@@ -2522,12 +2522,9 @@ class Elements extends Component
      * @param ElementInterface $element
      * @param null|string $fieldHandle
      * @param int $copyFromSiteId
-     * @return array
-     * @throws ElementNotFoundException
+     * @return array Array of field handles updated. The key will be the handle and value a boolean
      * @throws Exception
      * @throws Throwable
-     * @throws \craft\errors\InvalidFieldException
-     * @throws \yii\db\Exception
      */
     public function copyFieldValuesFromSite(ElementInterface $element, ?string $fieldHandle, int $copyFromSiteId): array
     {
@@ -2535,77 +2532,31 @@ class Elements extends Component
         /** @var string|ElementInterface $elementType */
         $elementType = get_class($element);
 
-        $user = Craft::$app->getUser()->getIdentity();
-
         $fromElement = $this->getElementById($element->getCanonicalId(), $elementType, $copyFromSiteId);
-
         if (!$fromElement) {
-            return [
-                'success' => false,
-                'message' => Craft::t('app', 'Couldn’t find this {type} on the site you selected.', [
-                    'type' => $element::lowerDisplayName(),
-                ]),
-                'element' => $element,
-            ];
+            throw new ElementNotFoundException(Craft::t('app', 'Couldn’t find this {type} on the site you selected.', [
+                'type' => $element::lowerDisplayName(),
+            ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            // check if element is a draft - if not, create one
-            if (!$element->getIsDraft()) {
-                /** @var Element|DraftBehavior $element */
-                $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, null, null, [], true);
-                $draft->setCanonical($element);
-                $element = $draft;
-            }
+        $updates = [];
 
-            $valueChanged = false;
+        if ($fieldHandle === null) {
+            $translatableFields = array_merge(
+                $this->_getTranslatableCustomFieldHandles($element),
+                $this->_getTranslatableNativeFieldHandles($element)
+            );
 
-            // if $fieldHandle === null - we're doing it for all element's fields
-            if ($fieldHandle === null) {
-                $translatableFields = array_merge(
-                    $this->_getTranslatableCustomFieldHandles($element),
-                    $this->_getTranslatableNativeFieldHandles($element)
-                );
-
-                foreach ($translatableFields as $translatableField) {
-                    $changed = $this->_copyFieldValueByHandle($fromElement, $element, $translatableField);
-                    if ($changed === true && $valueChanged !== true) {
-                        $valueChanged = true;
-                    }
+            foreach ($translatableFields as $translatableField) {
+                if ($this->_copyFieldValueByHandle($fromElement, $element, $translatableField)) {
+                    $updates[$translatableField] = true;
                 }
-            } else {
-                $valueChanged = $this->_copyFieldValueByHandle($fromElement, $element, $fieldHandle);
             }
-
-
-            if (!$valueChanged) {
-                $transaction->rollBack();
-                return [
-                    'success' => true,
-                    'message' => Craft::t('app', 'Nothing to copy.'),
-                    'element' => $element,
-                ];
-            }
-
-            if (!$this->saveElement($element, true, false, false)) {
-                return [
-                    'success' => false,
-                    'message' => Craft::t('app', 'Couldn’t copy content.'),
-                    'element' => $element,
-                ];
-            }
-
-            $transaction->commit();
-            return [
-                'success' => true,
-                'message' => Craft::t('app', 'Content copied.'),
-                'element' => $element,
-            ];
-        } catch (Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
+        } else {
+            $updates[$fieldHandle] = $this->_copyFieldValueByHandle($fromElement, $element, $fieldHandle);
         }
+
+        return array_filter($updates);
     }
 
     /**
@@ -2667,7 +2618,6 @@ class Elements extends Component
         // it's a reserved handle - handle differently
         if (in_array($fieldHandle, $reservedHandles) && $to->{$fieldHandle} != $from->{$fieldHandle}) {
             $to->{$fieldHandle} = $from->{$fieldHandle};
-            $valueChanged = true;
         } else {
             /** @var FieldInterface $field */
             $field = $from->getFieldLayout()?->getFieldByHandle($fieldHandle);
@@ -3696,6 +3646,8 @@ class Elements extends Component
                         }
                     }
                 }
+
+                $siteSettingsRecord = null;
 
                 // Save the element’s site settings record
                 if (!$isNewElement) {

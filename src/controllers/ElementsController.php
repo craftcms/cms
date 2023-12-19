@@ -19,6 +19,7 @@ use craft\errors\InvalidElementException;
 use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
+use craft\fieldlayoutelements\BaseField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
@@ -543,7 +544,7 @@ class ElementsController extends Controller
      */
     public function actionCopyFieldValuesFromSite(): Response
     {
-        $this->requireAcceptsJson();
+        $this->requireCpRequest();
 
         /** @var Element|null $element */
         $element = $this->_element();
@@ -555,7 +556,7 @@ class ElementsController extends Controller
         // if $fieldHandle is null, we're copying all element fields
         $fieldHandle = $this->request->getBodyParam('fieldHandle', null);
         $copyFromSiteId = $this->request->getRequiredBodyParam('copyFromSiteId');
-        $isFullPage = $this->request->getBodyParam('isFullPage');
+        $namespace = $this->request->getBodyParam('namespace');
 
         if ($fieldHandle === '' || empty($copyFromSiteId)) {
             throw new BadRequestHttpException("Request missing required param");
@@ -581,6 +582,7 @@ class ElementsController extends Controller
             return $this->_asFailure($element, $errorMsg);
         }
 
+        // Check if the site id requested exists for the element
         if (!in_array($copyFromSiteId, $siteIdsForElement, false)) {
             $errorMsg = Craft::t('app', 'Couldn’t find this {type} on the site you selected.', [
                 'type' => $element::lowerDisplayName(),
@@ -591,28 +593,39 @@ class ElementsController extends Controller
             return $this->_asFailure($element, $errorMsg);
         }
 
-        $result = $elementsService->copyFieldValuesFromSite($element, $fieldHandle, $copyFromSiteId);
-        if ($result['success'] === false) {
-            if ($isFullPage) {
-                Craft::$app->session->setError($result['message']);
-            }
-
-            return $this->_asFailure($result['element'], $result['message']);
-        }
-
-        if (!$this->request->getAcceptsJson()) {
-            // Tell all browser windows about the element save
-            Craft::$app->getSession()->broadcastToJs([
-                'event' => 'saveElement',
-                'id' => $element->id,
+        // Now we can actually copy things
+        $updates = $elementsService->copyFieldValuesFromSite($element, $fieldHandle, $copyFromSiteId);
+        if (count(array_keys($updates)) === 0) {
+            return $this->_asSuccess(Craft::t('app', 'Nothing to copy.'), $element, [
+                'fragments' => [],
             ]);
         }
 
-        if ($isFullPage) {
-            Craft::$app->session->setNotice($result['message']);
+        $fragments = [];
+        $view = Craft::$app->getView();
+        $layout = $element->getFieldLayout();
+
+        // Loop over each of the updated fields and gather the HTML of the field
+        foreach ($layout->getTabs() as $tab) {
+            foreach ($tab->getElements() as $layoutElement) {
+                if ($layoutElement instanceof BaseField) {
+                    $attribute = $layoutElement->attribute();
+
+                    // Only return attributes that were updated
+                    if (in_array($attribute, array_keys($updates))) {
+                        $fragments[$layoutElement->uid] = $view->namespaceInputs(function() use ($element, $layoutElement) {
+                            return $layoutElement->formHtml($element);
+                        }, $namespace);
+                    }
+                }
+            }
         }
 
-        return $this->_asSuccess($result['message'], $result['element']);
+        return $this->_asSuccess('Content copied.', $element, [
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+            'fragments' => $fragments,
+        ]);
     }
 
     /**
@@ -956,15 +969,6 @@ class ElementsController extends Controller
                         'params' => ['dropProvisional' => 1],
                     ],
                 ]);
-                if (ElementHelper::supportsFieldCopying($element)) {
-                    $components[] = Html::button(Craft::t('app', 'Copy content'), [
-                        'type' => 'button',
-                        'class' => ['btn', 'copy-all-from-site'],
-                        'aria' => [
-                            'label' => Craft::t('app', 'Copy content'),
-                        ],
-                    ]);
-                }
             } else {
                 $components[] = Html::beginForm() .
                     Html::actionInput('elements/save-draft') .

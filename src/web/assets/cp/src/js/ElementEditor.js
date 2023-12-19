@@ -53,7 +53,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     $sitesMenuCopyBtn: null,
     $copyAllFromSiteBtn: null,
     $translationBtn: null,
-    sitesForCopyFieldAction: null,
     copySitesMenuId: null,
 
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
@@ -107,7 +106,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.$previewBtn = this.$container.find('.preview-btn');
 
-      this.$copyAllFromSiteBtn = this.$container.find('.copy-all-from-site');
+      this.$copyAllFromSiteBtn = $('[data-copy-content]');
       this.$translationBtn = this.$container.find('.t9n-indicator');
       this.copySitesMenuId = `copy-sites-menu-${Math.floor(
         Math.random() * 1000000000
@@ -137,12 +136,10 @@ Craft.ElementEditor = Garnish.Base.extend(
           'expandSiteStatuses'
         );
 
-        this.sitesForCopyFieldAction = this._getSitesForCopyFieldAction();
-
         this.addListener(
           this.$copyAllFromSiteBtn,
           'click',
-          'showElementCopyDialogue'
+          'showElementCopyModal'
         );
 
         this.addListener(
@@ -253,7 +250,6 @@ Craft.ElementEditor = Garnish.Base.extend(
         });
       }
 
-      //this.sitesDisclosureMenu();
       this.activityTooltips = {};
 
       if (this.isFullPage) {
@@ -607,85 +603,86 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     _getSitesForCopyFieldAction: function () {
-      var menuOptions = [];
-      this._getOtherSupportedSites().forEach((s) =>
-        menuOptions.push({
-          label: s.name,
-          value: s.id,
-        })
-      );
-
-      return menuOptions;
+      return this._getOtherSupportedSites().map((s) => ({
+        label: s.name,
+        value: s.id,
+      }));
     },
 
     _getCopyBetweenSitesForm: function (fieldHandle = null) {
-      let form = '';
+      const $form = Craft.createForm();
+      $form.append(Craft.getCsrfInput());
 
-      form +=
-        '<form class="fitted copyBetweenSites" method="post" accept-charset="UTF-8" data-action="elements/copy-field-values-from-site">' +
-        Craft.getCsrfInput();
-
-      if (fieldHandle !== null) {
-        form +=
-          '<input type="hidden" id="copyFieldHandle" name="copyFieldHandle" value="' +
-          $btn.data('handle') +
-          '"/>';
+      if (fieldHandle) {
+        $('<input/>', {
+          type: 'hidden',
+          name: 'fieldHandle',
+          value: fieldHandle,
+        }).appendTo($form);
       }
 
-      form +=
-        '<label>' +
-        Craft.t('app', 'From') +
-        '</label>' +
-        '<input type="hidden" name="copyFromSiteId" id="copyFromSiteId" value="" />' +
-        '<button type="submit" class="btn submit">' +
-        Craft.t('app', 'Copy') +
-        '</button>' +
-        '</form>';
+      if (this.namespace) {
+        $('<input/>', {
+          type: 'hidden',
+          name: 'namespace',
+          value: this.namespace,
+        }).appendTo($form);
+      }
 
-      return form;
+      const $siteSelect = Craft.ui.createSelectField({
+        label: Craft.t('app', 'Copy from'),
+        name: 'copyFromSiteId',
+        class: ['fullwidth'],
+        options: this._getSitesForCopyFieldAction(),
+      });
+      $form.append($siteSelect);
+
+      const $submitBtn = Craft.ui.createSubmitButton({
+        label: Craft.t('app', 'Copy'),
+        spinner: true,
+      });
+      $form.append($submitBtn);
+
+      this.addListener($form, 'submit', 'copyValuesFromSite');
+
+      return $form;
     },
 
-    showElementCopyDialogue: function (ev) {
-      $btn = $(ev.target);
+    showElementCopyModal: function (ev) {
+      const $hudContent = $('<div/>', {
+        class: 'modal fitted copy-translation-dialogue',
+      });
+      const $body = $('<div/>', {
+        class: 'body',
+      });
 
-      let hudContent =
-        `<div class="copy-translation-dialogue">` +
-        `<h2>` +
-        Craft.t('app', 'Copy content from site') +
-        `</h2>` +
-        this._getCopyBetweenSitesForm() +
-        `<p class="smalltext">` +
-        Craft.t(
-          'app',
-          'Only translatable (<span class="t9n-indicator" data-icon="language" data-handle="title"></span>) field values will be copied if their content differs from the current.'
-        ) +
-        `</p>` +
-        `</div>`;
-
-      let hud = new Garnish.HUD($btn, hudContent);
-
-      this.sitesDisclosureMenu(hud);
-
-      this.addListener(
-        $('.copyBetweenSites'),
-        'submit',
-        {
-          hud: hud,
-        },
-        'copyValuesFromSite'
+      $body.append(
+        $(
+          `<p>${Craft.t(
+            'app',
+            'Only translatable (<span class="t9n-indicator" data-icon="language" data-handle="title"></span>) field values will be copied, and only if their content differs from the current.'
+          )}</p>`
+        )
       );
+
+      $body.append(this._getCopyBetweenSitesForm());
+      $hudContent.append($body);
+
+      this.copyModal = new Garnish.Modal($hudContent);
+
+      this.addListener($('.copyBetweenSites'), 'submit', 'copyValuesFromSite');
     },
 
     showFieldCopyDialogue: function (ev) {
       ev.preventDefault();
 
-      $btn = $(ev.target);
+      const $btn = $(ev.target);
 
-      let hudContent =
-        `<div class="copy-translation-dialogue">` +
-        `<span>` +
-        $btn.attr('title') +
-        `</span>`;
+      const $hudContent = $('<div/>', {
+        class: 'copy-translation-dialogue',
+      });
+
+      $(`<span>${$btn.attr('title')}</span>`).appendTo($hudContent);
 
       // only allow the copy field value of a copyable field
       // only if drafts can be created for this element (both user has permissions and element supports them)
@@ -693,55 +690,15 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (
         this.settings.canCreateDrafts &&
         $btn.hasClass('copyable') &&
-        this.sitesForCopyFieldAction.length > 0
+        this._getSitesForCopyFieldAction().length > 0
       ) {
-        hudContent +=
-          `<hr />` + this._getCopyBetweenSitesForm($btn.data('handle'));
+        $hudContent.append('<hr/>');
+        $hudContent.append(this._getCopyBetweenSitesForm($btn.data('handle')));
       }
 
-      hudContent += `</div>`;
+      this.copyHud = new Garnish.HUD($btn, $hudContent);
 
-      let hud = new Garnish.HUD($btn, hudContent);
-      this.sitesDisclosureMenu(hud);
-
-      this.addListener(
-        $('.copyBetweenSites'),
-        'submit',
-        {
-          hud: hud,
-        },
-        'copyValuesFromSite'
-      );
-    },
-
-    sitesDisclosureMenu: function (hud) {
-      let submitBtn = hud.$body.find('.copyBetweenSites button.submit');
-
-      if (
-        this.$sitesMenuCopyBtn &&
-        this.$sitesMenuCopyBtn.data('trigger') !== undefined
-      ) {
-        this.$sitesMenuCopyBtn.data('trigger').destroy();
-        $(`#${this.copySitesMenuId}`).remove();
-        this.$sitesMenuCopyBtn = null;
-      }
-
-      this.$sitesMenuCopyBtn = $('<button />', {
-        type: 'button',
-        class: 'btn copy-sites-menu-btn menubtn',
-        text: Craft.t('app', 'Select a site'),
-        'aria-controls': this.copySitesMenuId,
-        'aria-expanded': false,
-      }).insertBefore(submitBtn);
-
-      const $menu = $('<div/>', {
-        id: this.copySitesMenuId,
-        class: 'menu menu--disclosure',
-      }).insertBefore(submitBtn);
-
-      this._buildSitesList(this.sitesForCopyFieldAction, hud).appendTo($menu);
-
-      this.$sitesMenuCopyBtn.disclosureMenu();
+      this.addListener($('.copyBetweenSites'), 'submit', 'copyValuesFromSite');
     },
 
     _buildSitesList: function (sites, hud) {
@@ -767,64 +724,91 @@ Craft.ElementEditor = Garnish.Base.extend(
       return $ul;
     },
 
-    copyValuesFromSite: function (ev) {
+    copyValuesFromSite: async function (ev) {
       ev.preventDefault();
-      // hide the HUD
-      ev.data.hud.$hud.hide();
 
-      let $form = $(ev.target);
-      let params = {
-        copyFromSiteId: $form.find('[name="copyFromSiteId"]').val(),
-        elementId: this.settings.canonicalId,
-        draftId: this.settings.draftId,
-        provisional: this.settings.isProvisionalDraft,
-        isFullPage: this.isFullPage,
-      };
+      const $form = $(ev.target);
+      const formData = new FormData(ev.target);
+      const $submitBtn = $form.find('[type=submit]');
+      $submitBtn.addClass('loading');
 
-      if ($form.find('[name="copyFieldHandle"]') != undefined) {
-        params['fieldHandle'] = $form.find('[name="copyFieldHandle"]').val();
+      formData.set('elementId', this.settings.canonicalId);
+      if (this.settings.draftId) {
+        formData.set('draftId', this.settings.draftId);
       }
+      formData.set('provisional', this.settings.isProvisionalDraft);
+      formData.set('isFullPage', this.settings.isFullPage);
 
       if (Craft.csrfTokenName) {
-        params[Craft.csrfTokenName] = Craft.csrfTokenValue;
+        formData.set(Craft.csrfTokenName, Craft.csrfTokenValue);
       }
 
-      Craft.sendActionRequest('POST', $form.data('action'), {
-        data: params,
-      })
-        .then((response) => {
-          let element = response.data.element;
+      try {
+        const response = await Craft.sendActionRequest(
+          'POST',
+          'elements/copy-field-values-from-site',
+          {
+            data: formData,
+          }
+        );
 
-          if (Craft.broadcaster) {
-            Craft.broadcaster.postMessage({
-              pageId: Craft.pageId,
-              event: 'saveDraft',
-              canonicalId: element.canonicalId,
-              draftId: element.draftId,
-              isProvisionalDraft: element.isProvisionalDraft,
-            });
-          }
+        const {element, fragments, message, headHtml, bodyHtml} = response.data;
 
-          if (this.isFullPage) {
-            window.location.reload();
-            // window.location.replace(window.location.href);
-          } else {
-            this.slideout.close();
-            this.slideout = Craft.createElementEditor(
-              'craft\\elements\\Entry',
-              {
-                siteId: element.siteId,
-                elementId: element.canonicalId,
-              }
-            );
-            Craft.cp.displayNotice(response.data.message);
+        // Need to append head and body HTML in case a field registered some JS
+        await Craft.appendHeadHtml(headHtml);
+        await Craft.appendBodyHtml(bodyHtml);
+
+        if (Craft.broadcaster) {
+          Craft.broadcaster.postMessage({
+            pageId: Craft.pageId,
+            event: 'saveDraft',
+            canonicalId: element.canonicalId,
+            draftId: element.draftId,
+            isProvisionalDraft: element.isProvisionalDraft,
+          });
+        }
+
+        const dirtyFields = [];
+
+        // Replace the layout elements
+        for (const uid in fragments) {
+          const $field = this.$container.find(`[data-layout-element="${uid}"]`);
+          if ($field.length > 0) {
+            $field.replaceWith(fragments[uid]);
+            dirtyFields.push($field.data('attribute'));
+            Craft.initUiElements($field);
           }
-        })
-        .catch((e) => {
-          if (e.response.data.message) {
-            Craft.cp.displayError(e.response.data.message);
-          }
-        });
+        }
+
+        if (dirtyFields.length > 0) {
+          // Update the draft with the new values
+          await this.saveDraft({
+            dirtyFields,
+          });
+        }
+
+        Craft.cp.displaySuccess(message);
+      } catch (error) {
+        if (error.response?.data?.message) {
+          Craft.cp.displayError(error.response.data.message);
+        } else {
+          // Generic error for when things went horribly wrong
+          Craft.cp.displayError(Craft.t('app', 'Failed to copy content.'));
+        }
+      } finally {
+        // Close the modal if it's open
+        if (this.copyModal) {
+          this.copyModal.hide();
+        }
+
+        // Close the HUD if it's open
+        if (this.copyHud) {
+          this.copyHud.$hud.hide();
+        }
+
+        // Cleanup after ourselves
+        $submitBtn.removeClass('loading');
+      }
     },
 
     /**

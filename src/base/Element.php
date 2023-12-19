@@ -3477,6 +3477,25 @@ abstract class Element extends Component implements ElementInterface
             ];
         }
 
+        // Copy content
+        if (ElementHelper::supportsFieldCopying($this)) {
+            $copyContentId = sprintf('action-copy-content-%s', mt_rand());
+            $items[] = [
+                'id' => $copyContentId,
+                'icon' => 'language',
+                'label' => Craft::t('app', 'Copy content from site'),
+                'type' => MenuItemType::Button,
+                'attributes' => [
+                    'data' => [
+                        'copy-content' => true,
+                    ],
+                    'aria' => [
+                        'label' => Craft::t('app', 'Copy content from site'),
+                    ],
+                ],
+            ];
+        }
+
         // Edit
         if (Craft::$app->getElements()->canView($this)) {
             $editId = sprintf('action-edit-%s', mt_rand());
