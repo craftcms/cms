@@ -87,3 +87,6 @@ import './js/UI.js';
 import './js/Uploader.js';
 import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
+
+// Web components
+import './js/CraftCopyAttribute.js';
