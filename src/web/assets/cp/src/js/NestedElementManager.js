@@ -16,10 +16,8 @@ Craft.NestedElementManager = Garnish.Base.extend(
     // index
     elementIndex: null,
 
-    init: function (containerId, elementType, settings) {
-      // Workaround for handling colon characters in ID selectors, which jQuery doesn't like
-      // https://stackoverflow.com/a/11862160
-      this.$container = $(document.getElementById(containerId));
+    init: function (container, elementType, settings) {
+      this.$container = $(container);
       this.elementType = elementType;
       this.setSettings(settings, Craft.NestedElementManager.defaults);
 
