@@ -1185,6 +1185,29 @@ JS, [
             ])
             : '';
 
+
+        $translationIconHtml = Html::tag('span', '', [
+            'class' => ['t9n-indicator'],
+            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+            'data' => [
+                'icon' => 'language',
+            ],
+            'aria' => [
+                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                'role' => 'img',
+            ],
+        ]);
+
+        // If this is a copyable field, make the translation icon a button
+        if ($copyable) {
+            $translationIconHtml = Html::button($translationIconHtml, [
+                'class' => 'copyable',
+                'data' => [
+                    'copy' => $attribute,
+                ],
+            ]);
+        }
+
         if ($label) {
             $labelHtml = $label . (
                     ($required
@@ -1198,20 +1221,7 @@ JS, [
                             ],
                         ])
                         : '') .
-                    ($translatable
-                        ? Html::tag('span', '', [
-                            'class' => array_filter(['t9n-indicator', ($copyable ? 'copyable' : '')]),
-                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            'data' => [
-                                'icon' => 'language',
-                                'handle' => $attribute,
-                            ],
-                            'aria' => [
-                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                                'role' => 'button',
-                            ],
-                        ])
-                        : '')
+                    ($translatable ? $translationIconHtml : '')
                 );
         } else {
             $labelHtml = '';

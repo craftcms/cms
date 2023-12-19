@@ -107,7 +107,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$previewBtn = this.$container.find('.preview-btn');
 
       this.$copyAllFromSiteBtn = $('[data-copy-content]');
-      this.$translationBtn = this.$container.find('.t9n-indicator');
+      this.$translationBtn = this.$container.find('[data-copy]');
       this.copySitesMenuId = `copy-sites-menu-${Math.floor(
         Math.random() * 1000000000
       )}`;
@@ -629,19 +629,28 @@ Craft.ElementEditor = Garnish.Base.extend(
         }).appendTo($form);
       }
 
+      const $fields = $('<div/>', {
+        class: 'flex flex-end flex-nowrap',
+      });
+
       const $siteSelect = Craft.ui.createSelectField({
         label: Craft.t('app', 'Copy from'),
         name: 'copyFromSiteId',
         class: ['fullwidth'],
         options: this._getSitesForCopyFieldAction(),
       });
-      $form.append($siteSelect);
+
+      // `class` above targets the select input, we need the container
+      $siteSelect.addClass('flex-grow');
+      $fields.append($siteSelect);
 
       const $submitBtn = Craft.ui.createSubmitButton({
         label: Craft.t('app', 'Copy'),
         spinner: true,
       });
-      $form.append($submitBtn);
+      $fields.append($submitBtn);
+
+      $form.append($fields);
 
       this.addListener($form, 'submit', 'copyValuesFromSite');
 
@@ -676,24 +685,25 @@ Craft.ElementEditor = Garnish.Base.extend(
     showFieldCopyDialogue: function (ev) {
       ev.preventDefault();
 
-      const $btn = $(ev.target);
+      const $btn = $(ev.currentTarget);
+      const $icon = $btn.find('.t9n-indicator');
 
       const $hudContent = $('<div/>', {
         class: 'copy-translation-dialogue',
       });
 
-      $(`<span>${$btn.attr('title')}</span>`).appendTo($hudContent);
+      $(`<span>${$icon.attr('title')}</span>`).appendTo($hudContent);
 
       // only allow the copy field value of a copyable field
       // only if drafts can be created for this element (both user has permissions and element supports them)
       // only if this element exists on other sites too
       if (
         this.settings.canCreateDrafts &&
-        $btn.hasClass('copyable') &&
+        $btn.attr('data-copy') &&
         this._getSitesForCopyFieldAction().length > 0
       ) {
         $hudContent.append('<hr/>');
-        $hudContent.append(this._getCopyBetweenSitesForm($btn.data('handle')));
+        $hudContent.append(this._getCopyBetweenSitesForm($btn.data('copy')));
       }
 
       this.copyHud = new Garnish.HUD($btn, $hudContent);
