@@ -603,6 +603,7 @@ class ElementsController extends Controller
 
         $fragments = [];
         $view = Craft::$app->getView();
+        $view->setNamespace($namespace);
         $layout = $element->getFieldLayout();
 
         // Loop over each of the updated fields and gather the HTML of the field
@@ -615,7 +616,7 @@ class ElementsController extends Controller
                     if (in_array($attribute, array_keys($updates))) {
                         $html = $view->namespaceInputs(function() use ($element, $layoutElement) {
                             return $layoutElement->formHtml($element);
-                        }, $namespace);
+                        });
 
                         if ($html) {
                             $html = Html::modifyTagAttributes($html, [
