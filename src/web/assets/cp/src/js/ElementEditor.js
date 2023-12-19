@@ -813,7 +813,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         // Close the HUD if it's open
         if (this.copyHud) {
-          this.copyHud.$hud.hide();
+          this.copyHud.hide();
         }
 
         // Cleanup after ourselves
