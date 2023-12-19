@@ -201,7 +201,7 @@ class Search extends Component
      * Searches for elements that match the given element query.
      *
      * @param ElementQuery $elementQuery The element query being executed
-     * @return int[] The filtered list of element IDs.
+     * @return array<int,int> Element ID and score mapping, with scores descending
      * @phpstan-return array<int,int>
      * @since 3.7.14
      */
@@ -210,6 +210,7 @@ class Search extends Component
         $searchQuery = $this->normalizeSearchQuery($elementQuery->search);
 
         $elementQuery = (clone $elementQuery)
+            ->select('elements.id')
             ->search(null)
             ->offset(null)
             ->limit(null);
@@ -222,6 +223,57 @@ class Search extends Component
                 'siteId' => $elementQuery->siteId,
             ]));
         }
+
+        // Execute the sql
+        $query = $this->createDbQuery($searchQuery, $elementQuery);
+
+        if ($query === false) {
+            return [];
+        }
+
+        $results = $query
+            ->andWhere(['elementId' => $elementQuery])
+            ->cache(true, new ElementQueryTagDependency($elementQuery))
+            ->all();
+
+        // Score the results
+        $scores = $this->_scoreResults($results, $searchQuery, $elementQuery);
+
+        // Fire an 'afterSearch' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
+            $event = new SearchEvent([
+                'elementQuery' => $elementQuery,
+                'query' => $searchQuery,
+                'siteId' => $elementQuery->siteId,
+                'results' => $results,
+                'scores' => $scores,
+            ]);
+            $this->trigger(self::EVENT_AFTER_SEARCH, $event);
+
+            // Use the scores from the event, in case any last minute changes were made to it
+            if ($event->scores !== null) {
+                $scores = $event->scores;
+            }
+        }
+
+        // Sort by element ID ascending, then score descending
+        ksort($scores);
+        arsort($scores);
+
+        return $scores;
+    }
+
+    /**
+     * Returns a database query which will fetch results for a given search query.
+     *
+     * @param string|array|SearchQuery $searchQuery The search term to filter the resulting elements by.
+     * @param ElementQuery $elementQuery The element query being executed
+     * @return Query|false
+     * @since 4.6.0
+     */
+    public function createDbQuery(string|array|SearchQuery $searchQuery, ElementQuery $elementQuery): Query|false
+    {
+        $searchQuery = $this->normalizeSearchQuery($searchQuery);
 
         // Get tokens for query
         $this->_terms = [];
@@ -246,27 +298,22 @@ class Search extends Component
         $where = $this->_getWhereClause($elementQuery->siteId, $customFields);
 
         if (empty($where)) {
-            return [];
+            return false;
         }
 
         $query = (new Query())
             ->from([Table::SEARCHINDEX])
-            ->where(new Expression($where))
-            ->andWhere([
-                'elementId' => $elementQuery->select(['elements.id']),
-            ])
-            ->cache(true, new ElementQueryTagDependency($elementQuery));
+            ->where(new Expression($where));
 
         if ($elementQuery->siteId !== null) {
             $query->andWhere(['siteId' => $elementQuery->siteId]);
         }
 
-        // Execute the sql
-        $results = $query->all();
+        return $query;
+    }
 
-        // Score the results
-        $scores = null;
-
+    private function _scoreResults(array $results, SearchQuery $searchQuery, ElementQuery $elementQuery): array
+    {
         // Fire a 'beforeScoreResults' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SCORE_RESULTS)) {
             $event = new SearchEvent([
@@ -277,47 +324,27 @@ class Search extends Component
             ]);
             $this->trigger(self::EVENT_BEFORE_SCORE_RESULTS, $event);
 
+            if ($event->scores !== null) {
+                return $event->scores;
+            }
+
             // Use whatever changes may have been made to the results (unless it was set to null for some reason)
             if ($event->results !== null) {
                 $results = $event->results;
             }
-
-            // If a handler set the scores, use that instead of figuring it out for ourselves.
-            $scores = $event->scores;
         }
 
-        if ($scores === null) {
-            $scores = [];
+        $scores = [];
 
-            // Loop through results and calculate score per element
-            foreach ($results as $row) {
-                $elementId = $row['elementId'];
-                $score = $this->_scoreRow($row, $elementQuery->siteId);
+        // Loop through results and calculate score per element
+        foreach ($results as $row) {
+            $elementId = $row['elementId'];
+            $score = $this->_scoreRow($row, $elementQuery->siteId);
 
-                if (!isset($scores[$elementId])) {
-                    $scores[$elementId] = $score;
-                } else {
-                    $scores[$elementId] += $score;
-                }
-            }
-        }
-
-        arsort($scores);
-
-        // Fire an 'afterSearch' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
-            $event = new SearchEvent([
-                'elementQuery' => $elementQuery,
-                'query' => $searchQuery,
-                'siteId' => $elementQuery->siteId,
-                'results' => $results,
-                'scores' => $scores,
-            ]);
-            $this->trigger(self::EVENT_AFTER_SEARCH, $event);
-
-            // Return the scores from the event, in case any last minute changes were made to it
-            if ($event->scores !== null) {
-                return $event->scores;
+            if (!isset($scores[$elementId])) {
+                $scores[$elementId] = $score;
+            } else {
+                $scores[$elementId] += $score;
             }
         }
 
