@@ -46,23 +46,30 @@ class CraftCopyAttribute extends HTMLElement {
     this.btn.appendChild(a11yText);
 
     const icon = document.createElement('span');
-    icon.classList.add('copytextbtn__icon');
     icon.ariaHidden = true;
     icon.setAttribute('data-icon', 'clipboard');
     this.btn.appendChild(icon);
   }
 
+  renderButton() {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.addEventListener('click', this.handleTrigger.bind(this));
+    button.addEventListener('keydown', this.handleTrigger.bind(this));
+
+    button.innerText = this.value;
+
+    this.btn = button;
+    this.appendChild(this.btn);
+  }
+
   connectedCallback() {
-    this.value = this.querySelector('.copytextbtn__value').innerText;
-    this.classList.add('copytextbtn-wrapper');
+    this.value = this.innerText.trim();
+    this.innerHTML = '';
 
-    this.btn = this.querySelector('.copytextbtn');
-
+    this.renderButton();
     this.renderInput();
     this.renderIcon();
-
-    this.btn.addEventListener('click', this.handleTrigger.bind(this));
-    this.btn.addEventListener('keydown', this.handleTrigger.bind(this));
   }
 }
 

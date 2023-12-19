@@ -193,10 +193,7 @@ Craft.ui = {
       $btn.addClass(config.class);
     }
 
-    $('<span/>', {
-      text: value,
-      class: 'copytextbtn__value',
-    }).appendTo($btn);
+    $btn.text(value);
 
     return $wrapper;
   },

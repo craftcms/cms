@@ -10,10 +10,5 @@
 } %}
 
 <craft-copy-attribute>
-    {% tag 'div' with attributes %}
-        {{ tag('span', {
-            class: 'copytextbtn__value',
-            text: value,
-        }) }}
-    {% endtag %}
+    {{ value }}
 </craft-copy-attribute>
