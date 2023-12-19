@@ -613,9 +613,19 @@ class ElementsController extends Controller
 
                     // Only return attributes that were updated
                     if (in_array($attribute, array_keys($updates))) {
-                        $fragments[$layoutElement->uid] = $view->namespaceInputs(function() use ($element, $layoutElement) {
+                        $html = $view->namespaceInputs(function() use ($element, $layoutElement) {
                             return $layoutElement->formHtml($element);
                         }, $namespace);
+
+                        if ($html) {
+                            $html = Html::modifyTagAttributes($html, [
+                                'data' => [
+                                    'layout-element' => $layoutElement->uid,
+                                ],
+                            ]);
+                        }
+
+                        $fragments[$layoutElement->uid] = $html;
                     }
                 }
             }
