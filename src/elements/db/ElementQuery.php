@@ -1424,6 +1424,14 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->orderBy = $this->normalizeOrderBy($this->orderBy);
         }
 
+        // Normalize `offset` and `limit` for _applySearchParam()
+        if (is_numeric($this->offset)) {
+            $this->offset = (int)$this->offset;
+        }
+        if (is_numeric($this->limit)) {
+            $this->limit = (int)$this->limit;
+        }
+
         // Build the query
         // ---------------------------------------------------------------------
 
@@ -1551,7 +1559,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_applyRelatedToParam();
         $this->_applyStructureParams($class);
         $this->_applyRevisionParams();
-        $this->_applySearchParam($db);
+        $this->_applySearchParam();
         $this->_applyInBulkOpParam();
         $this->_applyOrderByParams($db);
         $this->_applySelectParam();
@@ -2855,25 +2863,53 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'search' param to the query being prepared.
      *
-     * @param Connection $db
-     * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
-    private function _applySearchParam(Connection $db): void
+    private function _applySearchParam(): void
     {
         $this->_searchResults = null;
 
-        if ($this->search) {
+        if (!$this->search) {
+            return;
+        }
+
+        if (isset($this->orderBy['score'])) {
+            // Get the scored results up front
             $searchResults = Craft::$app->getSearch()->searchElements($this);
 
-            // No results?
+            if ($this->orderBy['score'] === SORT_ASC) {
+                $searchResults = array_reverse($searchResults, true);
+            }
+
+            if (array_key_first($this->orderBy) === 'score') {
+                // Only use the portion we're actually querying for
+                if (is_int($this->offset) && $this->offset !== 0) {
+                    $searchResults = array_slice($searchResults, $this->offset, null, true);
+                    $this->subQuery->offset(null);
+                }
+                if (is_int($this->limit) && $this->limit !== 0) {
+                    $searchResults = array_slice($searchResults, 0, $this->limit, true);
+                    $this->subQuery->limit(null);
+                }
+            }
+
             if (empty($searchResults)) {
                 throw new QueryAbortedException();
             }
 
             $this->_searchResults = $searchResults;
-
             $this->subQuery->andWhere(['elements.id' => array_keys($searchResults)]);
+        } else {
+            // Just filter the main query by the search query
+            $searchQuery = Craft::$app->getSearch()->createDbQuery($this->search, $this);
+
+            if ($searchQuery === false) {
+                throw new QueryAbortedException();
+            }
+
+            $this->subQuery->andWhere([
+                'elements.id' => $searchQuery->select(['elementId']),
+            ]);
         }
     }
 
@@ -2892,11 +2928,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'fixedOrder' and 'orderBy' params to the query being prepared.
      *
-     * @param Connection $db
+     * @param YiiConnection $db
      * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
-    private function _applyOrderByParams(Connection $db): void
+    private function _applyOrderByParams(YiiConnection $db): void
     {
         if (!isset($this->orderBy) || !empty($this->query->orderBy)) {
             return;
@@ -2946,6 +2982,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
+        // swap `score` direction value with a fixed order expression
+        if (isset($this->_searchResults)) {
+            if (!$db instanceof Connection) {
+                throw new Exception('The database connection doesn’t support fixed ordering.');
+            }
+            $orderBy['score'] = new FixedOrderExpression('elements.id', array_keys($this->_searchResults), $db);
+        } else {
+            unset($orderBy['score']);
+        }
+
         if ($this->inReverse) {
             foreach ($orderBy as &$direction) {
                 if ($direction instanceof FixedOrderExpression) {
@@ -2957,41 +3003,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
             }
             unset($direction);
-        }
-
-        // swap `score` direction value with a case expression
-        if (
-            !empty($this->_searchResults) &&
-            isset($orderBy['score']) &&
-            in_array($orderBy['score'], [SORT_ASC, SORT_DESC], true)
-        ) {
-            $elementIdsByScore = [];
-            foreach ($this->_searchResults as $elementId => $score) {
-                if ($score !== 0) {
-                    $elementIdsByScore[$score][] = $elementId;
-                }
-            }
-            if (!empty($elementIdsByScore)) {
-                $caseSql = 'CASE';
-                foreach ($elementIdsByScore as $score => $elementIds) {
-                    $caseSql .= ' WHEN (';
-                    if (count($elementIds) === 1) {
-                        $caseSql .= "[[elements.id]] = $elementIds[0]";
-                    } else {
-                        $caseSql .= '[[elements.id]] IN (' . implode(',', $elementIds) . ')';
-                    }
-                    $caseSql .= ") THEN $score";
-                }
-                $caseSql .= ' ELSE 0 END';
-                if ($orderBy['score'] === SORT_DESC) {
-                    $caseSql .= ' DESC';
-                }
-                $orderBy['score'] = new Expression($caseSql);
-            } else {
-                unset($orderBy['score']);
-            }
-        } else {
-            unset($orderBy['score']);
         }
 
         $this->query->orderBy($orderBy);
@@ -3077,9 +3088,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'unique' param to the query being prepared
      *
-     * @param Connection $db
+     * @param YiiConnection $db
      */
-    private function _applyUniqueParam(Connection $db): void
+    private function _applyUniqueParam(YiiConnection $db): void
     {
         if (
             !$this->unique ||
