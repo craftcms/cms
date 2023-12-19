@@ -2618,6 +2618,7 @@ class Elements extends Component
         // it's a reserved handle - handle differently
         if (in_array($fieldHandle, $reservedHandles) && $to->{$fieldHandle} != $from->{$fieldHandle}) {
             $to->{$fieldHandle} = $from->{$fieldHandle};
+            $valueChanged = true;
         } else {
             /** @var FieldInterface $field */
             $field = $from->getFieldLayout()?->getFieldByHandle($fieldHandle);
