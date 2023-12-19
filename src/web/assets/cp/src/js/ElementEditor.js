@@ -52,8 +52,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     $sitesMenuCopyBtn: null,
     $copyAllFromSiteBtn: null,
-    $translationBtn: null,
-    copySitesMenuId: null,
 
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
 
@@ -107,10 +105,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$previewBtn = this.$container.find('.preview-btn');
 
       this.$copyAllFromSiteBtn = $('[data-copy-content]');
-      this.$translationBtn = this.$container.find('[data-copy]');
-      this.copySitesMenuId = `copy-sites-menu-${Math.floor(
-        Math.random() * 1000000000
-      )}`;
 
       const $spinnerContainer = this.isFullPage
         ? $('#page-title')
@@ -142,10 +136,11 @@ Craft.ElementEditor = Garnish.Base.extend(
           'showElementCopyModal'
         );
 
-        this.addListener(
-          this.$translationBtn,
+        // Use event delegation so we don't have to reinitialize when markup is replaced
+        this.$container.on(
           'click',
-          'showFieldCopyDialogue'
+          '[data-copy]',
+          this.showFieldCopyDialogue.bind(this)
         );
       }
 
@@ -250,12 +245,16 @@ Craft.ElementEditor = Garnish.Base.extend(
         });
       }
 
+      this.initFieldCopy();
+
       this.activityTooltips = {};
 
       if (this.isFullPage) {
         Craft.ui.setFocusOnErrorSummary(this.$container);
       }
     },
+
+    initFieldCopy() {},
 
     _createQueue: function () {
       const queue = new Craft.Queue();
@@ -786,6 +785,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           if ($field.length > 0) {
             $field.replaceWith(fragments[uid]);
             dirtyFields.push($field.data('attribute'));
+
             Craft.initUiElements($field);
           }
         }
