@@ -501,7 +501,7 @@ class NestedElementManager extends Component
 
             $view->registerJsWithVars(fn($id, $elementType, $settings) => <<<JS
 (() => {
-  new Craft.NestedElementManager('#' + $id, $elementType, $settings);
+  new Craft.NestedElementManager($id, $elementType, $settings);
 })();
 JS, [
                 $view->namespaceInputId($id),
