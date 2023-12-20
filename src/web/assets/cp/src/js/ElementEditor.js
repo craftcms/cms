@@ -763,10 +763,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         const {element, fragments, message, headHtml, bodyHtml} = response.data;
 
-        // Need to append head and body HTML in case a field registered some JS
-        await Craft.appendHeadHtml(headHtml);
-        await Craft.appendBodyHtml(bodyHtml);
-
         if (Craft.broadcaster) {
           Craft.broadcaster.postMessage({
             pageId: Craft.pageId,
@@ -796,6 +792,10 @@ Craft.ElementEditor = Garnish.Base.extend(
             dirtyFields,
           });
         }
+
+        // Need to append head and body HTML in case a field registered some JS
+        await Craft.appendHeadHtml(headHtml);
+        await Craft.appendBodyHtml(bodyHtml);
 
         Craft.cp.displaySuccess(message);
       } catch (error) {

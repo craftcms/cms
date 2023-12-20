@@ -40,6 +40,7 @@ use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Json;
 use craft\helpers\Queue;
@@ -1115,7 +1116,7 @@ class Matrix extends Field implements
      */
     public function getIsCopyable(?ElementInterface $element = null): bool
     {
-        return false;
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 
     // Events
