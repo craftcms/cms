@@ -51,7 +51,7 @@ class SearchEvent extends BaseEvent
     public ?array $results = null;
 
     /**
-     * @var array|null The result scores, indexed by element ID
+     * @var array<string,int>|null The element scores indexed by element ID and site ID (e.g. `'100-1'`).
      *
      * This will only be set ahead of time for [[\craft\services\Search::EVENT_AFTER_SEARCH]].
      *

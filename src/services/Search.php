@@ -22,7 +22,6 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Search as SearchHelper;
 use craft\helpers\StringHelper;
-use craft\models\Site;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -202,8 +201,7 @@ class Search extends Component
      * Searches for elements that match the given element query.
      *
      * @param ElementQuery $elementQuery The element query being executed
-     * @return array<int,int> Element ID and score mapping, with scores descending
-     * @phpstan-return array<int,int>
+     * @return array<string,int> The element scores (descending) indexed by element ID and site ID (e.g. `'100-1'`).
      * @since 3.7.14
      */
     public function searchElements(ElementQuery $elementQuery): array
@@ -257,8 +255,8 @@ class Search extends Component
             }
         }
 
-        // Sort by element ID ascending, then score descending
-        ksort($scores);
+        // Sort by element ID/site ID ascending, then score descending
+        ksort($scores, SORT_NATURAL);
         arsort($scores);
 
         return $scores;
@@ -339,14 +337,11 @@ class Search extends Component
 
         // Loop through results and calculate score per element
         foreach ($results as $row) {
-            $elementId = $row['elementId'];
-            $score = $this->_scoreRow($row, $elementQuery->siteId);
-
-            if (!isset($scores[$elementId])) {
-                $scores[$elementId] = $score;
-            } else {
-                $scores[$elementId] += $score;
+            $key = sprintf('%s-%s', $row['elementId'], $row['siteId']);
+            if (!isset($scores[$key])) {
+                $scores[$key] = 0;
             }
+            $scores[$key] += $this->_scoreRow($row);
         }
 
         return $scores;
@@ -476,17 +471,16 @@ SQL;
      * Calculate score for a result.
      *
      * @param array $row A single result from the search query.
-     * @param int|int[]|null $siteId
      * @return int The total score for this row.
      */
-    private function _scoreRow(array $row, array|int|null $siteId = null): int
+    private function _scoreRow(array $row): int
     {
         // Starting point
         $score = 0;
 
         // Loop through AND-terms and score each one against this row
         foreach ($this->_terms as $term) {
-            $score += $this->_scoreTerm($term, $row, 1, $siteId);
+            $score += $this->_scoreTerm($term, $row, 1);
         }
 
         // Loop through each group of OR-terms
@@ -496,7 +490,7 @@ SQL;
 
             // Get the score for each term and add it to the total
             foreach ($terms as $term) {
-                $score += $this->_scoreTerm($term, $row, $weight, $siteId);
+                $score += $this->_scoreTerm($term, $row, $weight);
             }
         }
 
@@ -509,14 +503,13 @@ SQL;
      * @param SearchQueryTerm $term The SearchQueryTerm to score.
      * @param array $row The result row to score against.
      * @param float|int $weight Optional weight for this term.
-     * @param int|int[]|null $siteId
      * @return float The total score for this term/row combination.
      */
-    private function _scoreTerm(SearchQueryTerm $term, array $row, float|int $weight = 1, array|int|null $siteId = null): float
+    private function _scoreTerm(SearchQueryTerm $term, array $row, float|int $weight = 1): float
     {
         // Skip these terms: exact filtering is just that, no weighted search applies since all elements will
         // already apply for these filters.
-        if ($term->exact || !($keywords = $this->_normalizeTerm($term->term, $siteId))) {
+        if ($term->exact || !($keywords = $this->_normalizeTerm($term->term, $row['siteId']))) {
             return 0;
         }
 

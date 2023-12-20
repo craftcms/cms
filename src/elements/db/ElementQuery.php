@@ -43,6 +43,7 @@ use ReflectionProperty;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidValueException;
 use yii\base\NotSupportedException;
 use yii\db\Connection as YiiConnection;
 use yii\db\Expression;
@@ -524,7 +525,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private ?array $_resultCriteria = null;
 
     /**
-     * @var int[]|null
+     * @var array<string,int>|null
      * @see _applySearchParam()
      * @see _applyOrderByParams()
      * @see populate()
@@ -2984,10 +2985,32 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // swap `score` direction value with a fixed order expression
         if (isset($this->_searchResults)) {
-            if (!$db instanceof Connection) {
-                throw new Exception('The database connection doesn’t support fixed ordering.');
+            $scoreSql = 'CASE';
+            $scoreParams = [];
+            $paramSuffix = StringHelper::randomString(10);
+            $keys = array_keys($this->_searchResults);
+            if ($this->inReverse) {
+                $keys = array_reverse($keys);
             }
-            $orderBy['score'] = new FixedOrderExpression('elements.id', array_keys($this->_searchResults), $db);
+            $i = -1;
+            foreach ($keys as $i => $key) {
+                [$elementId, $siteId] = array_pad(explode('-', $key, 2), 2, null);
+                if ($siteId === null) {
+                    throw new InvalidValueException("Invalid element search score key: \"$key\". Search scores should be indexed by element ID and site ID (e.g. \"100-1\").");
+                }
+                $keyParamSuffix = sprintf('%s_%s', $paramSuffix, $i);
+                $scoreSql .= sprintf(
+                    ' WHEN [[elements.id]] = :elementId_%s AND [[elements_sites.siteId]] = :siteId_%s THEN :value_%s',
+                    $keyParamSuffix, $keyParamSuffix, $keyParamSuffix
+                );
+                $scoreParams[":elementId_$keyParamSuffix"] = $elementId;
+                $scoreParams[":siteId_$keyParamSuffix"] = $siteId;
+                $scoreParams[":value_$keyParamSuffix"] = $i;
+            }
+            $defaultParam = sprintf(':value_%s_%s', $paramSuffix, $i + 1);
+            $scoreSql .= sprintf(' ELSE %s END', $defaultParam);
+            $scoreParams[$defaultParam] = $i + 1;
+            $orderBy['score'] = new Expression($scoreSql, $scoreParams);
         } else {
             unset($orderBy['score']);
         }
