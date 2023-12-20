@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where the `index-assets/cleanup` command accepted `--cache-remote-images`, `--create-missing-assets`, and `--delete-missing-assets` options, even though they didn’t do anything.
+
 ## 4.5.13 - 2023-12-15
 
 - Address fields now have the appropriate `autocomplete` values when editing an address that belongs to the current user. ([#13938](https://github.com/craftcms/cms/pull/13938))

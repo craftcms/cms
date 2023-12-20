@@ -59,11 +59,18 @@ class IndexAssetsController extends Controller
     public function options($actionID): array
     {
         $options = parent::options($actionID);
-        if (!App::isEphemeral()) {
-            $options[] = 'cacheRemoteImages';
+
+        switch ($actionID) {
+            case 'all':
+            case 'one':
+                if (!App::isEphemeral()) {
+                    $options[] = 'cacheRemoteImages';
+                }
+                $options[] = 'createMissingAssets';
+                $options[] = 'deleteMissingAssets';
+                break;
         }
-        $options[] = 'createMissingAssets';
-        $options[] = 'deleteMissingAssets';
+
         return $options;
     }
 
