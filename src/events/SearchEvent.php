@@ -33,6 +33,7 @@ class SearchEvent extends BaseEvent
 
     /**
      * @var int|int[]|null The site ID(s) to filter by
+     * @deprecated in 5.0.0. The `siteId` property on [[$elementQuery]] should be used instead.
      */
     public array|int|null $siteId = null;
 
