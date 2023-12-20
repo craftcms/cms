@@ -584,6 +584,9 @@ class Volumes extends Component
                 'id',
                 'name',
                 'handle',
+                'fs',
+                'transformFs',
+                'transformSubpath',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'sortOrder',
@@ -596,15 +599,11 @@ class Volumes extends Component
 
         // todo: cleanup after next breakpoint
         $db = Craft::$app->getDb();
-        if ($db->columnExists(Table::VOLUMES, 'fs')) {
-            $query->addSelect([
-                'fs',
-                'transformFs',
-                'transformSubpath',
-            ]);
-        }
         if ($db->columnExists(Table::VOLUMES, 'subpath')) {
             $query->addSelect(['subpath']);
+        }
+        if ($db->columnExists(Table::VOLUMES, 'altTranslationMethod')) {
+            $query->addSelect(['altTranslationMethod', 'altTranslationKeyFormat']);
         }
 
         return $query;

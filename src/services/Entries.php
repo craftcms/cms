@@ -1157,7 +1157,10 @@ SQL)->execute();
         // todo: remove this after the next breakpoint
         if (!Craft::$app->getDb()->tableExists(Table::SECTIONS_ENTRYTYPES)) {
             $results = $this->_createEntryTypeQuery()
-                ->where(['sectionId' => $sectionId])
+                ->where([
+                    'sectionId' => $sectionId,
+                    'dateDeleted' => null,
+                ])
                 ->orderBy(['sortOrder' => SORT_DESC])
                 ->all();
             return array_map(fn(array $result) => new EntryType($result), $results);

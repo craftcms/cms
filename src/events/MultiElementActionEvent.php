@@ -11,12 +11,12 @@ use craft\base\ElementInterface;
 use Throwable;
 
 /**
- * Batch element action event class.
+ * Multi element action event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2.0
+ * @since 5.0.0
  */
-class BatchElementActionEvent extends ElementQueryEvent
+class MultiElementActionEvent extends ElementQueryEvent
 {
     /**
      * @var ElementInterface The element being processed

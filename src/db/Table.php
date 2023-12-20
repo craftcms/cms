@@ -23,6 +23,8 @@ abstract class Table
     /** @since 4.0.0 */
     public const ASSETINDEXINGSESSIONS = '{{%assetindexingsessions}}';
     public const ASSETS = '{{%assets}}';
+    /** @since 5.0.0 */
+    public const ASSETS_SITES = '{{%assets_sites}}';
     /** @since 5.0 */
     public const AUTHENTICATOR = '{{%authenticator}}';
     /** @since 4.0.0 */
@@ -45,6 +47,8 @@ abstract class Table
     /** @since 4.5.0 */
     public const ELEMENTACTIVITY = '{{%elementactivity}}';
     public const ELEMENTS = '{{%elements}}';
+    /** @since 5.0.0 */
+    public const ELEMENTS_BULKOPS = '{{%elements_bulkops}}';
     /** @since 5.0.0 */
     public const ELEMENTS_OWNERS = '{{%elements_owners}}';
     public const ELEMENTS_SITES = '{{%elements_sites}}';
