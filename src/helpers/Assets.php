@@ -958,8 +958,23 @@ class Assets
         return Html::appendToTag($svg, $textNode);
     }
 
-    public static function isUsedForTempUploads(FsInterface $fs): bool
+    /**
+     * Returns whether the given filesystem is used to store temporary asset uploads.
+     *
+     * @param FsInterface $fs
+     * @return bool
+     */
+    public static function isTempUploadFs(FsInterface $fs): bool
     {
-        return Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs === $fs->handle || $fs instanceof Temp;
+        if ($fs instanceof Temp) {
+            return true;
+        }
+
+        if (!$fs->handle) {
+            return false;
+        }
+
+        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
+        return $fs->handle === $handle;
     }
 }

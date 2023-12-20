@@ -14,7 +14,6 @@ use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
 use craft\base\FsInterface;
-use craft\base\LocalFsInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -30,6 +29,7 @@ use craft\events\AssetPreviewEvent;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\fs\Temp;
+use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -940,14 +940,14 @@ class Assets extends Component
      */
     public function getTempAssetUploadFs(): FsInterface
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if (empty($generalConfig->tempAssetUploadFs)) {
+        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
+        if (!$handle) {
             return new Temp();
         }
-        $fs = Craft::$app->getFs()->getFilesystemByHandle($generalConfig->tempAssetUploadFs);
 
+        $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
         if (!$fs) {
-            throw new InvalidConfigException("The Temp Uploads Filesystem General Config is set to an invalid Filesystem handle: {$generalConfig->tempAssetUploadFs}");
+            throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem handle: $handle");
         }
 
         return $fs;
@@ -976,7 +976,7 @@ class Assets extends Component
      *
      * @param User|null $user
      * @return VolumeFolder
-     * @throws VolumeException If no correct volume provided.
+     * @throws VolumeException
      */
     public function getUserTemporaryUploadFolder(?User $user = null): VolumeFolder
     {
@@ -1006,11 +1006,9 @@ class Assets extends Component
             'parentId' => ':empty:',
         ]);
 
-        // Unlikely, but would be very awkward if this happened without any contingency plans in place.
         if (!$volumeTopFolder) {
             $volumeTopFolder = new VolumeFolder();
-            $tempVolume = new Temp();
-            $volumeTopFolder->name = $tempVolume->name;
+            $volumeTopFolder->name = Craft::t('app', 'Temporary Uploads');
             $this->storeFolderRecord($volumeTopFolder);
         }
 
@@ -1032,16 +1030,14 @@ class Assets extends Component
         try {
             if ($fs instanceof Temp) {
                 FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
-            } elseif ($fs instanceof LocalFsInterface) {
-                FileHelper::createDirectory($fs->getRootPath() . DIRECTORY_SEPARATOR . $folderName);
-            } else {
-                if (!$fs->directoryExists($folderName)) {
-                    $fs->createDirectory($folderName);
-                }
+            } elseif (!$fs->directoryExists($folderName)) {
+                $fs->createDirectory($folderName);
             }
         } catch (Exception) {
             throw new VolumeException('Unable to create directory for temporary uploads.');
         }
+
+        $folder->name = Craft::t('app', 'Temporary Uploads');
 
         return $this->_userTempFolders[$cacheKey] = $folder;
     }

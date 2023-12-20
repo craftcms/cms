@@ -853,7 +853,7 @@ class Cp extends Component
     public function getFsOptions(): array
     {
         return Collection::make(Craft::$app->getFs()->getAllFilesystems())
-            ->filter(fn(FsInterface $fs) => !Assets::isUsedForTempUploads($fs))
+            ->filter(fn(FsInterface $fs) => !Assets::isTempUploadFs($fs))
             ->sortBy(fn(FsInterface $fs) => $fs->name)
             ->map(fn(FsInterface $fs) => [
                 'label' => $fs->name,

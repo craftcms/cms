@@ -199,7 +199,7 @@ class Volumes extends Component
     public function getTemporaryVolume(): Volume
     {
         $volume = new Volume([
-            'name' => Craft::t('app', 'Temporary volume'),
+            'name' => Craft::t('app', 'Temporary Uploads'),
         ]);
 
         $fs = Craft::$app->getAssets()->getTempAssetUploadFs();

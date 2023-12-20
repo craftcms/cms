@@ -2794,14 +2794,15 @@ class GeneralConfig extends BaseConfig
     public bool $storeUserIps = false;
 
     /**
-     * @var string|null The handle of the Filesystem to use for storing temporary asset uploads. If not specified local temp folder will be used.
+     * @var string|null The handle of the filesystem that should be used for storing temporary asset uploads. A local temp folder will
+     * be used by default.
      *
      * ::: code
      * ```php Static Config
-     * ->tempAssetUploadFs('myTempFs')
+     * ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
      * ```
      * ```shell Environment Override
-     * CRAFT_TEMP_ASSET_UPLOAD_FS=myTempFs
+     * CRAFT_TEMP_ASSET_UPLOAD_FS=tempAssetUploads
      * ```
      * :::
      *
@@ -6231,10 +6232,11 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The handle of the Filesystem to use for storing temporary asset uploads. If not specified local temp folder will be used.
+     * The handle of the filesystem that should be used for storing temporary asset uploads. A local temp folder will
+     * be used by default.
      *
      *  ```php
-     *  ->tempAssetUploadFs('myTempFs')
+     *  ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
      *  ```
      *
      * @group Assets

@@ -60,7 +60,6 @@ use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
-use craft\records\Volume as VolumeRecord;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -373,14 +372,12 @@ class Asset extends Element
             $sources[] = self::_assembleSourceInfoForFolder($folder, $user);
         }
 
-        // Add the Temporary Uploads location.
-        // Since 5.0.0 this is never set to an actual volume; it can be a dedicated Fs or local temp folder.
+        // Add the Temporary Uploads location
         if (
             $context !== ElementSources::CONTEXT_SETTINGS &&
             !Craft::$app->getRequest()->getIsConsoleRequest()
         ) {
             $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
-            $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
             $sources[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder);
         }
 
@@ -463,7 +460,7 @@ class Asset extends Element
         // Only match the first folder ID - ignore nested folders
         if (isset($volume)) {
             $fs = $volume->getFs();
-            $isTemp = Assets::isUsedForTempUploads($fs);
+            $isTemp = Assets::isTempUploadFs($fs);
 
             $actions[] = [
                 'type' => PreviewAsset::class,
@@ -767,7 +764,7 @@ class Asset extends Element
             }
         }
 
-        if (Assets::isUsedForTempUploads($queryFolder->getVolume()->getFs())) {
+        if (Assets::isTempUploadFs($queryFolder->getFs())) {
             return false;
         }
 
@@ -1167,12 +1164,6 @@ class Asset extends Element
         }
 
         $this->_oldVolumeId = $this->_volumeId;
-
-        // double check that tempAssetUploadFs is not used by a volume
-        $tempAssetUploadFs = Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs;
-        if (!empty($tempAssetUploadFs) && VolumeRecord::find()->where(['fs' => $tempAssetUploadFs])->exists()) {
-            throw new InvalidConfigException('tempAssetUploadFs can’t be set to a Filesystem used by a volume.', 0);
-        }
     }
 
     /**
@@ -1339,7 +1330,7 @@ class Asset extends Element
             return $user->can("viewPeerAssets:$volume->uid");
         }
 
-        if (Assets::isUsedForTempUploads($volume->getFs())) {
+        if (Assets::isTempUploadFs($volume->getFs())) {
             return true;
         }
 
@@ -1379,7 +1370,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
 
-        if (Assets::isUsedForTempUploads($volume->getFs())) {
+        if (Assets::isTempUploadFs($volume->getFs())) {
             return true;
         }
 
@@ -1410,7 +1401,7 @@ class Asset extends Element
         }
 
         $volume = $this->getVolume();
-        if (Assets::isUsedForTempUploads($volume->getFs())) {
+        if (Assets::isTempUploadFs($volume->getFs())) {
             return null;
         }
 
@@ -2075,7 +2066,7 @@ JS,[
         }
 
         $fs = $volume->getFs();
-        if (!$fs->hasUrls || Assets::isUsedForTempUploads($fs)) {
+        if (!$fs->hasUrls || Assets::isTempUploadFs($fs)) {
             return null;
         }
 
@@ -2717,7 +2708,7 @@ JS;
     private function locationHtml(): string
     {
         $volume = $this->getVolume();
-        $isTemp = Assets::isUsedForTempUploads($volume->getFs());
+        $isTemp = Assets::isTempUploadFs($volume->getFs());
 
         if (!$isTemp) {
             $uri = "assets/$volume->handle";
@@ -2859,7 +2850,7 @@ JS;
         // Set the field layout
         $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
 
-        if (!Assets::isUsedForTempUploads($volume->getFs())) {
+        if (!Assets::isTempUploadFs($volume->getFs())) {
             $this->fieldLayoutId = $volume->fieldLayoutId;
         }
 
@@ -3079,7 +3070,7 @@ JS;
         $userSession = Craft::$app->getUser();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if (Assets::isUsedForTempUploads($volume->getFs()) || $userSession->getId() == $this->uploaderId) {
+        if (Assets::isTempUploadFs($volume->getFs()) || $userSession->getId() == $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {

@@ -1478,8 +1478,6 @@ return [
     'Template' => 'Template',
     'Templates' => 'Templates',
     'Temporary Uploads' => 'Temporary Uploads',
-    'Temporary filesystem' => 'Temporary filesystem',
-    'Temporary volume' => 'Temporary volume',
     'Test Recipient' => 'Test Recipient',
     'Test' => 'Test',
     'Text that should be shown after the input.' => 'Text that should be shown after the input.',

@@ -106,7 +106,7 @@ class VolumesController extends Controller
             ->map(fn(FsInterface $fs) => [
                 'label' => $fs->name,
                 'value' => $fs->handle,
-                'disabled' => Assets::isUsedForTempUploads($fs) || ($takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle),
+                'disabled' => Assets::isTempUploadFs($fs) || ($takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle),
             ])
             ->all();
         array_unshift($fsOptions, ['label' => Craft::t('app', 'Select a filesystem'), 'value' => '']);
