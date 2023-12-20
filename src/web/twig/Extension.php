@@ -1252,10 +1252,25 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * 'gfm-comment' (GFM with newlines converted to `<br>`s),
      * or 'extra' (Markdown Extra). Default is 'original'.
      * @param bool $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
+     * @param bool $encode Whether special characters should be pre-encoded, before parsing the text as Markdown.
+     * Note that the `flavor` cannot be specified if this option is used.
      * @return string
      */
-    public function markdownFilter(mixed $markdown, ?string $flavor = null, bool $inlineOnly = false): string
-    {
+    public function markdownFilter(
+        mixed $markdown,
+        ?string $flavor = null,
+        bool $inlineOnly = false,
+        bool $encode = false,
+    ): string {
+        if ($encode) {
+            if ($flavor !== null && !in_array($flavor, ['original', 'pre-encoded'])) {
+                throw new InvalidArgumentException('The Markdown flavor cannot be specified when passing `encode=true`.');
+            }
+
+            $markdown = Html::encode($markdown);
+            $flavor = 'pre-encoded';
+        }
+
         if ($inlineOnly) {
             return Markdown::processParagraph((string)$markdown, $flavor);
         }

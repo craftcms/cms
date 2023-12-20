@@ -1296,6 +1296,7 @@ return [
     'See all' => 'Alle ansehen',
     'See logs' => 'Protokolle einsehen',
     'Select All' => 'Alle auswählen',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'Volume auswählen',
     'Select all' => 'Alle auswählen',
     'Select element' => 'Element auswählen',

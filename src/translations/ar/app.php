@@ -1296,6 +1296,7 @@ return [
     'See all' => 'عرض الكل',
     'See logs' => 'عرض السجلات',
     'Select All' => 'تحديد الكل',
+    'Select a filesystem' => 'Select a filesystem',
     'Select a volume' => 'تحديد وحدة تخزين',
     'Select all' => 'تحديد الكل',
     'Select element' => 'تحديد العنصر',
