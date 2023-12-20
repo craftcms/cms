@@ -54,7 +54,8 @@ class IndexAssetsController extends Controller
     public bool $deleteMissingAssets = false;
 
     /**
-     * @var bool Whether to delete all the empty folders.
+     * @var bool Whether empty folders should be deleted.
+     * @since 4.6.0
      */
     public bool $deleteEmptyFolders = false;
 
@@ -302,7 +303,7 @@ class IndexAssetsController extends Controller
             $totalMissingFolders = count($missingFolders);
             $this->stdout('Deleting the' . ($totalMissingFolders > 1 ? ' ' . $totalMissingFolders : '') . ' missing and empty folders' . ($totalMissingFolders > 1 ? 's' : '') . ' ... ');
 
-            Craft::$app->getAssets()->deleteFoldersByIds(array_keys($missingFolders), true);
+            Craft::$app->getAssets()->deleteFoldersByIds(array_keys($missingFolders));
 
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
