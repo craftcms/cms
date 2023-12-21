@@ -194,7 +194,10 @@ abstract class Api
             Craft::error(new PsrMessage('allCombinedInfo', $allCombinedInfo));
 
             foreach ($allCombinedInfo as $combinedInfo) {
-                [$handle, $combinedValues] = explode(':', $combinedInfo, 2);
+                $split = explode(':', $combinedInfo, 2);
+                $handle = $split[0] ?? null;
+                $combinedValues = $split[1] ?? null;
+
                 if ($combinedValues === LicenseKeyStatus::Invalid) {
                     // invalid license
                     $licenseStatus = LicenseKeyStatus::Invalid;
