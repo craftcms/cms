@@ -270,9 +270,9 @@ class Matrix extends Field implements
         // Config normalization
         unset($config['contentTable']);
 
-        if (array_key_exists('localizeEntries', $config)) {
-            $config['propagationMethod'] = $config['localizeEntries'] ? 'none' : 'all';
-            unset($config['localizeEntries']);
+        if (array_key_exists('localizeBlocks', $config)) {
+            $config['propagationMethod'] = $config['localizeBlocks'] ? 'none' : 'all';
+            unset($config['localizeBlocks']);
         }
 
         if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
