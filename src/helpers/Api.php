@@ -12,6 +12,7 @@ use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use ErrorException;
+use samdark\log\PsrMessage;
 
 /**
  * Craftnet API helper.
@@ -189,6 +190,9 @@ abstract class Api
             $oldLicenseInfo = $cache->get('licenseInfo') ?: [];
             $licenseInfo = [];
             $allCombinedInfo = explode(',', reset($headers['x-craft-license-info']));
+            Craft::error(new PsrMessage('headers', $headers));
+            Craft::error(new PsrMessage('allCombinedInfo', $allCombinedInfo));
+
             foreach ($allCombinedInfo as $combinedInfo) {
                 [$handle, $combinedValues] = explode(':', $combinedInfo, 2);
                 if ($combinedValues === LicenseKeyStatus::Invalid) {
