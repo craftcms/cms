@@ -81,11 +81,8 @@ interface FieldInterface extends SavableComponentInterface
      * Returns the DB data type(s) that this field will store within the `elements_sites.content` column.
      *
      * ```php
-     * return 'string(100)';
+     * return \yii\db\Schema::TYPE_STRING;
      * ```
-     *
-     * [[\yii\db\QueryBuilder::getColumnType()]] will be used to normalize the provided type.
-     * For example, `string(100)` will become `varchar(100)`.
      *
      * Specifying the DB type isn’t strictly necessary, but it enables individual field values to be targeted
      * by functional indexes.
@@ -95,8 +92,8 @@ interface FieldInterface extends SavableComponentInterface
      *
      * ```php
      * return [
-     *     'date' => 'datetime',
-     *     'tz' => 'string',
+     *     'date' => \yii\db\Schema::TYPE_DATETIME,
+     *     'tz' => \yii\db\Schema::TYPE_STRING,
      * ];
      * ```
      *
