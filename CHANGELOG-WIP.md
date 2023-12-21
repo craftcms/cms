@@ -53,7 +53,9 @@
 - Volumes now have a “Subpath” setting, and can reuse filesystems so long as the subpaths don’t overlap. ([#11044](https://github.com/craftcms/cms/discussions/11044))
 - Volumes now have an “Alternative Text Translation Method” setting. ([#11576](https://github.com/craftcms/cms/issues/11576))
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
+- Added the `tempAssetUploadFs` config setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
 - Removed the concept of field groups.
+- Removed the “Temp Uploads Location” asset setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
 - `entrify/*` commands now ask if an entry type already exists for the section.
 - The `resave/entries` command now accepts a `--field` option.
 - The `up`, `migrate/up`, and `migrate/all` commands no longer overwrite pending project config YAML changes, if new project config changes were made by migrations.
