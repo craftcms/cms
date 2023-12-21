@@ -187,7 +187,7 @@ class Addresses extends Field implements
                 Address::class,
                 fn(ElementInterface $owner) => $this->createAddressQuery($owner),
                 [
-                    'fieldHandle' => $this->handle,
+                    'field' => $this,
                     'criteria' => [
                         'fieldId' => $this->id,
                     ],

@@ -4,8 +4,10 @@
 
 - Added the `tempAssetUploadFs` config setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
 - Removed the “Temp Uploads Location” asset setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
+- Matrix and Addresses fields now remember their view settings between page loads.
 - JSON field values in Craft 4 will now get decoded when updating to Craft 5, for fields whose `dbType()` method returns an associative array or `yii\db\Schema::TYPE_JSON`. ([#14017](https://github.com/craftcms/cms/discussions/14017))
 - Element search scores set on `craft\events\SearchEvent::$scores` by `craft\services\Search::EVENT_AFTER_SEARCH` or `EVENT_BEFORE_SCORE_RESULTS` now must be indexed by element ID and site ID (e.g. `'100-1'`).
+- `craft\elements\NestedElementMananger` instances used by custom fields must now be configured with a `field` key set to the field instance, rather than `fieldHandle`.
 - Deprecated `craft\events\SearchEvent::$siteId`.
 - Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
 - Fixed an error that could occur when updating to Craft 5. ([#14067](https://github.com/craftcms/cms/issues/14067))

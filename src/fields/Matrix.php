@@ -390,7 +390,7 @@ class Matrix extends Field implements
                 Entry::class,
                 fn(ElementInterface $owner) => $this->createEntryQuery($owner),
                 [
-                    'fieldHandle' => $this->handle,
+                    'field' => $this,
                     'criteria' => [
                         'fieldId' => $this->id,
                     ],
@@ -887,6 +887,7 @@ class Matrix extends Field implements
                 $entryType->titleFormat
             )),
             'pageSize' => $this->pageSize ?? 50,
+            'storageKey' => sprintf('field:%s', $this->uid),
         ];
 
         if (!$static) {
