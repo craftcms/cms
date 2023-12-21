@@ -993,15 +993,10 @@ class Cp
             })();
         } else {
             $showSidebar = false;
-            $key = '__IMP__';
-            if (!empty($config['fieldSourceKey'])) {
-                $key = 'field:' . $config['fieldSourceKey'];
-            }
-
             $sources = [
                 [
                     'type' => ElementSources::TYPE_NATIVE,
-                    'key' => $key,
+                    'key' => '__IMP__',
                     'label' => Craft::t('app', 'All elements'),
                     'hasThumbs' => $elementType::hasThumbs(),
                 ],

@@ -215,7 +215,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         );
       }
 
-      this.getSourceStateFromLocalStorage();
+      // Source states (view mode, etc.) are stored by the element type and context
+      this.sourceStatesStorageKey =
+        'BaseElementIndex.' + this.elementType + '.' + this.settings.context;
+      $.extend(
+        this.sourceStates,
+        Craft.getLocalStorage(this.sourceStatesStorageKey, {})
+      );
 
       // Find the DOM elements
       // ---------------------------------------------------------------------
@@ -474,16 +480,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     namespaceId(id) {
       return Craft.namespaceId(id, this.settings.namespace);
-    },
-
-    getSourceStateFromLocalStorage: function () {
-      // Source states (view mode, etc.) are stored by the element type and context
-      this.sourceStatesStorageKey =
-        'BaseElementIndex.' + this.elementType + '.' + this.settings.context;
-      $.extend(
-        this.sourceStates,
-        Craft.getLocalStorage(this.sourceStatesStorageKey, {})
-      );
     },
 
     loadSourcePathByKey: function (stepKey) {
@@ -1510,7 +1506,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       if (
-        (this.sourceKey === '__IMP__' || this.sourceKey.startsWith('field:')) &&
+        this.sourceKey === '__IMP__' &&
         typeof params.viewState.tableColumns === 'undefined'
       ) {
         params.viewState.tableColumns = this.getDefaultTableColumns();
@@ -2265,12 +2261,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     setSelectedTableColumns: function (attributes) {
-      // now that we can have multiple sources on a single page (e.g. 2 matrix field with view mode of: entry index view with table),
-      // we want to get a fresh copy of the local storage before setting selected source state;
-      // otherwise things might get out of sync if you change the view for more than one field
-      // without reloading the page and re-initialising sourceStates
-      this.getSourceStateFromLocalStorage();
-
       this.setSelecetedSourceState({
         tableColumns: attributes,
       });

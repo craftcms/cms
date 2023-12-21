@@ -423,7 +423,6 @@ class NestedElementManager extends Component
                     'fieldLayouts' => $config['fieldLayouts'],
                     'defaultTableColumns' => $config['defaultTableColumns'],
                     'registerJs' => false,
-                    'fieldSourceKey' => $config['fieldSourceKey'] ?? null,
                 ]);
             },
         );

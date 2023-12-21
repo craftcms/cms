@@ -893,7 +893,6 @@ class Matrix extends Field implements
             $config += [
                 'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
                 'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),
-                'fieldSourceKey' => $owner->uid . '-' . $this->uid,
             ];
         }
 
