@@ -190,8 +190,9 @@ abstract class Api
             $oldLicenseInfo = $cache->get('licenseInfo') ?: [];
             $licenseInfo = [];
             $allCombinedInfo = explode(',', reset($headers['x-craft-license-info']));
-            Craft::error(new PsrMessage('headers', $headers));
+            Craft::error(new PsrMessage('normalizedHeaders', $headers));
             Craft::error(new PsrMessage('allCombinedInfo', $allCombinedInfo));
+            Craft::error(new PsrMessage('headers', (array) Craft::$app->getRequest()->getHeaders()));
 
             foreach ($allCombinedInfo as $combinedInfo) {
                 $split = explode(':', $combinedInfo, 2);
