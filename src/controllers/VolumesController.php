@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FsInterface;
 use craft\elements\Asset;
+use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\Volume;
@@ -105,7 +106,7 @@ class VolumesController extends Controller
             ->map(fn(FsInterface $fs) => [
                 'label' => $fs->name,
                 'value' => $fs->handle,
-                'disabled' => $takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle,
+                'disabled' => Assets::isTempUploadFs($fs) || ($takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle),
             ])
             ->all();
         array_unshift($fsOptions, ['label' => Craft::t('app', 'Select a filesystem'), 'value' => '']);
