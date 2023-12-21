@@ -3,16 +3,21 @@
 namespace craft\migrations;
 
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
+use craft\fieldlayoutelements\CustomField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\FieldLayout;
+use yii\base\InvalidArgumentException;
 use yii\db\ColumnSchema;
 use yii\db\Expression;
 use yii\db\Query as YiiQuery;
 use yii\db\Schema;
+use yii\db\TableSchema;
 
 /**
  * Base content refactor migration class
@@ -54,41 +59,16 @@ class BaseContentRefactorMigration extends Migration
         if ($fieldLayout) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
-                $dbType = $field::dbType();
 
-                if ($dbType === null) {
-                    continue;
-                }
-
-                $primaryColumn = sprintf(
-                    '%s%s%s',
+                if ($this->findColumnsForField(
                     $fieldColumnPrefix,
-                    $field->handle,
-                    ($field->columnSuffix ? "_$field->columnSuffix" : ''),
-                );
-
-                if ($contentTableSchema->getColumn($primaryColumn)) {
+                    $contentTableSchema,
+                    $layoutElement,
+                    $field,
+                    $fieldColumns,
+                    $flatFieldColumns,
+                )) {
                     $fieldsByUid[$layoutElement->uid] = $field;
-
-                    // is this a multi-column field?
-                    if (is_array($dbType)) {
-                        foreach (array_keys($dbType) as $i => $key) {
-                            if ($i === 0) {
-                                $column = $primaryColumn;
-                            } else {
-                                $column = sprintf('%s%s_%s_%s', $fieldColumnPrefix, $field->handle, $key, $field->columnSuffix);
-                                if (!$contentTableSchema->getColumn($column)) {
-                                    continue;
-                                }
-                            }
-
-                            $fieldColumns[$layoutElement->uid][$key] = $column;
-                            $flatFieldColumns[] = "c.$column";
-                        }
-                    } else {
-                        $fieldColumns[$layoutElement->uid] = $primaryColumn;
-                        $flatFieldColumns[] = $primaryColumn;
-                    }
                 }
             }
         }
@@ -134,8 +114,8 @@ class BaseContentRefactorMigration extends Migration
                 $field = $fieldsByUid[$layoutElementUid];
                 $dbType = $field::dbType();
 
-                if (is_array($dbType)) {
-                    /** @var array $column */
+                if (is_array($column)) {
+                    /** @var array $dbType */
                     $value = [];
                     foreach (array_keys($dbType) as $i => $key) {
                         if (!isset($column[$key])) {
@@ -229,7 +209,58 @@ class BaseContentRefactorMigration extends Migration
         return $label;
     }
 
-    private function decodeValue(mixed $value, ?string $dbType, ColumnSchema $column): mixed
+    private function findColumnsForField(
+        string $fieldColumnPrefix,
+        TableSchema $contentTableSchema,
+        CustomField $layoutElement,
+        FieldInterface $field,
+        array &$fieldColumns,
+        array &$flatFieldColumns,
+    ): bool {
+        $dbType = $field::dbType();
+
+        if ($dbType === null) {
+            return false;
+        }
+
+        $primaryColumn = sprintf(
+            '%s%s%s',
+            $fieldColumnPrefix,
+            $field->handle,
+            ($field->columnSuffix ? "_$field->columnSuffix" : ''),
+        );
+
+        if (!$contentTableSchema->getColumn($primaryColumn)) {
+            return false;
+        }
+
+        // was this a multi-column field?
+        if (is_array($dbType) && count($dbType) > 1) {
+            $dbTypeKeys = array_keys($dbType);
+            $extraColumns = array_map(
+                fn(string $key) => sprintf('%s%s_%s_%s', $fieldColumnPrefix, $field->handle, $key, $field->columnSuffix),
+                array_slice($dbTypeKeys, 1),
+            );
+
+            if (ArrayHelper::contains($extraColumns, fn(string $column) => $contentTableSchema->getColumn($column))) {
+                $columns = [$primaryColumn, ...$extraColumns];
+                foreach ($columns as $i => $column) {
+                    if ($contentTableSchema->getColumn($column)) {
+                        $fieldColumns[$layoutElement->uid][$dbTypeKeys[$i]] = $column;
+                        $flatFieldColumns[] = "c.$column";
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        $fieldColumns[$layoutElement->uid] = $primaryColumn;
+        $flatFieldColumns[] = "c.$primaryColumn";
+        return true;
+    }
+
+    private function decodeValue(mixed $value, string|array|null $dbType, ColumnSchema $column): mixed
     {
         if ($value === null || $value === '') {
             return null;
@@ -238,6 +269,20 @@ class BaseContentRefactorMigration extends Migration
         // if dbType is null or text, the content column type may be more reliable
         if (!$dbType || $dbType === Schema::TYPE_TEXT) {
             $dbType = $column->type;
+        }
+
+        if (is_array($dbType)) {
+            // dbType() returned an array but there was only one field column,
+            // so see if the field was storing JSON
+            if (Json::isJsonObject($value)) {
+                try {
+                    return Json::decode($value);
+                } catch (InvalidArgumentException) {
+                }
+            }
+
+            // if we're still here, go with the first type listed instead
+            $dbType = reset($dbType);
         }
 
         switch ($dbType) {
