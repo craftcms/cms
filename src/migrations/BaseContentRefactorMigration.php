@@ -73,13 +73,15 @@ class BaseContentRefactorMigration extends Migration
                     // is this a multi-column field?
                     if (is_array($dbType)) {
                         foreach (array_keys($dbType) as $i => $key) {
-                            $column = $i === 0 ? $primaryColumn : sprintf(
-                                '%s%s_%s_%s',
-                                $fieldColumnPrefix,
-                                $field->handle,
-                                $key,
-                                $field->columnSuffix,
-                            );
+                            if ($i === 0) {
+                                $column = $primaryColumn;
+                            } else {
+                                $column = sprintf('%s%s_%s_%s', $fieldColumnPrefix, $field->handle, $key, $field->columnSuffix);
+                                if (!$contentTableSchema->getColumn($column)) {
+                                    continue;
+                                }
+                            }
+
                             $fieldColumns[$layoutElement->uid][$key] = $column;
                             $flatFieldColumns[] = "c.$column";
                         }
@@ -136,8 +138,11 @@ class BaseContentRefactorMigration extends Migration
                     /** @var array $column */
                     $value = [];
                     foreach (array_keys($dbType) as $i => $key) {
-                        $c = $column[$i];
-                        $v = $this->decodeValue($element[$c], $dbType[$i], $contentTableSchema->getColumn($c));
+                        if (!isset($column[$key])) {
+                            continue;
+                        }
+                        $c = $column[$key];
+                        $v = $this->decodeValue($element[$c], $dbType[$key], $contentTableSchema->getColumn($c));
 
                         if ($v !== null) {
                             $value[$key] = $v;
