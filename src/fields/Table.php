@@ -26,6 +26,7 @@ use craft\web\assets\timepicker\TimepickerAsset;
 use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use yii\db\Schema;
 use yii\validators\EmailValidator;
 
 /**
@@ -50,6 +51,14 @@ class Table extends Field
     public static function phpType(): string
     {
         return 'array|null';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): array|string|null
+    {
+        return Schema::TYPE_JSON;
     }
 
     /**

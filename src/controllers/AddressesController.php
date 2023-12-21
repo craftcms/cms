@@ -71,7 +71,7 @@ class AddressesController extends Controller
             'address',
         ];
 
-        if (!Craft::$app->getAddresses()->saveLayout($fieldLayout)) {
+        if (!Craft::$app->getAddresses()->saveFieldLayout($fieldLayout)) {
             Craft::$app->getUrlManager()->setRouteParams([
                 'variables' => [
                     'fieldLayout' => $fieldLayout,

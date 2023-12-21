@@ -63,6 +63,18 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
     public ?string $titleTranslationKeyFormat = null;
 
     /**
+     * @var string Alternative text translation method
+     * @since 5.0.0
+     */
+    public string $altTranslationMethod = Field::TRANSLATION_METHOD_NONE;
+
+    /**
+     * @var null|string Alternative text translation key format
+     * @since 5.0.0
+     */
+    public ?string $altTranslationKeyFormat = null;
+
+    /**
      * @var int|null Sort order
      */
     public ?int $sortOrder = null;
@@ -157,6 +169,10 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'url' => Craft::t('app', 'URL'),
+            'fsHandle' => Craft::t('app', 'Asset Filesystem'),
+            'subpath' => Craft::t('app', 'Subpath'),
+            'transformFsHandle' => Craft::t('app', 'Transform Filesystem'),
+            'transformSubpath' => Craft::t('app', 'Transform Subpath'),
         ];
     }
 
@@ -168,7 +184,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
         $rules = parent::defineRules();
         $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class];
-        $rules[] = [['name', 'handle'], 'required'];
+        $rules[] = [['name', 'handle', 'fsHandle'], 'required'];
         $rules[] = [
             ['handle'],
             HandleValidator::class,
@@ -184,6 +200,22 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
         $rules[] = [['subpath'], fn($attribute) => $this->validateUniqueSubpath($attribute), 'skipOnEmpty' => false];
+        $rules[] = [
+            ['fsHandle'],
+            'compare',
+            'compareAttribute' => 'fsHandle',
+            'compareValue' => App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs),
+            'operator' => '!=',
+            'message' => Craft::t('app', 'This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
+        ];
+        $rules[] = [
+            ['transformFsHandle'],
+            'compare',
+            'compareAttribute' => 'transformFsHandle',
+            'compareValue' => App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs),
+            'operator' => '!=',
+            'message' => Craft::t('app', 'This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
+        ];
 
         return $rules;
     }

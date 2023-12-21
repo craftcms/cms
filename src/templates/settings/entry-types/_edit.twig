@@ -40,9 +40,11 @@
 {% if craft.app.getIsMultiSite() %}
     <div id="title-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
         {{ forms.selectField({
-            label: 'Title Translation Method'|t('app'),
-            instructions: 'How should {type} titles be translated?'|t('app', {
-                type: lowerTypeName,
+            label: '{name} Translation Method'|t('app', {
+                name: 'Title'|t('app'),
+            }),
+            instructions: 'How should {name} values be translated?'|t('app', {
+                name: 'Title'|t('app'),
             }),
             id: 'translation-method',
             name: 'titleTranslationMethod',
@@ -60,9 +62,11 @@
 
         <div id="translation-method-custom" {% if entryType.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
             {{ forms.textField({
-                label: 'Title Translation Key Format'|t('app'),
-                instructions: 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'|t('app', {
-                    type: typeName,
+                label: '{name} Translation Key Format'|t('app', {
+                    name: 'Title'|t('app'),
+                }),
+                instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+                    name: 'Title'|t('app'),
                 }),
                 id: 'translation-key-format',
                 name: 'titleTranslationKeyFormat',
@@ -87,9 +91,11 @@
 
 {% if craft.app.getIsMultiSite() %}
     {{ forms.selectField({
-        label: 'Slug Translation Method'|t('app'),
-        instructions: 'How should {type} slugs be translated?'|t('app', {
-            type: lowerTypeName,
+        label: '{name} Translation Method'|t('app', {
+            name: 'Slug'|t('app'),
+        }),
+        instructions: 'How should {name} values be translated?'|t('app', {
+            name: 'Slug'|t('app'),
         }),
         id: 'slug-translation-method',
         name: 'slugTranslationMethod',
@@ -107,9 +113,11 @@
 
     <div id="slug-translation-method-custom" {% if entryType.slugTranslationMethod != 'custom' %}class="hidden"{% endif %}>
         {{ forms.textField({
-            label: 'Slug Translation Key Format'|t('app'),
-            instructions: 'Template that defines the Slug field’s custom “translation key” format. {type} slugs will be copied to all sites that produce the same key. For example, to make slugs translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'|t('app', {
-                type: typeName,
+            label: '{name} Translation Key Format'|t('app', {
+                name: 'Slug'|t('app'),
+            }),
+            instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+                name: 'Slug'|t('app'),
             }),
             id: 'slug-translation-key-format',
             name: 'slugTranslationKeyFormat',

@@ -76,8 +76,12 @@ JS;
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
+            if (!$usersService->canSuspend($currentUser, $user)) {
+                return false;
+            }
             try {
-                return $usersService->canSuspend($currentUser, $user) && $usersService->unsuspendUser($user);
+                $usersService->unsuspendUser($user);
+                return true;
             } catch (Throwable) {
                 return false;
             }
