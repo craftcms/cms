@@ -8,11 +8,13 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
+use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 
 /**
@@ -21,7 +23,7 @@ use craft\helpers\StringHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class PlainText extends Field implements InlineEditableFieldInterface, SortableFieldInterface
+class PlainText extends Field implements InlineEditableFieldInterface, SortableFieldInterface, CopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -217,5 +219,13 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     public function getElementConditionRuleType(): ?string
     {
         return TextFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

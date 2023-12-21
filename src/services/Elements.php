@@ -8,11 +8,13 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
+use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
@@ -2515,6 +2517,120 @@ class Elements extends Component
     }
 
     /**
+     * Copy value of a field from another site
+     *
+     * @param ElementInterface $element
+     * @param null|string $fieldHandle
+     * @param int $copyFromSiteId
+     * @return array Array of field handles updated. The key will be the handle and value a boolean
+     * @throws Exception
+     * @throws Throwable
+     */
+    public function copyFieldValuesFromSite(ElementInterface $element, ?string $fieldHandle, int $copyFromSiteId): array
+    {
+        // get element for selected site
+        /** @var string|ElementInterface $elementType */
+        $elementType = get_class($element);
+
+        $fromElement = $this->getElementById($element->getCanonicalId(), $elementType, $copyFromSiteId);
+        if (!$fromElement) {
+            throw new ElementNotFoundException(Craft::t('app', 'Couldn’t find this {type} on the site you selected.', [
+                'type' => $element::lowerDisplayName(),
+            ]));
+        }
+
+        $updates = [];
+
+        if ($fieldHandle === null) {
+            $translatableFields = array_merge(
+                $this->_getTranslatableCustomFieldHandles($element),
+                $this->_getTranslatableNativeFieldHandles($element)
+            );
+
+            foreach ($translatableFields as $translatableField) {
+                if ($this->_copyFieldValueByHandle($fromElement, $element, $translatableField)) {
+                    $updates[$translatableField] = true;
+                }
+            }
+        } else {
+            $updates[$fieldHandle] = $this->_copyFieldValueByHandle($fromElement, $element, $fieldHandle);
+        }
+
+        return array_filter($updates);
+    }
+
+    /**
+     * Get field handles of all translatable custom fields used in the element
+     *
+     * @param ElementInterface $element
+     * @return array
+     */
+    private function _getTranslatableCustomFieldHandles(ElementInterface $element): array
+    {
+        $customFields = $element->getFieldLayout()?->getVisibleCustomFields($element);
+        return array_map(
+            function($field) {
+                /** @var Field $field */
+                return $field->handle;
+            },
+            array_filter($customFields,
+                fn($field) => $field instanceof CopyableFieldInterface && $field->getIsCopyable($element)
+            )
+        );
+    }
+
+    /**
+     * Get field handles of all translatable native fields used in the element
+     *
+     * @param ElementInterface $element
+     * @return array
+     * @throws \yii\base\InvalidConfigException
+     */
+    private function _getTranslatableNativeFieldHandles(ElementInterface $element): array
+    {
+        $fields = $element->fields();
+        return array_map(
+            function($field) {
+                return $field->attribute();
+            },
+            array_filter(
+                $element->getFieldLayout()?->getAvailableNativeFields(),
+                fn($field) => isset($fields[$field->attribute()]) && $field->isCopyable($element)
+            )
+        );
+    }
+
+    /**
+     * Copy field value from one element to another and check if it changed
+     *
+     * @param $from
+     * @param $to
+     * @param $fieldHandle
+     * @return bool
+     * @since 5.0.0
+     */
+    private function _copyFieldValueByHandle($from, $to, $fieldHandle): bool
+    {
+        // reserved $fieldHandles which we need to treat differently
+        $reservedHandles = ['title', 'slug'];
+
+        $valueChanged = false;
+        // it's a reserved handle - handle differently
+        if (in_array($fieldHandle, $reservedHandles) && $to->{$fieldHandle} != $from->{$fieldHandle}) {
+            $to->{$fieldHandle} = $from->{$fieldHandle};
+            $valueChanged = true;
+        } else {
+            /** @var FieldInterface $field */
+            $field = $from->getFieldLayout()?->getFieldByHandle($fieldHandle);
+            if ($field instanceof CopyableFieldInterface) {
+                $valueChanged = $field->copyValueBetweenSites($from, $to);
+            }
+        }
+
+        return $valueChanged;
+    }
+
+    /**
      * Returns the recent activity for an element.
      *
      * @param ElementInterface $element
@@ -3531,6 +3647,8 @@ class Elements extends Component
                         }
                     }
                 }
+
+                $siteSettingsRecord = null;
 
                 // Save the element’s site settings record
                 if (!$isNewElement) {

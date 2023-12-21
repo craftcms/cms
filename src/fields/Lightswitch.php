@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -16,6 +17,7 @@ use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
@@ -26,7 +28,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Lightswitch extends Field implements InlineEditableFieldInterface, SortableFieldInterface
+class Lightswitch extends Field implements InlineEditableFieldInterface, SortableFieldInterface, CopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -218,6 +220,14 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
             'name' => $this->handle,
             'type' => Type::boolean(),
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 
     /**

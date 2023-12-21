@@ -8,11 +8,13 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\validators\ColorValidator;
 use yii\db\Schema;
@@ -23,7 +25,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Color extends Field implements InlineEditableFieldInterface
+class Color extends Field implements InlineEditableFieldInterface, CopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -161,5 +163,13 @@ class Color extends Field implements InlineEditableFieldInterface
 
         return "<div class='color small static'><div class='color-preview' style='background-color: {$value->getHex()};'></div></div>" .
             "<div class='colorhex code'>{$value->getHex()}</div>";
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

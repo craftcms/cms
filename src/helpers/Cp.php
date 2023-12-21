@@ -1162,6 +1162,7 @@ JS, [
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
         $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
+        $copyable = (bool)($config['copyable'] ?? false);
 
         $fieldClass = array_merge(array_filter([
             'field',
@@ -1184,6 +1185,29 @@ JS, [
             ])
             : '';
 
+
+        $translationIconHtml = Html::tag('span', '', [
+            'class' => ['t9n-indicator'],
+            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+            'data' => [
+                'icon' => 'language',
+            ],
+            'aria' => [
+                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                'role' => 'img',
+            ],
+        ]);
+
+        // If this is a copyable field, make the translation icon a button
+        if ($copyable) {
+            $translationIconHtml = Html::button($translationIconHtml, [
+                'class' => 'copyable',
+                'data' => [
+                    'copy' => $attribute,
+                ],
+            ]);
+        }
+
         if ($label) {
             $labelHtml = $label . (
                     ($required
@@ -1197,19 +1221,7 @@ JS, [
                             ],
                         ])
                         : '') .
-                    ($translatable
-                        ? Html::tag('span', '', [
-                            'class' => ['t9n-indicator'],
-                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            'data' => [
-                                'icon' => 'language',
-                            ],
-                            'aria' => [
-                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            ],
-                            'role' => 'img',
-                        ])
-                        : '')
+                    ($translatable ? $translationIconHtml : '')
                 );
         } else {
             $labelHtml = '';

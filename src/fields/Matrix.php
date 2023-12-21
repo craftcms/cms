@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementContainerFieldInterface;
@@ -39,6 +40,7 @@ use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Json;
 use craft\helpers\Queue;
@@ -69,7 +71,8 @@ use yii\db\Expression;
 class Matrix extends Field implements
     ElementContainerFieldInterface,
     EagerLoadingFieldInterface,
-    GqlInlineFragmentFieldInterface
+    GqlInlineFragmentFieldInterface,
+    CopyableFieldInterface
 {
     /**
      * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
@@ -721,6 +724,7 @@ class Matrix extends Field implements
                 'type' => $entry->getType()->handle,
                 'enabled' => $entry->enabled,
                 'collapsed' => $entry->collapsed,
+                'title' => $entry->title ?? null,
                 'fields' => $entry->getSerializedFieldValues(),
             ];
         }
@@ -1105,6 +1109,14 @@ class Matrix extends Field implements
         }
 
         return $entryType;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 
     // Events
