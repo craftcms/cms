@@ -63,11 +63,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public static function dbType(): string
     {
-        if (!static::$multi) {
-            return Schema::TYPE_STRING;
-        }
-
-        return parent::dbType();
+        return static::$multi ? Schema::TYPE_JSON : Schema::TYPE_STRING;
     }
 
     /**

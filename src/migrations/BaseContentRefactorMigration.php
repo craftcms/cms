@@ -3,13 +3,9 @@
 namespace craft\migrations;
 
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\fields\BaseOptionsField;
-use craft\fields\Lightswitch;
-use craft\fields\Table as TableField;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\FieldLayout;
@@ -132,26 +128,32 @@ class BaseContentRefactorMigration extends Migration
             );
             $content = [];
 
-            foreach ($fieldColumns as $fieldUid => $column) {
-                $field = $fieldsByUid[$fieldUid];
-                if (is_array($column)) {
-                    $value = array_map(
-                        fn($c) => $this->decodeValue($element[$c], $field, $contentTableSchema->getColumn($c)),
-                        $column,
-                    );
-                    // if the primary column is null, consider the whole value to be null
-                    if (reset($value) === null) {
-                        continue;
+            foreach ($fieldColumns as $layoutElementUid => $column) {
+                $field = $fieldsByUid[$layoutElementUid];
+                $dbType = $field::dbType();
+
+                if (is_array($dbType)) {
+                    /** @var array $column */
+                    $value = [];
+                    foreach (array_keys($dbType) as $i => $key) {
+                        $c = $column[$i];
+                        $v = $this->decodeValue($element[$c], $dbType[$i], $contentTableSchema->getColumn($c));
+
+                        if ($v !== null) {
+                            $value[$key] = $v;
+                        } elseif ($i === 0) {
+                            // the primary column is null, so consider the whole value to be null
+                            continue 2;
+                        }
                     }
-                    // prune out any null values in the secondary columns
-                    $value = array_filter($value, fn($v) => $v !== null);
                 } else {
-                    $value = $this->decodeValue($element[$column], $field, $contentTableSchema->getColumn($column));
+                    $value = $this->decodeValue($element[$column], $dbType, $contentTableSchema->getColumn($column));
                     if ($value === null) {
                         continue;
                     }
                 }
-                $content[$fieldUid] = $value;
+
+                $content[$layoutElementUid] = $value;
             }
 
             // don't call $this->update() so it doesn't mess with the CLI output
@@ -222,24 +224,18 @@ class BaseContentRefactorMigration extends Migration
         return $label;
     }
 
-    private function decodeValue(mixed $value, FieldInterface $field, ColumnSchema $column): mixed
+    private function decodeValue(mixed $value, ?string $dbType, ColumnSchema $column): mixed
     {
         if ($value === null || $value === '') {
             return null;
         }
 
-        if (
-            $field instanceof TableField ||
-            ($field instanceof BaseOptionsField && $field->getIsMultiOptionsField())
-        ) {
-            return Json::decodeIfJson($value);
+        // if dbType is null or text, the content column type may be more reliable
+        if (!$dbType || $dbType === Schema::TYPE_TEXT) {
+            $dbType = $column->type;
         }
 
-        if ($field instanceof Lightswitch) {
-            return (bool)$value;
-        }
-
-        switch ($column->type) {
+        switch ($dbType) {
             case Schema::TYPE_TINYINT:
             case Schema::TYPE_SMALLINT:
             case Schema::TYPE_INTEGER:
@@ -254,6 +250,9 @@ class BaseContentRefactorMigration extends Migration
 
             case Schema::TYPE_BOOLEAN:
                 return (bool)$value;
+
+            case Schema::TYPE_JSON:
+                return Json::decodeIfJson($value);
         }
 
         return $value;
