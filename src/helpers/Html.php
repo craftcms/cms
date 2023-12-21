@@ -657,7 +657,7 @@ class Html extends \yii\helpers\Html
     {
         // IDs must begin with a letter
         $id = preg_replace('/^[^A-Za-z]+/', '', $id);
-        $id = rtrim(preg_replace('/[^A-Za-z0-9_:.]+/', '-', $id), '-');
+        $id = rtrim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
         return $id ?: StringHelper::randomString(10);
     }
 
