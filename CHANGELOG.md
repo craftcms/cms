@@ -10,6 +10,7 @@
 - Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
 - Fixed an error that could occur when updating to Craft 5. ([#14067](https://github.com/craftcms/cms/issues/14067))
 - Fixed a bug where Matrix fields weren’t getting initialized. ([#14062](https://github.com/craftcms/cms/pull/14062))
+- Fixed a bug where Matrix and Addresses fields were overriding each others’ view states. ([#13976](https://github.com/craftcms/cms/pull/13976))
 
 ## 5.0.0-alpha.2 - 2023-12-15
 
