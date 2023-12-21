@@ -53,7 +53,9 @@
 - Volumes now have a “Subpath” setting, and can reuse filesystems so long as the subpaths don’t overlap. ([#11044](https://github.com/craftcms/cms/discussions/11044))
 - Volumes now have an “Alternative Text Translation Method” setting. ([#11576](https://github.com/craftcms/cms/issues/11576))
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
+- Added the `tempAssetUploadFs` config setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
 - Removed the concept of field groups.
+- Removed the “Temp Uploads Location” asset setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
 - `entrify/*` commands now ask if an entry type already exists for the section.
 - The `resave/entries` command now accepts a `--field` option.
 - The `up`, `migrate/up`, and `migrate/all` commands no longer overwrite pending project config YAML changes, if new project config changes were made by migrations.
@@ -84,6 +86,7 @@
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - Element action triggers’ `validateSelection()` and `activate()` methods are now passed an `elementIndex` argument, with a reference to the trigger’s corresponding element index.
+- Element search scores set on `craft\events\SearchEvent::$scores` by `craft\services\Search::EVENT_AFTER_SEARCH` or `EVENT_BEFORE_SCORE_RESULTS` now must be indexed by element ID and site ID (e.g. `'100-1'`). 
 - Added `craft\auth\methods\AuthMethodInterface`.
 - Added `craft\auth\methods\BaseAuthMethod`.
 - Added `craft\auth\methods\RecoveryCodes`.
@@ -337,6 +340,7 @@
 - Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
 - Deprecated the `cp.elements.element` control panel template hook.
 - Deprecated `craft\events\DefineElementInnerHtmlEvent`.
+- Deprecated `craft\events\SearchEvent::$siteId`.
 - Deprecated `craft\helpers\Cp::elementHtml()`. `elementChipHtml()` or `elementCardHtml()` should be used instead.
 - Removed the `_includes/revisionmenu.twig` control panel template.
 - Removed `craft\base\ApplicationTrait::getMatrix()`.
@@ -474,3 +478,4 @@
 - Improved the initial page load performance for element edit pages that contain Matrix fields.
 - Improved the performance of autosaves for elements with newly-created Matrix entries.
 - Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
+- Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))

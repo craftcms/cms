@@ -2794,6 +2794,24 @@ class GeneralConfig extends BaseConfig
     public bool $storeUserIps = false;
 
     /**
+     * @var string|null The handle of the filesystem that should be used for storing temporary asset uploads. A local temp folder will
+     * be used by default.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_TEMP_ASSET_UPLOAD_FS=tempAssetUploads
+     * ```
+     * :::
+     *
+     * @group Assets
+     * @since 5.0.0
+     */
+    public ?string $tempAssetUploadFs = null;
+
+    /**
      * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
      * for testing purposes.
      *
@@ -6210,6 +6228,26 @@ class GeneralConfig extends BaseConfig
     public function storeUserIps(bool $value = true): self
     {
         $this->storeUserIps = $value;
+        return $this;
+    }
+
+    /**
+     * The handle of the filesystem that should be used for storing temporary asset uploads. A local temp folder will
+     * be used by default.
+     *
+     *  ```php
+     *  ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
+     *  ```
+     *
+     * @group Assets
+     * @param string|null $value
+     * @return self
+     * @see $tempAssetUploadFs
+     * @since 5.0.0
+     */
+    public function tempAssetUploadFs(string|null $value): self
+    {
+        $this->tempAssetUploadFs = $value;
         return $this;
     }
 

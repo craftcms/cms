@@ -15,7 +15,6 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\events\ConfigEvent;
 use craft\events\VolumeEvent;
-use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -200,10 +199,12 @@ class Volumes extends Component
     public function getTemporaryVolume(): Volume
     {
         $volume = new Volume([
-            'name' => Craft::t('app', 'Temporary volume'),
+            'name' => Craft::t('app', 'Temporary Uploads'),
         ]);
 
-        $volume->setFs(Craft::createObject(Temp::class));
+        $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
+
+        $volume->setFs($fs);
 
         return $volume;
     }

@@ -1,5 +1,15 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Added the `tempAssetUploadFs` config setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
+- Removed the “Temp Uploads Location” asset setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
+- Fields’ `dbType()` methods can now return `yii\db\Schema::TYPE_JSON`, which will indicate that their existing values should be JSON-decoded when upgrading to Craft 5. ([#14017](https://github.com/craftcms/cms/discussions/14017))
+- Element search scores set on `craft\events\SearchEvent::$scores` by `craft\services\Search::EVENT_AFTER_SEARCH` or `EVENT_BEFORE_SCORE_RESULTS` now must be indexed by element ID and site ID (e.g. `'100-1'`).
+- Deprecated `craft\events\SearchEvent::$siteId`.
+- Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
+- Fixed an error that could occur when updating to Craft 5. ([#14067](https://github.com/craftcms/cms/issues/14067))
+
 ## 5.0.0-alpha.2 - 2023-12-15
 
 - Added `craft\helpers\Cp::moneyFieldHtml()`.
