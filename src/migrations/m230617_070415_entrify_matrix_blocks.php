@@ -69,7 +69,7 @@ class m230617_070415_entrify_matrix_blocks extends Migration
         $fieldHandles = [];
         foreach ($projectConfig->get(ProjectConfig::PATH_FIELDS) ?? [] as $fieldConfig) {
             $fieldNames[$fieldConfig['name']] = true;
-            $fieldNames[$fieldConfig['handle']] = true;
+            $fieldHandles[$fieldConfig['handle']] = true;
         }
 
         // get all the block type configs, grouped by field

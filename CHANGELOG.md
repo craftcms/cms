@@ -14,6 +14,7 @@
 - Fixed a bug where various features weren’t working. ([#14062](https://github.com/craftcms/cms/pull/14062))
 - Fixed a bug where Matrix and Addresses fields were overriding each others’ view states. ([#13976](https://github.com/craftcms/cms/pull/13976))
 - Fixed an error that could occur when updating to Craft 5, if any Matrix fields hadn’t been saved since before Craft 3.2. ([#14061](https://github.com/craftcms/cms/issues/14061))
+- Fixed a bug where globalized Matrix sub-fields could have the same handle as existing global fields, when updating to Craft 5. ([#14052](https://github.com/craftcms/cms/issues/14052))
 
 ## 5.0.0-alpha.2 - 2023-12-15
 
