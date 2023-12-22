@@ -1,4 +1,4 @@
-# Release Notes for Craft CMS 4
+# Release Notes for Craft CMS 5
 
 ## 5.0.0-alpha.3 - 2023-12-21
 

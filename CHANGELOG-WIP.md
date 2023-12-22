@@ -1,4 +1,4 @@
-# Release Notes for Craft CMS 5.0 (WIP)
+# Release Notes for Craft CMS 5.0.0 (WIP)
 
 ### Content Management
 - Redesigned the global breadcrumb bar to include quick links to other areas of the control panel, page context menus, and action menus. ([#13902](https://github.com/craftcms/cms/pull/13902))
