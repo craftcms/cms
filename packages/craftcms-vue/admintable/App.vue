@@ -801,7 +801,7 @@
 
         if (this.paginatedReorderAction && this.moveToPageAction) {
           itemActions.push({
-            label: Craft.t('app', 'Move to page'),
+            label: Craft.t('app', 'Move to'),
             action: this.moveToPageAction,
             allowMultiple: false,
             ajax: true,
