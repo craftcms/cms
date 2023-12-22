@@ -1135,7 +1135,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function previewTargets(): array
     {
-        if ($this->fieldId || Craft::$app->getEdition() === Craft::Pro) {
+        if ($this->fieldId || Craft::$app->getEdition() === Craft::Solo) {
             return parent::previewTargets();
         }
 
