@@ -96,7 +96,12 @@ class Utilities extends Component
         ]);
         $this->trigger(self::EVENT_REGISTER_UTILITIES, $event);
 
-        return $event->types;
+        $disabledUtilities = array_flip(Craft::$app->getConfig()->getGeneral()->disabledUtilities);
+
+        return array_values(array_filter($event->types, function(string $class) use ($disabledUtilities) {
+            /** @var string|UtilityInterface $class */
+            return !isset($disabledUtilities[$class::id()]);
+        }));
     }
 
     /**

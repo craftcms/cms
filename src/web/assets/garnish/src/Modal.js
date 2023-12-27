@@ -112,8 +112,8 @@ export default Base.extend(
 
       if (this.$container) {
         // Move it to the end of <body> so it gets the highest sub-z-index
-        this.$shade.appendTo(Garnish.$bod);
-        this.$container.appendTo(Garnish.$bod);
+        this.$shade.appendTo(Garnish.$bod).velocity('stop');
+        this.$container.appendTo(Garnish.$bod).velocity('stop');
 
         this.$container.show();
         this.updateSizeAndPosition();
@@ -190,8 +190,10 @@ export default Base.extend(
       }
 
       if (this.$container) {
-        this.$container.velocity('fadeOut', {duration: Garnish.FX_DURATION});
-        this.$shade.velocity('fadeOut', {
+        this.$container
+          .velocity('stop')
+          .velocity('fadeOut', {duration: Garnish.FX_DURATION});
+        this.$shade.velocity('stop').velocity('fadeOut', {
           duration: Garnish.FX_DURATION,
           complete: this.onFadeOut.bind(this),
         });
