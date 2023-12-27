@@ -6,6 +6,7 @@
 - Fixed a bug where the `index-assets/cleanup` command accepted `--cache-remote-images`, `--create-missing-assets`, and `--delete-missing-assets` options, even though they didn’t do anything.
 - Fixed a bug where automatically-created relations could be lost when a new site was added to an entry. ([#14065](https://github.com/craftcms/cms/issues/14065))
 - Fixed a bug where `craft\web\Request::getIsPreview()` was returning `true` for requests with expired tokens. ([#14066](https://github.com/craftcms/cms/discussions/14066))
+- Fixed a bug where asset conflict resolution modals were closing prematurely if there were multiple conflicts. ([#14045](https://github.com/craftcms/cms/issues/14045))
 
 ## 4.5.13 - 2023-12-15
 
