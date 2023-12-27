@@ -181,6 +181,7 @@
 - Added `craft\events\BulkOpEvent`. ([#14032](https://github.com/craftcms/cms/pull/14032))
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\events\DefineFieldHtmlEvent::$inline`.
+- Added `craft\events\SetEagerLoadedElementsEvent::$plan`.
 - Added `craft\fieldlayoutelements\BaseField::$includeInCards`.
 - Added `craft\fieldlayoutelements\BaseField::$providesThumbs`.
 - Added `craft\fieldlayoutelements\BaseField::previewHtml()`.
@@ -299,6 +300,7 @@
 - `craft\base\ElementInterface::getEagerLoadedElementCount()` can now return `null` for counts that haven’t been eager-loaded yet.
 - `craft\base\ElementInterface::getEagerLoadedElements` now has an `ElementCollection|null` return type, rather than `Collection|null`.
 - `craft\base\ElementInterface::indexHtml()`’ `$showCheckboxes` argument is now `$selectable`, and it now has a `$sortable` argument.
+- `craft\base\ElementInterface::setEagerLoadedElements()` now has a `$plan` argument, which will be set to the eager-loading plan.
 - `craft\base\ElementInterface::setParent()` no longer needs to specify a default value for the `parent` argument.
 - `craft\base\ElementInterface::setRevisionCreatorId()` no longer needs to specify a default value for the `creatorId` argument.
 - `craft\base\ElementInterface::setRevisionNotes()` no longer needs to specify a default value for the `notes` argument.
@@ -479,3 +481,4 @@
 - Improved the performance of autosaves for elements with newly-created Matrix entries.
 - Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
 - Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
+- Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))

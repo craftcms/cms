@@ -30,6 +30,7 @@ use craft\elements\actions\Restore;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\MenuItemType;
 use craft\errors\AssetException;
@@ -321,14 +322,14 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.4.0
      */
-    public function setEagerLoadedElements(string $handle, array $elements): void
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($handle === 'uploader') {
+        if ($plan->handle === 'uploader') {
             /** @var User|null $uploader */
             $uploader = $elements[0] ?? null;
             $this->setUploader($uploader);
         } else {
-            parent::setEagerLoadedElements($handle, $elements);
+            parent::setEagerLoadedElements($handle, $elements, $plan);
         }
     }
 

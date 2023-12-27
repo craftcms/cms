@@ -20,6 +20,7 @@ use craft\elements\actions\UnsuspendUsers;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\AddressQuery;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\enums\MenuItemType;
@@ -2043,14 +2044,14 @@ JS, [
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements): void
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($handle === 'photo') {
+        if ($plan->handle === 'photo') {
             /** @var Asset|null $photo */
             $photo = $elements[0] ?? null;
             $this->setPhoto($photo);
         } else {
-            parent::setEagerLoadedElements($handle, $elements);
+            parent::setEagerLoadedElements($handle, $elements, $plan);
         }
     }
 

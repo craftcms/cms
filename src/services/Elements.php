@@ -3226,7 +3226,7 @@ class Elements extends Component
                         }
                     }
 
-                    $sourceElement->setEagerLoadedElements($planHandle, $targetElementsForSource);
+                    $sourceElement->setEagerLoadedElements($planHandle, $targetElementsForSource, $plan);
                     $sourceElement->setLazyEagerLoadedElements($planHandle, $plan->lazy);
 
                     if ($plan->count) {

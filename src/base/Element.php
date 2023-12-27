@@ -23,6 +23,7 @@ use craft\elements\actions\SetStatus;
 use craft\elements\actions\View as ViewAction;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
@@ -4888,9 +4889,9 @@ JS, [
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements): void
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        switch ($handle) {
+        switch ($plan->handle) {
             case 'parent':
                 $this->_parent = $elements[0] ?? false;
                 break;
@@ -4916,6 +4917,7 @@ JS, [
                 $event = new SetEagerLoadedElementsEvent([
                     'handle' => $handle,
                     'elements' => $elements,
+                    'plan' => $plan,
                 ]);
                 $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {

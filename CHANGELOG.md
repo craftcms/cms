@@ -3,6 +3,9 @@
 ## Unreleased
 
 - Fixed a bug where section preview targets weren’t being respected in Craft Pro. ([#14050](https://github.com/craftcms/cms/issues/14050))
+- Added `craft\events\SetEagerLoadedElementsEvent::$plan`.
+- `craft\base\ElementInterface::setEagerLoadedElements()` now has a `$plan` argument, which will be set to the eager-loading plan.
+- Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
 
 ## 5.0.0-alpha.3 - 2023-12-21
 
