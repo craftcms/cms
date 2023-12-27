@@ -178,10 +178,10 @@ trait ElementTrait
     public bool $propagating = false;
 
     /**
-     * @var bool Whether the element is currently being validated via BaseRelationField::validateRelatedElements()
-     * @since 4.5.10
+     * @var ElementInterface|null The element that this element is being propagated from.
+     * @since 5.0.0
      */
-    public bool $validatingRelatedElement = false;
+    public ?ElementInterface $propagatingFrom = null;
 
     /**
      * @var bool Whether all element attributes should be propagated across all its supported sites, even if that means

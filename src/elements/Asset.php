@@ -30,6 +30,7 @@ use craft\elements\actions\Restore;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\MenuItemType;
 use craft\errors\AssetException;
@@ -321,14 +322,14 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.4.0
      */
-    public function setEagerLoadedElements(string $handle, array $elements): void
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($handle === 'uploader') {
+        if ($plan->handle === 'uploader') {
             /** @var User|null $uploader */
             $uploader = $elements[0] ?? null;
             $this->setUploader($uploader);
         } else {
-            parent::setEagerLoadedElements($handle, $elements);
+            parent::setEagerLoadedElements($handle, $elements, $plan);
         }
     }
 
@@ -372,14 +373,12 @@ class Asset extends Element
             $sources[] = self::_assembleSourceInfoForFolder($folder, $user);
         }
 
-        // Add the Temporary Uploads location, if that's not set to a real volume
+        // Add the Temporary Uploads location
         if (
             $context !== ElementSources::CONTEXT_SETTINGS &&
-            !Craft::$app->getRequest()->getIsConsoleRequest() &&
-            !Craft::$app->getProjectConfig()->get('assets.tempVolumeUid')
+            !Craft::$app->getRequest()->getIsConsoleRequest()
         ) {
             $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
-            $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
             $sources[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder);
         }
 
@@ -461,7 +460,8 @@ class Asset extends Element
 
         // Only match the first folder ID - ignore nested folders
         if (isset($volume)) {
-            $isTemp = $volume->getFs() instanceof Temp;
+            $fs = $volume->getFs();
+            $isTemp = Assets::isTempUploadFs($fs);
 
             $actions[] = [
                 'type' => PreviewAsset::class,
@@ -479,7 +479,7 @@ class Asset extends Element
             }
 
             // Copy URL
-            if ($volume->getFs()->hasUrls) {
+            if ($fs->hasUrls) {
                 $actions[] = CopyUrl::class;
             }
 
@@ -765,7 +765,7 @@ class Asset extends Element
             }
         }
 
-        if ($queryFolder->getVolume()->getFs() instanceof Temp) {
+        if (Assets::isTempUploadFs($queryFolder->getFs())) {
             return false;
         }
 
@@ -881,9 +881,7 @@ class Asset extends Element
     {
         $volume = $folder->getVolume();
         $fs = $volume->getFs();
-        if ($fs instanceof Temp) {
-            $volumeHandle = 'temp';
-        } elseif (!$folder->parentId) {
+        if (!$folder->parentId) {
             $volumeHandle = $volume->handle ?? false;
         } else {
             $volumeHandle = false;
@@ -1285,13 +1283,16 @@ class Asset extends Element
                 'url' => UrlHelper::cpUrl('assets'),
             ],
             [
-                'menu' => Collection::make(Craft::$app->getVolumes()->getViewableVolumes())
-                    ->map(fn(Volume $v) => [
-                        'label' => Craft::t('site', $v->name),
-                        'url' => "assets/$v->handle",
-                        'selected' => $v->id === $volume->id,
-                    ])
-                    ->all(),
+                'menu' => [
+                    'label' => Craft::t('app', 'Select volume'),
+                    'items' => Collection::make(Craft::$app->getVolumes()->getViewableVolumes())
+                        ->map(fn(Volume $v) => [
+                            'label' => Craft::t('site', $v->name),
+                            'url' => "assets/$v->handle",
+                            'selected' => $v->id === $volume->id,
+                        ])
+                        ->all(),
+                ],
             ],
         ];
 
@@ -1330,7 +1331,7 @@ class Asset extends Element
             return $user->can("viewPeerAssets:$volume->uid");
         }
 
-        if ($volume->getFs() instanceof Temp) {
+        if (Assets::isTempUploadFs($volume->getFs())) {
             return true;
         }
 
@@ -1370,7 +1371,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
 
-        if ($volume->getFs() instanceof Temp) {
+        if (Assets::isTempUploadFs($volume->getFs())) {
             return true;
         }
 
@@ -1401,7 +1402,7 @@ class Asset extends Element
         }
 
         $volume = $this->getVolume();
-        if ($volume->getFs() instanceof Temp) {
+        if (Assets::isTempUploadFs($volume->getFs())) {
             return null;
         }
 
@@ -1543,6 +1544,9 @@ $('#' + $id).on('click', () => {
         }
       },
       fileuploadfail: (event, data) => {
+        const file = data.data.getAll('replaceFile');
+        const backupFilename = file[0].name;
+
         const response = event instanceof Event
           ? event.detail
           : data?.jqXHR?.responseJSON;
@@ -1550,6 +1554,9 @@ $('#' + $id).on('click', () => {
         let {message, filename} = response || {};
 
         if (!message) {
+          if (!filename) {
+            filename = backupFilename;
+          }
           message = filename
             ? Craft.t('app', 'Replace file failed for “{filename}”.', {filename})
             : Craft.t('app', 'Replace file failed.');
@@ -1818,6 +1825,18 @@ JS,[
     }
 
     /**
+     * Returns the Alternative Text field’s translation key.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getAltTranslationKey(): string
+    {
+        $volume = $this->getVolume();
+        return ElementHelper::translationKey($this, $volume->altTranslationMethod, $volume->altTranslationKeyFormat);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getFieldLayout(): ?FieldLayout
@@ -2047,10 +2066,10 @@ JS,[
             return $url;
         }
 
-        // todo: uncomment for v5. Currently Imager X is relying on a relative URL being returned
-        //if (!$volume->getFs()->hasUrls) {
-        //    return null;
-        //}
+        $fs = $volume->getFs();
+        if (!$fs->hasUrls || Assets::isTempUploadFs($fs)) {
+            return null;
+        }
 
         return Html::encodeSpaces(Assets::generateUrl($volume, $this));
     }
@@ -2690,15 +2709,27 @@ JS;
     private function locationHtml(): string
     {
         $volume = $this->getVolume();
-        $uri = "assets/$volume->handle";
-        $items = [
-            Html::a(Craft::t('site', Html::encode($volume->name)), UrlHelper::cpUrl($uri)),
-        ];
+        $isTemp = Assets::isTempUploadFs($volume->getFs());
+
+        if (!$isTemp) {
+            $uri = "assets/$volume->handle";
+            $items = [
+                Html::a(Craft::t('site', Html::encode($volume->name)), UrlHelper::cpUrl($uri)),
+            ];
+        } else {
+            $items = [
+                Html::tag('span', Craft::t('site', Html::encode($volume->name))),
+            ];
+        }
         if ($this->folderPath) {
             $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
             foreach ($subfolders as $subfolder) {
-                $uri .= "/$subfolder";
-                $items[] = Html::a($subfolder, UrlHelper::cpUrl($uri));
+                if (!$isTemp) {
+                    $uri .= "/$subfolder";
+                    $items[] = Html::a($subfolder, UrlHelper::cpUrl($uri));
+                } else {
+                    $items[] = Html::tag('span', $subfolder);
+                }
             }
         }
 
@@ -2820,7 +2851,7 @@ JS;
         // Set the field layout
         $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
 
-        if (!$volume->getFs() instanceof Temp) {
+        if (!Assets::isTempUploadFs($volume->getFs())) {
             $this->fieldLayoutId = $volume->fieldLayoutId;
         }
 
@@ -2848,6 +2879,7 @@ JS;
             $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
 
             if (
+                isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 !($isCpRequest && !$sanitizeCpImageUploads)
@@ -2860,6 +2892,7 @@ JS;
             $fallbackWidth = null;
             $fallbackHeight = null;
             if (
+                isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
             ) {
@@ -2894,11 +2927,14 @@ JS;
             $record->folderId = (int)$this->folderId;
             $record->uploaderId = (int)$this->uploaderId ?: null;
             $record->kind = $this->kind;
-            $record->alt = $this->alt;
             $record->size = (int)$this->size ?: null;
             $record->width = (int)$this->_width ?: $fallbackWidth;
             $record->height = (int)$this->_height ?: $fallbackHeight;
             $record->dateModified = Db::prepareDateForDb($this->dateModified);
+
+            if ($record->alt === null) {
+                $record->alt = $this->alt;
+            }
 
             if ($this->getHasFocalPoint()) {
                 $focal = $this->getFocalPoint();
@@ -2909,6 +2945,28 @@ JS;
 
             $record->save(false);
         }
+
+        if (
+            $this->propagating &&
+            $this->propagatingFrom &&
+            !$isNew
+        ) {
+            /** @var self $from */
+            $from = $this->propagatingFrom;
+
+            if (
+                $this->alt !== $from->alt &&
+                $this->getAltTranslationKey() === $from->getAltTranslationKey()
+            ) {
+                $this->alt = $from->alt;
+            }
+        }
+
+        Db::upsert(Table::ASSETS_SITES, [
+            'assetId' => $this->id,
+            'siteId' => $this->siteId,
+            'alt' => $this->alt,
+        ]);
 
         parent::afterSave($isNew);
     }
@@ -3013,7 +3071,7 @@ JS;
         $userSession = Craft::$app->getUser();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if ($volume->getFs() instanceof Temp || $userSession->getId() == $this->uploaderId) {
+        if (Assets::isTempUploadFs($volume->getFs()) || $userSession->getId() == $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {

@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
@@ -1544,8 +1545,9 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $handle The handle that was used to eager-load the elements
      * @param self[] $elements The eager-loaded elements
+     * @param EagerLoadPlan $plan The eager-loading plan
      */
-    public function setEagerLoadedElements(string $handle, array $elements): void;
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void;
 
     /**
      * Sets whether the given eager-loaded element handles were eager-loaded lazily.

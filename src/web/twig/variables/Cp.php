@@ -17,6 +17,7 @@ use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -27,6 +28,7 @@ use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Collection;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -346,7 +348,7 @@ class Cp extends Component
         // Figure out which item is selected, and normalize the items
         $path = Craft::$app->getRequest()->getPathInfo();
 
-        if ($path === 'myaccount') {
+        if ($path === 'myaccount' || str_starts_with($path, 'myaccount/')) {
             $path = 'users';
         }
 
@@ -850,14 +852,14 @@ class Cp extends Component
      */
     public function getFsOptions(): array
     {
-        $options = array_map(fn(FsInterface $fs) => [
-            'label' => $fs->name,
-            'value' => $fs->handle,
-        ], Craft::$app->getFs()->getAllFilesystems());
-
-        ArrayHelper::multisort($options, 'label');
-
-        return $options;
+        return Collection::make(Craft::$app->getFs()->getAllFilesystems())
+            ->filter(fn(FsInterface $fs) => !Assets::isTempUploadFs($fs))
+            ->sortBy(fn(FsInterface $fs) => $fs->name)
+            ->map(fn(FsInterface $fs) => [
+                'label' => $fs->name,
+                'value' => $fs->handle,
+            ])
+            ->all();
     }
 
     /**

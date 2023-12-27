@@ -13,6 +13,10 @@ jQuery.htmlPrefilter = function (html) {
 $.extend(Craft, {
   navHeight: 48,
 
+  isIterable(obj) {
+    return obj && typeof obj[Symbol.iterator] === 'function';
+  },
+
   /**
    * @callback indexKeyCallback
    * @param {Object} currentValue
@@ -26,14 +30,18 @@ $.extend(Craft, {
    * @param {(string|indexKeyCallback)} key
    */
   index: function (arr, key) {
-    if (!Array.isArray(arr)) {
-      throw 'The first argument passed to Craft.index() must be an array.';
+    if (arr instanceof NodeList || this.isIterable(arr)) {
+      arr = Array.from(arr);
+    } else if (!Array.isArray(arr)) {
+      throw 'The first argument passed to Craft.index() must be an array, NodeList, or iterable object.';
     }
 
-    return arr.reduce((index, obj, i) => {
-      index[typeof key === 'string' ? obj[key] : key(obj, i)] = obj;
-      return index;
-    }, {});
+    if (typeof key === 'string') {
+      const k = key;
+      key = (item) => item[k];
+    }
+
+    return Object.fromEntries(arr.map((item) => [key(item), item]));
   },
 
   /**
@@ -393,7 +401,10 @@ $.extend(Craft, {
    * @returns {string}
    */
   formatInputId: function (inputName) {
-    return this.rtrim(inputName.replace(/[^\w\-]+/g, '-'), '-');
+    // IDs must begin with a letter
+    let id = inputName.replace(/^[^A-Za-z]+/, '');
+    id = this.rtrim(id.replace(/[^A-Za-z0-9_.]+/g, '-'), '-');
+    return id || this.randomString(10);
   },
 
   /**
@@ -1540,6 +1551,26 @@ $.extend(Craft, {
   },
 
   /**
+   * @callback filterObjectCallback
+   * @param {*} value
+   * @param {string} key
+   * @return {boolean}
+   */
+  /**
+   * Filters an object by a callback method.
+   *
+   * @param {Object} obj
+   * @param {filterObjectCallback} [callback] A user-defined callback function. If null, values that equate to false will be removed.
+   * @returns {Object}
+   */
+  filterObject(obj, callback) {
+    if (typeof callback === 'undefined') {
+      callback = (v) => !!v;
+    }
+    return Object.fromEntries(Object.entries(obj).filter(callback));
+  },
+
+  /**
    * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element’s index, or -1).
    *
    * @param {*} elem
@@ -1976,6 +2007,7 @@ $.extend(Craft, {
   _elementSelectorModalClasses: {},
   _elementEditorClasses: {},
   _uploaderClasses: {},
+  _authFormHandlers: {},
 
   /**
    * Registers an element index class for a given element type.
@@ -2029,6 +2061,14 @@ $.extend(Craft, {
     }
 
     this._elementSelectorModalClasses[elementType] = func;
+  },
+
+  registerAuthFormHandler(method, func) {
+    if (typeof this._authFormHandlers[method] !== 'undefined') {
+      throw `An authentication form handler has already been registered for the method “${method}”.`;
+    }
+
+    this._authFormHandlers[method] = func;
   },
 
   /**
@@ -2087,6 +2127,27 @@ $.extend(Craft, {
     }
 
     return new func(elementType, settings);
+  },
+
+  createAuthFormHandler(method, container, onSuccess, showError) {
+    if (typeof this._authFormHandlers[method] === 'undefined') {
+      throw `No authentication form has been registered for the method "${method}".`;
+    }
+
+    if (container instanceof jQuery) {
+      if (!container.length) {
+        throw 'No form element specified.';
+      }
+      container = container[0];
+    }
+
+    if (!showError) {
+      showError = (error) => {
+        Craft.cp.displayError(error);
+      };
+    }
+
+    return new this._authFormHandlers[method](container, onSuccess, showError);
   },
 
   /**
@@ -2280,6 +2341,59 @@ $.extend(Craft, {
     }
   },
 
+  refreshElementInstances(elementId) {
+    const $elements = $(`div.element[data-id="${elementId}"][data-settings]`);
+    if (!$elements.length) {
+      return;
+    }
+    const elementsBySite = {};
+    for (let i = 0; i < $elements.length; i++) {
+      const $element = $elements.eq(i);
+      const siteId = $element.data('site-id');
+      if (typeof elementsBySite[siteId] === 'undefined') {
+        elementsBySite[siteId] = {
+          key: i,
+          type: $element.data('type'),
+          id: elementId,
+          siteId,
+          instances: [],
+        };
+      }
+      elementsBySite[siteId].instances.push($element.data('settings'));
+    }
+    const data = {
+      elements: Object.values(elementsBySite),
+    };
+    Craft.sendActionRequest('POST', 'app/render-elements', {data}).then(
+      ({data}) => {
+        const instances = data.elements[elementId] || {};
+        for (let key of Object.keys(instances)) {
+          const $element = $elements.eq(key);
+          const $replacement = $(instances[key]);
+          for (let attribute of $replacement[0].attributes) {
+            if (attribute.name === 'class') {
+              $element.addClass(attribute.value);
+            } else {
+              $element.attr(attribute.name, attribute.value);
+            }
+          }
+          const $actions = $element
+            .find('.chip-actions,.card-actions')
+            .detach();
+          const $inputs = $element.find('input,button').detach();
+          $element.html($replacement.html());
+          if ($actions.length) {
+            $element.find('.chip-actions,.card-actions').replaceWith($actions);
+          }
+          if ($inputs.length) {
+            $inputs.appendTo($element);
+          }
+        }
+        Craft.cp.elementThumbLoader.load($elements);
+      }
+    );
+  },
+
   /**
    * Submits a form.
    * @param {Object} $form
@@ -2290,6 +2404,7 @@ $.extend(Craft, {
    * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
    * @param {Object} [options.data] Additional data to be passed to the submit event
    * @param {boolean} [options.retainScroll] Whether the scroll position should be stored and reapplied on the next page load
+   * @param {boolean} [options.requireElevatedSession] Whether an elevated session is required
    */
   submitForm: function ($form, options) {
     if (typeof options === 'undefined') {
@@ -2300,6 +2415,16 @@ $.extend(Craft, {
       return;
     }
 
+    if (options.requireElevatedSession) {
+      Craft.elevatedSessionManager.requireElevatedSession(() => {
+        this._submitFormInternal($form, options);
+      });
+    } else {
+      this._submitFormInternal($form, options);
+    }
+  },
+
+  _submitFormInternal($form, options) {
     const namespace = options.namespace ?? null;
 
     if (options.action) {
@@ -2469,63 +2594,29 @@ if (typeof BroadcastChannel !== 'undefined') {
   Craft.broadcaster = new BroadcastChannel(channelName);
   Craft.messageReceiver = new BroadcastChannel(channelName);
 
+  Craft.broadcaster.addEventListener('message', (ev) => {
+    switch (ev.data.event) {
+      case 'beforeTrackJobProgress':
+        Craft.cp.cancelJobTracking();
+        break;
+
+      case 'trackJobProgress':
+        Craft.cp.setJobData(ev.data.jobData);
+
+        if (Craft.cp.jobInfo.length) {
+          // Check again after a longer delay than usual,
+          // as it looks like another browser tab is driving for now
+          const delay = Craft.cp.getNextJobDelay() + 1000;
+          Craft.cp.trackJobProgress(delay);
+        }
+
+        break;
+    }
+  });
+
   Craft.messageReceiver.addEventListener('message', (ev) => {
     if (ev.data.event === 'saveElement') {
-      // Are there any instances of the same element on the page?
-      const $elements = $(
-        `div.element[data-id="${ev.data.id}"][data-settings]`
-      );
-      if (!$elements.length) {
-        return;
-      }
-      const elementsBySite = {};
-      for (let i = 0; i < $elements.length; i++) {
-        const $element = $elements.eq(i);
-        const siteId = $element.data('site-id');
-        if (typeof elementsBySite[siteId] === 'undefined') {
-          elementsBySite[siteId] = {
-            key: i,
-            type: $element.data('type'),
-            id: ev.data.id,
-            siteId,
-            instances: [],
-          };
-        }
-        elementsBySite[siteId].instances.push($element.data('settings'));
-      }
-      const data = {
-        elements: Object.values(elementsBySite),
-      };
-      Craft.sendActionRequest('POST', 'app/render-elements', {data}).then(
-        ({data}) => {
-          const instances = data.elements[ev.data.id] || {};
-          for (let key of Object.keys(instances)) {
-            const $element = $elements.eq(key);
-            const $replacement = $(instances[key]);
-            for (let attribute of $replacement[0].attributes) {
-              if (attribute.name === 'class') {
-                $element.addClass(attribute.value);
-              } else {
-                $element.attr(attribute.name, attribute.value);
-              }
-            }
-            const $actions = $element
-              .find('.chip-actions,.card-actions')
-              .detach();
-            const $inputs = $element.find('input,button').detach();
-            $element.html($replacement.html());
-            if ($actions.length) {
-              $element
-                .find('.chip-actions,.card-actions')
-                .replaceWith($actions);
-            }
-            if ($inputs.length) {
-              $inputs.appendTo($element);
-            }
-          }
-          Craft.cp.elementThumbLoader.load($elements);
-        }
-      );
+      Craft.refreshElementInstances(ev.data.id);
     }
   });
 }
@@ -2739,6 +2830,10 @@ $.extend($.fn, {
         confirm: $btn.data('confirm'),
         action: $btn.data('action'),
         redirect: $btn.data('redirect'),
+        requireElevatedSession: Garnish.hasAttr(
+          $btn,
+          'data-require-elevated-session'
+        ),
         namespace: namespace,
         params: params,
         data: $.extend(

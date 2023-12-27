@@ -435,7 +435,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * Update uploaded byte count.
      */
-    _onUploadProgress: function (event, data) {
+    _onUploadProgress: function (event, data = null) {
       data = event instanceof CustomEvent ? event.detail : data;
 
       var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
@@ -449,7 +449,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @param {Object} data
      * @private
      */
-    _onUploadSuccess: function (event, data) {
+    _onUploadSuccess: function (event, data = null) {
       const result = event instanceof CustomEvent ? event.detail : data.result;
 
       // Add the uploaded file to the selected ones, if appropriate
@@ -463,6 +463,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
             {value: 'replace', title: Craft.t('app', 'Replace it')},
           ],
+          modalSettings: {
+            hideOnEsc: false,
+            hideOnShadeClick: false,
+          },
         };
 
         this.promptHandler.addPrompt(result);
@@ -490,11 +494,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * On Upload Failure.
      */
-    _onUploadFailure: function (event, data) {
+    _onUploadFailure: function (event, data = null) {
       const response =
         event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
       let {message, filename, errors} = response || {};
+      filename = filename || data?.files?.[0].name;
       let errorMessages = errors ? Object.values(errors).flat() : [];
 
       if (!message) {

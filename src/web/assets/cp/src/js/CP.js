@@ -52,6 +52,8 @@ Craft.CP = Garnish.Base.extend(
     displayedJobInfo: null,
     displayedJobInfoUnchanged: 1,
     trackJobProgressTimeout: null,
+    trackingJobProgress: false,
+    jobProgressCancelToken: null,
     jobProgressIcon: null,
 
     checkingForUpdates: false,
@@ -1311,49 +1313,90 @@ Craft.CP = Garnish.Base.extend(
     },
 
     trackJobProgress: function (delay, force) {
-      if (force && this.trackJobProgressTimeout) {
-        clearTimeout(this.trackJobProgressTimeout);
-        this.trackJobProgressTimeout = null;
-      }
-
       // Ignore if we're already tracking jobs, or the queue is disabled
-      if (this.trackJobProgressTimeout || !this.enableQueue) {
+      if ((this.trackJobProgressTimeout && !force) || !this.enableQueue) {
         return;
       }
 
-      if (delay === true) {
+      this.cancelJobTracking();
+
+      if (delay) {
         // Determine the delay based on how long the displayed job info has remained unchanged
-        var timeout = Math.min(60000, this.displayedJobInfoUnchanged * 500);
+        if (delay === true) {
+          delay = this.getNextJobDelay();
+        }
         this.trackJobProgressTimeout = setTimeout(
           this._trackJobProgressInternal.bind(this),
-          timeout
+          delay
         );
       } else {
         this._trackJobProgressInternal();
       }
     },
 
+    getNextJobDelay: function () {
+      return Math.min(60000, this.displayedJobInfoUnchanged * 500);
+    },
+
     _trackJobProgressInternal: function () {
-      Craft.queue.push(
-        () =>
-          new Promise((resolve, reject) => {
-            Craft.sendActionRequest(
-              'POST',
-              'queue/get-job-info?limit=50&dontExtendSession=1'
-            )
-              .then(({data}) => {
-                this.trackJobProgressTimeout = null;
-                this.totalJobs = data.total;
-                this.setJobInfo(data.jobs);
-                if (this.jobInfo.length) {
-                  // Check again after a delay
-                  this.trackJobProgress(true);
-                }
-                resolve();
-              })
-              .catch(reject);
-          })
-      );
+      this.trackingJobProgress = true;
+
+      Craft.queue.push(async () => {
+        // has this been cancelled?
+        if (!this.trackingJobProgress) {
+          return;
+        }
+
+        // Tell other browser windows to stop tracking job progress
+        if (Craft.broadcaster) {
+          Craft.broadcaster.postMessage({
+            event: 'beforeTrackJobProgress',
+          });
+        }
+
+        this.jobProgressCancelToken = axios.CancelToken.source();
+
+        let data;
+        try {
+          const response = await Craft.sendActionRequest(
+            'POST',
+            'queue/get-job-info?limit=50&dontExtendSession=1',
+            {
+              cancelToken: this.jobProgressCancelToken.token,
+            }
+          );
+          data = response.data;
+        } catch (e) {
+          // only throw if we weren't expecting this
+          if (this.trackingJobProgress) {
+            throw e;
+          }
+        } finally {
+          this.trackingJobProgress = false;
+          this.trackJobProgressTimeout = null;
+          this.jobProgressCancelToken = null;
+        }
+
+        this.setJobData(data);
+
+        if (this.jobInfo.length) {
+          // Check again after a delay
+          this.trackJobProgress(true);
+        }
+
+        // Notify the other browser tabs about the jobs
+        if (Craft.broadcaster) {
+          Craft.broadcaster.postMessage({
+            event: 'trackJobProgress',
+            jobData: data,
+          });
+        }
+      });
+    },
+
+    setJobData: function (data) {
+      this.totalJobs = data.total;
+      this.setJobInfo(data.jobs);
     },
 
     setJobInfo: function (jobInfo) {
@@ -1386,6 +1429,19 @@ Craft.CP = Garnish.Base.extend(
 
       // Fire a setJobInfo event
       this.trigger('setJobInfo');
+    },
+
+    cancelJobTracking: function () {
+      this.trackingJobProgress = false;
+
+      if (this.trackJobProgressTimeout) {
+        clearTimeout(this.trackJobProgressTimeout);
+        this.trackJobProgressTimeout = null;
+      }
+
+      if (this.jobProgressCancelToken) {
+        this.jobProgressCancelToken.cancel();
+      }
     },
 
     /**
@@ -1536,7 +1592,6 @@ Craft.CP.Notification = Garnish.Base.extend({
   $container: null,
   $closeBtn: null,
   originalActiveElement: null,
-  _hasUiElements: false,
 
   init: function (type, message, settings) {
     this.type = type;
@@ -1587,19 +1642,13 @@ Craft.CP.Notification = Garnish.Base.extend({
         .append(this.settings.details)
         .appendTo($main);
 
-      this._hasUiElements = !!$detailsContainer.find('button,input');
-      if (this._hasUiElements) {
+      if ($detailsContainer.find('button,input').length) {
         this.originalActiveElement = document.activeElement;
         this.$container.attr('tabindex', '-1').focus();
-
-        // Delay adding the layer in case a slideout needs to unregister its own layer
-        Garnish.requestAnimationFrame(() => {
-          Garnish.uiLayerManager.addLayer(this.$container, {
-            bubble: true,
-          });
-          Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+        this.addListener(this.$container, 'keydown', (ev) => {
+          if (ev.keyCode === Garnish.ESC_KEY) {
             this.close();
-          });
+          }
         });
       }
     }
@@ -1663,10 +1712,6 @@ Craft.CP.Notification = Garnish.Base.extend({
 
     this.closing = true;
 
-    if (this._hasUiElements) {
-      Garnish.uiLayerManager.removeLayer(this.$container);
-    }
-
     if (
       this.originalActiveElement &&
       document.activeElement &&
@@ -1681,7 +1726,7 @@ Craft.CP.Notification = Garnish.Base.extend({
       {
         duration: 'fast',
         complete: () => {
-          this.$container.remove();
+          this.destroy();
         },
       }
     );
@@ -1715,6 +1760,11 @@ Craft.CP.Notification = Garnish.Base.extend({
     }
 
     this.$container.off('mouseover mouseout');
+  },
+
+  destroy: function () {
+    this.$container.remove();
+    this.base();
   },
 });
 

@@ -30,6 +30,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
@@ -1056,7 +1057,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             ],
             [
                 'menu' => [
-                    'label' => Craft::t('app', 'Select entry type'),
+                    'label' => Craft::t('app', 'Select section'),
                     'items' => $sectionOptions->all(),
                 ],
             ],
@@ -1135,7 +1136,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function previewTargets(): array
     {
-        if ($this->fieldId || Craft::$app->getEdition() === Craft::Pro) {
+        if ($this->fieldId || Craft::$app->getEdition() === Craft::Solo) {
             return parent::previewTargets();
         }
 
@@ -1706,12 +1707,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements): void
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($handle === 'author') {
+        if ($plan->handle === 'author') {
             $this->_author = $elements[0] ?? false;
         } else {
-            parent::setEagerLoadedElements($handle, $elements);
+            parent::setEagerLoadedElements($handle, $elements, $plan);
         }
     }
 

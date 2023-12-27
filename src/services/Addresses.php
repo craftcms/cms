@@ -367,7 +367,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      * @param bool $runValidation Whether the layout should be validated
      * @return bool
      */
-    public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
+    public function saveFieldLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
         if ($runValidation && !$layout->validate()) {
             Craft::info('Field layout not saved due to validation error.', __METHOD__);

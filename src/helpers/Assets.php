@@ -16,6 +16,7 @@ use craft\enums\TimePeriod;
 use craft\errors\FsException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
+use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\models\VolumeFolder;
 use DateTime;
@@ -955,5 +956,25 @@ class Assets
         ]);
 
         return Html::appendToTag($svg, $textNode);
+    }
+
+    /**
+     * Returns whether the given filesystem is used to store temporary asset uploads.
+     *
+     * @param FsInterface $fs
+     * @return bool
+     */
+    public static function isTempUploadFs(FsInterface $fs): bool
+    {
+        if ($fs instanceof Temp) {
+            return true;
+        }
+
+        if (!$fs->handle) {
+            return false;
+        }
+
+        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
+        return $fs->handle === $handle;
     }
 }
