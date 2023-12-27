@@ -14,7 +14,6 @@ use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\TagGroupEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -89,7 +88,7 @@ class Tags extends Component
      */
     public function getAllTagGroupIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllTagGroups(), 'id');
+        return array_map(fn(TagGroup $group) => $group->id, $this->getAllTagGroups());
     }
 
     /**

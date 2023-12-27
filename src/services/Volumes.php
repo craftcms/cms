@@ -102,7 +102,7 @@ class Volumes extends Component
      */
     public function getAllVolumeIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllVolumes(), 'id', false);
+        return array_values(array_map(fn(Volume $volume) => $volume->id, $this->getAllVolumes()));
     }
 
     /**
@@ -112,7 +112,7 @@ class Volumes extends Component
      */
     public function getViewableVolumeIds(): array
     {
-        return ArrayHelper::getColumn($this->getViewableVolumes(), 'id', false);
+        return array_values(array_map(fn(Volume $volume) => $volume->id, $this->getViewableVolumes()));
     }
 
     /**

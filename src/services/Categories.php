@@ -95,7 +95,7 @@ class Categories extends Component
      */
     public function getAllGroupIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllGroups(), 'id');
+        return array_map(fn(CategoryGroup $group) => $group->id, $this->getAllGroups());
     }
 
     /**
@@ -105,7 +105,7 @@ class Categories extends Component
      */
     public function getEditableGroupIds(): array
     {
-        return ArrayHelper::getColumn($this->getEditableGroups(), 'id');
+        return array_map(fn(CategoryGroup $group) => $group->id, $this->getEditableGroups());
     }
 
     /**

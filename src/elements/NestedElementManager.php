@@ -261,7 +261,10 @@ class NestedElementManager extends Component
     {
         /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
-        $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+        $ownerSiteIds = array_map(
+            fn(array $siteInfo) => $siteInfo['siteId'],
+            ElementHelper::supportedSitesForElement($owner),
+        );
         $siteIds = [];
 
         $view = Craft::$app->getView();
@@ -647,7 +650,10 @@ JS, [
                 ($owner->propagateAll || !empty($owner->newSiteIds))
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's nested elements
-                $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+                $ownerSiteIds = array_map(
+                    fn(array $siteInfo) => $siteInfo['siteId'],
+                    ElementHelper::supportedSitesForElement($owner),
+                );
                 $fieldSiteIds = $this->getSupportedSiteIds($owner);
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
@@ -854,7 +860,10 @@ JS, [
         // Duplicate elements for other sites as well?
         if ($checkOtherSites && $this->propagationMethod !== PropagationMethod::All) {
             // Find the target's site IDs that *aren't* supported by this site's nested elements
-            $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
+            $targetSiteIds = array_map(
+                fn(array $siteInfo) => $siteInfo['siteId'],
+                ElementHelper::supportedSitesForElement($target),
+            );
             $fieldSiteIds = $this->getSupportedSiteIds($target);
             $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
 
@@ -913,7 +922,10 @@ JS, [
     private function createRevisions(ElementInterface $canonical, ElementInterface $revision): void
     {
         // Only fetch nested elements in the sites the owner element supports
-        $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($canonical), 'siteId');
+        $siteIds = array_map(
+            fn(array $siteInfo) => $siteInfo['siteId'],
+            ElementHelper::supportedSitesForElement($canonical),
+        );
 
         /** @var NestedElementInterface[] $elements */
         $elements = $this->nestedElementQuery($canonical)

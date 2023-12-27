@@ -414,7 +414,7 @@ class Sites extends Component
      */
     public function getAllSiteIds(?bool $withDisabled = null): array
     {
-        return ArrayHelper::getColumn($this->_allSites($withDisabled), 'id', false);
+        return array_values(array_map(fn(Site $site) => $site->id, $this->_allSites($withDisabled)));
     }
 
     /**

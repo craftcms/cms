@@ -276,26 +276,26 @@ abstract class Element extends Component implements ElementInterface
      *
      * ```php
      * use craft\base\Element;
+     * use craft\base\ElementInterface;
      * use craft\db\Query;
      * use craft\elements\Entry;
      * use craft\events\DefineEagerLoadingMapEvent;
-     * use craft\helpers\ArrayHelper;
      * use yii\base\Event;
      *
      * // Add support for `with(['bookClub'])` to entries
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_DEFINE_EAGER_LOADING_MAP,
-     *     function(DefineEagerLoadingMapEvent $e) {
-     *         if ($e->handle === 'bookClub') {
-     *             $bookEntryIds = ArrayHelper::getColumn($e->elements, 'id');
-     *             $e->elementType = \my\plugin\BookClub::class,
-     *             $e->map = (new Query)
+     *     function(DefineEagerLoadingMapEvent $event) {
+     *         if ($event->handle === 'bookClub') {
+     *             $bookEntryIds = array_map(fn(ElementInterface $element) => $element->id, $event->elements);
+     *             $event->elementType = \my\plugin\BookClub::class,
+     *             $event->map = (new Query)
      *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
      *                 ->from('{{%bookclub_books}}')
      *                 ->where(['bookId' => $bookEntryIds])
      *                 ->all();
-     *             $e->handled = true;
+     *             $event->handled = true;
      *         }
      *     }
      * );
@@ -1489,7 +1489,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapDescendants(array $sourceElements, bool $children): ?array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         // Get the structure data for these elements
         $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
@@ -1575,7 +1575,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapAncestors(array $sourceElements, bool $parents): ?array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         // Get the structure data for these elements
         $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
@@ -1704,7 +1704,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapCurrentRevisions(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1734,7 +1734,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapDrafts(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1762,7 +1762,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapRevisions(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1790,7 +1790,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapDraftCreators(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1818,7 +1818,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapRevisionCreators(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -4721,7 +4721,7 @@ JS, [
     public function getDirtyFields(): array
     {
         if ($this->_allDirty()) {
-            return ArrayHelper::getColumn($this->fieldLayoutFields(), 'handle');
+            return array_map(fn(FieldInterface $field) => $field->handle, $this->fieldLayoutFields());
         }
 
         return array_keys($this->_dirtyFields);

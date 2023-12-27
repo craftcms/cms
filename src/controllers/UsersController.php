@@ -2615,7 +2615,7 @@ JS);
         $allGroups = ArrayHelper::index(Craft::$app->getUserGroups()->getAllGroups(), 'id');
 
         // See if there are any new groups in here
-        $oldGroupIds = ArrayHelper::getColumn($user->getGroups(), 'id');
+        $oldGroupIds = array_map(fn(UserGroup $group) => $group->id, $user->getGroups());
         $hasNewGroups = false;
         $newGroups = [];
 

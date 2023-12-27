@@ -284,7 +284,7 @@ class ElementHelper
      *
      * @param ElementInterface $element The element to return supported site info for
      * @param bool $withUnpropagatedSites Whether to include sites the element is currently not being propagated to
-     * @return array
+     * @return array[]
      * @throws Exception if any of the element’s supported sites are invalid
      */
     public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array

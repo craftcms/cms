@@ -8,9 +8,9 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\PluginInterface;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Queue;
@@ -79,7 +79,10 @@ class Announcements extends Component
 
         // Any enabled plugins?
         $pluginsService = Craft::$app->getPlugins();
-        $enabledPluginHandles = ArrayHelper::getColumn($pluginsService->getAllPlugins(), 'id');
+        $enabledPluginHandles = array_map(
+            fn(PluginInterface $plugin) => $plugin->getHandle(),
+            $pluginsService->getAllPlugins(),
+        );
         if (!empty($enabledPluginHandles)) {
             $query
                 ->addSelect(['pluginHandle' => 'p.handle'])
