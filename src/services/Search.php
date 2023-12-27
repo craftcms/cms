@@ -146,23 +146,22 @@ class Search extends Component
         }
 
         // Figure out which fields to update, and which to ignore
-        /** @var FieldInterface[] $updateFields */
-        $updateFields = [];
-        /** @var string[] $ignoreFieldIds */
+        $customFields = $element->getFieldLayout()?->getCustomFields() ?? [];
+        $updateFieldIds = [];
         $ignoreFieldIds = [];
-        $fieldLayout = $element->getFieldLayout();
-        if ($fieldLayout !== null) {
+
+        if (!empty($customFields)) {
             if ($fieldHandles !== null) {
                 $fieldHandles = array_flip($fieldHandles);
             }
-            foreach ($fieldLayout->getCustomFields() as $field) {
+            foreach ($customFields as $field) {
                 if ($field->searchable) {
                     // Are we updating this field's keywords?
                     if ($fieldHandles === null || isset($fieldHandles[$field->handle])) {
-                        $updateFields[] = $field;
+                        $updateFieldIds[$field->id] = true;
                     } else {
                         // Leave its existing keywords alone
-                        $ignoreFieldIds[] = (string)$field->id;
+                        $ignoreFieldIds[$field->id] = true;
                     }
                 }
             }
@@ -174,7 +173,12 @@ class Search extends Component
             'siteId' => $element->siteId,
         ];
         if (!empty($ignoreFieldIds)) {
-            $deleteCondition = ['and', $deleteCondition, ['not', ['fieldId' => $ignoreFieldIds]]];
+            $ignoreFieldIds = array_map(fn(int $fieldId) => (string)$fieldId, array_keys($ignoreFieldIds));
+            $deleteCondition = [
+                'and',
+                $deleteCondition,
+                ['not', ['fieldId' => $ignoreFieldIds]],
+            ];
         }
         Db::delete(Table::SEARCHINDEX, $deleteCondition);
 
@@ -185,10 +189,15 @@ class Search extends Component
         }
 
         // Update the custom fields' keywords
-        foreach ($updateFields as $field) {
-            $fieldValue = $element->getFieldValue($field->handle);
-            $keywords = $field->getSearchKeywords($fieldValue, $element);
-            $this->_indexKeywords($element, $keywords, fieldId: $field->id);
+        $keywords = [];
+        foreach ($customFields as $field) {
+            if (isset($updateFieldIds[$field->id])) {
+                $fieldValue = $element->getFieldValue($field->handle);
+                $keywords[$field->id][] = $field->getSearchKeywords($fieldValue, $element);
+            }
+        }
+        foreach ($keywords as $fieldId => $instanceKeywords) {
+            $this->_indexKeywords($element, implode(' ', $instanceKeywords), fieldId: $fieldId);
         }
 
         // Release the lock

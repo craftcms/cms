@@ -6,6 +6,7 @@
 - Added `craft\events\SetEagerLoadedElementsEvent::$plan`.
 - `craft\base\ElementInterface::setEagerLoadedElements()` now has a `$plan` argument, which will be set to the eager-loading plan.
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
+- Fixed an error that occurred when indexing search keywords for an element with multiple instances of the same custom field. ([#13987](https://github.com/craftcms/cms/issues/13987))
 
 ## 5.0.0-alpha.3 - 2023-12-21
 
