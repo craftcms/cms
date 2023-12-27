@@ -22,7 +22,6 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Search as SearchHelper;
 use craft\helpers\StringHelper;
-use craft\models\Site;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -812,7 +811,10 @@ SQL;
     private function _getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields): array|int|null
     {
         if ($customFields !== null) {
-            return ArrayHelper::getColumn($customFields->where('handle', $attribute)->all(), 'id');
+            return array_map(
+                fn(FieldInterface $field) => $field->id,
+                $customFields->where('handle', $attribute)->all(),
+            );
         }
 
         $field = Craft::$app->getFields()->getFieldByHandle($attribute);
