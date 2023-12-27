@@ -930,7 +930,7 @@ JS, [
     {
         // Skip if nothing changed, or the element is just propagating and we're not localizing relations
         if (
-            ($element->isFieldDirty($this->handle) || $this->maintainHierarchy) &&
+            ($element->duplicateOf || $element->isFieldDirty($this->handle) || $this->maintainHierarchy) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
             /** @var ElementQueryInterface|Collection $value */
