@@ -1799,7 +1799,9 @@ EOD;
         }
 
         // Slug
-        $fields[] = $this->slugFieldHtml($static);
+        if ($this->getType()->showSlugField) {
+            $fields[] = $this->slugFieldHtml($static);
+        }
 
         // Parent
         if ($section?->type === Section::TYPE_STRUCTURE && $section->maxLevels !== 1) {

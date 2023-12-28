@@ -89,41 +89,51 @@
     }) }}
 </div>
 
-{% if craft.app.getIsMultiSite() %}
-    {{ forms.selectField({
-        label: '{name} Translation Method'|t('app', {
-            name: 'Slug'|t('app'),
-        }),
-        instructions: 'How should {name} values be translated?'|t('app', {
-            name: 'Slug'|t('app'),
-        }),
-        id: 'slug-translation-method',
-        name: 'slugTranslationMethod',
-        options: [
-            { value: 'none', label: 'Not translatable'|t('app') },
-            { value: 'site', label: 'Translate for each site'|t('app') },
-            { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
-            { value: 'language', label: 'Translate for each language'|t('app') },
-            { value: 'custom', label: 'Custom…'|t('app') },
-        ]|filter,
-        value: entryType.slugTranslationMethod,
-        toggle: true,
-        targetPrefix: 'slug-translation-method-'
-    }) }}
+{{ forms.lightswitchField({
+    label: "Show the Slug field"|t('app'),
+    name: 'showSlugField',
+    toggle: 'slug-container',
+    reverseToggle: '#slugFormat-container, .fld-slug-field-icon',
+    on: entryType.showSlugField
+}) }}
 
-    <div id="slug-translation-method-custom" {% if entryType.slugTranslationMethod != 'custom' %}class="hidden"{% endif %}>
-        {{ forms.textField({
-            label: '{name} Translation Key Format'|t('app', {
+{% if craft.app.getIsMultiSite() %}
+    <div id="slug-container"{% if not entryType.showSlugField %} class="hidden"{% endif %}>
+        {{ forms.selectField({
+            label: '{name} Translation Method'|t('app', {
                 name: 'Slug'|t('app'),
             }),
-            instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+            instructions: 'How should {name} values be translated?'|t('app', {
                 name: 'Slug'|t('app'),
             }),
-            id: 'slug-translation-key-format',
-            name: 'slugTranslationKeyFormat',
-            value: entryType.slugTranslationKeyFormat,
-            errors: entryType.getErrors('slugTranslationKeyFormat')
+            id: 'slug-translation-method',
+            name: 'slugTranslationMethod',
+            options: [
+                { value: 'none', label: 'Not translatable'|t('app') },
+                { value: 'site', label: 'Translate for each site'|t('app') },
+                { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
+                { value: 'language', label: 'Translate for each language'|t('app') },
+                { value: 'custom', label: 'Custom…'|t('app') },
+            ]|filter,
+            value: entryType.slugTranslationMethod,
+            toggle: true,
+            targetPrefix: 'slug-translation-method-'
         }) }}
+
+        <div id="slug-translation-method-custom" {% if entryType.slugTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+            {{ forms.textField({
+                label: '{name} Translation Key Format'|t('app', {
+                    name: 'Slug'|t('app'),
+                }),
+                instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+                    name: 'Slug'|t('app'),
+                }),
+                id: 'slug-translation-key-format',
+                name: 'slugTranslationKeyFormat',
+                value: entryType.slugTranslationKeyFormat,
+                errors: entryType.getErrors('slugTranslationKeyFormat')
+            }) }}
+        </div>
     </div>
 {% endif %}
 
