@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Improved the performance of input namespacing.
 - `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` are now reserved user field handles. ([#14075](https://github.com/craftcms/cms/issues/14075))
 - `craft\services\Security::$sensitiveKeywords` is no longer case-sensitive. ([#14064](https://github.com/craftcms/cms/discussions/14064))
 - Fixed a bug where the `index-assets/cleanup` command accepted `--cache-remote-images`, `--create-missing-assets`, and `--delete-missing-assets` options, even though they didn’t do anything.
