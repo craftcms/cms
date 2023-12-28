@@ -802,7 +802,7 @@ SQL;
     }
 
     /**
-     * Get the fieldId for given attribute or 0 for unmatched.
+     * Get the fieldId for given attribute or `null` for unmatched.
      *
      * @param string $attribute
      * @param MemoizableArray<FieldInterface>|null $customFields
