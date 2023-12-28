@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'إظهار قائمة التنقل',
     'Show nested sources' => 'إظهار المصادر المتداخلة',
     'Show sidebar' => 'إظهار الشريط الجانبي',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'إظهار حقل الحالة',
     'Show the Title field' => 'إظهار حقل العنوان',
     'Show the debug toolbar in the control panel' => 'إظهار شريط أدوات تصحيح الأخطاء في لوحة التحكم',
