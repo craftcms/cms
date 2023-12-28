@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'Показати навігацію',
     'Show nested sources' => 'Показати вкладені джерела',
     'Show sidebar' => 'Показати бічну панель',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'Показати поле статусу',
     'Show the Title field' => 'Показати поле заголовка',
     'Show the debug toolbar in the control panel' => 'Показувати панель налагодження на панелі керування',
