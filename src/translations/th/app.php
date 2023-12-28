@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'Show nav',
     'Show nested sources' => 'Show nested sources',
     'Show sidebar' => 'Show sidebar',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'แสดงฟิลด์สถานะ',
     'Show the Title field' => 'Show the Title field',
     'Show the debug toolbar in the control panel' => 'Show the debug toolbar in the control panel',
