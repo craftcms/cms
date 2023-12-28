@@ -155,10 +155,11 @@ class Search extends Component
                 $fieldHandles = array_flip($fieldHandles);
             }
             foreach ($customFields as $field) {
-                if ($field->searchable) {
+                if ($field->searchable && !isset($updateFieldIds[$field->id])) {
                     // Are we updating this field's keywords?
                     if ($fieldHandles === null || isset($fieldHandles[$field->handle])) {
                         $updateFieldIds[$field->id] = true;
+                        unset($ignoreFieldIds[$field->id]);
                     } else {
                         // Leave its existing keywords alone
                         $ignoreFieldIds[$field->id] = true;
