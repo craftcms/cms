@@ -1231,13 +1231,16 @@ SQL)->execute();
             ->where(['dateDeleted' => null]);
 
         // todo: remove after the next breakpoint
-        if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'slugTranslationMethod')) {
+        $db = Craft::$app->getDb();
+        if ($db->columnExists(Table::ENTRYTYPES, 'slugTranslationMethod')) {
             $query->addSelect([
-                'showSlugField',
                 'slugTranslationMethod',
                 'slugTranslationKeyFormat',
                 'showStatusField',
             ]);
+        }
+        if ($db->columnExists(Table::ENTRYTYPES, 'showSlugField')) {
+            $query->addSelect('showSlugField');
         }
 
         return $query;
