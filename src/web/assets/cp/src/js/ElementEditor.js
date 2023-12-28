@@ -15,7 +15,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     $expandSiteStatusesBtn: null,
     $statusIcon: null,
     $previewBtn: null,
-    additionalMenu: null,
 
     metaModal: null,
     $nameTextInput: null,
