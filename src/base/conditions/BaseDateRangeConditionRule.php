@@ -326,7 +326,7 @@ JS,
                 return array_filter([
                     'and',
                     $this->_startDate ? ">= $this->_startDate" : null,
-                    $this->_endDate ? "< " . DateTimeHelper::toIso8601($this->_adjustedEndDate()) : null,
+                    $this->_endDate ? "< " . DateTimeHelper::toIso8601($this->_inclusiveEndDate()) : null,
                 ]);
 
             case DateRange::TYPE_BEFORE:
@@ -366,7 +366,7 @@ JS,
             case DateRange::TYPE_RANGE:
                 return (
                     (!$this->_startDate || ($value && $value >= DateTimeHelper::toDateTime($this->_startDate))) &&
-                    (!$this->_endDate || ($value && $value < $this->_adjustedEndDate()))
+                    (!$this->_endDate || ($value && $value < $this->_inclusiveEndDate()))
                 );
 
             case DateRange::TYPE_BEFORE:
@@ -395,17 +395,8 @@ JS,
         }
     }
 
-    /**
-     * Adjust endDate based on whether it should be inclusive or not
-     *
-     * @return DateTime
-     * @throws Exception
-     */
-    private function _adjustedEndDate(): DateTime
+    private function _inclusiveEndDate(): DateTime
     {
-        $endDate = DateTimeHelper::toDateTime($this->_endDate);
-        $endDate->modify('+1 day');
-
-        return $endDate;
+        return DateTimeHelper::toDateTime($this->_endDate)->modify('+1 day');
     }
 }
