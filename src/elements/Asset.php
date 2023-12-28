@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\Fs;
 use craft\base\FsInterface;
@@ -300,7 +301,7 @@ class Asset extends Element
     {
         if ($handle === 'uploader') {
             // Get the source element IDs
-            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+            $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
             $map = (new Query())
                 ->select(['id as source', 'uploaderId as target'])
@@ -1493,7 +1494,7 @@ $('#replace-btn').on('click', () => {
             fileuploadstart: () => {
                 $('#thumb-container').addClass('loading');
             },
-            fileuploaddone: (event, data) => {
+            fileuploaddone: (event, data = null) => {
                 const result = event instanceof CustomEvent ? event.detail : data.result;
                 
                 $('#new-filename').val(result.filename);
@@ -1524,12 +1525,14 @@ $('#replace-btn').on('click', () => {
 
                 }
             },
-            fileuploadfail: (event, data) => {
+            fileuploadfail: (event, data = null) => {
                 const response = event instanceof Event
                     ? event.detail
                     : data?.jqXHR?.responseJSON;
                 
                 let {message, filename} = response || {};
+                
+                filename = filename || data?.files?.[0].name;
                 
                 if (!message) {
                     message = filename
@@ -1539,7 +1542,7 @@ $('#replace-btn').on('click', () => {
                 
               Craft.cp.displayError(message);
             },
-            fileuploadalways: (event, data) => {
+            fileuploadalways: (event, data = null) => {
                 $('#thumb-container').removeClass('loading');
             },
         }
@@ -2865,6 +2868,7 @@ JS;
             $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
 
             if (
+                isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 !($isCpRequest && !$sanitizeCpImageUploads)
@@ -2877,6 +2881,7 @@ JS;
             $fallbackWidth = null;
             $fallbackHeight = null;
             if (
+                isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
             ) {

@@ -404,9 +404,16 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             return Db::prepareDateForDb($value);
         }
 
+        // Only store the time zone if it was created in the IANA format
+        if ($value->getTimezone()->getLocation()) {
+            $timeZone = $value->getTimezone()->getName();
+        } else {
+            $timeZone = null;
+        }
+
         return [
             'date' => Db::prepareDateForDb($value),
-            'tz' => $value->getTimezone()->getName(),
+            'tz' => $timeZone,
         ];
     }
 
@@ -458,9 +465,12 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getContentGqlMutationArgumentType(): Type|array
     {
+        $type = DateTimeType::getType();
+        $type->setToSystemTimeZone = !$this->showTimeZone;
+
         return [
             'name' => $this->handle,
-            'type' => DateTimeType::getType(),
+            'type' => $type,
             'description' => $this->instructions,
         ];
     }

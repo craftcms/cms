@@ -2,19 +2,82 @@
 
 ## Unreleased
 
+- `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` are now reserved user field handles. ([#14075](https://github.com/craftcms/cms/issues/14075))
+- `craft\services\Security::$sensitiveKeywords` is no longer case-sensitive. ([#14064](https://github.com/craftcms/cms/discussions/14064))
+- Fixed a bug where the `index-assets/cleanup` command accepted `--cache-remote-images`, `--create-missing-assets`, and `--delete-missing-assets` options, even though they didn’t do anything.
+- Fixed a bug where automatically-created relations could be lost when a new site was added to an entry. ([#14065](https://github.com/craftcms/cms/issues/14065))
+- Fixed a bug where `craft\web\Request::getIsPreview()` was returning `true` for requests with expired tokens. ([#14066](https://github.com/craftcms/cms/discussions/14066))
+- Fixed a bug where asset conflict resolution modals were closing prematurely if there were multiple conflicts. ([#14045](https://github.com/craftcms/cms/issues/14045))
+
+## 4.5.13 - 2023-12-15
+
+- Address fields now have the appropriate `autocomplete` values when editing an address that belongs to the current user. ([#13938](https://github.com/craftcms/cms/pull/13938))
+- The `|markdown` and `|md` filters now accept an `encode` argument, which can be set to `true` to HTML-encode the content before parsing it as Markdown.
+- Added the `pre-encoded` Markdown flavor, which can be used when the content has already been HTML-encoded.
+- Added `craft\elements\Address::getBelongsToCurrentUser()`.
+- Fixed a bug where `{% namespace %}` tags weren’t respecting namespaces set to `0`. ([#13943](https://github.com/craftcms/cms/issues/13943))
+- Fixed an error that could occur when using a custom asset uploader. ([#14029](https://github.com/craftcms/cms/pull/14029))
+- Fixed an error that could occur when saving an asset using `SCENARIO_CREATE`, if `Asset::$tempFilePath` wasn’t set. ([#14041](https://github.com/craftcms/cms/pull/14041))
+- Fixed a bug where some HTML entities within Tip and Warning field layout elements colud get double-encoded. ([#13959](https://github.com/craftcms/cms/issues/13959))
+- Fixed an infinite recursion bug. ([#14033](https://github.com/craftcms/cms/issues/14033))
+
+## 4.5.12 - 2023-12-12
+
+- It’s no longer possible to dismiss asset conflict resolution modals by pressing <kbd>Esc</kbd> or clicking outside of the modal. ([#14002](https://github.com/craftcms/cms/issues/14002))
+- Improved performance for sites with lots of custom fields in non-global contexts. ([#13992](https://github.com/craftcms/cms/issues/13992))
+- Username, Full Name, and Email fields now have the appropriate `autocomplete` values when editing the current user. ([#13941](https://github.com/craftcms/cms/pull/13941))
+- Queue job info is now broadcasted to other browser tabs opened to the same control panel. ([#13990](https://github.com/craftcms/cms/issues/13990))
+- Volumes’ Asset Filesystem settings now list filesystems that are already selected by another volume, as disabled options. ([#14004](https://github.com/craftcms/cms/pull/14004))
+- Added `craft\db\Connection::onAfterTransaction()`.
+- Added `craft\errors\MutexException`. ([#13985](https://github.com/craftcms/cms/pull/13985))
+- Added `craft\fieldlayoutelements\TextField::$inputType`. ([#13988](https://github.com/craftcms/cms/issues/13988))
+- Deprecated `craft\fieldlayoutelements\TextField::$type`. `$inputType` should be used instead. ([#13988](https://github.com/craftcms/cms/issues/13988))
+- Fixed a bug where WebP image transforms weren’t respecting transform quality settings. ([#13998](https://github.com/craftcms/cms/issues/13998))
+- Fixed a bug where `craft\base\ApplicationTrait::onAfterRequest()` callbacks weren’t necessarily triggered if an `EVENT_AFTER_REQUEST` handler got in the way.
+- Fixed a bug where keyboard shortcuts could stop working. ([#14011](https://github.com/craftcms/cms/issues/14011))
+- Fixed a bug where the `craft\services\Elements::EVENT_AUTHORIZE_VIEW` event wasn’t always triggered when editing elements. ([#13981](https://github.com/craftcms/cms/issues/13981))
+- Fixed a bug that prevented Live Preview from opening for edited entries, when the `autosaveDrafts` config setting was disabled. ([#13921](https://github.com/craftcms/cms/issues/13921))
+- Fixed a bug where JavaScript-based slug generation wasn’t working consistently with PHP. ([#13971](https://github.com/craftcms/cms/pull/13971))
+- Fixed a bug where asset upload failure notifications could be ambiguous if a server connection issue occurred. ([#14003](https://github.com/craftcms/cms/issues/14003))
+- Fixed a “Changes to the project config are not possible while in read-only mode.” error that could occur when adimn changes were disallowed. ([#14018](https://github.com/craftcms/cms/issues/14018))
+- Fixed a bug where it was possible to create a volume without a filesystem selected. ([#14004](https://github.com/craftcms/cms/pull/14004))
+- Fixed a privilege escalation vulnerability.
+
+## 4.5.11.1 - 2023-11-23
+
+- Fixed a PHP error that occurred due to a conflict with psr/log v3. ([#13963](https://github.com/craftcms/cms/issues/13963))
+
+## 4.5.11 - 2023-11-16
+
+- Date fields with “Show Time Zone” enabled will now remember IANA-formatted time zones set via GraphQL. ([#13893](https://github.com/craftcms/cms/issues/13893))
+- Added `craft\gql\types\DateTime::$setToSystemTimeZone`.
+- `craft\gql\types\DateTime` now supports JSON-encoded objects with `date`, `time`, and `timezone` keys.
+- `craft\web\Response::setCacheHeaders()` now includes the `public` directive in the `Cache-Control` header. ([#13922](https://github.com/craftcms/cms/pull/13922))
+- Fixed a bug where <kbd>↑</kbd> and <kbd>↓</kbd> key presses would set focus to disabled menu options. ([#13911](https://github.com/craftcms/cms/issues/13911))
+- Fixed a bug where elements’ `localized` GraphQL field wasn’t returning any results for drafts or revisions. ([#13924](https://github.com/craftcms/cms/issues/13924))
+- Fixed a bug where dropdown option labels within Table fields weren’t getting translated. ([#13914](https://github.com/craftcms/cms/issues/13914))
+- Fixed a bug where “Updating search indexes” jobs were getting queued for Matrix block revisions. ([#13917](https://github.com/craftcms/cms/issues/13917))
+- Fixed a bug where control panel resources weren’t getting published on demand. ([#13935](https://github.com/craftcms/cms/issues/13935))
+- Fixed privilege escalation vulnerabilities.
+
+## 4.5.10 - 2023-11-07
+
 - Added the `db/drop-table-prefix` command.
 - Top-level disabled related/nested elements are now included in “Extended” element exports. ([#13496](https://github.com/craftcms/cms/issues/13496))
+- Related element validation is no longer recursive. ([#13904](https://github.com/craftcms/cms/issues/13904))
 - Addresses’ owner elements are now automatically set on them during initialization, if they were queried with the `owner` address query param.
 - Entry Title fields are no longer shown when “Show the Title field” is disabled and there’s a validation error on the `title` attribute. ([#13876](https://github.com/craftcms/cms/issues/13876))
 - Improved the reliability of image dimension detection. ([#13886](https://github.com/craftcms/cms/pull/13886))
-- The default Postgres database backup command no longer passes in `--column-inserts` to `pg_dump`.
+- The default backup command for PostgreSQL no longer passes in `--column-inserts` to `pg_dump`.
 - Log contexts now include the environment name. ([#13882](https://github.com/craftcms/cms/pull/13882))
 - Added `craft\web\AssetManager::$cacheSourcePaths`.
 - Fixed a bug where disclosure menus could be positioned off-screen on mobile.
 - Fixed a bug where element edit pages could show a context menu when it wasn’t necessary.
 - Fixed a bug where the “Delete entry for this site” action wasn’t deleting the canonical entry for the selected site, when editing a provisional draft.
-- Fixed an error that occurred when cropping an image that was missing its dimension info. ([#13884](https://github.com/craftcms/cms/issues/13884))])
+- Fixed an error that occurred when cropping an image that was missing its dimension info. ([#13884](https://github.com/craftcms/cms/issues/13884))
 - Fixed an error that occurred if a filesystem didn’t have any settings. ([#13883](https://github.com/craftcms/cms/pull/13883))
+- Fixed a bug where related element validation wansn’t ensuring that related elements were loaded in the same site as the source element when possible. ([#13907](https://github.com/craftcms/cms/issues/13907))
+- Fixed a bug where sites weren’t always getting queried in the same order, if multiple sites’ `sortOrder` values were the same. ([#13896](https://github.com/craftcms/cms/issues/13896))
 
 ## 4.5.9 - 2023-10-23
 

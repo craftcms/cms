@@ -164,7 +164,7 @@ class Sections extends Component
      */
     public function getAllSectionIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllSections(), 'id', false);
+        return array_values(array_map(fn(Section $section) => $section->id, $this->getAllSections()));
     }
 
     /**
@@ -183,7 +183,7 @@ class Sections extends Component
      */
     public function getEditableSectionIds(): array
     {
-        return ArrayHelper::getColumn($this->getEditableSections(), 'id', false);
+        return array_values(array_map(fn(Section $section) => $section->id, $this->getEditableSections()));
     }
 
     /**
@@ -1504,12 +1504,15 @@ SQL)->execute();
             return isset($siteSettings[$site->uid]);
         }, true, true, false);
 
-        $siteIds = ArrayHelper::getColumn($sites, 'id');
+        $siteIds = array_map(fn(Site $site) => $site->id, $sites);
 
         // Get the section's entry types
         // ---------------------------------------------------------------------
 
-        $entryTypeIds = ArrayHelper::getColumn($this->getEntryTypesBySectionId($section->id), 'id', false);
+        $entryTypeIds = array_values(array_map(
+            fn(EntryType $entryType) => $entryType->id,
+            $this->getEntryTypesBySectionId($section->id),
+        ));
 
         // There should always be at least one entry type by the time this is called
         if (empty($entryTypeIds)) {

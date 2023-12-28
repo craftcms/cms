@@ -1389,7 +1389,7 @@ JS,
         // Is the site set to use email addresses as usernames?
         if ($generalConfig->useEmailAsUsername) {
             $user->username = $user->email;
-        } else {
+        } elseif ($isNewUser || $currentUser->admin || $isCurrentUser) {
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 
@@ -2435,7 +2435,7 @@ JS,
         $allGroups = ArrayHelper::index(Craft::$app->getUserGroups()->getAllGroups(), 'id');
 
         // See if there are any new groups in here
-        $oldGroupIds = ArrayHelper::getColumn($user->getGroups(), 'id');
+        $oldGroupIds = array_map(fn(UserGroup $group) => $group->id, $user->getGroups());
         $hasNewGroups = false;
         $newGroups = [];
 

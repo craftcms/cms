@@ -414,7 +414,7 @@ class Sites extends Component
      */
     public function getAllSiteIds(?bool $withDisabled = null): array
     {
-        return ArrayHelper::getColumn($this->_allSites($withDisabled), 'id', false);
+        return array_values(array_map(fn(Site $site) => $site->id, $this->_allSites($withDisabled)));
     }
 
     /**
@@ -1164,7 +1164,7 @@ class Sites extends Component
             ->innerJoin(['sg' => Table::SITEGROUPS], '[[sg.id]] = [[s.groupId]]')
             ->where(['s.dateDeleted' => null])
             ->andWhere(['sg.dateDeleted' => null])
-            ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC])
+            ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC, 's.id' => SORT_ASC])
             ->all();
 
         // Check for results because during installation, the transaction hasn't been committed yet.
