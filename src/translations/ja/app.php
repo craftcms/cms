@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'ナビゲーションを表示',
     'Show nested sources' => 'ネストされたソースを表示',
     'Show sidebar' => 'サイドバーを表示する',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'ステータスフィールドを表示',
     'Show the Title field' => 'タイトルのフィールドを見る。',
     'Show the debug toolbar in the control panel' => 'コントロールパネルにデバッグツールバーを表示',
