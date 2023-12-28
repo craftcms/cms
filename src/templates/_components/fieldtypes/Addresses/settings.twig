@@ -27,3 +27,17 @@
   size: 3,
   errors: field.getErrors('maxAddresses')
 }) }}
+
+{{ forms.selectField({
+  label: 'View Mode'|t('app'),
+  instructions: 'Choose how nested {type} should be presented to authors.'|t('app', {
+    type: 'addresses'|t('app'),
+  }),
+  id: 'view-mode',
+  name: 'viewMode',
+  options: [
+    {label: 'As cards'|t('app'), value: constant('VIEW_MODE_CARDS', field)},
+    {label: 'As an element index'|t('app'), value: constant('VIEW_MODE_INDEX', field)},
+  ],
+  value: field.viewMode,
+}) }}

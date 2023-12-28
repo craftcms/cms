@@ -48,14 +48,14 @@ class Utilities extends Component
      * use yii\base\Event;
      *
      * Event::on(Utilities::class,
-     *     Utilities::EVENT_REGISTER_UTILITY_TYPES,
+     *     Utilities::EVENT_REGISTER_UTILITIES,
      *     function(RegisterComponentTypesEvent $event) {
      *         $event->types[] = MyUtilityType::class;
      *     }
      * );
      * ```
      */
-    public const EVENT_REGISTER_UTILITY_TYPES = 'registerUtilityTypes';
+    public const EVENT_REGISTER_UTILITIES = 'registerUtilities';
 
     /**
      * Returns all available utility type classes.
@@ -94,9 +94,14 @@ class Utilities extends Component
         $event = new RegisterComponentTypesEvent([
             'types' => $utilityTypes,
         ]);
-        $this->trigger(self::EVENT_REGISTER_UTILITY_TYPES, $event);
+        $this->trigger(self::EVENT_REGISTER_UTILITIES, $event);
 
-        return $event->types;
+        $disabledUtilities = array_flip(Craft::$app->getConfig()->getGeneral()->disabledUtilities);
+
+        return array_values(array_filter($event->types, function(string $class) use ($disabledUtilities) {
+            /** @var string|UtilityInterface $class */
+            return !isset($disabledUtilities[$class::id()]);
+        }));
     }
 
     /**

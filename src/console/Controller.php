@@ -9,7 +9,6 @@ namespace craft\console;
 
 use craft\console\controllers\ResaveController;
 use craft\events\DefineConsoleActionsEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -74,7 +73,7 @@ class Controller extends YiiController
     public const EVENT_DEFINE_ACTIONS = 'defineActions';
 
     /**
-     * @var array Custom actions that should be available.
+     * @var array[] Custom actions that should be available.
      * @see defineActions()
      */
     private array $_actions;
@@ -175,7 +174,7 @@ class Controller extends YiiController
      */
     public function actions(): array
     {
-        return ArrayHelper::getColumn($this->_actions, 'action');
+        return array_map(fn(array $action) => $action['action'], $this->_actions);
     }
 
     /**

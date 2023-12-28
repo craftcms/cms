@@ -14,6 +14,7 @@ use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\enums\LicenseKeyStatus;
+use craft\enums\MenuItemType;
 use craft\errors\InvalidHtmlTagException;
 use craft\errors\InvalidPluginException;
 use craft\events\DefineElementHtmlEvent;
@@ -425,6 +426,7 @@ class Cp
             'showLabel' => true,
             'showStatus' => true,
             'showThumb' => true,
+            'showActionMenu' => false,
             'size' => self::ELEMENT_SIZE_SMALL,
         ];
 
@@ -485,6 +487,7 @@ class Cp
         }
 
         $html .= Html::beginTag('div', ['class' => 'chip-actions']) .
+            ($config['showActionMenu'] ? self::elementActionMenu($element) : '') .
             ($config['sortable'] ? Html::button('', [
                 'class' => ['move', 'icon'],
                 'title' => Craft::t('app', 'Reorder'),
@@ -538,6 +541,7 @@ class Cp
             'context' => 'index',
             'id' => sprintf('card-%s', mt_rand()),
             'inputName' => null,
+            'showActionMenu' => false,
         ];
 
         $attributes = ArrayHelper::merge(
@@ -572,6 +576,7 @@ class Cp
                 'title' => Craft::t('app', 'Select'),
                 'aria' => ['label' => Craft::t('app', 'Select')],
             ]) : '') .
+            ($config['showActionMenu'] ? self::elementActionMenu($element) : '') .
             ($config['sortable'] ? Html::button('', [
                 'class' => ['move', 'icon'],
                 'title' => Craft::t('app', 'Reorder'),
@@ -602,6 +607,44 @@ class Cp
         return $html;
     }
 
+    /**
+     * Renders accessible HTML for status indicators.
+     *
+     * When the `status` is equal to "draft" the draft icon will be displayed. The attributes passed as the
+     * second argument should be a status definition from [[\craft\base\ElementInterface::statuses]]
+     *
+     * @param string $status Status string
+     * @param array|null $attributes Attributes to be passed along.
+     * @return string|null
+     * @since 5.0.0
+     */
+    public static function statusIndicatorHtml(string $status, array $attributes = null): ?string
+    {
+        if ($status === 'draft') {
+            return Html::tag('span', '', [
+                'data' => ['icon' => 'draft'],
+                'class' => 'icon',
+                'role' => 'img',
+                'aria' => [
+                    'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
+                ],
+            ]);
+        }
+
+        return Html::tag('span', '', [
+            'class' => array_filter([
+                'status',
+                $status,
+                $attributes['color'] ?? null,
+            ]),
+            'role' => 'img',
+            'aria' => [
+                'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $attributes['label'] ?? ucfirst($status)),
+            ],
+        ]);
+    }
+
+
     private static function baseElementAttributes(ElementInterface $element, array $config): array
     {
         $elementsService = Craft::$app->getElements();
@@ -615,7 +658,7 @@ class Cp
                 'class' => array_filter([
                     'element',
                     $config['context'] === 'field' ? 'removable' : null,
-                    $element->hasErrors() ? 'error' : null,
+                    ($config['context'] === 'field' && $element->hasErrors()) ? 'error' : null,
                 ]),
                 'data' => array_filter([
                     'type' => get_class($element),
@@ -641,14 +684,7 @@ class Cp
     private static function elementStatusHtml(ElementInterface $element): ?string
     {
         if ($element->getIsDraft()) {
-            return Html::tag('span', '', [
-                'data' => ['icon' => 'draft'],
-                'class' => 'icon',
-                'role' => 'img',
-                'aria' => [
-                    'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
-                ],
-            ]);
+            return self::statusIndicatorHtml('draft');
         }
 
         if (!$element::hasStatuses()) {
@@ -657,41 +693,38 @@ class Cp
 
         $status = $element->getStatus();
         $statusDef = $element::statuses()[$status] ?? null;
-        return Html::tag('span', '', [
-            'class' => array_filter([
-                'status',
-                $status,
-                $statusDef['color'] ?? null,
-            ]),
-            'role' => 'img',
-            'aria' => [
-                'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $statusDef['label'] ?? $statusDef ?? ucfirst($status)),
-            ],
-        ]);
+
+        // Just to give the `statusIndicatorHtml` clean types
+        if (is_string($statusDef)) {
+            $statusDef = ['label' => $statusDef];
+        }
+
+        return self::statusIndicatorHtml($status, $statusDef);
     }
 
     private static function elementLabelHtml(ElementInterface $element, array $config, array $attributes, callable $uiLabel): string
     {
         $content = implode('', array_map(
-            fn(string $segment) => Html::tag('span', Html::encode($segment), ['class' => 'segment']),
-            $element->getUiLabelPath()
-        )) .
+                fn(string $segment) => Html::tag('span', Html::encode($segment), ['class' => 'segment']),
+                $element->getUiLabelPath()
+            )) .
             $uiLabel();
 
         // show the draft name?
-        if (($config['showDraftName'] ?? true) && $element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
+        if (($config['showDraftName'] ?? true) && $element->getIsDraft() && !$element->isProvisionalDraft && !$element->getIsUnpublishedDraft()) {
             /** @var DraftBehavior|ElementInterface $element */
             $content .= Html::tag('span', $element->draftName ?: Craft::t('app', 'Draft'), [
-                'class' => 'draft-label',
+                'class' => 'context-label',
             ]);
         }
 
-        $content = ($content !== '' ? Html::tag('a', $content, [
-                'class' => 'label-link',
+        // the inner span is needed for `text-overflow: ellipsis` (e.g. within breadcrumbs)
+        $content = ($content !== '' ? Html::tag('a', Html::tag('span', $content), [
+                'class' => ['label-link'],
                 'href' => !$element->trashed && $config['context'] !== 'modal'
                     ? ($attributes['data']['cp-url'] ?? null) : null,
             ]) : '') .
-            ($element->hasErrors() ? Html::tag('span', '', [
+            ($config['context'] === 'field' && $element->hasErrors() ? Html::tag('span', '', [
                 'data' => ['icon' => 'alert'],
                 'aria' => ['label' => Craft::t('app', 'Error')],
                 'role' => 'img',
@@ -705,6 +738,32 @@ class Cp
             'id' => sprintf('%s-label', $config['id']),
             'class' => 'label',
         ]);
+    }
+
+    private static function elementActionMenu(ElementInterface $element): string
+    {
+        return Craft::$app->getView()->namespaceInputs(
+            function() use ($element): string {
+                $actionMenuItems = array_filter(
+                    $element->getActionMenuItems(),
+                    fn(array $item) => !($item['destructive'] ?? false),
+                );
+
+                if (empty($actionMenuItems)) {
+                    return '';
+                }
+
+                return static::disclosureMenu($actionMenuItems, [
+                    'hiddenLabel' => Craft::t('app', 'Actions'),
+                    'buttonAttributes' => [
+                        'class' => ['action-btn'],
+                        'removeClass' => 'menubtn',
+                        'data' => ['icon' => 'ellipsis'],
+                    ],
+                ]);
+            },
+            sprintf('element-actions-%s', mt_rand()),
+        );
     }
 
     /**
@@ -816,7 +875,7 @@ class Cp
                 ]);
             }
             $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
-                'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),
+                'title' => implode(', ', array_map(fn(ElementInterface $element) => $element->id, $elements)),
                 'class' => 'btn small',
                 'role' => 'button',
                 'onclick' => sprintf(
@@ -1027,7 +1086,7 @@ JS, [
 
     private static function contextIsAdministrative(string $context): bool
     {
-        return in_array($context, ['index', 'embedded-index']);
+        return in_array($context, ['index', 'embedded-index', 'field']);
     }
 
     /**
@@ -1116,6 +1175,8 @@ JS, [
             $showAttribute = false;
         }
 
+        $showLabelExtra = $showAttribute || isset($config['labelExtra']);
+
         $instructionsHtml = $instructions
             ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process(Html::encodeInvalidTags($instructions), 'gfm-comment')), [
                 'id' => $instructionsId,
@@ -1186,7 +1247,7 @@ JS, [
                 ]) .
                 Html::endTag('div')
                 : '') .
-            (($label || $showAttribute)
+            (($label || $showLabelExtra)
                 ? (
                     Html::beginTag('div', ['class' => 'heading']) .
                     ($config['headingPrefix'] ?? '') .
@@ -1200,14 +1261,16 @@ JS, [
                             ],
                         ], $config['labelAttributes'] ?? []))
                         : '') .
-                    ($showAttribute
+                    ($showLabelExtra
                         ? Html::tag('div', '', [
                             'class' => ['flex-grow'],
-                        ]) . static::renderTemplate('_includes/forms/copytextbtn.twig', [
+                        ]) .
+                        ($showAttribute ? static::renderTemplate('_includes/forms/copytextbtn.twig', [
                             'id' => "$id-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
-                        ])
+                        ]) : '') .
+                        ($config['labelExtra'] ?? '')
                         : '') .
                     ($config['headingSuffix'] ?? '') .
                     Html::endTag('div')
@@ -1396,6 +1459,33 @@ JS, [
         unset($config['label']);
 
         return static::fieldHtml('template:_includes/forms/lightswitch.twig', $config);
+    }
+
+    /**
+     * Renders a money input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws TemplateLoaderException
+     * @since 5.0.0
+     */
+    public static function moneyInputHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/money.twig', $config);
+    }
+
+    /**
+     * Renders a money field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws TemplateLoaderException
+     * @since 5.0.0
+     */
+    public static function moneyFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'money' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/money.twig', $config);
     }
 
     /**
@@ -1679,6 +1769,7 @@ JS, [
         $address->setScenario(Element::SCENARIO_LIVE);
         $activeValidators = $address->getActiveValidators();
         $address->setScenario($scenario);
+        $belongsToCurrentUser = $address->getBelongsToCurrentUser();
 
         foreach ($activeValidators as $validator) {
             if ($validator instanceof RequiredValidator) {
@@ -1703,9 +1794,9 @@ JS, [
                 'id' => 'addressLine1',
                 'name' => 'addressLine1',
                 'value' => $address->addressLine1,
+                'autocomplete' => $belongsToCurrentUser ? 'address-line1' : 'off',
                 'required' => isset($requiredFields['addressLine1']),
                 'errors' => $address->getErrors('addressLine1'),
-                'autocomplete' => 'address-line1',
             ]) .
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine2'),
@@ -1713,13 +1804,14 @@ JS, [
                 'id' => 'addressLine2',
                 'name' => 'addressLine2',
                 'value' => $address->addressLine2,
+                'autocomplete' => $belongsToCurrentUser ? 'address-line2' : 'off',
                 'required' => isset($requiredFields['addressLine2']),
                 'errors' => $address->getErrors('addressLine2'),
-                'autocomplete' => 'address-line2',
             ]) .
             self::_subdivisionField(
                 $address,
                 'administrativeArea',
+                $belongsToCurrentUser ? 'address-level1' : 'off',
                 isset($visibleFields['administrativeArea']),
                 isset($requiredFields['administrativeArea']),
                 [$address->countryCode],
@@ -1728,6 +1820,7 @@ JS, [
             self::_subdivisionField(
                 $address,
                 'locality',
+                $belongsToCurrentUser ? 'address-level2' : 'off',
                 isset($visibleFields['locality']),
                 isset($requiredFields['locality']),
                 [$address->countryCode, $address->administrativeArea],
@@ -1736,6 +1829,7 @@ JS, [
             self::_subdivisionField(
                 $address,
                 'dependentLocality',
+                $belongsToCurrentUser ? 'address-level3' : 'off',
                 isset($visibleFields['dependentLocality']),
                 isset($requiredFields['dependentLocality']),
                 [$address->countryCode, $address->administrativeArea, $address->locality],
@@ -1751,9 +1845,9 @@ JS, [
                 'id' => 'postalCode',
                 'name' => 'postalCode',
                 'value' => $address->postalCode,
+                'autocomplete' => $belongsToCurrentUser ? 'postal-code' : 'off',
                 'required' => isset($requiredFields['postalCode']),
                 'errors' => $address->getErrors('postalCode'),
-                'autocomplete' => 'postal-code',
             ]) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([
@@ -1773,6 +1867,7 @@ JS, [
     private static function _subdivisionField(
         Address $address,
         string $name,
+        string $autocomplete,
         bool $visible,
         bool $required,
         ?array $parents,
@@ -1799,6 +1894,7 @@ JS, [
                         'value' => $value,
                         'options' => $options,
                         'errors' => $errors,
+                        'autocomplete' => $autocomplete,
                     ]) .
                     Html::tag('div', '', [
                         'id' => "$name-spinner",
@@ -1825,6 +1921,7 @@ JS, [
                 'options' => $options,
                 'required' => $required,
                 'errors' => $address->getErrors($name),
+                'autocomplete' => $autocomplete,
             ]);
         }
 
@@ -1833,6 +1930,7 @@ JS, [
             'fieldClass' => !$visible ? 'hidden' : null,
             'status' => $address->getAttributeStatus($name),
             'label' => $address->getAttributeLabel($name),
+            'autocomplete' => $autocomplete,
             'id' => $name,
             'name' => $name,
             'value' => $value,
@@ -1861,9 +1959,9 @@ JS, [
 
         if (!$config['customizableTabs']) {
             $tab = array_shift($tabs) ?? new FieldLayoutTab([
-                    'uid' => StringHelper::UUID(),
-                    'layout' => $fieldLayout,
-                ]);
+                'uid' => StringHelper::UUID(),
+                'layout' => $fieldLayout,
+            ]);
             $tab->name = $config['pretendTabName'] ?? Craft::t('app', 'Content');
 
             // Any extra tabs?
@@ -2204,6 +2302,210 @@ JS;
         return Html::tag('dl', implode("\n", $defs), [
             'class' => ['meta', 'read-only'],
         ]);
+    }
+
+    /**
+     * Returns a disclosure menu’s HTML.
+     *
+     * Each item can contain a `type` key set to a [[MenuItemType]] case. By default, it will be set to:
+     *
+     * - [[MenuItemType::Button]] if an `action` key is set
+     * - [[MenuItemType::Group]] if `heading` or `items` keys are set
+     * - [[MenuItemType::Link]] in all other cases
+     *
+     * Link and button items can contain the following keys:
+     *
+     *  - `id` – The item’s ID
+     *  - `label` – The item label, to be HTML-encoded
+     *  - `html` - The item label, which will be output verbatim, without being HTML-encoded
+     *  - `description` – The item description
+     *  - `status` – The status indicator that should be shown beside the item label
+     *  - `url` – The URL that the item should link to
+     *  - `action` – The controller action that the item should trigger
+     *  - `params` – Request parameters that should be sent to the `action`
+     *  - `confirm` – A confirmation message that should be presented to the user before triggering the `action`
+     *  - `redirect` – The redirect path that the `action` should use
+     *  - `requireElevatedSession` – Whether an elevated session is required before the `action` is triggered
+     *  - `selected` – Whether the item should be marked as selected
+     *  - `hidden` – Whether the item should be hidden
+     *  - `attributes` – Any HTML attributes that should be set on the item’s `<a>` or `<button>` tag
+     *
+     *  Horizontal rules can be defined with the following key:
+     *
+     *  - `hr` - Set to `true`
+     *
+     *  Groups of items can be defined as well, using the following keys:
+     *
+     *  - `group` – Set to `true`
+     *  - `heading` – The group heading
+     *  - `items` – The nested item definitions
+     *  - `listAttributes` - any HTML attributes that should be included on the `<ul>`
+     *
+     * @param array $items The menu items.
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function disclosureMenu(array $items, array $config = []): string
+    {
+        $config += [
+            'id' => sprintf('menu-%s', mt_rand()),
+            'class' => null,
+            'withButton' => true,
+            'buttonLabel' => null,
+            'buttonHtml' => null,
+            'autoLabel' => false,
+            'buttonAttributes' => [],
+            'hiddenLabel' => null,
+        ];
+
+        // Item normalization & cleanup
+        $items = Collection::make(self::normalizeMenuItems($items));
+
+        // Place all the destructive items at the end
+        $destructiveItems = $items->filter(fn(array $item) => $item['destructive'] ?? false);
+        $items = $items->filter(fn(array $item) => !($item['destructive'] ?? false))
+            ->push(['type' => MenuItemType::HR->value])
+            ->push(...$destructiveItems->all());
+
+        // Remove leading/trailing/repetitive HRs
+        while (($items->first()['type'] ?? null) === MenuItemType::HR->value) {
+            $items->shift();
+        }
+        while (($items->last()['type'] ?? null) === MenuItemType::HR->value) {
+            $items->pop();
+        }
+        $items = $items->values();
+        $items = $items->filter(fn(array $item, int $i) => (
+            ($item['type'] ?? null) !== MenuItemType::HR->value ||
+            ($items->get($i + 1)['type'] ?? null) !== MenuItemType::HR->value
+        ));
+
+        // If we're left without any items, just return an empty string
+        if ($items->isEmpty()) {
+            return '';
+        }
+
+        $config['items'] = $items->all();
+
+        if ($config['withButton'] && $config['autoLabel']) {
+            // Find the selected item, also looking within nested item groups
+            $selectedItem = $items
+                ->map(fn(array $i) => $i['type'] === MenuItemType::Group->value ? ($i['items'] ?? []) : [$i])
+                ->flatten(1)
+                ->first(fn(array $i) => $i['selected'] ?? false);
+
+            if ($selectedItem) {
+                $config['label'] = $selectedItem['label'] ?? null;
+                $config['html'] = $selectedItem['html'] ?? null;
+            }
+        }
+
+        return Craft::$app->getView()->renderTemplate('_includes/disclosuremenu.twig', $config, View::TEMPLATE_MODE_CP);
+    }
+
+    /**
+     * Normalizes and cleans up the given disclosure menu items.
+     *
+     * @param array $items
+     * @return array
+     * @since 5.0.0
+     */
+    public static function normalizeMenuItems(array $items): array
+    {
+        return array_map(function(array $item) {
+            if (!isset($item['type'])) {
+                if (isset($item['action'])) {
+                    $item['type'] = MenuItemType::Button;
+                } elseif (isset($item['heading']) || isset($item['items'])) {
+                    $item['type'] = MenuItemType::Group;
+                } else {
+                    $item['type'] = MenuItemType::Link;
+                }
+            }
+
+            if ($item['type'] instanceof MenuItemType) {
+                $item['type'] = $item['type']->value;
+            }
+
+            if ($item['type'] === MenuItemType::Group->value) {
+                $item['items'] = self::normalizeMenuItems($item['items'] ?? []);
+            }
+
+            return $item;
+        }, $items);
+    }
+
+    /**
+     * Returns a menu item array for the given sites, possibly grouping them by site group.
+     *
+     * @param array<int,Site|array{site:Site,status?:string}> $sites
+     * @param Site|null $selectedSite
+     * @param array $config
+     * @return array
+     * @since 5.0.0
+     */
+    public static function siteMenuItems(
+        array $sites,
+        ?Site $selectedSite = null,
+        array $config = [],
+    ): array {
+        $config += [
+            'showSiteGroupHeadings' => null,
+            'includeOmittedSites' => false,
+        ];
+
+        $items = [];
+
+        $siteGroups = Craft::$app->getSites()->getAllGroups();
+        $config['showSiteGroupHeadings'] ??= count($siteGroups) > 1;
+
+        // Normalize and index the sites
+        /** @var array<int,array{site:Site,status?:string}> $sites */
+        $sites = Collection::make($sites)
+            ->map(fn(Site|array $site) => $site instanceof Site ? ['site' => $site] : $site)
+            ->keyBy(fn(array $site) => $site['site']->id)
+            ->all();
+
+        $request = Craft::$app->getRequest();
+        $path = $request->getPathInfo();
+        $params = $request->getQueryParamsWithoutPath();
+
+        foreach ($siteGroups as $siteGroup) {
+            $groupSites = $siteGroup->getSites();
+            if (!$config['includeOmittedSites']) {
+                $groupSites = array_filter($groupSites, fn(Site $site) => isset($sites[$site->id]));
+            }
+
+            if (empty($groupSites)) {
+                continue;
+            }
+
+            $groupSiteItems = array_map(fn(Site $site) => [
+                'status' => $sites[$site->id]['status'] ?? null,
+                'label' => Craft::t('site', $site->name),
+                'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
+                'hidden' => !isset($sites[$site->id]),
+                'selected' => $site->id === $selectedSite->id,
+                'attributes' => [
+                    'data' => [
+                        'site-id' => $site->id,
+                    ],
+                ],
+            ], $groupSites);
+
+            if ($config['showSiteGroupHeadings']) {
+                $items[] = [
+                    'heading' => Craft::t('site', $siteGroup->name),
+                    'items' => $groupSiteItems,
+                    'hidden' => !ArrayHelper::contains($groupSiteItems, fn(array $item) => !$item['hidden']),
+                ];
+            } else {
+                array_push($items, ...$groupSiteItems);
+            }
+        }
+
+        return $items;
     }
 
     /**

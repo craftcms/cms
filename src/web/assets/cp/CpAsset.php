@@ -22,6 +22,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
+use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
@@ -136,6 +137,7 @@ JS;
             'Buy {name}',
             'Cancel',
             'Changes saved.',
+            'Check your email for instructions to reset your password.',
             'Choose a page',
             'Choose a user',
             'Choose which sites this source should be visible for.',
@@ -146,6 +148,7 @@ JS;
             'Close',
             'Color hex value',
             'Color picker',
+            'Content',
             'Continue',
             'Copied to clipboard.',
             'Copy the URL',
@@ -185,7 +188,6 @@ JS;
             'Enabled for all sites',
             'Enabled',
             'Enter the name of the folder',
-            'Enter your password to continue.',
             'Enter your password to log back in.',
             'Error',
             'Export Type',
@@ -213,6 +215,8 @@ JS;
             'Incorrect password.',
             'Information',
             'Instructions',
+            'Invalid email.',
+            'Invalid username or email.',
             'Keep both',
             'Keep me signed in',
             'Keep them',
@@ -309,7 +313,6 @@ JS;
             'Show',
             'Show/hide children',
             'Showing your unsaved changes.',
-            'Sign in',
             'Sign out now',
             'Sites',
             'Skip to {title}',
@@ -346,6 +349,7 @@ JS;
             'Top of preview',
             'Transfer it to:',
             'Try again',
+            'Try another way',
             'Undo',
             'Unread announcements',
             'Update {type}',
@@ -366,7 +370,6 @@ JS;
             'You must specify a tab name.',
             'Your changes could not be stored.',
             'Your changes have been stored.',
-            'Your session has ended.',
             'Your session will expire in {time}.',
             'by {creator}',
             'day',
@@ -399,6 +402,11 @@ JS;
             '{type} saved.',
             '“{name}” deleted.',
         ]);
+
+        $view->registerTranslations('yii', [
+            '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
+            '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
+        ]);
     }
 
     private function _craftData(): array
@@ -415,6 +423,8 @@ JS;
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
 
         $data = [
+            'Pro' => Craft::Pro,
+            'Solo' => Craft::Solo,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
@@ -430,24 +440,25 @@ JS;
             'fileKinds' => Assets::getFileKinds(),
             'language' => Craft::$app->language,
             'left' => $orientation === 'ltr' ? 'left' : 'right',
+            'maxPasswordLength' => UserPasswordValidator::MAX_PASSWORD_LENGTH,
+            'minPasswordLength' => UserPasswordValidator::MIN_PASSWORD_LENGTH,
             'omitScriptNameInUrls' => $generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'pageNum' => $request->getPageNum(),
             'pageTrigger' => 'p',
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
-            'Pro' => Craft::Pro,
             'registeredAssetBundles' => [], // force encode as JS object
             'registeredJsFiles' => [], // force encode as JS object
             'resourceBaseUrl' => Craft::$app->getAssetManager()->baseUrl,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'scriptName' => basename($request->getScriptFile()),
-            'Solo' => Craft::Solo,
             'systemUid' => Craft::$app->getSystemUid(),
             'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
             'timezone' => Craft::$app->getTimeZone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
+            'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
             'usePathInfo' => $generalConfig->usePathInfo,
         ];
 
@@ -486,6 +497,7 @@ JS;
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'elementTypeNames' => $elementTypeNames,
+            'elevatedSessionDuration' => $generalConfig->elevatedSessionDuration,
             'fieldsWithoutContent' => array_map(fn(FieldInterface $field) => $field->handle, Craft::$app->getFields()->getFieldsWithoutContent(false)),
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => $this->_httpProxy($generalConfig),
@@ -504,6 +516,8 @@ JS;
             'sites' => $this->_sites($sitesService),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
+            'userEmail' => $currentUser->email,
+            'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($currentUser),
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
         ];

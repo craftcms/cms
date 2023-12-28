@@ -15,7 +15,6 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\events\ConfigEvent;
 use craft\events\VolumeEvent;
-use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -103,7 +102,7 @@ class Volumes extends Component
      */
     public function getAllVolumeIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllVolumes(), 'id', false);
+        return array_values(array_map(fn(Volume $volume) => $volume->id, $this->getAllVolumes()));
     }
 
     /**
@@ -113,7 +112,7 @@ class Volumes extends Component
      */
     public function getViewableVolumeIds(): array
     {
-        return ArrayHelper::getColumn($this->getViewableVolumes(), 'id', false);
+        return array_values(array_map(fn(Volume $volume) => $volume->id, $this->getViewableVolumes()));
     }
 
     /**
@@ -200,10 +199,12 @@ class Volumes extends Component
     public function getTemporaryVolume(): Volume
     {
         $volume = new Volume([
-            'name' => Craft::t('app', 'Temporary volume'),
+            'name' => Craft::t('app', 'Temporary Uploads'),
         ]);
 
-        $volume->setFs(Craft::createObject(Temp::class));
+        $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
+
+        $volume->setFs($fs);
 
         return $volume;
     }
@@ -583,6 +584,9 @@ class Volumes extends Component
                 'id',
                 'name',
                 'handle',
+                'fs',
+                'transformFs',
+                'transformSubpath',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'sortOrder',
@@ -595,15 +599,11 @@ class Volumes extends Component
 
         // todo: cleanup after next breakpoint
         $db = Craft::$app->getDb();
-        if ($db->columnExists(Table::VOLUMES, 'fs')) {
-            $query->addSelect([
-                'fs',
-                'transformFs',
-                'transformSubpath',
-            ]);
-        }
         if ($db->columnExists(Table::VOLUMES, 'subpath')) {
             $query->addSelect(['subpath']);
+        }
+        if ($db->columnExists(Table::VOLUMES, 'altTranslationMethod')) {
+            $query->addSelect(['altTranslationMethod', 'altTranslationKeyFormat']);
         }
 
         return $query;

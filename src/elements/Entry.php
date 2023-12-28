@@ -30,6 +30,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
@@ -53,13 +54,11 @@ use craft\services\ElementSources;
 use craft\services\Structures;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
-use craft\web\CpScreenResponseBehavior;
 use DateTime;
 use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
-use yii\web\Response;
 
 /**
  * Entry represents an entry element.
@@ -1025,6 +1024,62 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    protected function crumbs(): array
+    {
+        $section = $this->getSection();
+
+        if (!$section) {
+            return [];
+        }
+
+        $sections = Collection::make(Craft::$app->getEntries()->getEditableSections());
+        /** @var Collection $sectionOptions */
+        $sectionOptions = $sections
+            ->filter(fn(Section $s) => $s->type !== Section::TYPE_SINGLE)
+            ->map(fn(Section $s) => [
+                'label' => Craft::t('site', $s->name),
+                'url' => "entries/$s->handle",
+                'selected' => $s->id === $section->id,
+            ]);
+
+        if ($sections->contains(fn(Section $s) => $s->type === Section::TYPE_SINGLE)) {
+            $sectionOptions->prepend([
+                'label' => Craft::t('app', 'Singles'),
+                'url' => 'entries/singles',
+                'selected' => $section->type === Section::TYPE_SINGLE,
+            ]);
+        }
+
+        $crumbs = [
+            [
+                'label' => Craft::t('app', 'Entries'),
+                'url' => 'entries',
+            ],
+            [
+                'menu' => [
+                    'label' => Craft::t('app', 'Select section'),
+                    'items' => $sectionOptions->all(),
+                ],
+            ],
+        ];
+
+        if ($section->type === Section::TYPE_STRUCTURE) {
+            $elementsService = Craft::$app->getElements();
+            $user = Craft::$app->getUser()->getIdentity();
+
+            foreach ($this->getAncestors()->all() as $ancestor) {
+                if ($elementsService->canView($ancestor, $user)) {
+                    $crumbs[] = ['html' => Cp::elementChipHtml($ancestor)];
+                }
+            }
+        }
+
+        return $crumbs;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getUiLabel(): string
     {
         if ($this->fieldId) {
@@ -1081,7 +1136,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function previewTargets(): array
     {
-        if ($this->fieldId || Craft::$app->getEdition() === Craft::Pro) {
+        if ($this->fieldId || Craft::$app->getEdition() === Craft::Solo) {
             return parent::previewTargets();
         }
 
@@ -1642,66 +1697,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
     /**
      * @inheritdoc
-     */
-    public function prepareEditScreen(Response $response, string $containerId): void
-    {
-        if ($this->fieldId) {
-            $crumbs = [];
-            $owner = $this->getOwner();
-
-            do {
-                array_unshift($crumbs, ['html' => Cp::elementChipHtml($owner)]);
-                if (!$owner instanceof NestedElementInterface) {
-                    break;
-                }
-                $owner = $owner->getOwner();
-                if (!$owner) {
-                    break;
-                }
-            } while (true);
-        } else {
-            $section = $this->getSection();
-
-            $crumbs = [
-                [
-                    'label' => Craft::t('app', 'Entries'),
-                    'url' => 'entries',
-                ],
-            ];
-
-            if ($section->type === Section::TYPE_SINGLE) {
-                $crumbs[] = [
-                    'label' => Craft::t('app', 'Singles'),
-                    'url' => 'entries/singles',
-                ];
-            } else {
-                $crumbs[] = [
-                    'label' => Craft::t('site', $section->name),
-                    'url' => "entries/$section->handle",
-                ];
-
-                if ($section->type === Section::TYPE_STRUCTURE) {
-                    $elementsService = Craft::$app->getElements();
-                    $user = Craft::$app->getUser()->getIdentity();
-
-                    foreach ($this->getCanonical()->getAncestors()->all() as $ancestor) {
-                        if ($elementsService->canView($ancestor, $user)) {
-                            $crumbs[] = [
-                                'label' => $ancestor->title,
-                                'url' => $ancestor->getCpEditUrl(),
-                            ];
-                        }
-                    }
-                }
-            }
-        }
-
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response->crumbs($crumbs);
-    }
-
-    /**
-     * @inheritdoc
      * @since 3.3.0
      */
     public function getGqlTypeName(): string
@@ -1712,12 +1707,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements): void
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($handle === 'author') {
+        if ($plan->handle === 'author') {
             $this->_author = $elements[0] ?? false;
         } else {
-            parent::setEagerLoadedElements($handle, $elements);
+            parent::setEagerLoadedElements($handle, $elements, $plan);
         }
     }
 

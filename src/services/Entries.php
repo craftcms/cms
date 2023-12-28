@@ -178,7 +178,7 @@ class Entries extends Component
      */
     public function getAllSectionIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllSections(), 'id', false);
+        return array_values(array_map(fn(Section $section) => $section->id, $this->getAllSections()));
     }
 
     /**
@@ -198,7 +198,7 @@ class Entries extends Component
      */
     public function getEditableSectionIds(): array
     {
-        return ArrayHelper::getColumn($this->getEditableSections(), 'id', false);
+        return array_values(array_map(fn(Section $section) => $section->id, $this->getEditableSections()));
     }
 
     /**
@@ -877,12 +877,15 @@ class Entries extends Component
             return isset($siteSettings[$site->uid]);
         }, true, true, false);
 
-        $siteIds = ArrayHelper::getColumn($sites, 'id');
+        $siteIds = array_map(fn(Site $site) => $site->id, $sites);
 
         // Get the section's entry types
         // ---------------------------------------------------------------------
 
-        $entryTypeIds = ArrayHelper::getColumn($this->getEntryTypesBySectionId($section->id), 'id', false);
+        $entryTypeIds = array_values(array_map(
+            fn(EntryType $entryType) => $entryType->id,
+            $this->getEntryTypesBySectionId($section->id),
+        ));
 
         // There should always be at least one entry type by the time this is called
         if (empty($entryTypeIds)) {
@@ -1157,7 +1160,10 @@ SQL)->execute();
         // todo: remove this after the next breakpoint
         if (!Craft::$app->getDb()->tableExists(Table::SECTIONS_ENTRYTYPES)) {
             $results = $this->_createEntryTypeQuery()
-                ->where(['sectionId' => $sectionId])
+                ->where([
+                    'sectionId' => $sectionId,
+                    'dateDeleted' => null,
+                ])
                 ->orderBy(['sortOrder' => SORT_DESC])
                 ->all();
             return array_map(fn(array $result) => new EntryType($result), $results);

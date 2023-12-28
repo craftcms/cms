@@ -27,7 +27,6 @@ use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
-use craft\events\ElementEvent;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -58,6 +57,8 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
      * @since 3.4.16
      */
     public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
+
+    private static bool $validatingRelatedElements = false;
 
     /**
      * @inheritdoc
@@ -174,18 +175,6 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
         array_unshift($conditions, 'or');
         return $conditions;
     }
-
-    /**
-     * @var array Related elements that have been validated
-     * @see _validateRelatedElement()
-     */
-    private static array $_relatedElementValidates = [];
-
-    /**
-     * @var bool Whether we're listening for related element saves yet
-     * @see _validateRelatedElement()
-     */
-    private static bool $_listeningForRelatedElementSave = false;
 
     /**
      * @var string|string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
@@ -511,7 +500,7 @@ JS, [
             $value = $element->getFieldValue($this->handle);
 
             if ($value instanceof ElementQueryInterface) {
-                $value = $this->_all($value);
+                $value = $this->_all($value, $element);
             }
 
             $arrayValidator = new NumberValidator([
@@ -541,35 +530,28 @@ JS, [
      */
     public function validateRelatedElements(ElementInterface $element): void
     {
-        // Prevent circular relations from worrying about this element
-        $sourceId = $element->getCanonicalId();
-        $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
-        self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
+        // No recursive related element validation
+        if (self::$validatingRelatedElements) {
+            return;
+        }
 
         /** @var ElementQueryInterface|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
 
         if ($value instanceof ElementQueryInterface) {
-            $value = $this->_all($value);
+            $value
+                ->site('*')
+                ->unique()
+                ->preferSites([$this->targetSiteId($element)]);
         }
 
         $errorCount = 0;
 
-        foreach ($value->all() as $i => $related) {
-            /** @var Element $related */
-            if ($related->enabled && $related->getEnabledForSite()) {
-                if (!self::_validateRelatedElement($related)) {
-                    $element->addModelErrors($related, "$this->handle[$i]");
-                    $errorCount++;
-                }
+        foreach ($value->all() as $i => $target) {
+            if (!self::_validateRelatedElement($element, $target)) {
+                $element->addModelErrors($target, "$this->handle[$i]");
+                $errorCount++;
             }
-        }
-
-        // Reset self::$_relatedElementValidates[$sourceId][$element->siteId] to its original value
-        if ($sourceValidates !== null) {
-            self::$_relatedElementValidates[$sourceId][$element->siteId] = $sourceValidates;
-        } else {
-            unset(self::$_relatedElementValidates[$sourceId][$element->siteId]);
         }
 
         if ($errorCount) {
@@ -585,30 +567,29 @@ JS, [
     /**
      * Returns whether a related element validates.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface $source
+     * @param ElementInterface $target
      * @return bool
      */
-    private static function _validateRelatedElement(ElementInterface $element): bool
+    private static function _validateRelatedElement(ElementInterface $source, ElementInterface $target): bool
     {
-        if (isset(self::$_relatedElementValidates[$element->id][$element->siteId])) {
-            return self::$_relatedElementValidates[$element->id][$element->siteId];
+        if (
+            self::$validatingRelatedElements ||
+            !$target->enabled ||
+            !$target->getEnabledForSite() ||
+            $target->getCanonicalId() === $source->getCanonicalId()
+        ) {
+            return true;
         }
 
-        // If this is the first time we are validating a related element,
-        // listen for future element saves so we can clear our cache
-        if (!self::$_listeningForRelatedElementSave) {
-            Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function(ElementEvent $e) {
-                $element = $e->element;
-                unset(self::$_relatedElementValidates[$element->id][$element->siteId]);
-            });
-            self::$_listeningForRelatedElementSave = true;
-        }
+        // Prevent relational fields on this element from enforcing related element validation
+        self::$validatingRelatedElements = true;
 
-        // Prevent an infinite loop if there are circular relations
-        self::$_relatedElementValidates[$element->id][$element->siteId] = true;
+        $target->setScenario(Element::SCENARIO_LIVE);
+        $validates = $target->validate();
 
-        $element->setScenario(Element::SCENARIO_LIVE);
-        return self::$_relatedElementValidates[$element->id][$element->siteId] = $element->validate();
+        self::$validatingRelatedElements = false;
+        return $validates;
     }
 
     /**
@@ -699,7 +680,7 @@ JS, [
                             $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
                         }
 
-                        $query->id(ArrayHelper::getColumn($structureElements, 'id'));
+                        $query->id(array_map(fn(ElementInterface $element) => $element->id, $structureElements));
                     }
                 },
             ], true));
@@ -881,7 +862,7 @@ JS, [
         $sourceSiteId = $sourceElements[0]->siteId;
 
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id', false);
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
@@ -965,7 +946,7 @@ JS, [
     {
         // Skip if nothing changed, or the element is just propagating and we're not localizing relations
         if (
-            ($element->isFieldDirty($this->handle) || $this->maintainHierarchy) &&
+            ($element->duplicateOf || $element->isFieldDirty($this->handle) || $this->maintainHierarchy) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
             /** @var ElementQueryInterface|ElementCollection $value */
@@ -1008,7 +989,7 @@ JS, [
                     $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
                 }
 
-                $targetIds = ArrayHelper::getColumn($structureElements, 'id');
+                $targetIds = array_map(fn(ElementInterface $element) => $element->id, $structureElements);
             }
 
             /** @var int|int[]|false|null $targetIds */
@@ -1022,7 +1003,10 @@ JS, [
             if (!$this->localizeRelations && ElementHelper::shouldTrackChanges($element)) {
                 // Mark the field as dirty across all of the element’s sites
                 // (this is a little hacky but there’s not really a non-hacky alternative unfortunately.)
-                $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
+                $siteIds = array_map(
+                    fn(array $siteInfo) => $siteInfo['siteId'],
+                    ElementHelper::supportedSitesForElement($element),
+                );
                 $siteIds = ArrayHelper::withoutValue($siteIds, $element->siteId);
                 if (!empty($siteIds)) {
                     $userId = Craft::$app->getUser()->getId();
@@ -1212,13 +1196,10 @@ JS, [
             $value = [];
         }
 
-        if ($this->validateRelatedElements) {
+        if ($this->validateRelatedElements && $element !== null) {
             // Pre-validate related elements
-            foreach ($value as $related) {
-                if ($related->enabled && $related->getEnabledForSite()) {
-                    $related->setScenario(Element::SCENARIO_LIVE);
-                    $related->validate();
-                }
+            foreach ($value as $target) {
+                self::_validateRelatedElement($element, $target);
             }
         }
 
@@ -1340,7 +1321,7 @@ JS, [
         }
 
         // Don't instantiate it unless we actually end up needing it.
-        // Avoids an infinite recursion bug (ElementCondition::conditionRuleTypes() => getAllFields() => setSelectionCondition() => ...)
+        // Avoids an infinite recursion bug (ElementCondition::selectableConditionRules() => getAllFields() => setSelectionCondition() => ...)
         $this->_selectionCondition = $condition;
     }
 

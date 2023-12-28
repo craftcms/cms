@@ -207,7 +207,7 @@ abstract class Api
         if (isset($headers['x-craft-license-info'])) {
             $oldLicenseInfo = $cache->get('licenseInfo') ?: [];
             $licenseInfo = [];
-            $allCombinedInfo = explode(',', reset($headers['x-craft-license-info']));
+            $allCombinedInfo = array_filter(explode(',', reset($headers['x-craft-license-info'])));
             foreach ($allCombinedInfo as $combinedInfo) {
                 [$handle, $combinedValues] = explode(':', $combinedInfo, 2);
                 if ($combinedValues === LicenseKeyStatus::Invalid->value) {
