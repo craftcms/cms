@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'Navigatiebalk weergeven',
     'Show nested sources' => 'Geneste bronnen tonen',
     'Show sidebar' => 'Toon zijbalk',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'Statusveld weergeven',
     'Show the Title field' => 'Toon het titel veld',
     'Show the debug toolbar in the control panel' => 'De werkbalk voor foutopsporing weergeven in het configuratiescherm',

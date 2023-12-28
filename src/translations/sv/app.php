@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'Visa navigeringsfält',
     'Show nested sources' => 'Visa inbäddade källor',
     'Show sidebar' => 'Visa sidofält',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'Visa statusfältet',
     'Show the Title field' => 'Visa titelfältet',
     'Show the debug toolbar in the control panel' => 'Visa verktygsfältet för felsökning i kontrollpanelen',

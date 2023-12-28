@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'A navigáció megjelenítése',
     'Show nested sources' => 'Beágyazott források megjelenítése',
     'Show sidebar' => 'Oldalsáv mutatása',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'Státusz mező megjelenítése',
     'Show the Title field' => 'Cím mező mutatása',
     'Show the debug toolbar in the control panel' => 'A hibakereső eszköztár megjelenítése a Vezérlőpulton',

@@ -1372,6 +1372,7 @@ return [
     'Show nav' => '显示导航',
     'Show nested sources' => '显示嵌套源',
     'Show sidebar' => '显示侧边栏',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => '显示“状态”字段',
     'Show the Title field' => '显示标题字段',
     'Show the debug toolbar in the control panel' => '在控制面板中显示调试工具栏',

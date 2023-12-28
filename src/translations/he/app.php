@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'הצג nav',
     'Show nested sources' => 'הצג מקורות מקוננים',
     'Show sidebar' => 'הצג תפריט צדדי',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'הצג את שדה הסטטוס',
     'Show the Title field' => 'הצג את שדה הכותרת',
     'Show the debug toolbar in the control panel' => 'הצג את סרגל הכלים לניפוי באגים בלוח הבקרה',

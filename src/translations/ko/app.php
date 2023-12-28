@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'nav 표시',
     'Show nested sources' => '중첩된 소스 표시',
     'Show sidebar' => '사이드바 표시',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => '상태 필드 표시',
     'Show the Title field' => '제목 필드 보기',
     'Show the debug toolbar in the control panel' => '제어판에 디버그 도구 모음 표시',

@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'Vis nav',
     'Show nested sources' => 'Vis indlejrede kilder',
     'Show sidebar' => 'Vis sidebjælke',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'Vis statusfeltet',
     'Show the Title field' => 'Vis titelfeltet',
     'Show the debug toolbar in the control panel' => 'Vis værktøjslinjen til fejlfinding i kontrolpanelet',

@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'Gezinti menüsünü göster',
     'Show nested sources' => 'İç içe geçmiş kaynakları göster',
     'Show sidebar' => 'Kenar çubuğunu göster',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'Durum alanını göster',
     'Show the Title field' => 'Başlık alanını göster',
     'Show the debug toolbar in the control panel' => 'Hata ayıklama araç çubuğunu kontrol panelinde göster',

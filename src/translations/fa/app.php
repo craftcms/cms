@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'نمایش نوار راهبری',
     'Show nested sources' => 'نشان دادن منابع تودرتو',
     'Show sidebar' => 'نمایش نوار کناری',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'نمایش فیلد وضعیت',
     'Show the Title field' => 'نمایش فیلد عنوان',
     'Show the debug toolbar in the control panel' => 'نمایش نوار ابزار خطایابی در صفحه کنترل',
