@@ -7,6 +7,9 @@ import './css/charts.scss';
 // Load Craft first
 import './js/Craft.js';
 
+// UI
+import './js/UI.js';
+
 // Utilities
 import './js/Queue.js';
 
@@ -81,7 +84,6 @@ import './js/TableElementIndexView.js';
 import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
 import './js/Tooltip.js';
-import './js/UI.js';
 import './js/Uploader.js';
 import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
