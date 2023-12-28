@@ -1799,7 +1799,7 @@ EOD;
         }
 
         // Slug
-        if ($this->showSlugField()) {
+        if ($this->getType()->showSlugField) {
             $fields[] = $this->slugFieldHtml($static);
         }
 
@@ -1893,20 +1893,6 @@ EOD;
         $fields[] = parent::metaFieldsHtml($static);
 
         return implode("\n", $fields);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function showSlugField(): bool
-    {
-        try {
-            $showSlugField = $this->getType()->showSlugField;
-        } catch (InvalidConfigException $e) {
-            $showSlugField = true;
-        }
-
-        return $showSlugField;
     }
 
     /**

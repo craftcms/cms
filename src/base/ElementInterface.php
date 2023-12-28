@@ -1317,16 +1317,6 @@ interface ElementInterface extends ComponentInterface
     public function getTitleTranslationKey(): string;
 
     /**
-     * Returns whether the Slug field should be shown for this element.
-     *
-     *  If set to `false`, the element’s slug can't be updated via edit forms.
-     *
-     * @return bool
-     * @since 5.0.0
-     */
-    public function showSlugField(): bool;
-
-    /**
      * Returns whether the Slug field should be shown as translatable in the UI.
      *
      * Note this method has no effect on whether slugs will get copied over to other
@@ -1357,15 +1347,6 @@ interface ElementInterface extends ComponentInterface
      * @since 4.5.0
      */
     public function getSlugTranslationKey(): string;
-
-    /**
-     * Returns the HTML for the element’s Slug field.
-     *
-     * @param bool $static Whether the fields should be static (non-interactive)
-     * @return string
-     * @since 3.7.0
-     */
-    public function slugFieldHtml(bool $static): string;
 
     /**
      * Returns whether a field is empty.

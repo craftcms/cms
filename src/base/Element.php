@@ -5324,7 +5324,7 @@ JS, [
 
         $metaFieldsHtml = $this->metaFieldsHtml($static);
         if ($metaFieldsHtml !== '') {
-            $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta primary-meta']) .
+            $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']) .
                 Html::tag('h2', Craft::t('app', 'Metadata'), ['class' => 'visually-hidden']);
         }
 
@@ -5363,17 +5363,13 @@ JS, [
     }
 
     /**
-     * @inheritdoc
+     * Returns the HTML for the element’s Slug field.
+     *
+     * @param bool $static Whether the fields should be static (non-interactive)
+     * @return string
+     * @since 3.7.0
      */
-    public function showSlugField(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function slugFieldHtml(bool $static): string
+    protected function slugFieldHtml(bool $static): string
     {
         $slug = isset($this->slug) && !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 

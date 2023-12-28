@@ -1539,7 +1539,6 @@ JS, [
                     'bodyHtml' => $view->getBodyHtml(),
                     'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
                     'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
-                    'slugFieldHtml' => $element->showSlugField() ? $element->slugFieldHtml(false) : null,
                 ];
             }
 

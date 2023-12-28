@@ -15,7 +15,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     $expandSiteStatusesBtn: null,
     $statusIcon: null,
     $previewBtn: null,
-    $sidebar: null,
 
     metaModal: null,
     $nameTextInput: null,
@@ -84,11 +83,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (this.isFullPage) {
         this.$tabContainer = $('#tabs');
         this.$contentContainer = $('#content');
-        this.$sidebar = $('#details .details');
       } else {
         this.$tabContainer = this.slideout.$tabContainer;
         this.$contentContainer = this.slideout.$content;
-        this.$sidebar = this.slideout.$sidebar;
       }
 
       this.queue = this._createQueue();
@@ -1378,10 +1375,6 @@ Craft.ElementEditor = Garnish.Base.extend(
               this.checkMetaValues();
             }
 
-            if (response.data.slugFieldHtml !== undefined) {
-              this._handleSlugField(response.data.slugFieldHtml);
-            }
-
             // Add missing field modified indicators
             const selectors = response.data.modifiedAttributes
               .map((attr) => {
@@ -1622,34 +1615,6 @@ Craft.ElementEditor = Garnish.Base.extend(
         .addClass('alert-icon');
 
       this.setStatusMessage(this._saveFailMessage());
-    },
-
-    /**
-     * Adds/removes the slug field based on response from saving a draft
-     *
-     * @param slugFieldHtml
-     * @private
-     */
-    _handleSlugField: function (slugFieldHtml) {
-      if (this.$sidebar) {
-        let $slugField = this.$sidebar.find('[id$="slug-field"]');
-        // if the slug wasn't there, but now we have the html for it - add it
-        if ($slugField.length == 0 && slugFieldHtml !== null) {
-          $slugField = $(slugFieldHtml);
-          let $entryTypeField = this.$sidebar.find('[id$="entryType-field"]');
-
-          if ($entryTypeField.length > 0) {
-            $slugField.insertAfter($entryTypeField);
-          } else {
-            $slugField.prependTo(this.$sidebar.find('.primary-meta').first());
-          }
-        }
-
-        // if the slug was there, but now the html for it is null - remove it
-        if ($slugField.length == 1 && slugFieldHtml === null) {
-          $slugField.remove();
-        }
-      }
     },
 
     /**

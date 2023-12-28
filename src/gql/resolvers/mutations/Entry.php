@@ -75,7 +75,7 @@ class Entry extends ElementMutationResolver
         // If saving an entry the slug is provided, check if we should allow changing it.
         if (array_key_exists('slug', $arguments)) {
             try {
-                $showSlugField = $entry->showSlugField();
+                $showSlugField = $entry->getType()->showSlugField;
             } catch (InvalidConfigException) {
                 $showSlugField = true;
             }
