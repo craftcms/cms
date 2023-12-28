@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'Zobraziť navigáciu',
     'Show nested sources' => 'Zobraziť vnorené zdroje',
     'Show sidebar' => 'Zobraziť bočný panel',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'Zobraziť pole Stav',
     'Show the Title field' => 'Zobraziť pole Nadpis',
     'Show the debug toolbar in the control panel' => 'Zobraziť panel nástrojov na ladenie v ovládacom paneli',
