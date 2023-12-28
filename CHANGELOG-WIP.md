@@ -1,6 +1,7 @@
 # Release notes for Craft CMS 4.6 (WIP)
 
 - Added the “Country” field type. ([#13789](https://github.com/craftcms/cms/discussions/13789))
+- Date range condition rules are now inclusive of their end dates. ([#13435](https://github.com/craftcms/cms/issues/13435))
 - Improved element search performance. ([#14055](https://github.com/craftcms/cms/pull/14055))
 - Added partial support for field types storing data in JSON columns (excluding MariaDB). ([#13916](https://github.com/craftcms/cms/issues/13916))
 - “Updating search indexes” jobs are no longer queued when saving elements with change tracking enabled, if no searchable fields or attributes were changed. ([#13917](https://github.com/craftcms/cms/issues/13917))
