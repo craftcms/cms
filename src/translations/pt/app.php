@@ -1372,6 +1372,7 @@ return [
     'Show nav' => 'Mostrar nav',
     'Show nested sources' => 'Mostrar fontes aninhadas',
     'Show sidebar' => 'Mostrar barra lateral',
+    'Show the Slug field' => 'Show the Slug field',
     'Show the Status field' => 'Mostrar o campo de Estado',
     'Show the Title field' => 'Mostrar o campo Título',
     'Show the debug toolbar in the control panel' => 'Mostrar a barra de ferramentas de depuração no painel de controlo',
