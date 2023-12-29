@@ -26,11 +26,6 @@ class EntryTitleField extends TitleField
     /**
      * @inheritdoc
      */
-    public bool $mandatory = false;
-
-    /**
-     * @inheritdoc
-     */
     public bool $required = false;
 
     /**
@@ -51,7 +46,7 @@ class EntryTitleField extends TitleField
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         if (!$element instanceof Entry) {
-            throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', __CLASS__));
         }
 
         return $element->getType()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
@@ -63,7 +58,7 @@ class EntryTitleField extends TitleField
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Entry) {
-            throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', __CLASS__));
         }
 
         return ElementHelper::translationDescription($element->getType()->titleTranslationMethod);
@@ -75,10 +70,10 @@ class EntryTitleField extends TitleField
     public function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Entry) {
-            throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', __CLASS__));
         }
 
-        if (!$element->getType()->hasTitleField && !$element->hasErrors('title')) {
+        if (!$element->getType()->hasTitleField) {
             return null;
         }
 

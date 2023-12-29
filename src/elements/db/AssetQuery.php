@@ -8,6 +8,7 @@
 namespace craft\elements\db;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -895,6 +896,11 @@ class AssetQuery extends ElementQuery
         }
 
         $this->joinElementTable(Table::ASSETS);
+        $this->query->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
+            'and',
+            '[[assets_sites.assetId]] = [[assets.id]]',
+            '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
+        ]);
         $this->subQuery->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
         $this->query->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
 
@@ -907,16 +913,13 @@ class AssetQuery extends ElementQuery
             'assets.width',
             'assets.height',
             'assets.size',
+            'assets.alt',
             'assets.focalPoint',
             'assets.keptFile',
             'assets.dateModified',
-            'volumeFolders.path AS folderPath',
+            'siteAlt' => 'assets_sites.alt',
+            'folderPath' => 'volumeFolders.path',
         ]);
-
-        // todo: cleanup after next breakpoint
-        if (Craft::$app->getDb()->columnExists(Table::ASSETS, 'alt')) {
-            $this->query->addSelect(['assets.alt']);
-        }
 
         if ($this->volumeId) {
             if ($this->volumeId === ':empty:') {
@@ -962,7 +965,18 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->hasAlt !== null) {
-            $this->subQuery->andWhere($this->hasAlt ? ['not', ['assets.alt' => null]] : ['assets.alt' => null]);
+            $hasAltCondition = [
+                'or',
+                ['assets.alt' => null],
+                ['assets_site.alt' => null],
+            ];
+            $this->subQuery
+                ->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
+                    'and',
+                    '[[assets_sites.assetId]] = [[assets.id]]',
+                    '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
+                ])
+                ->andWhere($this->hasAlt ? ['not', $hasAltCondition] : $hasAltCondition);
         }
 
         if ($this->width) {
@@ -1081,6 +1095,20 @@ class AssetQuery extends ElementQuery
                 ->where(Db::parseNumericParam('id', $this->volumeId))
                 ->column();
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createElement(array $row): ElementInterface
+    {
+        // Use the site-specific alt text, if set
+        $siteAlt = ArrayHelper::remove($row, 'siteAlt');
+        if ($siteAlt !== null && $siteAlt !== '') {
+            $row['alt'] = $siteAlt;
+        }
+
+        return parent::createElement($row);
     }
 
     /**

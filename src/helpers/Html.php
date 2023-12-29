@@ -183,6 +183,22 @@ class Html extends \yii\helpers\Html
 
     /**
      * @inheritdoc
+     */
+    public static function tag($name, $content = '', $options = [])
+    {
+        return parent::tag($name, $content, static::normalizeTagAttributes($options));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function beginTag($name, $options = [])
+    {
+        return parent::beginTag($name, static::normalizeTagAttributes($options));
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public static function a($text, $url = null, $options = []): string
@@ -441,6 +457,7 @@ class Html extends \yii\helpers\Html
 
             switch ($name) {
                 case 'class':
+                case 'removeClass':
                     $normalized[$name] = static::explodeClass($value);
                     break;
                 case 'style':
@@ -457,6 +474,11 @@ class Html extends \yii\helpers\Html
                     }
                     $normalized[$name] = $value;
             }
+        }
+
+        if (isset($normalized['removeClass'])) {
+            $removeClasses = ArrayHelper::remove($normalized, 'removeClass');
+            $normalized['class'] = array_diff($normalized['class'] ?? [], $removeClasses);
         }
 
         return $normalized;
@@ -633,7 +655,9 @@ class Html extends \yii\helpers\Html
      */
     public static function id(string $id = ''): string
     {
-        $id = trim(preg_replace('/[^\w]+/', '-', $id), '-');
+        // IDs must begin with a letter
+        $id = preg_replace('/^[^A-Za-z]+/', '', $id);
+        $id = rtrim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
         return $id ?: StringHelper::randomString(10);
     }
 
@@ -852,16 +876,34 @@ class Html extends \yii\helpers\Html
     {
         $markers = [];
         $offset = 0;
+        $r = '';
 
-        while (preg_match('/<textarea\b[^>]*>/i', $html, $openMatch, PREG_OFFSET_CAPTURE, $offset)) {
-            $innerOffset = $openMatch[0][1] + strlen($openMatch[0][0]);
-            if (!preg_match('/<\/textarea>/', $html, $closeMatch, PREG_OFFSET_CAPTURE, $innerOffset)) {
+        while (($pos = stripos($html, '<textarea', $offset)) !== false) {
+            $gtPos = strpos($html, '>', $pos + 9);
+            if ($gtPos === false) {
                 break;
             }
-            $marker = sprintf('{marker:%s}', StringHelper::randomString());
-            $markers[$marker] = substr($html, $innerOffset, $closeMatch[0][1] - $innerOffset);
-            $html = substr($html, 0, $innerOffset) . $marker . substr($html, $closeMatch[0][1]);
-            $offset = $innerOffset + strlen($marker) + strlen($closeMatch[0][0]);
+            $innerHtmlPos = $gtPos + 1;
+            $closePos = stripos($html, '</textarea>', $innerHtmlPos);
+            if ($closePos === false) {
+                break;
+            }
+            $outerPos = $closePos + 11;
+            $innerHtml = $closePos !== $innerHtmlPos ? substr($html, $innerHtmlPos, $closePos - $innerHtmlPos) : null;
+
+            if ($innerHtml !== null && str_contains($innerHtml, '<')) {
+                $marker = sprintf('{marker:%s}', mt_rand());
+                $r .= substr($html, $offset, $innerHtmlPos - $offset) . $marker . substr($html, $closePos, 11);
+                $markers[$marker] = $innerHtml;
+            } else {
+                $r .= substr($html, $offset, $outerPos - $offset);
+            }
+
+            $offset = $outerPos;
+        }
+
+        if ($offset !== 0) {
+            $html = $r . substr($html, $offset);
         }
 
         return $markers;
@@ -876,7 +918,22 @@ class Html extends \yii\helpers\Html
      */
     private static function _restoreTextareas(string $html, array $markers): string
     {
-        return str_replace(array_keys($markers), array_values($markers), $html);
+        if (empty($markers)) {
+            return $html;
+        }
+
+        $r = '';
+        $offset = 0;
+
+        foreach ($markers as $marker => $textarea) {
+            $pos = strpos($html, $marker, $offset);
+            if ($pos !== false) {
+                $r .= substr($html, $offset, $pos - $offset) . $textarea;
+                $offset = $pos + strlen($marker);
+            }
+        }
+
+        return $r . substr($html, $offset);
     }
 
     /**

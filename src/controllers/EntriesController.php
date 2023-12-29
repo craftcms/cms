@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
+use craft\errors\MutexException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -21,7 +22,6 @@ use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use Throwable;
-use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -311,7 +311,7 @@ class EntriesController extends BaseEntriesController
             $lockKey = "entry:$entry->id";
             $mutex = Craft::$app->getMutex();
             if (!$mutex->acquire($lockKey, 15)) {
-                throw new Exception('Could not acquire a lock to save the entry.');
+                throw new MutexException($lockKey, 'Could not acquire a lock to save the entry.');
             }
         }
 

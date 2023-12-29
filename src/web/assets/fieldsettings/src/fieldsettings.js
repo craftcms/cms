@@ -58,7 +58,7 @@
         if (this.namespace) {
           data.namespace = this.namespace.replace(
             /__TYPE__/g,
-            this.currentType
+            Craft.formatInputId(this.currentType)
           );
         }
 

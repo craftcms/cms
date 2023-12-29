@@ -744,7 +744,7 @@ class EntryQuery extends ElementQuery
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getEntries()->getEntryTypesByHandle($item);
+                $item = Craft::$app->getEntries()->getEntryTypeByHandle($item);
             }
             return $item instanceof EntryType ? $item->id : null;
         })) {

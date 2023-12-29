@@ -152,8 +152,12 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         return;
       }
 
+      let defaultValue = '';
+      if (this.tabGrid.$items.length === 0) {
+        defaultValue = Craft.t('app', 'Content');
+      }
       const name = Craft.escapeHtml(
-        prompt(Craft.t('app', 'Give your tab a name.'))
+        prompt(Craft.t('app', 'Give your tab a name.'), defaultValue)
       );
 
       if (!name) {

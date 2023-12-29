@@ -178,6 +178,12 @@ trait ElementTrait
     public bool $propagating = false;
 
     /**
+     * @var ElementInterface|null The element that this element is being propagated from.
+     * @since 5.0.0
+     */
+    public ?ElementInterface $propagatingFrom = null;
+
+    /**
      * @var bool Whether all element attributes should be propagated across all its supported sites, even if that means
      * overwriting existing site-specific values.
      * @since 3.2.0

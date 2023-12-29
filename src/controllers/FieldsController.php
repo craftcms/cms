@@ -13,6 +13,7 @@ use craft\base\FieldInterface;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
@@ -54,9 +55,10 @@ class FieldsController extends Controller
      *
      * @param int|null $fieldId The field’s ID, if editing an existing field
      * @param FieldInterface|null $field The field being edited, if there were any validation errors
+     * @param string|null $type The field type to use by default
      * @return Response
      */
-    public function actionEditField(?int $fieldId = null, ?FieldInterface $field = null): Response
+    public function actionEditField(?int $fieldId = null, ?FieldInterface $field = null, ?string $type = null): Response
     {
         $this->requireAdmin();
 
@@ -74,7 +76,7 @@ class FieldsController extends Controller
         }
 
         if ($field === null) {
-            $field = $fieldsService->createField(PlainText::class);
+            $field = $fieldsService->createField($type ?? PlainText::class);
         }
 
         // Supported translation methods
@@ -234,7 +236,7 @@ JS;
             'searchable' => (bool)$this->request->getBodyParam('searchable', true),
             'translationMethod' => $this->request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->request->getBodyParam('translationKeyFormat'),
-            'settings' => $this->request->getBodyParam('types.' . $type),
+            'settings' => $this->request->getBodyParam(sprintf('types.%s', Html::id($type))),
         ]);
 
         if (!$fieldsService->saveField($field)) {
@@ -249,6 +251,13 @@ JS;
         }
 
         $this->setSuccessFlash(Craft::t('app', 'Field saved.'));
+
+        if ($this->request->getParam('addAnother')) {
+            return $this->redirect(UrlHelper::cpUrl('settings/fields/new', [
+                'type' => $field::class,
+            ]));
+        }
+
         return $this->redirectToPostedUrl($field);
     }
 

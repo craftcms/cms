@@ -24,6 +24,12 @@ use yii\console\ExitCode;
 class UpController extends Controller
 {
     /**
+     * @var bool Skip backing up the database.
+     * @since 4.5.8
+     */
+    public bool $noBackup = false;
+
+    /**
      * @var bool Whether to perform the action even if a mutex lock could not be acquired.
      */
     public bool $force = false;
@@ -39,6 +45,7 @@ class UpController extends Controller
     public function options($actionID): array
     {
         return array_merge(parent::options($actionID), [
+            'noBackup',
             'force',
         ]);
     }
@@ -56,7 +63,10 @@ class UpController extends Controller
             $writeYamlAutomatically = $projectConfig->writeYamlAutomatically;
 
             // Craft + plugin migrations
-            $res = $this->run('migrate/all', ['noContent' => true]);
+            $res = $this->run('migrate/all', [
+                'noContent' => true,
+                'noBackup' => $this->noBackup,
+            ]);
             if ($res !== ExitCode::OK) {
                 $this->stderr("\nAborting remaining tasks.\n", Console::FG_YELLOW);
                 return $res;
@@ -77,7 +87,9 @@ class UpController extends Controller
             }
 
             // Content migration
-            $res = $this->run('migrate/up', ['track' => MigrationManager::TRACK_CONTENT]);
+            $res = $this->run('migrate/up', [
+                'track' => MigrationManager::TRACK_CONTENT,
+            ]);
             if ($res !== ExitCode::OK) {
                 return $res;
             }

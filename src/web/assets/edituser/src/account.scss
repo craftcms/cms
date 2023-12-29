@@ -1,6 +1,0 @@
-@charset "UTF-8";
-@import '@craftcms/sass/mixins';
-
-#action-menubtn {
-  @include margin(-6px, var(--neg-padding), -6px, 0);
-}

@@ -14,7 +14,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     idPrefix: null,
 
     instanceState: null,
-    sourceStates: null,
+    _sourceStates: null,
     sourceStatesStorageKey: null,
 
     searchTimeout: null,
@@ -27,6 +27,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     $sidebar: null,
     showingSidebar: null,
+    hasImplicitSource: false,
     sourceKey: null,
     rootSourceKey: null,
     sourceViewModes: null,
@@ -162,6 +163,42 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       );
     },
 
+    get baseCriteria() {
+      const criteria = {};
+      if (this.$source) {
+        Object.assign(criteria, this.$source.data('criteria'));
+      }
+      if (this.settings.criteria) {
+        Object.assign(criteria, this.settings.criteria);
+      }
+      if (this.sourcePath.length) {
+        const currentStep = this.sourcePath[this.sourcePath.length - 1];
+        if (currentStep.criteria) {
+          Object.assign(criteria, currentStep.criteria);
+        }
+      }
+      return criteria;
+    },
+
+    get sourceStates() {
+      if (this.hasImplicitSource) {
+        return {
+          __IMP__: this.instanceState.source || {},
+        };
+      }
+
+      return this._sourceStates;
+    },
+
+    set sourceStates(sourceStates) {
+      if (this.hasImplicitSource) {
+        this.setInstanceState('source', sourceStates.__IMP__ || {});
+      } else {
+        this._sourceStates = sourceStates;
+        Craft.setLocalStorage(this.sourceStatesStorageKey, this.sourceStates);
+      }
+    },
+
     /**
      * Constructor
      */
@@ -169,6 +206,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.elementType = elementType;
       this.$container = $container;
       this.setSettings(settings, Craft.BaseElementIndex.defaults);
+
+      this.$container.data('elementIndex', this);
 
       this.nestedInputNamespace = `elementindex-${Math.floor(
         Math.random() * 100000
@@ -179,30 +218,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // ---------------------------------------------------------------------
 
       this.idPrefix = Craft.randomString(10);
-
-      // Set the state objects
-      // ---------------------------------------------------------------------
-
-      this.instanceState = this.getDefaultInstanceState();
-
-      this.sourceStates = {};
-
-      // Instance states (selected source) are stored by a custom storage key defined in the settings
-      if (this.settings.storageKey) {
-        $.extend(
-          this.instanceState,
-          Craft.getLocalStorage(this.settings.storageKey),
-          {}
-        );
-      }
-
-      // Source states (view mode, etc.) are stored by the element type and context
-      this.sourceStatesStorageKey =
-        'BaseElementIndex.' + this.elementType + '.' + this.settings.context;
-      $.extend(
-        this.sourceStates,
-        Craft.getLocalStorage(this.sourceStatesStorageKey, {})
-      );
 
       // Find the DOM elements
       // ---------------------------------------------------------------------
@@ -251,10 +266,46 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $('.body, .content', this.$container).removeClass('has-sidebar');
       }
 
+      // Find the sources
+      // ---------------------------------------------------------------------
+
+      const $sources = this.findSources();
+
+      // Is there just an implicit source?
+      if ($sources.length === 1 && $sources.data('key') === '__IMP__') {
+        this.hasImplicitSource = true;
+      }
+
+      // Set the state objects
+      // ---------------------------------------------------------------------
+
+      this.instanceState = this.getDefaultInstanceState();
+
+      // Instance states (selected source) are stored by a custom storage key defined in the settings
+      if (this.settings.storageKey) {
+        $.extend(
+          this.instanceState,
+          Craft.getLocalStorage(this.settings.storageKey),
+          {}
+        );
+      }
+
+      // Source states (view mode, etc.) are stored by the element type and context
+      if (!this.hasImplicitSource) {
+        this._sourceStates = {};
+
+        this.sourceStatesStorageKey =
+          'BaseElementIndex.' + this.elementType + '.' + this.settings.context;
+        Object.assign(
+          this._sourceStates,
+          Craft.getLocalStorage(this.sourceStatesStorageKey, {})
+        );
+      }
+
       // Initialize the sources
       // ---------------------------------------------------------------------
 
-      if (!this.initSources()) {
+      if (!this.initSources($sources)) {
         return;
       }
 
@@ -571,8 +622,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return Craft.sites.find((s) => s.id == this.siteId);
     },
 
-    initSources: function () {
-      var $sources = this._getSourcesInList(this.getSourceContainer(), true);
+    initSources: function ($sources) {
+      if (typeof $sources === 'undefined') {
+        $sources = this.findSources();
+      }
 
       // No source, no party.
       if ($sources.length === 0) {
@@ -592,6 +645,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       return true;
+    },
+
+    findSources: function () {
+      return this._getSourcesInList(this.getSourceContainer(), true);
     },
 
     selectDefaultSource: function () {
@@ -693,10 +750,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getDefaultInstanceState: function () {
-      return {
+      const state = {
         selectedSource: null,
         expandedSources: [],
       };
+
+      if (this.hasImplicitSource) {
+        state.source = {};
+      }
+
+      return state;
     },
 
     getDefaultSourceKey: function () {
@@ -1170,24 +1233,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     getSourceState: function (sourceKey, key, defaultValue) {
       // account for when all sources are disabled
-      if (sourceKey == undefined) {
+      if (!sourceKey) {
         return null;
       }
 
       sourceKey = sourceKey.replace(/\/.*/, '');
-
-      if (typeof this.sourceStates[sourceKey] === 'undefined') {
-        // Set it now so any modifications to it by whoever's calling this will be stored.
-        this.sourceStates[sourceKey] = {};
-      }
+      const sourceState = this.sourceStates[sourceKey] || {};
 
       if (typeof key === 'undefined') {
-        return this.sourceStates[sourceKey];
-      } else if (typeof this.sourceStates[sourceKey][key] !== 'undefined') {
-        return this.sourceStates[sourceKey][key];
-      } else {
-        return typeof defaultValue !== 'undefined' ? defaultValue : null;
+        return sourceState;
       }
+      if (typeof sourceState[key] !== 'undefined') {
+        return sourceState[key];
+      }
+      return typeof defaultValue !== 'undefined' ? defaultValue : null;
     },
 
     getSelectedSourceState: function (key, defaultValue) {
@@ -1229,17 +1288,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         sourceKey = this.instanceState.selectedSource.replace(/\/.*/, '');
       }
 
-      this.sourceStates[sourceKey] = viewState;
+      const sourceStates = this.sourceStates;
+      sourceStates[sourceKey] = viewState;
 
       // Clean up sourceStates while we're at it
-      for (let i in this.sourceStates) {
-        if (this.sourceStates.hasOwnProperty(i) && i.includes('/')) {
-          delete this.sourceStates[i];
+      for (let i in sourceStates) {
+        if (sourceStates.hasOwnProperty(i) && i.includes('/')) {
+          delete sourceStates[i];
         }
       }
 
-      // Store it in localStorage too
-      Craft.setLocalStorage(this.sourceStatesStorageKey, this.sourceStates);
+      this.sourceStates = sourceStates;
     },
 
     /**
@@ -1321,7 +1380,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       actions.forEach((action) => {
         const $button = $('<button/>', {
           type: 'button',
-          class: 'menu-option',
+          class: 'menu-item',
           text: action.label,
         }).on('click', () => {
           this.$sourceActionsBtn.data('trigger').hide();
@@ -1395,16 +1454,30 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * when loading elements.
      */
     getViewParams: function () {
-      const baseCriteria = {
-        siteId: this.siteId,
+      // baseCriteria: the criteria properties determined by the source and element index config
+      // criteria: everything the user had some say in
+
+      // baseCriteria will determine the unfilteredTotal count, in case something needs to know
+      // the total number of elements the user has access to
+
+      const baseCriteria = Object.assign(
+        {
+          status: null,
+          drafts: this.settings.canHaveDrafts ? null : false,
+          draftOf: this.settings.canHaveDrafts && this.drafts ? null : false,
+          savedDraftsOnly: true,
+        },
+        this.baseCriteria,
+        {
+          siteId: this.siteId,
+        }
+      );
+
+      const criteria = {
         offset: this.settings.batchSize * (this.page - 1),
         limit: this.settings.batchSize,
+        search: this.searching ? this.searchText : null,
       };
-      const criteria = {};
-
-      if (this.searchText) {
-        criteria.search = this.searchText;
-      }
 
       // Only set drafts/draftOf/trashed params when needed, so we don't potentially override a source's criteria
       if (this.settings.canHaveDrafts && this.drafts) {
@@ -1415,21 +1488,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         criteria.trashed = true;
       }
 
-      if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
-        baseCriteria.status = null;
-
-        if (this.status) {
-          criteria.status = this.status;
-        }
-      }
-
-      $.extend(baseCriteria, this.settings.criteria);
-
-      if (this.sourcePath.length) {
-        const currentStep = this.sourcePath[this.sourcePath.length - 1];
-        if (typeof currentStep.criteria !== 'undefined') {
-          $.extend(baseCriteria, currentStep.criteria);
-        }
+      if (!this.$statusMenuContainer.hasClass('hidden') && this.status) {
+        criteria.status = this.status;
       }
 
       const params = {
@@ -1465,7 +1525,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.instanceState.collapsedElementIds = [];
         }
         params.collapsedElementIds = this.instanceState.collapsedElementIds;
-      } else if (!this.sortable) {
+      } else if (!this.sortable && !this.inlineEditing) {
         // Possible that the order/sort isn't entirely accurate if we're sorting by Score
         const [sortAttribute, sortDirection] =
           this.getSortAttributeAndDirection();
@@ -1486,7 +1546,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       if (
-        this.sourceKey === '__IMP__' &&
+        this.hasImplicitSource &&
         typeof params.viewState.tableColumns === 'undefined'
       ) {
         params.viewState.tableColumns = this.getDefaultTableColumns();
@@ -1991,7 +2051,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // ----------------------------------------------------------------------
 
       if (this.$statusMenuBtn.length) {
-        if (Garnish.hasAttr(this.$source, 'data-override-status')) {
+        if (typeof this.baseCriteria.status !== 'undefined') {
           this.$statusMenuContainer.addClass('hidden');
         } else {
           this.$statusMenuContainer.removeClass('hidden');
@@ -3046,11 +3106,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Update the view with the new container + elements HTML
       // -------------------------------------------------------------
 
-      if (this.isAdministrative) {
-        // set Craft.currentElementIndex for actions
-        Craft.currentElementIndex = this;
-      }
-
       this.$elements.html(response.html);
       Craft.appendHeadHtml(response.headHtml);
       Craft.appendBodyHtml(response.bodyHtml);
@@ -3203,6 +3258,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return new Promise((resolve, reject) => {
         if (this.totalResults !== null) {
           resolve(this.totalResults, this.totalUnfilteredResults);
+          this.onCountResults();
         } else {
           var params = this.getViewParams();
           delete params.baseCriteria.offset;
@@ -3323,6 +3379,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       this._$triggers.appendTo(this.$actionsContainer);
+
+      if (this.isAdministrative) {
+        // set Craft.currentElementIndex for actions
+        Craft.currentElementIndex = this;
+      }
+
       await Craft.appendHeadHtml(this.actionsHeadHtml);
       await Craft.appendBodyHtml(this.actionsBodyHtml);
 
