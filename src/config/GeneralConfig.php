@@ -955,6 +955,26 @@ class GeneralConfig extends BaseConfig
     public string|array|null $disabledPlugins = null;
 
     /**
+     * @var string[] Array of utility IDs that should be disabled.
+     *
+     * ::: code
+     * ```php Static Config
+     *  ->disabledUtilities([
+     *      'updates',
+     *      'find-replace',
+     *  ])
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DISABLED_UTILITIES=updates,find-replace
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 4.6.0
+     */
+    public array $disabledUtilities = [];
+
+    /**
      * @var bool Whether front end requests should respond with `X-Robots-Tag: none` HTTP headers, indicating that pages should not be indexed,
      * and links on the page should not be followed, by web crawlers.
      *
@@ -4094,6 +4114,33 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->disabledPlugins = $value;
+        return $this;
+    }
+
+    /**
+     * Array of utility IDs that should be disabled.
+     *
+     *  ::: code
+     *  ```php Static Config
+     *   ->disabledUtilities([
+     *       'updates',
+     *       'find-replace',
+     *   ])
+     *  ```
+     *  ```shell Environment Override
+     *  CRAFT_DISABLED_UTILITIES=updates,find-replace
+     *  ```
+     *  :::
+     *
+     * @group System
+     * @param string[] $value
+     * @return self
+     * @see $disabledUtilities
+     * @since 4.6.0
+     */
+    public function disabledUtilities(array $value): self
+    {
+        $this->disabledUtilities = $value;
         return $this;
     }
 

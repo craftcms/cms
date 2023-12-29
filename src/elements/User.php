@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\NameTrait;
 use craft\db\Query;
 use craft\db\Table;
@@ -480,7 +481,7 @@ class User extends Element implements IdentityInterface
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         if ($handle == 'addresses') {
             $map = (new Query())
@@ -1152,10 +1153,10 @@ class User extends Element implements IdentityInterface
         }
 
         if (is_numeric($group)) {
-            return in_array($group, ArrayHelper::getColumn($this->getGroups(), 'id'), false);
+            return ArrayHelper::contains($this->getGroups(), fn(UserGroup $g) => $g->id == $group);
         }
 
-        return in_array($group, ArrayHelper::getColumn($this->getGroups(), 'handle'), true);
+        return ArrayHelper::contains($this->getGroups(), fn(UserGroup $g) => $g->handle === $group);
     }
 
     /**

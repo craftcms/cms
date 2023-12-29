@@ -254,7 +254,11 @@ class Cp
                             'class' => 'errors',
                         ]) .
                         // can't use Html::a() because it's encoding &amp;'s, which is causing issues
-                        Html::tag('p', sprintf('<a class="go" href="%s">%s</a>', $cartUrl, Craft::t('app', 'Resolve now'))),
+                        Html::beginTag('p', [
+                            'class' => ['flex', 'flex-nowrap', 'resolvable-alert-buttons'],
+                        ]) .
+                        sprintf('<a class="go" href="%s">%s</a>', $cartUrl, Craft::t('app', 'Resolve now')) .
+                        Html::endTag('p'),
                     'showIcon' => false,
                 ];
             }
@@ -632,7 +636,7 @@ class Cp
                 $otherHtml .= static::elementHtml($other, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
             }
             $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
-                'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),
+                'title' => implode(', ', array_map(fn(ElementInterface $element) => $element->id, $elements)),
                 'class' => 'btn small',
                 'role' => 'button',
                 'onclick' => sprintf(
