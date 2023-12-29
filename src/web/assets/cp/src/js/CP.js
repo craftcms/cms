@@ -998,7 +998,7 @@ Craft.CP = Garnish.Base.extend(
       );
     },
 
-    displayAlerts: function (alerts) {
+    displayAlerts: function (alerts, animate = true) {
       this.$alerts.remove();
 
       if (Array.isArray(alerts) && alerts.length) {
@@ -1021,10 +1021,12 @@ Craft.CP = Garnish.Base.extend(
           $(`<li>${content}</li>`).appendTo(this.$alerts);
         }
 
-        var height = this.$alerts.outerHeight();
-        this.$alerts
-          .css('margin-top', -height)
-          .velocity({'margin-top': 0}, 'fast');
+        if (animate) {
+          const height = this.$alerts.outerHeight();
+          this.$alerts
+            .css('margin-top', -height)
+            .velocity({'margin-top': 0}, 'fast');
+        }
 
         this.initAlerts();
       }
@@ -1056,6 +1058,28 @@ Craft.CP = Garnish.Base.extend(
                   });
               })
           );
+        });
+      }
+
+      const $resolvableButtonsContainer = this.$alerts.find(
+        '.resolvable-alert-buttons'
+      );
+      if ($resolvableButtonsContainer.length) {
+        const $refreshBtn = Craft.ui
+          .createButton({
+            label: Craft.t('app', 'Refresh'),
+            spinner: true,
+          })
+          .appendTo($resolvableButtonsContainer);
+        $refreshBtn.on('click', async () => {
+          $refreshBtn.addClass('loading');
+          try {
+            await Craft.sendApiRequest('GET', 'ping');
+            const alerts = await this.fetchAlerts();
+            this.displayAlerts(alerts, false);
+          } finally {
+            $refreshBtn.removeClass('loading');
+          }
         });
       }
     },

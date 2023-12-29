@@ -35,7 +35,8 @@ Craft.EditableTable = Garnish.Base.extend(
       this.$tbody = this.$table.children('tbody');
       this.$tableParent = this.$table.parent();
       this.$statusMessage = this.$tableParent.find('[data-status-message]');
-      this.rowCount = this.$tbody.find('tr').length;
+      const $rows = this.$tbody.children();
+      this.rowCount = $rows.length;
 
       // Is this already an editable table?
       if (this.$table.data('editable-table')) {
@@ -52,6 +53,16 @@ Craft.EditableTable = Garnish.Base.extend(
           this.updateAllRows();
         },
       });
+
+      for (let i = 0; i < $rows.length; i++) {
+        const $row = $rows.eq(i);
+        const id = parseInt(
+          $row.attr('data-id').substring(this.settings.rowIdPrefix.length)
+        );
+        if (id > this.biggestId) {
+          this.biggestId = id;
+        }
+      }
 
       if (this.isVisible()) {
         this.initialize();
@@ -79,12 +90,6 @@ Craft.EditableTable = Garnish.Base.extend(
       this.initialized = true;
       this.removeListener(Garnish.$win, 'resize');
 
-      var $rows = this.$tbody.children();
-
-      for (var i = 0; i < $rows.length; i++) {
-        this.createRowObj($rows[i]);
-      }
-
       const $container = this.$table.parent('.input');
       if ($container.length && this.$table.width() > $container.width()) {
         $container.css('overflow-x', 'auto');
@@ -93,6 +98,28 @@ Craft.EditableTable = Garnish.Base.extend(
       this.$addRowBtn = this.$table.next('.add');
       this.updateAddRowButton();
       this.addListener(this.$addRowBtn, 'activate', 'addRow');
+
+      // Lazily create the row objects
+      this.addListener(
+        this.$tbody,
+        'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
+        (ev) => {
+          const $target = $(ev.target);
+          const $tr = $target.closest('tr');
+          if ($tr.length && !$tr.data('editable-table-row')) {
+            const $textarea = $target.hasClass('editable-table-preview')
+              ? $target.next()
+              : null;
+            this.createRowObj($tr);
+            setTimeout(() => {
+              if ($textarea && !$textarea.is(':focus')) {
+                $textarea.trigger('focus');
+              }
+            }, 100);
+          }
+        }
+      );
+
       return true;
     },
     initializeIfVisible: function () {
@@ -269,6 +296,10 @@ Craft.EditableTable = Garnish.Base.extend(
       );
     },
 
+    getRowObj: function ($tr) {
+      return $tr.data('editable-table-row') || this.createRowObj($tr);
+    },
+
     createRowObj: function ($tr) {
       return new Craft.EditableTable.Row(this, $tr);
     },
@@ -278,7 +309,7 @@ Craft.EditableTable = Garnish.Base.extend(
       var prevRow;
 
       if ($prevTr.length) {
-        prevRow = $prevTr.data('editable-table-row');
+        prevRow = this.getRowObj($prevTr);
       } else {
         prevRow = this.addRow(false, true);
       }
@@ -311,7 +342,7 @@ Craft.EditableTable = Garnish.Base.extend(
       var nextRow;
 
       if ($nextTr.length) {
-        nextRow = $nextTr.data('editable-table-row');
+        nextRow = this.getRowObj($nextTr);
       } else {
         nextRow = this.addRow(false);
       }
@@ -355,7 +386,7 @@ Craft.EditableTable = Garnish.Base.extend(
         // move onto the next row
         let $nextTr = row.$tr.next('tr');
         if ($nextTr.length) {
-          row = $nextTr.data('editable-table-row');
+          row = this.getRowObj($nextTr);
         } else {
           row = this.addRow(false);
         }
@@ -609,7 +640,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
       var textareasByColId = {};
 
       var i = 0;
-      var colId, col, td, $textarea, $checkbox;
+      var colId, col, td, $checkbox;
 
       for (colId in this.table.columns) {
         if (!this.table.columns.hasOwnProperty(colId)) {
@@ -620,7 +651,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         td = this.tds[colId] = this.$tds[i];
 
         if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
-          $textarea = $('textarea', td);
+          $('.editable-table-preview', td).remove();
+          const $textarea = $('textarea', td);
           this.$textareas = this.$textareas.add($textarea);
 
           this.addListener($textarea, 'focus', 'onTextareaFocus');

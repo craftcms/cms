@@ -7,6 +7,12 @@
         shortcut: true,
         retainScroll: true,
     },
+    {
+        label: 'Save and add another'|t('app'),
+        shortcut: true,
+        shift: true,
+        params: {addAnother: 1},
+    },
     fieldId ?? false ? {
         label: 'Delete'|t('app'),
         action: 'fields/delete-field',
@@ -136,7 +142,7 @@
 {% endblock %}
 
 
-{% if field is empty or field.handle is empty %}
+{% if not (field.handle ?? false) %}
     {% js %}
         new Craft.HandleGenerator('#name', '#handle');
     {% endjs %}

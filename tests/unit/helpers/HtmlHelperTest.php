@@ -528,6 +528,8 @@ class HtmlHelperTest extends TestCase
         return [
             ['<input name="foo[bar]">', '<input name="bar">', 'foo'],
             ['<input name="foo[bar][baz]">', '<input name="bar[baz]">', 'foo'],
+            ['<textarea name="foo[bar]"></textarea>', '<textarea name="bar"></textarea>', 'foo'],
+            ['<textarea name="foo[bar]">blah</textarea>', '<textarea name="bar">blah</textarea>', 'foo'],
             ['<textarea name="foo[bar]"><input name="foo"></textarea>', '<textarea name="bar"><input name="foo"></textarea>', 'foo'],
             ['<input name="3[foo]">', '<input name="foo">', '3'],
         ];
