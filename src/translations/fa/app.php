@@ -269,7 +269,7 @@ return [
     'Choose the available content for querying with this schema:' => 'انتخاب محتوای در دسترس برای پرس‌و‌‌جو با این اسکیما:',
     'Choose the available mutations for this schema:' => 'انتخاب تغییرات در دسترس برای این اسکیما:',
     'Choose the site-specific settings for nested entries.' => 'Choose the site-specific settings for nested entries.',
-    'Choose the type of entry this section’s entry will have.' => 'Choose the type of entry this section’s entry will have.',
+    'Choose the type of entry this section will have.' => 'Choose the type of entry this section will have.',
     'Choose the types of entries that can be created in this field.' => 'Choose the types of entries that can be created in this field.',
     'Choose the types of entries that can be included in this field.' => 'Choose the types of entries that can be included in this field.',
     'Choose the types of entries that can be included in this section.' => 'Choose the types of entries that can be included in this section.',
