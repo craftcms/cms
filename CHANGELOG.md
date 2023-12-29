@@ -5,7 +5,9 @@
 - Entry types now have a “Show the Slug field” setting. ([#13799](https://github.com/craftcms/cms/discussions/13799))
 - Fixed a bug where section preview targets weren’t being respected in Craft Pro. ([#14050](https://github.com/craftcms/cms/issues/14050))
 - Added `craft\events\SetEagerLoadedElementsEvent::$plan`.
+- Added `craft\services\Entries::getEntryTypeByHandle()`.
 - `craft\base\ElementInterface::setEagerLoadedElements()` now has a `$plan` argument, which will be set to the eager-loading plan.
+- Removed `craft\services\Entries::getEntryTypesByHandle()`.
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
 - Fixed an error that occurred when indexing search keywords for an element with multiple instances of the same custom field. ([#13987](https://github.com/craftcms/cms/issues/13987))
 

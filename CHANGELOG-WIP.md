@@ -246,7 +246,26 @@
 - Added `craft\queue\BaseBatchedJob::before()`.
 - Added `craft\queue\BaseBatchedJob::beforeBatch()`.
 - Added `craft\services\Auth`.
+- Added `craft\services\Entries::deleteEntryType()`.
+- Added `craft\services\Entries::deleteEntryTypeById()`.
+- Added `craft\services\Entries::deleteSection()`.
+- Added `craft\services\Entries::deleteSectionById()`.
+- Added `craft\services\Entries::getAllEntryTypes()`.
+- Added `craft\services\Entries::getAllSectionIds()`.
+- Added `craft\services\Entries::getAllSections()`.
+- Added `craft\services\Entries::getEditableSectionIds()`.
+- Added `craft\services\Entries::getEditableSections()`.
+- Added `craft\services\Entries::getEntryTypeByHandle()`.
+- Added `craft\services\Entries::getEntryTypeById()`.
+- Added `craft\services\Entries::getEntryTypesBySectionId()`.
+- Added `craft\services\Entries::getSectionByHandle()`.
+- Added `craft\services\Entries::getSectionById()`.
+- Added `craft\services\Entries::getSectionByUid()`.
+- Added `craft\services\Entries::getSectionsByType()`.
+- Added `craft\services\Entries::getTotalEditableSections()`.
+- Added `craft\services\Entries::getTotalSections()`.
 - Added `craft\services\Entries::refreshEntryTypes()`.
+- Added `craft\services\Entries::saveSection()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
 - Added `craft\services\Fields::getAllLayouts()`.
 - Added `craft\services\Gql::defineContentArgumentsForFieldLayouts()`.
@@ -265,7 +284,6 @@
 - Added `craft\web\CpScreenResponseBehavior::site()`.
 - Added `craft\web\Request::getQueryParamsWithoutPath()`.
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
-- All of the `craft\services\Sections` members have been moved into `craft\services\Entries`.
 - Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added the `getField()`, `getSortOrder()`, and `setOwner()` methods to it. 
 - Renamed `craft\base\Element::EVENT_SET_TABLE_ATTRIBUTE_HTML` to `EVENT_DEFINE_ATTRIBUTE_HTML`.
 - Renamed `craft\base\Element::getHasCheckeredThumb()` to `hasCheckeredThumb()` and made it protected.
@@ -450,7 +468,7 @@
 - Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
 - Removed `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
 - Removed `craft\services\ProjectConfig::updateStoredConfigAfterRequest()`.
-- Removed `craft\services\Sections::reorderEntryTypes()`.
+- Removed `craft\services\Sections`. Most of its methods have been moved to `craft\services\Entries`.
 - Removed `craft\web\CpScreenResponseBehavior::$contextMenuHtml`. `$contextMenuItems` should be used instead.
 - Removed `craft\web\CpScreenResponseBehavior::contextMenuHtml()`. `contextMenuItems()` should be used instead.
 - Removed `craft\web\CpScreenResponseBehavior::contextMenuTemplate()`. `contextMenuItems()` should be used instead.

@@ -270,7 +270,7 @@ class SectionsController extends Controller
 
         if (isset($this->entryTypes)) {
             foreach (explode(',', $this->entryTypes) as $entryTypeHandle) {
-                $entryType = $entriesService->getEntryTypesByHandle($entryTypeHandle)[0] ?? null;
+                $entryType = $entriesService->getEntryTypeByHandle($entryTypeHandle);
                 if (!$entryType) {
                     throw new InvalidArgumentException("Invalid entry type handle: $entryTypeHandle");
                 }
