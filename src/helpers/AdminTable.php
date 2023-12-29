@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\db\Query;
+use Exception;
 use yii\db\Expression;
 
 /**
@@ -53,7 +54,7 @@ abstract class AdminTable
      * @param string $sortColumn
      * @param array $criteria
      * @return bool
-     * @since 4.5.13
+     * @since 4.6.0
      */
     public static function moveToPage(string $table, int $id, int $page, int $perPage, string $sortColumn = 'sortOrder', array $criteria = []): bool
     {
@@ -104,13 +105,12 @@ abstract class AdminTable
             }
 
             Craft::$app->getDb()->createCommand()
-                ->update($table, [$sortColumn    => $newSortOrder], ['id' => $id])
+                ->update($table, [$sortColumn => $newSortOrder], ['id' => $id])
                 ->execute();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (Exception) {
             $transaction->rollBack();
-
             return false;
         }
 
