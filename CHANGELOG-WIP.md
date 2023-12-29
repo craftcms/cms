@@ -6,6 +6,7 @@
 - Improved the performance of large editable tables. ([#13852](https://github.com/craftcms/cms/issues/13852))
 - Added partial support for field types storing data in JSON columns (excluding MariaDB). ([#13916](https://github.com/craftcms/cms/issues/13916))
 - “Updating search indexes” jobs are no longer queued when saving elements with change tracking enabled, if no searchable fields or attributes were changed. ([#13917](https://github.com/craftcms/cms/issues/13917))
+- Edit Field pages now have a “Save and add another” action. ([#13865](https://github.com/craftcms/cms/discussions/13865))
 - Added the `disabledUtilities` config setting. ([#14044](https://github.com/craftcms/cms/discussions/14044))
 - `resave` commands now pass an empty string (`''`) to fields’ `normalizeValue()` methods when `--to` is set to `:empty:`. ([#13951](https://github.com/craftcms/cms/issues/13951))
 - The `index-assets/one` and `index-assets/all` commands now accept a `--delete-empty-folders` option. ([#13947](https://github.com/craftcms/cms/discussions/13947))
