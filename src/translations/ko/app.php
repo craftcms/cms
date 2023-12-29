@@ -269,7 +269,7 @@ return [
     'Choose the available content for querying with this schema:' => '이 스키마 쿼리에서 사용할 수 있는 콘텐츠 선택:',
     'Choose the available mutations for this schema:' => '이 스키마에 사용 가능한 변형 선택:',
     'Choose the site-specific settings for nested entries.' => 'Choose the site-specific settings for nested entries.',
-    'Choose the type of entry this section’s entry will have.' => 'Choose the type of entry this section’s entry will have.',
+    'Choose the type of entry this section will have.' => 'Choose the type of entry this section will have.',
     'Choose the types of entries that can be created in this field.' => 'Choose the types of entries that can be created in this field.',
     'Choose the types of entries that can be included in this field.' => 'Choose the types of entries that can be included in this field.',
     'Choose the types of entries that can be included in this section.' => 'Choose the types of entries that can be included in this section.',
