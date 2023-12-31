@@ -40,6 +40,8 @@ class BaseContentRefactorMigration extends Migration
         ?FieldLayout $fieldLayout,
         string $contentTable = '{{%content}}',
         string $fieldColumnPrefix = 'field_',
+        bool $dropContentRows = true,
+        bool $dropContentTable = true,
     ): void {
         if (is_array($ids) && empty($ids)) {
             return;
@@ -174,7 +176,9 @@ class BaseContentRefactorMigration extends Migration
         }
 
         // drop these content rows completely
-        $this->delete($contentTable, ['in', 'elementId', $ids]);
+        if ($dropContentRows) {
+            $this->delete($contentTable, ['in', 'elementId', $ids]);
+        }
 
         // if the content table is totally empty now, drop it
         $rowsExist = (new Query())
@@ -183,7 +187,7 @@ class BaseContentRefactorMigration extends Migration
             ->limit(1)
             ->exists($this->db);
 
-        if (!$rowsExist) {
+        if (!$rowsExist && $dropContentTable) {
             $this->dropTable($contentTable);
         }
     }
