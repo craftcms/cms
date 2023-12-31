@@ -269,7 +269,7 @@ return [
     'Choose the available content for querying with this schema:' => 'Choisissez le contenu de la variable pour les requêtes sur ce schéma :',
     'Choose the available mutations for this schema:' => 'Choisissez les mutations disponibles pour ce schéma :',
     'Choose the site-specific settings for nested entries.' => 'Choose the site-specific settings for nested entries.',
-    'Choose the type of entry this section’s entry will have.' => 'Choose the type of entry this section’s entry will have.',
+    'Choose the type of entry this section will have.' => 'Choose the type of entry this section will have.',
     'Choose the types of entries that can be created in this field.' => 'Choose the types of entries that can be created in this field.',
     'Choose the types of entries that can be included in this field.' => 'Choose the types of entries that can be included in this field.',
     'Choose the types of entries that can be included in this section.' => 'Choose the types of entries that can be included in this section.',

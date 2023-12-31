@@ -1894,6 +1894,7 @@ EOD;
                 }
 
                 return Cp::selectFieldHtml([
+                    'status' => $this->getAttributeStatus('typeId'),
                     'label' => Craft::t('app', 'Entry Type'),
                     'id' => 'entryType',
                     'name' => 'typeId',
@@ -1955,6 +1956,7 @@ EOD;
                 $fields[] = (function() use ($static, $section) {
                     $authors = $this->getAuthors();
                     $html = Cp::elementSelectFieldHtml([
+                        'status' => $this->getAttributeStatus('authorIds'),
                         'label' => Craft::t('app', 'Authors'),
                         'id' => 'authorsIds',
                         'name' => 'authorsIds',
@@ -1981,6 +1983,7 @@ EOD;
 
             // Post Date
             $fields[] = Cp::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('postDate'),
                 'label' => Craft::t('app', 'Post Date'),
                 'id' => 'postDate',
                 'name' => 'postDate',
@@ -1991,6 +1994,7 @@ EOD;
 
             // Expiry Date
             $fields[] = Cp::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('expiryDate'),
                 'label' => Craft::t('app', 'Expiry Date'),
                 'id' => 'expiryDate',
                 'name' => 'expiryDate',
