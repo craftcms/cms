@@ -4925,6 +4925,7 @@ JS,
         }
 
         return Cp::textFieldHtml([
+            'status' => $this->getAttributeStatus('slug'),
             'label' => Craft::t('app', 'Slug'),
             'siteId' => $this->siteId,
             'translatable' => $this->getIsSlugTranslatable(),

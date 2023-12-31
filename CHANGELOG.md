@@ -10,6 +10,8 @@
 - Fixed a bug where automatically-created relations could be lost when a new site was added to an entry. ([#14065](https://github.com/craftcms/cms/issues/14065))
 - Fixed a bug where `craft\web\Request::getIsPreview()` was returning `true` for requests with expired tokens. ([#14066](https://github.com/craftcms/cms/discussions/14066))
 - Fixed a bug where asset conflict resolution modals were closing prematurely if there were multiple conflicts. ([#14045](https://github.com/craftcms/cms/issues/14045))
+- Fixed a bug where meta fields weren’t showing change indicators.
+- Fixed a privilege escalation vulnerability.
 
 ## 4.5.13 - 2023-12-15
 
