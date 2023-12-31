@@ -3416,6 +3416,9 @@ class Elements extends Component
             // It is now officially saved
             $element->afterSave($isNewElement);
 
+            // Update the list of dirty attributes
+            $dirtyAttributes = $element->getDirtyAttributes();
+
             // Update the element across the other sites?
             if ($propagate) {
                 $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
