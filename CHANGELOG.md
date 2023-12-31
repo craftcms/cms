@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where meta fields weren’t immediately showing change indicators when entries were autosaved.
 - Fixed a privilege escalation vulnerability.
 
 ## 3.9.6 - 2023-11-16

@@ -5,6 +5,8 @@
  */
 Craft.DraftEditor = Garnish.Base.extend(
   {
+    $contentContainer: null,
+    $sidebar: null,
     $revisionBtn: null,
     $revisionLabel: null,
     $spinner: null,
@@ -64,6 +66,8 @@ Craft.DraftEditor = Garnish.Base.extend(
         return parseInt(siteId);
       });
 
+      this.$contentContainer = $('#content');
+      this.$sidebar = $('#details');
       this.$revisionBtn = $('#context-btn');
       this.$revisionLabel = $('#revision-label');
       this.$spinner = $('#revision-spinner');
@@ -1130,13 +1134,22 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             // Add missing field modified indicators
-            const selectors = response.data.modifiedAttributes
-              .map((attr) => `[name="${attr}"],[name^="${attr}["]`)
-              .concat(modifiedFieldNames.map((name) => `[name="${name}"]`));
+            const selector = response.data.modifiedAttributes
+              .map((attr) => [`[name="${attr}"]`, `[name^="${attr}["]`])
+              .flat()
+              .concat(modifiedFieldNames.map((name) => `[name="${name}"]`))
+              .join(',');
 
-            const $fields = $(selectors.join(','))
+            const $fields = this.$contentContainer
+              .find(selector)
               .parents()
-              .filter('.flex-fields > .field:not(:has(> .status-badge))');
+              .filter('.flex-fields > .field:not(:has(> .status-badge))')
+              .add(
+                this.$sidebar
+                  .find(selector)
+                  .closest('.field:not(:has(> .status-badge))')
+              );
+
             for (let i = 0; i < $fields.length; i++) {
               $fields.eq(i).prepend(
                 $('<div/>', {
