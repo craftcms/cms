@@ -1643,8 +1643,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             ElementHelper::setNextPrevOnElements($elements);
 
             // Should we eager-load some elements onto these?
-            if ($this->with) {
-                Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
+            if (isset($this->with)) {
+                $this->with = $elementsService->createEagerLoadingPlans($this->with);
+                $elementsService->eagerLoadElements($this->elementType, $elements, $this->with);
             }
         }
 

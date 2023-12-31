@@ -95,7 +95,7 @@ class EntriesController extends BaseEntriesController
         $entry = Craft::createObject(Entry::class);
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
-        $entry->authorsIds = $this->request->getQueryParam('authorsIds', $user->id);
+        $entry->setAuthorIds($this->request->getQueryParam('authorIds', $user->id));
 
         // Type
         if (($typeHandle = $this->request->getParam('type')) !== null) {
@@ -239,7 +239,7 @@ class EntriesController extends BaseEntriesController
         if (
             $entry->id &&
             !$duplicate &&
-            !in_array($currentUser->id, $entry->authorsIds) &&
+            !in_array($currentUser->id, $entry->getAuthorIds()) &&
             $section->type !== Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
@@ -466,8 +466,12 @@ class EntriesController extends BaseEntriesController
         $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Authors
-        $authorsIds = $this->request->getBodyParam('authors', ($entry->authorsIds ?: [static::currentUser()->id]));
-        $entry->_authorsIds = $authorsIds;
+        $authorIdsParam = $this->request->getBodyParam('authors');
+        if ($authorIdsParam !== null) {
+            $entry->setAuthorIds($authorIdsParam);
+        } elseif (!$entry->id) {
+            $entry->setAuthor(static::currentUser());
+        }
 
         // Parent
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {

@@ -2335,7 +2335,7 @@ JS, [
                 foreach (Db::each($entryQuery) as $entry) {
                     /** @var Entry $entry */
                     // only delete their entry if they're the sole author
-                    if (count($entry->authorsIds) == 1) {
+                    if (count($entry->getAuthorIds()) == 1) {
                         $elementsService->deleteElement($entry);
                     }
                 }

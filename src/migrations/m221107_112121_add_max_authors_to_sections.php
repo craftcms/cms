@@ -32,7 +32,5 @@ class m221107_112121_add_max_authors_to_sections extends Migration
     {
         $this->dropColumn(Table::SECTIONS, 'maxAuthors');
         return true;
-//        echo "m221107_112121_add_max_authors_to_sections cannot be reverted.\n";
-//        return false;
     }
 }

@@ -17,7 +17,7 @@ return [
 
     // Authors
     [
-        'authorsIds' => [1, 2, 3],
+        'authorIds' => [1, 2, 3],
         'sectionId' => '1006',
         'typeId' => '1006',
         'title' => 'Theories of life multi-author',

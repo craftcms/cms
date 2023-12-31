@@ -56,11 +56,6 @@ class Entry extends StructureElementArguments
             'authorId' => [
                 'name' => 'authorId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the entries’ author.',
-            ],
-            'authorsIds' => [
-                'name' => 'authorsIds',
-                'type' => Type::listOf(Type::int()),
                 'description' => 'Narrows the query results based on the entries’ authors.',
             ],
             'authorGroup' => [

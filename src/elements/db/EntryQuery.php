@@ -157,9 +157,9 @@ class EntryQuery extends ElementQuery
 
     /**
      * @var mixed The user IDs that the resulting entries’ authors must have.
-     * @used-by authorsIds()
+     * @used-by authorIds()
      */
-    public mixed $authorsIds = [];
+    public mixed $authorIds = [];
 
     /**
      * @var mixed The user group ID(s) that the resulting entries’ authors must be in.
@@ -808,6 +808,7 @@ class EntryQuery extends ElementQuery
      * | `1` | with an author with an ID of 1.
      * | `'not 1'` | not with an author with an ID of 1.
      * | `[1, 2]` | with an author with an ID of 1 or 2.
+     * | `['and', 1, 2]` |  with authors with IDs of 1 and 2.
      * | `['not', 1, 2]` | not with an author with an ID of 1 or 2.
      *
      * ---
@@ -838,51 +839,6 @@ class EntryQuery extends ElementQuery
         $this->addSelect('id');
 
         $this->authorId = $value;
-        return $this;
-    }
-
-    /**
-     * Narrows the query results based on the entries’ authors.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches entries…
-     * | - | -
-     * | `1` | with an author with an ID of 1.
-     * | `[1, 2]` | with authors with ID of 1 and 2.
-     * | `['not', 1, 2]` | not with authors with an ID of 1 and 2.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch entries with an author with an ID of 1 #}
-     * {% set {elements-var} = {twig-method}
-     *   .authorsIds([1,2])
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch entries with an author with an ID of 1
-     * ${elements-var} = {php-method}
-     *     ->authorsIds([1,2])
-     *     ->all();
-     * ```
-     *
-     * @param mixed $values The property value
-     * @return self self reference
-     * @uses $authorsIds
-     */
-    public function authorsIds(mixed $values): self
-    {
-        // we always need the entry id
-        // to be able to join with entries_authors table when populating
-        // in the _processAuthors() method
-        $this->addSelect('id');
-
-        if (!is_array($values)) {
-            $values = ArrayHelper::toArray($values);
-        }
-        $this->authorsIds = $values;
         return $this;
     }
 
@@ -1306,22 +1262,48 @@ class EntryQuery extends ElementQuery
 
         if (Craft::$app->getEdition() === Craft::Pro) {
             if ($this->authorId) {
-                $this->subQuery
-                    ->innerJoin(['entries_authors' => Table::ENTRIES_AUTHORS], '[[entries_authors.elementId]] = [[entries.id]]')
-                    ->andWhere(Db::parseNumericParam('entries_authors.authorId', $this->authorId));
-            }
+                // Checking multiple authors?
+                if (
+                    is_array($this->authorId) &&
+                    is_string(reset($this->authorId)) &&
+                    strtolower(reset($this->authorId)) === 'and'
+                ) {
+                    $authorIdChecks = array_slice($this->authorId, 1);
+                } else {
+                    $authorIdChecks = [$this->authorId];
+                }
 
-            if ($this->authorsIds) {
-                $this->subQuery
-                    ->innerJoin(['entries_authors' => Table::ENTRIES_AUTHORS], '[[entries_authors.elementId]] = [[entries.id]]')
-                    ->andWhere(Db::parseNumericParam('entries_authors.authorId', $this->authorsIds));
+                foreach ($authorIdChecks as $i => $authorIdCheck) {
+                    if (
+                        is_array($authorIdCheck) &&
+                        is_string(reset($authorIdCheck)) &&
+                        strtolower(reset($authorIdCheck)) === 'not'
+                    ) {
+                        $authorIdOperator = 'not exists';
+                        array_shift($authorIdCheck);
+                        if (empty($authorIdCheck)) {
+                            continue;
+                        }
+                    } else {
+                        $authorIdOperator = 'exists';
+                    }
+
+                    $this->subQuery->andWhere([
+                        $authorIdOperator, (new Query())
+                            ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
+                            ->where('[[entries.id]] = [[entries_authors.entryId]]')
+                            ->andWhere(Db::parseNumericParam('authorId', $authorIdCheck)),
+                    ]);
+                }
             }
 
             if ($this->authorGroupId) {
-                $this->subQuery
-                    ->innerJoin(['entries_authors' => Table::ENTRIES_AUTHORS], '[[entries_authors.elementId]] = [[entries.id]]')
+                $this->subQuery->andWhere(['exists', (new Query())
+                    ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
                     ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries_authors.authorId]]')
-                    ->andWhere(Db::parseNumericParam('usergroups_users.groupId', $this->authorGroupId));
+                    ->where('[[entries.id]] = [[entries_authors.entryId]]')
+                    ->andWhere(Db::parseNumericParam('usergroups_users.groupId', $this->authorGroupId)),
+                ]);
             }
         }
 
@@ -1334,11 +1316,40 @@ class EntryQuery extends ElementQuery
 
     /**
      * @inheritdoc
-     * @return ElementInterface[]|array The resulting elements.
      */
-    public function populate($rows): array
+    public function afterPopulate($elements): array
     {
-        return parent::populate($this->_processAuthors($rows));
+        if (!$this->asArray && !empty($elements)) {
+            $this->loadAuthorIds($elements);
+        }
+
+        return parent::afterPopulate($elements);
+    }
+
+    private function loadAuthorIds(array $entries): void
+    {
+        /** @var Entry[][] $indexedEntries */
+        $indexedEntries = ArrayHelper::index($entries, null, [
+            fn(Entry $entry) => $entry->id,
+        ]);
+        $indexedAuthorIds = [];
+
+        $results = (new Query())
+            ->select(['entryId', 'authorId'])
+            ->from(Table::ENTRIES_AUTHORS)
+            ->where(['entryId' => array_keys($indexedEntries)])
+            ->orderBy(['sortOrder' => SORT_ASC])
+            ->all();
+
+        foreach ($results as $result) {
+            $indexedAuthorIds[$result['entryId']][] = (int)$result['authorId'];
+        }
+
+        foreach ($indexedEntries as $entryId => $entriesOfId) {
+            foreach ($entriesOfId as $entry) {
+                $entry->setAuthorIds($indexedAuthorIds[$entryId] ?? []);
+            }
+        }
     }
 
     /**
@@ -1649,76 +1660,6 @@ class EntryQuery extends ElementQuery
             }
         }
         return $tags;
-    }
-
-    /**
-     * We are getting multiple rows for one entry because of
-     * ->authorId([...]), ->authorsIds([...]) and the ->innerJoin with
-     * entries_authors table.
-     * We need to process each entry to make sure we get one element per entry.
-     *
-     * @param array $rows
-     * @return array
-     */
-    private function _processAuthors(array $rows): array
-    {
-        // get authors info
-        // also, because of ->authorId([...]), ->authorsIds([...]) we are now
-        // getting multiple rows for one entry
-        $distinctRows = [];
-        if (!empty($rows)) {
-            foreach ($rows as $row) {
-                // if this entryId has already been processed, carry on to the next one
-                if (isset($distinctRows[$row['id']])) {
-                    continue;
-                }
-                // get all authorIds for this entry
-                $entryAuthorsIds = array_column(
-                    (new Query())
-                        ->select(['authorId'])
-                        ->from(Table::ENTRIES_AUTHORS)
-                        ->where(['elementId' => $row['id']])
-                        ->orderBy('sortOrder ASC')
-                        ->all(),
-                    'authorId');
-
-                // if authors IDs were passed via authorsIds
-                // make sure we only return entries which have all and only
-                // the specified authors from the query
-                if (!empty($this->authorsIds)) {
-                    if (strtolower(trim($this->authorsIds[0])) === 'not') {
-                        $negativeSearch = true;
-                        $_authorsIds = array_slice($this->authorsIds, 1);
-                    } else {
-                        $negativeSearch = false;
-                        $_authorsIds = $this->authorsIds;
-                    }
-
-                    // if "regular" search, check if row (entry) has only the authors we're after
-                    if (
-                        $negativeSearch === false &&
-                        count($_authorsIds) === count($entryAuthorsIds) &&
-                        empty(array_diff($_authorsIds, $entryAuthorsIds))
-                    ) {
-                        $row['authorsIds'] = $entryAuthorsIds;
-                        $distinctRows[$row['id']] = $row;
-                    // if "negative" search, check if row (entry) doesn't have
-                        // any of the authors we need to exclude, and no others
-                    } elseif (
-                        $negativeSearch === true &&
-                        !empty(array_diff($_authorsIds, $entryAuthorsIds))
-                    ) {
-                        $row['authorsIds'] = $entryAuthorsIds;
-                        $distinctRows[$row['id']] = $row;
-                    }
-                } else {
-                    $row['authorsIds'] = $entryAuthorsIds;
-                    $distinctRows[$row['id']] = $row;
-                }
-            }
-        }
-
-        return $distinctRows;
     }
 
     /**

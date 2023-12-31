@@ -23,15 +23,15 @@ class EntryQueryTest extends TestCase
     /**
      * @return void
      */
-    public function testAuthorsIds(): void
+    public function testAuthorIds(): void
     {
         $query = Entry::find();
 
         $query->authorId(1);
         $this->assertSame(1, $query->authorId);
 
-        $query->authorsIds([1, 2, 3]);
-        $this->assertSame([1, 2, 3], $query->authorsIds);
+        $query->authorId(['and', 1, 2, 3]);
+        $this->assertSame(['and', 1, 2, 3], $query->authorId);
     }
 
     /**
