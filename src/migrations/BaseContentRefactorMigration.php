@@ -151,9 +151,11 @@ class BaseContentRefactorMigration extends Migration
         }
 
         // make sure the elements’ fieldLayoutId values are accurate
-        $this->update(Table::ELEMENTS, [
-            'fieldLayoutId' => $fieldLayout->id,
-        ], ['in', 'id', $ids], updateTimestamp: false);
+        if ($fieldLayout) {
+            $this->update(Table::ELEMENTS, [
+                'fieldLayoutId' => $fieldLayout->id,
+            ], ['in', 'id', $ids], updateTimestamp: false);
+        }
 
         if (!empty($fieldsByUid)) {
             $caseSql = 'CASE ';
