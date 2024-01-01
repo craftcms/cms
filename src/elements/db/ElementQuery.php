@@ -1643,8 +1643,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             ElementHelper::setNextPrevOnElements($elements);
 
             // Should we eager-load some elements onto these?
-            if (isset($this->with)) {
-                $this->with = $elementsService->createEagerLoadingPlans($this->with);
+            if ($this->with) {
                 $elementsService->eagerLoadElements($this->elementType, $elements, $this->with);
             }
         }
