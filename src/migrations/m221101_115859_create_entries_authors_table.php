@@ -42,6 +42,9 @@ SQL, Table::ENTRIES_AUTHORS, Table::ENTRIES));
         $this->dropIndexIfExists(Table::ENTRIES, 'authorId');
         $this->dropColumn(Table::ENTRIES, 'authorId');
 
+        // update the changedattributes table
+        $this->update(Table::CHANGEDATTRIBUTES, ['attribute' => 'authorIds'], ['attribute' => 'authorId'], updateTimestamp: false);
+
         return true;
     }
 
