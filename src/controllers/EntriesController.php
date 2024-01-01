@@ -243,7 +243,7 @@ class EntriesController extends BaseEntriesController
         if (
             $entry->id &&
             !$duplicate &&
-            !in_array($currentUser->id, $entry->getAuthorIds()) &&
+            !in_array($currentUser->id, $entry->getAuthorIds(), true) &&
             $section->type !== Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
