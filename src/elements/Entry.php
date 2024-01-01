@@ -845,6 +845,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             }
         }];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
+        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
+        $rules[] = [
+            ['postDate'],
+            DateCompareValidator::class,
+            'operator' => '<',
+            'compareAttribute' => 'expiryDate',
+            'when' => fn() => $this->postDate && $this->expiryDate,
+            'on' => self::SCENARIO_LIVE,
+        ];
 
         $section = $this->getSection();
         if ($section && $section->type !== Section::TYPE_SINGLE) {
@@ -858,16 +867,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 ]),
             ];
         }
-
-        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
-        $rules[] = [
-            ['postDate'],
-            DateCompareValidator::class,
-            'operator' => '<',
-            'compareAttribute' => 'expiryDate',
-            'when' => fn() => $this->postDate && $this->expiryDate,
-            'on' => self::SCENARIO_LIVE,
-        ];
 
         return $rules;
     }
