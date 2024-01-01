@@ -76,6 +76,7 @@ class Section extends Model
 
     /**
      * @var int Max authors
+     * @since 5.0.0
      */
     public int $maxAuthors = 1;
 

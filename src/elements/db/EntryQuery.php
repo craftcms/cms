@@ -150,16 +150,10 @@ class EntryQuery extends ElementQuery
     public mixed $typeId = null;
 
     /**
-     * @var mixed The user ID that the resulting entries’ authors must have.
+     * @var mixed The user ID(s) that the resulting entries’ authors must have.
      * @used-by authorId()
      */
     public mixed $authorId = null;
-
-    /**
-     * @var mixed The user IDs that the resulting entries’ authors must have.
-     * @used-by authorIds()
-     */
-    public mixed $authorIds = [];
 
     /**
      * @var mixed The user group ID(s) that the resulting entries’ authors must be in.
@@ -799,7 +793,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the entries’ authors.
+     * Narrows the query results based on the entries’ author ID(s).
      *
      * Possible values include:
      *
@@ -833,11 +827,6 @@ class EntryQuery extends ElementQuery
      */
     public function authorId(mixed $value): static
     {
-        // we always need the entry id
-        // to be able to join with entries_authors table when populating
-        // in the _processAuthors() method
-        $this->addSelect('id');
-
         $this->authorId = $value;
         return $this;
     }
@@ -1445,8 +1434,10 @@ class EntryQuery extends ElementQuery
                     ['entries.sectionId' => $section->id],
                 ];
                 if ($excludePeerEntries) {
-                    $this->subQuery->innerJoin(['entries_authors' => Table::ENTRIES_AUTHORS], '[[entries_authors.elementId]] = [[entries.id]]');
-                    $sectionCondition[] = ['entries_authors.authorId' => $user->id];
+                    $sectionCondition[] = ['exists', (new Query())
+                        ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
+                        ->where('[[entries_authors.entryId]] = [[entries.id]]')
+                        ->andWhere(['entries_authors.authorId' => $user->id]), ];
                 }
                 if ($excludePeerDrafts) {
                     $sectionCondition[] = [
