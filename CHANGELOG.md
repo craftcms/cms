@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.14 - 2024-01-02
 
 - Improved the performance of input namespacing.
 - The Licensing Issues alert now includes a “Refresh” button. ([#14080](https://github.com/craftcms/cms/pull/14080))
@@ -11,6 +11,7 @@
 - Fixed a bug where `craft\web\Request::getIsPreview()` was returning `true` for requests with expired tokens. ([#14066](https://github.com/craftcms/cms/discussions/14066))
 - Fixed a bug where asset conflict resolution modals were closing prematurely if there were multiple conflicts. ([#14045](https://github.com/craftcms/cms/issues/14045))
 - Fixed a bug where meta fields weren’t showing change indicators.
+- Fixed a bug where the `index-assets/one` command was overly-destructive when run with a subpath and the `--delete-missing-assets` option. ([#14087](https://github.com/craftcms/cms/issues/14087))
 - Fixed a privilege escalation vulnerability.
 
 ## 4.5.13 - 2023-12-15

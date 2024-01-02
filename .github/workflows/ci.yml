@@ -6,8 +6,6 @@ on:
       - develop
       - '4.6'
   pull_request:
-    types:
-      - opened
 permissions:
   contents: read
 concurrency:
