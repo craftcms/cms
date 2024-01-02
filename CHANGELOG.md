@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.14 - 2024-01-02
 
 - Improved the performance of input namespacing.
 - The Licensing Issues alert now includes a “Refresh” button. ([#14080](https://github.com/craftcms/cms/pull/14080))
