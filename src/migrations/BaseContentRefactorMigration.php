@@ -29,7 +29,7 @@ class BaseContentRefactorMigration extends Migration
     /**
      * Updates the `elements_sites.content` value for elements.
      *
-     * @param int[]|YiiQuery $ids The elmenet IDs to update, or a query that selects them.
+     * @param int[]|YiiQuery $ids The element IDs to update, or a query that selects them.
      * If a query is passed but `select` is not set, it will default to `'id'`.
      * @param FieldLayout|null $fieldLayout The field layout that the elements use, if any
      * @param string $contentTable The table that the elements stored their field values in.
