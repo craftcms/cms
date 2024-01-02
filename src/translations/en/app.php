@@ -1523,7 +1523,7 @@ return [
     'The locale that should be used for date and number formatting.' => 'The locale that should be used for date and number formatting.',
     'The location where assets can be selected from.' => 'The location where assets can be selected from.',
     'The maximum length (in bytes) the field can hold.' => 'The maximum length (in bytes) the field can hold.',
-    'The maximum number of authors entries in this section can have' => 'The maximum number of authors entries in this section can have',
+    'The maximum number of authors entries in this section can have.' => 'The maximum number of authors entries in this section can have.',
     'The maximum number of characters or bytes the field is allowed to have.' => 'The maximum number of characters or bytes the field is allowed to have.',
     'The maximum number of levels this category group can have. Leave blank if you don’t care.' => 'The maximum number of levels this category group can have. Leave blank if you don’t care.',
     'The maximum number of levels this section can have. Leave blank if you don’t care.' => 'The maximum number of levels this section can have. Leave blank if you don’t care.',
