@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-alpha.4 - 2024-01-02
 
 - Entries can now have multiple authors. ([#12380](https://github.com/craftcms/cms/pull/12380))
 - Sections now have a “Max Authors” setting. ([#12380](https://github.com/craftcms/cms/pull/12380))
