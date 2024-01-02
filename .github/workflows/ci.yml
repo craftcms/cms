@@ -5,8 +5,6 @@ on:
     branches:
       - v3
   pull_request:
-    types:
-      - opened
 permissions:
   contents: read
 concurrency:
