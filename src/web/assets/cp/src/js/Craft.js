@@ -820,7 +820,7 @@ $.extend(Craft, {
    * @returns {Promise}
    * @since 3.3.16
    */
-  sendApiRequest: function (method, uri, options) {
+  sendApiRequest: function (method, uri, options = {}) {
     return new Promise((resolve, reject) => {
       options = options ? $.extend({}, options) : {};
       let cancelToken = options.cancelToken || null;
