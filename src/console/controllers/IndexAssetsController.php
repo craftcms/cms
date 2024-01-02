@@ -183,7 +183,7 @@ class IndexAssetsController extends Controller
             }
         }
 
-        $missingFiles = $assetIndexer->getMissingFiles($sessionId);
+        $missingFiles = $assetIndexer->getMissingFiles($sessionId, $path);
         $maybes = false;
 
         if (!empty($missingFiles)) {

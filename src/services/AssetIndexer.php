@@ -315,9 +315,10 @@ class AssetIndexer extends Component
      * Return a list of missing files for an indexing session.
      *
      * @param string $sessionId Session ID.
+     * @param string $path path to a folder
      * @return array
      */
-    public function getMissingFiles(string $sessionId): array
+    public function getMissingFiles(string $sessionId, string $path = ''): array
     {
         $output = [];
 
@@ -346,15 +347,20 @@ class AssetIndexer extends Component
 
         // Flip for faster lookup
         $processedFiles = array_flip($processedFiles);
-        $assets = (new Query())
+        $assetsQuery = (new Query())
             ->select(['fi.volumeId', 'fi.id AS assetId', 'fi.filename', 'fo.path', 's.name AS volumeName'])
             ->from(['fi' => Table::ASSETS])
             ->innerJoin(['fo' => Table::VOLUMEFOLDERS], '[[fo.id]] = [[fi.folderId]]')
             ->innerJoin(['s' => Table::VOLUMES], '[[s.id]] = [[fi.volumeId]]')
             ->innerJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[fi.id]]')
             ->where(['fi.volumeId' => $volumeIds])
-            ->andWhere(['e.dateDeleted' => null])
-            ->all();
+            ->andWhere(['e.dateDeleted' => null]);
+
+        if ($path !== '') {
+            $assetsQuery->andWhere(['like', 'fo.path', "$path%", false]);
+        }
+
+        $assets = $assetsQuery->all();
 
         foreach ($assets as $asset) {
             if (!isset($processedFiles[$asset['assetId']])) {
