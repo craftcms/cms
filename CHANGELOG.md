@@ -10,7 +10,7 @@
 - Entries now have `author` and `authorIds` GraphQL field.
 - Fixed a bug where section preview targets weren’t being respected in Craft Pro. ([#14050](https://github.com/craftcms/cms/issues/14050))
 - Added `craft\events\SetEagerLoadedElementsEvent::$plan`.
-- Added `craft\services\Entries::getEntryTypeByHandle()`.
+- Added `craft\services\Entries::getEntryTypeByHandle()`. ([#14094](https://github.com/craftcms/cms/discussions/14094))
 - `craft\base\ElementInterface::setEagerLoadedElements()` now has a `$plan` argument, which will be set to the eager-loading plan.
 - Removed `craft\services\Entries::getEntryTypesByHandle()`.
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
