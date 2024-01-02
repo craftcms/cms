@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.9.10 - 2024-01-02
 
 - Fixed a bug where meta fields weren’t immediately showing change indicators when entries were autosaved.
 - Fixed a bug where the `index-assets/one` command was overly-destructive when run with a subpath and the `--delete-missing-assets` option. ([#14087](https://github.com/craftcms/cms/issues/14087))
