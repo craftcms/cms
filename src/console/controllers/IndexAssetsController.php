@@ -227,7 +227,7 @@ class IndexAssetsController extends Controller
 
         // Manually close the indexing session.
         $session->actionRequired = true;
-        $missingEntries = $assetIndexer->getMissingEntriesForSession($session);
+        $missingEntries = $assetIndexer->getMissingEntriesForSession($session, $path);
         $missingFiles = $missingEntries['files'];
         $missingFolders = $missingEntries['folders'];
 
