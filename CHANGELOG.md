@@ -17,6 +17,7 @@
 - Fixed an error that occurred when indexing search keywords for an element with multiple instances of the same custom field. ([#13987](https://github.com/craftcms/cms/issues/13987))
 - Fixed a bug where changed element attributes weren’t getting recorded.
 - Fixed an error that could occur when updating to Craft 5. ([#14086](https://github.com/craftcms/cms/issues/14086))
+- Fixed a bug where volume filesystem settings were getting unnecessary validation errors when the `tempAssetUploadFs` config setting wasn’t set. ([#14071](https://github.com/craftcms/cms/issues/14071))
 
 ## 5.0.0-alpha.3 - 2023-12-21
 
