@@ -6,9 +6,9 @@ use craft\db\Migration;
 use craft\db\Table;
 
 /**
- * m230617_000000_add_entry_type_show_slug_field migration.
+ * m230524_000000_add_entry_type_show_slug_field migration.
  */
-class m230617_000000_add_entry_type_show_slug_field extends Migration
+class m230524_000000_add_entry_type_show_slug_field extends Migration
 {
     /**
      * @inheritdoc
