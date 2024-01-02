@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where meta fields weren’t immediately showing change indicators when entries were autosaved.
+- Fixed a bug where the `index-assets/one` command was overly-destructive when run with a subpath and the `--delete-missing-assets` option. ([#14087](https://github.com/craftcms/cms/issues/14087))
 - Fixed a privilege escalation vulnerability.
 
 ## 3.9.6 - 2023-11-16
