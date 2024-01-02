@@ -201,12 +201,23 @@ class Entry extends Structure
                 'authorId' => [
                     'name' => 'authorId',
                     'type' => Type::int(),
-                    'description' => 'The ID of the author of this entry.',
+                    'description' => 'The primary entry author’s ID.',
                 ],
                 'author' => [
                     'name' => 'author',
-                    'type' => User::getType(),
-                    'description' => 'The entry’s author.',
+                    'type' => Type::listOf(User::getType()),
+                    'description' => 'The primary entry author.',
+                    'complexity' => Gql::eagerLoadComplexity(),
+                ],
+                'authorIds' => [
+                    'name' => 'authorIds',
+                    'type' => Type::listOf(Type::int()),
+                    'description' => 'The entry authors’ IDs.',
+                ],
+                'authors' => [
+                    'name' => 'authors',
+                    'type' => Type::listOf(User::getType()),
+                    'description' => 'The entry authors.',
                     'complexity' => Gql::eagerLoadComplexity(),
                 ],
             ]);

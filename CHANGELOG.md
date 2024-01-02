@@ -2,7 +2,12 @@
 
 ## Unreleased
 
+- Entries can now have multiple authors. ([#12380](https://github.com/craftcms/cms/pull/12380))
+- Sections now have a “Max Authors” setting. ([#12380](https://github.com/craftcms/cms/pull/12380))
 - Entry types now have a “Show the Slug field” setting. ([#13799](https://github.com/craftcms/cms/discussions/13799))
+- Entry queries’ `authorId` params now support passing multiple IDs prefixed with `and`, to fetch entries with multiple listed authors.
+- User queries now have an `authorOf` param.
+- Entries now have `author` and `authorIds` GraphQL field.
 - Fixed a bug where section preview targets weren’t being respected in Craft Pro. ([#14050](https://github.com/craftcms/cms/issues/14050))
 - Added `craft\events\SetEagerLoadedElementsEvent::$plan`.
 - Added `craft\services\Entries::getEntryTypeByHandle()`.

@@ -5836,6 +5836,10 @@ $min2ColWidth: 400px;
       @include margin-right(-20px);
     }
   }
+
+  div.elements {
+    list-style: none;
+  }
 }
 
 .dropdownsettingsmodal {

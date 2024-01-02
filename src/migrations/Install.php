@@ -388,13 +388,18 @@ class Install extends Migration
             'primaryOwnerId' => $this->integer(),
             'fieldId' => $this->integer(),
             'typeId' => $this->integer()->notNull(),
-            'authorId' => $this->integer(),
             'postDate' => $this->dateTime(),
             'expiryDate' => $this->dateTime(),
             'deletedWithEntryType' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
+        ]);
+        $this->createTable(Table::ENTRIES_AUTHORS, [
+            'entryId' => $this->integer()->notNull(),
+            'authorId' => $this->integer()->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
+            'PRIMARY KEY([[entryId]], [[authorId]])',
         ]);
         $this->createTable(Table::ENTRYTYPES, [
             'id' => $this->primaryKey(),
@@ -548,6 +553,7 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'type' => $this->enum('type', [Section::TYPE_SINGLE, Section::TYPE_CHANNEL, Section::TYPE_STRUCTURE])->notNull()->defaultValue('channel'),
             'enableVersioning' => $this->boolean()->defaultValue(false)->notNull(),
+            'maxAuthors' => $this->smallInteger()->unsigned()->defaultValue(1)->notNull(),
             'propagationMethod' => $this->string()->defaultValue(PropagationMethod::All->value)->notNull(),
             'defaultPlacement' => $this->enum('defaultPlacement', [Section::DEFAULT_PLACEMENT_BEGINNING, Section::DEFAULT_PLACEMENT_END])->defaultValue('end')->notNull(),
             'previewTargets' => $this->text(),
@@ -836,9 +842,10 @@ class Install extends Migration
         $this->createIndex(null, Table::SYSTEMMESSAGES, ['language'], false);
         $this->createIndex(null, Table::ENTRIES, ['postDate'], false);
         $this->createIndex(null, Table::ENTRIES, ['expiryDate'], false);
-        $this->createIndex(null, Table::ENTRIES, ['authorId'], false);
         $this->createIndex(null, Table::ENTRIES, ['sectionId'], false);
         $this->createIndex(null, Table::ENTRIES, ['typeId'], false);
+        $this->createIndex(null, Table::ENTRIES_AUTHORS, ['authorId'], false);
+        $this->createIndex(null, Table::ENTRIES_AUTHORS, ['entryId', 'sortOrder'], false);
         $this->createIndex(null, Table::ENTRIES, ['primaryOwnerId'], false);
         $this->createIndex(null, Table::ENTRIES, ['fieldId'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['fieldLayoutId'], false);
@@ -1009,11 +1016,12 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ELEMENTS_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS_SITES, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS_SITES, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
-        $this->addForeignKey(null, Table::ENTRIES, ['authorId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ENTRIES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRIES, ['sectionId'], Table::SECTIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRIES, ['parentId'], Table::ENTRIES, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ENTRIES, ['typeId'], Table::ENTRYTYPES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ENTRIES_AUTHORS, ['entryId'], Table::ENTRIES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ENTRIES_AUTHORS, ['authorId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRIES, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRIES, ['primaryOwnerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRYTYPES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
