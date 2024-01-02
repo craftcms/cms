@@ -4069,7 +4069,7 @@ class GeneralConfig extends BaseConfig
      * ```php
      * ->dev([
      *     'disabledPlugins' => '*',
-     * ],
+     * ])
      * ```
      *
      * ::: warning
@@ -5463,7 +5463,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 1 hour
-     * ->previewTokenDuration(3600),
+     * ->previewTokenDuration(3600)
      * ```
      *
      * @group Security
@@ -5516,7 +5516,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 2 weeks
-     * ->purgePendingUsersDuration(1209600),
+     * ->purgePendingUsersDuration(1209600)
      * ```
      *
      * @group Garbage Collection
@@ -5540,7 +5540,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 1 week
-     * ->purgeStaleUserSessionDuration(604800),
+     * ->purgeStaleUserSessionDuration(604800)
      * ```
      *
      * @group Garbage Collection
@@ -6121,7 +6121,7 @@ class GeneralConfig extends BaseConfig
      *     'CF-Visitor' => [
      *         '{\"scheme\":\"https\"}',
      *     ],
-     * ],
+     * ])
      * ```
      *
      * @group Security
