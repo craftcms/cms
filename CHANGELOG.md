@@ -16,6 +16,7 @@
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
 - Fixed an error that occurred when indexing search keywords for an element with multiple instances of the same custom field. ([#13987](https://github.com/craftcms/cms/issues/13987))
 - Fixed a bug where changed element attributes weren’t getting recorded.
+- Fixed an error that could occur when updating to Craft 5. ([#14086](https://github.com/craftcms/cms/issues/14086))
 
 ## 5.0.0-alpha.3 - 2023-12-21
 
