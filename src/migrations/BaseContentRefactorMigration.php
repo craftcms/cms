@@ -27,6 +27,12 @@ use yii\db\TableSchema;
 class BaseContentRefactorMigration extends Migration
 {
     /**
+     * @var bool Whether the old content table data should be preserved after it has been migrated to the
+     * `elements_sites` table.
+     */
+    protected bool $preserveOldData = false;
+
+    /**
      * Updates the `elements_sites.content` value for elements.
      *
      * @param int[]|YiiQuery $ids The element IDs to update, or a query that selects them.
@@ -173,18 +179,20 @@ class BaseContentRefactorMigration extends Migration
             ], ['in', 'elementId', $ids], $params, false);
         }
 
-        // drop these content rows completely
-        $this->delete($contentTable, ['in', 'elementId', $ids]);
+        if (!$this->preserveOldData) {
+            // drop these content rows completely
+            $this->delete($contentTable, ['in', 'elementId', $ids]);
 
-        // if the content table is totally empty now, drop it
-        $rowsExist = (new Query())
-            ->select('id')
-            ->from($contentTable)
-            ->limit(1)
-            ->exists($this->db);
+            // if the content table is totally empty now, drop it
+            $rowsExist = (new Query())
+                ->select('id')
+                ->from($contentTable)
+                ->limit(1)
+                ->exists($this->db);
 
-        if (!$rowsExist) {
-            $this->dropTable($contentTable);
+            if (!$rowsExist) {
+                $this->dropTable($contentTable);
+            }
         }
     }
 
