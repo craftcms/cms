@@ -6,16 +6,18 @@ use craft\db\Migration;
 use craft\db\Table;
 
 /**
- * m231102_113100_add_entry_type_show_slug_field migration.
+ * m230524_000000_add_entry_type_show_slug_field migration.
  */
-class m231102_113100_add_entry_type_show_slug_field extends Migration
+class m230524_000000_add_entry_type_show_slug_field extends Migration
 {
     /**
      * @inheritdoc
      */
     public function safeUp(): bool
     {
-        $this->addColumn(Table::ENTRYTYPES, 'showSlugField', $this->boolean()->defaultValue(true)->after('titleFormat'));
+        if (!$this->db->columnExists(Table::ENTRYTYPES, 'showSlugField')) {
+            $this->addColumn(Table::ENTRYTYPES, 'showSlugField', $this->boolean()->defaultValue(true)->after('titleFormat'));
+        }
         return true;
     }
 

@@ -2,14 +2,23 @@
 
 ## Unreleased
 
+- Entries can now have multiple authors. ([#12380](https://github.com/craftcms/cms/pull/12380))
+- Sections now have a “Max Authors” setting. ([#12380](https://github.com/craftcms/cms/pull/12380))
 - Entry types now have a “Show the Slug field” setting. ([#13799](https://github.com/craftcms/cms/discussions/13799))
+- Entry queries’ `authorId` params now support passing multiple IDs prefixed with `and`, to fetch entries with multiple listed authors.
+- User queries now have an `authorOf` param.
+- Entries now have `author` and `authorIds` GraphQL field.
 - Fixed a bug where section preview targets weren’t being respected in Craft Pro. ([#14050](https://github.com/craftcms/cms/issues/14050))
 - Added `craft\events\SetEagerLoadedElementsEvent::$plan`.
-- Added `craft\services\Entries::getEntryTypeByHandle()`.
+- Added `craft\migrations\BaseContentRefactorMigration::$preserveOldData`. ([#14089](https://github.com/craftcms/cms/pull/14089))
+- Added `craft\services\Entries::getEntryTypeByHandle()`. ([#14094](https://github.com/craftcms/cms/discussions/14094))
 - `craft\base\ElementInterface::setEagerLoadedElements()` now has a `$plan` argument, which will be set to the eager-loading plan.
 - Removed `craft\services\Entries::getEntryTypesByHandle()`.
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
 - Fixed an error that occurred when indexing search keywords for an element with multiple instances of the same custom field. ([#13987](https://github.com/craftcms/cms/issues/13987))
+- Fixed a bug where changed element attributes weren’t getting recorded.
+- Fixed an error that could occur when updating to Craft 5. ([#14086](https://github.com/craftcms/cms/issues/14086))
+- Fixed a bug where volume filesystem settings were getting unnecessary validation errors when the `tempAssetUploadFs` config setting wasn’t set. ([#14071](https://github.com/craftcms/cms/issues/14071))
 
 ## 5.0.0-alpha.3 - 2023-12-21
 

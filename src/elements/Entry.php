@@ -52,10 +52,12 @@ use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use DateTime;
 use Illuminate\Support\Collection;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -64,10 +66,12 @@ use yii\db\Expression;
  * Entry represents an entry element.
  *
  * @property int $typeId the entry type’s ID
- * @property int|null $authorId the entry author’s ID
  * @property EntryType $type the entry type
  * @property Section|null $section the entry’s section
- * @property User|null $author the entry’s author
+ * @property User|null $author the primary entry author
+ * @property User[] $authors the entry authors
+ * @property int|null $authorId The primary entry author’s ID
+ * @property int[] $authorIds the entry authors’ IDs
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -571,7 +575,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $attributes = [
             'section' => ['label' => Craft::t('app', 'Section')],
             'type' => ['label' => Craft::t('app', 'Entry Type')],
-            'author' => ['label' => Craft::t('app', 'Author')],
+            'authors' => ['label' => Craft::t('app', 'Authors')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
             'parent' => ['label' => Craft::t('app', 'Parent')],
@@ -590,7 +594,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // Hide Author & Last Edited By from Craft Solo
         if (Craft::$app->getEdition() !== Craft::Pro) {
-            unset($attributes['author'], $attributes['revisionCreator']);
+            unset($attributes['authors'], $attributes['revisionCreator']);
         }
 
         return $attributes;
@@ -610,7 +614,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         if ($source !== 'singles') {
             $attributes[] = 'postDate';
             $attributes[] = 'expiryDate';
-            $attributes[] = 'author';
+            $attributes[] = 'authors';
         }
 
         $attributes[] = 'link';
@@ -623,30 +627,32 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
-        if ($handle === 'author') {
-            /** @phpstan-ignore-next-line */
-            $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
-                return $entry->getAuthorId() !== null;
-            });
+        switch ($handle) {
+            case 'author':
+            case 'authors':
+                $map = [];
 
-            /** @phpstan-ignore-next-line */
-            $map = array_map(function(self $entry) {
+                /** @var self[] $sourceElements */
+                foreach ($sourceElements as $entry) {
+                    foreach ($entry->getAuthorIds() as $authorId) {
+                        $map[] = [
+                            'source' => $entry->id,
+                            'target' => $authorId,
+                        ];
+                    }
+                }
+
                 return [
-                    'source' => $entry->id,
-                    'target' => $entry->getAuthorId(),
+                    'elementType' => User::class,
+                    'map' => $map,
+                    'criteria' => [
+                        'status' => null,
+                    ],
                 ];
-            }, $sourceElementsWithAuthors);
 
-            return [
-                'elementType' => User::class,
-                'map' => $map,
-                'criteria' => [
-                    'status' => null,
-                ],
-            ];
+            default:
+                return parent::eagerLoadingMap($sourceElements, $handle);
         }
-
-        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     /**
@@ -677,8 +683,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         switch ($attribute) {
-            case 'author':
-                $elementQuery->andWith(['author', ['status' => null]]);
+            case 'authors':
+                $elementQuery->andWith(['authors', ['status' => null]]);
                 break;
             default:
                 parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
@@ -739,18 +745,24 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public bool $deletedWithEntryType = false;
 
     /**
-     * @var int|null Author ID
-     * @see getAuthorId()
-     * @see setAuthorId()
+     * @var int[] Entry author IDs
+     * @see getAuthorIds()
+     * @see setAuthorIds()
      */
-    private ?int $_authorId = null;
+    private array $_authorIds;
 
     /**
-     * @var User|null|false
-     * @see getAuthor()
-     * @see setAuthor()
+     * @var int[] Original entry author IDs
+     * @see setAuthorIds()
      */
-    private User|false|null $_author = null;
+    private array $_oldAuthorIds;
+
+    /**
+     * @var User[]|null Entry authors
+     * @see getAuthors()
+     * @see setAuthors()
+     */
+    private ?array $_authors = null;
 
     /**
      * @var int|null Type ID
@@ -782,6 +794,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         unset($names['deletedWithEntryType']);
         unset($names['saveOwnership']);
         $names['authorId'] = true;
+        $names['authorIds'] = true;
         $names['typeId'] = true;
         return array_keys($names);
     }
@@ -793,6 +806,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         $names = parent::extraFields();
         $names[] = 'author';
+        $names[] = 'authors';
         $names[] = 'section';
         $names[] = 'type';
         return $names;
@@ -804,6 +818,9 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public function attributeLabels(): array
     {
         return array_merge(parent::attributeLabels(), [
+            'authorIds' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
+                'max' => $this->getSection()?->maxAuthors ?? 1,
+            ]),
             'postDate' => Craft::t('app', 'Post Date'),
             'expiryDate' => Craft::t('app', 'Expiry Date'),
         ]);
@@ -815,7 +832,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['sectionId', 'fieldId', 'ownerId', 'primaryOwnerId', 'typeId', 'sortOrder', 'authorId'], 'number', 'integerOnly' => true];
+        $rules[] = [['sectionId', 'fieldId', 'ownerId', 'primaryOwnerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
+        $rules[] = [['authorIds'], 'each', 'rule' => ['number', 'integerOnly' => true]];
         $rules[] = [
             ['sectionId'],
             'required',
@@ -827,7 +845,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             }
         }];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
-
+        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
         $rules[] = [
             ['postDate'],
             DateCompareValidator::class,
@@ -837,12 +855,18 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'on' => self::SCENARIO_LIVE,
         ];
 
-        $rules[] = [
-            ['authorId'],
-            'required',
-            'when' => fn() => isset($this->sectionId) && $this->getSection()->type !== Section::TYPE_SINGLE,
-            'on' => self::SCENARIO_LIVE,
-        ];
+        $section = $this->getSection();
+        if ($section && $section->type !== Section::TYPE_SINGLE) {
+            $rules[] = [['authorIds'], 'required', 'on' => self::SCENARIO_LIVE];
+            $rules[] = [
+                ['authorIds'],
+                ArrayValidator::class,
+                'max' => $section->maxAuthors,
+                'tooMany' => Craft::t('app', '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.', [
+                    'num' => $section->maxAuthors,
+                ]),
+            ];
+        }
 
         return $rules;
     }
@@ -1347,39 +1371,84 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     }
 
     /**
-     * Returns the entry author ID.
+     * Returns the entry author’s ID.
      *
      * @return int|null
      * @since 4.0.0
      */
     public function getAuthorId(): ?int
     {
-        return $this->_authorId;
+        return $this->getAuthorIds()[0] ?? null;
     }
 
     /**
-     * Sets the entry author ID.
+     * Sets the entry author’s ID.
      *
-     * @param int|int[]|string|null $authorId
+     * @param int|array{0:int}|string|null $authorId
      * @since 4.0.0
      */
     public function setAuthorId(array|int|string|null $authorId): void
     {
-        if ($authorId === '') {
-            $authorId = null;
-        }
-
-        if (is_array($authorId)) {
-            $this->_authorId = reset($authorId) ?: null;
-        } else {
-            $this->_authorId = $authorId;
-        }
-
-        $this->_author = null;
+        $authorId = $this->normalizeAuthorIds($authorId)[0] ?? null;
+        $this->setAuthorIds($authorId);
     }
 
     /**
-     * Returns the entry’s author.
+     * Returns the primary entry authors’ IDs.
+     *
+     * @return int[]
+     * @since 5.0.0
+     */
+    public function getAuthorIds(): array
+    {
+        if (!isset($this->_authorIds)) {
+            $this->_authorIds = array_map(fn(User $author) => $author->id, $this->getAuthors());
+        }
+
+        return $this->_authorIds;
+    }
+
+    /**
+     * Sets the entry authors’ IDs.
+     *
+     * @param User[]|int[]|string|int|null $authorIds
+     * @since 5.0.0
+     */
+    public function setAuthorIds(array|string|int|null $authorIds): void
+    {
+        $authorIds = $this->normalizeAuthorIds($authorIds);
+
+        if (isset($this->_authorIds)) {
+            if ($authorIds === $this->_authorIds) {
+                return;
+            }
+
+            if (!isset($this->_oldAuthorIds)) {
+                // remember the old IDs so we know if this has been modified
+                $this->_oldAuthorIds = $this->_authorIds;
+            }
+        }
+
+        $this->_authorIds = $authorIds;
+        $this->_authors = null;
+    }
+
+    private function normalizeAuthorIds(array|string|int|null $authorIds): array
+    {
+        if ($authorIds === '' || $authorIds === null) {
+            return [];
+        }
+
+        // make sure we're working with an array
+        if (!is_array($authorIds)) {
+            $authorIds = ArrayHelper::toArray($authorIds);
+        }
+
+        return array_map(fn($id) => (int)$id, $authorIds);
+    }
+
+    /**
+     * Returns the entry author.
      *
      * ---
      * ```php
@@ -1394,29 +1463,73 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function getAuthor(): ?User
     {
-        if (!isset($this->_author)) {
-            if (!$this->getAuthorId()) {
-                return null;
-            }
-
-            if (($this->_author = Craft::$app->getUsers()->getUserById($this->getAuthorId())) === null) {
-                // The author is probably soft-deleted. Just no author is set
-                $this->_author = false;
-            }
-        }
-
-        return $this->_author ?: null;
+        return $this->getAuthors()[0] ?? null;
     }
 
     /**
-     * Sets the entry’s author.
+     * Sets the entry author.
      *
      * @param User|null $author
      */
     public function setAuthor(?User $author = null): void
     {
-        $this->_author = $author;
-        $this->setAuthorId($author?->id);
+        $this->setAuthors($author ? [$author] : []);
+    }
+
+    /**
+     * Returns the entry authors.
+     *
+     * ---
+     * ```php
+     * $authors = $entry->authors;
+     * ```
+     * ```twig
+     * {% for author in entry.authors %}
+     *     <p>By {{ author.name }}</p>
+     * {% endfor %}
+     * ```
+     *
+     * @return User[]
+     * @since 5.0.0
+     */
+    public function getAuthors(): array
+    {
+        if (!isset($this->_authors)) {
+            if (isset($this->_authorIds)) {
+                $authors = User::find()
+                    ->id($this->_authorIds)
+                    ->fixedOrder()
+                    ->status(null)
+                    ->all();
+            } else {
+                $authors = User::find()
+                    ->authorOf($this)
+                    ->status(null)
+                    ->innerJoin(['entries_authors' => Table::ENTRIES_AUTHORS], [
+                        'and',
+                        ['entries_authors.entryId' => $this->id],
+                        '[[entries_authors.authorId]] = [[users.id]]',
+                    ])
+                    ->orderBy(['entries_authors.sortOrder' => SORT_ASC])
+                    ->all();
+            }
+
+            $this->setAuthors($authors);
+        }
+
+        return $this->_authors;
+    }
+
+    /**
+     * Sets the entry authors.
+     *
+     * @param User[] $authors
+     * @since 5.0.0
+     */
+    public function setAuthors(array $authors): void
+    {
+        $this->_authors = $authors;
+        $this->_authorIds = array_map(fn(User $author) => $author->id, $authors);
     }
 
     /**
@@ -1517,7 +1630,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         return (
             $section->type === Section::TYPE_SINGLE ||
-            $this->getAuthorId() === $user->id ||
+            in_array($user->id, $this->getAuthorIds(), true) ||
             $user->can("viewPeerEntries:$section->uid")
         );
     }
@@ -1558,7 +1671,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         return (
             $section->type === Section::TYPE_SINGLE ||
-            $this->getAuthorId() === $user->id ||
+            in_array($user->id, $this->getAuthorIds(), true) ||
             $user->can("savePeerEntries:$section->uid")
         );
     }
@@ -1617,7 +1730,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         return (
-            $this->getAuthorId() === $user->id ||
+            in_array($user->id, $this->getAuthorIds(), true) ||
             $user->can("deletePeerEntries:$section->uid")
         );
     }
@@ -1709,10 +1822,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($plan->handle === 'author') {
-            $this->_author = $elements[0] ?? false;
-        } else {
-            parent::setEagerLoadedElements($handle, $elements, $plan);
+        switch ($plan->handle) {
+            case 'author':
+            case 'authors':
+                /** @var User[] $elements */
+                $this->setAuthors($elements);
+                break;
+            default:
+                parent::setEagerLoadedElements($handle, $elements, $plan);
         }
     }
 
@@ -1725,9 +1842,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
-            case 'author':
-                $author = $this->getAuthor();
-                return $author ? Cp::elementChipHtml($author) : '';
+            case 'authors':
+                $authors = $this->getAuthors();
+                $html = '';
+                if (!empty($authors)) {
+                    foreach ($authors as $author) {
+                        $html .= Cp::elementChipHtml($author);
+                    }
+                }
+                return $html;
             case 'section':
                 $section = $this->getSection();
                 return $section ? Html::encode(Craft::t('site', $section->name)) : '';
@@ -1786,6 +1909,7 @@ EOD;
                 }
 
                 return Cp::selectFieldHtml([
+                    'status' => $this->getAttributeStatus('typeId'),
                     'label' => Craft::t('app', 'Entry Type'),
                     'id' => 'entryType',
                     'name' => 'typeId',
@@ -1845,21 +1969,26 @@ EOD;
             // Author
             if (Craft::$app->getEdition() === Craft::Pro && $user->can("viewPeerEntries:$section->uid")) {
                 $fields[] = (function() use ($static, $section) {
-                    $author = $this->getAuthor();
-                    return Cp::elementSelectFieldHtml([
-                        'label' => Craft::t('app', 'Author'),
-                        'id' => 'authorId',
-                        'name' => 'authorId',
+                    $authors = $this->getAuthors();
+                    $html = Cp::elementSelectFieldHtml([
+                        'status' => $this->getAttributeStatus('authorIds'),
+                        'label' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
+                            'max' => $section->maxAuthors,
+                        ]),
+                        'id' => 'authorIds',
+                        'name' => 'authorIds',
                         'elementType' => User::class,
                         'selectionLabel' => Craft::t('app', 'Choose'),
                         'criteria' => [
                             'can' => "viewEntries:$section->uid",
                         ],
-                        'single' => true,
-                        'elements' => $author ? [$author] : null,
+                        'single' => false,
+                        'elements' => $authors ?: null,
                         'disabled' => $static,
-                        'errors' => $this->getErrors('authorId'),
+                        'errors' => $this->getErrors('authorIds'),
+                        'limit' => $section->maxAuthors,
                     ]);
+                    return $html;
                 })();
             }
 
@@ -1871,6 +2000,7 @@ EOD;
 
             // Post Date
             $fields[] = Cp::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('postDate'),
                 'label' => Craft::t('app', 'Post Date'),
                 'id' => 'postDate',
                 'name' => 'postDate',
@@ -1881,6 +2011,7 @@ EOD;
 
             // Expiry Date
             $fields[] = Cp::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('expiryDate'),
                 'label' => Craft::t('app', 'Expiry Date'),
                 'id' => 'expiryDate',
                 'name' => 'expiryDate',
@@ -2021,8 +2152,8 @@ EOD;
      */
     public function beforeValidate(): bool
     {
-        if (!$this->getAuthorId() && !isset($this->fieldId) && $this->getSection()->type !== Section::TYPE_SINGLE) {
-            $this->setAuthorId(Craft::$app->getUser()->getId());
+        if (!isset($this->_authorIds) && !isset($this->fieldId) && $this->getSection()->type !== Section::TYPE_SINGLE) {
+            $this->setAuthor(Craft::$app->getUser()->getIdentity());
         }
 
         if (
@@ -2137,7 +2268,6 @@ EOD;
             $record->fieldId = $this->fieldId;
             $record->primaryOwnerId = $this->primaryOwnerId ?? $this->ownerId;
             $record->typeId = $this->getTypeId();
-            $record->authorId = $this->getAuthorId();
             $record->postDate = Db::prepareDateForDb($this->postDate);
             $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
 
@@ -2145,6 +2275,16 @@ EOD;
             $dirtyAttributes = array_keys($record->getDirtyAttributes());
 
             $record->save(false);
+
+            // save authors
+            if (isset($this->_authorIds)) {
+                // save & add to dirty attributes
+                $this->_saveAuthors();
+
+                if (isset($this->_oldAuthorIds) && $this->_authorIds !== $this->_oldAuthorIds) {
+                    $dirtyAttributes[] = 'authorIds';
+                }
+            }
 
             // ownerId will be null when creating a revision
             if (isset($this->fieldId, $this->ownerId) && $this->saveOwnership) {
@@ -2191,6 +2331,26 @@ EOD;
         }
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * Save authors
+     *
+     * @return void
+     * @throws Throwable
+     * @throws \yii\db\Exception
+     */
+    private function _saveAuthors(): void
+    {
+        Db::delete(Table::ENTRIES_AUTHORS, ['entryId' => $this->id]);
+
+        if (!empty($this->_authorIds)) {
+            $data = [];
+            foreach ($this->getAuthorIds() as $sortOrder => $authorId) {
+                $data[] = [$this->id, $authorId, $sortOrder + 1];
+            }
+            Db::batchInsert(Table::ENTRIES_AUTHORS, ['entryId', 'authorId', 'sortOrder'], $data);
+        }
     }
 
     private function _placeInStructure(bool $isNew, Section $section): void
