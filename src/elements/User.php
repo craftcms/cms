@@ -905,6 +905,10 @@ class User extends Element implements IdentityInterface
             unset($values['email'], $values['unverifiedEmail']);
         }
 
+        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            $this->fullName = null;
+        }
+
         parent::setAttributes($values, $safeOnly);
     }
 
@@ -1688,6 +1692,7 @@ XML;
                 'user' => $this,
                 'isNewUser' => !$this->id,
                 'static' => $static,
+                'meta' => true,
             ]),
             parent::metaFieldsHtml($static),
         ]);
