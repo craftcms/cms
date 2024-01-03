@@ -8,6 +8,7 @@
 - “Updating search indexes” jobs are no longer queued when saving elements with change tracking enabled, if no searchable fields or attributes were changed. ([#13917](https://github.com/craftcms/cms/issues/13917))
 - Edit Field pages now have a “Save and add another” action. ([#13865](https://github.com/craftcms/cms/discussions/13865))
 - Added the `disabledUtilities` config setting. ([#14044](https://github.com/craftcms/cms/discussions/14044))
+- Added the `showFirstAndLastNameFields` config setting. ([#14097](https://github.com/craftcms/cms/pull/14097))
 - `resave` commands now pass an empty string (`''`) to fields’ `normalizeValue()` methods when `--to` is set to `:empty:`. ([#13951](https://github.com/craftcms/cms/issues/13951))
 - The `sections/create` command now supports `--name`, `--handle`, `--type`, `--no-versioning`, `--uri-format`, and `--template` options, and can now be run non-interactively. ([#13864](https://github.com/craftcms/cms/discussions/13864))
 - The `index-assets/one` and `index-assets/all` commands now accept a `--delete-empty-folders` option. ([#13947](https://github.com/craftcms/cms/discussions/13947))
