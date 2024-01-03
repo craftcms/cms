@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a bug where `craft\web\Request::getIsPreview()` was returning `true` for requests with expired tokens. ([#14066](https://github.com/craftcms/cms/discussions/14066))
+
 ## 3.9.10 - 2024-01-02
 
 - Fixed a bug where meta fields weren’t immediately showing change indicators when entries were autosaved.

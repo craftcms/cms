@@ -710,7 +710,11 @@ class Request extends \yii\web\Request
      */
     public function getIsPreview(): bool
     {
-        return $this->getQueryParam('x-craft-preview') !== null || $this->getQueryParam('x-craft-live-preview') !== null;
+        return (
+            ($this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview')) !== null &&
+            // If there's a token but it expired, they're looking at the live site
+            (!$this->getHadToken() || $this->getToken() !== null)
+        );
     }
 
     /**
