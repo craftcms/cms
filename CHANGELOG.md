@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the `showFirstAndLastNameFields` config setting. ([#14097](https://github.com/craftcms/cms/pull/14097))
 - Fixed a PHP error that occurred when viewing a user’s addresses.
 
 ## 5.0.0-alpha.4 - 2024-01-02
@@ -9,15 +10,22 @@
 - Entries can now have multiple authors. ([#12380](https://github.com/craftcms/cms/pull/12380))
 - Sections now have a “Max Authors” setting. ([#12380](https://github.com/craftcms/cms/pull/12380))
 - Entry types now have a “Show the Slug field” setting. ([#13799](https://github.com/craftcms/cms/discussions/13799))
+- Date range condition rules are now inclusive of their end dates. ([#13435](https://github.com/craftcms/cms/issues/13435))
+- Improved the performance of large editable tables. ([#13852](https://github.com/craftcms/cms/issues/13852))
+- Edit Field pages now have a “Save and add another” action. ([#13865](https://github.com/craftcms/cms/discussions/13865))
+- The `sections/create` command now supports `--name`, `--handle`, `--type`, `--no-versioning`, `--uri-format`, and `--template` options, and can now be run non-interactively. ([#13864](https://github.com/craftcms/cms/discussions/13864))
+- Added the `disabledUtilities` config setting. ([#14044](https://github.com/craftcms/cms/discussions/14044))
 - Entry queries’ `authorId` params now support passing multiple IDs prefixed with `and`, to fetch entries with multiple listed authors.
 - User queries now have an `authorOf` param.
 - Entries now have `author` and `authorIds` GraphQL field.
 - Fixed a bug where section preview targets weren’t being respected in Craft Pro. ([#14050](https://github.com/craftcms/cms/issues/14050))
 - Added `craft\events\SetEagerLoadedElementsEvent::$plan`.
+- Added `craft\helpers\AdminTable::moveToPage()`. ([#14051](https://github.com/craftcms/cms/pull/14051))
 - Added `craft\migrations\BaseContentRefactorMigration::$preserveOldData`. ([#14089](https://github.com/craftcms/cms/pull/14089))
 - Added `craft\services\Entries::getEntryTypeByHandle()`. ([#14094](https://github.com/craftcms/cms/discussions/14094))
 - `craft\base\ElementInterface::setEagerLoadedElements()` now has a `$plan` argument, which will be set to the eager-loading plan.
 - Removed `craft\services\Entries::getEntryTypesByHandle()`.
+- Admin tables now have `footerActions`, `moveToPageAction`, `onCellClicked`, `onCellDoubleClicked`, `onRowClicked`, `onRowDoubleClicked`, and `paginatedReorderAction` settings. ([#14051](https://github.com/craftcms/cms/pull/14051))
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
 - Fixed an error that occurred when indexing search keywords for an element with multiple instances of the same custom field. ([#13987](https://github.com/craftcms/cms/issues/13987))
 - Fixed a bug where changed element attributes weren’t getting recorded.
