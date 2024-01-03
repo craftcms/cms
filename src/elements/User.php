@@ -973,6 +973,10 @@ class User extends Element implements IdentityInterface
             }
         }
 
+        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            $this->fullName = null;
+        }
+
         parent::setAttributes($values, $safeOnly);
     }
 

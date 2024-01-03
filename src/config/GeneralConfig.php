@@ -2775,6 +2775,23 @@ class GeneralConfig extends BaseConfig
     public ?array $secureProtocolHeaders = null;
 
     /**
+     * @var bool Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->showFirstAndLastNameFields()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SHOW_FIRST_AND_LAST_NAME_FIELDS=true
+     * ```
+     * :::
+     *
+     * @group Users
+     * @since 4.6.0
+     */
+    public bool $showFirstAndLastNameFields = false;
+
+    /**
      * @var mixed The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
      *
      * Set to `0` if you don’t ever want to delete soft-deleted items.
@@ -4121,7 +4138,7 @@ class GeneralConfig extends BaseConfig
      * ```php
      * ->dev([
      *     'disabledPlugins' => '*',
-     * ],
+     * ])
      * ```
      *
      * ::: warning
@@ -5562,7 +5579,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 1 hour
-     * ->previewTokenDuration(3600),
+     * ->previewTokenDuration(3600)
      * ```
      *
      * @group Security
@@ -5615,7 +5632,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 2 weeks
-     * ->purgePendingUsersDuration(1209600),
+     * ->purgePendingUsersDuration(1209600)
      * ```
      *
      * @group Garbage Collection
@@ -5639,7 +5656,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 1 week
-     * ->purgeStaleUserSessionDuration(604800),
+     * ->purgeStaleUserSessionDuration(604800)
      * ```
      *
      * @group Garbage Collection
@@ -6220,7 +6237,7 @@ class GeneralConfig extends BaseConfig
      *     'CF-Visitor' => [
      *         '{\"scheme\":\"https\"}',
      *     ],
-     * ],
+     * ])
      * ```
      *
      * @group Security
@@ -6232,6 +6249,25 @@ class GeneralConfig extends BaseConfig
     public function secureProtocolHeaders(?array $value): self
     {
         $this->secureProtocolHeaders = $value;
+        return $this;
+    }
+
+    /**
+     * Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
+     *
+     * ```php
+     * ->showFirstAndLastNameFields()
+     * ```
+     *
+     * @group Users
+     * @param bool $value
+     * @return self
+     * @see $showFirstAndLastNameFields
+     * @since 4.6.0
+     */
+    public function showFirstAndLastNameFields(bool $value = true): self
+    {
+        $this->showFirstAndLastNameFields = $value;
         return $this;
     }
 
