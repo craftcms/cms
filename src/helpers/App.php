@@ -964,10 +964,19 @@ class App
      */
     public static function dbMutexConfig(): array
     {
+        $dbConfig = ['class' => NonTransactionalConnection::class] + static::dbConfig();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            return [
+                'class' => MysqlMutex::class,
+                'db' => $dbConfig,
+                'keyPrefix' => Craft::$app->id,
+            ];
+        }
+
         return [
-            'class' => Craft::$app->getDb()->getIsMysql() ? MysqlMutex::class : PgsqlMutex::class,
-            'db' => ['class' => NonTransactionalConnection::class] + static::dbConfig(),
-            'keyPrefix' => Craft::$app->id,
+            'class' => PgsqlMutex::class,
+            'db' => $dbConfig,
         ];
     }
 
