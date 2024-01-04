@@ -983,22 +983,10 @@ SQL)->execute();
     private function _entryTypes(): MemoizableArray
     {
         if (!isset($this->_entryTypes)) {
-            $entryTypes = [];
-            foreach ($this->_createEntryTypeQuery()->all() as $result) {
-                $entryTypes[] = new EntryType($result);
-            }
-            $this->_entryTypes = new MemoizableArray($entryTypes);
-
-            if (!empty($entryTypes) && Craft::$app->getRequest()->getIsCpRequest()) {
-                // Eager load the field layouts
-                /** @var EntryType[] $entryTypesByLayoutId */
-                $entryTypesByLayoutId = ArrayHelper::index($entryTypes, 'fieldLayoutId');
-                $allLayouts = Craft::$app->getFields()->getLayoutsByIds(array_filter(array_keys($entryTypesByLayoutId)));
-
-                foreach ($allLayouts as $layout) {
-                    $entryTypesByLayoutId[$layout->id]->setFieldLayout($layout);
-                }
-            }
+            $this->_entryTypes = new MemoizableArray(
+                $this->_createEntryTypeQuery()->all(),
+                fn(array $result) => new EntryType($result),
+            );
         }
 
         return $this->_entryTypes;
