@@ -22,6 +22,7 @@ use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
 use Webauthn\AuthenticationExtensions\ExtensionOutputCheckerHandler;
 use Webauthn\AuthenticatorAssertionResponseValidator;
 use Webauthn\AuthenticatorAttestationResponseValidator;
+use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialLoader;
 use Webauthn\PublicKeyCredentialParameters;
 use Webauthn\TokenBinding\IgnoreTokenBindingHandler;
@@ -29,15 +30,24 @@ use Webauthn\TokenBinding\IgnoreTokenBindingHandler;
 class WebauthnServer
 {
     /**
-     * Return the token binding handler
+     * Return the token binding handler.
+     * "we recommend to ignore this feature"
      *
      * @return IgnoreTokenBindingHandler
+     * @see https://webauthn-doc.spomky-labs.com/v/v4.5/pure-php/the-hard-way#token-binding-handler
      */
     public function getTokenBindingHandler(): IgnoreTokenBindingHandler
     {
         return IgnoreTokenBindingHandler::create();
     }
 
+    /**
+     * Return supported attestation statement types.
+     * "you should only use the none one unless you have specific needs"
+     *
+     * @return AttestationStatementSupportManager
+     * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#supported-attestation-statement-types
+     */
     public function getAttestationStatementManager(): AttestationStatementSupportManager
     {
         // The manager will receive data to load and select the appropriate
@@ -47,6 +57,12 @@ class WebauthnServer
         return $attestationStatementSupportManager;
     }
 
+    /**
+     * Returns the object that will load the Attestation statements received from the devices.
+     *
+     * @return AttestationObjectLoader
+     * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#attestation-object-loader
+     */
     public function getAttestationObjectLoader(): AttestationObjectLoader
     {
         return AttestationObjectLoader::create(
@@ -54,6 +70,12 @@ class WebauthnServer
         );
     }
 
+    /**
+     * Returns the object that will load the Public Key.
+     *
+     * @return PublicKeyCredentialLoader
+     * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#public-key-credential-loader
+     */
     public function getPublicKeyCredentialLoader(): PublicKeyCredentialLoader
     {
         return PublicKeyCredentialLoader::create(
@@ -61,11 +83,23 @@ class WebauthnServer
         );
     }
 
+    /**
+     * Returns the object that deals with extensions.
+     *
+     * @return ExtensionOutputCheckerHandler
+     * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#extension-output-checker-handler
+     */
     public function getExtensionOutputCheckerHandler(): ExtensionOutputCheckerHandler
     {
         return ExtensionOutputCheckerHandler::create();
     }
 
+    /**
+     * Returns a list of cryptographic algorithms to perform data verification based on cryptographic signatures.
+     *
+     * @return Manager
+     * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#algorithm-manager
+     */
     public function getAlgorithmManager(): Manager
     {
         return Manager::create()
@@ -88,6 +122,12 @@ class WebauthnServer
             );
     }
 
+    /**
+     * Returns the object that will be used to validate the Attestation Responses.
+     *
+     * @return AuthenticatorAttestationResponseValidator
+     * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#authenticator-attestation-response-validator
+     */
     public function getAuthenticatorAttestationResponseValidator(): AuthenticatorAttestationResponseValidator
     {
         return AuthenticatorAttestationResponseValidator::create(
@@ -98,6 +138,12 @@ class WebauthnServer
         );
     }
 
+    /**
+     * Returns the object that will be used to validate the Assertion Responses.
+     *
+     * @return AuthenticatorAssertionResponseValidator
+     * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#authenticator-assertion-response-validator
+     */
     public function getAuthenticatorAssertionResponseValidator(): AuthenticatorAssertionResponseValidator
     {
         return AuthenticatorAssertionResponseValidator::create(
@@ -108,21 +154,35 @@ class WebauthnServer
         );
     }
 
+    /**
+     * COSE algorithms that the authenticators must use in the order of interest.
+     *
+     * @return array
+     * @see: https://webauthn-doc.spomky-labs.com/pure-php/authenticator-registration
+     */
     public function getPublicKeyCredentialParametersList(): array
     {
         return [
-            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ES256),
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ES256K),
-            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ES384),
-            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ES512),
+            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ES256),
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_RS256),
-            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_RS384),
-            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_RS512),
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_PS256),
-            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_PS384),
-            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_PS512),
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ED256),
-            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ED512),
         ];
+    }
+
+    /**
+     * Return the object containing Authenticator Selection Criteria
+     *
+     * @return AuthenticatorSelectionCriteria
+     */
+    public function getPasskeyAuthenticatorSelectionCriteria(): AuthenticatorSelectionCriteria
+    {
+        return new AuthenticatorSelectionCriteria(
+            authenticatorAttachment: null,
+            userVerification: AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED,
+            residentKey: AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_REQUIRED,
+            requireResidentKey: true,
+        );
     }
 }
