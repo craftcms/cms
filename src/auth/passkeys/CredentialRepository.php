@@ -7,12 +7,12 @@
 
 namespace craft\auth\passkeys;
 
-use Base64Url\Base64Url;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\records\WebAuthn;
+use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialSourceRepository;
 use Webauthn\PublicKeyCredentialUserEntity;
@@ -25,6 +25,9 @@ use Webauthn\PublicKeyCredentialUserEntity;
  */
 class CredentialRepository implements PublicKeyCredentialSourceRepository
 {
+    /**
+     * @inheritdoc
+     */
     public function findOneByCredentialId(string $publicKeyCredentialId): ?PublicKeyCredentialSource
     {
         $record = $this->_findByCredentialId($publicKeyCredentialId);
@@ -70,7 +73,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
             $record = new WebAuthn();
             $record->userId = Craft::$app->getUser()->getIdentity()?->id;
             $record->credentialName = !empty($credentialName) ? $credentialName : Craft::t('app', 'Secure credential');
-            $record->credentialId = Base64Url::encode($publicKeyCredentialId);
+            $record->credentialId = Base64UrlSafe::encodeUnpadded($publicKeyCredentialId);
         }
 
         $record->dateLastUsed = Db::prepareDateForDb(DateTimeHelper::currentTimeStamp());
@@ -94,6 +97,6 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
      */
     private function _findByCredentialId(string $publicKeyCredentialId): ?WebAuthn
     {
-        return WebAuthn::findOne(['credentialId' => Base64Url::encode($publicKeyCredentialId)]);
+        return WebAuthn::findOne(['credentialId' => Base64UrlSafe::encodeUnpadded($publicKeyCredentialId)]);
     }
 }

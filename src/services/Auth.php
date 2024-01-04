@@ -7,12 +7,12 @@
 
 namespace craft\services;
 
-use Base64Url\Base64Url;
 use Craft;
 use craft\auth\methods\AuthMethodInterface;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\auth\passkeys\CredentialRepository;
+use craft\auth\passkeys\WebauthnServer;
 use craft\elements\User;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
@@ -24,7 +24,10 @@ use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
+use ParagonIE\ConstantTime\Base64UrlSafe;
 use Throwable;
+use Webauthn\AuthenticatorAssertionResponse;
+use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
@@ -32,7 +35,6 @@ use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
 use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
-use Webauthn\Server;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 
@@ -81,10 +83,10 @@ class Auth extends Component
     private User|false $_user;
 
     /**
-     * @var Server
+     * @var WebauthnServer
      * @see webauthnServer()
      */
-    private Server $_webauthnServer;
+    private WebauthnServer $_webauthnServer;
 
     /**
      * @var int|false The session duration for the user being authenticated.
@@ -112,6 +114,7 @@ class Auth extends Component
     /**
      * Get user and duration data from session
      *
+     * @param int|null $sessionDuration
      * @return User|null
      */
     public function getUser(?int &$sessionDuration = null): ?User
@@ -412,15 +415,18 @@ class Auth extends Component
             (new CredentialRepository())->findAllForUserEntity($userEntity),
         );
 
-        $options = $this->webauthnServer()->generatePublicKeyCredentialCreationOptions(
-            $userEntity,
-            PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
-            $excludeCredentials,
-            $this->passkeyAuthenticatorSelectionCriteria(),
+        $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::create(
+            rp: $this->passkeyRpEntity(),
+            user: $userEntity,
+            challenge: random_bytes(16),
+            pubKeyCredParams: $this->webauthnServer()->getPublicKeyCredentialParametersList(),
+            authenticatorSelection: $this->passkeyAuthenticatorSelectionCriteria(),
+            attestation: PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
+            excludeCredentials: $excludeCredentials
         );
 
-        Craft::$app->getSession()->set($this->passkeyCreationOptionsParam, Json::encode($options));
-        return $options;
+        Craft::$app->getSession()->set($this->passkeyCreationOptionsParam, Json::encode($publicKeyCredentialCreationOptions));
+        return $publicKeyCredentialCreationOptions;
     }
 
     /**
@@ -438,21 +444,29 @@ class Auth extends Component
             return false;
         }
 
-        /** @var PublicKeyCredentialCreationOptions $options */
-        $options = PublicKeyCredentialCreationOptions::createFromArray(Json::decode($optionsJson));
+        /** @var PublicKeyCredentialCreationOptions $publicKeyCredentialCreationOptions */
+        $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::createFromArray(Json::decode($optionsJson));
 
+        $publicKeyCredential = $this->webauthnServer()->getPublicKeyCredentialLoader()->load($credentials);
+        $authenticatorAttestationResponse = $publicKeyCredential->getResponse();
+        if (!$authenticatorAttestationResponse instanceof AuthenticatorAttestationResponse) {
+            //e.g. process here with a redirection to the public key creation page.
+            throw new \Exception('IWONA 123');
+        }
+
+        $serverRequest = $this->webauthnServerRequest();
         try {
-            $verifiedCredentials = $this->webauthnServer()->loadAndCheckAttestationResponse(
-                $credentials,
-                $options,
-                $this->webauthnServerRequest(),
+            $publicKeyCredentialSource = $this->webauthnServer()->getAuthenticatorAttestationResponseValidator()->check(
+                $authenticatorAttestationResponse,
+                $publicKeyCredentialCreationOptions,
+                $serverRequest
             );
         } catch (Throwable) {
             return false;
         }
 
         $credentialRepository = new CredentialRepository();
-        $credentialRepository->savedNamedCredentialSource($verifiedCredentials, $credentialName);
+        $credentialRepository->savedNamedCredentialSource($publicKeyCredentialSource, $credentialName);
 
         return true;
     }
@@ -476,13 +490,22 @@ class Auth extends Component
             $requestOptions = PublicKeyCredentialRequestOptions::createFromString($requestOptions);
         }
 
+        $userEntity = $this->passkeyUserEntity($user);
+        $publicKeyCredential = $this->webauthnServer()->getPublicKeyCredentialLoader()->load($response);
+        $authenticatorAssertionResponse = $publicKeyCredential->getResponse();
+        if (!$authenticatorAssertionResponse instanceof AuthenticatorAssertionResponse) {
+            //e.g. process here with a redirection to the public key creation page.
+            throw new \Exception('IWONA 321');
+        }
+
+        $serverRequest = ServerRequest::fromGlobals();
         try {
-            /** @var PublicKeyCredentialRequestOptions $requestOptions */
-            $this->webauthnServer()->loadAndCheckAssertionResponse(
-                $response,
+            $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
+                $publicKeyCredential->getRawId(),
+                $authenticatorAssertionResponse,
                 $requestOptions,
-                $this->passkeyUserEntity($user),
-                $this->webauthnServerRequest(),
+                $serverRequest,
+                $userEntity->getId(),
             );
         } catch (Throwable) {
             return false;
@@ -509,15 +532,16 @@ class Auth extends Component
      */
     public function getPasskeyRequestOptions(): PublicKeyCredentialRequestOptions
     {
-        return $this->webauthnServer()->generatePublicKeyCredentialRequestOptions(
-            PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_PREFERRED,
+        return PublicKeyCredentialRequestOptions::create(
+            challenge: random_bytes(32),
+            userVerification: PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_REQUIRED,
         );
     }
 
-    private function webauthnServer(): Server
+    private function webauthnServer(): WebauthnServer
     {
         if (!isset($this->_webauthnServer)) {
-            $this->_webauthnServer = new Server($this->passkeyRpEntity(), new CredentialRepository());
+            $this->_webauthnServer = new WebauthnServer();
         }
 
         return $this->_webauthnServer;
@@ -539,7 +563,7 @@ class Auth extends Component
     {
         $data = [
             'name' => $user->email,
-            'id' => Base64Url::encode($user->uid),
+            'id' => Base64UrlSafe::encodeUnpadded($user->uid),
             'displayName' => $user->getName(),
         ];
 
@@ -556,9 +580,11 @@ class Auth extends Component
 
     private function passkeyAuthenticatorSelectionCriteria(): AuthenticatorSelectionCriteria
     {
-        $authenticatorSelectionCriteria = new AuthenticatorSelectionCriteria();
-        $authenticatorSelectionCriteria->setRequireResidentKey(true);
-        $authenticatorSelectionCriteria->setUserVerification(AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_PREFERRED);
-        return $authenticatorSelectionCriteria;
+        return new AuthenticatorSelectionCriteria(
+            authenticatorAttachment: null,
+            userVerification: AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED,
+            residentKey: AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_REQUIRED,
+            requireResidentKey: true,
+        );
     }
 }
