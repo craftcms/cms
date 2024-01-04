@@ -14,7 +14,9 @@
 - The `sections/create` command now supports `--name`, `--handle`, `--type`, `--no-versioning`, `--uri-format`, and `--template` options, and can now be run non-interactively. ([#13864](https://github.com/craftcms/cms/discussions/13864))
 - The `index-assets/one` and `index-assets/all` commands now accept a `--delete-empty-folders` option. ([#13947](https://github.com/craftcms/cms/discussions/13947))
 - `queue/get-job-info` action requests no longer create a mutex lock.
+- The `mutex` driver is now set to `yii\mutex\MysqlMutex` or `yii\mutex\PgsqlMutex` by default, once again. ([#14102](https://github.com/craftcms/cms/pull/14102))
 - Added `craft\helpers\AdminTable::moveToPage()`. ([#14051](https://github.com/craftcms/cms/pull/14051))
+- Added `craft\helpers\App::dbMutexConfig()`.
 - Added `craft\helpers\ElementHelper::searchableAttributes()`.
 - Added `craft\services\Elements::setElementUri()`.
 - Added `craft\services\Elements::EVENT_SET_ELEMENT_URI`. ([#13930](https://github.com/craftcms/cms/discussions/13930))
@@ -22,4 +24,5 @@
 - `craft\base\MemoizableArray` now supports passing a normalizer method to the constructor, which will be lazily applied to each array item once, only if returned by `all()` or `firstWhere()`. ([#14104](https://github.com/craftcms/cms/pull/14104))
 - `craft\elements\actions\DeleteAssets` is no longer deprecated.
 - `craft\helpers\ArrayHelper::firstWhere()` now has a `$valueKey` argument, which can be passed a variable by reference that should be set to the resulting value’s key in the array.
+- Deprecated `craft\helpers\App::mutexConfig()`.
 - Admin tables now have `footerActions`, `moveToPageAction`, `onCellClicked`, `onCellDoubleClicked`, `onRowClicked`, `onRowDoubleClicked`, and `paginatedReorderAction` settings. ([#14051](https://github.com/craftcms/cms/pull/14051))
