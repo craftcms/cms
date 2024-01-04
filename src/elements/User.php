@@ -1932,6 +1932,10 @@ XML;
 
         $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
 
+        if (!$requestUserAgent) {
+            return false;
+        }
+
         if (!hash_equals($userAgent, md5($requestUserAgent))) {
             Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
             return false;
