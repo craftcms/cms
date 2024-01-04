@@ -14,7 +14,6 @@ use craft\config\DbConfig;
 use craft\db\Command;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
-use craft\db\NonTransactionalConnection;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
 use craft\errors\MissingComponentException;
@@ -964,7 +963,9 @@ class App
      */
     public static function dbMutexConfig(): array
     {
-        $dbConfig = ['class' => NonTransactionalConnection::class] + static::dbConfig();
+        // Use a dedicated connection, to avoid erratic behavior when locks are used during transactions
+        // https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions
+        $dbConfig = static::dbConfig();
 
         if (Craft::$app->getDb()->getIsMysql()) {
             return [
