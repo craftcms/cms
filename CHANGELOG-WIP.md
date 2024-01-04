@@ -12,6 +12,7 @@
 - `resave` commands now pass an empty string (`''`) to fields’ `normalizeValue()` methods when `--to` is set to `:empty:`. ([#13951](https://github.com/craftcms/cms/issues/13951))
 - The `sections/create` command now supports `--name`, `--handle`, `--type`, `--no-versioning`, `--uri-format`, and `--template` options, and can now be run non-interactively. ([#13864](https://github.com/craftcms/cms/discussions/13864))
 - The `index-assets/one` and `index-assets/all` commands now accept a `--delete-empty-folders` option. ([#13947](https://github.com/craftcms/cms/discussions/13947))
+- `queue/get-job-info` action requests no longer create a mutex lock.
 - Added `craft\helpers\AdminTable::moveToPage()`. ([#14051](https://github.com/craftcms/cms/pull/14051))
 - Added `craft\helpers\ElementHelper::searchableAttributes()`.
 - Added `craft\services\Elements::setElementUri()`.
