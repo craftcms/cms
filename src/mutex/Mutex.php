@@ -49,7 +49,7 @@ class Mutex extends YiiMutex
         $this->_init();
 
         if (!isset($this->mutex)) {
-            if (Craft::$app->getIsInstalled()) {
+            if (Craft::$app->id !== 'craft-test' && Craft::$app->getIsInstalled()) {
                 $this->mutex = App::dbMutexConfig();
             } else {
                 $this->mutex = NullMutex::class;
