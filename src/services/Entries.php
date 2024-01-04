@@ -209,34 +209,35 @@ class Entries extends Component
     private function _sections(): MemoizableArray
     {
         if (!isset($this->_sections)) {
-            $sections = [];
+            $results = $this->_createSectionQuery()->all();
+            $siteSettingsBySection = [];
 
-            foreach ($this->_createSectionQuery()->all() as $result) {
+            if (!empty($results) && Craft::$app->getRequest()->getIsCpRequest()) {
+                // Eager load the site settings
+                $sectionIds = array_map(fn(array $result) => $result['id'], $results);
+                $siteSettingsBySection = ArrayHelper::index(
+                    $this->_createSectionSiteSettingsQuery()->where(['sections_sites.sectionId' => $sectionIds])->all(),
+                    null,
+                    ['sectionId'],
+                );
+            }
+
+            $this->_sections = new MemoizableArray($results, function(array $result) use (&$siteSettingsBySection) {
                 if (!empty($result['previewTargets'])) {
                     $result['previewTargets'] = Json::decode($result['previewTargets']);
                 } else {
                     $result['previewTargets'] = [];
                 }
-                $sections[$result['id']] = new Section($result);
-            }
-
-            $this->_sections = new MemoizableArray(array_values($sections));
-
-            if (!empty($sections) && Craft::$app->getRequest()->getIsCpRequest()) {
-                // Eager load the site settings
-                $allSiteSettings = $this->_createSectionSiteSettingsQuery()
-                    ->where(['sections_sites.sectionId' => array_keys($sections)])
-                    ->all();
-
-                $siteSettingsBySection = [];
-                foreach ($allSiteSettings as $siteSettings) {
-                    $siteSettingsBySection[$siteSettings['sectionId']][] = new Section_SiteSettings($siteSettings);
+                $section = new Section($result);
+                /** @phpstan-ignore-next-line */
+                $siteSettings = ArrayHelper::remove($siteSettingsBySection, $section->id);
+                if ($siteSettings !== null) {
+                    $section->setSiteSettings(
+                        array_map(fn(array $config) => new Section_SiteSettings($config), $siteSettings),
+                    );
                 }
-
-                foreach ($siteSettingsBySection as $sectionId => $sectionSiteSettings) {
-                    $sections[$sectionId]->setSiteSettings($sectionSiteSettings);
-                }
-            }
+                return $section;
+            });
         }
 
         return $this->_sections;
