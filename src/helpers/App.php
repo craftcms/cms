@@ -44,6 +44,8 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
+use yii\mutex\MysqlMutex;
+use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
 
 /**
@@ -984,6 +986,32 @@ class App
     }
 
     /**
+     * Returns a database-based mutex driver config.
+     *
+     * @return array
+     * @since 4.6.0
+     */
+    public static function dbMutexConfig(): array
+    {
+        // Use a dedicated connection, to avoid erratic behavior when locks are used during transactions
+        // https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions
+        $dbConfig = static::dbConfig();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            return [
+                'class' => MysqlMutex::class,
+                'db' => $dbConfig,
+                'keyPrefix' => Craft::$app->id,
+            ];
+        }
+
+        return [
+            'class' => PgsqlMutex::class,
+            'db' => $dbConfig,
+        ];
+    }
+
+    /**
      * Returns a file-based mutex driver config.
      *
      * ::: tip
@@ -994,6 +1022,7 @@ class App
      *
      * @return array
      * @since 3.0.18
+     * @deprecated in 4.6.0
      */
     public static function mutexConfig(): array
     {
