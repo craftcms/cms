@@ -21,6 +21,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\CopyUrl;
+use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
 use craft\elements\actions\EditImage;
 use craft\elements\actions\MoveAssets;
@@ -500,6 +501,11 @@ class Asset extends Element
                 'type' => Restore::class,
                 'restorableElementsOnly' => true,
             ];
+
+            // Delete
+            if ($userSession->checkPermission("deletePeerAssets:$volume->uid")) {
+                $actions[] = DeleteAssets::class;
+            }
         }
 
         return $actions;

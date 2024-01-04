@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+- It’s now possible to delete volume folders using the “Delete” asset action. ([#13086](https://github.com/craftcms/cms/discussions/13086))
 - Added the `showFirstAndLastNameFields` config setting. ([#14097](https://github.com/craftcms/cms/pull/14097))
 - `queue/get-job-info` action requests no longer create a mutex lock.
 - `craft\base\MemoizableArray` now supports passing a normalizer method to the constructor, which will be lazily applied to each array item once, only if returned by `all()` or `firstWhere()`. ([#14104](https://github.com/craftcms/cms/pull/14104))
+- `craft\elements\actions\DeleteAssets` is no longer deprecated.
 - `craft\helpers\ArrayHelper::firstWhere()` now has a `$valueKey` argument, which can be passed a variable by reference that should be set to the resulting value’s key in the array.
 - Fixed a PHP error that occurred when viewing a user’s addresses.
 - Fixed a bug where all field layouts were getting instantiated before the Debug Toolbar had a chance to register its `*` wildcard event
