@@ -3532,6 +3532,8 @@ class Elements extends Component
                     }
                 }
 
+                $siteSettingsRecord = null; // keep php-stan happy
+
                 // Save the element’s site settings record
                 if (!$isNewElement) {
                     $siteSettingsRecord = Element_SiteSettingsRecord::findOne([

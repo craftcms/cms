@@ -1592,6 +1592,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Pass the query back
+        /** @phpstan-ignore-next-line */
         return $this->query;
     }
 
