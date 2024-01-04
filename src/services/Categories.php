@@ -116,19 +116,15 @@ class Categories extends Component
     private function _groups(): MemoizableArray
     {
         if (!isset($this->_groups)) {
-            $groups = [];
-
-            /** @var CategoryGroupRecord[] $groupRecords */
             $groupRecords = CategoryGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->with('structure')
                 ->all();
 
-            foreach ($groupRecords as $groupRecord) {
-                $groups[] = $this->_createCategoryGroupFromRecord($groupRecord);
-            }
-
-            $this->_groups = new MemoizableArray($groups);
+            $this->_groups = new MemoizableArray(
+                $groupRecords,
+                fn(CategoryGroupRecord $record) => $this->_createCategoryGroupFromRecord($record),
+            );
         }
 
         return $this->_groups;

@@ -63,7 +63,6 @@ use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
 use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
-use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -197,31 +196,16 @@ class Fields extends Component
     private ?MemoizableArray $_groups = null;
 
     /**
-     * @var MemoizableArray<array>|null
-     * @see _fieldConfigs()
+     * @var MemoizableArray<FieldInterface>|null
+     * @see _fields()
      */
-    private ?MemoizableArray $_fieldConfigs = null;
+    private ?MemoizableArray $_fields = null;
 
     /**
-     * @var FieldInterface[]
-     * @see _field()
+     * @var MemoizableArray<FieldLayout>|null
+     * @see _layouts()
      */
-    private array $_fields = [];
-
-    /**
-     * @var FieldLayout[]|null[]
-     */
-    private array $_layoutsById = [];
-
-    /**
-     * @var FieldLayout[]
-     */
-    private array $_layoutsByType = [];
-
-    /**
-     * @var FieldLayout[][]
-     */
-    private array $_allLayoutsByType = [];
+    private ?MemoizableArray $_layouts = null;
 
     /**
      * @var array
@@ -251,11 +235,7 @@ class Fields extends Component
     private function _groups(): MemoizableArray
     {
         if (!isset($this->_groups)) {
-            $groups = [];
-            foreach ($this->_createGroupQuery()->all() as $result) {
-                $groups[] = new FieldGroup($result);
-            }
-            $this->_groups = new MemoizableArray($groups);
+            $this->_groups = new MemoizableArray($this->_createGroupQuery()->all(), fn(array $result) => new FieldGroup($result));
         }
 
         return $this->_groups;
@@ -628,55 +608,33 @@ class Fields extends Component
     }
 
     /**
-     * Returns a memoizable array of field configs.
+     * Returns a memoizable array of fields.
      *
      * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      *
-     * @return MemoizableArray<array>
+     * @return MemoizableArray<FieldInterface>
      */
-    private function _fieldConfigs(mixed $context = null): MemoizableArray
+    private function _fields(mixed $context = null): MemoizableArray
     {
         $context ??= Craft::$app->getContent()->fieldContext;
 
-        if (!isset($this->_fieldConfigs)) {
-            $this->_fieldConfigs = new MemoizableArray($this->_createFieldQuery()->all());
+        if (!isset($this->_fields)) {
+            $this->_fields = new MemoizableArray(
+                $this->_createFieldQuery()->all(),
+                fn(array $config) => $this->createField($config),
+            );
         }
 
         if ($context === false) {
-            return $this->_fieldConfigs;
+            return $this->_fields;
         }
 
         if (is_array($context)) {
-            return $this->_fieldConfigs->whereIn('context', $context, true);
+            return $this->_fields->whereIn('context', $context, true);
         }
 
-        return $this->_fieldConfigs->where('context', $context, true);
-    }
-
-    /**
-     * @param array[] $configs
-     * @return FieldInterface[]
-     */
-    private function _fields(array $configs): array
-    {
-        return array_map(fn(array $config) => $this->_field($config), $configs);
-    }
-
-    /**
-     * @param array|null $config
-     * @return FieldInterface|null
-     */
-    private function _field(?array $config): ?FieldInterface
-    {
-        if ($config === null) {
-            return null;
-        }
-
-        if (!isset($this->_fields[$config['id']])) {
-            $this->_fields[$config['id']] = $this->createField($config);
-        }
-        return $this->_fields[$config['id']];
+        return $this->_fields->where('context', $context, true);
     }
 
     /**
@@ -688,7 +646,7 @@ class Fields extends Component
      */
     public function getAllFields(mixed $context = null): array
     {
-        return $this->_fields($this->_fieldConfigs($context)->all());
+        return $this->_fields($context)->all();
     }
 
     /**
@@ -747,7 +705,7 @@ class Fields extends Component
      */
     public function getFieldById(int $fieldId): ?FieldInterface
     {
-        return $this->_field($this->_fieldConfigs(false)->firstWhere('id', $fieldId));
+        return $this->_fields(false)->firstWhere('id', $fieldId);
     }
 
     /**
@@ -758,7 +716,7 @@ class Fields extends Component
      */
     public function getFieldByUid(string $fieldUid): ?FieldInterface
     {
-        return $this->_field($this->_fieldConfigs(false)->firstWhere('uid', $fieldUid, true));
+        return $this->_fields(false)->firstWhere('uid', $fieldUid, true);
     }
 
     /**
@@ -781,7 +739,7 @@ class Fields extends Component
      */
     public function getFieldByHandle(string $handle, mixed $context = null): ?FieldInterface
     {
-        return $this->_field($this->_fieldConfigs($context)->firstWhere('handle', $handle, true));
+        return $this->_fields($context)->firstWhere('handle', $handle, true);
     }
 
     /**
@@ -804,7 +762,7 @@ class Fields extends Component
      */
     public function getFieldsByGroupId(int $groupId): array
     {
-        return $this->_fields($this->_fieldConfigs(false)->where('groupId', $groupId)->all());
+        return $this->_fields(false)->where('groupId', $groupId)->all();
     }
 
     /**
@@ -1055,8 +1013,7 @@ class Fields extends Component
         }
 
         // Clear caches
-        $this->_fieldConfigs = null;
-        $this->_fields = [];
+        $this->_fields = null;
 
         // Update the field version
         $this->updateFieldVersion();
@@ -1117,13 +1074,46 @@ class Fields extends Component
      */
     public function refreshFields(): void
     {
-        $this->_fieldConfigs = null;
-        $this->_fields = [];
+        $this->_fields = null;
         $this->updateFieldVersion();
     }
 
     // Layouts
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns a memoizable array of all field layouts.
+     *
+     * @return MemoizableArray<FieldLayout>
+     */
+    private function _layouts(): MemoizableArray
+    {
+        if (!isset($this->_layouts)) {
+            if (Craft::$app->getIsInstalled()) {
+                $layoutConfigs = $this->_createLayoutQuery()->all();
+                $layoutTabConfigs = ArrayHelper::index($this->_createLayoutTabQuery()->all(), null, ['layoutId']);
+            } else {
+                $layoutConfigs = [];
+                $layoutTabConfigs = [];
+            }
+
+            $isMysql = Craft::$app->getDb()->getIsMysql();
+
+            $this->_layouts = new MemoizableArray($layoutConfigs, function($config) use (&$layoutTabConfigs, $isMysql) {
+                $layout = new FieldLayout($config);
+                /** @phpstan-ignore-next-line  */
+                $tabConfigs = ArrayHelper::remove($layoutTabConfigs, $layout->id) ?? [];
+                $tabs = array_map(
+                    fn(array $row) => $this->_createLayoutTabFromRow(['layout' => $layout] + $row, $isMysql),
+                    $tabConfigs
+                );
+                $layout->setTabs($tabs);
+                return $layout;
+            });
+        }
+
+        return $this->_layouts;
+    }
 
     /**
      * Returns a field layout by its ID.
@@ -1133,15 +1123,7 @@ class Fields extends Component
      */
     public function getLayoutById(int $layoutId): ?FieldLayout
     {
-        if (array_key_exists($layoutId, $this->_layoutsById)) {
-            return $this->_layoutsById[$layoutId];
-        }
-
-        $result = $this->_createLayoutQuery()
-            ->andWhere(['id' => $layoutId])
-            ->one();
-
-        return $this->_layoutsById[$layoutId] = $result ? new FieldLayout($result) : null;
+        return $this->_layouts()->firstWhere('id', $layoutId);
     }
 
     /**
@@ -1153,33 +1135,7 @@ class Fields extends Component
      */
     public function getLayoutsByIds(array $layoutIds): array
     {
-        $response = [];
-
-        // Don't re-fetch any layouts we've already memoized
-        foreach ($layoutIds as $key => $id) {
-            if (array_key_exists($id, $this->_layoutsById)) {
-                if ($this->_layoutsById[$id] !== null) {
-                    $response[$id] = $this->_layoutsById[$id];
-                }
-                unset($layoutIds[$key]);
-            }
-        }
-
-        if (!empty($layoutIds)) {
-            $result = $this->_createLayoutQuery()
-                ->andWhere(['id' => $layoutIds])
-                ->all();
-
-            $layouts = [];
-
-            foreach ($result as $row) {
-                $this->_layoutsById[$row['id']] = $response[$row['id']] = $layouts[$row['id']] = new FieldLayout($row);
-            }
-
-            $this->_loadTabs($layouts);
-        }
-
-        return $response;
+        return $this->_layouts()->whereIn('id', $layoutIds)->all();
     }
 
     /**
@@ -1191,27 +1147,8 @@ class Fields extends Component
      */
     public function getLayoutByType(string $type): FieldLayout
     {
-        if (!isset($this->_layoutsByType[$type])) {
-            if (Craft::$app->getIsInstalled()) {
-                $result = $this->_createLayoutQuery()
-                    ->andWhere(['type' => $type])
-                    ->one();
-            }
-
-            if (isset($result)) {
-                if (!isset($this->_layoutsById[$result['id']])) {
-                    $this->_layoutsById[$result['id']] = new FieldLayout($result);
-                }
-
-                $this->_layoutsByType[$type] = $this->_layoutsById[$result['id']];
-            } else {
-                $this->_layoutsByType[$type] = new FieldLayout([
-                    'type' => $type,
-                ]);
-            }
-        }
-
-        return $this->_layoutsByType[$type];
+        return $this->_layouts()->firstWhere('type', $type)
+            ?? new FieldLayout(['type' => $type]);
     }
 
     /**
@@ -1224,19 +1161,7 @@ class Fields extends Component
      */
     public function getLayoutsByType(string $type): array
     {
-        if (!isset($this->_allLayoutsByType[$type])) {
-            $results = $this->_createLayoutQuery()
-                ->andWhere(['type' => $type])
-                ->all();
-
-            $this->_allLayoutsByType[$type] = [];
-
-            foreach ($results as $result) {
-                $this->_allLayoutsByType[$type][] = new FieldLayout($result);
-            }
-        }
-
-        return $this->_allLayoutsByType[$type];
+        return $this->_layouts()->where('type', $type)->all();
     }
 
     /**
@@ -1244,6 +1169,7 @@ class Fields extends Component
      *
      * @param int|int[] $layoutId The field layout’s ID(s)
      * @return FieldLayoutTab[] The field layout’s tabs
+     * @deprecated in 4.6.0
      */
     public function getLayoutTabsById(int|array $layoutId): array
     {
@@ -1281,25 +1207,6 @@ class Fields extends Component
         }
 
         return new FieldLayoutTab($row);
-    }
-
-    /**
-     * Fetches the layout tabs for the given layouts.
-     *
-     * @param FieldLayout[] $layouts Field layouts indexed by their IDs
-     */
-    private function _loadTabs(array $layouts): void
-    {
-        if (empty($layouts)) {
-            return;
-        }
-
-        $tabs = Collection::make($this->getLayoutTabsById(array_keys($layouts)));
-
-        Collection::make($layouts)
-            ->each(function(FieldLayout $layout) use ($tabs) {
-                $layout->setTabs($tabs->where('layoutId', $layout->id)->all());
-            });
     }
 
     /**
@@ -1513,10 +1420,8 @@ class Fields extends Component
             ]));
         }
 
-        $this->_layoutsByType[$layout->type] = $this->_layoutsById[$layout->id] = $layout;
-
         // Clear caches
-        unset($this->_allLayoutsByType[$layout->type]);
+        $this->_layouts = null;
 
         return true;
     }
@@ -1570,9 +1475,7 @@ class Fields extends Component
         }
 
         // Clear caches
-        unset($this->_layoutsById[$layout->id]);
-        unset($this->_layoutsByType[$layout->type]);
-        unset($this->_allLayoutsByType[$layout->type]);
+        $this->_layouts = null;
 
         return true;
     }
@@ -1591,9 +1494,7 @@ class Fields extends Component
             ->execute();
 
         // Clear caches
-        $this->_layoutsById = [];
-        $this->_layoutsByType = [];
-        $this->_allLayoutsByType = [];
+        $this->_layouts = null;
 
         return (bool)$affectedRows;
     }
@@ -1612,9 +1513,7 @@ class Fields extends Component
             ->execute();
 
         // Clear caches
-        $this->_layoutsById = [];
-        $this->_layoutsByType = [];
-        $this->_allLayoutsByType = [];
+        $this->_layouts = null;
 
         return (bool)$affectedRows;
     }

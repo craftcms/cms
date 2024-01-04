@@ -161,11 +161,10 @@ class Volumes extends Component
     private function _volumes(): MemoizableArray
     {
         if (!isset($this->_volumes)) {
-            $volumes = [];
-            foreach ($this->_createVolumeQuery()->all() as $result) {
-                $volumes[] = Craft::createObject(Volume::class, [$result]);
-            }
-            $this->_volumes = new MemoizableArray($volumes);
+            $this->_volumes = new MemoizableArray(
+                $this->_createVolumeQuery()->all(),
+                fn(array $result) => Craft::createObject(Volume::class, [$result]),
+            );
         }
 
         return $this->_volumes;
