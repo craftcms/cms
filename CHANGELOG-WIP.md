@@ -1,6 +1,7 @@
 # Release notes for Craft CMS 4.6 (WIP)
 
 - Added the “Country” field type. ([#13789](https://github.com/craftcms/cms/discussions/13789))
+- It’s now possible to delete volume folders using the “Delete” asset action. ([#13086](https://github.com/craftcms/cms/discussions/13086))
 - Date range condition rules are now inclusive of their end dates. ([#13435](https://github.com/craftcms/cms/issues/13435))
 - Improved element search performance. ([#14055](https://github.com/craftcms/cms/pull/14055))
 - Improved the performance of large editable tables. ([#13852](https://github.com/craftcms/cms/issues/13852))
@@ -19,5 +20,6 @@
 - Added `craft\services\Elements::EVENT_SET_ELEMENT_URI`. ([#13930](https://github.com/craftcms/cms/discussions/13930))
 - Added `craft\services\Search::createDbQuery()`.
 - `craft\base\MemoizableArray` now supports passing a normalizer method to the constructor, which will be lazily applied to each array item once, only if returned by `all()` or `firstWhere()`. ([#14104](https://github.com/craftcms/cms/pull/14104))
+- `craft\elements\actions\DeleteAssets` is no longer deprecated.
 - `craft\helpers\ArrayHelper::firstWhere()` now has a `$valueKey` argument, which can be passed a variable by reference that should be set to the resulting value’s key in the array.
 - Admin tables now have `footerActions`, `moveToPageAction`, `onCellClicked`, `onCellDoubleClicked`, `onRowClicked`, `onRowDoubleClicked`, and `paginatedReorderAction` settings. ([#14051](https://github.com/craftcms/cms/pull/14051))
