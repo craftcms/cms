@@ -2,8 +2,6 @@
 
 ## 4.6.0-RC1 - 2024-01-04
 
-# Release notes for Craft CMS 4.6 (WIP)
-
 - Added the “Country” field type. ([#13789](https://github.com/craftcms/cms/discussions/13789))
 - It’s now possible to delete volume folders using the “Delete” asset action. ([#13086](https://github.com/craftcms/cms/discussions/13086))
 - Date range condition rules are now inclusive of their end dates. ([#13435](https://github.com/craftcms/cms/issues/13435))
