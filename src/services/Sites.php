@@ -194,11 +194,10 @@ class Sites extends Component
     private function _groups(): MemoizableArray
     {
         if (!isset($this->_groups)) {
-            $groups = [];
-            foreach ($this->_createGroupQuery()->all() as $result) {
-                $groups[] = new SiteGroup($result);
-            }
-            $this->_groups = new MemoizableArray($groups);
+            $this->_groups = new MemoizableArray(
+                $this->_createGroupQuery()->all(),
+                fn(array $result) => new SiteGroup($result),
+            );
         }
 
         return $this->_groups;
