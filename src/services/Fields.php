@@ -729,6 +729,7 @@ class Fields extends Component
         }
 
         // Clear caches
+        $this->_fields = null;
         $this->_fieldConfigs = null;
 
         // Update the field version
@@ -755,6 +756,7 @@ class Fields extends Component
      */
     public function refreshFields(): void
     {
+        $this->_fields = null;
         $this->_fieldConfigs = null;
         $this->updateFieldVersion();
     }
