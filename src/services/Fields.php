@@ -742,28 +742,32 @@ class Fields extends Component
     private function _layouts(): MemoizableArray
     {
         if (!isset($this->_layouts)) {
-            $layouts = [];
             if (Craft::$app->getIsInstalled()) {
-                foreach ($this->_createLayoutQuery()->all() as $result) {
-                    if (array_key_exists('config', $result)) {
-                        $config = ArrayHelper::remove($result, 'config');
-                        if ($config) {
-                            $result += Json::decode($config);
-                        }
-                        $loadTabs = false;
-                    } else {
-                        $loadTabs = true;
-                    }
-
-                    $layouts[] = $layout = $this->createLayout($result);
-
-                    // todo: remove after the next breakpoint
-                    if ($loadTabs) {
-                        $this->_legacyTabsByLayoutId($layout);
-                    }
-                }
+                $layoutConfigs = $this->_createLayoutQuery()->all();
+            } else {
+                $layoutConfigs = [];
             }
-            $this->_layouts = new MemoizableArray($layouts);
+
+            $this->_layouts = new MemoizableArray($layoutConfigs, function($config) {
+                if (array_key_exists('config', $config)) {
+                    $nestedConfig = ArrayHelper::remove($config, 'config');
+                    if ($nestedConfig) {
+                        $config += Json::decode($nestedConfig);
+                    }
+                    $loadTabs = false;
+                } else {
+                    $loadTabs = true;
+                }
+
+                $layout = $this->createLayout($config);
+
+                // todo: remove after the next breakpoint
+                if ($loadTabs) {
+                    $this->_legacyTabsByLayoutId($layout);
+                }
+
+                return $layout;
+            });
         }
 
         return $this->_layouts;

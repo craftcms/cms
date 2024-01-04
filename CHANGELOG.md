@@ -7,6 +7,7 @@
 - `craft\base\MemoizableArray` now supports passing a normalizer method to the constructor, which will be lazily applied to each array item once, only if returned by `all()` or `firstWhere()`.
 - `craft\helpers\ArrayHelper::firstWhere()` now has a `$valueKey` argument, which can be passed a variable by reference that should be set to the resulting value’s key in the array.
 - Fixed a PHP error that occurred when viewing a user’s addresses.
+- Fixed a bug where all field layouts were getting instantiated before the Debug Toolbar had a chance to register its `*` wildcard event
 
 ## 5.0.0-alpha.4 - 2024-01-02
 
