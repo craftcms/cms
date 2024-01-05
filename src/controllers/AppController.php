@@ -365,11 +365,8 @@ class AppController extends Controller
         $currentTime = DateTimeHelper::currentUTCDateTime();
         $tomorrow = $currentTime->add(new DateInterval('P1D'));
 
-        if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
-            return $this->asSuccess();
-        }
-
-        return $this->asFailure(Craft::t('app', 'A server error occurred.'));
+        Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow);
+        return $this->asSuccess();
     }
 
     /**
@@ -681,8 +678,12 @@ class AppController extends Controller
             }
         }
 
+        $view = Craft::$app->getView();
+
         return $this->asJson([
             'elements' => $elementHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
         ]);
     }
 }

@@ -78,6 +78,8 @@ class Matrix extends Field implements
     public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
 
     /** @since 5.0.0 */
+    public const VIEW_MODE_CARDS = 'cards';
+    /** @since 5.0.0 */
     public const VIEW_MODE_BLOCKS = 'blocks';
     /** @since 5.0.0 */
     public const VIEW_MODE_INDEX = 'index';
@@ -201,7 +203,7 @@ class Matrix extends Field implements
      * @phpstan-var self::VIEW_MODE_*
      * @since 5.0.0
      */
-    public string $viewMode = self::VIEW_MODE_BLOCKS;
+    public string $viewMode = self::VIEW_MODE_CARDS;
 
     /**
      * @var bool Include table view in element indexes
@@ -268,9 +270,9 @@ class Matrix extends Field implements
         // Config normalization
         unset($config['contentTable']);
 
-        if (array_key_exists('localizeEntries', $config)) {
-            $config['propagationMethod'] = $config['localizeEntries'] ? 'none' : 'all';
-            unset($config['localizeEntries']);
+        if (array_key_exists('localizeBlocks', $config)) {
+            $config['propagationMethod'] = $config['localizeBlocks'] ? 'none' : 'all';
+            unset($config['localizeBlocks']);
         }
 
         if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
@@ -347,6 +349,11 @@ class Matrix extends Field implements
         $rules[] = [['entryTypes'], ArrayValidator::class, 'min' => 1, 'skipOnEmpty' => false];
         $rules[] = [['siteSettings'], fn() => $this->validateSiteSettings()];
         $rules[] = [['minEntries', 'maxEntries'], 'integer', 'min' => 0];
+        $rules[] = [['viewMode'], 'in', 'range' => [
+            self::VIEW_MODE_CARDS,
+            self::VIEW_MODE_INDEX,
+            self::VIEW_MODE_BLOCKS,
+        ]];
         return $rules;
     }
 
@@ -383,7 +390,7 @@ class Matrix extends Field implements
                 Entry::class,
                 fn(ElementInterface $owner) => $this->createEntryQuery($owner),
                 [
-                    'fieldHandle' => $this->handle,
+                    'field' => $this,
                     'criteria' => [
                         'fieldId' => $this->id,
                     ],
@@ -761,7 +768,7 @@ class Matrix extends Field implements
     {
         return match ($this->viewMode) {
             self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element),
-            self::VIEW_MODE_INDEX => $this->indexInputHtml($element),
+            default => $this->nestedElementManagerHtml($element),
         };
     }
 
@@ -845,26 +852,13 @@ class Matrix extends Field implements
             ]);
     }
 
-    private function indexInputHtml(?ElementInterface $owner, bool $static = false): string
+    private function nestedElementManagerHtml(?ElementInterface $owner, bool $static = false): string
     {
         $entryTypes = $this->getEntryTypes();
-
-        $config = [
-            'allowedViewModes' => array_filter([
-                ElementIndexViewMode::Cards,
-                $this->includeTableView ? ElementIndexViewMode::Table : null,
-            ]),
-            'showHeaderColumn' => ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => (
-                $entryType->hasTitleField ||
-                $entryType->titleFormat
-            )),
-            'pageSize' => $this->pageSize ?? 50,
-        ];
+        $config = [];
 
         if (!$static) {
             $config += [
-                'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
-                'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),
                 'sortable' => true,
                 'canCreate' => true,
                 'createAttributes' => array_map(fn(EntryType $entryType) => [
@@ -876,6 +870,30 @@ class Matrix extends Field implements
                 ], $entryTypes),
                 'minElements' => $this->minEntries,
                 'maxElements' => $this->maxEntries,
+            ];
+        }
+
+        if ($this->viewMode === self::VIEW_MODE_CARDS) {
+            return $this->entryManager()->getCardsHtml($owner, $config);
+        }
+
+        $config += [
+            'allowedViewModes' => array_filter([
+                ElementIndexViewMode::Cards,
+                $this->includeTableView ? ElementIndexViewMode::Table : null,
+            ]),
+            'showHeaderColumn' => ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => (
+                $entryType->hasTitleField ||
+                $entryType->titleFormat
+            )),
+            'pageSize' => $this->pageSize ?? 50,
+            'storageKey' => sprintf('field:%s', $this->uid),
+        ];
+
+        if (!$static) {
+            $config += [
+                'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
+                'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),
             ];
         }
 
@@ -983,8 +1001,8 @@ class Matrix extends Field implements
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        if ($this->viewMode === self::VIEW_MODE_INDEX) {
-            return $this->indexInputHtml($element, true);
+        if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
+            return $this->nestedElementManagerHtml($element, true);
         }
 
         /** @var EntryQuery|ElementCollection $value */
@@ -1228,9 +1246,19 @@ class Matrix extends Field implements
 
         // Were the entries posted by UUID or ID?
         $uids = (
-            (isset($value['entries']) && StringHelper::isUUID(array_key_first($value['entries']))) ||
+            (isset($value['entries']) && str_starts_with(array_key_first($value['entries']), 'uid:')) ||
             (isset($value['sortOrder']) && StringHelper::isUUID(reset($value['sortOrder'])))
         );
+
+        if ($uids) {
+            // strip out the `uid:` key prefixes
+            if (isset($value['entries'])) {
+                $value['entries'] = array_combine(
+                    array_map(fn(string $key) => StringHelper::removeLeft($key, 'uid:'), array_keys($value['entries'])),
+                    array_values($value['entries']),
+                );
+            }
+        }
 
         // Get the old entries
         if ($element->id) {
@@ -1380,7 +1408,11 @@ class Matrix extends Field implements
 
             // Set the content post location on the entry if we can
             if ($baseEntryFieldNamespace) {
-                $entry->setFieldParamNamespace("$baseEntryFieldNamespace.$entryId.fields");
+                if ($uids) {
+                    $entry->setFieldParamNamespace("$baseEntryFieldNamespace.uid:$entryId.fields");
+                } else {
+                    $entry->setFieldParamNamespace("$baseEntryFieldNamespace.$entryId.fields");
+                }
             }
 
             if (isset($entryData['fields'])) {

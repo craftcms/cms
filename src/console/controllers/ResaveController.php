@@ -19,7 +19,7 @@ use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
-use craft\events\BatchElementActionEvent;
+use craft\events\MultiElementActionEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -53,7 +53,7 @@ class ResaveController extends Controller
         // empty
         if ($to === ':empty:') {
             return function() {
-                return null;
+                return '';
             };
         }
 
@@ -540,7 +540,7 @@ class ResaveController extends Controller
         $elementsService = Craft::$app->getElements();
         $fail = false;
 
-        $beforeCallback = function(BatchElementActionEvent $e) use ($query, $count, $to) {
+        $beforeCallback = function(MultiElementActionEvent $e) use ($query, $count, $to) {
             if ($e->query === $query) {
                 $label = isset($this->propagateTo) ? 'Propagating' : 'Resaving';
                 $element = $e->element;
@@ -570,7 +570,7 @@ class ResaveController extends Controller
             }
         };
 
-        $afterCallback = function(BatchElementActionEvent $e) use ($query, &$fail) {
+        $afterCallback = function(MultiElementActionEvent $e) use ($query, &$fail) {
             if ($e->query === $query) {
                 $element = $e->element;
                 if ($e->exception) {

@@ -72,6 +72,19 @@ class Entry extends ElementMutationResolver
             unset($arguments['enabled']);
         }
 
+        // If saving an entry the slug is provided, check if we should allow changing it.
+        if (array_key_exists('slug', $arguments)) {
+            try {
+                $showSlugField = $entry->getType()->showSlugField;
+            } catch (InvalidConfigException) {
+                $showSlugField = true;
+            }
+
+            if (!$showSlugField) {
+                unset($arguments['slug']);
+            }
+        }
+
         // TODO refactor saving draft to its own method in 4.0
         if (array_key_exists('draftId', $arguments)) {
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);

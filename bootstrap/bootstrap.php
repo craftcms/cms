@@ -130,6 +130,7 @@ if (!App::env('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
     }
 }
 
+$createFolder($storagePath);
 $ensureFolderIsReadable($storagePath, true);
 
 // Create the storage/runtime/ folder if it doesn't already exist
@@ -239,6 +240,10 @@ $config = ArrayHelper::merge(
     $configService->getConfigFromFile('app'),
     $configService->getConfigFromFile("app.{$appType}")
 );
+
+if (function_exists('craft_modify_app_config')) {
+    craft_modify_app_config($config, $appType);
+}
 
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */

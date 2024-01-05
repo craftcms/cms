@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
@@ -525,14 +526,14 @@ interface ElementInterface extends ComponentInterface
      *   query result data, and the first source element that the result was eager-loaded for
      *
      * ```php
+     * use craft\base\ElementInterface;
      * use craft\db\Query;
-     * use craft\helpers\ArrayHelper;
      *
      * public static function eagerLoadingMap(array $sourceElements, string $handle)
      * {
      *     switch ($handle) {
      *         case 'author':
-     *             $bookIds = ArrayHelper::getColumn($sourceElements, 'id');
+     *             $bookIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
      *             $map = (new Query)
      *                 ->select(['source' => 'id', 'target' => 'authorId'])
      *                 ->from('{{%books}}')
@@ -543,7 +544,7 @@ interface ElementInterface extends ComponentInterface
      *                 'map' => $map,
      *             ];
      *         case 'bookClubs':
-     *             $bookIds = ArrayHelper::getColumn($sourceElements, 'id');
+     *             $bookIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
      *             $map = (new Query)
      *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
      *                 ->from('{{%bookclub_books}}')
@@ -770,6 +771,14 @@ interface ElementInterface extends ComponentInterface
     public function getLink(): ?Markup;
 
     /**
+     * Returns the breadcrumbs that lead up to the element.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getCrumbs(): array;
+
+    /**
      * Returns what the element should be called within the control panel.
      *
      * @return string
@@ -954,6 +963,16 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public function getAdditionalButtons(): string;
+
+    /**
+     * Returns action menu items for the element’s edit screens.
+     *
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getActionMenuItems(): array;
 
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
@@ -1526,8 +1545,9 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $handle The handle that was used to eager-load the elements
      * @param self[] $elements The eager-loaded elements
+     * @param EagerLoadPlan $plan The eager-loading plan
      */
-    public function setEagerLoadedElements(string $handle, array $elements): void;
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void;
 
     /**
      * Sets whether the given eager-loaded element handles were eager-loaded lazily.

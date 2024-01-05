@@ -326,7 +326,7 @@ class Fields extends Component
     }
 
     /**
-     * Returns a memoizable array of all fields.
+     * Returns a memoizable array of fields.
      *
      * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
@@ -335,20 +335,17 @@ class Fields extends Component
      */
     private function _fields(mixed $context = null): MemoizableArray
     {
+        $context ??= $this->fieldContext;
+
         if (!isset($this->_fields)) {
-            $fields = [];
-            foreach ($this->_createFieldQuery()->all() as $result) {
-                $fields[] = $this->createField($result);
-            }
-            $this->_fields = new MemoizableArray($fields);
+            $this->_fields = new MemoizableArray(
+                $this->_createFieldQuery()->all(),
+                fn(array $config) => $this->createField($config),
+            );
         }
 
         if ($context === false) {
             return $this->_fields;
-        }
-
-        if ($context === null) {
-            $context = $this->fieldContext;
         }
 
         if (is_array($context)) {
@@ -745,28 +742,32 @@ class Fields extends Component
     private function _layouts(): MemoizableArray
     {
         if (!isset($this->_layouts)) {
-            $layouts = [];
             if (Craft::$app->getIsInstalled()) {
-                foreach ($this->_createLayoutQuery()->all() as $result) {
-                    if (array_key_exists('config', $result)) {
-                        $config = ArrayHelper::remove($result, 'config');
-                        if ($config) {
-                            $result += Json::decode($config);
-                        }
-                        $loadTabs = false;
-                    } else {
-                        $loadTabs = true;
-                    }
-
-                    $layouts[] = $layout = $this->createLayout($result);
-
-                    // todo: remove after the next breakpoint
-                    if ($loadTabs) {
-                        $this->_legacyTabsByLayoutId($layout);
-                    }
-                }
+                $layoutConfigs = $this->_createLayoutQuery()->all();
+            } else {
+                $layoutConfigs = [];
             }
-            $this->_layouts = new MemoizableArray($layouts);
+
+            $this->_layouts = new MemoizableArray($layoutConfigs, function($config) {
+                if (array_key_exists('config', $config)) {
+                    $nestedConfig = ArrayHelper::remove($config, 'config');
+                    if ($nestedConfig) {
+                        $config += Json::decode($nestedConfig);
+                    }
+                    $loadTabs = false;
+                } else {
+                    $loadTabs = true;
+                }
+
+                $layout = $this->createLayout($config);
+
+                // todo: remove after the next breakpoint
+                if ($loadTabs) {
+                    $this->_legacyTabsByLayoutId($layout);
+                }
+
+                return $layout;
+            });
         }
 
         return $this->_layouts;

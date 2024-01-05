@@ -6,10 +6,9 @@ use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
 use Craft;
 use craft\base\Element;
-use craft\base\ElementContainerFieldInterface;
-use craft\base\ElementInterface;
 use craft\base\NameTrait;
 use craft\base\NestedElementInterface;
+use craft\base\NestedElementTrait;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\conditions\addresses\AddressCondition;
@@ -34,6 +33,7 @@ use yii\base\InvalidConfigException;
 class Address extends Element implements AddressInterface, NestedElementInterface
 {
     use NameTrait;
+    use NestedElementTrait;
 
     /**
      * @since 5.0.0
@@ -161,35 +161,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
-     * @var int|null Field ID
-     * @since 5.0.0
-     */
-    public ?int $fieldId = null;
-
-    /**
-     * @var int|null Primary owner ID
-     * @since 5.0.0
-     */
-    public ?int $primaryOwnerId = null;
-
-    /**
-     * @var int|null Owner ID
-     */
-    public ?int $ownerId = null;
-
-    /**
-     * @var int|null Sort order
-     * @since 5.0.0
-     */
-    public ?int $sortOrder = null;
-
-    /**
-     * @var ElementInterface|null The owner element
-     * @see getOwner()
-     */
-    private ?ElementInterface $_owner = null;
-
-    /**
      * @var string Two-letter country code
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
@@ -251,12 +222,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public ?string $longitude = null;
 
     /**
-     * @var bool Whether to save the address’s row in the `elements_owners` table in [[afterSave()]].
-     * @since 5.0.0
-     */
-    public bool $saveOwnership = true;
-
-    /**
      * @inheritdoc
      */
     public function init(): void
@@ -278,6 +243,10 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         // Don't even allow setting a blank country code
         if (array_key_exists('countryCode', $values) && empty($values['countryCode'])) {
             unset($values['countryCode']);
+        }
+
+        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            $this->fullName = null;
         }
 
         parent::setAttributes($values, $safeOnly);
@@ -306,56 +275,15 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
-     * @inheritdoc
+     * Returns whether the address belongs to the currently logged-in user.
+     *
+     * @return bool
+     * @since 4.5.13
      */
-    public function getOwner(): ?ElementInterface
+    public function getBelongsToCurrentUser(): bool
     {
-        if (!isset($this->_owner)) {
-            $ownerId = $this->ownerId ?? $this->primaryOwnerId;
-            if (!$ownerId) {
-                throw new InvalidConfigException('Address is missing its owner ID');
-            }
-
-            $this->_owner = Craft::$app->getElements()->getElementById($ownerId, null, $this->siteId);
-            if (!isset($this->_owner)) {
-                throw new InvalidConfigException("Invalid owner ID: $ownerId");
-            }
-        }
-
-        return $this->_owner;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setOwner(?ElementInterface $owner): void
-    {
-        $this->_owner = $owner;
-        $this->ownerId = $owner?->id;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getField(): ?ElementContainerFieldInterface
-    {
-        if (!isset($this->fieldId)) {
-            return null;
-        }
-
-        $field = $this->getOwner()->getFieldLayout()->getFieldById($this->fieldId);
-        if (!$field instanceof ElementContainerFieldInterface) {
-            throw new InvalidConfigException("Invalid field ID: $this->fieldId");
-        }
-        return $field;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSortOrder(): ?int
-    {
-        return $this->sortOrder;
+        $owner = $this->getOwner();
+        return $owner instanceof User && $owner->getIsCurrent();
     }
 
     /**
@@ -593,6 +521,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             LatLongField::class,
         ];
 
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $fieldLayout = $this->getFieldLayout();
 
         foreach ($requirableNativeFields as $class) {
@@ -600,15 +529,28 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             $field = $fieldLayout->getFirstVisibleElementByType($class, $this);
             if ($field && $field->required) {
                 $attribute = $field->attribute();
-                if ($attribute === 'latLong') {
-                    $attribute = ['latitude', 'longitude'];
+                switch ($attribute) {
+                    case 'latLong':
+                        $attribute = ['latitude', 'longitude'];
+                        break;
+                    case 'fullName':
+                        if ($generalConfig->showFirstAndLastNameFields) {
+                            $attribute = ['firstName', 'lastName'];
+                        }
+                        break;
                 }
+
                 $rules[] = [$attribute, 'required', 'on' => self::SCENARIO_LIVE];
             }
         }
 
         $rules[] = [['longitude', 'latitude'], 'safe'];
         $rules[] = [self::_addressAttributes(), 'safe'];
+
+        if ($generalConfig->showFirstAndLastNameFields) {
+            $rules[] = [['firstName', 'lastName'], 'safe'];
+        }
+
         return $rules;
     }
 
