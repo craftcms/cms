@@ -25,6 +25,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
 use craft\services\ElementSources;
 use Throwable;
 use yii\base\InvalidValueException;
@@ -518,13 +519,16 @@ class ElementIndexesController extends BaseElementsController
 
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
-        $elements = [];
 
         // get all the elements
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType();
+        $elementIds = array_map(
+            fn(string $key) => (int)StringHelper::removeLeft($key, 'element-'),
+            array_keys($data),
+        );
         $elements = $elementType::find()
-            ->id(array_keys($data))
+            ->id($elementIds)
             ->status(null)
             ->drafts(null)
             ->siteId($siteId)
@@ -544,7 +548,7 @@ class ElementIndexesController extends BaseElementsController
         // set attributes and validate everything
         $errors = [];
         foreach ($elements as $element) {
-            $attributes = ArrayHelper::without($data[$element->id], 'fields');
+            $attributes = ArrayHelper::without($data["element-$element->id"], 'fields');
             if (!empty($attributes)) {
                 $scenario = $element->getScenario();
                 $element->setScenario(Element::SCENARIO_LIVE);
@@ -552,7 +556,7 @@ class ElementIndexesController extends BaseElementsController
                 $element->setScenario($scenario);
             }
 
-            $element->setFieldValuesFromRequest("$namespace.$element->id.fields");
+            $element->setFieldValuesFromRequest("$namespace.element-$element->id.fields");
 
             if ($element->enabled && $element->getEnabledForSite()) {
                 $element->setScenario(Element::SCENARIO_LIVE);
@@ -560,7 +564,7 @@ class ElementIndexesController extends BaseElementsController
 
             $names = array_merge(
                 array_keys($attributes),
-                array_map(fn(string $handle) => "field:$handle", array_keys($data[$element->id]['fields'] ?? [])),
+                array_map(fn(string $handle) => "field:$handle", array_keys($data["element-$element->id"]['fields'] ?? [])),
             );
 
             if (!$element->validate($names)) {

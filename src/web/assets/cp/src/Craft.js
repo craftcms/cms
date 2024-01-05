@@ -7,6 +7,9 @@ import './css/charts.scss';
 // Load Craft first
 import './js/Craft.js';
 
+// UI
+import './js/UI.js';
+
 // Utilities
 import './js/Queue.js';
 
@@ -67,6 +70,7 @@ import './js/InfoIcon.js';
 import './js/LightSwitch.js';
 import './js/Listbox.js';
 import './js/LivePreview.js';
+import './js/LoginForm.js';
 import './js/NestedElementManager.js';
 import './js/PasswordInput.js';
 import './js/Preview.js';
@@ -82,7 +86,6 @@ import './js/TableElementIndexView.js';
 import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
 import './js/Tooltip.js';
-import './js/UI.js';
 import './js/Uploader.js';
 import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';

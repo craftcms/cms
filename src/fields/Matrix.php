@@ -270,9 +270,9 @@ class Matrix extends Field implements
         // Config normalization
         unset($config['contentTable']);
 
-        if (array_key_exists('localizeEntries', $config)) {
-            $config['propagationMethod'] = $config['localizeEntries'] ? 'none' : 'all';
-            unset($config['localizeEntries']);
+        if (array_key_exists('localizeBlocks', $config)) {
+            $config['propagationMethod'] = $config['localizeBlocks'] ? 'none' : 'all';
+            unset($config['localizeBlocks']);
         }
 
         if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
@@ -390,7 +390,7 @@ class Matrix extends Field implements
                 Entry::class,
                 fn(ElementInterface $owner) => $this->createEntryQuery($owner),
                 [
-                    'fieldHandle' => $this->handle,
+                    'field' => $this,
                     'criteria' => [
                         'fieldId' => $this->id,
                     ],
@@ -887,6 +887,7 @@ class Matrix extends Field implements
                 $entryType->titleFormat
             )),
             'pageSize' => $this->pageSize ?? 50,
+            'storageKey' => sprintf('field:%s', $this->uid),
         ];
 
         if (!$static) {
@@ -1245,9 +1246,19 @@ class Matrix extends Field implements
 
         // Were the entries posted by UUID or ID?
         $uids = (
-            (isset($value['entries']) && StringHelper::isUUID(array_key_first($value['entries']))) ||
+            (isset($value['entries']) && str_starts_with(array_key_first($value['entries']), 'uid:')) ||
             (isset($value['sortOrder']) && StringHelper::isUUID(reset($value['sortOrder'])))
         );
+
+        if ($uids) {
+            // strip out the `uid:` key prefixes
+            if (isset($value['entries'])) {
+                $value['entries'] = array_combine(
+                    array_map(fn(string $key) => StringHelper::removeLeft($key, 'uid:'), array_keys($value['entries'])),
+                    array_values($value['entries']),
+                );
+            }
+        }
 
         // Get the old entries
         if ($element->id) {
@@ -1397,7 +1408,11 @@ class Matrix extends Field implements
 
             // Set the content post location on the entry if we can
             if ($baseEntryFieldNamespace) {
-                $entry->setFieldParamNamespace("$baseEntryFieldNamespace.$entryId.fields");
+                if ($uids) {
+                    $entry->setFieldParamNamespace("$baseEntryFieldNamespace.uid:$entryId.fields");
+                } else {
+                    $entry->setFieldParamNamespace("$baseEntryFieldNamespace.$entryId.fields");
+                }
             }
 
             if (isset($entryData['fields'])) {

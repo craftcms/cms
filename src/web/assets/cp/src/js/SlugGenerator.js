@@ -11,14 +11,14 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend({
     // Remove inner-word punctuation
     sourceVal = sourceVal.replace(/['"‘’“”\[\]\(\)\{\}:]/g, '');
 
-    // Make it lowercase
-    if (!Craft.allowUppercaseInSlug) {
-      sourceVal = sourceVal.toLowerCase();
-    }
-
     if (Craft.limitAutoSlugsToAscii) {
       // Convert extended ASCII characters to basic ASCII
       sourceVal = Craft.asciiString(sourceVal, this.settings.charMap);
+    }
+
+    // Make it lowercase
+    if (!Craft.allowUppercaseInSlug) {
+      sourceVal = sourceVal.toLowerCase();
     }
 
     // Get the "words". Split on anything that is not alphanumeric.

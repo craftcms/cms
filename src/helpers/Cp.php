@@ -275,7 +275,11 @@ class Cp
                             'class' => 'errors',
                         ]) .
                         // can't use Html::a() because it's encoding &amp;'s, which is causing issues
-                        Html::tag('p', sprintf('<a class="go" href="%s">%s</a>', $cartUrl, Craft::t('app', 'Resolve now'))),
+                        Html::beginTag('p', [
+                            'class' => ['flex', 'flex-nowrap', 'resolvable-alert-buttons'],
+                        ]) .
+                        sprintf('<a class="go" href="%s">%s</a>', $cartUrl, Craft::t('app', 'Resolve now')) .
+                        Html::endTag('p'),
                     'showIcon' => false,
                 ];
             }
@@ -486,8 +490,6 @@ class Cp
             $html .= self::elementLabelHtml($element, $config, $attributes, fn() => $element->getChipLabelHtml());
         }
 
-        $actionMenuItems = $config['showActionMenu'] ? $element->getActionMenuItems() : null;
-
         $html .= Html::beginTag('div', ['class' => 'chip-actions']) .
             ($config['showActionMenu'] ? self::elementActionMenu($element) : '') .
             ($config['sortable'] ? Html::button('', [
@@ -660,7 +662,7 @@ class Cp
                 'class' => array_filter([
                     'element',
                     $config['context'] === 'field' ? 'removable' : null,
-                    $element->hasErrors() ? 'error' : null,
+                    ($config['context'] === 'field' && $element->hasErrors()) ? 'error' : null,
                 ]),
                 'data' => array_filter([
                     'type' => get_class($element),
@@ -726,7 +728,7 @@ class Cp
                 'href' => !$element->trashed && $config['context'] !== 'modal'
                     ? ($attributes['data']['cp-url'] ?? null) : null,
             ]) : '') .
-            ($element->hasErrors() ? Html::tag('span', '', [
+            ($config['context'] === 'field' && $element->hasErrors() ? Html::tag('span', '', [
                 'data' => ['icon' => 'alert'],
                 'aria' => ['label' => Craft::t('app', 'Error')],
                 'role' => 'img',
@@ -877,7 +879,7 @@ class Cp
                 ]);
             }
             $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
-                'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),
+                'title' => implode(', ', array_map(fn(ElementInterface $element) => $element->id, $elements)),
                 'class' => 'btn small',
                 'role' => 'button',
                 'onclick' => sprintf(
@@ -1177,6 +1179,8 @@ JS, [
             $showAttribute = false;
         }
 
+        $showLabelExtra = $showAttribute || isset($config['labelExtra']);
+
         $instructionsHtml = $instructions
             ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process(Html::encodeInvalidTags($instructions), 'gfm-comment')), [
                 'id' => $instructionsId,
@@ -1247,7 +1251,7 @@ JS, [
                 ]) .
                 Html::endTag('div')
                 : '') .
-            (($label || $showAttribute)
+            (($label || $showLabelExtra)
                 ? (
                     Html::beginTag('div', ['class' => 'heading']) .
                     ($config['headingPrefix'] ?? '') .
@@ -1261,14 +1265,16 @@ JS, [
                             ],
                         ], $config['labelAttributes'] ?? []))
                         : '') .
-                    ($showAttribute
+                    ($showLabelExtra
                         ? Html::tag('div', '', [
                             'class' => ['flex-grow'],
-                        ]) . static::renderTemplate('_includes/forms/copytextbtn.twig', [
+                        ]) .
+                        ($showAttribute ? static::renderTemplate('_includes/forms/copytextbtn.twig', [
                             'id' => "$id-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
-                        ])
+                        ]) : '') .
+                        ($config['labelExtra'] ?? '')
                         : '') .
                     ($config['headingSuffix'] ?? '') .
                     Html::endTag('div')
@@ -1457,6 +1463,33 @@ JS, [
         unset($config['label']);
 
         return static::fieldHtml('template:_includes/forms/lightswitch.twig', $config);
+    }
+
+    /**
+     * Renders a money input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws TemplateLoaderException
+     * @since 5.0.0
+     */
+    public static function moneyInputHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/money.twig', $config);
+    }
+
+    /**
+     * Renders a money field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws TemplateLoaderException
+     * @since 5.0.0
+     */
+    public static function moneyFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'money' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/money.twig', $config);
     }
 
     /**
@@ -1740,6 +1773,7 @@ JS, [
         $address->setScenario(Element::SCENARIO_LIVE);
         $activeValidators = $address->getActiveValidators();
         $address->setScenario($scenario);
+        $belongsToCurrentUser = $address->getBelongsToCurrentUser();
 
         foreach ($activeValidators as $validator) {
             if ($validator instanceof RequiredValidator) {
@@ -1764,9 +1798,9 @@ JS, [
                 'id' => 'addressLine1',
                 'name' => 'addressLine1',
                 'value' => $address->addressLine1,
+                'autocomplete' => $belongsToCurrentUser ? 'address-line1' : 'off',
                 'required' => isset($requiredFields['addressLine1']),
                 'errors' => $address->getErrors('addressLine1'),
-                'autocomplete' => 'address-line1',
             ]) .
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine2'),
@@ -1774,13 +1808,14 @@ JS, [
                 'id' => 'addressLine2',
                 'name' => 'addressLine2',
                 'value' => $address->addressLine2,
+                'autocomplete' => $belongsToCurrentUser ? 'address-line2' : 'off',
                 'required' => isset($requiredFields['addressLine2']),
                 'errors' => $address->getErrors('addressLine2'),
-                'autocomplete' => 'address-line2',
             ]) .
             self::_subdivisionField(
                 $address,
                 'administrativeArea',
+                $belongsToCurrentUser ? 'address-level1' : 'off',
                 isset($visibleFields['administrativeArea']),
                 isset($requiredFields['administrativeArea']),
                 [$address->countryCode],
@@ -1789,6 +1824,7 @@ JS, [
             self::_subdivisionField(
                 $address,
                 'locality',
+                $belongsToCurrentUser ? 'address-level2' : 'off',
                 isset($visibleFields['locality']),
                 isset($requiredFields['locality']),
                 [$address->countryCode, $address->administrativeArea],
@@ -1797,6 +1833,7 @@ JS, [
             self::_subdivisionField(
                 $address,
                 'dependentLocality',
+                $belongsToCurrentUser ? 'address-level3' : 'off',
                 isset($visibleFields['dependentLocality']),
                 isset($requiredFields['dependentLocality']),
                 [$address->countryCode, $address->administrativeArea, $address->locality],
@@ -1812,9 +1849,9 @@ JS, [
                 'id' => 'postalCode',
                 'name' => 'postalCode',
                 'value' => $address->postalCode,
+                'autocomplete' => $belongsToCurrentUser ? 'postal-code' : 'off',
                 'required' => isset($requiredFields['postalCode']),
                 'errors' => $address->getErrors('postalCode'),
-                'autocomplete' => 'postal-code',
             ]) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([
@@ -1834,6 +1871,7 @@ JS, [
     private static function _subdivisionField(
         Address $address,
         string $name,
+        string $autocomplete,
         bool $visible,
         bool $required,
         ?array $parents,
@@ -1860,6 +1898,7 @@ JS, [
                         'value' => $value,
                         'options' => $options,
                         'errors' => $errors,
+                        'autocomplete' => $autocomplete,
                     ]) .
                     Html::tag('div', '', [
                         'id' => "$name-spinner",
@@ -1886,6 +1925,7 @@ JS, [
                 'options' => $options,
                 'required' => $required,
                 'errors' => $address->getErrors($name),
+                'autocomplete' => $autocomplete,
             ]);
         }
 
@@ -1894,6 +1934,7 @@ JS, [
             'fieldClass' => !$visible ? 'hidden' : null,
             'status' => $address->getAttributeStatus($name),
             'label' => $address->getAttributeLabel($name),
+            'autocomplete' => $autocomplete,
             'id' => $name,
             'name' => $name,
             'value' => $value,
@@ -2288,6 +2329,7 @@ JS;
      *  - `params` – Request parameters that should be sent to the `action`
      *  - `confirm` – A confirmation message that should be presented to the user before triggering the `action`
      *  - `redirect` – The redirect path that the `action` should use
+     *  - `requireElevatedSession` – Whether an elevated session is required before the `action` is triggered
      *  - `selected` – Whether the item should be marked as selected
      *  - `hidden` – Whether the item should be hidden
      *  - `attributes` – Any HTML attributes that should be set on the item’s `<a>` or `<button>` tag

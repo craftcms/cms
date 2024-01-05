@@ -11,11 +11,11 @@ Craft.ElementEditor = Garnish.Base.extend(
     $activityContainer: null,
     $tabContainer: null,
     $contentContainer: null,
+    $sidebar: null,
     $spinner: null,
     $expandSiteStatusesBtn: null,
     $statusIcon: null,
     $previewBtn: null,
-    additionalMenu: null,
 
     metaModal: null,
     $nameTextInput: null,
@@ -84,9 +84,11 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (this.isFullPage) {
         this.$tabContainer = $('#tabs');
         this.$contentContainer = $('#content');
+        this.$sidebar = $('#details .details');
       } else {
         this.$tabContainer = this.slideout.$tabContainer;
         this.$contentContainer = this.slideout.$content;
+        this.$sidebar = this.slideout.$sidebar;
       }
 
       this.queue = this._createQueue();
@@ -1053,7 +1055,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.preview;
     },
 
-    openPreview: function () {
+    openPreview: async function () {
       if (Garnish.hasAttr(this.$previewBtn, 'aria-disabled')) {
         return;
       }
@@ -1061,22 +1063,17 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$previewBtn.attr('aria-disabled', true);
       this.$previewBtn.addClass('loading');
 
-      this.queue.push(
-        () =>
-          new Promise((resolve, reject) => {
-            this.openingPreview = true;
-            this.ensureIsDraftOrRevision(true)
-              .then(() => {
-                this.scrollY = window.scrollY;
-                this.$previewBtn.removeAttr('aria-disabled');
-                this.$previewBtn.removeClass('loading');
-                this.getPreview().open();
-                this.openingPreview = false;
-                resolve();
-              })
-              .catch(reject);
-          })
-      );
+      try {
+        await this.checkForm();
+        this.openingPreview = true;
+        await this.ensureIsDraftOrRevision(true);
+        this.scrollY = window.scrollY;
+        this.getPreview().open();
+      } finally {
+        this.$previewBtn.removeAttr('aria-disabled');
+        this.$previewBtn.removeClass('loading');
+        this.openingPreview = false;
+      }
     },
 
     ensureIsDraftOrRevision: function (onlyIfChanged) {
@@ -1170,7 +1167,9 @@ Craft.ElementEditor = Garnish.Base.extend(
               typeof this.$container.data('initialSerializedValue') ===
               'undefined'
             ) {
-              this.timeout = setTimeout(this.checkForm.bind(this), 500);
+              setTimeout(() => {
+                this.checkForm(force).then(resolve).catch(reject);
+              }, 500);
               return;
             }
 
@@ -1380,16 +1379,24 @@ Craft.ElementEditor = Garnish.Base.extend(
             }
 
             // Add missing field modified indicators
-            const selectors = response.data.modifiedAttributes
+            const selector = response.data.modifiedAttributes
               .map((attr) => {
                 attr = this.namespaceInputName(attr);
-                return `[name="${attr}"],[name^="${attr}["]`;
+                return [`[name="${attr}"]`, `[name^="${attr}["]`];
               })
-              .concat(modifiedFieldNames.map((name) => `[name="${name}"]`));
+              .flat()
+              .concat(modifiedFieldNames.map((name) => `[name="${name}"]`))
+              .join(',');
 
-            let $fields = $(selectors.join(','))
+            let $fields = this.$contentContainer
+              .find(selector)
               .parents()
-              .filter('.flex-fields > .field:not(:has(> .status-badge))');
+              .filter('.flex-fields > .field:not(:has(> .status-badge))')
+              .add(
+                this.$sidebar
+                  .find(selector)
+                  .closest('.field:not(:has(> .status-badge))')
+              );
 
             if (params.dirtyFields) {
               $fields = $fields.add(

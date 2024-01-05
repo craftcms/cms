@@ -53,13 +53,17 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
+    public static function phpType(): string
+    {
+        return sprintf('\\%s', static::$multi ? MultiOptionsFieldData::class : SingleOptionFieldData::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function dbType(): string
     {
-        if (!static::$multi) {
-            return Schema::TYPE_STRING;
-        }
-
-        return parent::dbType();
+        return static::$multi ? Schema::TYPE_JSON : Schema::TYPE_STRING;
     }
 
     /**

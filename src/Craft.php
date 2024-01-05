@@ -348,10 +348,19 @@ EOD;
      */
     private static function _fields(): array
     {
-        return array_merge(...array_map(
-            fn(FieldLayout $fieldLayout) => $fieldLayout->getCustomFields(),
-            Craft::$app->getFields()->getAllLayouts(),
-        ));
+        // Return all fields merged with all layouts' field instances, to be sure we're not missing anything
+        $fields = array_merge(
+            static::$app->getFields()->getAllFields(false),
+            ...array_map(
+                fn(FieldLayout $fieldLayout) => $fieldLayout->getCustomFields(),
+                Craft::$app->getFields()->getAllLayouts(),
+            ),
+        );
+
+        // Sort by handle
+        usort($fields, fn(FieldInterface $a, FieldInterface $b) => $a->handle <=> $b->handle);
+
+        return $fields;
     }
 
     /**

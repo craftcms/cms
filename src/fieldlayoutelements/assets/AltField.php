@@ -10,8 +10,11 @@ namespace craft\fieldlayoutelements\assets;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\elements\Asset;
 use craft\fieldlayoutelements\TextareaField;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use yii\base\InvalidArgumentException;
 
 /**
  * AltField represents an Alternative Text field that can be included within a volume’s field layout designer.
@@ -25,11 +28,6 @@ class AltField extends TextareaField
      * @inheritdoc
      */
     public string $attribute = 'alt';
-
-    /**
-     * @inheritdoc
-     */
-    public bool $translatable = false;
 
     /**
      * @inheritdoc
@@ -99,8 +97,24 @@ class AltField extends TextareaField
     /**
      * @inheritdoc
      */
+    protected function translatable(?ElementInterface $element = null, bool $static = false): bool
+    {
+        if (!$element instanceof Asset) {
+            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', __CLASS__));
+        }
+
+        return $element->getVolume()->altTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Field::TRANSLATION_METHOD_SITE;
+        if (!$element instanceof Asset) {
+            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', __CLASS__));
+        }
+
+        return ElementHelper::translationDescription($element->getVolume()->altTranslationMethod);
     }
 }

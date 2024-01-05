@@ -10,6 +10,7 @@ namespace craft\elements;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\db\Table;
@@ -34,7 +35,7 @@ use yii\base\InvalidConfigException;
  * This can be used by elements or fields to manage nested elements, such as users → addresses,
  * or Matrix fields → nested entries.
  *
- * If this is for a custom field, [[fieldHandle]] must be set. Otherwise, [[attribute]] must be set.
+ * If this is for a custom field, [[field]] must be set. Otherwise, [[attribute]] must be set.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
@@ -71,9 +72,9 @@ class NestedElementManager extends Component
     public ?string $attribute = null;
 
     /**
-     * @var string|null The field handle used to access nested elements.
+     * @var FieldInterface|null The field associated with this nested element manager.
      */
-    public ?string $fieldHandle = null;
+    public ?FieldInterface $field = null;
 
     /**
      * @var string The name of the element query param that nested elements use to associate with the owner’s ID
@@ -121,11 +122,11 @@ class NestedElementManager extends Component
     {
         parent::init();
 
-        if (!isset($this->attribute) && !isset($this->fieldHandle)) {
-            throw new InvalidConfigException('NestedElementManager requires that either `attribute` or `fieldHandle` is set.');
+        if (!isset($this->attribute) && !isset($this->field)) {
+            throw new InvalidConfigException('NestedElementManager requires that either `attribute` or `field` is set.');
         }
-        if (isset($this->attribute) && isset($this->fieldHandle)) {
-            throw new InvalidConfigException('NestedElementManager requires that either `attribute` or `fieldHandle` is set, but not both.');
+        if (isset($this->attribute) && isset($this->field)) {
+            throw new InvalidConfigException('NestedElementManager requires that either `attribute` or `field` is set, but not both.');
         }
     }
 
@@ -158,13 +159,13 @@ class NestedElementManager extends Component
             return $owner->{$this->attribute};
         }
 
-        $query = $owner->getFieldValue($this->fieldHandle);
+        $query = $owner->getFieldValue($this->field->handle);
 
         if (!$query instanceof ElementQueryInterface) {
             $query = $this->nestedElementQuery($owner);
         }
 
-        if ($fetchAll && !$query->getCachedResult()) {
+        if ($fetchAll && $query->getCachedResult() === null) {
             $query
                 ->drafts(null)
                 ->status(null)
@@ -185,7 +186,7 @@ class NestedElementManager extends Component
         } elseif (isset($this->attribute)) {
             $owner->{$this->attribute} = $value;
         } else {
-            $owner->setFieldValue($this->fieldHandle, $value);
+            $owner->setFieldValue($this->field->handle, $value);
         }
     }
 
@@ -260,7 +261,10 @@ class NestedElementManager extends Component
     {
         /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
-        $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+        $ownerSiteIds = array_map(
+            fn(array $siteInfo) => $siteInfo['siteId'],
+            ElementHelper::supportedSitesForElement($owner),
+        );
         $siteIds = [];
 
         $view = Craft::$app->getView();
@@ -383,7 +387,22 @@ class NestedElementManager extends Component
             'fieldLayouts' => [],
             'defaultTableColumns' => null,
             'pageSize' => 50,
+            'storageKey' => null,
         ];
+
+        if ($config['storageKey'] === null) {
+            if (isset($this->field)) {
+                if ($this->field::isMultiInstance()) {
+                    if (isset($this->field->layoutElement)) {
+                        $config['storageKey'] = sprintf('field:%s', $this->field->layoutElement->uid);
+                    }
+                } else {
+                    $config['storageKey'] = sprintf('field:%s', $this->field->uid);
+                }
+            } elseif ($owner !== null) {
+                $config['storageKey'] = sprintf('%s:%s', $owner::class, $this->attribute);
+            }
+        }
 
         return $this->createView(
             $owner,
@@ -406,6 +425,7 @@ class NestedElementManager extends Component
                     'batchSize' => $config['pageSize'],
                     'actions' => [],
                     'canHaveDrafts' => $elementType::hasDrafts(),
+                    'storageKey' => $config['storageKey'],
                 ];
 
                 if ($config['sortable']) {
@@ -459,7 +479,7 @@ class NestedElementManager extends Component
                 $authorizedOwnerId = $owner->getCanonicalId();
             }
         }
-        $attribute = $this->attribute ?? "field:$this->fieldHandle";
+        $attribute = $this->attribute ?? sprintf('field:%s', $this->field->handle);
         Craft::$app->getSession()->authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
 
         $view = Craft::$app->getView();
@@ -486,7 +506,7 @@ class NestedElementManager extends Component
                 'maxElements' => $config['maxElements'],
                 'createButtonLabel' => $config['createButtonLabel'],
                 'ownerIdParam' => $this->ownerIdParam,
-                'fieldHandle' => $this->fieldHandle,
+                'fieldHandle' => $this->field?->handle,
             ];
 
             if (!empty($config['createAttributes'])) {
@@ -555,7 +575,7 @@ JS, [
             return $owner->isAttributeDirty($this->attribute);
         }
 
-        return $owner->isFieldDirty($this->fieldHandle);
+        return $owner->isFieldDirty($this->field->handle);
     }
 
     private function isModified(ElementInterface $owner, bool $anySite = false): bool
@@ -564,7 +584,7 @@ JS, [
             return $owner->isAttributeModified($this->attribute);
         }
 
-        return $owner->isFieldModified($this->fieldHandle, $anySite);
+        return $owner->isFieldModified($this->field->handle, $anySite);
     }
 
     private function saveNestedElements(ElementInterface $owner): void
@@ -630,7 +650,10 @@ JS, [
                 ($owner->propagateAll || !empty($owner->newSiteIds))
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's nested elements
-                $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+                $ownerSiteIds = array_map(
+                    fn(array $siteInfo) => $siteInfo['siteId'],
+                    ElementHelper::supportedSitesForElement($owner),
+                );
                 $fieldSiteIds = $this->getSupportedSiteIds($owner);
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
@@ -837,7 +860,10 @@ JS, [
         // Duplicate elements for other sites as well?
         if ($checkOtherSites && $this->propagationMethod !== PropagationMethod::All) {
             // Find the target's site IDs that *aren't* supported by this site's nested elements
-            $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
+            $targetSiteIds = array_map(
+                fn(array $siteInfo) => $siteInfo['siteId'],
+                ElementHelper::supportedSitesForElement($target),
+            );
             $fieldSiteIds = $this->getSupportedSiteIds($target);
             $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
 
@@ -896,7 +922,10 @@ JS, [
     private function createRevisions(ElementInterface $canonical, ElementInterface $revision): void
     {
         // Only fetch nested elements in the sites the owner element supports
-        $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($canonical), 'siteId');
+        $siteIds = array_map(
+            fn(array $siteInfo) => $siteInfo['siteId'],
+            ElementHelper::supportedSitesForElement($canonical),
+        );
 
         /** @var NestedElementInterface[] $elements */
         $elements = $this->nestedElementQuery($canonical)

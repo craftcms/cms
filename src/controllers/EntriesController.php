@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
+use craft\errors\MutexException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -21,7 +22,6 @@ use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use Throwable;
-use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -95,7 +95,11 @@ class EntriesController extends BaseEntriesController
         $entry = Craft::createObject(Entry::class);
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
-        $entry->authorId = $this->request->getParam('authorId', $user->id);
+
+        $authorIds = $this->request->getQueryParam('authorIds') ?? $this->request->getQueryParam('authorId');
+        if ($authorIds !== null) {
+            $entry->setAuthorIds($authorIds);
+        }
 
         // Type
         if (($typeHandle = $this->request->getParam('type')) !== null) {
@@ -239,7 +243,7 @@ class EntriesController extends BaseEntriesController
         if (
             $entry->id &&
             !$duplicate &&
-            $entry->authorId != $currentUser->id &&
+            !in_array($currentUser->id, $entry->getAuthorIds(), true) &&
             $section->type !== Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
@@ -311,7 +315,7 @@ class EntriesController extends BaseEntriesController
             $lockKey = "entry:$entry->id";
             $mutex = Craft::$app->getMutex();
             if (!$mutex->acquire($lockKey, 15)) {
-                throw new Exception('Could not acquire a lock to save the entry.');
+                throw new MutexException($lockKey, 'Could not acquire a lock to save the entry.');
             }
         }
 
@@ -465,14 +469,13 @@ class EntriesController extends BaseEntriesController
         $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
         $entry->setFieldValuesFromRequest($fieldsLocation);
 
-        // Author
-        $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: static::currentUser()->id));
-
-        if (is_array($authorId)) {
-            $authorId = $authorId[0] ?? null;
+        // Authors
+        $authorIds = $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author');
+        if ($authorIds !== null) {
+            $entry->setAuthorIds($authorIds);
+        } elseif (!$entry->id) {
+            $entry->setAuthor(static::currentUser());
         }
-
-        $entry->authorId = $authorId;
 
         // Parent
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {

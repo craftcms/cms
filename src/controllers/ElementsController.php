@@ -369,7 +369,7 @@ class ElementsController extends Controller
             $notice = fn() => $this->_revisionNotice($element::lowerDisplayName());
         }
 
-        if ($element->enabled) {
+        if ($element->enabled && $element->id) {
             $enabledSiteIds = array_flip($elementsService->getEnabledSiteIdsForElement($element->id));
         } else {
             $enabledSiteIds = [];
@@ -441,8 +441,8 @@ class ElementsController extends Controller
                         'siteStatuses' => $siteStatuses,
                         'siteToken' => (!Craft::$app->getIsLive() || !$element->getSite()->enabled) ? $security->hashData((string)$element->siteId) : null,
                         'visibleLayoutElements' => $form ? $form->getVisibleElements() : [],
-                        'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
-                        'canonicalUpdatedTimestamp' => $canonical->dateUpdated->getTimestamp(),
+                        'updatedTimestamp' => $element->dateUpdated?->getTimestamp(),
+                        'canonicalUpdatedTimestamp' => $canonical->dateUpdated?->getTimestamp(),
                     ]
                 )
             );
@@ -591,16 +591,20 @@ class ElementsController extends Controller
      */
     private function _editElementTitles(ElementInterface $element): array
     {
-        $title = trim((string)$element->title);
+        if ($element::hasTitles()) {
+            $title = $element->title;
 
-        if ($title === '') {
-            if (!$element->id || $element->getIsUnpublishedDraft()) {
-                $title = Craft::t('app', 'Create a new {type}', [
-                    'type' => $element::lowerDisplayName(),
-                ]);
-            } else {
-                $title = sprintf('%s %s', $element::displayName(), $element->id);
+            if ($title === '') {
+                if (!$element->id || $element->getIsUnpublishedDraft()) {
+                    $title = Craft::t('app', 'Create a new {type}', [
+                        'type' => $element::lowerDisplayName(),
+                    ]);
+                } else {
+                    $title = sprintf('%s %s', $element::displayName(), $element->id);
+                }
             }
+        } else {
+            $title = $element->getUiLabel();
         }
 
         $docTitle = $title;
@@ -1932,7 +1936,7 @@ JS, [
             return null;
         }
 
-        if (!$element->canView(static::currentUser())) {
+        if (!$elementsService->canView($element, static::currentUser())) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
