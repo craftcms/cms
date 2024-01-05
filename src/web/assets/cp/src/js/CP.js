@@ -1085,9 +1085,11 @@ Craft.CP = Garnish.Base.extend(
     },
 
     updateContext: function (label, description) {
-      const contextBtn = document.getElementById('context-btn');
-      if (contextBtn) {
-        contextBtn.textContent = label;
+      const contextBtnLabel = document.querySelector(
+        '#context-menu-container > span'
+      );
+      if (contextBtnLabel) {
+        contextBtnLabel.textContent = label;
       }
 
       const menuItem = document.querySelector('#context-menu a.sel');

@@ -1347,17 +1347,19 @@ Craft.ElementEditor = Garnish.Base.extend(
               }
             } else {
               this.settings.draftName = response.data.draftName;
-              Craft.cp.updateContext(
-                response.data.draftName,
-                response.data.creator
-                  ? Craft.t('app', 'Saved {timestamp} by {creator}', {
-                      timestamp: response.data.timestamp,
-                      creator: response.data.creator,
-                    })
-                  : Craft.t('app', 'Saved {timestamp}', {
-                      timestamp: response.data.timestamp,
-                    })
-              );
+              if (this.isFullPage) {
+                Craft.cp.updateContext(
+                  response.data.draftName,
+                  response.data.creator
+                    ? Craft.t('app', 'Saved {timestamp} by {creator}', {
+                        timestamp: response.data.timestamp,
+                        creator: response.data.creator,
+                      })
+                    : Craft.t('app', 'Saved {timestamp}', {
+                        timestamp: response.data.timestamp,
+                      })
+                );
+              }
             }
 
             // Did the controller send us updated preview targets?
