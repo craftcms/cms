@@ -27,11 +27,19 @@ use Webauthn\PublicKeyCredentialLoader;
 use Webauthn\PublicKeyCredentialParameters;
 use Webauthn\TokenBinding\IgnoreTokenBindingHandler;
 
+/**
+ * Webauthn server.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 5.0.0
+ * @internal
+ */
 class WebauthnServer
 {
     /**
-     * Return the token binding handler.
-     * "we recommend to ignore this feature"
+     * Returns the token binding handler.
+     *
+     * > At the time of writing, we recommend to ignore this feature.
      *
      * @return IgnoreTokenBindingHandler
      * @see https://webauthn-doc.spomky-labs.com/v/v4.5/pure-php/the-hard-way#token-binding-handler
@@ -42,8 +50,9 @@ class WebauthnServer
     }
 
     /**
-     * Return supported attestation statement types.
-     * "you should only use the none one unless you have specific needs"
+     * Returns supported attestation statement types.
+     *
+     * > Note that you should only use the none one unless you have specific needs.
      *
      * @return AttestationStatementSupportManager
      * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#supported-attestation-statement-types
@@ -172,7 +181,7 @@ class WebauthnServer
     }
 
     /**
-     * Return the object containing Authenticator Selection Criteria
+     * Returns the object containing Authenticator Selection Criteria
      *
      * @return AuthenticatorSelectionCriteria
      */
