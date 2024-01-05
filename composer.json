@@ -73,6 +73,7 @@
     "codeception/module-phpbrowser": "^3.0.0",
     "codeception/module-rest": "^3.3.2",
     "codeception/module-yii2": "^1.1.9",
+    "codeception/lib-innerbrowser": "4.0.1",
     "craftcms/ecs": "dev-main",
     "fakerphp/faker": "^1.19.0",
     "league/factory-muffin": "^3.3.0",
