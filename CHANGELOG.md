@@ -14,6 +14,7 @@
 - Fixed a PHP error that occurred when viewing a user’s addresses.
 - Fixed a bug where all field layouts were getting instantiated before the Debug Toolbar had a chance to register its `*` wildcard event
 - Fixed a JavaScript error that occurred when creating a new custom source. ([#14108](https://github.com/craftcms/cms/issues/14108))
+- Updated `web-auth/webauthn-lib` to ^4.7.
 
 ## 5.0.0-alpha.4 - 2024-01-02
 
