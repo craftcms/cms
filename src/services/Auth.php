@@ -7,12 +7,12 @@
 
 namespace craft\services;
 
-use Base64Url\Base64Url;
 use Craft;
 use craft\auth\methods\AuthMethodInterface;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\auth\passkeys\CredentialRepository;
+use craft\auth\passkeys\WebauthnServer;
 use craft\elements\User;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
@@ -24,15 +24,16 @@ use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
+use ParagonIE\ConstantTime\Base64UrlSafe;
 use Throwable;
-use Webauthn\AuthenticatorSelectionCriteria;
+use Webauthn\AuthenticatorAssertionResponse;
+use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
 use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
-use Webauthn\Server;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 
@@ -81,10 +82,10 @@ class Auth extends Component
     private User|false $_user;
 
     /**
-     * @var Server
+     * @var WebauthnServer
      * @see webauthnServer()
      */
-    private Server $_webauthnServer;
+    private WebauthnServer $_webauthnServer;
 
     /**
      * @var int|false The session duration for the user being authenticated.
@@ -112,6 +113,7 @@ class Auth extends Component
     /**
      * Get user and duration data from session
      *
+     * @param int|null $sessionDuration
      * @return User|null
      */
     public function getUser(?int &$sessionDuration = null): ?User
@@ -412,15 +414,19 @@ class Auth extends Component
             (new CredentialRepository())->findAllForUserEntity($userEntity),
         );
 
-        $options = $this->webauthnServer()->generatePublicKeyCredentialCreationOptions(
-            $userEntity,
-            PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
-            $excludeCredentials,
-            $this->passkeyAuthenticatorSelectionCriteria(),
+        $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::create(
+            rp: $this->passkeyRpEntity(),
+            user: $userEntity,
+            challenge: random_bytes(16),
+            pubKeyCredParams: $this->webauthnServer()->getPublicKeyCredentialParametersList(),
+            authenticatorSelection: $this->webauthnServer()->getPasskeyAuthenticatorSelectionCriteria(),
+            attestation: PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
+            excludeCredentials: $excludeCredentials
         );
 
-        Craft::$app->getSession()->set($this->passkeyCreationOptionsParam, Json::encode($options));
-        return $options;
+        Craft::$app->getSession()->set($this->passkeyCreationOptionsParam, Json::encode($publicKeyCredentialCreationOptions));
+
+        return $publicKeyCredentialCreationOptions;
     }
 
     /**
@@ -438,23 +444,43 @@ class Auth extends Component
             return false;
         }
 
-        /** @var PublicKeyCredentialCreationOptions $options */
-        $options = PublicKeyCredentialCreationOptions::createFromArray(Json::decode($optionsJson));
+        $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::createFromArray(Json::decode($optionsJson));
+        $publicKeyCredential = $this->webauthnServer()->getPublicKeyCredentialLoader()->load($credentials);
+        $authenticatorAttestationResponse = $publicKeyCredential->response;
+
+        if (!$authenticatorAttestationResponse instanceof AuthenticatorAttestationResponse) {
+            Craft::warning('Authenticator Attestation Response was not of AuthenticatorAttestationResponse type.');
+            return false;
+        }
 
         try {
-            $verifiedCredentials = $this->webauthnServer()->loadAndCheckAttestationResponse(
-                $credentials,
-                $options,
-                $this->webauthnServerRequest(),
+            $publicKeyCredentialSource = $this->webauthnServer()->getAuthenticatorAttestationResponseValidator()->check(
+                $authenticatorAttestationResponse,
+                $publicKeyCredentialCreationOptions,
+                Craft::$app->getRequest()->getHostName(),
             );
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            Craft::warning('Authenticator Attestation Response Validation failed: ' . $e->getMessage());
             return false;
         }
 
         $credentialRepository = new CredentialRepository();
-        $credentialRepository->savedNamedCredentialSource($verifiedCredentials, $credentialName);
+        $credentialRepository->savedNamedCredentialSource($publicKeyCredentialSource, $credentialName);
 
         return true;
+    }
+
+    /**
+     * Returns the public key credential request options.
+     *
+     * @return PublicKeyCredentialRequestOptions
+     */
+    public function getPasskeyRequestOptions(): PublicKeyCredentialRequestOptions
+    {
+        return PublicKeyCredentialRequestOptions::create(
+            challenge: random_bytes(32),
+            userVerification: PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_REQUIRED,
+        );
     }
 
     /**
@@ -476,15 +502,26 @@ class Auth extends Component
             $requestOptions = PublicKeyCredentialRequestOptions::createFromString($requestOptions);
         }
 
+        $userEntity = $this->passkeyUserEntity($user);
+        $publicKeyCredential = $this->webauthnServer()->getPublicKeyCredentialLoader()->load($response);
+        $authenticatorAssertionResponse = $publicKeyCredential->response;
+
+        if (!$authenticatorAssertionResponse instanceof AuthenticatorAssertionResponse) {
+            Craft::warning('Authenticator Assertion Response was not of AuthenticatorAssertionResponse type.');
+            return false;
+        }
+
+        $serverRequest = ServerRequest::fromGlobals();
         try {
-            /** @var PublicKeyCredentialRequestOptions $requestOptions */
-            $this->webauthnServer()->loadAndCheckAssertionResponse(
-                $response,
+            $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
+                $publicKeyCredential->rawId,
+                $authenticatorAssertionResponse,
                 $requestOptions,
-                $this->passkeyUserEntity($user),
-                $this->webauthnServerRequest(),
+                $serverRequest,
+                $userEntity->id,
             );
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            Craft::warning('Authenticator Assertion Response Validation failed: ' . $e->getMessage());
             return false;
         }
 
@@ -503,62 +540,46 @@ class Auth extends Component
     }
 
     /**
-     * Returns the credential request options.
+     * Return WebauthnServer
      *
-     * @return PublicKeyCredentialRequestOptions
+     * @return WebauthnServer
      */
-    public function getPasskeyRequestOptions(): PublicKeyCredentialRequestOptions
-    {
-        return $this->webauthnServer()->generatePublicKeyCredentialRequestOptions(
-            PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_PREFERRED,
-        );
-    }
-
-    private function webauthnServer(): Server
+    private function webauthnServer(): WebauthnServer
     {
         if (!isset($this->_webauthnServer)) {
-            $this->_webauthnServer = new Server($this->passkeyRpEntity(), new CredentialRepository());
+            $this->_webauthnServer = new WebauthnServer();
         }
 
         return $this->_webauthnServer;
     }
 
-    private function webauthnServerRequest(): ServerRequest
-    {
-        $request = Craft::$app->getRequest();
-
-        return new ServerRequest(
-            $request->getMethod(),
-            $request->getFullUri(),
-            $request->getHeaders()->toArray(),
-            $request->getRawBody(),
-        );
-    }
-
+    /**
+     * Returns User Entity for given User element
+     *
+     * @param User $user
+     * @return PublicKeyCredentialUserEntity
+     */
     private function passkeyUserEntity(User $user): PublicKeyCredentialUserEntity
     {
         $data = [
             'name' => $user->email,
-            'id' => Base64Url::encode($user->uid),
+            'id' => Base64UrlSafe::encodeUnpadded($user->uid),
             'displayName' => $user->getName(),
         ];
 
         return PublicKeyCredentialUserEntity::createFromArray($data);
     }
 
-    public function passkeyRpEntity(): PublicKeyCredentialRpEntity
+    /**
+     * Returns RP Entity (i.e. the application)
+     *
+     * @return PublicKeyCredentialRpEntity
+     */
+    private function passkeyRpEntity(): PublicKeyCredentialRpEntity
     {
         return PublicKeyCredentialRpEntity::createFromArray([
             'name' => Craft::$app->getSystemName(),
             'id' => Craft::$app->getRequest()->getHostName(),
         ]);
-    }
-
-    private function passkeyAuthenticatorSelectionCriteria(): AuthenticatorSelectionCriteria
-    {
-        $authenticatorSelectionCriteria = new AuthenticatorSelectionCriteria();
-        $authenticatorSelectionCriteria->setRequireResidentKey(true);
-        $authenticatorSelectionCriteria->setUserVerification(AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_PREFERRED);
-        return $authenticatorSelectionCriteria;
     }
 }
