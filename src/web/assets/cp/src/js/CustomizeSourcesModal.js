@@ -560,7 +560,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     this.modal.$sourceSettingsContainer.scrollTop(0);
   },
 
-  createSettings: function () {},
+  createSettings: async function () {},
 
   getIndexSourceItem: function () {},
 
@@ -617,7 +617,7 @@ Craft.CustomizeSourcesModal.Source =
       return true;
     },
 
-    createSettings: function ($container) {
+    createSettings: async function ($container) {
       Craft.ui
         .createLightswitchField({
           label: Craft.t('app', 'Enabled'),
@@ -779,7 +779,7 @@ Craft.CustomizeSourcesModal.CustomSource =
   Craft.CustomizeSourcesModal.Source.extend({
     $labelInput: null,
 
-    createSettings: function ($container) {
+    createSettings: async function ($container) {
       const $labelField = Craft.ui
         .createTextField({
           label: Craft.t('app', 'Label'),
@@ -814,7 +814,10 @@ Craft.CustomizeSourcesModal.CustomSource =
           }),
         })
         .appendTo($container);
-      Craft.appendBodyHtml(conditionBuilderJs);
+
+      if (conditionBuilderJs) {
+        await Craft.appendBodyHtml(conditionBuilderJs);
+      }
 
       this.createSortField($container);
       this.createTableAttributesField($container);
@@ -916,7 +919,7 @@ Craft.CustomizeSourcesModal.Heading =
       return true;
     },
 
-    createSettings: function ($container) {
+    createSettings: async function ($container) {
       const $labelField = Craft.ui
         .createTextField({
           label: Craft.t('app', 'Heading'),
