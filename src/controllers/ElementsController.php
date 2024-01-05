@@ -31,6 +31,7 @@ use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
+use craft\web\UrlManager;
 use craft\web\View;
 use Throwable;
 use yii\helpers\Markdown;
@@ -155,12 +156,9 @@ class ElementsController extends Controller
      * @throws ServerErrorHttpException
      * @since 4.0.0
      */
-    public function actionRedirect(?int $elementId = null, ?string $elementUid = null, ?ElementInterface $element = null): Response
+    public function actionRedirect(?int $elementId = null, ?string $elementUid = null): Response
     {
-        if ($element === null) {
-            $element = $this->element = $this->_element($elementId, $elementUid);
-        }
-
+        $element = $this->element = $this->_element($elementId, $elementUid);
         $url = $element->getCpEditUrl();
 
         if (!$url) {
@@ -169,9 +167,11 @@ class ElementsController extends Controller
 
         $editUrl = UrlHelper::removeParam(UrlHelper::cpUrl('edit'), 'site');
         if (str_starts_with($url, $editUrl)) {
-            return $this->runAction('edit', [
-                'element' => $element,
-            ]);
+            /** @var UrlManager $urlManager */
+            $urlManager = Craft::$app->getUrlManager();
+            return $this->runAction('edit', array_merge($urlManager->getRouteParams(), [
+                'elementId' => $element->id,
+            ]));
         }
 
         return $this->redirect($url);
