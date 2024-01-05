@@ -99,17 +99,14 @@ class Tags extends Component
     private function _tagGroups(): MemoizableArray
     {
         if (!isset($this->_tagGroups)) {
-            $groups = [];
-            /** @var TagGroupRecord[] $records */
             $records = TagGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->all();
 
-            foreach ($records as $record) {
-                $groups[] = $this->_createTagGroupFromRecord($record);
-            }
-
-            $this->_tagGroups = new MemoizableArray($groups);
+            $this->_tagGroups = new MemoizableArray(
+                $records,
+                fn(TagGroupRecord $record) => $this->_createTagGroupFromRecord($record),
+            );
         }
 
         return $this->_tagGroups;
