@@ -3540,11 +3540,14 @@ class Elements extends Component
                     ]);
                 }
 
-                if ($element->isNewForSite = empty($siteSettingsRecord)) {
+                if (!isset($siteSettingsRecord)) {
                     // First time we've saved the element for this site
                     $siteSettingsRecord = new Element_SiteSettingsRecord();
                     $siteSettingsRecord->elementId = $element->id;
                     $siteSettingsRecord->siteId = $element->siteId;
+                    $element->isNewForSite = true;
+                } else {
+                    $element->isNewForSite = false;
                 }
 
                 $title = $element::hasTitles() ? $element->title : null;
