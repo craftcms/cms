@@ -37,11 +37,6 @@ class ImageTransforms
     public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?(?:_(?P<fill>[0-9a-f]{6}|transparent))?(?:_(?P<upscale>ns))?/i';
 
     /**
-     * @var bool Whether we should delete the image source (on after request)
-     */
-    public static bool $deleteImageSourceAfterRequest = false;
-
-    /**
      * Create an AssetImageTransform model from a string.
      *
      * @param string $transformString
@@ -206,18 +201,9 @@ class ImageTransforms
                     // we've downloaded the file, now store it
                     self::storeLocalSource($tempFilePath, $imageSourcePath);
 
-                    $generalConfig = Craft::$app->getConfig()->getGeneral();
                     // And delete it after the request, if nobody wants it.
-                    if ($generalConfig->maxCachedCloudImageSize == 0) {
-                        // this works fine for the CP requests,
-                        // but for non-cp requests where we have maxCachedCloudImageSize set to zero
-                        // and generateTransformsBeforePageLoad set to true, we need to defer the deletion further
-                        // see https://github.com/craftcms/cms/issues/14100 for more details
-                        if (!$generalConfig->generateTransformsBeforePageLoad || Craft::$app->getRequest()->getIsCpRequest()) {
-                            FileHelper::deleteFileAfterRequest($imageSourcePath);
-                        } else {
-                            self::$deleteImageSourceAfterRequest = true;
-                        }
+                    if (Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize == 0) {
+                        FileHelper::deleteFileAfterRequest($imageSourcePath);
                     }
 
                     if (!FileHelper::unlink($tempFilePath)) {
@@ -494,11 +480,6 @@ class ImageTransforms
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
         $image->saveAs($tempPath);
         clearstatcache(true, $tempPath);
-
-        // if we couldn't delete the source image before, we should delete it now
-        if (self::$deleteImageSourceAfterRequest) {
-            FileHelper::deleteFileAfterRequest($imageSource);
-        }
 
         return $tempPath;
     }
