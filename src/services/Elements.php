@@ -401,6 +401,31 @@ class Elements extends Component
     public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
 
     /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to
+     * duplicate an element as an unpublished draft.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_DUPLICATE,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canDuplicateAsDraft()
+     * @since 5.0.0
+     */
+    public const EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT = 'authorizeDuplicateAsDraft';
+
+    /**
      * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete an element.
      *
      * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
@@ -1651,6 +1676,7 @@ class Elements extends Component
      * set to an array of site-specific attribute array, indexed by site IDs.
      * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
      * (This will only happen if the duplicated element is canonical.)
+     * @param bool $asUnpublishedDraft whether the duplicate should be created as unpublished draft
      * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
@@ -1660,6 +1686,7 @@ class Elements extends Component
         ElementInterface $element,
         array $newAttributes = [],
         bool $placeInStructure = true,
+        bool $asUnpublishedDraft = false,
     ): ElementInterface {
         // Make sure the element exists
         if (!$element->id) {
@@ -1744,6 +1771,25 @@ class Elements extends Component
             );
         }
 
+        // If we are supposed to save it as new unpublished draft
+        if ($asUnpublishedDraft) {
+            /** @var ElementInterface|DraftBehavior $element */
+            /** @var DraftBehavior $draftBehavior */
+            // check if draftBehavior is attached - if not, attach it
+            $draftBehavior = $mainClone->getBehavior('draft') ?? $mainClone->attachBehavior('draft', new DraftBehavior());
+            $draftsService = Craft::$app->getDrafts();
+            $draftBehavior->draftName = Craft::t('app', 'First draft');
+            $draftBehavior->draftNotes = null;
+            $mainClone->setCanonicalId(null);
+            $mainClone->draftId = $draftsService->insertDraftRow(
+                $draftBehavior->draftName,
+                null,
+                Craft::$app->getUser()->getId(),
+                null,
+                $draftBehavior->trackChanges,
+            );
+        }
+
         // Validate
         $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
         $mainClone->validate();
@@ -1766,6 +1812,7 @@ class Elements extends Component
             $newAttributes,
             $behaviors,
             $siteAttributes,
+            $asUnpublishedDraft,
         ) {
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
@@ -1881,6 +1928,11 @@ class Elements extends Component
 
             // Clean up our tracks
             $mainClone->duplicateOf = null;
+
+            // discard draft from the original element, if it was a provisional draft
+            if ($asUnpublishedDraft && $element->isProvisionalDraft) {
+                Craft::$app->elements->deleteElementById($element->id);
+            }
         });
 
         return $mainClone;
@@ -4098,6 +4150,27 @@ SQL;
         }
 
         return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE) ?? $element->canDuplicate($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to duplicate the given element as an unpublished draft.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 5.0.0
+     */
+    public function canDuplicateAsDraft(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT)
+            ?? $element->canDuplicateAsDraft($user);
     }
 
     /**
