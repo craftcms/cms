@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where the “Save and add another” element action wasn’t redirecting to a new element edit page, when editing an unpublished draft.
+
 ## 4.5.14 - 2024-01-02
 
 - Improved the performance of input namespacing.
