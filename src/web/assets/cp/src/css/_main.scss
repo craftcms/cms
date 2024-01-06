@@ -3120,6 +3120,14 @@ table {
   }
 }
 
+// fix for context menus that are only children
+.context-menu-container .menubtn:only-child,
+.context-menu-container .visually-hidden:first-child + .menubtn:last-child {
+  margin: 0 calc(var(--s) * -1);
+  border-left: none !important;
+  border-radius: calc(var(--touch-target-size) / 2) !important;
+}
+
 .chip,
 .card {
   // prevent double focus ring (chip/card already gets it)

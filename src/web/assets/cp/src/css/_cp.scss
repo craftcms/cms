@@ -952,7 +952,8 @@ li.breadcrumb-toggle-wrapper {
 
   #crumbs:not(.empty) #primary-nav-toggle + nav ul li:first-child,
   #crumbs.empty + .context-menu-container {
-    @include padding-left(var(--padding));
+    @include margin-left(var(--padding));
+    @include padding-left(0);
   }
 }
 

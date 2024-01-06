@@ -2450,10 +2450,14 @@ JS;
      * @since 5.0.0
      */
     public static function siteMenuItems(
-        array $sites,
+        ?array $sites = null,
         ?Site $selectedSite = null,
         array $config = [],
     ): array {
+        if ($sites === null) {
+            $sites = Craft::$app->getSites()->getAllSites();
+        }
+
         $config += [
             'showSiteGroupHeadings' => null,
             'includeOmittedSites' => false,
@@ -2490,7 +2494,7 @@ JS;
                 'label' => Craft::t('site', $site->name),
                 'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
                 'hidden' => !isset($sites[$site->id]),
-                'selected' => $site->id === $selectedSite->id,
+                'selected' => $site->id === $selectedSite?->id,
                 'attributes' => [
                     'data' => [
                         'site-id' => $site->id,
