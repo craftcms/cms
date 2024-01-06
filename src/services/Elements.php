@@ -401,6 +401,31 @@ class Elements extends Component
     public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
 
     /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to
+     * duplicate an element as an unpublished draft.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_DUPLICATE,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canDuplicateAsDraft()
+     * @since 5.0.0
+     */
+    public const EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT = 'authorizeDuplicateAsDraft';
+
+    /**
      * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete an element.
      *
      * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
@@ -4125,6 +4150,27 @@ SQL;
         }
 
         return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE) ?? $element->canDuplicate($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to duplicate the given element as an unpublished draft.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 5.0.0
+     */
+    public function canDuplicateAsDraft(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT)
+            ?? $element->canDuplicateAsDraft($user);
     }
 
     /**
