@@ -16,6 +16,7 @@
 - Fixed a JavaScript error that occurred when creating a new custom source. ([#14108](https://github.com/craftcms/cms/issues/14108))
 - Fixed a bug where nested entry edit pages weren’t showing validation errors. ([#13975](https://github.com/craftcms/cms/pull/13975))
 - Fixed some global header styling issues.
+- Fixed an error that occurred when logged in with an account that didn’t have permission to edit any sites.
 - Updated `web-auth/webauthn-lib` to ^4.7.
 
 ## 5.0.0-alpha.4 - 2024-01-02

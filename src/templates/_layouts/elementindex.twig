@@ -30,7 +30,7 @@
         {% elseif requestedSite and requestedSite in selectableSites %}
             {% set selectedSite = requestedSite %}
         {% else %}
-            {% set selectedSite = selectableSites|first %}
+            {% set selectedSite = selectableSites|length ? selectableSites|first : craft.app.sites.getPrimarySite() %}
         {% endif %}
     {% endif %}
 
