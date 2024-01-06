@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased (4.5.x)
+
+- Fixed a bug where the “Save and add another” element action wasn’t redirecting to a new element edit page, when editing an unpublished draft.
+
 ## 4.6.0-RC1 - 2024-01-04
 
 - Added the “Country” field type. ([#13789](https://github.com/craftcms/cms/discussions/13789))
