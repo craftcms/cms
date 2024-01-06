@@ -3,13 +3,18 @@
 ## Unreleased
 
 - It’s now possible to delete volume folders using the “Delete” asset action. ([#13086](https://github.com/craftcms/cms/discussions/13086))
+- The “Save as a new entry” action is now available to all users with the “Create entries” permission, and will create a new unpublished draft rather than a fully-saved entry. ([#9577](https://github.com/craftcms/cms/issues/9577), [#10244](https://github.com/craftcms/cms/discussions/10244))
 - Added the `showFirstAndLastNameFields` config setting. ([#14097](https://github.com/craftcms/cms/pull/14097))
 - The `mutex` driver is now set to `yii\mutex\MysqlMutex` or `yii\mutex\PgsqlMutex` by default, once again. ([#14102](https://github.com/craftcms/cms/pull/14102))
+- Added `craft\base\ElementInterface::canDuplicateAsDraft()`.
 - Added `craft\helpers\App::dbMutexConfig()`.
+- Added `craft\services\Elements::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT`.
+- Added `craft\services\Elements::canDuplicateAsDraft()`.
 - `queue/get-job-info` action requests no longer create a mutex lock.
 - `craft\base\MemoizableArray` now supports passing a normalizer method to the constructor, which will be lazily applied to each array item once, only if returned by `all()` or `firstWhere()`. ([#14104](https://github.com/craftcms/cms/pull/14104))
 - `craft\elements\actions\DeleteAssets` is no longer deprecated.
 - `craft\helpers\ArrayHelper::firstWhere()` now has a `$valueKey` argument, which can be passed a variable by reference that should be set to the resulting value’s key in the array.
+- `craft\services\Elements::duplicateElement()` now has an `$asUnpublishedDraft` argument.
 - Deprecated `craft\helpers\App::mutexConfig()`.
 - Fixed a PHP error that occurred when viewing a user’s addresses.
 - Fixed a bug where all field layouts were getting instantiated before the Debug Toolbar had a chance to register its `*` wildcard event

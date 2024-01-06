@@ -10,6 +10,7 @@
 - Asset edit pages now include quick links to other volumes’ index sources.
 - Assets’ Alternative Text fields are now translatable. ([#11576](https://github.com/craftcms/cms/issues/11576))
 - Entries can now have multiple authors. ([#12380](https://github.com/craftcms/cms/pull/12380))
+- The “Save as a new entry” action is now available to all users with the “Create entries” permission, and will create a new unpublished draft rather than a fully-saved entry. ([#9577](https://github.com/craftcms/cms/issues/9577), [#10244](https://github.com/craftcms/cms/discussions/10244))
 - Entry conditions can now have a “Matrix field” rule. ([#13794](https://github.com/craftcms/cms/discussions/13794))
 - Selected elements within relational fields now include a context menu with “View in a new tab”, “Edit”, and “Remove” options.
 - Selected elements within relational fields now include a dedicated drag handle.
@@ -107,6 +108,7 @@
 - Added `craft\base\Element::safeActionMenuItems()`.
 - Added `craft\base\Element::shouldValidateTitle()`.
 - Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
+- Added `craft\base\ElementInterface::canDuplicateAsDraft()`.
 - Added `craft\base\ElementInterface::getActionMenuItems()`.
 - Added `craft\base\ElementInterface::getCardBodyHtml()`.
 - Added `craft\base\ElementInterface::getChipLabelHtml()`.
@@ -251,6 +253,8 @@
 - Added `craft\queue\BaseBatchedJob::before()`.
 - Added `craft\queue\BaseBatchedJob::beforeBatch()`.
 - Added `craft\services\Auth`.
+- Added `craft\services\Elements::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT`.
+- Added `craft\services\Elements::canDuplicateAsDraft()`.
 - Added `craft\services\Entries::deleteEntryType()`.
 - Added `craft\services\Entries::deleteEntryTypeById()`.
 - Added `craft\services\Entries::deleteSection()`.
@@ -351,7 +355,7 @@
 - `craft\services\AssetIndexer::indexFileByListing()` now has a `$volume` argument in place of `$volumeId`.
 - `craft\services\AssetIndexer::indexFolderByListing()` now has a `$volume` argument in place of `$volumeId`.
 - `craft\services\AssetIndexer::storeIndexList()` now has a `$volume` argument in place of `$volumeId`.
-- `craft\services\Elements::duplicateElement()` no longer has a `$trackDuplication` argument.
+- `craft\services\Elements::duplicateElement()` now has an `$asUnpublishedDraft` argument, and no longer has a `$trackDuplication` argument.
 - `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
 - `craft\services\Users::activateUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
