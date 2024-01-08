@@ -61,6 +61,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             filter: ':not(a[href]):not(.toggle):not(.btn)',
             checkboxMode: this.settings.checkboxMode,
             onSelectionChange: this.onSelectionChange.bind(this),
+            makeFocusable: false,
           }
         );
 
