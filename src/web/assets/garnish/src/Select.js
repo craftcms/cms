@@ -852,12 +852,24 @@ export default Base.extend(
 
     _selectItems: function ($items) {
       $items.addClass(this.settings.selectedClass);
+
+      if (this.settings.focusTargetClass) {
+        const $targets = $items.find(`.${this.settings.focusTargetClass}`);
+        $targets.attr('aria-checked', 'true');
+      }
+
       this.$selectedItems = this.$selectedItems.add($items);
       this.onSelectionChange();
     },
 
     _deselectItems: function ($items) {
       $items.removeClass(this.settings.selectedClass);
+
+      if (this.settings.focusTargetClass) {
+        const $targets = $items.find(`.${this.settings.focusTargetClass}`);
+        $targets.attr('aria-checked', 'false');
+      }
+
       this.$selectedItems = this.$selectedItems.not($items);
       this.onSelectionChange();
     },

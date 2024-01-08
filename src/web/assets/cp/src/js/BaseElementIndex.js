@@ -3204,7 +3204,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           sortable: this.sortable,
           onSelectionChange: this._handleSelectionChange.bind(this),
           onSortChange: this.settings.onSortChange,
-          focusTargetClass: 'checkbox',
         },
         this.getViewSettings()
       );
