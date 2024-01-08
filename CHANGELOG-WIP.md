@@ -25,4 +25,5 @@
 - `craft\elements\actions\DeleteAssets` is no longer deprecated.
 - `craft\helpers\ArrayHelper::firstWhere()` now has a `$valueKey` argument, which can be passed a variable by reference that should be set to the resulting value’s key in the array.
 - Deprecated `craft\helpers\App::mutexConfig()`.
+- Added `Craft.FormObserver`. ([#14114](https://github.com/craftcms/cms/pull/14114))
 - Admin tables now have `footerActions`, `moveToPageAction`, `onCellClicked`, `onCellDoubleClicked`, `onRowClicked`, `onRowDoubleClicked`, and `paginatedReorderAction` settings. ([#14051](https://github.com/craftcms/cms/pull/14051))

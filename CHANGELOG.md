@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased (4.6.x)
+
+- Added `Craft.FormObserver`. ([#14114](https://github.com/craftcms/cms/pull/14114))
+
 ## Unreleased (4.5.x)
 
 - Fixed a bug where the “Save and add another” element action wasn’t redirecting to a new element edit page, when editing an unpublished draft.
