@@ -34,9 +34,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     enableAutosave: null,
     lastSerializedValue: null,
-    listeningForChanges: false,
-    pauseLevel: 0,
-    timeout: null,
+    /**
+     * @type {?Craft.FormObserver}
+     */
+    formObserver: null,
     cancelToken: null,
     ignoreFailedRequest: false,
     queue: null,
@@ -270,98 +271,45 @@ Craft.ElementEditor = Garnish.Base.extend(
       return Craft.namespaceId(id, this.namespace);
     },
 
+    get listeningForChanges() {
+      return !!this.formObserver;
+    },
+
+    /**
+     * @deprecated
+     */
+    get pauseLevel() {
+      return this.formObserver?._pauseLevel ?? 0;
+    },
+
     listenForChanges: function () {
       if (
-        this.listeningForChanges ||
-        this.pauseLevel > 0 ||
+        this.formObserver ||
         !this.enableAutosave ||
         !this.settings.canCreateDrafts
       ) {
         return;
       }
 
-      this.listeningForChanges = true;
-
-      // Listen for events on the body when editing a full page form, so we don’t miss events from Live Preview
-      const $target = this.isFullPage ? Garnish.$bod : this.$container;
-
-      // we're now using selectize select_on_focus plugin which clears the dropdown's value on dropdown open;
-      // that triggers a change event which triggers saving a draft and causes conditional fields/tabs to misbehave;
-      // because of that, we are now emitting selectize dropdown open and close events;
-      // we pause listening for changes on dropdown open (it happens before the focus event, so before the value is cleared)
-      // and we resume on dropdown close to register the change in value (if one actually occurred);
-      this.addListener(
-        $target.find('.selectized'),
-        'selectizedropdownopen',
-        (ev) => {
-          this.pause();
-        }
-      );
-
-      this.addListener(
-        $target.find('.selectized'),
-        'selectizedropdownclose',
-        (ev) => {
-          this.resume(false);
-        }
-      );
-
-      this.addListener(
-        $target,
-        'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
-        (ev) => {
-          if ($(ev.target).is(this.statusIcons())) {
-            return;
-          }
-
-          if (this.pauseLevel == 0) {
-            clearTimeout(this.timeout);
-            // If they are typing, wait half a second before checking the form
-            if (['keypress', 'keyup', 'change'].includes(ev.type)) {
-              this.timeout = setTimeout(this.checkForm.bind(this), 500);
-            } else {
-              this.checkForm();
-            }
-          }
-        }
-      );
+      this.formObserver = new Craft.FormObserver(this.$container, () => {
+        this.checkForm();
+      });
     },
 
     stopListeningForChanges: function () {
-      if (!this.listeningForChanges) {
+      if (this.formObserver) {
+        this.formObserver.destroy();
+        this.formObserver = null;
         return;
       }
-
-      this.removeListener(
-        Garnish.$bod,
-        'keypress,keyup,change,focus,blur,click,mousedown,mouseup'
-      );
-      clearTimeout(this.timeout);
-      this.listeningForChanges = false;
     },
 
     pause: function () {
-      this.pauseLevel++;
-      this.stopListeningForChanges();
+      this.formObserver?.pause();
     },
 
     resume: function (checkBeforeListening = true) {
-      if (this.pauseLevel === 0) {
-        throw 'Craft.ElementEditor::resume() should only be called after pause().';
-      }
-
-      // Only actually resume operation if this has been called the same
-      // number of times that pause() was called
-      this.pauseLevel--;
-      if (this.pauseLevel === 0) {
-        if (this.enableAutosave) {
-          // prevent double-calling save draft on resuming after selectize dropdown closed
-          if (checkBeforeListening) {
-            this.checkForm();
-          }
-          this.listenForChanges();
-        }
-      }
+      this.formObserver?.resume();
     },
 
     initForProvisionalDraft: function () {
@@ -1033,11 +981,10 @@ Craft.ElementEditor = Garnish.Base.extend(
         if (!this.enableAutosave) {
           this.preview.on('open', () => {
             this.enableAutosave = true;
-            this.listenForChanges();
+            this.checkForm();
           });
           this.preview.on('close', () => {
             this.enableAutosave = false;
-            this.stopListeningForChanges();
 
             // Hide the status icon if the save was successful
             const $statusIcons = this.statusIcons();
@@ -1046,7 +993,11 @@ Craft.ElementEditor = Garnish.Base.extend(
             }
           });
         }
+        this.preview.on('beforeOpen', () => {
+          this.formObserver?.pause();
+        });
         this.preview.on('close', () => {
+          this.formObserver?.resume();
           if (this.scrollY) {
             window.scrollTo(0, this.scrollY);
             this.scrollY = null;
@@ -1139,16 +1090,12 @@ Craft.ElementEditor = Garnish.Base.extend(
             // If this isn't a draft and there's no active preview, then there's nothing to check
             if (
               this.settings.revisionId ||
-              this.pauseLevel > 0 ||
               !this.enableAutosave ||
               !this.settings.canCreateDrafts
             ) {
               resolve();
               return;
             }
-
-            clearTimeout(this.timeout);
-            this.timeout = null;
 
             // If we haven't had a chance to fetch the initial data yet, try again in a bit
             if (
@@ -1447,8 +1394,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             const visibleLayoutElements = {};
             let changedElements = false;
 
-            for (let i = 0; i < response.data.missingElements.length; i++) {
-              const tabInfo = response.data.missingElements[i];
+            for (const tabInfo of response.data.missingElements) {
               let $tabContainer = this.$contentContainer.children(
                 `[data-layout-tab="${tabInfo.uid}"]`
               );
@@ -1468,9 +1414,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
               $allTabContainers = $allTabContainers.add($tabContainer);
 
-              for (let j = 0; j < tabInfo.elements.length; j++) {
-                const elementInfo = tabInfo.elements[j];
-
+              for (const elementInfo of tabInfo.elements) {
                 if (elementInfo.html !== false) {
                   if (!visibleLayoutElements[tabInfo.uid]) {
                     visibleLayoutElements[tabInfo.uid] = [];
