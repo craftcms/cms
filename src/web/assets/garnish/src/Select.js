@@ -884,6 +884,7 @@ export default Base.extend(
   {
     defaults: {
       selectedClass: 'sel',
+      focusTargetClass: null,
       multi: false,
       allowEmpty: true,
       vertical: false,
