@@ -891,7 +891,7 @@ export default Base.extend(
       handle: null,
       filter: null,
       checkboxMode: false,
-      makeFocusable: true,
+      makeFocusable: false,
       onSelectionChange: $.noop,
     },
 
