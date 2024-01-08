@@ -383,17 +383,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     onSelectionChange: function () {
       this.settings.onSelectionChange();
       this.trigger('selectionChange');
-
-      // Update checkboxes
-      // if (this.settings.checkboxMode) {
-      //   const $items = this.elementSelect.$items.each((index, item) => {
-      //     if (this.elementSelect.isSelected(item)) {
-      //       this.getElementCheckbox(item).attr('aria-checked', 'true');
-      //     } else {
-      //       this.getElementCheckbox(item).attr('aria-checked', 'false');
-      //     }
-      //   });
-      // }
     },
 
     disable: function () {
