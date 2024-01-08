@@ -461,7 +461,7 @@ class DateTimeHelper
      */
     public static function nextYear(?DateTimeZone $timeZone = null): DateTime
     {
-        return static::thisMonth($timeZone)->modify('+1 year');
+        return static::thisYear($timeZone)->modify('+1 year');
     }
 
     /**
@@ -473,7 +473,7 @@ class DateTimeHelper
      */
     public static function lastYear(?DateTimeZone $timeZone = null): DateTime
     {
-        return static::thisMonth($timeZone)->modify('-1 year');
+        return static::thisYear($timeZone)->modify('-1 year');
     }
 
     /**
