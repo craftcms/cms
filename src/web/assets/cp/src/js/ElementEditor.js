@@ -283,11 +283,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     listenForChanges: function () {
-      if (
-        this.formObserver ||
-        !this.enableAutosave ||
-        !this.settings.canCreateDrafts
-      ) {
+      if (this.formObserver) {
         return;
       }
 
@@ -1087,12 +1083,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.queue.push(
         () =>
           new Promise((resolve, reject) => {
-            // If this isn't a draft and there's no active preview, then there's nothing to check
-            if (
-              this.settings.revisionId ||
-              !this.enableAutosave ||
-              !this.settings.canCreateDrafts
-            ) {
+            // If this is a draft, there's nothing to check
+            if (this.settings.revisionId) {
               resolve();
               return;
             }
@@ -1120,12 +1112,21 @@ Craft.ElementEditor = Garnish.Base.extend(
               return;
             }
 
-            this.saveDraft(data)
-              .then(resolve)
-              .catch((e) => {
-                console.warn('Couldn’t save draft:', e);
-                reject(e);
-              });
+            if (this.enableAutosave && this.settings.canCreateDrafts) {
+              this.saveDraft(data)
+                .then(resolve)
+                .catch((e) => {
+                  console.warn('Couldn’t save draft:', e);
+                  reject(e);
+                });
+            } else {
+              this.updateFieldLayout(data)
+                .then(resolve)
+                .catch((e) => {
+                  console.warn('Couldn’t update field layout:', e);
+                  reject(e);
+                });
+            }
           })
       );
     },
@@ -1216,12 +1217,8 @@ Craft.ElementEditor = Garnish.Base.extend(
           data: preparedData,
         })
           .then((response) => {
-            // capture the new selected tab ID, in case it just changed
-            const newSelectedTabId = this.$contentContainer
-              .children('[data-layout-tab]:not(.hidden)')
-              .data('id');
-
             this._afterSaveDraft();
+            this._afterUpdateFieldLayout(data, selectedTabId, response);
 
             const createdProvisionalDraft = !this.settings.draftId;
 
@@ -1385,152 +1382,6 @@ Craft.ElementEditor = Garnish.Base.extend(
               );
             }
 
-            // Keep track of whether anything changed while we were waiting.
-            // If not, we can safely update lastSerializedValue after swapping out the fields
-            const noChanges = this.serializeForm(true) === data;
-
-            // Update the visible elements
-            let $allTabContainers = $();
-            const visibleLayoutElements = {};
-            let changedElements = false;
-
-            for (const tabInfo of response.data.missingElements) {
-              let $tabContainer = this.$contentContainer.children(
-                `[data-layout-tab="${tabInfo.uid}"]`
-              );
-
-              if (!$tabContainer.length) {
-                $tabContainer = $('<div/>', {
-                  id: this.namespaceId(tabInfo.id),
-                  class: 'flex-fields',
-                  'data-id': tabInfo.id,
-                  'data-layout-tab': tabInfo.uid,
-                });
-                if (tabInfo.id !== selectedTabId) {
-                  $tabContainer.addClass('hidden');
-                }
-                $tabContainer.appendTo(this.$contentContainer);
-              }
-
-              $allTabContainers = $allTabContainers.add($tabContainer);
-
-              for (const elementInfo of tabInfo.elements) {
-                if (elementInfo.html !== false) {
-                  if (!visibleLayoutElements[tabInfo.uid]) {
-                    visibleLayoutElements[tabInfo.uid] = [];
-                  }
-                  visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
-
-                  if (typeof elementInfo.html === 'string') {
-                    const $oldElement = $tabContainer.children(
-                      `[data-layout-element="${elementInfo.uid}"]`
-                    );
-                    const $newElement = $(elementInfo.html);
-                    if ($oldElement.length) {
-                      $oldElement.replaceWith($newElement);
-                    } else {
-                      $newElement.appendTo($tabContainer);
-                    }
-                    Craft.initUiElements($newElement);
-                    changedElements = true;
-                  }
-                } else {
-                  const $oldElement = $tabContainer.children(
-                    `[data-layout-element="${elementInfo.uid}"]`
-                  );
-                  if (
-                    !$oldElement.length ||
-                    !Garnish.hasAttr(
-                      $oldElement,
-                      'data-layout-element-placeholder'
-                    )
-                  ) {
-                    const $placeholder = $('<div/>', {
-                      class: 'hidden',
-                      'data-layout-element': elementInfo.uid,
-                      'data-layout-element-placeholder': '',
-                    });
-
-                    if ($oldElement.length) {
-                      $oldElement.replaceWith($placeholder);
-                    } else {
-                      $placeholder.appendTo($tabContainer);
-                    }
-
-                    changedElements = true;
-                  }
-                }
-              }
-            }
-
-            // Remove any unused tab content containers
-            // (`[data-layout-tab=""]` == unconditional containers, so ignore those)
-            const $unusedTabContainers = this.$contentContainer
-              .children('[data-layout-tab]')
-              .not($allTabContainers)
-              .not('[data-layout-tab=""]');
-            if ($unusedTabContainers.length) {
-              $unusedTabContainers.remove();
-              changedElements = true;
-            }
-
-            // Make the first tab visible if no others are
-            if (!$allTabContainers.filter(':not(.hidden)').length) {
-              $allTabContainers.first().removeClass('hidden');
-            }
-
-            this.settings.visibleLayoutElements = visibleLayoutElements;
-
-            // Update the tabs
-            let tabManager;
-            if (this.isFullPage) {
-              Craft.cp.updateTabs(response.data.tabs);
-              tabManager = Craft.cp.tabManager;
-            } else {
-              this.slideout.updateTabs(response.data.tabs);
-              tabManager = this.slideout.tabManager;
-            }
-
-            // was a new tab selected after the autosave request was kicked off?
-            if (
-              selectedTabId &&
-              newSelectedTabId &&
-              selectedTabId !== newSelectedTabId
-            ) {
-              const $newSelectedTab = tabManager.$tabs.filter(
-                `[data-id="${newSelectedTabId}"]`
-              );
-              if ($newSelectedTab.length) {
-                // if the new tab is visible - switch to it
-                tabManager.selectTab($newSelectedTab);
-              } else {
-                // if the new tab is not visible (e.g. hidden by a condition)
-                // switch to the first tab
-                tabManager.selectTab(tabManager.$tabs.first());
-              }
-            }
-
-            Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendBodyHtml(response.data.bodyHtml);
-
-            // Did any layout elements get added or removed?
-            if (changedElements) {
-              if (response.data.initialDeltaValues) {
-                Object.assign(
-                  this.$container.data('initial-delta-values'),
-                  response.data.initialDeltaValues
-                );
-              }
-
-              if (noChanges) {
-                // Update our record of the last serialized value to avoid a pointless resave
-                this.lastSerializedValue = this.serializeForm(true);
-              }
-            }
-
-            // re-grab dismissible tips, re-attach listener, hide on re-load
-            this.handleDismissibleTips();
-
             // updated the updatedTimestamp values
             this.settings.updatedTimestamp = response.data.updatedTimestamp;
             this.settings.canonicalUpdatedTimestamp =
@@ -1584,6 +1435,84 @@ Craft.ElementEditor = Garnish.Base.extend(
         .addClass('alert-icon');
 
       this.setStatusMessage(this._saveFailMessage());
+    },
+
+    /**
+     * @param {Object} data
+     * @returns {Promise}
+     */
+    updateFieldLayout: function (data) {
+      return new Promise((resolve, reject) => {
+        // Ignore if we're already submitting the main form
+        if (this.submittingForm) {
+          reject('Form already being submitted.');
+          return;
+        }
+
+        this.lastSerializedValue = data;
+        this.cancelToken = axios.CancelToken.source();
+
+        // Prep the data to be saved, keeping track of the first input name for each delta group
+        let modifiedFieldNames = [];
+        let preparedData = this.prepareData(
+          data,
+          !this.settings.isUnpublishedDraft
+            ? (deltaName, params) => {
+                if (params.length) {
+                  modifiedFieldNames.push(
+                    decodeURIComponent(params[0].split('=')[0])
+                  );
+                }
+              }
+            : null
+        );
+
+        const extraData = {
+          [this.namespaceInputName('visibleLayoutElements')]:
+            this.settings.visibleLayoutElements,
+        };
+
+        // Are we editing a provisional draft?
+        if (this.settings.isProvisionalDraft) {
+          extraData[this.namespaceInputName('provisional')] = 1;
+        }
+
+        const selectedTabId = this.$contentContainer
+          .children('[data-layout-tab]:not(.hidden)')
+          .data('id');
+        if (selectedTabId) {
+          extraData[this.namespaceInputName('selectedTab')] = selectedTabId;
+        }
+
+        preparedData += `&${$.param(extraData)}`;
+
+        Craft.sendActionRequest('POST', 'elements/update-field-layout', {
+          cancelToken: this.cancelToken.token,
+          headers: this._saveHeaders,
+          data: preparedData,
+        })
+          .then((response) => {
+            this._afterUpdateFieldLayout(data, selectedTabId, response);
+            resolve();
+          })
+          .catch((e) => {
+            this._afterSaveDraft();
+
+            if (!this.ignoreFailedRequest) {
+              this.failed = true;
+              if (e && e.response) {
+                this.httpStatus = e.response.status;
+                this.httpError = e.response.data
+                  ? e.response.data.message
+                  : null;
+              }
+              this._showFailStatus();
+              reject(e);
+            }
+
+            this.ignoreFailedRequest = false;
+          });
+      });
     },
 
     /**
@@ -1735,6 +1664,156 @@ Craft.ElementEditor = Garnish.Base.extend(
           this.updatePreviewLinkHref($previewLink);
         }
       });
+    },
+
+    _afterUpdateFieldLayout(data, selectedTabId, response) {
+      // Keep track of whether anything changed while we were waiting.
+      // If not, we can safely update lastSerializedValue after swapping out the fields
+      const noChanges = this.serializeForm(true) === data;
+
+      // capture the new selected tab ID, in case it just changed
+      const newSelectedTabId = this.$contentContainer
+        .children('[data-layout-tab]:not(.hidden)')
+        .data('id');
+
+      // Update the visible elements
+      let $allTabContainers = $();
+      const visibleLayoutElements = {};
+      let changedElements = false;
+
+      for (const tabInfo of response.data.missingElements) {
+        let $tabContainer = this.$contentContainer.children(
+          `[data-layout-tab="${tabInfo.uid}"]`
+        );
+
+        if (!$tabContainer.length) {
+          $tabContainer = $('<div/>', {
+            id: this.namespaceId(tabInfo.id),
+            class: 'flex-fields',
+            'data-id': tabInfo.id,
+            'data-layout-tab': tabInfo.uid,
+          });
+          if (tabInfo.id !== selectedTabId) {
+            $tabContainer.addClass('hidden');
+          }
+          $tabContainer.appendTo(this.$contentContainer);
+        }
+
+        $allTabContainers = $allTabContainers.add($tabContainer);
+
+        for (const elementInfo of tabInfo.elements) {
+          if (elementInfo.html !== false) {
+            if (!visibleLayoutElements[tabInfo.uid]) {
+              visibleLayoutElements[tabInfo.uid] = [];
+            }
+            visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
+
+            if (typeof elementInfo.html === 'string') {
+              const $oldElement = $tabContainer.children(
+                `[data-layout-element="${elementInfo.uid}"]`
+              );
+              const $newElement = $(elementInfo.html);
+              if ($oldElement.length) {
+                $oldElement.replaceWith($newElement);
+              } else {
+                $newElement.appendTo($tabContainer);
+              }
+              Craft.initUiElements($newElement);
+              changedElements = true;
+            }
+          } else {
+            const $oldElement = $tabContainer.children(
+              `[data-layout-element="${elementInfo.uid}"]`
+            );
+            if (
+              !$oldElement.length ||
+              !Garnish.hasAttr($oldElement, 'data-layout-element-placeholder')
+            ) {
+              const $placeholder = $('<div/>', {
+                class: 'hidden',
+                'data-layout-element': elementInfo.uid,
+                'data-layout-element-placeholder': '',
+              });
+
+              if ($oldElement.length) {
+                $oldElement.replaceWith($placeholder);
+              } else {
+                $placeholder.appendTo($tabContainer);
+              }
+
+              changedElements = true;
+            }
+          }
+        }
+      }
+
+      // Remove any unused tab content containers
+      // (`[data-layout-tab=""]` == unconditional containers, so ignore those)
+      const $unusedTabContainers = this.$contentContainer
+        .children('[data-layout-tab]')
+        .not($allTabContainers)
+        .not('[data-layout-tab=""]');
+      if ($unusedTabContainers.length) {
+        $unusedTabContainers.remove();
+        changedElements = true;
+      }
+
+      // Make the first tab visible if no others are
+      if (!$allTabContainers.filter(':not(.hidden)').length) {
+        $allTabContainers.first().removeClass('hidden');
+      }
+
+      this.settings.visibleLayoutElements = visibleLayoutElements;
+
+      // Update the tabs
+      let tabManager;
+      if (this.isFullPage) {
+        Craft.cp.updateTabs(response.data.tabs);
+        tabManager = Craft.cp.tabManager;
+      } else {
+        this.slideout.updateTabs(response.data.tabs);
+        tabManager = this.slideout.tabManager;
+      }
+
+      // was a new tab selected after the request was kicked off?
+      if (
+        selectedTabId &&
+        newSelectedTabId &&
+        selectedTabId !== newSelectedTabId
+      ) {
+        const $newSelectedTab = tabManager.$tabs.filter(
+          `[data-id="${newSelectedTabId}"]`
+        );
+        if ($newSelectedTab.length) {
+          // if the new tab is visible - switch to it
+          tabManager.selectTab($newSelectedTab);
+        } else {
+          // if the new tab is not visible (e.g. hidden by a condition)
+          // switch to the first tab
+          tabManager.selectTab(tabManager.$tabs.first());
+        }
+      }
+
+      Craft.appendHeadHtml(response.data.headHtml);
+      Craft.appendBodyHtml(response.data.bodyHtml);
+
+      // Did any layout elements get added or removed?
+      if (changedElements) {
+        if (response.data.initialDeltaValues) {
+          Object.assign(
+            this.$container.data('initial-delta-values'),
+            response.data.initialDeltaValues
+          );
+        }
+
+        if (noChanges) {
+          // Update our record of the last serialized value to avoid a pointless resave
+          this.lastSerializedValue = this.serializeForm(true);
+        }
+      }
+
+      // re-grab dismissible tips, re-attach listener, hide on re-load
+      this.handleDismissibleTips();
     },
 
     afterUpdate: function (data) {
