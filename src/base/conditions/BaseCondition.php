@@ -461,29 +461,29 @@ JS,
 
         if ($rule) {
             $ruleLabel = $rule->getLabel();
-            $ruleHint = $rule->getLabelHint();
+            $hint = $rule->getLabelHint();
             $groupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
 
             $groupedRuleTypeOptions[$groupLabel] = [
                 [
-                    'value' => $ruleValue,
                     'label' => $ruleLabel,
-                    'hint' => $ruleHint,
+                    'hint' => $hint,
+                    'value' => $ruleValue,
                 ],
             ];
-            $labelsByGroup[$groupLabel][$ruleHint] = true;
+            $labelsByGroup[$groupLabel][$hint] = true;
         }
 
         foreach ($selectableRules as $value => $selectableRule) {
             $label = $selectableRule->getLabel();
-            $ruleHint = $selectableRule->getLabelHint();
-            $key = $label . ($ruleHint !== null ? " - $ruleHint" : '');
+            $hint = $selectableRule->getLabelHint();
+            $key = $label . ($hint !== null ? " - $hint" : '');
             $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
 
             if (!isset($labelsByGroup[$groupLabel][$key])) {
                 $groupedRuleTypeOptions[$groupLabel][] = [
                     'label' => $label,
-                    'hint' => $ruleHint,
+                    'hint' => $hint,
                     'value' => $value,
                 ];
                 $labelsByGroup[$groupLabel][$key] = true;
