@@ -436,11 +436,22 @@ export default Base.extend(
         $.data(item, 'select-handle', $handle);
         $handle.data('select-item', item);
 
+        // Get the focus target
+        let $focusTarget;
+        if (this.settings.focusTargetClass) {
+          $focusTarget = $(item).find(`.${this.settings.focusTargetClass}`);
+        }
+
         this.addListener($handle, 'mousedown', 'onMouseDown');
         this.addListener($handle, 'mouseup', 'onMouseUp');
         this.addListener($handle, 'click', function () {
           this.ignoreClick = true;
         });
+
+        if ($focusTarget) {
+          $focusTarget.data('select-item', item);
+          this.addListener($focusTarget, 'activate', 'onFocusTargetActivate');
+        }
 
         this.addListener(item, 'keydown', 'onKeyDown');
       }
@@ -644,6 +655,17 @@ export default Base.extend(
           this.deselectAll();
           this.selectItem($item, true, true);
         }
+      }
+    },
+
+    onFocusTargetActivate: function (ev) {
+      ev.stopImmediatePropagation();
+      const $item = $($.data(event.currentTarget, 'select-item'));
+
+      if (!this.isSelected($item)) {
+        this.selectItem($item);
+      } else {
+        this.deselectItem($item);
       }
     },
 
