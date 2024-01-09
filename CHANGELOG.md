@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.5.15 - 2024-01-09
 
 - Fixed a bug where the “Save and add another” element action wasn’t redirecting to a new element edit page, when editing an unpublished draft.
 - Fixed a bug where `craft\helpers\DateTimeHelper::nextYear()` and `lastYear()` weren’t returning the correct dates. ([#14109](https://github.com/craftcms/cms/issues/14109))
