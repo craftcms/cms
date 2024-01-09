@@ -3,6 +3,9 @@
 ## Unreleased (4.6.x)
 
 - Added live conditional field support to asset edit pages, as well as asset, user, and tag slideouts. ([#14115](https://github.com/craftcms/cms/pull/14115))
+- Custom field condition rules now show their field handles, for users with the “Show field handles in edit forms” preference enabled. ([#13300](https://github.com/craftcms/cms/pull/13300))
+- Element conditions now include condition rules for fields with duplicate names, for users with the “Show field handles in edit forms” preference enabled. ([#13300](https://github.com/craftcms/cms/pull/13300)) 
+- Added `craft\base\conditions\ConditionRuleInterface::getLabelHint()`.
 - Added `Craft.FormObserver`. ([#14114](https://github.com/craftcms/cms/pull/14114))
 
 ## Unreleased (4.5.x)
