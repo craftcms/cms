@@ -278,17 +278,31 @@ class Assets extends BaseRelationField
     public function getSourceOptions(): array
     {
         $sourceOptions = [];
+        [$tempVolume, $tempSubpath] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
+        $tempVolumeKey = null;
+        $isTempVolumeSelected = false;
+
+        if ($tempVolume !== null) {
+            $tempVolumeKey = 'volume:' . $tempVolume->uid;
+            $isTempVolumeSelected = $this->_isVolumeSelected($tempVolumeKey);
+        }
 
         foreach (Asset::sources('settings') as $volume) {
             if (!isset($volume['heading'])) {
-                $sourceOptions[] = [
+                $option = [
                     'label' => $volume['label'],
                     'value' => $volume['key'],
                 ];
+
+                if ($tempVolumeKey && !$isTempVolumeSelected && $volume['key'] === $tempVolumeKey) {
+                    $option = null;
+                }
+
+                $sourceOptions[] = $option;
             }
         }
 
-        return $sourceOptions;
+        return array_filter($sourceOptions);
     }
 
     /**
@@ -1094,5 +1108,22 @@ class Assets extends BaseRelationField
         }
 
         return $folders;
+    }
+
+    /**
+     * Returns if given volume is already selected for this field
+     *
+     * @param string $volumeKey
+     * @return bool
+     */
+    private function _isVolumeSelected(string $volumeKey): bool
+    {
+        // we consider volume as already selected if:
+        // id is set and sources is set to 'all'
+        // or if volumeKey is on the list of sources
+        // or if volumeKey is the source
+        return ($this->id !== null && $this->sources == '*') ||
+            (is_array($this->sources) && in_array($volumeKey, $this->sources)) ||
+            $volumeKey == $this->source;
     }
 }
