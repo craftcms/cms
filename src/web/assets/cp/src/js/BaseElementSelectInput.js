@@ -9,6 +9,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     elementSort: null,
     modal: null,
     elementEditor: null,
+    modalFirstOpen: true,
 
     $container: null,
     $form: null,
@@ -474,6 +475,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       if (!this.modal) {
         this.modal = this.createModal();
+        this.modalFirstOpen = false;
       } else {
         this.modal.show();
       }
@@ -504,6 +506,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           onHide: this.onModalHide.bind(this),
           triggerElement: this.$addElementBtn,
           modalTitle: Craft.t('app', 'Choose'),
+          modalFirstOpen: this.modalFirstOpen,
         },
         this.settings.modalSettings
       );

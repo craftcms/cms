@@ -625,6 +625,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     getDefaultSourceKey: function () {
       if (
+        !this.settings.modalFirstOpen &&
         this.settings.preferStoredSource &&
         this.instanceState.selectedSource
       ) {
@@ -3340,6 +3341,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       defaultSource: null,
       defaultSourcePath: null,
       preferStoredSource: false,
+      modalFirstOpen: true,
       showSourcePath: true,
       canHaveDrafts: false,
 
