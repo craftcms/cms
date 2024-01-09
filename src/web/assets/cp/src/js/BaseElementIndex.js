@@ -350,7 +350,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Grab the localStorage step key up front, so we don's lose track of it when the default source's default
       // source path is selected
-      const stepKey = this.getSelectedSourceState('sourcePathStep');
+      let stepKey = null;
+      if (this.settings.context === 'modal') {
+        stepKey = this.getDefaultExpandedSources();
+      } else {
+        stepKey = this.getSelectedSourceState('sourcePathStep');
+      }
 
       this.selectDefaultSource();
 
@@ -1024,6 +1029,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     onSourcePathChange: function () {
+      // store expandedSources for instanceState so that each field that triggers a modal knows where to deep link to
+      let firstStep = this.sourcePath[0];
+      let lastStep = this.sourcePath[this.sourcePath.length - 1];
+      let instanceState = {
+        selectedSource: firstStep?.key,
+        expandedSources: lastStep?.key,
+      };
+      this.setInstanceState(instanceState);
       this.settings.onSourcePathChange();
       this.trigger('sourcePathChange');
     },
