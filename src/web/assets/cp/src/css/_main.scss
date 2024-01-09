@@ -5847,6 +5847,10 @@ $min2ColWidth: 400px;
   &.error {
     color: var(--menu-option-active-color) !important;
   }
+
+  span.light {
+    color: var(--white) !important;
+  }
 }
 
 .menu {

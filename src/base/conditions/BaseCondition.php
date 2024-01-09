@@ -5,7 +5,6 @@ namespace craft\base\conditions;
 use Craft;
 use craft\base\Component;
 use craft\events\RegisterConditionRuleTypesEvent;
-use craft\fields\conditions\FieldConditionRuleInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -461,34 +460,32 @@ JS,
         $labelsByGroup = [];
 
         if ($rule) {
-            $ruleLabel = $key = $rule->getLabel();
+            $ruleLabel = $rule->getLabel();
+            $ruleHint = $rule->getLabelHint();
             $groupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
-            $showHandle = false;
-
-            if ($rule instanceof FieldConditionRuleInterface) {
-                $key = $rule->getHandle();
-                $showHandle = true;
-            }
 
             $groupedRuleTypeOptions[$groupLabel] = [
-                ['value' => $ruleValue, 'label' => $ruleLabel] + ($showHandle ? ['handle' => $key] : []),
+                [
+                    'value' => $ruleValue,
+                    'label' => $ruleLabel,
+                    'hint' => $ruleHint,
+                ],
             ];
-            $labelsByGroup[$groupLabel][$key] = true;
+            $labelsByGroup[$groupLabel][$ruleHint] = true;
         }
 
         foreach ($selectableRules as $value => $selectableRule) {
-            $label = $key = $selectableRule->getLabel();
+            $label = $selectableRule->getLabel();
+            $ruleHint = $selectableRule->getLabelHint();
+            $key = $label . ($ruleHint !== null ? " - $ruleHint" : '');
             $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
-            $showHandle = false;
-
-            if ($selectableRule instanceof FieldConditionRuleInterface) {
-                $key = $selectableRule->getHandle();
-                $showHandle = true;
-            }
 
             if (!isset($labelsByGroup[$groupLabel][$key])) {
-                $groupedRuleTypeOptions[$groupLabel][] =
-                    compact('value', 'label') + ($showHandle ? ['handle' => $key] : []);
+                $groupedRuleTypeOptions[$groupLabel][] = [
+                    'label' => $label,
+                    'hint' => $ruleHint,
+                    'value' => $value,
+                ];
                 $labelsByGroup[$groupLabel][$key] = true;
             }
         }
@@ -502,23 +499,22 @@ JS,
 
         $optionsHtml = '';
 
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
         foreach ($groupedRuleTypeOptions as $groupLabel => $groupRuleTypeOptions) {
             if ($groupLabel !== '__UNGROUPED__') {
                 $optionsHtml .= Html::tag('hr', options: ['class' => 'padded']) .
                     Html::tag('h6', Html::encode($groupLabel), ['class' => 'padded']);
             }
-            ArrayHelper::multisort($groupRuleTypeOptions, 'label');
+            ArrayHelper::multisort($groupRuleTypeOptions, ['label', 'hint']);
             $optionsHtml .=
                 Html::beginTag('ul', ['class' => 'padded']) .
-                implode("\n", array_map(function(array $option) use ($ruleValue, $currentUser) {
+                implode("\n", array_map(function(array $option) use ($ruleValue) {
                     $html = Html::beginTag('li');
 
                     $label = Html::encode($option['label']);
-                    if (isset($option['handle']) && $currentUser?->getPreference('showFieldHandles')) {
-                        $label .= ' ' . Html::tag('div', $option['handle'], [
-                            'class' => ['smalltext', 'code'],
+                    if ($option['hint'] !== null) {
+                        $label .= ' ' .
+                            Html::tag('span', sprintf('– %s', Html::encode($option['hint'])), [
+                                'class' => 'light',
                             ]);
                     }
 

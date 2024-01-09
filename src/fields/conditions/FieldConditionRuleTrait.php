@@ -95,9 +95,11 @@ trait FieldConditionRuleTrait
     /**
      * @inheritdoc
      */
-    public function getHandle(): string
+    public function getLabelHint(): ?string
     {
-        return $this->field()->handle;
+        static $showHandles = null;
+        $showHandles ??= Craft::$app->getUser()->getIdentity()?->getPreference('showFieldHandles') ?? false;
+        return $showHandles ? $this->field()->handle : null;
     }
 
     /**
