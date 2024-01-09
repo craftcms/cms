@@ -259,6 +259,7 @@ return [
     'Checkout' => 'السداد مع الخروج',
     'Choose a currency…' => 'اختر عملة…',
     'Choose a new password' => 'اختر كلمة مرور جديدة',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'اختر كلمة مرور',
     'Choose a site' => 'اختر موقع',
     'Choose a user group that publicly-registered members will be added to by default.' => 'اختر مجموعة مستخدمين بحيث يتم افتراضياً إضافة من سجل عبر التسجيل العام من المستخدمين إليها.',
