@@ -126,11 +126,10 @@ class ImageTransforms extends Component
     private function _transforms(): MemoizableArray
     {
         if (!isset($this->_transforms)) {
-            $transforms = [];
-            foreach ($this->_createTransformQuery()->all() as $result) {
-                $transforms[] = new ImageTransform($result);
-            }
-            $this->_transforms = new MemoizableArray($transforms);
+            $this->_transforms = new MemoizableArray(
+                $this->_createTransformQuery()->all(),
+                fn(array $result) => new ImageTransform($result),
+            );
         }
 
         return $this->_transforms;

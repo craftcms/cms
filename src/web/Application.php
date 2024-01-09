@@ -482,25 +482,9 @@ class Application extends \yii\web\Application
         $resourceUri = substr($requestPath, strlen($resourceBaseUri));
         $slash = strpos($resourceUri, '/');
         $hash = substr($resourceUri, 0, $slash);
+        $sourcePath = $this->resourceSourcePathByHash($hash);
 
-        $sourcePath = Craft::$app->getCache()->getOrSet(
-            Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash),
-            function() use ($hash) {
-                try {
-                    return (new Query())
-                        ->select(['path'])
-                        ->from(Table::RESOURCEPATHS)
-                        ->where(['hash' => $hash])
-                        ->scalar();
-                } catch (DbException) {
-                    // Craft isn't installed yet
-                }
-
-                return false;
-            }
-        );
-
-        if (empty($sourcePath)) {
+        if (!$sourcePath) {
             return;
         }
 
@@ -529,6 +513,20 @@ class Application extends \yii\web\Application
             'inline' => true,
         ]);
         $this->end();
+    }
+
+    private function resourceSourcePathByHash(string $hash): string|false
+    {
+        try {
+            return (new Query())
+                ->select(['path'])
+                ->from(Table::RESOURCEPATHS)
+                ->where(['hash' => $hash])
+                ->scalar();
+        } catch (DbException) {
+            // Craft isn't installed yet. See if it's cached as a fallback.
+            return Craft::$app->getCache()->get(Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash));
+        }
     }
 
     /**

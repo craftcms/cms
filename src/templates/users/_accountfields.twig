@@ -1,5 +1,7 @@
 {% import '_includes/forms.twig' as forms %}
+{% set isCurrentUser = isCurrentUser ?? (user is defined and user.getIsCurrent()) %}
 {% set static = static ?? false %}
+{% set meta = meta ?? false %}
 
 {% if not craft.app.config.general.useEmailAsUsername %}
     {{ forms.textField({
@@ -9,9 +11,9 @@
         name: 'username',
         value: (user is defined ? user.username : null),
         autofocus: true,
-        autocomplete: false,
+        autocomplete: isCurrentUser ? 'username' : false,
         autocapitalize: false,
-        disabled: static or (isNewUser or (currentUser.admin or user.getIsCurrent()) ? false : true),
+        disabled: static or (isNewUser or (currentUser.admin or isCurrentUser) ? false : true),
         errors: (user is defined ? user.getErrors('username') : null),
         inputAttributes: {
             data: {lpignore: 'true'},
@@ -19,16 +21,52 @@
     }) }}
 {% endif %}
 
-{{ forms.textField({
-    label: "Full Name"|t('app'),
-    id: 'fullName',
-    name: 'fullName',
-    value: user.fullName,
-    autocomplete: false,
-    errors: user.getErrors('fullName'),
-    autofocus: craft.app.config.general.useEmailAsUsername,
-    inputAttributes: {
-        data: {lpignore: 'true'},
-    },
-    disabled: static,
-}) }}
+{% if craft.app.config.general.showFirstAndLastNameFields %}
+    {% if not meta %}
+        <div class="flex flex-nowrap fullwidth">
+    {% endif %}
+    {{ forms.textField({
+        fieldClass: not meta ? 'flex-grow',
+        label: 'First Name'|t('app'),
+        id: 'firstName',
+        name: 'firstName',
+        value: user.firstName,
+        autocomplete: isCurrentUser ? 'given-name' : false,
+        errors: user.getErrors('firstName'),
+        autofocus: craft.app.config.general.useEmailAsUsername,
+        inputAttributes: {
+            data: {lpignore: 'true'},
+        },
+        disabled: static,
+    }) }}
+    {{ forms.textField({
+        fieldClass: not meta ? 'flex-grow',
+        label: 'Last Name'|t('app'),
+        id: 'lastName',
+        name: 'lastName',
+        value: user.lastName,
+        autocomplete: isCurrentUser ? 'family-name' : false,
+        errors: user.getErrors('lastName'),
+        inputAttributes: {
+            data: {lpignore: 'true'},
+        },
+        disabled: static,
+    }) }}
+    {% if not meta %}
+        </div>
+    {% endif %}
+{% else %}
+    {{ forms.textField({
+        label: "Full Name"|t('app'),
+        id: 'fullName',
+        name: 'fullName',
+        value: user.fullName,
+        autocomplete: isCurrentUser ? 'name' : false,
+        errors: user.getErrors('fullName'),
+        autofocus: craft.app.config.general.useEmailAsUsername,
+        inputAttributes: {
+            data: {lpignore: 'true'},
+        },
+        disabled: static,
+    }) }}
+{% endif %}

@@ -194,11 +194,10 @@ class Sites extends Component
     private function _groups(): MemoizableArray
     {
         if (!isset($this->_groups)) {
-            $groups = [];
-            foreach ($this->_createGroupQuery()->all() as $result) {
-                $groups[] = new SiteGroup($result);
-            }
-            $this->_groups = new MemoizableArray($groups);
+            $this->_groups = new MemoizableArray(
+                $this->_createGroupQuery()->all(),
+                fn(array $result) => new SiteGroup($result),
+            );
         }
 
         return $this->_groups;
@@ -414,7 +413,7 @@ class Sites extends Component
      */
     public function getAllSiteIds(?bool $withDisabled = null): array
     {
-        return ArrayHelper::getColumn($this->_allSites($withDisabled), 'id', false);
+        return array_values(array_map(fn(Site $site) => $site->id, $this->_allSites($withDisabled)));
     }
 
     /**
@@ -1164,7 +1163,7 @@ class Sites extends Component
             ->innerJoin(['sg' => Table::SITEGROUPS], '[[sg.id]] = [[s.groupId]]')
             ->where(['s.dateDeleted' => null])
             ->andWhere(['sg.dateDeleted' => null])
-            ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC])
+            ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC, 's.id' => SORT_ASC])
             ->all();
 
         // Check for results because during installation, the transaction hasn't been committed yet.
