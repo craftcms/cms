@@ -14,7 +14,6 @@ use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\UserGroup;
@@ -199,7 +198,7 @@ class UserGroups extends Component
             ->select(['groupId', 'userId'])
             ->from([Table::USERGROUPS_USERS])
             ->where([
-                'userId' => array_unique(ArrayHelper::getColumn($users, 'id')),
+                'userId' => array_unique(array_map(fn(User $user) => $user->id, $users)),
             ])
             ->all();
 
@@ -210,7 +209,7 @@ class UserGroups extends Component
             $groups = [];
             $groupResults = $this->_createUserGroupsQuery()
                 ->where([
-                    'id' => array_unique(ArrayHelper::getColumn($assignments, 'groupId')),
+                    'id' => array_unique(array_map(fn(array $assignment) => $assignment['groupId'], $assignments)),
                 ])
                 ->all();
             foreach ($groupResults as $result) {

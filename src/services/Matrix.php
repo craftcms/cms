@@ -755,7 +755,10 @@ class Matrix extends Component
                 ($owner->propagateAll || !empty($owner->newSiteIds))
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's Matrix blocks
-                $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+                $ownerSiteIds = array_map(
+                    fn(array $siteInfo) => $siteInfo['siteId'],
+                    ElementHelper::supportedSitesForElement($owner),
+                );
                 $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
@@ -936,7 +939,10 @@ class Matrix extends Component
         // Duplicate blocks for other sites as well?
         if ($checkOtherSites && $field->propagationMethod !== MatrixField::PROPAGATION_METHOD_ALL) {
             // Find the target's site IDs that *aren't* supported by this site's Matrix blocks
-            $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
+            $targetSiteIds = array_map(
+                fn(array $siteInfo) => $siteInfo['siteId'],
+                ElementHelper::supportedSitesForElement($target),
+            );
             $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $target, $field->propagationKeyFormat);
             $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
 
@@ -1028,7 +1034,10 @@ SQL
     public function createRevisionBlocks(MatrixField $field, ElementInterface $canonical, ElementInterface $revision): void
     {
         // Only fetch blocks in the sites the owner element supports
-        $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($canonical), 'siteId');
+        $siteIds = array_map(
+            fn(array $siteInfo) => $siteInfo['siteId'],
+            ElementHelper::supportedSitesForElement($canonical),
+        );
 
         /** @var MatrixBlock[] $blocks */
         $blocks = MatrixBlock::find()
@@ -1162,7 +1171,10 @@ SQL
     {
         /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
-        $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+        $ownerSiteIds = array_map(
+            fn(array $siteInfo) => $siteInfo['siteId'],
+            ElementHelper::supportedSitesForElement($owner),
+        );
         $siteIds = [];
 
         $view = Craft::$app->getView();

@@ -110,12 +110,17 @@ class FieldsController extends Controller
      * @param int|null $fieldId The field’s ID, if editing an existing field
      * @param FieldInterface|null $field The field being edited, if there were any validation errors
      * @param int|null $groupId The default group ID that the field should be saved in
+     * @param string|null $type The field type to use by default
      * @return Response
      * @throws NotFoundHttpException if the requested field/field group cannot be found
      * @throws ServerErrorHttpException if no field groups exist
      */
-    public function actionEditField(?int $fieldId = null, ?FieldInterface $field = null, ?int $groupId = null): Response
-    {
+    public function actionEditField(
+        ?int $fieldId = null,
+        ?FieldInterface $field = null,
+        ?int $groupId = null,
+        ?string $type = null,
+    ): Response {
         $this->requireAdmin();
 
         $fieldsService = Craft::$app->getFields();
@@ -132,7 +137,7 @@ class FieldsController extends Controller
         }
 
         if ($field === null) {
-            $field = $fieldsService->createField(PlainText::class);
+            $field = $fieldsService->createField($type ?? PlainText::class);
         }
 
         // Supported translation methods
@@ -354,6 +359,14 @@ JS;
         }
 
         $this->setSuccessFlash(Craft::t('app', 'Field saved.'));
+
+        if ($this->request->getParam('addAnother')) {
+            return $this->redirect(UrlHelper::cpUrl('settings/fields/new', [
+                'groupId' => $field->groupId,
+                'type' => $field::class,
+            ]));
+        }
+
         return $this->redirectToPostedUrl($field);
     }
 

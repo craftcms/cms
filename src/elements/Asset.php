@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\Fs;
 use craft\base\FsInterface;
@@ -20,6 +21,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\CopyUrl;
+use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
 use craft\elements\actions\EditImage;
 use craft\elements\actions\MoveAssets;
@@ -300,7 +302,7 @@ class Asset extends Element
     {
         if ($handle === 'uploader') {
             // Get the source element IDs
-            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+            $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
             $map = (new Query())
                 ->select(['id as source', 'uploaderId as target'])
@@ -504,6 +506,11 @@ class Asset extends Element
                 'type' => Restore::class,
                 'restorableElementsOnly' => true,
             ];
+
+            // Delete
+            if ($userSession->checkPermission("deletePeerAssets:$volume->uid")) {
+                $actions[] = DeleteAssets::class;
+            }
         }
 
         return $actions;

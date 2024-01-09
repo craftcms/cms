@@ -636,7 +636,7 @@ class Cp
                 $otherHtml .= static::elementHtml($other, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
             }
             $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
-                'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),
+                'title' => implode(', ', array_map(fn(ElementInterface $element) => $element->id, $elements)),
                 'class' => 'btn small',
                 'role' => 'button',
                 'onclick' => sprintf(
