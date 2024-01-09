@@ -259,6 +259,7 @@ return [
     'Checkout' => 'チェックアウト',
     'Choose a currency…' => '通貨を選択...',
     'Choose a new password' => '新しいパスワードを選択',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'パスワードを選択',
     'Choose a site' => 'サイトを選択',
     'Choose a user group that publicly-registered members will be added to by default.' => 'パブリック登録されたユーザーを追加するデフォルトのユーザーグループを選択してください。',

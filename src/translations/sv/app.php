@@ -259,6 +259,7 @@ return [
     'Checkout' => 'Till kassan',
     'Choose a currency…' => 'Välj en valuta…',
     'Choose a new password' => 'Välj ett nytt lösenord',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'Välj ett lösenord',
     'Choose a site' => 'Välj en webbplats',
     'Choose a user group that publicly-registered members will be added to by default.' => 'Välj en användargrupp som allmänt registrerade medlemmar läggs till i som standard.',

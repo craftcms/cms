@@ -259,6 +259,7 @@ return [
     'Checkout' => 'יציאה',
     'Choose a currency…' => 'בחר מטבע…',
     'Choose a new password' => 'בחר סיסמה חדשה',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'בחר סיסמה',
     'Choose a site' => 'בחר אתר',
     'Choose a user group that publicly-registered members will be added to by default.' => 'בחר קבוצת משתמשים שתשמש כקבוצת ברירת מחדל לה יתווספו חברים חדשים שנרשמו בצורה פומבית.',
