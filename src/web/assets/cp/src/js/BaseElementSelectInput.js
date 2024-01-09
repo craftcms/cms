@@ -560,7 +560,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       if (
         this.modal &&
         this.settings.condition &&
-        this.settings.condition.conditionRules.length > 0 &&
         this.settings.referenceElementId
       ) {
         this.modal.destroy();
