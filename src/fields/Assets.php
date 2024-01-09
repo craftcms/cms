@@ -747,7 +747,6 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                 $variables['defaultSourcePath'] = array_map(function(VolumeFolder $folder) {
                     return $folder->getSourcePathInfo();
                 }, $folders);
-                $variables['preferStoredSource'] = true;
             }
         }
 
