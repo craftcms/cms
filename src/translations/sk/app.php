@@ -259,6 +259,7 @@ return [
     'Checkout' => 'Platba',
     'Choose a currency…' => 'Vyberte menu…',
     'Choose a new password' => 'Vybrať nové heslo',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'Zvoľte heslo',
     'Choose a site' => 'Vyberte web',
     'Choose a user group that publicly-registered members will be added to by default.' => 'Vybrať skupinu používateľov, do ktorej budú predvolene pridaný verejne registrovaný používatelia.',
