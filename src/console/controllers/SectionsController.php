@@ -30,6 +30,42 @@ use yii\helpers\Console;
 class SectionsController extends Controller
 {
     /**
+     * @var string|null The section name.
+     * @since 4.6.0
+     */
+    public ?string $name = null;
+
+    /**
+     * @var string|null The section handle.
+     * @since 4.6.0
+     */
+    public ?string $handle = null;
+
+    /**
+     * @var string|null The section type (single, channel, or structure).
+     * @since 4.6.0
+     */
+    public ?string $type = null;
+
+    /**
+     * @var bool|null Whether to disable versioning for the section.
+     * @since 4.6.0
+     */
+    public ?bool $noVersioning = null;
+
+    /**
+     * @var string|null The entry URI format to set for each site.
+     * @since 4.6.0
+     */
+    public ?string $uriFormat = null;
+
+    /**
+     * @var string|null The template to load when an entry’s URL is requested.
+     * @since 4.6.0
+     */
+    public ?string $template = null;
+
+    /**
      * @var string|null The category group handle to model the section from.
      */
     public ?string $fromCategoryGroup = null;
@@ -71,6 +107,12 @@ class SectionsController extends Controller
         switch ($actionID) {
             case 'create':
                 $options = array_merge($options, [
+                    'name',
+                    'handle',
+                    'type',
+                    'noVersioning',
+                    'uriFormat',
+                    'template',
                     'fromCategoryGroup',
                     'fromTagGroup',
                     'fromGlobalSet',
@@ -87,11 +129,6 @@ class SectionsController extends Controller
      */
     public function actionCreate(): int
     {
-        if (!$this->interactive) {
-            $this->stderr("This command must be run interactively.\n", Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
-
         $section = new Section([
             // Avoid the default preview target
             'previewTargets' => [],
@@ -162,32 +199,45 @@ class SectionsController extends Controller
             $saveEntryType = true;
         }
 
-        $section->name = $this->prompt('Section name:', [
+        $section->name = $this->name ?? $this->prompt('Section name:', [
             'required' => true,
             'validator' => fn(string $name, ?string & $error = null) => $validateAttribute(compact('name'), $error),
             'default' => $section->name,
         ]);
 
-        $section->handle = $this->prompt('Section handle:', [
+        $section->handle = $this->handle ?? $this->prompt('Section handle:', [
             'required' => true,
             'validator' => fn(string $handle, ?string & $error = null) => $validateAttribute(compact('handle'), $error),
             'default' => $section->handle ?? StringHelper::toHandle($section->name),
         ]);
 
-        if (!$section->type) {
-            $section->type = $this->select('Section type:', [
-                Section::TYPE_SINGLE => 'for one-off content',
-                Section::TYPE_CHANNEL => 'for repeating content',
-                Section::TYPE_STRUCTURE => 'for ordered/hierarchical content',
-            ]);
+        if (isset($this->type)) {
+            $section->type = $this->type;
+        } elseif (!$section->type) {
+            if ($this->interactive) {
+                $section->type = $this->select('Section type:', [
+                    Section::TYPE_SINGLE => 'for one-off content',
+                    Section::TYPE_CHANNEL => 'for repeating content',
+                    Section::TYPE_STRUCTURE => 'for ordered/hierarchical content',
+                ]);
+            } else {
+                $section->type = Section::TYPE_CHANNEL;
+            }
         }
 
-        $section->enableVersioning = $this->confirm('Enable entry versioning for the section?', true);
+        if (isset($this->noVersioning)) {
+            $section->enableVersioning = !$this->noVersioning;
+        } else {
+            $section->enableVersioning = $this->confirm('Enable entry versioning for the section?', true);
+        }
 
         if (empty($section->getSiteSettings())) {
             $section->setSiteSettings(array_map(
                 fn(Site $site) => new Section_SiteSettings([
                     'siteId' => $site->id,
+                    'hasUrls' => $this->uriFormat !== null,
+                    'uriFormat' => $this->uriFormat,
+                    'template' => $this->template,
                 ]),
                 Craft::$app->getSites()->getAllSites(true),
             ));
@@ -205,46 +255,52 @@ class SectionsController extends Controller
             ];
         }
 
-        $this->do('Saving the section', function() use ($section) {
-            if (!Craft::$app->getSections()->saveSection($section)) {
-                $message = ArrayHelper::firstValue($section->getFirstErrors()) ?? 'Unable to save the section';
-                throw new InvalidConfigException($message);
-            }
-        });
-
-        $entryType = $section->getEntryTypes()[0];
-        $entryTypeName = $this->prompt('Initial entry type name:', [
-            'default' => $entryType->name,
-        ]);
-        $entryTypeHandle = $this->prompt('Initial entry type handle:', [
-            'default' => $entryTypeName !== $entryType->name ? StringHelper::toHandle($entryTypeName) : $entryType->handle,
-        ]);
-
-        if ($entryTypeName !== $entryType->name || $entryTypeHandle !== $entryType->handle) {
-            $entryType->name = $entryTypeName;
-            $entryType->handle = $entryTypeHandle;
-            $saveEntryType = true;
+        try {
+            $this->do('Saving the section', function() use ($section) {
+                if (!Craft::$app->getSections()->saveSection($section)) {
+                    $message = ArrayHelper::firstValue($section->getFirstErrors()) ?? 'Unable to save the section';
+                    throw new InvalidConfigException($message);
+                }
+            });
+        } catch (InvalidConfigException) {
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        if ($saveEntryType) {
-            if ($this->fromGlobalSet) {
-                $entryType->showStatusField = false;
+        if ($this->interactive) {
+            $entryType = $section->getEntryTypes()[0];
+            $entryTypeName = $this->prompt('Initial entry type name:', [
+                'default' => $entryType->name,
+            ]);
+            $entryTypeHandle = $this->prompt('Initial entry type handle:', [
+                'default' => $entryTypeName !== $entryType->name ? StringHelper::toHandle($entryTypeName) : $entryType->handle,
+            ]);
+
+            if ($entryTypeName !== $entryType->name || $entryTypeHandle !== $entryType->handle) {
+                $entryType->name = $entryTypeName;
+                $entryType->handle = $entryTypeHandle;
+                $saveEntryType = true;
             }
 
-            $this->do('Saving the entry type', function() use ($entryType, $sourceFieldLayout) {
-                if ($sourceFieldLayout) {
-                    $fieldLayout = FieldLayout::createFromConfig($sourceFieldLayout->getConfig() ?? []);
-                    foreach ($fieldLayout->getTabs() as $tab) {
-                        $tab->uid = StringHelper::UUID();
-                        foreach ($tab->getElements() as $element) {
-                            $element->uid = StringHelper::UUID();
-                        }
-                    }
-                    $entryType->setFieldLayout($fieldLayout);
+            if ($saveEntryType) {
+                if ($this->fromGlobalSet) {
+                    $entryType->showStatusField = false;
                 }
 
-                Craft::$app->getSections()->saveEntryType($entryType);
-            });
+                $this->do('Saving the entry type', function() use ($entryType, $sourceFieldLayout) {
+                    if ($sourceFieldLayout) {
+                        $fieldLayout = FieldLayout::createFromConfig($sourceFieldLayout->getConfig() ?? []);
+                        foreach ($fieldLayout->getTabs() as $tab) {
+                            $tab->uid = StringHelper::UUID();
+                            foreach ($tab->getElements() as $element) {
+                                $element->uid = StringHelper::UUID();
+                            }
+                        }
+                        $entryType->setFieldLayout($fieldLayout);
+                    }
+
+                    Craft::$app->getSections()->saveEntryType($entryType);
+                });
+            }
         }
 
         $this->success('Section created.');

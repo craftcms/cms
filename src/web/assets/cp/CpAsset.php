@@ -136,6 +136,7 @@ JS;
             'Breadcrumbs',
             'Buy {name}',
             'Cancel',
+            'Choose a page',
             'Choose a user',
             'Choose which sites this source should be visible for.',
             'Choose which table columns should be visible for this source by default.',

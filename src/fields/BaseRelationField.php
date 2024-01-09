@@ -602,7 +602,7 @@ JS, [
                     $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
                 }
 
-                $query->id(ArrayHelper::getColumn($structureElements, 'id'));
+                $query->id(array_map(fn(ElementInterface $element) => $element->id, $structureElements));
             }
         } else {
             $query->id(false);
@@ -846,7 +846,7 @@ JS, [
         $sourceSiteId = $sourceElements[0]->siteId;
 
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id', false);
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
@@ -973,7 +973,7 @@ JS, [
                     $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
                 }
 
-                $targetIds = ArrayHelper::getColumn($structureElements, 'id');
+                $targetIds = array_map(fn(ElementInterface $element) => $element->id, $structureElements);
             }
 
             /** @var int|int[]|false|null $targetIds */
@@ -987,7 +987,10 @@ JS, [
             if (!$this->localizeRelations && ElementHelper::shouldTrackChanges($element)) {
                 // Mark the field as dirty across all of the element’s sites
                 // (this is a little hacky but there’s not really a non-hacky alternative unfortunately.)
-                $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
+                $siteIds = array_map(
+                    fn(array $siteInfo) => $siteInfo['siteId'],
+                    ElementHelper::supportedSitesForElement($element),
+                );
                 $siteIds = ArrayHelper::withoutValue($siteIds, $element->siteId);
                 if (!empty($siteIds)) {
                     $userId = Craft::$app->getUser()->getId();

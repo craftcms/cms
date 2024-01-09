@@ -785,7 +785,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
               label: Craft.t('app', 'Delete folder'),
               destructive: true,
               onSelect: () => {
-                this._deleteFolder();
+                this.deleteCurrentFolder();
               },
             });
           }
@@ -822,37 +822,43 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       }
     },
 
-    _deleteFolder: function () {
-      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
-
+    deleteCurrentFolder: async function () {
       if (
-        confirm(
+        await this.deleteFolder(this.sourcePath[this.sourcePath.length - 1])
+      ) {
+        this.sourcePath = this.sourcePath.slice(0, this.sourcePath.length - 1);
+        this.updateElements();
+      }
+    },
+
+    deleteFolder: async function (folder) {
+      if (
+        !confirm(
           Craft.t('app', 'Really delete folder “{folder}”?', {
-            folder: currentFolder.label,
+            folder: folder.label,
           })
         )
       ) {
-        const data = {
-          folderId: currentFolder.folderId,
-        };
-
-        this.setIndexBusy();
-
-        Craft.sendActionRequest('POST', 'assets/delete-folder', {data})
-          .then((response) => {
-            this.setIndexAvailable();
-            Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
-            this.sourcePath = this.sourcePath.slice(
-              0,
-              this.sourcePath.length - 1
-            );
-            this.updateElements();
-          })
-          .catch(({response}) => {
-            this.setIndexAvailable();
-            Craft.cp.displayError(response.data.message);
-          });
+        return false;
       }
+
+      this.setIndexBusy();
+
+      try {
+        await Craft.sendActionRequest('POST', 'assets/delete-folder', {
+          data: {
+            folderId: folder.folderId,
+          },
+        });
+      } catch (e) {
+        Craft.cp.displayError(e?.response?.data?.message);
+        return false;
+      } finally {
+        this.setIndexAvailable();
+      }
+
+      Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
+      return true;
     },
 
     /**
