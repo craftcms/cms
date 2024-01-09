@@ -18,6 +18,7 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\WrappingType;
+use yii\web\ServerErrorHttpException;
 
 /**
  * Class MutationResolver
@@ -160,7 +161,22 @@ abstract class ElementMutationResolver extends MutationResolver
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
-        Craft::$app->getElements()->saveElement($element);
+        $isNotNew = $element->id;
+        if ($isNotNew) {
+            $lockKey = "element:$element->id";
+            $mutex = Craft::$app->getMutex();
+            if (!$mutex->acquire($lockKey, 15)) {
+                throw new ServerErrorHttpException('Could not acquire a lock to save the element.');
+            }
+        }
+
+        try {
+            Craft::$app->getElements()->saveElement($element);
+        } finally {
+            if ($isNotNew) {
+                $mutex->release($lockKey);
+            }
+        }
 
         if ($element->hasErrors()) {
             $validationErrors = [];

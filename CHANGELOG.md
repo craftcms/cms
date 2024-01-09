@@ -9,6 +9,11 @@
 
 - Fixed a bug where the “Save and add another” element action wasn’t redirecting to a new element edit page, when editing an unpublished draft.
 - Fixed a bug where `craft\helpers\DateTimeHelper::nextYear()` and `lastYear()` weren’t returning the correct dates. ([#14109](https://github.com/craftcms/cms/issues/14109))
+- Fixed a bug where image transforms weren’t getting created for remote assets, if `maxCachedCloudImageSize` was set to `0`. ([#14100](https://github.com/craftcms/cms/issues/14100))
+- Fixed a SQL error that could occur when updating existing elements via GraphQL mutations. ([#14113](https://github.com/craftcms/cms/issues/14113))
+- Fixed a bug where Assets fields weren’t preselecting the default upload location when first opening the asset selection modal. ([#14112](https://github.com/craftcms/cms/issues/14112), [#14116](https://github.com/craftcms/cms/pull/14116))
+- Fixed a bug where Assets fields weren’t tracking their selected source path on a per-field basis. ([#14112](https://github.com/craftcms/cms/issues/14112), [#14116](https://github.com/craftcms/cms/pull/14116))
+- Fixed a bug where `craft\fields\BaseRelationField::normalizeValue()` wasn’t retaining eager-loaded values. ([#14117](https://github.com/craftcms/cms/issues/14117))
 
 ## 4.6.0-RC1 - 2024-01-04
 
