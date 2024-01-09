@@ -238,9 +238,38 @@ class Assets extends BaseRelationField
             },
         ];
 
+        $rules[] = [
+            ['source', 'sources', 'defaultUploadLocationSource', 'restrictedLocationSource'], 'validateNotTempVolume',
+        ];
+
         $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
 
         return $rules;
+    }
+
+    /**
+     * Ensure that you can't select tempUploadsLocation volume as a source or default uploads location or restricted location for an Assets field.
+     *
+     * @param string $attribute
+     * @return void
+     * @throws InvalidConfigException
+     * @since 4.6.0
+     */
+    public function validateNotTempVolume(string $attribute, ?array $params): void
+    {
+        [$tempVolume, $tempSubpath] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
+        if ($tempVolume !== null) {
+            $tempVolumeUid = 'volume:' . $tempVolume->uid;
+            $inputSources = $this->getInputSources();
+
+            if (in_array($tempVolumeUid, $inputSources)) {
+                $this->addError($attribute, Craft::t(
+                    'app',
+                    'Volume “{volumeName}” is used to store temporary asset uploads, so it cannot be used in a field.',
+                    ['volumeName' => $tempVolume->name])
+                );
+            }
+        }
     }
 
     /**

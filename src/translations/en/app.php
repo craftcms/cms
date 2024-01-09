@@ -1744,6 +1744,7 @@ return [
     'Village/Township' => 'Village/Township',
     'Visit webpage' => 'Visit webpage',
     'Volume - {volume}' => 'Volume - {volume}',
+    'Volume “{volumeName}” is used to store temporary asset uploads, so it cannot be used in a field.' => 'Volume “{volumeName}” is used to store temporary asset uploads, so it cannot be used in a field.',
     'Volume path' => 'Volume path',
     'Volume saved.' => 'Volume saved.',
     'Volume' => 'Volume',

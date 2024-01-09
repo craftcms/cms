@@ -62,7 +62,7 @@
             sourceOptions: sourceOptions,
             sourceValue: field.restrictedLocationSource,
             subpathValue: field.restrictedLocationSubpath,
-            errors: field.getErrors('restrictedLocationSubpath')
+            errors: field.getErrors('restrictedLocationSource') + field.getErrors('restrictedLocationSubpath')
         }) }}
 
         {{ forms.checkboxField({
@@ -103,7 +103,7 @@
             sourceOptions: sourceOptions,
             sourceValue: field.defaultUploadLocationSource,
             subpathValue: field.defaultUploadLocationSubpath,
-            errors: field.getErrors('defaultUploadLocationSubpath')
+            errors: field.getErrors('defaultUploadLocationSource') + field.getErrors('defaultUploadLocationSubpath')
         }) }}
     {% endtag %}
 
