@@ -5839,12 +5839,17 @@ $min2ColWidth: 400px;
   --ui-control-active-color: var(--gray-100);
 
   span.icon,
-  &:before {
+  &:before,
+  div.code {
     color: var(--menu-option-active-color);
   }
 
   &.error {
     color: var(--menu-option-active-color) !important;
+  }
+
+  span.light {
+    color: var(--white) !important;
   }
 }
 
