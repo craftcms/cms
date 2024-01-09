@@ -1,8 +1,11 @@
 # Release notes for Craft CMS 4.6 (WIP)
 
+- Added live conditional field support to asset edit pages, as well as asset, user, and tag slideouts. ([#14115](https://github.com/craftcms/cms/pull/14115))
 - Added the “Country” field type. ([#13789](https://github.com/craftcms/cms/discussions/13789))
 - It’s now possible to delete volume folders using the “Delete” asset action. ([#13086](https://github.com/craftcms/cms/discussions/13086))
 - Date range condition rules are now inclusive of their end dates. ([#13435](https://github.com/craftcms/cms/issues/13435))
+- Custom field condition rules now show their field handles, for users with the “Show field handles in edit forms” preference enabled. ([#13300](https://github.com/craftcms/cms/pull/13300))
+- Element conditions now include condition rules for fields with duplicate names, for users with the “Show field handles in edit forms” preference enabled. ([#13300](https://github.com/craftcms/cms/pull/13300))
 - Improved element search performance. ([#14055](https://github.com/craftcms/cms/pull/14055))
 - Improved the performance of large editable tables. ([#13852](https://github.com/craftcms/cms/issues/13852))
 - Added partial support for field types storing data in JSON columns (excluding MariaDB). ([#13916](https://github.com/craftcms/cms/issues/13916))
@@ -15,6 +18,7 @@
 - The `index-assets/one` and `index-assets/all` commands now accept a `--delete-empty-folders` option. ([#13947](https://github.com/craftcms/cms/discussions/13947))
 - `queue/get-job-info` action requests no longer create a mutex lock.
 - The `mutex` driver is now set to `yii\mutex\MysqlMutex` or `yii\mutex\PgsqlMutex` by default, once again. ([#14102](https://github.com/craftcms/cms/pull/14102))
+- Added `craft\base\conditions\ConditionRuleInterface::getLabelHint()`.
 - Added `craft\helpers\AdminTable::moveToPage()`. ([#14051](https://github.com/craftcms/cms/pull/14051))
 - Added `craft\helpers\App::dbMutexConfig()`.
 - Added `craft\helpers\ElementHelper::searchableAttributes()`.
