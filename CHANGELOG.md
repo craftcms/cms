@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-alpha.5 - 2024-01-09
 
 - Added live conditional field support to asset edit pages, as well as asset, user, and tag slideouts. ([#14115](https://github.com/craftcms/cms/pull/14115))
 - It’s now possible to delete volume folders using the “Delete” asset action. ([#13086](https://github.com/craftcms/cms/discussions/13086))
