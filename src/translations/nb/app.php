@@ -259,6 +259,7 @@ return [
     'Checkout' => 'Betale',
     'Choose a currency…' => 'Velg en valuta …',
     'Choose a new password' => 'Velg et nytt passord',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'Velg et passord',
     'Choose a site' => 'Velg en side',
     'Choose a user group that publicly-registered members will be added to by default.' => 'Velg en brukergruppe som offentlig registrerte medlemmer skal legges i som standard.',
