@@ -259,6 +259,7 @@ return [
     'Checkout' => 'Проверка',
     'Choose a currency…' => 'Выберите валюту…',
     'Choose a new password' => 'Введите новый пароль',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'Введите пароль',
     'Choose a site' => 'Выбрать сайт',
     'Choose a user group that publicly-registered members will be added to by default.' => 'Выберите группу по умолчанию, в которую будут добавляться все публично-регистрирующиеся пользователи.',
