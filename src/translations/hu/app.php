@@ -259,6 +259,7 @@ return [
     'Checkout' => 'Fizetés',
     'Choose a currency…' => 'Válasszon pénznemet…',
     'Choose a new password' => 'Válasszon új jelszavat',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'Válassz jelszót',
     'Choose a site' => 'Válasszon webhelyet',
     'Choose a user group that publicly-registered members will be added to by default.' => 'Válasszon csoportot, amelyikhez a nyilvánosan regisztrált felhasználók alapértelmezettként hozzá lesznek adva.',
