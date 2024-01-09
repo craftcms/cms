@@ -464,7 +464,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           defaultSource: this.settings.defaultSource,
           defaultSourcePath: this.settings.defaultSourcePath,
           preferStoredSource: this.settings.preferStoredSource,
-          modalFirstOpen: this.settings.modalFirstOpen,
           showSourcePath: this.settings.showSourcePath,
         },
         this.settings.indexSettings
@@ -496,7 +495,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       defaultSource: null,
       defaultSourcePath: null,
       preferStoredSource: false,
-      modalFirstOpen: true,
       showSourcePath: true,
       bodyAction: 'element-selector-modals/body',
       indexSettings: {},

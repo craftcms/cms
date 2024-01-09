@@ -3348,7 +3348,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       defaultSource: null,
       defaultSourcePath: null,
       preferStoredSource: false,
-      modalFirstOpen: true,
       showSourcePath: true,
       canHaveDrafts: false,
 
