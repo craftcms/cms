@@ -259,6 +259,7 @@ return [
     'Checkout' => 'Afrekenen',
     'Choose a currency…' => 'Kies een valuta ...',
     'Choose a new password' => 'Kies een nieuw wachtwoord',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'Kies een wachtwoord',
     'Choose a site' => 'Kies een site',
     'Choose a user group that publicly-registered members will be added to by default.' => 'Kies een gebruikersgroep waar openbaar geregistreerde leden standaard aan toe zullen worden gevoegd.',
