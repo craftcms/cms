@@ -5,6 +5,7 @@
 - Fixed a bug where the “Save and add another” element action wasn’t redirecting to a new element edit page, when editing an unpublished draft.
 - Fixed a bug where `craft\helpers\DateTimeHelper::nextYear()` and `lastYear()` weren’t returning the correct dates. ([#14109](https://github.com/craftcms/cms/issues/14109))
 - Fixed a bug where image transforms weren’t getting created for remote assets, if `maxCachedCloudImageSize` was set to `0`. ([#14100](https://github.com/craftcms/cms/issues/14100))
+- Fixed a SQL error that could occur when updating existing elements via GraphQL mutations. ([#14113](https://github.com/craftcms/cms/issues/14113))
 
 ## 4.5.14 - 2024-01-02
 
