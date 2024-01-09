@@ -259,6 +259,7 @@ return [
     'Checkout' => 'پرداخت',
     'Choose a currency…' => 'انتخاب یک واحد پول…',
     'Choose a new password' => 'انتخاب کردن یک رمز عبور جدید',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'انتخاب یک رمز عبور',
     'Choose a site' => 'انتخاب یک سایت',
     'Choose a user group that publicly-registered members will be added to by default.' => 'گروه کاربری را که اعضای به شکل عمومی ثبت شده به طور پیش فرض به آن اضافه می شوند را انتخاب نمایید.',
