@@ -8,6 +8,7 @@
 - Fixed a SQL error that could occur when updating existing elements via GraphQL mutations. ([#14113](https://github.com/craftcms/cms/issues/14113))
 - Fixed a bug where Assets fields weren’t preselecting the default upload location when first opening the asset selection modal. ([#14112](https://github.com/craftcms/cms/issues/14112), [#14116](https://github.com/craftcms/cms/pull/14116))
 - Fixed a bug where Assets fields weren’t tracking their selected source path on a per-field basis. ([#14112](https://github.com/craftcms/cms/issues/14112), [#14116](https://github.com/craftcms/cms/pull/14116))
+- Fixed a bug where `craft\fields\BaseRelationField::normalizeValue()` wasn’t retaining eager-loaded values. ([#14117](https://github.com/craftcms/cms/issues/14117))
 
 ## 4.5.14 - 2024-01-02
 

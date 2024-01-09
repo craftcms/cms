@@ -539,7 +539,7 @@ JS, [
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        if ($value instanceof ElementQueryInterface) {
+        if ($value instanceof ElementQueryInterface || $value instanceof Collection) {
             return $value;
         }
 
