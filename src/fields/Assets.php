@@ -259,10 +259,10 @@ class Assets extends BaseRelationField
     {
         [$tempVolume, $tempSubpath] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
         if ($tempVolume !== null) {
-            $tempVolumeUid = 'volume:' . $tempVolume->uid;
+            $tempVolumeKey = 'volume:' . $tempVolume->uid;
             $inputSources = $this->getInputSources();
 
-            if (in_array($tempVolumeUid, $inputSources)) {
+            if (in_array($tempVolumeKey, $inputSources)) {
                 $this->addError($attribute, Craft::t(
                     'app',
                     'Volume “{volumeName}” is used to store temporary asset uploads, so it cannot be used in a field.',
