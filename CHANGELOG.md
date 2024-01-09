@@ -23,6 +23,7 @@
 - Fixed a bug where nested entry edit pages weren’t showing validation errors. ([#13975](https://github.com/craftcms/cms/pull/13975))
 - Fixed some global header styling issues.
 - Fixed an error that occurred when logged in with an account that didn’t have permission to edit any sites.
+- Fixed a bug where conditionally-added field layout tabs weren’t showing their content.
 - Added `Craft.FormObserver`. ([#14114](https://github.com/craftcms/cms/pull/14114))
 - Updated `web-auth/webauthn-lib` to ^4.7.
 
