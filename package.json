@@ -66,7 +66,6 @@
     "vue-lodash": "^1.0.3",
     "vue-router": "^3.5.4",
     "vuex": "^3.6.2",
-    "whatwg-fetch": "^0.11.1",
     "xregexp": "^3.2.0",
     "yii2-pjax": "~2.0.1"
   }
