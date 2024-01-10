@@ -140,6 +140,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       for (let i = 0; i < $elements.length; i++) {
         const $element = $elements.eq(i);
         if ($element.hasClass('disabled')) {
+          $element.find('.checkbox').attr({
+            tabindex: '-1',
+          });
           continue;
         }
         if (this.canSelectElement($element)) {
