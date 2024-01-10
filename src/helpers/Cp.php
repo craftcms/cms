@@ -565,6 +565,10 @@ class Cp
 
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
+        $elementCheckboxId = sprintf('%s-checkbox', $config['id']);
+        $elementCheckboxLabel = Craft::t('app', 'Select {element}', [
+            'element' => Html::encode($element->getUiLabel()),
+        ]);
 
         $html = Html::beginTag('div', $attributes) .
             ($element->getThumbHtml(120) ?? '') .
@@ -577,8 +581,15 @@ class Cp
             (self::elementStatusHtml($element) ?? '') .
             ($config['selectable'] ? Html::tag('div', options: [
                 'class' => 'checkbox',
-                'title' => Craft::t('app', 'Select'),
-                'aria' => ['label' => Craft::t('app', 'Select')],
+                'id' => $elementCheckboxId,
+                'title' => $elementCheckboxLabel,
+                'role' => 'checkbox',
+                'aria' => [
+                    'checked' => 'false',
+                ],
+            ]) . Html::tag('label', $elementCheckboxLabel, [
+                'for' => $elementCheckboxId,
+                'class' => 'visually-hidden',
             ]) : '') .
             ($config['showActionMenu'] ? self::elementActionMenu($element) : '') .
             ($config['sortable'] ? Html::button('', [
