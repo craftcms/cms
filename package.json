@@ -52,7 +52,7 @@
     "jquery-ui": "^1.13.1",
     "jquery.payment": "^3.0.0",
     "picturefill": "^3.0.3",
-    "punycode": "1.4.1",
+    "punycode": "^2.3.1",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "timepicker": "^1.13.18",
