@@ -259,6 +259,7 @@ return [
     'Checkout' => '检查',
     'Choose a currency…' => '选择货币…',
     'Choose a new password' => '设置新密码',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => '选择密码',
     'Choose a site' => '选择站点',
     'Choose a user group that publicly-registered members will be added to by default.' => '默认选取公开注册成员将加入的用户组。',

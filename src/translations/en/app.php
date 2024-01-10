@@ -259,6 +259,7 @@ return [
     'Checkout' => 'Checkout',
     'Choose a currency…' => 'Choose a currency…',
     'Choose a new password' => 'Choose a new password',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'Choose a password',
     'Choose a site' => 'Choose a site',
     'Choose a user group that publicly-registered members will be added to by default.' => 'Choose a user group that publicly-registered members will be added to by default.',

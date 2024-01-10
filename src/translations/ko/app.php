@@ -259,6 +259,7 @@ return [
     'Checkout' => '결제',
     'Choose a currency…' => '통화 선택…',
     'Choose a new password' => '새 비밀번호 선택',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => '비밀번호 선택',
     'Choose a site' => '사이트 선택',
     'Choose a user group that publicly-registered members will be added to by default.' => '공개 등록된 회원들이 기본값으로 추가될 사용자 그룹을 선택하세요.',

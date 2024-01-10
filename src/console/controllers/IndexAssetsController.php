@@ -54,6 +54,12 @@ class IndexAssetsController extends Controller
     public bool $deleteMissingAssets = false;
 
     /**
+     * @var bool Whether empty folders should be deleted.
+     * @since 4.6.0
+     */
+    public bool $deleteEmptyFolders = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID): array
@@ -68,6 +74,7 @@ class IndexAssetsController extends Controller
                 }
                 $options[] = 'createMissingAssets';
                 $options[] = 'deleteMissingAssets';
+                $options[] = 'deleteEmptyFolders';
                 break;
         }
 
@@ -152,7 +159,7 @@ class IndexAssetsController extends Controller
 
         $this->stdout(PHP_EOL);
 
-        $session = $assetIndexer->createIndexingSession($volumes, $this->cacheRemoteImages, true);
+        $session = $assetIndexer->createIndexingSession($volumes, $this->cacheRemoteImages, true, $this->deleteEmptyFolders);
 
         foreach ($volumes as $volume) {
             $this->stdout('Indexing assets in ', Console::FG_YELLOW);
@@ -247,7 +254,7 @@ class IndexAssetsController extends Controller
 
         if (!empty($missingFolders)) {
             $totalMissing = count($missingFolders);
-            $this->stdout(($totalMissing === 1 ? 'One missing folder:' : "$totalMissing missing folders:") . PHP_EOL, Console::FG_YELLOW);
+            $this->stdout(($totalMissing === 1 ? 'One missing or empty folder:' : "$totalMissing missing or empty folders:") . PHP_EOL, Console::FG_YELLOW);
             foreach ($missingFolders as $folderId => $folderPath) {
                 $this->stdout("- $folderPath ($folderId)");
                 $this->stdout(PHP_EOL);
@@ -299,11 +306,11 @@ class IndexAssetsController extends Controller
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
-        if (!empty($missingFolders) && $this->deleteMissingAssets) {
+        if (!empty($missingFolders) && $this->deleteEmptyFolders) {
             $totalMissingFolders = count($missingFolders);
-            $this->stdout('Deleting the' . ($totalMissingFolders > 1 ? ' ' . $totalMissingFolders : '') . ' missing folder record' . ($totalMissingFolders > 1 ? 's' : '') . ' ... ');
+            $this->stdout('Deleting the' . ($totalMissingFolders > 1 ? ' ' . $totalMissingFolders : '') . ' missing and empty folders' . ($totalMissingFolders > 1 ? 's' : '') . ' ... ');
 
-            Craft::$app->getAssets()->deleteFoldersByIds(array_keys($missingFolders), false);
+            Craft::$app->getAssets()->deleteFoldersByIds(array_keys($missingFolders));
 
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }

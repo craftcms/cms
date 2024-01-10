@@ -259,6 +259,7 @@ return [
     'Checkout' => 'Pagar',
     'Choose a currency…' => 'Elegir una moneda…',
     'Choose a new password' => 'Elije una contraseña nueva',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'Elije una contraseña',
     'Choose a site' => 'Seleccionar un sitio',
     'Choose a user group that publicly-registered members will be added to by default.' => 'Selecciona un grupo de usuarios al cual pertenecerán los miembros registrados en el área pública.',

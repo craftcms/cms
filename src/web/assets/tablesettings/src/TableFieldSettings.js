@@ -131,9 +131,9 @@
         if (this.columnsData.hasOwnProperty(colId)) {
           switch (this.columnsData[colId].type) {
             case 'select':
-              const rowObj = this.columnsTable.$tbody
-                .find('tr[data-id="' + colId + '"]')
-                .data('editable-table-row');
+              const rowObj = this.columnsTable.getRowObj(
+                this.columnsTable.$tbody.find(`tr[data-id="${colId}"]`)
+              );
               this.columnsData[colId].options = rowObj.options || [];
               break;
             case 'heading':
