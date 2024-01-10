@@ -66,7 +66,7 @@
     "vue-lodash": "^1.0.3",
     "vue-router": "^3.5.4",
     "vuex": "^3.6.2",
-    "xregexp": "^3.2.0",
+    "xregexp": "^5.1.1",
     "yii2-pjax": "~2.0.1"
   }
 }
