@@ -533,6 +533,7 @@ return [
     'District' => 'District',
     'Do Si' => 'Do Si',
     'Documentation' => 'Documentation',
+    'Don’t select a volume that’s used by any Assets fields.' => 'Don’t select a volume that’s used by any Assets fields.',
     'Done' => 'Done',
     'Download backup' => 'Download backup',
     'Download' => 'Download',
