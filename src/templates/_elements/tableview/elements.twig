@@ -18,23 +18,16 @@
     {% set showInputs = (inlineEditing ?? false) and elementsService.canSave(element, currentUser) %}
     <tr data-id="{{ element.id }}"{% if structure %} data-title="{{ elementTitle }}" data-level="{{ element.level }}" data-descendants="{{ totalDescendants ?? 0 }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
         {% if selectable %}
-            {% set selectLabel = 'Select {element}'|t('app', {element: elementTitle}) %}
-            {% set selectId = 'element-select-' ~ element.id %}
             <td class="checkbox-cell">
                 {{ tag('div', {
-                    id: selectId,
                     class: 'checkbox',
-                    title: selectLabel,
+                    title: 'Select'|t('app'),
                     role: 'checkbox',
                     tabindex: '0',
                     aria: {
                         checked: 'false',
+                        label: elementTitle,
                     },
-                }) }}
-                {{ tag('label', {
-                    class: 'visually-hidden',
-                    for: selectId,
-                    html: selectLabel,
                 }) }}
             </td>
         {% endif %}
