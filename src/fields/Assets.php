@@ -262,7 +262,11 @@ class Assets extends BaseRelationField
             $tempVolumeKey = 'volume:' . $tempVolume->uid;
             $inputSources = $this->getInputSources();
 
-            if (in_array($tempVolumeKey, $inputSources)) {
+            if (
+                (in_array($attribute, ['source', 'sources']) && in_array($tempVolumeKey, $inputSources)) ||
+                ($attribute == 'defaultUploadLocationSource' && $this->defaultUploadLocationSource === $tempVolumeKey) ||
+                ($attribute == 'restrictedLocationSource' && $this->restrictedLocationSource === $tempVolumeKey)
+            ) {
                 $this->addError($attribute, Craft::t(
                     'app',
                     'Volume “{volumeName}” is used to store temporary asset uploads, so it cannot be used in a field.',
