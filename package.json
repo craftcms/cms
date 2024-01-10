@@ -20,7 +20,7 @@
   "devDependencies": {
     "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@playwright/test": "^1.19.2",
-    "husky": "^7.0.4",
+    "husky": "^8.0.3",
     "lint-staged": "^12.4.0",
     "prettier": "^2.7.1",
     "tailwindcss": "^3.0.18",
