@@ -450,7 +450,15 @@ export default Base.extend(
 
         if ($focusTarget) {
           $focusTarget.data('select-item', item);
-          this.addListener($focusTarget, 'activate', 'onFocusTargetActivate');
+          this.addListener($focusTarget, 'keydown', (event) => {
+            if (
+              event.keyCode === Garnish.SPACE_KEY ||
+              event.keyCode === Garnish.RETURN_KEY
+            ) {
+              event.preventDefault();
+              this.onFocusTargetActivate(event);
+            }
+          });
         }
 
         this.addListener(item, 'keydown', 'onKeyDown');
