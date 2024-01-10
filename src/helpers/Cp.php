@@ -584,6 +584,7 @@ class Cp
                 'id' => $elementCheckboxId,
                 'title' => $elementCheckboxLabel,
                 'role' => 'checkbox',
+                'tabindex' => '0',
                 'aria' => [
                     'checked' => 'false',
                 ],
