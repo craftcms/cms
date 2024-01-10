@@ -680,13 +680,10 @@ class Cp
     private static function elementCheckboxHtml(ElementInterface $element, array $config): ?string
     {
         $elementLabelId = sprintf('%s-label', $config['id']);
-        $elementCheckboxLabel = Craft::t('app', 'Select {element}', [
-            'element' => Html::encode($element->getUiLabel()),
-        ]);
         if ($config['selectable']) {
             return Html::tag('div', options: [
                 'class' => 'checkbox',
-                'title' => $elementCheckboxLabel,
+                'title' => Craft::t('app', 'Select'),
                 'role' => 'checkbox',
                 'tabindex' => '0',
                 'aria' => [
