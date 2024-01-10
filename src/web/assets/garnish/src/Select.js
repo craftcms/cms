@@ -436,10 +436,10 @@ export default Base.extend(
         $.data(item, 'select-handle', $handle);
         $handle.data('select-item', item);
 
-        // Get the focus target
-        let $focusTarget;
-        if (this.settings.focusTargetClass) {
-          $focusTarget = $(item).find(`.${this.settings.focusTargetClass}`);
+        // Get the checkbox element
+        let $checkbox;
+        if (this.settings.checkboxClass) {
+          $checkbox = $(item).find(`.${this.settings.checkboxClass}`);
         }
 
         this.addListener($handle, 'mousedown', 'onMouseDown');
@@ -448,15 +448,15 @@ export default Base.extend(
           this.ignoreClick = true;
         });
 
-        if ($focusTarget) {
-          $focusTarget.data('select-item', item);
-          this.addListener($focusTarget, 'keydown', (event) => {
+        if ($checkbox) {
+          $checkbox.data('select-item', item);
+          this.addListener($checkbox, 'keydown', (event) => {
             if (
               event.keyCode === Garnish.SPACE_KEY ||
               event.keyCode === Garnish.RETURN_KEY
             ) {
               event.preventDefault();
-              this.onFocusTargetActivate(event);
+              this.onCheckboxKeypress(event);
             }
           });
         }
@@ -666,7 +666,7 @@ export default Base.extend(
       }
     },
 
-    onFocusTargetActivate: function (ev) {
+    onCheckboxActivate: function (ev) {
       ev.stopImmediatePropagation();
       const $item = $($.data(event.currentTarget, 'select-item'));
 
@@ -883,9 +883,9 @@ export default Base.extend(
     _selectItems: function ($items) {
       $items.addClass(this.settings.selectedClass);
 
-      if (this.settings.focusTargetClass) {
-        const $targets = $items.find(`.${this.settings.focusTargetClass}`);
-        $targets.attr('aria-checked', 'true');
+      if (this.settings.checkboxClass) {
+        const $checkboxes = $items.find(`.${this.settings.checkboxClass}`);
+        $checkboxes.attr('aria-checked', 'true');
       }
 
       this.$selectedItems = this.$selectedItems.add($items);
@@ -895,9 +895,9 @@ export default Base.extend(
     _deselectItems: function ($items) {
       $items.removeClass(this.settings.selectedClass);
 
-      if (this.settings.focusTargetClass) {
-        const $targets = $items.find(`.${this.settings.focusTargetClass}`);
-        $targets.attr('aria-checked', 'false');
+      if (this.settings.checkboxClass) {
+        const $checkboxes = $items.find(`.${this.settings.checkboxClass}`);
+        $checkboxes.attr('aria-checked', 'false');
       }
 
       this.$selectedItems = this.$selectedItems.not($items);
@@ -926,7 +926,7 @@ export default Base.extend(
   {
     defaults: {
       selectedClass: 'sel',
-      focusTargetClass: null,
+      checkboxClass: 'checkbox',
       multi: false,
       allowEmpty: true,
       vertical: false,
