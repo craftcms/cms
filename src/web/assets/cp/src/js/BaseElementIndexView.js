@@ -140,8 +140,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       for (let i = 0; i < $elements.length; i++) {
         const $element = $elements.eq(i);
         if ($element.hasClass('disabled')) {
+          // remove checkbox from tab order and mark as checked
           $element.find('.checkbox').attr({
             tabindex: '-1',
+            'aria-checked': 'true',
           });
           continue;
         }
