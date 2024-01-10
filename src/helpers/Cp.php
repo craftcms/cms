@@ -475,11 +475,7 @@ class Cp
         $html .= Html::beginTag('div', ['class' => 'chip-content']);
 
         if ($config['selectable']) {
-            $html .= Html::tag('div', options: [
-                'class' => 'checkbox',
-                'title' => Craft::t('app', 'Select'),
-                'aria' => ['label' => Craft::t('app', 'Select')],
-            ]);
+            $html .= self::elementCheckboxHtml($element, $config) ?? '';
         }
 
         if ($config['showStatus']) {
@@ -565,10 +561,6 @@ class Cp
 
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
-        $elementCheckboxId = sprintf('%s-checkbox', $config['id']);
-        $elementCheckboxLabel = Craft::t('app', 'Select {element}', [
-            'element' => Html::encode($element->getUiLabel()),
-        ]);
 
         $html = Html::beginTag('div', $attributes) .
             ($element->getThumbHtml(120) ?? '') .
@@ -579,19 +571,7 @@ class Cp
             Html::beginTag('div', ['class' => 'card-actions-container']) .
             Html::beginTag('div', ['class' => 'card-actions']) .
             (self::elementStatusHtml($element) ?? '') .
-            ($config['selectable'] ? Html::tag('div', options: [
-                'class' => 'checkbox',
-                'id' => $elementCheckboxId,
-                'title' => $elementCheckboxLabel,
-                'role' => 'checkbox',
-                'tabindex' => '0',
-                'aria' => [
-                    'checked' => 'false',
-                ],
-            ]) . Html::tag('label', $elementCheckboxLabel, [
-                'for' => $elementCheckboxId,
-                'class' => 'visually-hidden',
-            ]) : '') .
+            (self::elementCheckboxHtml($element, $config) ?? '') .
             ($config['showActionMenu'] ? self::elementActionMenu($element) : '') .
             ($config['sortable'] ? Html::button('', [
                 'class' => ['move', 'icon'],
@@ -695,6 +675,31 @@ class Cp
                 ]),
             ],
         );
+    }
+
+    private static function elementCheckboxHtml(ElementInterface $element, array $config): ?string
+    {
+        $elementCheckboxId = sprintf('%s-checkbox', $config['id']);
+        $elementCheckboxLabel = Craft::t('app', 'Select {element}', [
+            'element' => Html::encode($element->getUiLabel()),
+        ]);
+        if ($config['selectable']) {
+            return Html::tag('div', options: [
+                'class' => 'checkbox',
+                'id' => $elementCheckboxId,
+                'title' => $elementCheckboxLabel,
+                'role' => 'checkbox',
+                'tabindex' => '0',
+                'aria' => [
+                    'checked' => 'false',
+                ],
+            ]) . Html::tag('label', $elementCheckboxLabel, [
+                'for' => $elementCheckboxId,
+                'class' => 'visually-hidden',
+            ]);
+        }
+
+        return null;
     }
 
     private static function elementStatusHtml(ElementInterface $element): ?string
