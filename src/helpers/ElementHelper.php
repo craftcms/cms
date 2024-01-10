@@ -440,7 +440,11 @@ class ElementHelper
     public static function rootElement(ElementInterface $element): ElementInterface
     {
         if ($element instanceof BlockElementInterface) {
-            $owner = $element->getOwner();
+            try {
+                $owner = $element->getOwner();
+            } catch (\Throwable $e) {
+                $owner = null;
+            }
             if ($owner) {
                 return static::rootElement($owner);
             }
