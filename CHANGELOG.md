@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
+
 ## 5.0.0-alpha.5 - 2024-01-09
 
 - Added live conditional field support to asset edit pages, as well as asset, user, and tag slideouts. ([#14115](https://github.com/craftcms/cms/pull/14115))
