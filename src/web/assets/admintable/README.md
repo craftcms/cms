@@ -375,7 +375,7 @@ Action buttons are provided as an array of objects and come in two varieties, a 
 | icon (optional) | icon to show in the top level button                         |
 | actions         | array of actions for use in the dropdown when the button is clicked (spec below) |
 
-####Sub action buttons
+#### Sub action buttons
 
 | Name          | Type   | Description                                                  |
 | ------------- | ------ | ------------------------------------------------------------ |
