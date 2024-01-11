@@ -672,9 +672,14 @@
 
       resetSearch() {
         this.searchTerm = '';
-        this.rows.forEach((row) => {
-          row.classList.remove('hidden');
-        });
+
+        if (!this.isApiMode && this.tableData.length) {
+          this.rows.forEach((row) => {
+            row.classList.remove('hidden');
+          });
+        } else {
+          this.reload();
+        }
       },
 
       handleSelectAll() {
