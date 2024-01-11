@@ -610,7 +610,7 @@ JS, [
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        if ($value instanceof ElementQueryInterface) {
+        if ($value instanceof ElementQueryInterface || $value instanceof ElementCollection) {
             return $value;
         }
 
@@ -1301,7 +1301,12 @@ JS, [
     public function getSelectionCondition(): ?ElementConditionInterface
     {
         if ($this->_selectionCondition !== null && !$this->_selectionCondition instanceof ConditionInterface) {
-            $this->_selectionCondition = Craft::$app->getConditions()->createCondition($this->_selectionCondition);
+            $condition = Craft::$app->getConditions()->createCondition($this->_selectionCondition);
+            if (!empty($condition->getConditionRules())) {
+                $this->_selectionCondition = $condition;
+            } else {
+                $this->_selectionCondition = null;
+            }
         }
 
         return $this->_selectionCondition;

@@ -16,6 +16,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
@@ -284,8 +285,7 @@ class FieldLayoutTab extends FieldLayoutComponent
         // ensure unique tab id even if there are multiple tabs with the same name
         $tabOrder = StringHelper::pad((string)$this->sortOrder, 2, '0', 'left');
 
-        // Use two dashes here in case a tab name starts with “Tab”
-        return "tab$tabOrder--$asciiName";
+        return Html::id("tab$tabOrder-$asciiName");
     }
 
     /**

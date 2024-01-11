@@ -817,6 +817,7 @@ JS, [
                     'owner' => $target,
                     'siteId' => $target->siteId,
                     'propagating' => false,
+                    'sortOrder' => $element->getSortOrder(),
                 ];
 
                 if ($target->updatingFromDerivative && $element->getIsDerivative()) {
