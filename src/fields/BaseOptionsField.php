@@ -498,7 +498,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     {
         /** @var MultiOptionsFieldData|SingleOptionFieldData $value */
         if ($value instanceof SingleOptionFieldData) {
-            return $value->value === null || $value->value === '';
+            return !$this->hasValue($value->value);
         }
 
         return count($value) === 0;
@@ -515,7 +515,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
             foreach ($value as $option) {
                 /** @var OptionData $option */
-                if ($option->value) {
+                if ($this->hasValue($option->value)) {
                     $labels[] = Craft::t('site', $option->label);
                 }
             }
@@ -524,7 +524,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         /** @var SingleOptionFieldData $value */
-        return $value->value ? Craft::t('site', (string)$value->label) : '';
+        return $this->hasValue($value->value) ? Craft::t('site', (string)$value->label) : '';
     }
 
     /**
@@ -571,6 +571,17 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'type' => $this->multi ? Type::listOf(Type::string()) : Type::string(),
             'description' => Craft::t('app', 'The allowed values are [{values}]', ['values' => implode(', ', $values)]),
         ];
+    }
+
+    /**
+     * Returns if passed in data has value.
+     *
+     * @param string|null $value
+     * @return bool
+     */
+    public function hasValue(?string $value): bool
+    {
+        return $value !== null && $value !== '';
     }
 
     /**
@@ -667,7 +678,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = $value->value;
         }
 
-        if ($value === null || $value === '') {
+        if (!$this->hasValue($value)) {
             return $value;
         }
 
