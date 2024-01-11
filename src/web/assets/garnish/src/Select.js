@@ -448,7 +448,7 @@ export default Base.extend(
           this.ignoreClick = true;
         });
 
-        if ($checkbox) {
+        if ($checkbox && $checkbox.length) {
           $checkbox.data('select-item', item);
           this.addListener($checkbox, 'keydown', (event) => {
             if (
