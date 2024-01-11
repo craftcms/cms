@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
+- Fixed a bug where asset edit screens didn’t include the “Open in Image Editor” action item. ([#14125](https://github.com/craftcms/cms/pull/14125))
 
 ## 5.0.0-alpha.5 - 2024-01-09
 
