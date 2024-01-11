@@ -98,5 +98,7 @@
         deleteAction: 'fields/delete-field',
         emptyMessage: Craft.t('app', '{{ emptyMessage }}'),
         tableData: {{ tableData|json_encode|raw }},
+        search: true,
+        searchParams: ['title', 'handle']
     });
 {% endjs %}

@@ -23,10 +23,8 @@
           </admin-table-action-button>
         </div>
 
-        <div
-          v-if="search && !tableData.length"
-          class="flex-grow texticon search icon clearable"
-        >
+        <div v-if="search" class="flex-grow texticon search icon clearable">
+          <span class="texticon-icon search icon" aria-hidden="true"></span>
           <input
             class="text fullwidth"
             type="text"
@@ -35,7 +33,14 @@
             v-model="searchTerm"
             @input="handleSearch"
           />
-          <div class="clear hidden" :title="searchClearTitle"></div>
+          <button
+            v-if="searchTerm.length"
+            class="clear-btn"
+            :title="searchClearTitle"
+            role="button"
+            :aria-label="searchClearTitle"
+            @click="resetSearch"
+          ></button>
         </div>
 
         <div class="vue-admin-table-buttons" v-if="buttons && buttons.length">
@@ -73,7 +78,7 @@
           <vuetable
             ref="vuetable"
             :append-params="appendParams"
-            :api-mode="apiUrl ? true : false"
+            :api-mode="isApiMode"
             :api-url="apiUrl"
             :css="tableCss"
             :data="tableData"
@@ -402,6 +407,16 @@
         type: Boolean,
         default: false,
       },
+      searchClear: {
+        type: String,
+        default: Craft.t('app', 'Clear'),
+      },
+      searchParams: {
+        type: Array,
+        default: () => {
+          return [];
+        },
+      },
       searchPlaceholder: {
         type: String,
         default: Craft.t('app', 'Search'),
@@ -458,8 +473,8 @@
         dragging: false,
         isEmpty: false,
         isLoading: true,
-        searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
-        searchTerm: null,
+        rows: [],
+        searchTerm: '',
         selectAll: null,
         sortable: null,
         tableBodySelector: '.vuetable-body',
@@ -504,6 +519,18 @@
           !this.tableDataEndpoint
         ) {
           this.$emit('data', this.tableData);
+
+          this.$nextTick(() => {
+            var tableData = this.$refs.vuetable.tableData;
+            tableData.forEach((row, index) => {
+              if (this.rows[index] == undefined) {
+                let $el = this.$refs.vuetable.$el.querySelector(
+                  '[item-index="' + index + '"]'
+                );
+                this.rows[index] = $el;
+              }
+            });
+          });
         }
 
         this.isLoading = false;
@@ -616,8 +643,39 @@
       },
 
       handleSearch: debounce(function () {
-        this.reload();
-      }, 350),
+        if (!this.isApiMode && this.tableData.length) {
+          let tableData = this.$refs.vuetable.tableData;
+          let searchTerm = this.searchTerm.toLowerCase();
+
+          tableData.forEach((row, index) => {
+            let includes = false;
+
+            this.searchParams.some((param) => {
+              return Object.entries(row).some(([key, value]) => {
+                if (key === param && value.toLowerCase().includes(searchTerm)) {
+                  includes = true;
+                  return includes;
+                }
+              });
+            });
+
+            if (!includes) {
+              this.rows[index].classList.add('hidden');
+            } else {
+              this.rows[index].classList.remove('hidden');
+            }
+          });
+        } else {
+          this.reload();
+        }
+      }, 200),
+
+      resetSearch() {
+        this.searchTerm = '';
+        this.rows.forEach((row) => {
+          row.classList.remove('hidden');
+        });
+      },
 
       handleSelectAll() {
         var tableData = this.$refs.vuetable.tableData;
@@ -770,6 +828,10 @@
         }
 
         return '';
+      },
+
+      isApiMode() {
+        return this.apiUrl ? true : false;
       },
 
       apiUrl() {
@@ -933,12 +995,16 @@
         return columns;
       },
 
+      searchClearTitle() {
+        return Craft.escapeHtml(this.searchClear);
+      },
+
       searchPlaceholderText() {
         return Craft.escapeHtml(this.searchPlaceholder);
       },
 
       showToolbar() {
-        return this.actions.length || (this.search && !this.tableData.length);
+        return this.actions.length || this.search;
       },
 
       showFooter() {

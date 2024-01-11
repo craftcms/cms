@@ -62,5 +62,7 @@ new Craft.VueAdminTable({
     deleteConfirmationMessage: Craft.t('app', 'Are you sure you want to delete “{name}” and all entries of that type?'),
     emptyMessage: Craft.t('app', 'No entry types exist yet.'),
     tableData: {{ tableData|json_encode|raw }},
+    search: true,
+    searchParams: ['title', 'handle'],
 });
 {% endjs %}
