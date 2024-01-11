@@ -456,7 +456,7 @@ export default Base.extend(
               event.keyCode === Garnish.RETURN_KEY
             ) {
               event.preventDefault();
-              this.onCheckboxKeypress(event);
+              this.onCheckboxActivate(event);
             }
           });
         }
