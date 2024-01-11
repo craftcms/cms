@@ -19,6 +19,7 @@
 - Improved checkbox-style deselection behavior for control panel items, to account for double-clicks. 
 - Table views are no longer available for element indexes on mobile.
 - Address conditions now have “Address Line 1”, “Address Line 2”, “Administrative Area”, “Country”, “Dependent Locality”, “First Name”, “Full Name”, “Last Name”, “Locality”, “Organization Tax ID”, “Organization”, “Postal Code”, and “Sorting Code” rules.
+- Added live conditional field support to user edit pages. ([#14115](https://github.com/craftcms/cms/pull/14115))
 
 ### User Management
 - Added two-step verification support, with built-in “Authenticator App” (TOTP) and “Recovery Codes” methods. Additional methods can be provided by plugins.

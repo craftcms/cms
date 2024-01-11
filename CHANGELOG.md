@@ -6,7 +6,7 @@
 
 ## 5.0.0-alpha.5 - 2024-01-09
 
-- Added live conditional field support to asset edit pages, as well as asset, user, and tag slideouts. ([#14115](https://github.com/craftcms/cms/pull/14115))
+- Added live conditional field support to asset and user edit pages, as well as all element slideouts. ([#14115](https://github.com/craftcms/cms/pull/14115))
 - It’s now possible to delete volume folders using the “Delete” asset action. ([#13086](https://github.com/craftcms/cms/discussions/13086))
 - The “Save as a new entry” action is now available to all users with the “Create entries” permission, and will create a new unpublished draft rather than a fully-saved entry. ([#9577](https://github.com/craftcms/cms/issues/9577), [#10244](https://github.com/craftcms/cms/discussions/10244))
 - Custom field condition rules now show their field handles, for users with the “Show field handles in edit forms” preference enabled. ([#13300](https://github.com/craftcms/cms/pull/13300))
