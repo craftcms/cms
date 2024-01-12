@@ -143,10 +143,10 @@ class Db
         }
 
         // If this isn’t a JSON column and the value is an object or array, JSON-encode it
-        if (
-            !in_array($columnType, [Schema::TYPE_JSON, YiiPgqslSchema::TYPE_JSONB]) &&
-            (is_object($value) || is_array($value))
-        ) {
+        if (is_object($value) || is_array($value)) {
+            if (in_array($columnType, [Schema::TYPE_JSON, YiiPgqslSchema::TYPE_JSONB])) {
+                return ArrayHelper::toArray($value);
+            }
             return Json::encode($value);
         }
 
