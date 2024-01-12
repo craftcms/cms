@@ -63,6 +63,7 @@ new Craft.VueAdminTable({...options...});
 | reorderSuccessMessage     | String   | `Items reordered`                            | Message to be displayed as the success notice after successful reorder.                                                                                  |
 | reorderFailMessage        | String   | `Couldn’t reorder items`                     | Message to be displayed as the fail notice after reorder failure.                                                                                        |
 | search                    | Bool     | `false`                                      | Whether or not to show the search field.                                                                                                                 |
+| searchClear               | String   | `Clear`                                      | Title of the button that clears search value.                                                                                                            |
 | searchPlaceholder         | String   | `Search`                                     | Search placeholder text.                                                                                                                                 |
 | tableData                 | Array    | `null`                                       | Array of objects used to populate the table data for data mode.                                                                                          |
 | tableDataEndpoint         | String   | `null`                                       | Endpoint for api mode to retrieve table data, pagination and table metadata (e.g. total count).                                                          |
@@ -375,7 +376,7 @@ Action buttons are provided as an array of objects and come in two varieties, a 
 | icon (optional) | icon to show in the top level button                         |
 | actions         | array of actions for use in the dropdown when the button is clicked (spec below) |
 
-####Sub action buttons
+#### Sub action buttons
 
 | Name          | Type   | Description                                                  |
 | ------------- | ------ | ------------------------------------------------------------ |

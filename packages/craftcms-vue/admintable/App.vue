@@ -35,7 +35,14 @@
             v-model="searchTerm"
             @input="handleSearch"
           />
-          <div class="clear hidden" :title="searchClearTitle"></div>
+          <button
+            v-if="searchTerm.length"
+            class="clear-btn"
+            :title="searchClearTitle"
+            role="button"
+            :aria-label="searchClearTitle"
+            @click="resetSearch"
+          ></button>
         </div>
 
         <div class="vue-admin-table-buttons" v-if="buttons && buttons.length">
@@ -73,7 +80,7 @@
           <vuetable
             ref="vuetable"
             :append-params="appendParams"
-            :api-mode="apiUrl ? true : false"
+            :api-mode="isApiMode"
             :api-url="apiUrl"
             :css="tableCss"
             :data="tableData"
@@ -402,6 +409,10 @@
         type: Boolean,
         default: false,
       },
+      searchClear: {
+        type: String,
+        default: Craft.t('app', 'Clear'),
+      },
       searchPlaceholder: {
         type: String,
         default: Craft.t('app', 'Search'),
@@ -459,7 +470,7 @@
         isEmpty: false,
         isLoading: true,
         searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
-        searchTerm: null,
+        searchTerm: '',
         selectAll: null,
         sortable: null,
         tableBodySelector: '.vuetable-body',
@@ -619,6 +630,11 @@
         this.reload();
       }, 350),
 
+      resetSearch() {
+        this.searchTerm = '';
+        this.reload();
+      },
+
       handleSelectAll() {
         var tableData = this.$refs.vuetable.tableData;
         let tableLength = tableData.length - this.disabledCheckboxesCount;
@@ -770,6 +786,10 @@
         }
 
         return '';
+      },
+
+      isApiMode() {
+        return this.apiUrl ? true : false;
       },
 
       apiUrl() {
@@ -931,6 +951,10 @@
         }
 
         return columns;
+      },
+
+      searchClearTitle() {
+        return Craft.escapeHtml(this.searchClear);
       },
 
       searchPlaceholderText() {
