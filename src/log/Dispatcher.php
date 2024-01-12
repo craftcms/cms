@@ -34,6 +34,7 @@ class Dispatcher extends \yii\log\Dispatcher
 
     /**
      * @var array Config to pass to each MonologTarget
+     * @deprecated Use createTarget event instead
      * @since 4.0.0
      */
     public array $monologTargetConfig = [];
