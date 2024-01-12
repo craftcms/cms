@@ -512,6 +512,7 @@
 - Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
 - Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
+- Updated Monolog to v3.
 - Updated Axios to 1.6.5.
 - Updated D3 to 7.8.5.
 - Updated Punycode to 2.0.1.
