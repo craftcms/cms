@@ -12,10 +12,6 @@ module.exports = getConfig({
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: path.resolve(pkgDir.sync(), 'node_modules/d3/dist/d3.min.js'),
-            to: 'd3.js',
-          },
-          {
             context: path.resolve(pkgDir.sync(), 'node_modules/d3-format'),
             from: 'locale/*.json',
             to: 'd3-format/',
