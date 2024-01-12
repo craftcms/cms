@@ -1,9 +1,10 @@
 /** global: Craft */
 /** global: Garnish */
+import * as d3 from 'd3';
+
 /**
  * Craft Charts
  */
-
 Craft.charts = {};
 
 // ---------------------------------------------------------------------
@@ -467,7 +468,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
           .data(this.dataTable.rows)
           .enter()
           .append('rect')
-          .attr('class', 'tip-trigger')
+          .attr('class', (d, index) => `tip-trigger tip-trigger-${index}`)
+          .attr('data-index', (d, index) => index)
           .style('fill', 'transparent')
           .style('fill-opacity', '1')
           .attr('width', tipTriggerWidth)
