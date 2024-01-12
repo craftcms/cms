@@ -28,12 +28,10 @@ class ContextProcessor implements ProcessorInterface
 {
     /**
      * @param array $vars The global variables to include {@see \yii\log\Target::$logVars}
-     * @param string $key The key in the record to push context data
      * @param bool $dumpVars Whether to dump vars as a readable, multi-line string in the message
      */
     public function __construct(
         protected array $vars = [],
-        protected string $key = 'context',
         protected bool $dumpVars = false,
     ) {
     }
@@ -102,8 +100,8 @@ class ContextProcessor implements ProcessorInterface
             channel: $record->channel,
             level: $record->level,
             message: $record->message . $message,
-            context: ($this->key === 'context') ? $record->context + $data : $record->context,
-            extra: ($this->key === 'extra') ? $record->extra + $data : $record->extra,
+            context: $record->context + $data,
+            extra: $record->extra,
             formatted: $record->formatted,
         );
     }
