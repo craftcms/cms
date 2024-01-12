@@ -31,7 +31,7 @@
 - Fixed some global header styling issues.
 - Fixed an error that occurred when logged in with an account that didn’t have permission to edit any sites.
 - Fixed a bug where conditionally-added field layout tabs weren’t showing their content.
-- Fixed a bug where nested Matrix entries weren’t always retaining their sort order when applying a draft. ([#14111](https://github.com/craftcms/cms/issues/14111)) 
+- Fixed a bug where nested Matrix entries weren’t always retaining their sort order when applying a draft. ([#14111](https://github.com/craftcms/cms/issues/14111))
 - Added `Craft.FormObserver`. ([#14114](https://github.com/craftcms/cms/pull/14114))
 - Updated `web-auth/webauthn-lib` to ^4.7.
 
