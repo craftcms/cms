@@ -1,5 +1,9 @@
+import $ from 'jquery';
+import * as d3 from 'd3';
+
 /** global: Craft */
 /** global: Garnish */
+/** global: d3FormatLocaleDefinition */
 
 // Use old jQuery prefilter behavior
 // see https://jquery.com/upgrade-guide/3.5/
@@ -2805,8 +2809,8 @@ $.extend($.fn, {
         let $anchor = $btn.closest('.menu--disclosure').length
           ? $btn.closest('.menu--disclosure').data('trigger').$trigger
           : $btn.data('menu')
-          ? $btn.data('menu').$anchor
-          : $btn;
+            ? $btn.data('menu').$anchor
+            : $btn;
 
         let isFullPage = $anchor.parents('.slideout').length == 0;
 
@@ -2814,8 +2818,8 @@ $.extend($.fn, {
           $form = $anchor.attr('data-form')
             ? $('#' + $anchor.attr('data-form'))
             : $btn.attr('data-form')
-            ? $('#' + $btn.attr('data-form'))
-            : $anchor.closest('form');
+              ? $('#' + $btn.attr('data-form'))
+              : $anchor.closest('form');
         } else {
           $form = $anchor.closest('form');
           namespace = $anchor.parents('.slideout').data('cpScreen').namespace;

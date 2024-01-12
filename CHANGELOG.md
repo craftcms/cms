@@ -4,6 +4,10 @@
 
 - Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
 - Fixed a bug where asset edit screens didn’t include the “Open in Image Editor” action item. ([#14125](https://github.com/craftcms/cms/pull/14125))
+- Updated Axios to 1.6.5.
+- Updated D3 to 7.8.5.
+- Updated Punycode to 2.0.1.
+- Updated XRegExp to 5.1.1.
 
 ## 5.0.0-alpha.5 - 2024-01-09
 

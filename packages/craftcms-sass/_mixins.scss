@@ -144,11 +144,14 @@ $mediumFocusColor: $blue500;
 $darkFocusColor: #0f74b1;
 
 // focus rings
-$lightFocusRing: 0 0 0 1px $lightFocusColor,
+$lightFocusRing:
+  0 0 0 1px $lightFocusColor,
   0 0 0 3px transparentize($lightFocusColor, 0.3);
-$mediumFocusRing: 0 0 0 1px $mediumFocusColor,
+$mediumFocusRing:
+  0 0 0 1px $mediumFocusColor,
   0 0 0 3px transparentize($mediumFocusColor, 0.3);
-$darkFocusRing: 0 0 0 1px $darkFocusColor,
+$darkFocusRing:
+  0 0 0 1px $darkFocusColor,
   0 0 0 3px transparentize($darkFocusColor, 0.3);
 
 // selection colors
@@ -171,9 +174,19 @@ $checkboxSize: 16px;
 $radioSize: 16px;
 
 @mixin sans-serif-font {
-  font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI',
-    'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
-    'Helvetica Neue', sans-serif;
+  font-family:
+    system-ui,
+    BlinkMacSystemFont,
+    -apple-system,
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
 }
 
 @mixin fixed-width-font {
@@ -297,7 +310,9 @@ $radioSize: 16px;
 
 @mixin pane {
   background: $white;
-  box-shadow: 0 0 0 1px $grey200, 0 2px 12px transparentize($grey200, 0.5);
+  box-shadow:
+    0 0 0 1px $grey200,
+    0 2px 12px transparentize($grey200, 0.5);
 
   &:focus {
     box-shadow: var(--focus-ring);
@@ -608,7 +623,8 @@ $radioSize: 16px;
   overflow: auto;
   background: $white;
   user-select: none;
-  box-shadow: 0 0 0 1px transparentize($grey900, 0.9),
+  box-shadow:
+    0 0 0 1px transparentize($grey900, 0.9),
     0 5px 20px transparentize($grey900, 0.75);
 }
 
@@ -918,5 +934,9 @@ $radioSize: 16px;
       #{transparentize($grey300, 0.75)} 75%
     );
   background-size: $size $size;
-  background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
+  background-position:
+    0 0,
+    $halfSize 0,
+    $halfSize -#{$halfSize},
+    0 $halfSize;
 }
