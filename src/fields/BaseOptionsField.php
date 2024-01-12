@@ -496,12 +496,15 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var MultiOptionsFieldData|SingleOptionFieldData $value */
         if ($value instanceof SingleOptionFieldData) {
-            return !$this->hasValue($value->value);
+            return $value->value === null || $value->value === '';
         }
 
-        return count($value) === 0;
+        if ($value instanceof MultiOptionsFieldData) {
+            return count($value) === 0;
+        }
+
+        return $value === null || $value === '';
     }
 
     /**
@@ -515,7 +518,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
             foreach ($value as $option) {
                 /** @var OptionData $option */
-                if ($this->hasValue($option->value)) {
+                if (!$this->isValueEmpty($option, $element)) {
                     $labels[] = Craft::t('site', $option->label);
                 }
             }
@@ -524,7 +527,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         /** @var SingleOptionFieldData $value */
-        return $this->hasValue($value->value) ? Craft::t('site', (string)$value->label) : '';
+        return !$this->isValueEmpty($value, $element) ? Craft::t('site', (string)$value->label) : '';
     }
 
     /**
@@ -571,17 +574,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'type' => $this->multi ? Type::listOf(Type::string()) : Type::string(),
             'description' => Craft::t('app', 'The allowed values are [{values}]', ['values' => implode(', ', $values)]),
         ];
-    }
-
-    /**
-     * Returns if passed in data has value.
-     *
-     * @param string|null $value
-     * @return bool
-     */
-    public function hasValue(?string $value): bool
-    {
-        return $value !== null && $value !== '';
     }
 
     /**
@@ -678,7 +670,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = $value->value;
         }
 
-        if (!$this->hasValue($value)) {
+        if ($value === null || $value === '') {
             return $value;
         }
 
