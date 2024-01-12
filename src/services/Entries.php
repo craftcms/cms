@@ -1559,7 +1559,7 @@ SQL;
 
             if ($db->getIsMysql()) {
                 $db->createCommand(<<<SQL
-UPDATE $elementsTable [[elements]], $entriesTable [[entries]] 
+UPDATE $elementsTable [[elements]], $entriesTable [[entries]]
 SET [[elements.dateDeleted]] = '$now',
   [[entries.deletedWithEntryType]] = 1
 WHERE $conditionSql

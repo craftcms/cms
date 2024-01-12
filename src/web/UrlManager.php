@@ -241,7 +241,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         $this->_getMatchedElementRoute($request);
-        return $this->_matchedElement;
+        return $this->_matchedElement ?? false;
     }
 
     /**

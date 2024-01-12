@@ -1071,7 +1071,7 @@ class Html extends \yii\helpers\Html
             $offset = $tag['end'];
         }
     }
-    
+
     /**
      * Returns the contents of a given SVG file.
      *

@@ -900,13 +900,11 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function deleteFileAfterRequest(string $filename): void
     {
-        self::$_filesToBeDeleted[] = $filename;
-
-        if (count(self::$_filesToBeDeleted) === 1) {
-            Craft::$app->onAfterRequest(function() {
-                static::deleteQueuedFiles();
-            });
+        if (empty(self::$_filesToBeDeleted)) {
+            register_shutdown_function([static::class, 'deleteQueuedFiles']);
         }
+
+        self::$_filesToBeDeleted[] = $filename;
     }
 
     /**

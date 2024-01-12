@@ -1701,6 +1701,27 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public function canDuplicateAsDraft(User $user): bool
+    {
+        if (parent::canDuplicate($user)) {
+            return true;
+        }
+
+        $section = $this->getSection();
+
+        if (!$section) {
+            return false;
+        }
+
+        return (
+            $section->type !== Section::TYPE_SINGLE &&
+            $user->can("createEntries:$section->uid")
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function canDelete(User $user): bool
     {
         if (parent::canDelete($user)) {

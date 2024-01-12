@@ -2,18 +2,41 @@
 
 ## Unreleased
 
+- Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
+- Fixed a bug where asset edit screens didn’t include the “Open in Image Editor” action item. ([#14125](https://github.com/craftcms/cms/pull/14125))
+- Updated Axios to 1.6.5.
+- Updated D3 to 7.8.5.
+- Updated Punycode to 2.0.1.
+- Updated XRegExp to 5.1.1.
+
+## 5.0.0-alpha.5 - 2024-01-09
+
+- Added live conditional field support to asset and user edit pages, as well as all element slideouts. ([#14115](https://github.com/craftcms/cms/pull/14115))
 - It’s now possible to delete volume folders using the “Delete” asset action. ([#13086](https://github.com/craftcms/cms/discussions/13086))
+- The “Save as a new entry” action is now available to all users with the “Create entries” permission, and will create a new unpublished draft rather than a fully-saved entry. ([#9577](https://github.com/craftcms/cms/issues/9577), [#10244](https://github.com/craftcms/cms/discussions/10244))
+- Custom field condition rules now show their field handles, for users with the “Show field handles in edit forms” preference enabled. ([#13300](https://github.com/craftcms/cms/pull/13300))
+- Element conditions now include condition rules for fields with duplicate names, for users with the “Show field handles in edit forms” preference enabled. ([#13300](https://github.com/craftcms/cms/pull/13300))
 - Added the `showFirstAndLastNameFields` config setting. ([#14097](https://github.com/craftcms/cms/pull/14097))
 - The `mutex` driver is now set to `yii\mutex\MysqlMutex` or `yii\mutex\PgsqlMutex` by default, once again. ([#14102](https://github.com/craftcms/cms/pull/14102))
+- Added `craft\base\ElementInterface::canDuplicateAsDraft()`.
 - Added `craft\helpers\App::dbMutexConfig()`.
+- Added `craft\services\Elements::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT`.
+- Added `craft\services\Elements::canDuplicateAsDraft()`.
 - `queue/get-job-info` action requests no longer create a mutex lock.
 - `craft\base\MemoizableArray` now supports passing a normalizer method to the constructor, which will be lazily applied to each array item once, only if returned by `all()` or `firstWhere()`. ([#14104](https://github.com/craftcms/cms/pull/14104))
 - `craft\elements\actions\DeleteAssets` is no longer deprecated.
 - `craft\helpers\ArrayHelper::firstWhere()` now has a `$valueKey` argument, which can be passed a variable by reference that should be set to the resulting value’s key in the array.
+- `craft\services\Elements::duplicateElement()` now has an `$asUnpublishedDraft` argument.
 - Deprecated `craft\helpers\App::mutexConfig()`.
 - Fixed a PHP error that occurred when viewing a user’s addresses.
 - Fixed a bug where all field layouts were getting instantiated before the Debug Toolbar had a chance to register its `*` wildcard event
 - Fixed a JavaScript error that occurred when creating a new custom source. ([#14108](https://github.com/craftcms/cms/issues/14108))
+- Fixed a bug where nested entry edit pages weren’t showing validation errors. ([#13975](https://github.com/craftcms/cms/pull/13975))
+- Fixed some global header styling issues.
+- Fixed an error that occurred when logged in with an account that didn’t have permission to edit any sites.
+- Fixed a bug where conditionally-added field layout tabs weren’t showing their content.
+- Fixed a bug where nested Matrix entries weren’t always retaining their sort order when applying a draft. ([#14111](https://github.com/craftcms/cms/issues/14111))
+- Added `Craft.FormObserver`. ([#14114](https://github.com/craftcms/cms/pull/14114))
 - Updated `web-auth/webauthn-lib` to ^4.7.
 
 ## 5.0.0-alpha.4 - 2024-01-02

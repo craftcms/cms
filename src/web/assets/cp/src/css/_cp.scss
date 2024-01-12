@@ -359,8 +359,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   padding: 16px var(--xl);
   border-radius: var(--large-border-radius);
   background-color: hsl(212, 40%, 90%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 0 0 1px hsl(212, 30%, 80%), 0 2px 12px transparentize($grey200, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 0 0 1px hsl(212, 30%, 80%),
+    0 2px 12px transparentize($grey200, 0.5);
   text-align: center;
 }
 
@@ -851,12 +853,14 @@ li.breadcrumb-toggle-wrapper {
     height: 30px;
     max-width: none;
     border-radius: 50%;
-    box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
+    box-shadow:
+      0 0 0 1px transparentize($grey900, 0.95),
       0 0 0 transparentize($grey900, 1);
     transition: box-shadow linear 150ms;
 
     #user-info:hover & {
-      box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
+      box-shadow:
+        0 0 0 1px transparentize($grey900, 0.95),
         0 2px 10px -2px transparentize($grey900, 0.7);
     }
   }
@@ -890,7 +894,8 @@ li.breadcrumb-toggle-wrapper {
     @include pane;
     padding: 10px 14px;
     border-radius: var(--large-border-radius);
-    box-shadow: 0 0 0 1px transparentize($grey1000, 0.85),
+    box-shadow:
+      0 0 0 1px transparentize($grey1000, 0.85),
       0 2px 12px transparentize($grey1000, 0.85);
     --color: var(--notice-color);
 
@@ -952,7 +957,8 @@ li.breadcrumb-toggle-wrapper {
 
   #crumbs:not(.empty) #primary-nav-toggle + nav ul li:first-child,
   #crumbs.empty + .context-menu-container {
-    @include padding-left(var(--padding));
+    @include margin-left(var(--padding));
+    @include padding-left(0);
   }
 }
 
@@ -981,7 +987,9 @@ li.breadcrumb-toggle-wrapper {
   box-sizing: border-box;
   background-color: transparentize($grey300, 1);
   box-shadow: 0 1px 0 transparentize($grey800, 1);
-  transition: background-color linear 100ms, box-shadow linear 100ms;
+  transition:
+    background-color linear 100ms,
+    box-shadow linear 100ms;
 
   body.fixed-header & {
     position: fixed;
@@ -993,7 +1001,9 @@ li.breadcrumb-toggle-wrapper {
 
   @supports (backdrop-filter: blur(10px)) {
     & {
-      transition: background-color linear 100ms, box-shadow linear 100ms,
+      transition:
+        background-color linear 100ms,
+        box-shadow linear 100ms,
         backdrop-filter linear 100ms;
 
       body.fixed-header & {
@@ -1602,7 +1612,9 @@ li.breadcrumb-toggle-wrapper {
           width: toRem(18);
           height: toRem(18);
           word-break: normal;
-          transition: margin-left linear 150ms, margin-right linear 150ms;
+          transition:
+            margin-left linear 150ms,
+            margin-right linear 150ms;
           opacity: 0.85;
 
           &.icon-mask {
@@ -1674,7 +1686,9 @@ li.breadcrumb-toggle-wrapper {
   margin-bottom: var(--l);
   padding: var(--l) var(--xl) var(--xl);
   box-sizing: border-box;
-  box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5);
+  box-shadow:
+    0 0 0 1px #cdd8e4,
+    0 2px 12px rgba(205, 216, 228, 0.5);
   border-radius: var(--large-border-radius);
   background-color: var(--gray-050);
 

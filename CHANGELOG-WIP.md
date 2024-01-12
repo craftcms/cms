@@ -10,14 +10,16 @@
 - Asset edit pages now include quick links to other volumes’ index sources.
 - Assets’ Alternative Text fields are now translatable. ([#11576](https://github.com/craftcms/cms/issues/11576))
 - Entries can now have multiple authors. ([#12380](https://github.com/craftcms/cms/pull/12380))
+- The “Save as a new entry” action is now available to all users with the “Create entries” permission, and will create a new unpublished draft rather than a fully-saved entry. ([#9577](https://github.com/craftcms/cms/issues/9577), [#10244](https://github.com/craftcms/cms/discussions/10244))
 - Entry conditions can now have a “Matrix field” rule. ([#13794](https://github.com/craftcms/cms/discussions/13794))
 - Selected elements within relational fields now include a context menu with “View in a new tab”, “Edit”, and “Remove” options.
 - Selected elements within relational fields now include a dedicated drag handle.
 - Selected assets within Assets fields no longer open the file preview modal when their thumbnail is clicked on. The “Preview file” quick action, or the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut, can be used instead.
 - Improved the styling of element chips.
-- Improved checkbox-style deselection behavior for control panel items, to account for double-clicks. 
+- Improved checkbox-style deselection behavior for control panel items, to account for double-clicks.
 - Table views are no longer available for element indexes on mobile.
 - Address conditions now have “Address Line 1”, “Address Line 2”, “Administrative Area”, “Country”, “Dependent Locality”, “First Name”, “Full Name”, “Last Name”, “Locality”, “Organization Tax ID”, “Organization”, “Postal Code”, and “Sorting Code” rules.
+- Added live conditional field support to user edit pages. ([#14115](https://github.com/craftcms/cms/pull/14115))
 
 ### User Management
 - Added two-step verification support, with built-in “Authenticator App” (TOTP) and “Recovery Codes” methods. Additional methods can be provided by plugins.
@@ -38,6 +40,7 @@
 - Elements within relational fields are no longer focusable at the container level.
 - Relational fields now use the proper list semantics.
 - Improved the accessibility of the login page, login modal, and elevated session modal.
+- Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
 
 ### Administration
 - Field layouts can now designate an Assets field as the source for elements’ thumbnails. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
@@ -48,7 +51,7 @@
 - Entry types are now managed independently of sections.
 - Entry types are no longer required to have a Title Format, if the Title field isn’t shown.
 - Entry types now have a “Show the Slug field” setting. ([#13799](https://github.com/craftcms/cms/discussions/13799))
-- Added the “Addresses” field type. ([#11438](https://github.com/craftcms/cms/discussions/11438)) 
+- Added the “Addresses” field type. ([#11438](https://github.com/craftcms/cms/discussions/11438))
 - Matrix fields now manage nested entries, rather than Matrix blocks. During the upgrade, existing Matrix block types will be converted to entry types; their nested fields will be made global; and Matrix blocks will be converted to entries.
 - Matrix fields now have “Entry URI Format” and “Template” settings for each site.
 - Matrix fields now have a “View Mode” setting, giving admins the choice to display nested entries as cards, inline-editable blocks, or an embedded element index.
@@ -92,7 +95,7 @@
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - Element action triggers’ `validateSelection()` and `activate()` methods are now passed an `elementIndex` argument, with a reference to the trigger’s corresponding element index.
-- Element search scores set on `craft\events\SearchEvent::$scores` by `craft\services\Search::EVENT_AFTER_SEARCH` or `EVENT_BEFORE_SCORE_RESULTS` now must be indexed by element ID and site ID (e.g. `'100-1'`). 
+- Element search scores set on `craft\events\SearchEvent::$scores` by `craft\services\Search::EVENT_AFTER_SEARCH` or `EVENT_BEFORE_SCORE_RESULTS` now must be indexed by element ID and site ID (e.g. `'100-1'`).
 - Added `craft\auth\methods\AuthMethodInterface`.
 - Added `craft\auth\methods\BaseAuthMethod`.
 - Added `craft\auth\methods\RecoveryCodes`.
@@ -107,6 +110,7 @@
 - Added `craft\base\Element::safeActionMenuItems()`.
 - Added `craft\base\Element::shouldValidateTitle()`.
 - Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
+- Added `craft\base\ElementInterface::canDuplicateAsDraft()`.
 - Added `craft\base\ElementInterface::getActionMenuItems()`.
 - Added `craft\base\ElementInterface::getCardBodyHtml()`.
 - Added `craft\base\ElementInterface::getChipLabelHtml()`.
@@ -251,6 +255,8 @@
 - Added `craft\queue\BaseBatchedJob::before()`.
 - Added `craft\queue\BaseBatchedJob::beforeBatch()`.
 - Added `craft\services\Auth`.
+- Added `craft\services\Elements::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT`.
+- Added `craft\services\Elements::canDuplicateAsDraft()`.
 - Added `craft\services\Entries::deleteEntryType()`.
 - Added `craft\services\Entries::deleteEntryTypeById()`.
 - Added `craft\services\Entries::deleteSection()`.
@@ -289,7 +295,7 @@
 - Added `craft\web\CpScreenResponseBehavior::site()`.
 - Added `craft\web\Request::getQueryParamsWithoutPath()`.
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
-- Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added the `getField()`, `getSortOrder()`, and `setOwner()` methods to it. 
+- Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added the `getField()`, `getSortOrder()`, and `setOwner()` methods to it.
 - Renamed `craft\base\Element::EVENT_SET_TABLE_ATTRIBUTE_HTML` to `EVENT_DEFINE_ATTRIBUTE_HTML`.
 - Renamed `craft\base\Element::getHasCheckeredThumb()` to `hasCheckeredThumb()` and made it protected.
 - Renamed `craft\base\Element::getHasRoundedThumb()` to `hasRoundedThumb()` and made it protected.
@@ -351,7 +357,7 @@
 - `craft\services\AssetIndexer::indexFileByListing()` now has a `$volume` argument in place of `$volumeId`.
 - `craft\services\AssetIndexer::indexFolderByListing()` now has a `$volume` argument in place of `$volumeId`.
 - `craft\services\AssetIndexer::storeIndexList()` now has a `$volume` argument in place of `$volumeId`.
-- `craft\services\Elements::duplicateElement()` no longer has a `$trackDuplication` argument.
+- `craft\services\Elements::duplicateElement()` now has an `$asUnpublishedDraft` argument, and no longer has a `$trackDuplication` argument.
 - `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
 - `craft\services\Users::activateUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
@@ -506,3 +512,7 @@
 - Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
 - Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
+- Updated Axios to 1.6.5.
+- Updated D3 to 7.8.5.
+- Updated Punycode to 2.0.1.
+- Updated XRegExp to 5.1.1.

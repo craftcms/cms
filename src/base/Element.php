@@ -3281,6 +3281,15 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function canDuplicateAsDraft(User $user): bool
+    {
+        // if anything, this will be more lenient than canDuplicate()
+        return Craft::$app->getElements()->canDuplicate($this, $user);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function canDelete(User $user): bool
     {
         if ($this instanceof NestedElementInterface) {

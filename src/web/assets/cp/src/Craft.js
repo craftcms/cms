@@ -61,6 +61,7 @@ import './js/ElevatedSessionForm.js';
 import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';
 import './js/FieldLayoutDesigner.js';
+import './js/FormObserver.js';
 import './js/VolumeFolderSelectorModal.js';
 import './js/FieldToggle.js';
 import './js/Grid.js';

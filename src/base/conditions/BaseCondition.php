@@ -456,11 +456,17 @@ JS,
 
         if ($rule) {
             $ruleLabel = $rule->getLabel();
+            $hint = $rule->getLabelHint();
             $groupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
+
             $groupedRuleTypeOptions[$groupLabel] = [
-                ['value' => $ruleValue, 'label' => $ruleLabel],
+                [
+                    'label' => $ruleLabel,
+                    'hint' => $hint,
+                    'value' => $ruleValue,
+                ],
             ];
-            $labelsByGroup[$groupLabel][$ruleLabel] = true;
+            $labelsByGroup[$groupLabel][$hint] = true;
         }
 
         foreach ($selectableRules as $value => $selectableRule) {
@@ -469,10 +475,17 @@ JS,
             } catch (Throwable) {
                 continue;
             }
+            $hint = $selectableRule->getLabelHint();
+            $key = $label . ($hint !== null ? " - $hint" : '');
             $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
-            if (!isset($labelsByGroup[$groupLabel][$label])) {
-                $groupedRuleTypeOptions[$groupLabel][] = compact('value', 'label');
-                $labelsByGroup[$groupLabel][$label] = true;
+
+            if (!isset($labelsByGroup[$groupLabel][$key])) {
+                $groupedRuleTypeOptions[$groupLabel][] = [
+                    'label' => $label,
+                    'hint' => $hint,
+                    'value' => $value,
+                ];
+                $labelsByGroup[$groupLabel][$key] = true;
             }
         }
 
@@ -490,17 +503,30 @@ JS,
                 $optionsHtml .= Html::tag('hr', options: ['class' => 'padded']) .
                     Html::tag('h6', Html::encode($groupLabel), ['class' => 'padded']);
             }
-            ArrayHelper::multisort($groupRuleTypeOptions, 'label');
+            ArrayHelper::multisort($groupRuleTypeOptions, ['label', 'hint']);
             $optionsHtml .=
                 Html::beginTag('ul', ['class' => 'padded']) .
-                implode("\n", array_map(fn(array $option) => Html::beginTag('li') .
-                    Html::a(Html::encode($option['label']), options: [
+                implode("\n", array_map(function(array $option) use ($ruleValue) {
+                    $html = Html::beginTag('li');
+
+                    $label = Html::encode($option['label']);
+                    if ($option['hint'] !== null) {
+                        $label .= ' ' .
+                            Html::tag('span', sprintf('– %s', Html::encode($option['hint'])), [
+                                'class' => 'light',
+                            ]);
+                    }
+
+                    $html .= Html::a($label, options: [
                         'class' => $option['value'] === $ruleValue ? 'sel' : false,
                         'data' => [
                             'value' => $option['value'],
                         ],
-                    ]) .
-                    Html::endTag('li'),
+                    ]);
+                    $html .= Html::endTag('li');
+
+                    return $html;
+                },
                     $groupRuleTypeOptions)) .
                 Html::endTag('ul');
         }

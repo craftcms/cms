@@ -31,9 +31,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     enableAutosave: null,
     lastSerializedValue: null,
-    listeningForChanges: false,
-    pauseLevel: 0,
-    timeout: null,
+    /**
+     * @type {?Craft.FormObserver}
+     */
+    formObserver: null,
     cancelToken: null,
     ignoreFailedRequest: false,
     queue: null,
@@ -263,98 +264,41 @@ Craft.ElementEditor = Garnish.Base.extend(
       return Craft.namespaceId(id, this.namespace);
     },
 
+    get listeningForChanges() {
+      return !!this.formObserver;
+    },
+
+    /**
+     * @deprecated
+     */
+    get pauseLevel() {
+      return this.formObserver?._pauseLevel ?? 0;
+    },
+
     listenForChanges: function () {
-      if (
-        this.listeningForChanges ||
-        this.pauseLevel > 0 ||
-        !this.enableAutosave ||
-        !this.settings.canCreateDrafts
-      ) {
+      if (this.formObserver) {
         return;
       }
 
-      this.listeningForChanges = true;
-
-      // Listen for events on the body when editing a full page form, so we don’t miss events from Live Preview
-      const $target = this.isFullPage ? Garnish.$bod : this.$container;
-
-      // we're now using selectize select_on_focus plugin which clears the dropdown's value on dropdown open;
-      // that triggers a change event which triggers saving a draft and causes conditional fields/tabs to misbehave;
-      // because of that, we are now emitting selectize dropdown open and close events;
-      // we pause listening for changes on dropdown open (it happens before the focus event, so before the value is cleared)
-      // and we resume on dropdown close to register the change in value (if one actually occurred);
-      this.addListener(
-        $target.find('.selectized'),
-        'selectizedropdownopen',
-        (ev) => {
-          this.pause();
-        }
-      );
-
-      this.addListener(
-        $target.find('.selectized'),
-        'selectizedropdownclose',
-        (ev) => {
-          this.resume(false);
-        }
-      );
-
-      this.addListener(
-        $target,
-        'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
-        (ev) => {
-          if ($(ev.target).is(this.statusIcons())) {
-            return;
-          }
-
-          if (this.pauseLevel == 0) {
-            clearTimeout(this.timeout);
-            // If they are typing, wait half a second before checking the form
-            if (['keypress', 'keyup', 'change'].includes(ev.type)) {
-              this.timeout = setTimeout(this.checkForm.bind(this), 500);
-            } else {
-              this.checkForm();
-            }
-          }
-        }
-      );
+      this.formObserver = new Craft.FormObserver(this.$container, () => {
+        this.checkForm();
+      });
     },
 
     stopListeningForChanges: function () {
-      if (!this.listeningForChanges) {
+      if (this.formObserver) {
+        this.formObserver.destroy();
+        this.formObserver = null;
         return;
       }
-
-      this.removeListener(
-        Garnish.$bod,
-        'keypress,keyup,change,focus,blur,click,mousedown,mouseup'
-      );
-      clearTimeout(this.timeout);
-      this.listeningForChanges = false;
     },
 
     pause: function () {
-      this.pauseLevel++;
-      this.stopListeningForChanges();
+      this.formObserver?.pause();
     },
 
     resume: function (checkBeforeListening = true) {
-      if (this.pauseLevel === 0) {
-        throw 'Craft.ElementEditor::resume() should only be called after pause().';
-      }
-
-      // Only actually resume operation if this has been called the same
-      // number of times that pause() was called
-      this.pauseLevel--;
-      if (this.pauseLevel === 0) {
-        if (this.enableAutosave) {
-          // prevent double-calling save draft on resuming after selectize dropdown closed
-          if (checkBeforeListening) {
-            this.checkForm();
-          }
-          this.listenForChanges();
-        }
-      }
+      this.formObserver?.resume();
     },
 
     initForProvisionalDraft: function () {
@@ -661,8 +605,8 @@ Craft.ElementEditor = Garnish.Base.extend(
           typeof status != 'undefined'
             ? status
             : this.settings.siteStatuses.hasOwnProperty(site.id)
-            ? this.settings.siteStatuses[site.id]
-            : true,
+              ? this.settings.siteStatuses[site.id]
+              : true,
         disabled: !!this.settings.revisionId,
       });
 
@@ -1032,11 +976,10 @@ Craft.ElementEditor = Garnish.Base.extend(
         if (!this.enableAutosave) {
           this.preview.on('open', () => {
             this.enableAutosave = true;
-            this.listenForChanges();
+            this.checkForm();
           });
           this.preview.on('close', () => {
             this.enableAutosave = false;
-            this.stopListeningForChanges();
 
             // Hide the status icon if the save was successful
             const $statusIcons = this.statusIcons();
@@ -1045,7 +988,11 @@ Craft.ElementEditor = Garnish.Base.extend(
             }
           });
         }
+        this.preview.on('beforeOpen', () => {
+          this.formObserver?.pause();
+        });
         this.preview.on('close', () => {
+          this.formObserver?.resume();
           if (this.scrollY) {
             window.scrollTo(0, this.scrollY);
             this.scrollY = null;
@@ -1148,19 +1095,11 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.queue.push(
         () =>
           new Promise((resolve, reject) => {
-            // If this isn't a draft and there's no active preview, then there's nothing to check
-            if (
-              this.settings.revisionId ||
-              this.pauseLevel > 0 ||
-              !this.enableAutosave ||
-              !this.settings.canCreateDrafts
-            ) {
+            // If this is a draft, there's nothing to check
+            if (this.settings.revisionId) {
               resolve();
               return;
             }
-
-            clearTimeout(this.timeout);
-            this.timeout = null;
 
             // If we haven't had a chance to fetch the initial data yet, try again in a bit
             if (
@@ -1185,12 +1124,21 @@ Craft.ElementEditor = Garnish.Base.extend(
               return;
             }
 
-            this._saveDraftInternal(data)
-              .then(resolve)
-              .catch((e) => {
-                console.warn('Couldn’t save draft:', e);
-                reject(e);
-              });
+            if (this.enableAutosave && this.settings.canCreateDrafts) {
+              this._saveDraftInternal(data)
+                .then(resolve)
+                .catch((e) => {
+                  console.warn('Couldn’t save draft:', e);
+                  reject(e);
+                });
+            } else {
+              this.updateFieldLayout(data)
+                .then(resolve)
+                .catch((e) => {
+                  console.warn('Couldn’t update field layout:', e);
+                  reject(e);
+                });
+            }
           })
       );
     },
@@ -1288,12 +1236,8 @@ Craft.ElementEditor = Garnish.Base.extend(
           data: preparedData,
         })
           .then((response) => {
-            // capture the new selected tab ID, in case it just changed
-            const newSelectedTabId = this.$contentContainer
-              .children('[data-layout-tab]:not(.hidden)')
-              .data('id');
-
             this._afterSaveDraft();
+            this._afterUpdateFieldLayout(data, selectedTabId, response);
 
             const createdProvisionalDraft = !this.settings.draftId;
 
@@ -1347,17 +1291,19 @@ Craft.ElementEditor = Garnish.Base.extend(
               }
             } else {
               this.settings.draftName = response.data.draftName;
-              Craft.cp.updateContext(
-                response.data.draftName,
-                response.data.creator
-                  ? Craft.t('app', 'Saved {timestamp} by {creator}', {
-                      timestamp: response.data.timestamp,
-                      creator: response.data.creator,
-                    })
-                  : Craft.t('app', 'Saved {timestamp}', {
-                      timestamp: response.data.timestamp,
-                    })
-              );
+              if (this.isFullPage) {
+                Craft.cp.updateContext(
+                  response.data.draftName,
+                  response.data.creator
+                    ? Craft.t('app', 'Saved {timestamp} by {creator}', {
+                        timestamp: response.data.timestamp,
+                        creator: response.data.creator,
+                      })
+                    : Craft.t('app', 'Saved {timestamp}', {
+                        timestamp: response.data.timestamp,
+                      })
+                );
+              }
             }
 
             // Did the controller send us updated preview targets?
@@ -1424,155 +1370,6 @@ Craft.ElementEditor = Garnish.Base.extend(
               );
             }
 
-            // Keep track of whether anything changed while we were waiting.
-            // If not, we can safely update lastSerializedValue after swapping out the fields
-            const noChanges = this.serializeForm(true) === data;
-
-            // Update the visible elements
-            let $allTabContainers = $();
-            const visibleLayoutElements = {};
-            let changedElements = false;
-
-            for (let i = 0; i < response.data.missingElements.length; i++) {
-              const tabInfo = response.data.missingElements[i];
-              let $tabContainer = this.$contentContainer.children(
-                `[data-layout-tab="${tabInfo.uid}"]`
-              );
-
-              if (!$tabContainer.length) {
-                $tabContainer = $('<div/>', {
-                  id: this.namespaceId(tabInfo.id),
-                  class: 'flex-fields',
-                  'data-id': tabInfo.id,
-                  'data-layout-tab': tabInfo.uid,
-                });
-                if (tabInfo.id !== selectedTabId) {
-                  $tabContainer.addClass('hidden');
-                }
-                $tabContainer.appendTo(this.$contentContainer);
-              }
-
-              $allTabContainers = $allTabContainers.add($tabContainer);
-
-              for (let j = 0; j < tabInfo.elements.length; j++) {
-                const elementInfo = tabInfo.elements[j];
-
-                if (elementInfo.html !== false) {
-                  if (!visibleLayoutElements[tabInfo.uid]) {
-                    visibleLayoutElements[tabInfo.uid] = [];
-                  }
-                  visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
-
-                  if (typeof elementInfo.html === 'string') {
-                    const $oldElement = $tabContainer.children(
-                      `[data-layout-element="${elementInfo.uid}"]`
-                    );
-                    const $newElement = $(elementInfo.html);
-                    if ($oldElement.length) {
-                      $oldElement.replaceWith($newElement);
-                    } else {
-                      $newElement.appendTo($tabContainer);
-                    }
-                    Craft.initUiElements($newElement);
-                    changedElements = true;
-                  }
-                } else {
-                  const $oldElement = $tabContainer.children(
-                    `[data-layout-element="${elementInfo.uid}"]`
-                  );
-                  if (
-                    !$oldElement.length ||
-                    !Garnish.hasAttr(
-                      $oldElement,
-                      'data-layout-element-placeholder'
-                    )
-                  ) {
-                    const $placeholder = $('<div/>', {
-                      class: 'hidden',
-                      'data-layout-element': elementInfo.uid,
-                      'data-layout-element-placeholder': '',
-                    });
-
-                    if ($oldElement.length) {
-                      $oldElement.replaceWith($placeholder);
-                    } else {
-                      $placeholder.appendTo($tabContainer);
-                    }
-
-                    changedElements = true;
-                  }
-                }
-              }
-            }
-
-            // Remove any unused tab content containers
-            // (`[data-layout-tab=""]` == unconditional containers, so ignore those)
-            const $unusedTabContainers = this.$contentContainer
-              .children('[data-layout-tab]')
-              .not($allTabContainers)
-              .not('[data-layout-tab=""]');
-            if ($unusedTabContainers.length) {
-              $unusedTabContainers.remove();
-              changedElements = true;
-            }
-
-            // Make the first tab visible if no others are
-            if (!$allTabContainers.filter(':not(.hidden)').length) {
-              $allTabContainers.first().removeClass('hidden');
-            }
-
-            this.settings.visibleLayoutElements = visibleLayoutElements;
-
-            // Update the tabs
-            let tabManager;
-            if (this.isFullPage) {
-              Craft.cp.updateTabs(response.data.tabs);
-              tabManager = Craft.cp.tabManager;
-            } else {
-              this.slideout.updateTabs(response.data.tabs);
-              tabManager = this.slideout.tabManager;
-            }
-
-            // was a new tab selected after the autosave request was kicked off?
-            if (
-              selectedTabId &&
-              newSelectedTabId &&
-              selectedTabId !== newSelectedTabId
-            ) {
-              const $newSelectedTab = tabManager.$tabs.filter(
-                `[data-id="${newSelectedTabId}"]`
-              );
-              if ($newSelectedTab.length) {
-                // if the new tab is visible - switch to it
-                tabManager.selectTab($newSelectedTab);
-              } else {
-                // if the new tab is not visible (e.g. hidden by a condition)
-                // switch to the first tab
-                tabManager.selectTab(tabManager.$tabs.first());
-              }
-            }
-
-            Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendBodyHtml(response.data.bodyHtml);
-
-            // Did any layout elements get added or removed?
-            if (changedElements) {
-              if (response.data.initialDeltaValues) {
-                Object.assign(
-                  this.$container.data('initial-delta-values'),
-                  response.data.initialDeltaValues
-                );
-              }
-
-              if (noChanges) {
-                // Update our record of the last serialized value to avoid a pointless resave
-                this.lastSerializedValue = this.serializeForm(true);
-              }
-            }
-
-            // re-grab dismissible tips, re-attach listener, hide on re-load
-            this.handleDismissibleTips();
-
             // updated the updatedTimestamp values
             this.settings.updatedTimestamp = response.data.updatedTimestamp;
             this.settings.canonicalUpdatedTimestamp =
@@ -1626,6 +1423,84 @@ Craft.ElementEditor = Garnish.Base.extend(
         .addClass('alert-icon');
 
       this.setStatusMessage(this._saveFailMessage());
+    },
+
+    /**
+     * @param {Object} data
+     * @returns {Promise}
+     */
+    updateFieldLayout: function (data) {
+      return new Promise((resolve, reject) => {
+        // Ignore if we're already submitting the main form
+        if (this.submittingForm) {
+          reject('Form already being submitted.');
+          return;
+        }
+
+        this.lastSerializedValue = data;
+        this.cancelToken = axios.CancelToken.source();
+
+        // Prep the data to be saved, keeping track of the first input name for each delta group
+        let modifiedFieldNames = [];
+        let preparedData = this.prepareData(
+          data,
+          !this.settings.isUnpublishedDraft
+            ? (deltaName, params) => {
+                if (params.length) {
+                  modifiedFieldNames.push(
+                    decodeURIComponent(params[0].split('=')[0])
+                  );
+                }
+              }
+            : null
+        );
+
+        const extraData = {
+          [this.namespaceInputName('visibleLayoutElements')]:
+            this.settings.visibleLayoutElements,
+        };
+
+        // Are we editing a provisional draft?
+        if (this.settings.isProvisionalDraft) {
+          extraData[this.namespaceInputName('provisional')] = 1;
+        }
+
+        const selectedTabId = this.$contentContainer
+          .children('[data-layout-tab]:not(.hidden)')
+          .data('id');
+        if (selectedTabId) {
+          extraData[this.namespaceInputName('selectedTab')] = selectedTabId;
+        }
+
+        preparedData += `&${$.param(extraData)}`;
+
+        Craft.sendActionRequest('POST', 'elements/update-field-layout', {
+          cancelToken: this.cancelToken.token,
+          headers: this._saveHeaders,
+          data: preparedData,
+        })
+          .then((response) => {
+            this._afterUpdateFieldLayout(data, selectedTabId, response);
+            resolve();
+          })
+          .catch((e) => {
+            this._afterSaveDraft();
+
+            if (!this.ignoreFailedRequest) {
+              this.failed = true;
+              if (e && e.response) {
+                this.httpStatus = e.response.status;
+                this.httpError = e.response.data
+                  ? e.response.data.message
+                  : null;
+              }
+              this._showFailStatus();
+              reject(e);
+            }
+
+            this.ignoreFailedRequest = false;
+          });
+      });
     },
 
     /**
@@ -1695,6 +1570,156 @@ Craft.ElementEditor = Garnish.Base.extend(
           this.updatePreviewLinkHref($previewLink);
         }
       });
+    },
+
+    _afterUpdateFieldLayout(data, selectedTabId, response) {
+      // Keep track of whether anything changed while we were waiting.
+      // If not, we can safely update lastSerializedValue after swapping out the fields
+      const noChanges = this.serializeForm(true) === data;
+
+      // capture the new selected tab ID, in case it just changed
+      const newSelectedTabId = this.$contentContainer
+        .children('[data-layout-tab]:not(.hidden)')
+        .data('id');
+
+      // Update the visible elements
+      let $allTabContainers = $();
+      const visibleLayoutElements = {};
+      let changedElements = false;
+
+      for (const tabInfo of response.data.missingElements) {
+        let $tabContainer = this.$contentContainer.children(
+          `[data-layout-tab="${tabInfo.uid}"]`
+        );
+
+        if (!$tabContainer.length) {
+          $tabContainer = $('<div/>', {
+            id: this.namespaceId(tabInfo.id),
+            class: 'flex-fields',
+            'data-id': tabInfo.id,
+            'data-layout-tab': tabInfo.uid,
+          });
+          if (tabInfo.id !== selectedTabId) {
+            $tabContainer.addClass('hidden');
+          }
+          $tabContainer.appendTo(this.$contentContainer);
+        }
+
+        $allTabContainers = $allTabContainers.add($tabContainer);
+
+        for (const elementInfo of tabInfo.elements) {
+          if (elementInfo.html !== false) {
+            if (!visibleLayoutElements[tabInfo.uid]) {
+              visibleLayoutElements[tabInfo.uid] = [];
+            }
+            visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
+
+            if (typeof elementInfo.html === 'string') {
+              const $oldElement = $tabContainer.children(
+                `[data-layout-element="${elementInfo.uid}"]`
+              );
+              const $newElement = $(elementInfo.html);
+              if ($oldElement.length) {
+                $oldElement.replaceWith($newElement);
+              } else {
+                $newElement.appendTo($tabContainer);
+              }
+              Craft.initUiElements($newElement);
+              changedElements = true;
+            }
+          } else {
+            const $oldElement = $tabContainer.children(
+              `[data-layout-element="${elementInfo.uid}"]`
+            );
+            if (
+              !$oldElement.length ||
+              !Garnish.hasAttr($oldElement, 'data-layout-element-placeholder')
+            ) {
+              const $placeholder = $('<div/>', {
+                class: 'hidden',
+                'data-layout-element': elementInfo.uid,
+                'data-layout-element-placeholder': '',
+              });
+
+              if ($oldElement.length) {
+                $oldElement.replaceWith($placeholder);
+              } else {
+                $placeholder.appendTo($tabContainer);
+              }
+
+              changedElements = true;
+            }
+          }
+        }
+      }
+
+      // Remove any unused tab content containers
+      // (`[data-layout-tab=""]` == unconditional containers, so ignore those)
+      const $unusedTabContainers = this.$contentContainer
+        .children('[data-layout-tab]')
+        .not($allTabContainers)
+        .not('[data-layout-tab=""]');
+      if ($unusedTabContainers.length) {
+        $unusedTabContainers.remove();
+        changedElements = true;
+      }
+
+      // Make the first tab visible if no others are
+      if (!$allTabContainers.filter(':not(.hidden)').length) {
+        $allTabContainers.first().removeClass('hidden');
+      }
+
+      this.settings.visibleLayoutElements = visibleLayoutElements;
+
+      // Update the tabs
+      let tabManager;
+      if (this.isFullPage) {
+        Craft.cp.updateTabs(response.data.tabs);
+        tabManager = Craft.cp.tabManager;
+      } else {
+        this.slideout.updateTabs(response.data.tabs);
+        tabManager = this.slideout.tabManager;
+      }
+
+      // was a new tab selected after the request was kicked off?
+      if (
+        selectedTabId &&
+        newSelectedTabId &&
+        selectedTabId !== newSelectedTabId
+      ) {
+        const $newSelectedTab = tabManager.$tabs.filter(
+          `[data-id="${newSelectedTabId}"]`
+        );
+        if ($newSelectedTab.length) {
+          // if the new tab is visible - switch to it
+          tabManager.selectTab($newSelectedTab);
+        } else {
+          // if the new tab is not visible (e.g. hidden by a condition)
+          // switch to the first tab
+          tabManager.selectTab(tabManager.$tabs.first());
+        }
+      }
+
+      Craft.appendHeadHtml(response.data.headHtml);
+      Craft.appendBodyHtml(response.data.bodyHtml);
+
+      // Did any layout elements get added or removed?
+      if (changedElements) {
+        if (response.data.initialDeltaValues) {
+          Object.assign(
+            this.$container.data('initial-delta-values'),
+            response.data.initialDeltaValues
+          );
+        }
+
+        if (noChanges) {
+          // Update our record of the last serialized value to avoid a pointless resave
+          this.lastSerializedValue = this.serializeForm(true);
+        }
+      }
+
+      // re-grab dismissible tips, re-attach listener, hide on re-load
+      this.handleDismissibleTips();
     },
 
     afterUpdate: function (data) {
@@ -2044,8 +2069,10 @@ Craft.ElementEditor = Garnish.Base.extend(
                         !this.settings.isProvisionalDraft
                           ? Craft.t('app', 'draft')
                           : Craft.elementTypeNames[this.settings.elementType]
-                          ? Craft.elementTypeNames[this.settings.elementType][2]
-                          : Craft.t('app', 'element'),
+                            ? Craft.elementTypeNames[
+                                this.settings.elementType
+                              ][2]
+                            : Craft.t('app', 'element'),
                     }),
                     {
                       details: $reloadBtn,

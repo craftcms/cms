@@ -9,6 +9,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     elementSort: null,
     modal: null,
     elementEditor: null,
+    modalFirstOpen: true,
 
     $container: null,
     $form: null,
@@ -638,6 +639,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       if (!this.modal) {
         this.modal = this.createModal();
+        this.modalFirstOpen = false;
       } else {
         this.modal.show();
       }
@@ -651,7 +653,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getModalSettings: function () {
-      return $.extend(
+      const settings = $.extend(
         {
           closeOtherModals: false,
           storageKey: this.modalStorageKey,
@@ -671,6 +673,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
         this.settings.modalSettings
       );
+
+      // make sure the previously-selected source is retained each time the
+      // modal is re-opened
+      if (!this.modalFirstOpen) {
+        settings.preferStoredSource = true;
+      }
+
+      return settings;
     },
 
     getSelectedElementIds: function () {
