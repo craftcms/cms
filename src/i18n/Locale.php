@@ -14,7 +14,6 @@ use NumberFormatter;
 use yii\base\BaseObject;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\helpers\FormatConverter;
 
 /**
  * Stores locale info.
@@ -220,6 +219,12 @@ class Locale extends BaseObject
     public const FORMAT_JUI = 'jui';
 
     /**
+     * @var string Human-readable format
+     * @since 4.3.0
+     */
+    public const FORMAT_HUMAN = 'human';
+
+    /**
      * @var array The languages that use RTL orientation.
      */
     private static array $_rtlLanguages = [
@@ -234,6 +239,19 @@ class Locale extends BaseObject
      * @var string|null The locale ID.
      */
     public ?string $id = null;
+
+    /**
+     * @var string|null The original locale ID, if this is an alias.
+     * @since 5.0.0
+     */
+    public ?string $aliasOf = null;
+
+    /**
+     * @var string|null The locale’s custom display name.
+     * @see getDisplayName()
+     * @see setDisplayName()
+     */
+    private ?string $_displayName = null;
 
     /**
      * @var Formatter|null The locale's formatter.
@@ -333,17 +351,35 @@ class Locale extends BaseObject
     /**
      * Returns the locale name in a given language.
      *
+     * If a custom display name has been set via [[setDisplayName()]],
+     * that will be returned regardless of `$inLocale`.
+     *
      * @param string|null $inLocale
      * @return string
      */
     public function getDisplayName(?string $inLocale = null): string
     {
+        if (isset($this->_displayName)) {
+            return $this->_displayName;
+        }
+
         // If no target locale is specified, default to this locale
         if ($inLocale === null) {
             $inLocale = $this->id;
         }
 
         return \Locale::getDisplayName($this->id, $inLocale);
+    }
+
+    /**
+     * Sets the locale’s display name.
+     *
+     * @param string|null $displayName
+     * @since 5.0.0
+     */
+    public function setDisplayName(?string $displayName): void
+    {
+        $this->_displayName = $displayName;
     }
 
     /**
@@ -370,7 +406,7 @@ class Locale extends BaseObject
         if (!isset($this->_formatter)) {
             $config = [
                 'class' => Formatter::class,
-                'locale' => $this->id,
+                'locale' => $this->aliasOf ?? $this->id,
                 'sizeFormatBase' => 1000,
                 'dateTimeFormats' => [
                     self::LENGTH_SHORT => [
@@ -455,7 +491,7 @@ class Locale extends BaseObject
             $length = self::LENGTH_FULL;
         }
 
-        $formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+        $formatter = new IntlDateFormatter($this->aliasOf ?? $this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
         switch ($length) {
             case self::LENGTH_ABBREVIATED:
@@ -505,7 +541,7 @@ class Locale extends BaseObject
             $length = self::LENGTH_FULL;
         }
 
-        $formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+        $formatter = new IntlDateFormatter($this->aliasOf ?? $this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
         switch ($length) {
             case self::LENGTH_ABBREVIATED:
@@ -585,7 +621,7 @@ class Locale extends BaseObject
      */
     public function getTextAttribute(int $attribute): ?string
     {
-        $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
+        $formatter = new NumberFormatter($this->aliasOf ?? $this->id, NumberFormatter::DECIMAL);
         return $formatter->getTextAttribute($attribute);
     }
 
@@ -598,7 +634,7 @@ class Locale extends BaseObject
      */
     public function getNumberPattern(int $style): ?string
     {
-        $formatter = new NumberFormatter($this->id, $style);
+        $formatter = new NumberFormatter($this->aliasOf ?? $this->id, $style);
         return $formatter->getPattern();
     }
 
@@ -614,7 +650,7 @@ class Locale extends BaseObject
      */
     public function getNumberSymbol(int $symbol): ?string
     {
-        $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
+        $formatter = new NumberFormatter($this->aliasOf ?? $this->id, NumberFormatter::DECIMAL);
         return $formatter->getSymbol($symbol);
     }
 
@@ -627,7 +663,8 @@ class Locale extends BaseObject
     public function getCurrencySymbol(string $currency): string
     {
         // hat tip: https://stackoverflow.com/a/30026774
-        $formatter = new NumberFormatter("$this->id@currency=$currency", NumberFormatter::CURRENCY);
+        $locale = $this->aliasOf ?? $this->id;
+        $formatter = new NumberFormatter("$locale@currency=$currency", NumberFormatter::CURRENCY);
         return $formatter->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
     }
 
@@ -637,7 +674,7 @@ class Locale extends BaseObject
      * @param string $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
      * @param bool $withDate Whether the date should be included in the format.
      * @param bool $withTime Whether the time should be included in the format.
-     * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
+     * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI, ::FORMAT_HUMAN
      * @return string The date/time format
      */
     private function _getDateTimeFormat(string $length, bool $withDate, bool $withTime, string $format): string
@@ -649,9 +686,12 @@ class Locale extends BaseObject
 
             switch ($format) {
                 case self::FORMAT_PHP:
-                    return FormatConverter::convertDateIcuToPhp($icuFormat, $type, $this->id);
+                    return FormatConverter::convertDateIcuToPhp($icuFormat, $type, $this->aliasOf ?? $this->id);
                 case self::FORMAT_JUI:
-                    return FormatConverter::convertDateIcuToJui($icuFormat, $type, $this->id);
+                    return FormatConverter::convertDateIcuToJui($icuFormat, $type, $this->aliasOf ?? $this->id);
+                case self::FORMAT_HUMAN:
+                    $php = FormatConverter::convertDateIcuToPhp($icuFormat, $type, $this->aliasOf ?? $this->id);
+                    return FormatConverter::convertDatePhpToHuman($php);
             }
         }
 
@@ -680,7 +720,7 @@ class Locale extends BaseObject
 
         $dateType = ($withDate ? $length : IntlDateFormatter::NONE);
         $timeType = ($withTime ? $length : IntlDateFormatter::NONE);
-        $formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
+        $formatter = new IntlDateFormatter($this->aliasOf ?? $this->id, $dateType, $timeType);
         $pattern = $formatter->getPattern();
 
         // Use 4-digit years

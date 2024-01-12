@@ -57,6 +57,91 @@ class ImageHelperTest extends TestCase
     }
 
     /**
+     * @param int $expectedWidth
+     * @param int $expectedHeight
+     * @param int $sourceWidth
+     * @param int $sourceHeight
+     * @param int|null $transformWidth
+     * @param int|null $transformHeight
+     * @param string $mode
+     * @param bool $upscale
+     * @return void
+     * @dataProvider targetDimensionsDataProvider
+     */
+    public function testTargetDimensions(
+        int $expectedWidth,
+        int $expectedHeight,
+        int $sourceWidth,
+        int $sourceHeight,
+        ?int $transformWidth,
+        ?int $transformHeight,
+        string $mode,
+        bool $upscale,
+    ): void {
+        self::assertSame([$expectedWidth, $expectedHeight], Image::targetDimensions(
+            $sourceWidth,
+            $sourceHeight,
+            $transformWidth,
+            $transformHeight,
+            $mode,
+            $upscale
+        ));
+    }
+
+    public static function targetDimensionsDataProvider(): array
+    {
+        return [
+            'crop1' => [200, 100, 600, 400, 200, 100, 'crop', true],
+            'crop2' => [200, 100, 60, 40, 200, 100, 'crop', true],
+            'crop3' => [200, 133, 60, 40, 200, null, 'crop', true],
+            'crop4' => [150, 100, 60, 40, null, 100, 'crop', true],
+            'crop5' => [60, 30, 60, 40, 200, 100, 'crop', false],
+            'crop6' => [200, 100, 80, 40, 200, 100, 'crop', true],
+            'crop7' => [80, 40, 80, 40, 200, 100, 'crop', false],
+            'crop8' => [200, 100, 400, 600, 200, 100, 'crop', true],
+            'crop9' => [200, 100, 40, 60, 200, 100, 'crop', true],
+            'crop10' => [40, 20, 40, 60, 200, 100, 'crop', false],
+
+            // https://github.com/craftcms/cms/issues/11837#issuecomment-1249186697
+            'crop11' => [1280, 720, 3600, 2400, 1280, 720, 'crop', false],
+
+            'stretch1' => [200, 100, 600, 400, 200, 100, 'stretch', true],
+            'stretch2' => [200, 100, 60, 40, 200, 100, 'stretch', true],
+            'stretch3' => [200, 133, 60, 40, 200, null, 'stretch', true],
+            'stretch4' => [150, 100, 60, 40, null, 100, 'stretch', true],
+            'stretch5' => [60, 30, 60, 40, 200, 100, 'stretch', false],
+            'stretch6' => [200, 100, 80, 40, 200, 100, 'stretch', true],
+            'stretch7' => [80, 40, 80, 40, 200, 100, 'stretch', false],
+            'stretch8' => [200, 100, 400, 600, 200, 100, 'stretch', true],
+            'stretch9' => [200, 100, 40, 60, 200, 100, 'stretch', true],
+            'stretch10' => [40, 20, 40, 60, 200, 100, 'stretch', false],
+
+            'fit1' => [150, 100, 600, 400, 200, 100, 'fit', true],
+            'fit2' => [150, 100, 60, 40, 200, 100, 'fit', true],
+            'fit3' => [200, 133, 60, 40, 200, null, 'fit', true],
+            'fit4' => [150, 100, 60, 40, null, 100, 'fit', true],
+            'fit5' => [60, 40, 60, 40, 200, 100, 'fit', false],
+            'fit6' => [200, 100, 80, 40, 200, 100, 'fit', true],
+            'fit7' => [80, 40, 80, 40, 200, 100, 'fit', false],
+            'fit8' => [67, 100, 400, 600, 200, 100, 'fit', true],
+            'fit9' => [67, 100, 40, 60, 200, 100, 'fit', true],
+            'fit10' => [40, 60, 40, 60, 200, 100, 'fit', false],
+
+            // https://github.com/craftcms/cms/issues/12023
+            'fit11' => [160, 240, 240, 360, 240, 240, 'fit', false],
+            'fit12' => [240, 160, 360, 240, 240, 240, 'fit', false],
+            'fit13' => [160, 240, 240, 360, 240, 240, 'fit', true],
+            'fit14' => [240, 160, 360, 240, 240, 240, 'fit', true],
+
+            'fill no upscale' => [100, 200, 100, 200, 200, 400, 'fit', false],
+            'fill differing ratios' => [300, 400, 300, 400, 400, 400, 'fit', false],
+            'fill with upscale' => [200, 400, 100, 200, 200, 400, 'fit', true],
+
+            'crop with fill' => [200, 400, 400, 800, 200, 400, 'crop', true],
+        ];
+    }
+
+    /**
      * @dataProvider canManipulateAsImageDataProvider
      * @param bool $expected
      * @param string $extension
@@ -151,7 +236,7 @@ class ImageHelperTest extends TestCase
         Craft::setLogger(
             Stub::make(Logger::class, [
                 'log' => function($message) use ($errorLogMessage) {
-                    self::assertSame($errorLogMessage, $message);
+                    self::assertContains($message, [$errorLogMessage, 'Roll back transaction']);
                 },
             ])
         );
@@ -163,7 +248,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function imageSizeByStreamDataProvider(): array
+    public static function imageSizeByStreamDataProvider(): array
     {
         $dirnameFile3 = dirname(__FILE__, 3);
 
@@ -178,7 +263,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function exceptionTriggeringImageByStreamDataProvider(): array
+    public static function exceptionTriggeringImageByStreamDataProvider(): array
     {
         $dirnameFile3 = dirname(__FILE__, 3);
 
@@ -208,7 +293,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function imageSizeDataProvider(): array
+    public static function imageSizeDataProvider(): array
     {
         return [
             [[960, 640], dirname(__FILE__, 3) . '/_data/assets/files/background.jpg', false],
@@ -221,7 +306,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function canHaveExitDataProvider(): array
+    public static function canHaveExitDataProvider(): array
     {
         return [
             [true, dirname(__FILE__, 3) . '/_data/assets/files/background.jpg'],
@@ -238,7 +323,7 @@ class ImageHelperTest extends TestCase
      * @return array
      * @todo Test empty unpack() function and invalid IHDR chunks and INVALID color value. See coverage for more.
      */
-    public function pngImageInfoDataProvider(): array
+    public static function pngImageInfoDataProvider(): array
     {
         return [
             [
@@ -264,7 +349,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function calculateMissingDimensionDataProvider(): array
+    public static function calculateMissingDimensionDataProvider(): array
     {
         return [
             [[1, 1], 1, 1, 1, 1],
@@ -272,8 +357,8 @@ class ImageHelperTest extends TestCase
             [[4, 2], 0, 2, 4, 2],
             [[2, 1], 2, 0, 4, 2],
             [[4, 2], 0, 0, 4.2891, 2.12321],
-            [[28971, 14342], 28971.251, 0, 4.2891, 2.12321],
-            [[2491031, 1233121], 0, 1233121.123213, 4.2891, 2.12321],
+            [[28971, 14341], 28971.251, 0, 4.2891, 2.12321],
+            [[2491030, 1233121], 0, 1233121.123213, 4.2891, 2.12321],
             [[12, 1233121], 12.12, 1233121.123213, 0, 4324],
         ];
     }
@@ -281,7 +366,7 @@ class ImageHelperTest extends TestCase
     /**
      * @return array
      */
-    public function canManipulateAsImageDataProvider(): array
+    public static function canManipulateAsImageDataProvider(): array
     {
         return [
             [true, 'jpg'],

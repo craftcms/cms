@@ -81,7 +81,7 @@ class MoneyTest extends TestCase
             Craft::$app->getFormattingLocale()->id = $locale;
         }
 
-        $html = $this->field->getTableAttributeHtml($value, new Entry());
+        $html = $this->field->getPreviewHtml($value, new Entry());
 
         self::assertIsString($html);
         self::assertEquals($expected, $html);
@@ -112,7 +112,7 @@ class MoneyTest extends TestCase
     /**
      * @return array[]
      */
-    public function constructorDataProvider(): array
+    public static function constructorDataProvider(): array
     {
         return [
             [
@@ -149,7 +149,7 @@ class MoneyTest extends TestCase
     /**
      * @return array[]
      */
-    public function normalizeValueDataProvider(): array
+    public static function normalizeValueDataProvider(): array
     {
         $freshEntry = new Entry();
         $freshEntry->setIsFresh(true);
@@ -169,7 +169,7 @@ class MoneyTest extends TestCase
     /**
      * @return array[]
      */
-    public function getTableAttributeHtmlDataProvider(): array
+    public static function getTableAttributeHtmlDataProvider(): array
     {
         return [
             [new \Money\Money('100', new Currency('USD')), '$1.00', null],
@@ -181,7 +181,7 @@ class MoneyTest extends TestCase
     /**
      * @return array[]
      */
-    public function serializeValueDataProvider(): array
+    public static function serializeValueDataProvider(): array
     {
         return [
             [null, null],

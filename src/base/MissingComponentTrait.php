@@ -128,7 +128,7 @@ trait MissingComponentTrait
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_special/missing-component', compact(
+        return Craft::$app->getView()->renderTemplate('_special/missing-component.twig', compact(
             'error',
             'showPlugin',
             'isComposerInstalled',

@@ -18,6 +18,8 @@ use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\events\UserGroupPermissionsEvent;
+use craft\events\UserPermissionsEvent;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
@@ -41,6 +43,18 @@ class UserPermissions extends Component
      * @event RegisterUserPermissionsEvent The event that is triggered when registering user permissions.
      */
     public const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
+
+    /**
+     * @event UserPermissionsEvent The event triggered before saving user permissions.
+     * @since 4.3.0
+     */
+    public const EVENT_AFTER_SAVE_USER_PERMISSIONS = 'afterSaveUserPermissions';
+
+    /**
+     * @event UserGroupPermissionsEvent The event triggered before saving group permissions.
+     * @since 4.3.0
+     */
+    public const EVENT_AFTER_SAVE_GROUP_PERMISSIONS = 'afterSaveGroupPermissions';
 
     /**
      * @var string[][]
@@ -203,6 +217,14 @@ class UserPermissions extends Component
         $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
         Craft::$app->getProjectConfig()->set($path, $permissions, "Update permissions for user group “{$group->handle}”");
 
+        // Trigger an afterSaveGroupPermissions event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS, new UserGroupPermissionsEvent([
+                'groupId' => $groupId,
+                'permissions' => $permissions,
+            ]));
+        }
+
         return true;
     }
 
@@ -284,6 +306,14 @@ class UserPermissions extends Component
         // Cache the new permissions
         $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $permissions));
 
+        // Trigger an afterSaveUserPermissions event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_PERMISSIONS)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_USER_PERMISSIONS, new UserPermissionsEvent([
+                'userId' => $userId,
+                'permissions' => $permissions,
+            ]));
+        }
+
         return true;
     }
 
@@ -346,6 +376,7 @@ class UserPermissions extends Component
                 ],
                 'accessCp' => [
                     'label' => Craft::t('app', 'Access the control panel'),
+                    'warning' => Craft::t('app', 'Includes read-only access to user data and most content, via element selector modals and other means.'),
                     'nested' => array_merge([
                         'accessCpWhenSystemIsOff' => [
                             'label' => Craft::t('app', 'Access the control panel when the system is offline'),
@@ -379,7 +410,9 @@ class UserPermissions extends Component
             'heading' => Craft::t('app', 'Users'),
             'permissions' => [
                 'editUsers' => [
-                    'label' => Craft::t('app', 'Edit users'),
+                    'label' => Craft::t('app', 'Edit {type}', [
+                        'type' => User::pluralLowerDisplayName(),
+                    ]),
                     'nested' => array_merge(
                         [
                             'registerUsers' => [
@@ -435,7 +468,7 @@ class UserPermissions extends Component
 
     private function _entryPermissions(array &$permissions): void
     {
-        $sections = Craft::$app->getSections()->getAllSections();
+        $sections = Craft::$app->getEntries()->getAllSections();
 
         if (!$sections) {
             return;
@@ -477,12 +510,19 @@ class UserPermissions extends Component
                 $sectionPermissions = [
                     "viewEntries:$section->uid" => [
                         'label' => Craft::t('app', 'View {type}', ['type' => $pluralType]),
+                        'info' => Craft::t('app', 'Allows viewing existing {type} and creating drafts for them.', [
+                            'type' => $pluralType,
+                        ]),
                         'nested' => [
                             "createEntries:$section->uid" => [
                                 'label' => Craft::t('app', 'Create {type}', ['type' => $pluralType]),
+                                'info' => Craft::t('app', 'Allows creating drafts of new {type}.', ['type' => $pluralType]),
                             ],
                             "saveEntries:$section->uid" => [
                                 'label' => Craft::t('app', 'Save {type}', ['type' => $pluralType]),
+                                'info' => Craft::t('app', 'Allows fully saving canonical {type} (directly or by applying drafts).', [
+                                    'type' => $pluralType,
+                                ]),
                             ],
                             "deleteEntries:$section->uid" => [
                                 'label' => Craft::t('app', 'Delete {type}', ['type' => $pluralType]),

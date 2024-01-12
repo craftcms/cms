@@ -22,8 +22,8 @@ Craft.Tabs = Garnish.Base.extend({
     this.$lastTab = this.$tabs.last();
     this.$selectedTab = this.$tabs.filter('.sel:first');
     this.$focusableTab = this.$tabs.filter('[tabindex=0]:first');
-    this.$menuBtn = this.$container.find('> .menubtn:first').menubtn();
-    this.menu = this.$menuBtn.data('menubtn').menu;
+    this.$menuBtn = this.$container.find('> .menubtn:first').disclosureMenu();
+    this.menu = this.$menuBtn.data('trigger').$container;
 
     // Is there already a tab manager?
     if (this.$container.data('tabs')) {
@@ -42,12 +42,12 @@ Craft.Tabs = Garnish.Base.extend({
         this.addListener($a, 'keydown', (ev) => {
           if ([Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(ev.keyCode)) {
             ev.preventDefault();
-            this.selectTab(ev.currentTarget);
+            this.selectTab(ev.currentTarget, true);
           }
         });
         this.addListener($a, 'click', (ev) => {
           ev.preventDefault();
-          this.selectTab(ev.currentTarget);
+          this.selectTab(ev.currentTarget, true);
         });
       }
 
@@ -94,21 +94,27 @@ Craft.Tabs = Garnish.Base.extend({
       this.updateMenuBtn();
     });
 
-    // Prevent menu options from updating the URL
-    this.menu.$options.on('click', (ev) => {
+    const $options = this.getMenuOptions();
+    this.addListener($options, 'activate', (ev) => {
       const $option = $(ev.currentTarget);
+
+      // Prevent menu options from updating the URL
       const href = $option.attr('href');
       if (href && href.charAt(0) === '#') {
         ev.preventDefault();
       }
-    });
 
-    this.menu.on('optionselect', (ev) => {
-      this.selectTab($(ev.selectedOption).data('id'));
+      // Select tab
+      this.selectTab($option.data('id'));
+      this.$menuBtn.data('trigger').hide();
     });
   },
 
-  selectTab: function (tab) {
+  getMenuOptions: function () {
+    return this.menu.find('a');
+  },
+
+  selectTab: function (tab, focusTab = true) {
     const $tab = this._getTab(tab);
 
     if ($tab[0] === this.$selectedTab[0]) {
@@ -118,17 +124,29 @@ Craft.Tabs = Garnish.Base.extend({
     this.deselectTab();
     this.$selectedTab = $tab.addClass('sel').attr('aria-selected', 'true');
     this.makeTabFocusable($tab);
-    $tab.focus();
+
+    if (focusTab) {
+      $tab.trigger('focus');
+    }
+
     this.scrollToTab($tab);
 
-    this.menu.$options.removeClass('sel');
-    this.menu.$options.filter(`[data-id="${$tab.data('id')}"]`).addClass('sel');
+    this.getMenuOptions().removeClass('sel').removeAttr('aria-current');
+    this.getMenuOptions()
+      .filter(`[data-id="${$tab.data('id')}"]`)
+      .addClass('sel')
+      .attr('aria-current', 'true');
 
     this.trigger('selectTab', {
       $tab: $tab,
     });
 
     $('#content').trigger('scroll');
+
+    const $slideoutContainer = $tab.closest('.slideout-container');
+    if ($slideoutContainer.length) {
+      $slideoutContainer.find('.so-content').trigger('scroll');
+    }
   },
 
   deselectTab: function () {

@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
@@ -20,6 +20,7 @@ use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
 use yii\base\InvalidArgumentException;
+use yii\db\Schema;
 
 /**
  * Number represents a Number field.
@@ -27,7 +28,7 @@ use yii\base\InvalidArgumentException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Number extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -53,9 +54,26 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'int|float|null';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return Schema::TYPE_DECIMAL;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    {
+        $valueSql = static::valueSql($instances);
+        return Db::parseNumericParam($valueSql, $value, columnType: static::dbType());
     }
 
     /**
@@ -157,7 +175,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings',
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings.twig',
             [
                 'field' => $this,
             ]);
@@ -166,15 +184,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
-    {
-        return Db::getNumericalColumnType($this->min, $this->max, $this->decimals);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value === null) {
             if (isset($this->defaultValue) && $this->isFresh($element)) {
@@ -216,7 +226,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
         $formatter = Craft::$app->getFormatter();
@@ -244,7 +254,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
                     }
                 }
             } else {
-                // Override the initial value being set to null by _includes/forms/field
+                // Override the initial value being set to null by CustomField::inputHtml()
                 $view->setInitialDeltaValue($this->handle, [
                     'locale' => Craft::$app->getFormattingLocale()->id,
                     'value' => '',
@@ -257,31 +267,16 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
 
         $js = <<<JS
 (function() {
-    \$('#$namespacedId').on('keydown', ev => {
-        if (
-            !Garnish.isCtrlKeyPressed(ev) &&
-            ![
-                9, // tab,
-                13, // return / enter
-                27, // esc
-                8, 46, // backspace, delete
-                37, 38, 39, 40, // arrows
-                173, 189, 109, // minus, subtract
-                190, 110, // period, decimal
-                188, // comma
-                48, 49, 50, 51, 52, 53, 54, 55, 56, 57, // 0-9
-                96, 97, 98, 99, 100, 101, 102, 103, 104, 105, // numpad 0-9
-            ].includes(ev.which)
-        ) {
-            ev.preventDefault();
-        }
+    const input = \$('#$namespacedId');
+    input.on('input', () => {
+        Craft.filterNumberInputVal(input);
     });
 })();
 JS;
 
         $view->registerJs($js);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input.twig', [
             'id' => $id,
             'describedBy' => $this->describedBy,
             'field' => $this,
@@ -311,7 +306,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if ($value === null) {
             return '';

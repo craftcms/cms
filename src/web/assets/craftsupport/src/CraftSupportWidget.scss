@@ -95,7 +95,7 @@
           }
         }
 
-        h2 {
+        .cs-more-resources-heading {
           margin: 7px 0 14px;
           font-weight: normal;
           text-align: center;
@@ -122,7 +122,13 @@
         .cs-forms {
           position: relative;
 
-          .submit {
+          .cs-button-wrapper {
+            display: grid;
+            gap: var(--s);
+          }
+
+          .submit,
+          .cancel {
             display: block;
             margin: 0 auto;
             max-width: 365px;
@@ -133,6 +139,7 @@
           transition: padding-top linear 100ms;
 
           p {
+            margin: 0;
             text-align: center;
           }
 
@@ -152,7 +159,7 @@
                 text-decoration: none;
               }
 
-              h3 {
+              h4 {
                 text-align: center;
                 margin-bottom: 0;
 
@@ -168,8 +175,10 @@
             }
           }
 
-          .cs-logo-image {
-            margin: 0 auto;
+          .cs-resource-heading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
           }
 
           .cs-icon-resources {

@@ -82,25 +82,25 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        batch: true,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                if ($.inArray(\$selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1) {
+        bulk: true,
+        validateSelection: (selectedItems, elementIndex) => {
+            for (let i = 0; i < selectedItems.length; i++) {
+                if ($.inArray(selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1) {
                     return false;
                 }
             }
             return true;
         },
-        activate: () => {
-            Craft.elementIndex.setIndexBusy();
-            const ids = Craft.elementIndex.getSelectedElementIds();
+        activate: (selectedItems, elementIndex) => {
+            elementIndex.setIndexBusy();
+            const ids = elementIndex.getSelectedElementIds();
             const data = {userId: ids};
             Craft.sendActionRequest('POST', 'users/user-content-summary', {data})
                 .then((response) => {
                     const modal = new Craft.DeleteUserModal(ids, {
                         contentSummary: response.data,
                         onSubmit: () => {
-                            Craft.elementIndex.submitAction($type, Garnish.getPostData(modal.\$container));
+                            elementIndex.submitAction($type, Garnish.getPostData(modal.\$container));
                             modal.hide();
                             return false;
                         },
@@ -108,7 +108,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
                     });                    
                 })
                 .finally(() => {
-                    Craft.elementIndex.setIndexAvailable();
+                    elementIndex.setIndexAvailable();
                 });
         },
     });
@@ -163,14 +163,33 @@ JS,
 
         // Delete the users
         $elementsService = Craft::$app->getElements();
+        $deletedCount = 0;
         foreach ($users as $user) {
             if (!in_array($user->id, $undeletableIds, false)) {
                 $user->inheritorOnDelete = $transferContentTo;
-                $elementsService->deleteElement($user, $this->hard);
+                if ($elementsService->deleteElement($user, $this->hard)) {
+                    $deletedCount++;
+                }
             }
         }
 
-        $this->setMessage(Craft::t('app', 'Users deleted.'));
+        if ($deletedCount !== count($users)) {
+            if ($deletedCount === 0) {
+                $this->setMessage(Craft::t('app', 'Couldn’t delete {type}.', [
+                    'type' => User::pluralLowerDisplayName(),
+                ]));
+            } else {
+                $this->setMessage(Craft::t('app', 'Couldn’t delete all {type}.', [
+                    'type' => User::pluralLowerDisplayName(),
+                ]));
+            }
+
+            return false;
+        }
+
+        $this->setMessage(Craft::t('app', '{type} deleted.', [
+            'type' => User::pluralDisplayName(),
+        ]));
 
         return true;
     }

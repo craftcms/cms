@@ -16,7 +16,7 @@
         v-if="edition.price && edition.price > 0"
         class="tw--mt-8 tw-py-6 tw-text-gray-700"
       >
-        {{ 'Price includes 1 year of updates.' | t('app') }}<br />
+        {{ 'Includes one year of updates.' | t('app') }}<br />
         {{
           '{renewalPrice}/year per site for updates after that.'
             | t('app', {

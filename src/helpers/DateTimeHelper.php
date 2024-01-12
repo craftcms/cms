@@ -12,6 +12,7 @@ use craft\i18n\Locale;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
+use DateTimeInterface;
 use DateTimeZone;
 use Exception;
 use Throwable;
@@ -71,15 +72,16 @@ class DateTimeHelper
      *  - MySQL DATE and DATETIME formats (http://dev.mysql.com/doc/refman/5.1/en/datetime.html)
      *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
      *  - Unix timestamps
-     * - `now`
+     * - `now`/`today`/`tomorrow`/`yesterday` (midnight of the specified relative date)
      *  - An array with at least one of these keys defined: `datetime`, `date`, or `time`. Supported keys include:
-     *      - `date` – a date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format
-     *      - `time` – a time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format
+     *      - `date` – A date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format.
+     *      - `time` – A time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format.
      *      - `datetime` – A timestamp in any of the non-array formats supported by this method
+     *      - `locale` – The locale ID that the date and time were formatted in. Defaults to the app’s current formatting locale.
      *      - `timezone` – A [valid PHP timezone](https://php.net/manual/en/timezones.php). If set, this will override
      *        the assumed timezone per `$assumeSystemTimeZone`.
      *
-     * @param string|int|array|DateTime|null $value The value that should be converted to a DateTime object.
+     * @param string|int|array|DateTimeInterface|null $value The value that should be converted to a DateTime object.
      * @param bool $assumeSystemTimeZone Whether it should be assumed that the value was set in the system timezone if
      * the timezone was not specified. If this is `false`, UTC will be assumed.
      * @param bool $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
@@ -92,6 +94,10 @@ class DateTimeHelper
             return $value;
         }
 
+        if ($value instanceof DateTimeImmutable) {
+            return DateTime::createFromImmutable($value);
+        }
+
         if (!$value) {
             return false;
         }
@@ -101,6 +107,12 @@ class DateTimeHelper
         if (is_array($value)) {
             if (empty($value['datetime']) && empty($value['date']) && empty($value['time'])) {
                 return false;
+            }
+
+            // Did they specify a locale?
+            $locale = Craft::$app->getFormattingLocale();
+            if (!empty($value['locale']) && $value['locale'] !== $locale->id) {
+                $locale = Craft::$app->getI18n()->getLocaleById($value['locale']);
             }
 
             // Did they specify a timezone?
@@ -119,7 +131,7 @@ class DateTimeHelper
             } else {
                 // Did they specify a date?
                 if (!empty($value['date'])) {
-                    [$date, $format] = self::_parseDate($value['date']);
+                    [$date, $format] = self::_parseDate($value['date'], $locale);
                 } else {
                     // Default to the current date
                     $format = 'Y-m-d';
@@ -128,7 +140,7 @@ class DateTimeHelper
 
                 // Did they specify a time?
                 if (!empty($value['time'])) {
-                    [$time, $timeFormat] = self::_parseTime($value['time']);
+                    [$time, $timeFormat] = self::_parseTime($value['time'], $locale);
                     $format .= ' ' . $timeFormat;
                     $date .= ' ' . $time;
                 }
@@ -198,6 +210,7 @@ class DateTimeHelper
      *
      * @param string $timeZone
      * @return string
+     * @deprecated in 4.3.7
      */
     public static function timeZoneAbbreviation(string $timeZone): string
     {
@@ -211,6 +224,7 @@ class DateTimeHelper
      *
      * @param string $timeZone
      * @return string
+     * @deprecated in 4.3.7
      */
     public static function timeZoneOffset(string $timeZone): string
     {
@@ -296,6 +310,170 @@ class DateTimeHelper
         }
 
         return new DateTime('now', $timeZone);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the current day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function today(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::now($timeZone)->setTime(0, 0);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the following day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function tomorrow(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::today($timeZone)->modify('+1 day');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the previous day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function yesterday(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::today($timeZone)->modify('-1 day');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of this week, according to the user’s preferences (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function thisWeek(?DateTimeZone $timeZone = null): DateTime
+    {
+        $today = static::today($timeZone);
+        $dayOfWeek = (int)$today->format('N');
+        if ($dayOfWeek === 7) {
+            $dayOfWeek = 0;
+        }
+        $startDay = static::firstWeekDay();
+
+        // Is today the first day of the week?
+        if ($dayOfWeek === $startDay) {
+            return $today;
+        }
+
+        if ($dayOfWeek > $startDay) {
+            $diff = $dayOfWeek - $startDay;
+        } else {
+            $diff = ($dayOfWeek + 7) - $startDay;
+        }
+
+        return $today->modify("-$diff days");
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of next week, according to the user’s preferences (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function nextWeek(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisWeek($timeZone)->modify('+1 week');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of last week, according to the user’s preferences (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function lastWeek(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisWeek($timeZone)->modify('-1 week');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of this month (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function thisMonth(?DateTimeZone $timeZone = null): DateTime
+    {
+        $today = static::today($timeZone);
+        return $today->setDate((int)$today->format('Y'), (int)$today->format('n'), 1);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of next month (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function nextMonth(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisMonth($timeZone)->modify('+1 month');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of last month (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function lastMonth(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisMonth($timeZone)->modify('-1 month');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of this year (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function thisYear(?DateTimeZone $timeZone = null): DateTime
+    {
+        $today = static::today($timeZone);
+        return $today->setDate((int)$today->format('Y'), 1, 1);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of next year (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function nextYear(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisYear($timeZone)->modify('+1 year');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of last year (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function lastYear(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisYear($timeZone)->modify('-1 year');
     }
 
     /**
@@ -487,9 +665,9 @@ class DateTimeHelper
 
         if (is_numeric($value)) {
             // Use DateTime::diff() so the years/months/days/hours/minutes values are all populated correctly
-            $now = static::now();
-            $then = (clone $now)->modify("+$value seconds");
-            return $then->diff($now);
+            $now = static::now(new DateTimeZone('UTC'));
+            $then = (clone $now)->modify(sprintf('%s%s seconds', $value < 0 ? '-' : '+', abs($value)));
+            return $now->diff($then);
         }
 
         if (is_string($value)) {
@@ -635,23 +813,27 @@ class DateTimeHelper
      * Normalizes and returns a date string along with the format it was set in.
      *
      * @param string $value
+     * @param Locale $locale
      * @return array
      */
-    private static function _parseDate(string $value): array
+    private static function _parseDate(string $value, Locale $locale): array
     {
         $value = trim($value);
 
-        // First see if it's in YYYY-MM-DD or YYYY-MM-DD HH:MM:SS.MU formats
-        if (preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2}\.\d+)?$/', $value, $match)) {
+        // First see if it's in YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, or YYYY-MM-DD HH:MM:SS.MU formats
+        if (preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2}(\.\d+)?)?$/', $value, $match)) {
             $format = 'Y-m-d';
             if (!empty($match[1])) {
-                $format .= ' H:i:s.u';
+                $format .= ' H:i:s';
+                if (!empty($match[2])) {
+                    $format .= '.u';
+                }
             }
             return [$value, $format];
         }
 
         // Get the locale's short date format
-        $format = Craft::$app->getFormattingLocale()->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
+        $format = $locale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
         // Make sure it's a 4-digit year
         $format = StringHelper::replace($format, 'y', 'Y');
@@ -681,9 +863,10 @@ class DateTimeHelper
      * Normalizes and returns a time string along with the format it was set in
      *
      * @param string $value
+     * @param Locale $locale
      * @return array
      */
-    private static function _parseTime(string $value): array
+    private static function _parseTime(string $value, Locale $locale): array
     {
         $value = trim($value);
 
@@ -693,17 +876,30 @@ class DateTimeHelper
         }
 
         // Get the formatting locale's short time format
-        $formattingLocale = Craft::$app->getFormattingLocale();
-        $format = $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
+        $format = $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
         // Replace the localized "AM" and "PM"
-        $am = $formattingLocale->getAMName();
-        $pm = $formattingLocale->getPMName();
+        $am = $locale->getAMName();
+        $pm = $locale->getPMName();
+        $m = [$am, $pm];
 
-        if (preg_match('/(.*)(' . preg_quote($am, '/') . '|' . preg_quote($pm, '/') . ')(.*)/iu', $value, $matches)) {
+        // account for AM/PM names that might be normalized for jQuery Timepicker
+        $amAlt = preg_replace('/[\s.]/', '', $am);
+        $pmAlt = preg_replace('/[\s.]/', '', $pm);
+
+        if ($amAlt !== $am) {
+            $m[] = $amAlt;
+        }
+        if ($pmAlt !== $pm) {
+            $m[] = $pmAlt;
+        }
+
+        $quoted = implode('|', array_map(fn($v) => preg_quote($v, '/'), $m));
+
+        if (preg_match("/(.*)($quoted)(.*)/iu", $value, $matches)) {
             $value = $matches[1] . $matches[3];
 
-            if (mb_strtolower($matches[2]) === mb_strtolower($am)) {
+            if (in_array(mb_strtolower($matches[2]), [mb_strtolower($am), mb_strtolower($amAlt)])) {
                 $value .= 'AM';
             } else {
                 $value .= 'PM';
@@ -712,7 +908,13 @@ class DateTimeHelper
             $format = str_replace('A', '', $format) . 'A';
         }
 
-        return [$value, $format];
+        // replace narrow non-breaking spaces with normal spaces, which are
+        // handled a bit more gracefully by DateTime::createFromFormat()
+        // (see https://github.com/php/php-src/issues/11600)
+        return [
+            str_replace("\u{202f}", ' ', $value),
+            str_replace("\u{202f}", ' ', $format),
+        ];
     }
 
     /**
@@ -724,8 +926,16 @@ class DateTimeHelper
     {
         $value = trim($value);
 
-        if ($value === 'now') {
-            return static::now();
+        $date = match (strtolower($value)) {
+            'now' => static::now(),
+            'today' => static::today(),
+            'tomorrow' => static::tomorrow(),
+            'yesterday' => static::yesterday(),
+            default => null,
+        };
+
+        if ($date !== null) {
+            return $date;
         }
 
         if (preg_match('/^
@@ -741,7 +951,7 @@ class DateTimeHelper
                                 (?:\.\d+)?                       # .s (decimal fraction of a second -- not supported)
                             )?
                             (?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?    # An optional space and AM or PM
-                            (?P<tz>Z|(?P<tzd>[+\-]\d\d\:?\d\d))? # Z or [+ or -]hh(:)ss (UTC or a timezone offset)
+                            (?P<tz>Z|(?P<tzd>[+\-]\d\d\:?\d\d)|([ ]?(?P<tz2>[a-zA-Z]{1,5}))|([ ]?(?P<tz3>(Africa|America|Antarctica|Arctic|Asia|Atlantic|Australia|Europe|Indian|Pacific)\/[\w-]+(\/[\w-]+)?)))? # Z or [+ or -]hh(:)ss or timezone abbreviation or IANA notation timezone
                         )?
                     )?
                 )?$/x', $value, $m)) {
@@ -764,6 +974,12 @@ class DateTimeHelper
                 if (!empty($m['tzd'])) {
                     $format .= str_contains($m['tzd'], ':') ? 'P' : 'O';
                     $date .= $m['tzd'];
+                } elseif (!empty($m['tz2'])) {
+                    $format .= ' e';
+                    $date .= ' ' . static::normalizeTimeZone($m['tz2']);
+                } elseif (!empty($m['tz3'])) {
+                    $format .= ' e';
+                    $date .= ' ' . $m['tz3'];
                 } else {
                     // "Z" = UTC
                     $format .= 'e';
@@ -783,5 +999,17 @@ class DateTimeHelper
         }
 
         return null;
+    }
+
+    /**
+     * Returns the index of the first day of the week (0-6), according to the user’s preferences.
+     *
+     * @return int
+     * @since 4.3.0
+     */
+    public static function firstWeekDay(): int
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        return (int)(($user?->getPreference('weekStartDay')) ?? Craft::$app->getConfig()->getGeneral()->defaultWeekStartDay);
     }
 }

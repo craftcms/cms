@@ -8,6 +8,7 @@
 namespace crafttests\unit\helpers\FileHelper;
 
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use craft\test\TestCase;
 use UnitTester;
 use yii\base\ErrorException;
@@ -95,6 +96,41 @@ class FileHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider absolutePathDataProvider
+     * @param string $expected
+     * @param string $to
+     * @param string|null $from
+     * @param string $ds
+     */
+    public function testAbsolutePath(string $expected, string $to, ?string $from, string $ds): void
+    {
+        self::assertSame($expected, FileHelper::absolutePath($to, $from, $ds));
+    }
+
+    /**
+     * @dataProvider relativePathDataProvider
+     * @param string $expected
+     * @param string $to
+     * @param string|null $from
+     * @param string $ds
+     */
+    public function testRelativePath(string $expected, string $to, ?string $from, string $ds): void
+    {
+        self::assertSame($expected, FileHelper::relativePath($to, $from, $ds));
+    }
+
+    /**
+     * @dataProvider isWithinDataProvider
+     * @param bool $expected
+     * @param string $path
+     * @param string $parentPath
+     */
+    public function testIsWithin(bool $expected, string $path, string $parentPath): void
+    {
+        self::assertSame($expected, FileHelper::isWithin($path, $parentPath));
+    }
+
+    /**
      * @dataProvider isDirectoryEmptyDataProvider
      * @param bool $expected
      * @param string $dir
@@ -144,6 +180,17 @@ class FileHelperTest extends TestCase
                 FileHelper::getMimeType('notafile');
             });
         }
+    }
+
+    /**
+     * @dataProvider getExtensionByMimeTypeDataProvider
+     *
+     * @param string $expected
+     * @param string $mimeType
+     */
+    public function testGetExtensionByMimeType(string $expected, string $mimeType)
+    {
+        self::assertSame($expected, FileHelper::getExtensionByMimeType($mimeType));
     }
 
     /**
@@ -236,9 +283,34 @@ class FileHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider findClosestFileDataProvider
+     */
+    public function testFindClosestFile(string|null|false $expected, string $dir, array $options = [])
+    {
+        if ($expected === false) {
+            $this->expectException(InvalidArgumentException::class);
+            FileHelper::findClosestFile($dir, $options);
+        } else {
+            self::assertSame($expected, FileHelper::findClosestFile($dir, $options));
+        }
+    }
+
+    /**
+     * @dataProvider uniqueNameDataProvider
+     *
+     * @param string $expectedPattern
+     * @param string $baseName
+     */
+    public function testUniqueName(string $expectedPattern, string $baseName): void
+    {
+        $expectedPattern = str_replace('{id}', '[\w\.]{23}', $expectedPattern);
+        self::assertRegExp("/^$expectedPattern$/", FileHelper::uniqueName($baseName));
+    }
+
+    /**
      * @return array
      */
-    public function normalizePathDataProvider(): array
+    public static function normalizePathDataProvider(): array
     {
         return [
             ['Im a string', 'Im a string', DIRECTORY_SEPARATOR],
@@ -258,7 +330,50 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function mimeTypeDataProvider(): array
+    public static function absolutePathDataProvider(): array
+    {
+        return [
+            ['/foo/bar', 'bar', '/foo', '/'],
+            ['/foo/bar', '/foo/bar', null, '/'],
+            ['\\foo\\bar', 'bar', '/foo', '\\'],
+            [FileHelper::normalizePath(getcwd(), '/') . '/foo/bar', 'foo/bar', null, '/'],
+            [FileHelper::normalizePath(getcwd(), '/') . '/baz/foo/bar', 'foo/bar', 'baz', '/'],
+            ['C:/Documents/Newsletters/Summer2018.pdf', 'C:\Documents\Newsletters\Summer2018.pdf', null, '/'],
+            ['C:\Documents\Newsletters\Summer2018.pdf', 'C:\Documents\Newsletters\Summer2018.pdf', null, '\\'],
+            ['C:\Documents\Newsletters\c:\Documents\Newsletters\Summer2018.pdf', 'c:\Documents\Newsletters\Summer2018.pdf', 'C:\Documents\Newsletters', '\\'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function relativePathDataProvider(): array
+    {
+        return [
+            ['bar/baz', '/foo/bar/baz', '/foo', '/'],
+            ['bar\\baz', '/foo/bar/baz', '/foo', '\\'],
+            ['/foo/bar/baz', '/foo/bar/baz', '/test', '/'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function isWithinDataProvider(): array
+    {
+        return [
+            [true, '/foo/bar', '/foo'],
+            [true, 'foo/bar', 'foo'],
+            [true, 'foo/bar', getcwd() . '/foo'],
+            [false, '/foo/bar', '\\foo\\bar'],
+            [false, '/baz', '/foo'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function mimeTypeDataProvider(): array
     {
         return [
             ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
@@ -267,15 +382,15 @@ class FileHelperTest extends TestCase
             ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
             ['image/svg+xml', dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true],
             ['application/xml', dirname(__DIR__, 3) . '/_data/assets/files/random.xml', null, true],
-            [PHP_VERSION_ID >= 80100 ? 'text/html' : 'text/plain', dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, false],
-            [PHP_VERSION_ID >= 80100 ? null : 'directory', __DIR__, null, true],
+            ['text/plain', dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, false],
+            ['directory', __DIR__, null, true],
         ];
     }
 
     /**
      * @return array
      */
-    public function isSvgDataProvider(): array
+    public static function isSvgDataProvider(): array
     {
         return [
             [true, dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true],
@@ -292,7 +407,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isGifDataProvider(): array
+    public static function isGifDataProvider(): array
     {
         return [
             [true, dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true],
@@ -309,7 +424,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isDirectoryEmptyDataProvider(): array
+    public static function isDirectoryEmptyDataProvider(): array
     {
         return [
             [true, __DIR__ . '/sandbox/isdirempty/yes'],
@@ -321,7 +436,18 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function sanitizeFilenameDataProvider(): array
+    public static function getExtensionByMimeTypeDataProvider(): array
+    {
+        return [
+            ['jpg', 'image/jpeg'],
+            ['svg', 'image/svg+xml'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function sanitizeFilenameDataProvider(): array
     {
         return [
             ['notafile', 'notafile', []],
@@ -336,7 +462,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function writeToFileDataProvider(): array
+    public static function writeToFileDataProvider(): array
     {
         $sandboxDir = __DIR__ . '/sandbox/writeto';
 
@@ -345,6 +471,53 @@ class FileHelperTest extends TestCase
             ['content', $sandboxDir . '/notadir/notafile', 'content', [], true, $sandboxDir . '/notadir'],
             ['content', $sandboxDir . '/notafile2', 'content', ['lock' => true]],
 
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function findClosestFileDataProvider(): array
+    {
+        return [
+            [
+                FileHelper::normalizePath(__DIR__ . '/sandbox/singlefile/foo.txt', '/'),
+                __DIR__ . '/sandbox/singlefile',
+            ],
+            [
+                FileHelper::normalizePath(__DIR__ . '/sandbox/singlefile/foo.txt', '/'),
+                __DIR__ . '/sandbox/singlefile/nested',
+                [
+                    'except' => ['ignore*'],
+                ],
+            ],
+            [
+                null,
+                '/',
+                [
+                    'only' => ['nonexistent.txt'],
+                ],
+            ],
+            [
+                false,
+                __DIR__ . '/sandbox/singlefile/nonexistent',
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function uniqueNameDataProvider(): array
+    {
+        $bigStr = StringHelper::randomString(300);
+
+        return [
+            ['{id}', ''],
+            ['foo{id}', 'foo'],
+            ['{id}.ext', '.ext'],
+            ['foo{id}.ext', 'foo.ext'],
+            [sprintf('%s{id}.ext', substr($bigStr, 0, 228)), "$bigStr.ext"],
         ];
     }
 

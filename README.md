@@ -10,35 +10,35 @@ It features:
 
 - An intuitive, user-friendly control panel for content creation and administrative tasks.
 - A clean-slate approach to content modeling that doesn’t make any assumptions about the content you need to manage.
-- An auto-generated [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) that can be consumed for building headless applications.
-- A fast and flexible [templating system](https://craftcms.com/docs/4.x/dev/twig-primer.html) based on Twig for building traditional websites.
+- A fast and flexible [templating system](https://craftcms.com/docs/4.x/dev/twig-primer.html) based on Twig.
+- An auto-generated [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for building headless applications.
 - A powerful [ecommerce platform](https://craftcms.com/commerce) for building bespoke ecommerce experiences.
 - A built-in Plugin Store with hundreds of free and commercial [plugins](https://plugins.craftcms.com/).
-- A robust framework for [module and plugin development](https://craftcms.com/docs/4.x/extend/).
+- A robust [extension framework](https://craftcms.com/docs/4.x/extend/) for advanced customization.
 - An active, vibrant [community](https://craftcms.com/community).
 
-You can learn more about it at [craftcms.com](https://craftcms.com), and documentation is available at [craftcms.com/docs](https://craftcms.com/docs/4.x/).
+You can learn more about it at [craftcms.com](https://craftcms.com), or dive into the documentation at [craftcms.com/docs](https://craftcms.com/docs/4.x/).
 
 ## Tech Specs
 
 Craft is a self-hosted PHP application. It can connect to MySQL and PostgreSQL for content storage. See [Server Requirements](https://craftcms.com/docs/4.x/requirements.html) for more details.
 
-## Popular Resources
+## Resources
 
-- **[Tutorial](https://craftcms.com/docs/getting-started-tutorial/)** – Get set up and learn the basics.
-- **[Documentation](https://craftcms.com/docs/)** – Read the official docs.
-- **[Knowledge Base](https://craftcms.com/knowledge-base)** – Find answers to common problems.
-- **[#craftcms](https://twitter.com/hashtag/craftcms)** – See the latest tweets about Craft.
-- **[Discord](https://craftcms.com/discord)** – Meet the community.
-- **[Stack Exchange](http://craftcms.stackexchange.com/)** – Get help and help others.
-- **[CraftQuest](https://craftquest.io/)** – Watch unlimited video lessons and courses.
-- **[Craft Link List](http://craftlinklist.com/)** – Stay in-the-know.
-- **[nystudio107 Blog](https://nystudio107.com/blog)** – Learn Craft and modern web development.
+### Official
 
----
+- **[Website](https://craftcms.com)** — Welcome to Craft!
+- **[Tutorial](https://craftcms.com/docs/getting-started-tutorial/)** — Build a blog with step-by-step instructions.
+- **[Installation](https://craftcms.com/docs/4.x/installation.html)** — Jump right in with Composer.
+- **[Documentation](https://craftcms.com/docs/)** — Read the official docs.
+- **[Knowledge Base](https://craftcms.com/knowledge-base)** — Find answers to common problems.
+- **[Newsletter](https://craftcms.com/newsletter/subscribe)** — Get official news and community updates.
+- **[Dot All](https://craftcms.com/events)** — Attend our annual conference.
 
-<p>
-<img src="https://github.com/craftcms/cms/workflows/ci/badge.svg?branch=main" alt="Build Status">
-<a href="https://packagist.org/packages/craftcms/cms"><img src="https://img.shields.io/packagist/dt/craftcms/cms.svg?label=downloads" alt="Total Packagist Downloads"></a>
-<a href="https://github.com/craftcms/cms/releases"><img src="https://img.shields.io/github/tag/craftcms/cms.svg?label=stable" alt="Latest Stable Version"></a>
-</p>
+### Community
+
+- **[#craftcms](https://twitter.com/hashtag/craftcms)** — See the latest tweets about Craft.
+- **[Discord](https://craftcms.com/discord)** — Meet the community.
+- **[Stack Exchange](http://craftcms.stackexchange.com/)** — Get help and help others.
+- **[CraftQuest](https://craftquest.io/)** — Watch unlimited video lessons and courses.
+- **[nystudio107 Blog](https://nystudio107.com/blog)** — Learn Craft and modern web development.

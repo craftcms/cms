@@ -1,6 +1,5 @@
 {%- set class = (class ?? [])|explodeClass|merge([
     'select',
-    (disabled ?? false) ? 'disabled' : null,
 ]|filter) %}
 
 {%- set options = options ?? [] %}
@@ -22,11 +21,12 @@
         (toggle ?? false) ? 'fieldtoggle' : null,
     ]|filter,
     name: name ?? false,
+    autocomplete: (autocomplete ?? false),
     autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
     disabled: disabled ?? false,
     aria: {
         describedby: describedBy ?? false,
-        labelledby: labelledBy ?? false,
+        labelledby: (inputAttributes.aria.label ?? false) ? false : (labelledBy ?? false),
     },
     data: {
         'target-prefix': (toggle ?? false) ? (targetPrefix ?? '') : false,

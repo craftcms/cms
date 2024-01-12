@@ -27,15 +27,15 @@ class MissingField extends Field implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn(): bool
+    public static function dbType(): array|string|null
     {
-        return false;
+        return null;
     }
 
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->getPlaceholderHtml();
     }

@@ -90,7 +90,7 @@ class CraftConnector extends Yii2
         $app->set('view', new View());
 
         /** @var Module $module */
-        foreach (Craft::$app->getModules() as $module) {
+        foreach (Craft::$app->getModules(true) as $module) {
             $moduleClass = get_class($module);
             $moduleId = $module->id;
 

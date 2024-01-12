@@ -19,18 +19,30 @@ import './Money.scss';
           .find('.clear-btn');
 
         this.$field.on('focus', $.proxy(this, 'onFocus'));
-        this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
+        this.$field.on('keyup', $.proxy(this, 'onKeyUp'));
+        if (this.$clearBtn) {
+          this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
+        }
 
         if (this.$field.val() != '') {
           this.updateInputMask();
         }
+
+        this.$field.data('money-input', this);
       },
 
       showClearBtn: function () {
+        if (!this.$clearBtn) {
+          return;
+        }
+
         this.$clearBtn.removeClass('hidden');
       },
 
       hideClearBtn: function () {
+        if (!this.$clearBtn) {
+          return;
+        }
         this.$clearBtn.addClass('hidden');
       },
 
@@ -48,6 +60,12 @@ import './Money.scss';
         this.updateInputMask();
       },
 
+      onKeyUp: function () {
+        if (this.$field.val() !== '') {
+          this.$field.removeClass('money-placeholder');
+        }
+      },
+
       removeInputMask: function () {
         this.$field.inputmask('remove');
       },
@@ -56,11 +74,16 @@ import './Money.scss';
         this.showClearBtn();
         const opts = {
           digits: this.settings.decimals,
+          placeholder: this.settings.placeholder,
           groupSeparator: this.settings.groupSeparator,
           radixPoint: this.settings.decimalSeparator,
         };
 
         this.$field.inputmask($.extend(this.settings.maskOptions, opts));
+
+        if (this.$field.val() === '') {
+          this.$field.addClass('money-placeholder');
+        }
       },
     },
     {
@@ -68,6 +91,7 @@ import './Money.scss';
         decimalSeparator: '.',
         groupSeparator: ',',
         decimals: 2,
+        placeholder: '0',
         maskOptions: {
           alias: 'currency',
           autoGroup: false,

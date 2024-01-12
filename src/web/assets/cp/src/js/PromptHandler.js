@@ -48,15 +48,16 @@ Craft.PromptHandler = Garnish.Base.extend({
       prompt.message,
       prompt.choices,
       this._handleBatchPromptSelection.bind(this),
-      remainingInBatch
+      remainingInBatch,
+      prompt.modalSettings
     );
   },
 
   /**
    * Handles a prompt choice selection.
    *
-   * @param choice
-   * @param applyToRemaining
+   * @param {string} choice
+   * @param {boolean} applyToRemaining
    * @private
    */
   _handleBatchPromptSelection: function (choice, applyToRemaining) {
@@ -88,18 +89,26 @@ Craft.PromptHandler = Garnish.Base.extend({
   },
 
   /**
+   * @callback showPromptCallback
+   * @param {string} choice
+   * @param {boolean} applyToRemaining
+   */
+  /**
    * Show the user prompt with a given message and choices, plus an optional "Apply to remaining" checkbox.
    *
    * @param {string} message
-   * @param {object} choices
-   * @param {function} callback
+   * @param {Array} choices
+   * @param {showPromptCallback} callback
    * @param {number} itemsToGo
+   * @param {Object} modalSettings
    */
-  _showPrompt: function (message, choices, callback, itemsToGo) {
+  _showPrompt: function (message, choices, callback, itemsToGo, modalSettings) {
     this._promptCallback = callback;
 
     if (this.modal === null) {
-      this.modal = new Garnish.Modal({closeOtherModals: false});
+      this.modal = new Garnish.Modal(
+        Object.assign({closeOtherModals: false}, modalSettings)
+      );
     }
 
     if (this.$modalContainerDiv === null) {
@@ -201,8 +210,8 @@ Craft.PromptHandler = Garnish.Base.extend({
   /**
    * Handles when a user selects one of the prompt choices.
    *
-   * @param choice
-   * @param applyToRemaining
+   * @param {string} choice
+   * @param {boolean} applyToRemaining
    * @private
    */
   _selectPromptChoice: function (choice, applyToRemaining) {

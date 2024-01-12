@@ -106,7 +106,7 @@ class Drafts extends Component
      *
      * @template T of ElementInterface
      * @param T $canonical The element to create a draft for
-     * @param int $creatorId The user ID that the draft should be attributed to
+     * @param int|null $creatorId The user ID that the draft should be attributed to
      * @param string|null $name The draft name
      * @param string|null $notes The draft notes
      * @param array $newAttributes any attributes to apply to the draft
@@ -116,7 +116,7 @@ class Drafts extends Component
      */
     public function createDraft(
         ElementInterface $canonical,
-        int $creatorId,
+        ?int $creatorId = null,
         ?string $name = null,
         ?string $notes = null,
         array $newAttributes = [],
@@ -164,6 +164,21 @@ class Drafts extends Component
             ];
 
             $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
+
+            // Duplicate nested element ownership
+            Craft::$app->getDb()->createCommand(sprintf(
+                <<<SQL
+INSERT INTO %s ([[elementId]], [[ownerId]], [[sortOrder]])
+SELECT [[o.elementId]], :draftId, [[o.sortOrder]]
+FROM %s AS [[o]]
+WHERE [[o.ownerId]] = :canonicalId
+SQL,
+                Table::ELEMENTS_OWNERS,
+                Table::ELEMENTS_OWNERS,
+            ), [
+                ':draftId' => $draft->id,
+                ':canonicalId' => $canonical->id,
+            ])->execute();
 
             $transaction->commit();
         } catch (Throwable $e) {
@@ -261,6 +276,7 @@ class Drafts extends Component
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         $canonical = $draft->getCanonical(true);
+        $originalDraft = $draft;
 
         // If the canonical element ended up being from a different site than the draft, get the draft in that site
         if ($canonical->siteId != $draft->siteId) {
@@ -295,11 +311,11 @@ class Drafts extends Component
         try {
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the canonical element, but not the draft
-                if (ElementHelper::isOutdated($draft)) {
+                if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
                     $elementsService->mergeCanonicalChanges($draft);
                 }
 
-                // "Duplicate" the draft with the canonical element’s ID, UID, and content ID
+                // "Duplicate" the draft with the canonical element’s ID and UID
                 $newCanonical = $elementsService->updateCanonicalElement($draft, [
                     'revisionNotes' => $draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);
@@ -341,6 +357,12 @@ class Drafts extends Component
             ]));
         }
 
+        // if we were on another site when the applyDraft was triggered,
+        // ensure we return the canonical element for the site we were on
+        if ($newCanonical->siteId !== $originalDraft->siteId) {
+            $newCanonical = $originalDraft->getCanonical();
+        }
+
         return $newCanonical;
     }
 
@@ -372,10 +394,9 @@ class Drafts extends Component
         }
 
         try {
-            if ($draft->hasErrors()) {
+            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
-            Craft::$app->getElements()->saveElement($draft, false);
             Db::delete(Table::DRAFTS, [
                 'id' => $draftId,
             ]);

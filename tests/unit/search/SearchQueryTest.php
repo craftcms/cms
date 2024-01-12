@@ -192,7 +192,7 @@ class SearchQueryTest extends TestCase
     /**
      *
      */
-    public function searchQueryDataProviders(): array
+    public static function searchQueryDataProviders(): array
     {
         // The $searchQueryTerm->term property will not contain the "" double quotes and will have ['phrase'] set to true
         $quotedPhraseConfig = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);

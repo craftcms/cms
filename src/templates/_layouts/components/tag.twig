@@ -1,0 +1,26 @@
+{% set attributes = (attributes ?? {})
+  |merge({
+    style: {
+      'bottom': 'auto',
+      'display': 'inline',
+      'filter': 'none',
+      'height': 'auto',
+      'left': 'auto',
+      'max-height': 'none',
+      'max-width': 'none',
+      'opacity': '1',
+      'position': 'static',
+      'right': 'auto',
+      'top': 'auto',
+      'transform': 'none',
+      'width': 'auto',
+    }
+      |merge(style ?? {})
+      |merge((attribtes.style ?? {})|explodeStyle)
+      |map(v => "#{v} !important")
+  })
+%}
+
+{{- tag(type, attributes|merge({
+  html: content ?? block('content') ?? ''
+})) }}

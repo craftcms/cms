@@ -47,7 +47,7 @@ class RoutesTest extends TestCase
     /**
      * @return array
      */
-    public function saveRouteDataProvider(): array
+    public static function saveRouteDataProvider(): array
     {
         return [
             [

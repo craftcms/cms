@@ -4,7 +4,7 @@ namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseConditionRule;
 use craft\elements\db\ElementQueryInterface;
-use Illuminate\Support\Collection;
+use craft\elements\ElementCollection;
 use yii\base\InvalidConfigException;
 
 /**
@@ -25,20 +25,12 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
     /**
      * @inheritdoc
      */
-    public static function supportsProjectConfig(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function operators(): array
     {
-        return array_filter([
+        return [
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
-        ]);
+        ];
     }
 
     /**
@@ -58,7 +50,7 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
      */
     protected function matchFieldValue($value): bool
     {
-        /** @var ElementQueryInterface|Collection $value */
+        /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             $isEmpty = !$value->exists();
         } else {

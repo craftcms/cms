@@ -1,0 +1,17 @@
+{% macro externalLinkIcon() %}
+    {{ tag('span', {
+        'data-icon': 'external',
+        'role': 'img',
+        'aria-label': 'Opens in a new window'|t('app'),
+    }) }}
+{% endmacro %}
+
+{% macro externalLink(config) %}
+    {% set linkAttributes = {
+        href: config.link,
+        target: '_blank',
+        rel: 'noopener',
+        html: (config.html ?? config.text|e) ~ _self.externalLinkIcon()
+    } %}
+    {{ tag('a', linkAttributes) }}
+{% endmacro %}

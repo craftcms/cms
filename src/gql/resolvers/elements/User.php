@@ -10,10 +10,12 @@ namespace craft\gql\resolvers\elements;
 use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\UserQuery;
+use craft\elements\ElementCollection;
 use craft\elements\User as UserElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Gql as GqlHelper;
+use yii\base\UnknownMethodException;
 
 /**
  * Class User
@@ -65,11 +67,17 @@ class User extends ElementResolver
         }
 
         foreach ($arguments as $key => $value) {
-            $query->$key($value);
+            try {
+                $query->$key($value);
+            } catch (UnknownMethodException $e) {
+                if ($value !== null) {
+                    throw $e;
+                }
+            }
         }
 
         if (!GqlHelper::canQueryUsers()) {
-            return [];
+            return ElementCollection::empty();
         }
 
         return $query;

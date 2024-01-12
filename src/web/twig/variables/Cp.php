@@ -10,20 +10,25 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
+use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidPluginException;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Collection;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -152,7 +157,7 @@ class Cp extends Component
     }
 
     /**
-     * Returns the Craft ID account URL.
+     * Returns the Craft Console account URL.
      *
      * @return string
      */
@@ -215,7 +220,7 @@ class Cp extends Component
             ],
         ];
 
-        if (Craft::$app->getSections()->getTotalEditableSections()) {
+        if (Craft::$app->getEntries()->getTotalEditableSections()) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Entries'),
                 'url' => 'entries',
@@ -343,7 +348,7 @@ class Cp extends Component
         // Figure out which item is selected, and normalize the items
         $path = Craft::$app->getRequest()->getPathInfo();
 
-        if ($path === 'myaccount') {
+        if ($path === 'myaccount' || str_starts_with($path, 'myaccount/')) {
             $path = 'users';
         }
 
@@ -410,6 +415,10 @@ class Cp extends Component
             'iconMask' => '@appicons/users.svg',
             'label' => Craft::t('app', 'Users'),
         ];
+        $settings[$label]['addresses'] = [
+            'iconMask' => '@appicons/location.svg',
+            'label' => Craft::t('app', 'Addresses'),
+        ];
         $settings[$label]['email'] = [
             'iconMask' => '@appicons/envelope.svg',
             'label' => Craft::t('app', 'Email'),
@@ -424,6 +433,10 @@ class Cp extends Component
         $settings[$label]['fields'] = [
             'iconMask' => '@appicons/field.svg',
             'label' => Craft::t('app', 'Fields'),
+        ];
+        $settings[$label]['entry-types'] = [
+            'iconMask' => '@appicons/entry-types.svg',
+            'label' => Craft::t('app', 'Entry Types'),
         ];
         $settings[$label]['sections'] = [
             'iconMask' => '@appicons/newspaper.svg',
@@ -485,7 +498,7 @@ class Cp extends Component
     public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Craftnet request
-        return (Craft::$app->getCache()->get('licenseKeyStatus') !== false);
+        return (Craft::$app->getCache()->get('licenseInfo') !== false);
     }
 
     /**
@@ -496,6 +509,105 @@ class Cp extends Component
     public function getAlerts(): array
     {
         return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
+    }
+
+    /**
+     * Returns info about the active trials.
+     *
+     * @return array|null
+     * @since 4.4.15
+     */
+    public function trialInfo(): ?array
+    {
+        $cache = Craft::$app->getCache();
+        $updatesService = Craft::$app->getUpdates();
+
+        if (!$cache->exists('licenseInfo') && $updatesService->getIsUpdateInfoCached()) {
+            return null;
+        }
+
+        $resolvableLicenseItems = [];
+        $hasCraftTrial = false;
+        $trialPluginCount = 0;
+        $trialPluginNames = [];
+        $allLicenseInfo = $cache->get('licenseInfo') ?: [];
+        $pluginsService = Craft::$app->getPlugins();
+
+        foreach ($allLicenseInfo as $handle => $licenseInfo) {
+            $isCraft = $handle === 'craft';
+
+            if ($isCraft) {
+                $editions = ['solo', 'pro'];
+                $currentEdition = Craft::$app->getEditionHandle();
+            } else {
+                if (!str_starts_with($handle, 'plugin-')) {
+                    continue;
+                }
+                $handle = StringHelper::removeLeft($handle, 'plugin-');
+
+                try {
+                    $pluginInfo = $pluginsService->getPluginInfo($handle);
+                } catch (InvalidPluginException $e) {
+                    continue;
+                }
+
+                $plugin = $pluginsService->getPlugin($handle);
+                if (!$plugin) {
+                    continue;
+                }
+
+                $pluginName = $plugin->name;
+                $editions = $plugin::editions();
+                $currentEdition = $pluginInfo['edition'];
+            }
+
+            $resolvableLicenseItem = null;
+
+            if ($licenseInfo['status'] === LicenseKeyStatus::Trial->value) {
+                $resolvableLicenseItem = array_filter([
+                    'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                    'plugin' => !$isCraft ? $handle : null,
+                    'licenseId' => $licenseInfo['id'],
+                    'edition' => $currentEdition,
+                ]);
+            } elseif ($licenseInfo['edition'] !== $currentEdition) {
+                $currentEditionIdx = array_search($currentEdition, $editions);
+                $licenseEditionIdx = array_search($licenseInfo['edition'], $editions);
+                if ($currentEditionIdx !== false && $licenseEditionIdx !== false && $currentEditionIdx > $licenseEditionIdx) {
+                    $resolvableLicenseItem = [
+                        'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                        'edition' => $currentEdition,
+                        'licenseId' => $licenseInfo['id'],
+                    ];
+                }
+            }
+
+            if ($resolvableLicenseItem) {
+                $resolvableLicenseItems[] = $resolvableLicenseItem;
+                if ($isCraft) {
+                    $hasCraftTrial = true;
+                } else {
+                    $trialPluginCount++;
+                    /** @phpstan-ignore-next-line */
+                    $trialPluginNames[] = $pluginName;
+                }
+            }
+        }
+
+        if (empty($resolvableLicenseItems)) {
+            return null;
+        }
+
+        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+
+        return [
+            'hasCraftTrial' => $hasCraftTrial,
+            'trialPluginCount' => $trialPluginCount,
+            'trialPluginNames' => $trialPluginNames,
+            'cartUrl' => UrlHelper::urlWithParams("$consoleUrl/cart/new", [
+                'items' => $resolvableLicenseItems,
+            ]),
+        ];
     }
 
     /**
@@ -597,13 +709,11 @@ class Cp extends Component
                     $data['hint'] = $security->redactIfSensitive($var, Craft::getAlias($value, false));
                 }
 
-                $options[] = [
+                $options[] = array_filter([
                     'label' => "$$var",
                     'value' => "$$var",
-                    'data' => [
-                        'data' => !empty($data) ? $data : false,
-                    ],
-                ];
+                    'data' => !empty($data) ? $data : null,
+                ]);
             }
         }
 
@@ -634,9 +744,7 @@ class Cp extends Component
                     'label' => "$$var",
                     'value' => "$$var",
                     'data' => [
-                        'data' => [
-                            'boolean' => $booleanValue,
-                        ],
+                        'boolean' => $booleanValue ? '1' : '0',
                     ],
                 ];
             }
@@ -706,16 +814,32 @@ class Cp extends Component
 
             $offsets[] = $offset;
             $timezoneIds[] = $timezoneId;
-            $options[] = [
+            $options[] = array_filter([
                 'value' => $timezoneId,
                 'label' => $label,
-                'data' => [
-                    'data' => !empty($data) ? $data : false,
-                ],
-            ];
+                'data' => !empty($data) ? $data : null,
+            ]);
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
+
+        return $options;
+    }
+
+    /**
+     * Returns all options for an entry type input.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getEntryTypeOptions(): array
+    {
+        $options = array_map(fn(EntryType $entryType) => [
+            'label' => Craft::t('site', $entryType->name),
+            'value' => $entryType->id,
+        ], Craft::$app->getEntries()->getAllEntryTypes());
+
+        ArrayHelper::multisort($options, 'label');
 
         return $options;
     }
@@ -728,14 +852,14 @@ class Cp extends Component
      */
     public function getFsOptions(): array
     {
-        $options = array_map(fn(FsInterface $fs) => [
-            'label' => $fs->name,
-            'value' => $fs->handle,
-        ], Craft::$app->getFs()->getAllFilesystems());
-
-        ArrayHelper::multisort($options, 'label');
-
-        return $options;
+        return Collection::make(Craft::$app->getFs()->getAllFilesystems())
+            ->filter(fn(FsInterface $fs) => !Assets::isTempUploadFs($fs))
+            ->sortBy(fn(FsInterface $fs) => $fs->name)
+            ->map(fn(FsInterface $fs) => [
+                'label' => $fs->name,
+                'value' => $fs->handle,
+            ])
+            ->all();
     }
 
     /**

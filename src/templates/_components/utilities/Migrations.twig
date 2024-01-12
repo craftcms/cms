@@ -1,5 +1,9 @@
 {% import "_includes/forms" as forms %}
 
+{% if not newMigrations %}
+    <p class="zilch">{{ 'No pending content migrations.'|t('app') }}</p>
+{% endif %}
+
 {% if newMigrations or migrationHistory %}
     {% if newMigrations %}
         <form method="post" accept-charset="UTF-8" action="" class="buttons">
@@ -7,8 +11,6 @@
             {{ actionInput('utilities/apply-new-migrations') }}
             <button type="submit" class="btn submit">{{ 'Apply new migrations'|t('app') }}</button>
         </form>
-    {% else %}
-        <p>{{ 'No pending content migrations.'|t('app') }}</p>
     {% endif %}
 
     <table class="data fullwidth">
@@ -38,6 +40,4 @@
             {% endfor %}
         </tbody>
     </table>
-{% else %}
-    <p>{{ 'No content migrations.'|t('app') }}</p>
 {% endif %}

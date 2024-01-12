@@ -152,6 +152,7 @@ export class FocalPoint {
     let data = {
       assetUid: this.assetUid,
       focal: (this.visible ? this.focalPos : [0.5, 0.5]).join(';'),
+      focalEnabled: this.visible,
     };
 
     this.$button.parents('.buttons').css({opacity: 1});

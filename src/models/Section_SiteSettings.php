@@ -78,7 +78,7 @@ class Section_SiteSettings extends Model
             throw new InvalidConfigException('Section site settings model is missing its section ID');
         }
 
-        if (($this->_section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
+        if (($this->_section = Craft::$app->getEntries()->getSectionById($this->sectionId)) === null) {
             throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
         }
 

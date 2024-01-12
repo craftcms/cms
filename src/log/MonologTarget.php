@@ -44,7 +44,7 @@ class MonologTarget extends PsrTarget
     /**
      * @var bool
      */
-    protected bool $allowLineBreaks;
+    protected bool $allowLineBreaks = false;
 
     /**
      * @var string
@@ -81,15 +81,12 @@ class MonologTarget extends PsrTarget
     protected ?ProcessorInterface $processor = null;
 
     /**
-     * @var Logger|null $logger
-     */
-    protected $logger;
-
-    /**
      * @inheritdoc
      */
     public function init(): void
     {
+        parent::init();
+
         $this->formatter = $this->formatter ?? new LineFormatter(
             format: "%datetime% [%channel%.%level_name%] [%extra.yii_category%] %message% %context% %extra%\n",
             dateFormat: 'Y-m-d H:i:s',
@@ -104,6 +101,7 @@ class MonologTarget extends PsrTarget
      */
     public function getLogger(): Logger
     {
+        /** @var Logger */
         return $this->logger;
     }
 
@@ -129,14 +127,16 @@ class MonologTarget extends PsrTarget
             return;
         }
 
-        $this->logger->pushProcessor(new ContextProcessor(
+        /** @var Logger $logger */
+        $logger = $this->logger;
+        $logger->pushProcessor(new ContextProcessor(
             vars: $this->logVars,
             dumpVars: $this->allowLineBreaks,
         ));
 
         // Log at default level, so it doesn't get filtered
-        $this->logger->log($this->level, 'Request context:');
-        $this->logger->popProcessor();
+        $logger->log($this->level, 'Request context:');
+        $logger->popProcessor();
     }
 
     /**

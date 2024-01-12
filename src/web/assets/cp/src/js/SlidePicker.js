@@ -54,6 +54,14 @@
               }
               ev.preventDefault();
               break;
+            case Garnish.HOME_KEY:
+              this.setValue(this.min);
+              ev.preventDefault();
+              break;
+            case Garnish.END_KEY:
+              this.setValue(this.max);
+              ev.preventDefault();
+              break;
           }
         });
       },

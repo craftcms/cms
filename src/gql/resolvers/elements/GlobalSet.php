@@ -7,9 +7,11 @@
 
 namespace craft\gql\resolvers\elements;
 
+use craft\elements\ElementCollection;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use yii\base\UnknownMethodException;
 
 /**
  * Class GlobalSet
@@ -27,13 +29,19 @@ class GlobalSet extends ElementResolver
         $query = GlobalSetElement::find();
 
         foreach ($arguments as $key => $value) {
-            $query->$key($value);
+            try {
+                $query->$key($value);
+            } catch (UnknownMethodException $e) {
+                if ($value !== null) {
+                    throw $e;
+                }
+            }
         }
 
         $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!GqlHelper::canQueryGlobalSets()) {
-            return [];
+            return ElementCollection::empty();
         }
 
         $query->andWhere(['in', 'globalsets.uid', $pairs['globalsets']]);

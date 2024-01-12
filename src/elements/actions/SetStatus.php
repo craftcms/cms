@@ -60,12 +60,20 @@ class SetStatus extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        validateSelection: \$selectedItems => Garnish.hasAttr(\$selectedItems.find('.element'), 'data-savable'),
+        validateSelection: (selectedItems, elementIndex) => {
+            for (let i = 0; i < selectedItems.length; i++) {
+                const element = selectedItems.eq(i).find('.element');
+                if (!Garnish.hasAttr(element, 'data-savable') || Garnish.hasAttr(element, 'data-disallow-status')) {
+                    return false;
+                }
+            }
+            return true;
+        },
     });
 })();
 JS, [static::class]);
 
-        return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger');
+        return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger.twig');
     }
 
     /**

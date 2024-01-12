@@ -29,7 +29,7 @@ class SearchQuery
     private array $_defaultTermOptions;
 
     /**
-     * @var SearchQueryTerm[]|SearchQueryTermGroup[]
+     * @var array<SearchQueryTerm|SearchQueryTermGroup>
      */
     private array $_tokens = [];
 
@@ -56,7 +56,7 @@ class SearchQuery
     /**
      * Returns the tokens.
      *
-     * @return SearchQueryTerm[]|SearchQueryTermGroup[]
+     * @return array<SearchQueryTerm|SearchQueryTermGroup>
      */
     public function getTokens(): array
     {
@@ -94,7 +94,7 @@ class SearchQuery
                     // Set the previous token to a TermGroup, if it’s not already
                     $previousToken = $this->_tokens[$totalTokens - 1];
 
-                    if (!($previousToken instanceof SearchQueryTermGroup)) {
+                    if (!$previousToken instanceof SearchQueryTermGroup) {
                         $previousToken = new SearchQueryTermGroup([$previousToken]);
                         $this->_tokens[$totalTokens - 1] = $previousToken;
                     }

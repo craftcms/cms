@@ -54,8 +54,8 @@ class SearchTest extends TestCase
     public function testSearchElements(array $usernameOrEmailsForResult, array $usernameOrEmailsForQuery, string $searchQuery): void
     {
         // Repackage the dataProvider data into something that can be used by the filter function
-        $result = $this->_usernameEmailArrayToIdList($usernameOrEmailsForResult);
-        $elementIds = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
+        $result = $this->_usernameEmailArrayToScoreKeyList($usernameOrEmailsForResult);
+        $elementIds = array_map(fn(string $key) => explode('-', $key)[0], $this->_usernameEmailArrayToScoreKeyList($usernameOrEmailsForQuery));
         $elementQuery = User::find()
             ->id($elementIds ?: null)
             ->search($searchQuery);
@@ -63,8 +63,8 @@ class SearchTest extends TestCase
         // Filter them
         $filtered = array_keys($this->search->searchElements($elementQuery));
 
-        sort($result, SORT_NUMERIC);
-        sort($filtered, SORT_NUMERIC);
+        sort($result, SORT_NATURAL);
+        sort($filtered, SORT_NATURAL);
 
         self::assertSame($result, $filtered);
     }
@@ -101,7 +101,7 @@ class SearchTest extends TestCase
      *
      * @return array
      */
-    public function searchElementsDataProvider(): array
+    public static function searchElementsDataProvider(): array
     {
         return [
             [['user1'], ['user1', 'user2', 'user3', 'user4'], 'user1@crafttest.com'],
@@ -150,19 +150,18 @@ class SearchTest extends TestCase
 
     /**
      * @param array $usernameOrEmails
-     * @param bool $typecastToInt
-     * @return array
+     * @return string[]
      */
-    private function _usernameEmailArrayToIdList(array $usernameOrEmails, bool $typecastToInt = true): array
+    private function _usernameEmailArrayToScoreKeyList(array $usernameOrEmails): array
     {
-        $ids = [];
+        $scoreKeys = [];
         $usersService = Craft::$app->getUsers();
 
         foreach ($usernameOrEmails as $usernameOrEmail) {
-            $userId = $usersService->getUserByUsernameOrEmail($usernameOrEmail)->id;
-            $ids[] = $typecastToInt === true ? (int)$userId : $userId;
+            $user = $usersService->getUserByUsernameOrEmail($usernameOrEmail);
+            $scoreKeys[] = sprintf('%s-%s', $user->id, $user->siteId);
         }
 
-        return $ids;
+        return $scoreKeys;
     }
 }

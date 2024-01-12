@@ -13,6 +13,7 @@ use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
+use craft\errors\MutexException;
 use craft\events\RevisionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -21,7 +22,6 @@ use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
 use Throwable;
 use yii\base\Component;
-use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -35,22 +35,22 @@ use yii\base\InvalidArgumentException;
 class Revisions extends Component
 {
     /**
-     * @event DraftEvent The event that is triggered before a revision is created.
+     * @event RevisionEvent The event that is triggered before a revision is created.
      */
     public const EVENT_BEFORE_CREATE_REVISION = 'beforeCreateRevision';
 
     /**
-     * @event DraftEvent The event that is triggered after a revision is created.
+     * @event RevisionEvent The event that is triggered after a revision is created.
      */
     public const EVENT_AFTER_CREATE_REVISION = 'afterCreateRevision';
 
     /**
-     * @event DraftEvent The event that is triggered before an element is reverted to a revision.
+     * @event RevisionEvent The event that is triggered before an element is reverted to a revision.
      */
     public const EVENT_BEFORE_REVERT_TO_REVISION = 'beforeRevertToRevision';
 
     /**
-     * @event DraftEvent The event that is triggered after an element is reverted to a revision.
+     * @event RevisionEvent The event that is triggered after an element is reverted to a revision.
      */
     public const EVENT_AFTER_REVERT_TO_REVISION = 'afterRevertToRevision';
 
@@ -77,7 +77,7 @@ class Revisions extends Component
         $lockKey = 'revision:' . $canonical->id;
         $mutex = Craft::$app->getMutex();
         if (!$mutex->acquire($lockKey, 3)) {
-            throw new Exception('Could not acquire a lock to save a revision for element ' . $canonical->id);
+            throw new MutexException($lockKey, sprintf('Could not acquire a lock to save a revision for element %s', $canonical->id));
         }
 
         $db = Craft::$app->getDb();
@@ -218,7 +218,7 @@ class Revisions extends Component
             ]));
         }
 
-        // "Duplicate" the revision with the source element’s ID, UID, and content ID
+        // "Duplicate" the revision with the source element’s ID and UID
         $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
             'revisionCreatorId' => $creatorId,
             'revisionNotes' => Craft::t('app', 'Reverted content from revision {num}.', ['num' => $revision->revisionNum]),

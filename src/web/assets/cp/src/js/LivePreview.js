@@ -128,6 +128,7 @@ Craft.LivePreview = Garnish.Base.extend(
       }
 
       this.trigger('beforeEnter');
+      this.trigger('beforeOpen');
 
       $(document.activeElement).trigger('blur');
 
@@ -221,6 +222,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
       this.inPreviewMode = true;
       this.trigger('enter');
+      this.trigger('open');
     },
 
     createToken: function () {
@@ -274,6 +276,7 @@ Craft.LivePreview = Garnish.Base.extend(
       }
 
       this.trigger('beforeExit');
+      this.trigger('beforeClose');
 
       $('html').removeClass('noscroll');
 
@@ -308,6 +311,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
       this.inPreviewMode = false;
       this.trigger('exit');
+      this.trigger('close');
     },
 
     moveFieldsBack: function () {
@@ -477,6 +481,7 @@ Craft.LivePreview = Garnish.Base.extend(
       }
 
       this.updateWidths();
+      this.trigger('drag');
     },
 
     _onDragStop: function () {
@@ -503,6 +508,14 @@ Craft.LivePreview = Garnish.Base.extend(
       previewUrl: null,
       previewAction: null,
       previewParams: {},
+    },
+
+    getActive: function () {
+      for (let preview of Craft.LivePreview.instances) {
+        if (preview.inPreviewMode) {
+          return preview;
+        }
+      }
     },
   }
 );

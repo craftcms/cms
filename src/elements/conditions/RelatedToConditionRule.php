@@ -3,9 +3,9 @@
 namespace craft\elements\conditions;
 
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
+use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\helpers\Cp;
@@ -67,23 +67,25 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     protected function inputHtml(): string
     {
-        return Html::tag('div',
-            Cp::selectHtml([
-                'id' => 'element-type',
-                'name' => 'elementType',
-                'options' => $this->_elementTypeOptions(),
-                'value' => $this->elementType,
-                'inputAttributes' => [
-                    'hx' => [
-                        'post' => UrlHelper::actionUrl('conditions/render'),
+        $id = 'element-type';
+        return Html::hiddenLabel($this->getLabel(), $id) .
+            Html::tag('div',
+                Cp::selectHtml([
+                    'id' => $id,
+                    'name' => 'elementType',
+                    'options' => $this->_elementTypeOptions(),
+                    'value' => $this->elementType,
+                    'inputAttributes' => [
+                        'hx' => [
+                            'post' => UrlHelper::actionUrl('conditions/render'),
+                        ],
                     ],
-                ],
-            ]) .
-            parent::inputHtml(),
-            [
-                'class' => ['flex', 'flex-start'],
-            ]
-        );
+                ]) .
+                parent::inputHtml(),
+                [
+                    'class' => ['flex', 'flex-start'],
+                ]
+            );
     }
 
     /**
@@ -95,7 +97,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             /** @var string|ElementInterface $elementType */
             /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-            if (!is_subclass_of($elementType, BlockElementInterface::class)) {
+            if (!is_subclass_of($elementType, NestedElementInterface::class)) {
                 $options[] = [
                     'value' => $elementType,
                     'label' => $elementType::displayName(),
@@ -137,6 +139,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 
         return $element::find()
             ->id($element->id ?: false)
+            ->site('*')
             ->drafts($element->getIsDraft())
             ->provisionalDrafts($element->isProvisionalDraft)
             ->revisions($element->getIsRevision())

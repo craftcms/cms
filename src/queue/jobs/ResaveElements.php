@@ -8,13 +8,15 @@
 namespace craft\queue\jobs;
 
 use Craft;
+use craft\base\Batchable;
+use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\events\BatchElementActionEvent;
+use craft\console\controllers\ResaveController;
+use craft\db\QueryBatcher;
+use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
-use craft\queue\BaseJob;
-use craft\services\Elements;
+use craft\queue\BaseBatchedElementJob;
+use Throwable;
 
 /**
  * ResaveElements job
@@ -22,7 +24,7 @@ use craft\services\Elements;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class ResaveElements extends BaseJob
+class ResaveElements extends BaseBatchedElementJob
 {
     /**
      * @var string The element type that should be resaved
@@ -42,30 +44,68 @@ class ResaveElements extends BaseJob
     public bool $updateSearchIndex = false;
 
     /**
+     * @var string|null An attribute name that should be set for each of the elements. The value will be determined by [[to]].
+     * @since 4.2.6
+     */
+    public ?string $set = null;
+
+    /**
+     * @var string|null The value that should be set on the [[set]] attribute.
+     * @since 4.2.6
+     */
+    public ?string $to = null;
+
+    /**
+     * @var bool Whether the [[set]] attribute should only be set if it doesn’t have a value.
+     * @since 4.2.6
+     */
+    public bool $ifEmpty = false;
+
+    /**
+     * @var bool Whether to update the `dateUpdated` timestamp for the elements.
+     * @since 4.2.6
+     */
+    public bool $touch = false;
+
+    /**
      * @inheritdoc
      */
-    public function execute($queue): void
+    protected function loadData(): Batchable
     {
-        /** @var ElementQuery $query */
-        $query = $this->_query();
-        $total = $query->count();
-        if ($query->limit) {
-            $total = min($total, $query->limit);
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
+        $elementType = $this->elementType;
+        $query = $elementType::find()
+            ->orderBy(['elements.id' => SORT_ASC]);
+
+        if (!empty($this->criteria)) {
+            Craft::configure($query, $this->criteria);
         }
-        $elementsService = Craft::$app->getElements();
 
-        $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
-            if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Translation::prep('app', '{step, number} of {total, number}', [
-                    'step' => $e->position,
-                    'total' => $total,
-                ]));
-            }
-        };
+        return new QueryBatcher($query);
+    }
 
-        $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
-        $elementsService->resaveElements($query, false, true, $this->updateSearchIndex);
-        $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
+    /**
+     * @inheritdoc
+     */
+    protected function processItem(mixed $item): void
+    {
+        $item->setScenario(Element::SCENARIO_ESSENTIALS);
+        $item->resaving = true;
+
+        if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($item, $this->set))) {
+            $to = ResaveController::normalizeTo($this->to);
+            $item->{$this->set} = $to($item);
+        }
+
+        try {
+            Craft::$app->getElements()->saveElement($item,
+                updateSearchIndex: $this->updateSearchIndex,
+                forceTouch: $this->touch,
+            );
+        } catch (Throwable $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+        }
     }
 
     /**
@@ -73,31 +113,11 @@ class ResaveElements extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        /** @var ElementQuery $query */
-        $query = $this->_query();
-        /** @var ElementInterface $elementType */
-        $elementType = $query->elementType;
-        return Translation::prep('app', 'Resaving {type}', [
-            'type' => $elementType::pluralLowerDisplayName(),
-        ]);
-    }
-
-    /**
-     * Returns the element query based on the criteria.
-     *
-     * @return ElementQueryInterface
-     */
-    private function _query(): ElementQueryInterface
-    {
         /** @var string|ElementInterface $elementType */
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
-        $query = $elementType::find();
-
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-
-        return $query;
+        return Translation::prep('app', 'Resaving {type}', [
+            'type' => $elementType::pluralLowerDisplayName(),
+        ]);
     }
 }

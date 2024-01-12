@@ -14,8 +14,10 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
+use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
+use Illuminate\Support\Collection;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 
@@ -33,12 +35,12 @@ class ElementRelationParamParser extends BaseObject
     /**
      * @var int
      */
-    private static int $_relateSourceMatrixBlocksCount = 0;
+    private static int $_relateSourceNestedElementsCount = 0;
 
     /**
      * @var int
      */
-    private static int $_relateTargetMatrixBlocksCount = 0;
+    private static int $_relateTargetNestedElementsCount = 0;
 
     /**
      * @var int
@@ -59,18 +61,29 @@ class ElementRelationParamParser extends BaseObject
      * Normalizes a `relatedTo` param for [[parse()]].
      *
      * @param array|string|int|ElementInterface $relatedToParam
+     * @param int|string|int[]|null $siteId
      * @return array
      * @throws InvalidArgumentException if any of the relation criteria contain an invalid site handle
      * @since 3.6.11
      */
-    public static function normalizeRelatedToParam(mixed $relatedToParam): array
+    public static function normalizeRelatedToParam(mixed $relatedToParam, array|int|string|null $siteId = null): array
     {
         // Ensure it's an array
         if (!is_array($relatedToParam)) {
-            $relatedToParam = is_string($relatedToParam) ? StringHelper::split($relatedToParam) : [$relatedToParam];
+            if (is_string($relatedToParam)) {
+                $relatedToParam = StringHelper::split($relatedToParam);
+            } elseif ($relatedToParam instanceof Collection) {
+                $relatedToParam = $relatedToParam->all();
+            } else {
+                $relatedToParam = [$relatedToParam];
+            }
         }
 
-        if (isset($relatedToParam[0]) && in_array($relatedToParam[0], ['and', 'or'])) {
+        if (
+            isset($relatedToParam[0]) &&
+            is_string($relatedToParam[0]) &&
+            in_array($relatedToParam[0], ['and', 'or'])
+        ) {
             $glue = array_shift($relatedToParam);
             if ($glue === 'and' && count($relatedToParam) < 2) {
                 $glue = 'or';
@@ -83,7 +96,9 @@ class ElementRelationParamParser extends BaseObject
             $relatedToParam = [$relatedToParam];
         }
 
-        $relatedToParam = array_map([static::class, 'normalizeRelatedToCriteria'], $relatedToParam);
+        $relatedToParam = Collection::make($relatedToParam)->map(
+            fn($relatedToParam) => static::normalizeRelatedToCriteria($relatedToParam, $siteId)
+        )->all();
 
         if ($glue === 'or') {
             // Group all of the OR elements, so we avoid adding massive JOINs to the query
@@ -102,7 +117,7 @@ class ElementRelationParamParser extends BaseObject
             }
 
             if (!empty($orElements)) {
-                $relatedToParam[] = static::normalizeRelatedToCriteria($orElements);
+                $relatedToParam[] = static::normalizeRelatedToCriteria($orElements, $siteId);
             }
         }
 
@@ -114,11 +129,12 @@ class ElementRelationParamParser extends BaseObject
      * Normalizes an individual `relatedTo` criteria.
      *
      * @param mixed $relCriteria
+     * @param int|string|int[]|null $siteId
      * @return array
      * @throws InvalidArgumentException if the criteria contains an invalid site handle
      * @since 3.6.11
      */
-    public static function normalizeRelatedToCriteria(mixed $relCriteria): array
+    public static function normalizeRelatedToCriteria(mixed $relCriteria, array|int|string|null $siteId = null): array
     {
         if (
             !is_array($relCriteria) ||
@@ -130,20 +146,25 @@ class ElementRelationParamParser extends BaseObject
         // Merge in default criteria params
         $relCriteria += [
             'field' => null,
-            'sourceSite' => null,
+            'sourceSite' => $siteId,
         ];
 
         // Normalize the sourceSite param (should be an ID)
-        if ($relCriteria['sourceSite'] && !is_numeric($relCriteria['sourceSite'])) {
-            if ($relCriteria['sourceSite'] instanceof Site) {
-                $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;
-            } else {
-                $site = Craft::$app->getSites()->getSiteByHandle($relCriteria['sourceSite']);
-                if (!$site) {
-                    // Invalid handle
-                    throw new InvalidArgumentException("Invalid site: {$relCriteria['sourceSite']}");
+        if ($relCriteria['sourceSite']) {
+            if (
+                !is_numeric($relCriteria['sourceSite']) &&
+                (!is_array($relCriteria['sourceSite']) || !ArrayHelper::isNumeric($relCriteria['sourceSite']))
+            ) {
+                if ($relCriteria['sourceSite'] instanceof Site) {
+                    $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;
+                } else {
+                    $site = Craft::$app->getSites()->getSiteByHandle($relCriteria['sourceSite']);
+                    if (!$site) {
+                        // Invalid handle
+                        throw new InvalidArgumentException("Invalid site: {$relCriteria['sourceSite']}");
+                    }
+                    $relCriteria['sourceSite'] = $site->id;
                 }
-                $relCriteria['sourceSite'] = $site->id;
             }
         }
 
@@ -153,10 +174,20 @@ class ElementRelationParamParser extends BaseObject
                 $elements = &$relCriteria[$elementParam];
 
                 if (!is_array($elements)) {
-                    $elements = is_string($elements) ? StringHelper::split($elements) : [$elements];
+                    if (is_string($elements)) {
+                        $elements = StringHelper::split($elements);
+                    } elseif ($elements instanceof Collection) {
+                        $elements = $elements->all();
+                    } else {
+                        $elements = [$elements];
+                    }
                 }
 
-                if (isset($elements[0]) && in_array($elements[0], ['and', 'or'])) {
+                if (
+                    isset($elements[0]) &&
+                    is_string($elements[0]) &&
+                    in_array($elements[0], ['and', 'or'])
+                ) {
                     $glue = array_shift($elements);
                     if ($glue === 'and' && count($elements) < 2) {
                         $glue = 'or';
@@ -178,11 +209,12 @@ class ElementRelationParamParser extends BaseObject
      * be applied back on the element query, or `false` if there's an issue.
      *
      * @param mixed $relatedToParam
+     * @param int|string|int[]|null $siteId
      * @return array|false
      */
-    public function parse(mixed $relatedToParam): array|false
+    public function parse(mixed $relatedToParam, array|int|string|null $siteId = null): array|false
     {
-        $relatedToParam = static::normalizeRelatedToParam($relatedToParam);
+        $relatedToParam = static::normalizeRelatedToParam($relatedToParam, $siteId);
         $glue = array_shift($relatedToParam);
 
         if (empty($relatedToParam)) {
@@ -277,10 +309,12 @@ class ElementRelationParamParser extends BaseObject
                 [
                     'sourceElement' => $relElementIds,
                     'field' => $relCriteria['field'],
+                    'sourceSite' => $relCriteria['sourceSite'],
                 ],
                 [
                     'targetElement' => $relSourceElementIds,
                     'field' => $relCriteria['field'],
+                    'sourceSite' => $relCriteria['sourceSite'],
                 ],
             ]);
         }
@@ -308,8 +342,8 @@ class ElementRelationParamParser extends BaseObject
         $relationFieldIds = [];
 
         if ($relCriteria['field']) {
-            // Loop through all of the fields in this rel criteria, create the Matrix-specific conditions right away
-            // and save the normal field IDs for later
+            // Loop through all of the fields in this rel criteria, create the Matrix-specific
+            // conditions right away and save the normal field IDs for later
             $fields = $relCriteria['field'];
             if (!is_array($fields)) {
                 $fields = is_string($fields) ? StringHelper::split($fields) : [$fields];
@@ -326,46 +360,42 @@ class ElementRelationParamParser extends BaseObject
                     // We'll deal with normal relation fields all together
                     $relationFieldIds[] = $fieldModel->id;
                 } elseif ($fieldModel instanceof Matrix) {
-                    $blockTypeFieldIds = [];
+                    $nestedFieldIds = [];
 
-                    // Searching by a specific block type field?
+                    // Searching by a specific nested field?
                     if (isset($fieldHandleParts[1])) {
-                        // There could be more than one block type field with this handle, so we must loop through all
-                        // of the block types on this Matrix field
-                        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($fieldModel->id);
-
-                        foreach ($blockTypes as $blockType) {
-                            foreach ($blockType->getCustomFields() as $blockTypeField) {
-                                if ($blockTypeField->handle == $fieldHandleParts[1]) {
-                                    $blockTypeFieldIds[] = $blockTypeField->id;
-                                    break;
-                                }
+                        // There could be more than one field with this handle, so we must loop through all
+                        // the field layouts on this field
+                        foreach ($fieldModel->getEntryTypes() as $entryType) {
+                            $nestedField = $entryType->getFieldLayout()->getFieldByHandle($fieldHandleParts[1]);
+                            if ($nestedField) {
+                                $nestedFieldIds[] = $nestedField->id;
                             }
                         }
 
-                        if (empty($blockTypeFieldIds)) {
+                        if (empty($nestedFieldIds)) {
                             continue;
                         }
                     }
 
                     if ($dir === self::DIR_FORWARD) {
                         self::$_relateSourcesCount++;
-                        self::$_relateTargetMatrixBlocksCount++;
+                        self::$_relateTargetNestedElementsCount++;
 
                         $sourcesAlias = 'sources' . self::$_relateSourcesCount;
-                        $targetMatrixBlocksAlias = 'target_matrixblocks' . self::$_relateTargetMatrixBlocksCount;
-                        $targetMatrixElementsAlias = 'target_matrixelements' . self::$_relateTargetMatrixBlocksCount;
+                        $targetNestedElementsAlias = 'target_nestedelements' . self::$_relateTargetNestedElementsCount;
+                        $targetContainerElementsAlias = 'target_containerelements' . self::$_relateTargetNestedElementsCount;
 
                         $subQuery = (new Query())
                             ->select(["$sourcesAlias.targetId"])
                             ->from([$sourcesAlias => Table::RELATIONS])
-                            ->innerJoin([$targetMatrixBlocksAlias => Table::MATRIXBLOCKS], "[[$targetMatrixBlocksAlias.id]] = [[$sourcesAlias.sourceId]]")
-                            ->innerJoin([$targetMatrixElementsAlias => Table::ELEMENTS], "[[$targetMatrixElementsAlias.id]] = [[$targetMatrixBlocksAlias.id]]")
+                            ->innerJoin([$targetNestedElementsAlias => Table::ENTRIES], "[[$targetNestedElementsAlias.id]] = [[$sourcesAlias.sourceId]]")
+                            ->innerJoin([$targetContainerElementsAlias => Table::ELEMENTS], "[[$targetContainerElementsAlias.id]] = [[$targetNestedElementsAlias.id]]")
                             ->where([
-                                "$targetMatrixBlocksAlias.primaryOwnerId" => $relElementIds,
-                                "$targetMatrixBlocksAlias.fieldId" => $fieldModel->id,
-                                "$targetMatrixElementsAlias.enabled" => true,
-                                "$targetMatrixElementsAlias.dateDeleted" => null,
+                                "$targetNestedElementsAlias.primaryOwnerId" => $relElementIds,
+                                "$targetNestedElementsAlias.fieldId" => $fieldModel->id,
+                                "$targetContainerElementsAlias.enabled" => true,
+                                "$targetContainerElementsAlias.dateDeleted" => null,
                             ]);
 
                         if ($relCriteria['sourceSite']) {
@@ -376,37 +406,37 @@ class ElementRelationParamParser extends BaseObject
                             ]);
                         }
 
-                        if (!empty($blockTypeFieldIds)) {
-                            $subQuery->andWhere(["$sourcesAlias.fieldId" => $blockTypeFieldIds]);
+                        if (!empty($nestedFieldIds)) {
+                            $subQuery->andWhere(["$sourcesAlias.fieldId" => $nestedFieldIds]);
                         }
                     } else {
-                        self::$_relateSourceMatrixBlocksCount++;
-                        $sourceMatrixBlocksAlias = 'source_matrixblocks' . self::$_relateSourceMatrixBlocksCount;
-                        $sourceMatrixElementsAlias = 'source_matrixelements' . self::$_relateSourceMatrixBlocksCount;
-                        $matrixBlockTargetsAlias = 'matrixblock_targets' . self::$_relateSourceMatrixBlocksCount;
+                        self::$_relateSourceNestedElementsCount++;
+                        $sourceNestedElementsAlias = 'source_nestedelements' . self::$_relateSourceNestedElementsCount;
+                        $sourceContainerElementsAlias = 'source_containerelements' . self::$_relateSourceNestedElementsCount;
+                        $nestedElementTargetsAlias = 'nestedelement_targets' . self::$_relateSourceNestedElementsCount;
 
                         $subQuery = (new Query())
-                            ->select(["$sourceMatrixBlocksAlias.primaryOwnerId"])
-                            ->from([$sourceMatrixBlocksAlias => Table::MATRIXBLOCKS])
-                            ->innerJoin([$sourceMatrixElementsAlias => Table::ELEMENTS], "[[$sourceMatrixElementsAlias.id]] = [[$sourceMatrixBlocksAlias.id]]")
-                            ->innerJoin([$matrixBlockTargetsAlias => Table::RELATIONS], "[[$matrixBlockTargetsAlias.sourceId]] = [[$sourceMatrixBlocksAlias.id]]")
+                            ->select(["$sourceNestedElementsAlias.primaryOwnerId"])
+                            ->from([$sourceNestedElementsAlias => Table::ENTRIES])
+                            ->innerJoin([$sourceContainerElementsAlias => Table::ELEMENTS], "[[$sourceContainerElementsAlias.id]] = [[$sourceNestedElementsAlias.id]]")
+                            ->innerJoin([$nestedElementTargetsAlias => Table::RELATIONS], "[[$nestedElementTargetsAlias.sourceId]] = [[$sourceNestedElementsAlias.id]]")
                             ->where([
-                                "$sourceMatrixElementsAlias.enabled" => true,
-                                "$sourceMatrixElementsAlias.dateDeleted" => null,
-                                "$matrixBlockTargetsAlias.targetId" => $relElementIds,
-                                "$sourceMatrixBlocksAlias.fieldId" => $fieldModel->id,
+                                "$sourceContainerElementsAlias.enabled" => true,
+                                "$sourceContainerElementsAlias.dateDeleted" => null,
+                                "$nestedElementTargetsAlias.targetId" => $relElementIds,
+                                "$sourceNestedElementsAlias.fieldId" => $fieldModel->id,
                             ]);
 
                         if ($relCriteria['sourceSite']) {
                             $subQuery->andWhere([
                                 'or',
-                                ["$matrixBlockTargetsAlias.sourceSiteId" => null],
-                                ["$matrixBlockTargetsAlias.sourceSiteId" => $relCriteria['sourceSite']],
+                                ["$nestedElementTargetsAlias.sourceSiteId" => null],
+                                ["$nestedElementTargetsAlias.sourceSiteId" => $relCriteria['sourceSite']],
                             ]);
                         }
 
-                        if (!empty($blockTypeFieldIds)) {
-                            $subQuery->andWhere(["$matrixBlockTargetsAlias.fieldId" => $blockTypeFieldIds]);
+                        if (!empty($nestedFieldIds)) {
+                            $subQuery->andWhere(["$nestedElementTargetsAlias.fieldId" => $nestedFieldIds]);
                         }
                     }
 
@@ -420,8 +450,9 @@ class ElementRelationParamParser extends BaseObject
             }
         }
 
-        // If there were no fields, or there are some non-Matrix fields, add the normal relation condition. (Basically,
-        // run this code if the rel criteria wasn't exclusively for Matrix.)
+        // If there were no fields, or there are some non-Matrix fields, add the
+        // normal relation condition. (Basically, run this code if the rel criteria wasn't exclusively for
+        // Matrix fields.)
         if (empty($relCriteria['field']) || !empty($relationFieldIds)) {
             if ($dir === self::DIR_FORWARD) {
                 self::$_relateSourcesCount++;

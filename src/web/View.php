@@ -8,6 +8,8 @@
 namespace craft\web;
 
 use Craft;
+use craft\events\AssetBundleEvent;
+use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\App;
@@ -20,14 +22,16 @@ use craft\helpers\StringHelper;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
+use craft\web\twig\FeExtension;
 use craft\web\twig\GlobalsExtension;
+use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
+use LogicException;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
-use Twig\Extension\DebugExtension;
 use Twig\Extension\ExtensionInterface;
 use Twig\Extension\StringLoaderExtension;
 use Twig\Template as TwigTemplate;
@@ -58,6 +62,13 @@ use yii\web\AssetBundle as YiiAssetBundle;
 class View extends \yii\web\View
 {
     /**
+     * @event CreateTwigEvent The event that is triggered when a Twig environment is created.
+     * @see createTwig()
+     * @since 4.3.0
+     */
+    public const EVENT_AFTER_CREATE_TWIG = 'afterCreateTwig';
+
+    /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
      */
     public const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
@@ -86,6 +97,12 @@ class View extends \yii\web\View
      * @event TemplateEvent The event that is triggered after a page template gets rendered
      */
     public const EVENT_AFTER_RENDER_PAGE_TEMPLATE = 'afterRenderPageTemplate';
+
+    /**
+     * @event AssetBundleEvent The event that is triggered after an asset bundle is registered
+     * @since 4.5.0
+     */
+    public const EVENT_AFTER_REGISTER_ASSET_BUNDLE = 'afterRegisterAssetBundle';
 
     /**
      * @const TEMPLATE_MODE_CP
@@ -188,6 +205,11 @@ class View extends \yii\web\View
     private array $_indexTemplateFilenames;
 
     /**
+     * @var string
+     */
+    private string $_privateTemplateTrigger;
+
+    /**
      * @var string|null
      */
     private ?string $_namespace = null;
@@ -248,6 +270,21 @@ class View extends \yii\web\View
     private array $_jsFileBuffers = [];
 
     /**
+     * @var array
+     * @see startHtmlBuffer()
+     * @see clearHtmlBuffer()
+     */
+    private array $_htmlBuffers = [];
+
+    /**
+     * @var array
+     * @see startMetaTagBuffer()
+     * @see clearMetaTagBuffer()
+     * @since 4.5.8
+     */
+    private array $_metaTagBuffers = [];
+
+    /**
      * @var array|null the registered generic `<script>` code blocks
      * @see registerScript()
      */
@@ -257,7 +294,7 @@ class View extends \yii\web\View
      * @var array the registered generic HTML code blocks
      * @see registerHtml()
      */
-    private array $_html;
+    private array $_html = [];
 
     /**
      * @var callable[][]
@@ -304,7 +341,7 @@ class View extends \yii\web\View
         }
 
         // Register the control panel hooks
-        $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
+        $this->hook('cp.elements.element', [$this, '_elementChipHtml']);
     }
 
     /**
@@ -338,12 +375,13 @@ class View extends \yii\web\View
 
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
             $twig->addExtension(new CpExtension());
-        } else {
+        } elseif (Craft::$app->getIsInstalled()) {
+            $twig->addExtension(new FeExtension());
             $twig->addExtension(new GlobalsExtension());
-        }
 
-        if (App::devMode()) {
-            $twig->addExtension(new DebugExtension());
+            if (Craft::$app->getConfig()->getGeneral()->preloadSingles) {
+                $twig->addExtension(new SinglePreloaderExtension());
+            }
         }
 
         // Add plugin-supplied extensions
@@ -355,6 +393,14 @@ class View extends \yii\web\View
         /** @var CoreExtension $core */
         $core = $twig->getExtension(CoreExtension::class);
         $core->setTimezone(Craft::$app->getTimeZone());
+
+        // Fire a afterCreateTwig event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_TWIG)) {
+            $this->trigger(self::EVENT_AFTER_CREATE_TWIG, new CreateTwigEvent([
+                'templateMode' => $this->_templateMode ?? self::TEMPLATE_MODE_SITE,
+                'twig' => $twig,
+            ]));
+        }
 
         return $twig;
     }
@@ -374,12 +420,20 @@ class View extends \yii\web\View
 
         $this->_twigExtensions[$class] = $extension;
 
-        // Add it to any existing Twig environments
         if (isset($this->_cpTwig)) {
-            $this->_cpTwig->addExtension($extension);
+            try {
+                $this->_cpTwig->addExtension($extension);
+            } catch (LogicException) {
+                $this->_cpTwig = null;
+            }
         }
+
         if (isset($this->_siteTwig)) {
-            $this->_siteTwig->addExtension($extension);
+            try {
+                $this->_siteTwig->addExtension($extension);
+            } catch (LogicException) {
+                $this->_siteTwig = null;
+            }
         }
     }
 
@@ -552,7 +606,7 @@ class View extends \yii\web\View
     {
         // If there are no dynamic tags, just return the template
         if (!str_contains($template, '{')) {
-            return $template;
+            return trim($template);
         }
 
         $oldTemplateMode = $this->templateMode;
@@ -608,7 +662,7 @@ class View extends \yii\web\View
             // Render it!
             /** @var TwigTemplate $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
-            return $templateObj->render($variables);
+            return trim($templateObj->render($variables));
         } finally {
             $this->_renderingTemplate = $lastRenderingTemplate;
             $twig->setDefaultEscaperStrategy();
@@ -697,28 +751,18 @@ class View extends \yii\web\View
      *
      * @param string $name The name of the template.
      * @param string|null $templateMode The template mode to use.
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return bool Whether the template exists.
      * @throws Exception
      */
-    public function doesTemplateExist(string $name, ?string $templateMode = null): bool
+    public function doesTemplateExist(string $name, ?string $templateMode = null, bool $publicOnly = false): bool
     {
-        if ($templateMode === null) {
-            $templateMode = $this->getTemplateMode();
-        }
-
-        $oldTemplateMode = $this->getTemplateMode();
-        $this->setTemplateMode($templateMode);
-
         try {
-            $templateExists = ($this->resolveTemplate($name) !== false);
+            return ($this->resolveTemplate($name, $templateMode, $publicOnly) !== false);
         } catch (TwigLoaderError) {
             // _validateTemplateName() had an issue with it
-            $templateExists = false;
+            return false;
         }
-
-        $this->setTemplateMode($oldTemplateMode);
-
-        return $templateExists;
     }
 
     /**
@@ -790,22 +834,23 @@ class View extends \yii\web\View
      *
      * @param string $name The name of the template.
      * @param string|null $templateMode The template mode to use.
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
      */
-    public function resolveTemplate(string $name, ?string $templateMode = null): string|false
+    public function resolveTemplate(string $name, ?string $templateMode = null, bool $publicOnly = false): string|false
     {
-        if ($templateMode === null) {
-            $templateMode = $this->getTemplateMode();
+        if ($templateMode !== null) {
+            $oldTemplateMode = $this->getTemplateMode();
+            $this->setTemplateMode($templateMode);
         }
 
-        $oldTemplateMode = $this->getTemplateMode();
-        $this->setTemplateMode($templateMode);
-
         try {
-            return $this->_resolveTemplateInternal($name);
+            return $this->_resolveTemplateInternal($name, $publicOnly);
         } finally {
-            $this->setTemplateMode($oldTemplateMode);
+            if (isset($oldTemplateMode)) {
+                $this->setTemplateMode($oldTemplateMode);
+            }
         }
     }
 
@@ -813,10 +858,11 @@ class View extends \yii\web\View
      * Finds a template on the file system and returns its path.
      *
      * @param string $name The name of the template.
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
      */
-    private function _resolveTemplateInternal(string $name): string|false
+    private function _resolveTemplateInternal(string $name, bool $publicOnly): string|false
     {
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', StringHelper::convertToUtf8($name))), '/');
@@ -846,7 +892,7 @@ class View extends \yii\web\View
         $basePaths[] = $this->_templatesPath;
 
         foreach ($basePaths as $basePath) {
-            if (($path = $this->_resolveTemplate($basePath, $name)) !== null) {
+            if (($path = $this->_resolveTemplate($basePath, $name, $publicOnly)) !== null) {
                 return $this->_templatePaths[$key] = $path;
             }
         }
@@ -867,7 +913,7 @@ class View extends \yii\web\View
                 if ($templateRoot === '' || strncasecmp($templateRoot . '/', $name . '/', $templateRootLen + 1) === 0) {
                     $subName = $templateRoot === '' ? $name : (strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1));
                     foreach ($basePaths as $basePath) {
-                        if (($path = $this->_resolveTemplate($basePath, $subName)) !== null) {
+                        if (($path = $this->_resolveTemplate($basePath, $subName, $publicOnly)) !== null) {
                             return $this->_templatePaths[$key] = $path;
                         }
                     }
@@ -1129,7 +1175,8 @@ class View extends \yii\web\View
 
         foreach ($bufferedJsFiles as $files) {
             foreach (array_keys($files) as $key) {
-                unset($this->_registeredJsFiles[$key]);
+                $hash = $this->resourceHash($key);
+                unset($this->_registeredJsFiles[$hash]);
             }
         }
 
@@ -1137,18 +1184,79 @@ class View extends \yii\web\View
     }
 
     /**
+     * Starts a buffer for any html tags registered with [[registerHtml()]].
+     *
+     * @since 4.3.0
+     */
+    public function startHtmlBuffer(): void
+    {
+        $this->_htmlBuffers[] = $this->_html;
+        $this->_html = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startHtmlBuffer()]], returning any html tags that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The html that was registered while the buffer was active or `false` if there wasn't an active buffer.
+     * @since 4.3.0
+     */
+    public function clearHtmlBuffer(): array|false
+    {
+        if (empty($this->_htmlBuffers)) {
+            return false;
+        }
+
+        $bufferedHtml = $this->_html;
+        $this->_html = array_pop($this->_htmlBuffers);
+        return $bufferedHtml;
+    }
+
+    /**
+     * Starts a buffer for any `<meta>` tags registered with [[registerMetaTag()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearMetaTagBuffer()]].
+     *
+     * @see clearMetaTagBuffer()
+     * @since 4.5.8
+     */
+    public function startMetaTagBuffer(): void
+    {
+        $this->_metaTagBuffers[] = $this->metaTags;
+        $this->metaTags = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startMetaTagBuffer()]], returning any `<meta>` tags that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     * @see startMetaTagBuffer()
+     * @since 4.5.8
+     */
+    public function clearMetaTagBuffer(): array|false
+    {
+        if (empty($this->_metaTagBuffers)) {
+            return false;
+        }
+
+        $bufferedMetaTags = $this->metaTags;
+        $this->metaTags = array_pop($this->_metaTagBuffers);
+        return $bufferedMetaTags;
+    }
+
+    /**
      * @inheritdoc
      */
     public function registerJsFile($url, $options = [], $key = null): void
     {
-        // If 'depends' is specified, ignore it for now because the file will
-        // get registered as an asset bundle
-        if (empty($options['depends'])) {
-            $key = $key ?: $url;
-            if (isset($this->_registeredJsFiles[$key])) {
+        // If the file lives within cpresources/, ignore it because it came from an asset bundle
+        if (!str_starts_with($url, $this->assetManager->baseUrl)) {
+            $hash = $this->resourceHash($key ?: $url);
+            if (isset($this->_registeredJsFiles[$hash])) {
                 return;
             }
-            $this->_registeredJsFiles[$key] = true;
+            $this->_registeredJsFiles[$hash] = true;
         }
 
         parent::registerJsFile($url, $options, $key);
@@ -1411,8 +1519,8 @@ JS;
      * Returns all of the registered delta input names.
      *
      * @return string[]
-     * @since 3.4.0
      * @see registerDeltaName()
+     * @since 3.4.0
      */
     public function getDeltaNames(): array
     {
@@ -1462,13 +1570,15 @@ JS;
         // Update everything
         if ($templateMode == self::TEMPLATE_MODE_CP) {
             $this->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
-            $this->_defaultTemplateExtensions = ['html', 'twig'];
+            $this->_defaultTemplateExtensions = ['twig', 'html'];
             $this->_indexTemplateFilenames = ['index'];
+            $this->_privateTemplateTrigger = '_';
         } else {
             $this->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
             $generalConfig = Craft::$app->getConfig()->getGeneral();
             $this->_defaultTemplateExtensions = $generalConfig->defaultTemplateExtensions;
             $this->_indexTemplateFilenames = $generalConfig->indexTemplateFilenames;
+            $this->_privateTemplateTrigger = $generalConfig->privateTemplateTrigger;
         }
     }
 
@@ -1550,13 +1660,16 @@ JS;
             // If no namespace was passed in, just return the callable response directly.
             // No need to namespace it via the currently-set namespace in this case; if there is one, it should get applied later on.
             if ($namespace === null) {
-                return $html();
+                return (string)$html();
             }
 
             $oldNamespace = $this->getNamespace();
             $this->setNamespace($this->namespaceInputName($namespace));
-            $response = $this->namespaceInputs($html(), $namespace, $otherAttributes, $withClasses);
-            $this->setNamespace($oldNamespace);
+            try {
+                $response = $this->namespaceInputs((string)$html(), $namespace, $otherAttributes, $withClasses);
+            } finally {
+                $this->setNamespace($oldNamespace);
+            }
             return $response;
         }
 
@@ -1977,11 +2090,30 @@ JS;
     protected function registerAssetFiles($name): void
     {
         // Don't re-register bundles
-        if (isset($this->_registeredAssetBundles[$name])) {
+        $hash = $this->resourceHash($name);
+        if (isset($this->_registeredAssetBundles[$hash])) {
             return;
         }
-        $this->_registeredAssetBundles[$name] = true;
+        $this->_registeredAssetBundles[$hash] = true;
         parent::registerAssetFiles($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetBundle($name, $position = null)
+    {
+        $bundle = parent::registerAssetBundle($name, $position);
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_REGISTER_ASSET_BUNDLE)) {
+            $this->trigger(self::EVENT_AFTER_REGISTER_ASSET_BUNDLE, new AssetBundleEvent([
+                'bundleName' => $name,
+                'position' => $position,
+                'bundle' => $bundle,
+            ]));
+        }
+
+        return $bundle;
     }
 
     /**
@@ -2008,9 +2140,10 @@ JS;
      *
      * @param string $basePath The base path to be looking in.
      * @param string $name The name of the template to be looking for.
+     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|null The matching file path, or `null`.
      */
-    private function _resolveTemplate(string $basePath, string $name): ?string
+    private function _resolveTemplate(string $basePath, string $name, bool $publicOnly): ?string
     {
         // Normalize the path and name
         $basePath = FileHelper::normalizePath($basePath);
@@ -2018,6 +2151,10 @@ JS;
 
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name !== '') {
+            if ($publicOnly && preg_match(sprintf('/(^|\/)%s/', preg_quote($this->_privateTemplateTrigger, '/')), $name)) {
+                return null;
+            }
+
             // Maybe $name is already the full file path
             $testPath = $basePath . DIRECTORY_SEPARATOR . $name;
 
@@ -2115,6 +2252,11 @@ JS;
         return $this->_templateRoots[$which] = $roots;
     }
 
+    private function resourceHash(string $key): string
+    {
+        return sprintf('%x', crc32($key));
+    }
+
     /**
      * @param string $property
      * @param string[] $names
@@ -2128,10 +2270,10 @@ JS;
         $js = "if (typeof Craft !== 'undefined') {\n";
         foreach (array_keys($names) as $name) {
             if ($name) {
-                $jsName = Json::encode(str_replace(['<', '>'], '', $name));
+                $jsName = Json::encode($name);
                 // WARNING: the curly braces are needed here no matter what PhpStorm thinks
                 // https://youtrack.jetbrains.com/issue/WI-60044
-                $js .= "  Craft.{$property}[$jsName] = true;\n";
+                $js .= "  Craft.{$property}.push($jsName);\n";
             }
         }
         $js .= '}';
@@ -2139,13 +2281,15 @@ JS;
     }
 
     /**
-     * Returns the HTML for an element in the control panel.
+     * Renders an element’s chip HTML.
      *
      * @param array $context
      * @return string|null
      */
-    private function _getCpElementHtml(array $context): ?string
+    private function _elementChipHtml(array $context): ?string
     {
+        Craft::$app->getDeprecator()->log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
+
         if (!isset($context['element'])) {
             return null;
         }
@@ -2158,15 +2302,11 @@ JS;
 
         return Cp::elementHtml(
             $context['element'],
-            $context['context'] ?? 'index',
-            $size,
-            $context['name'] ?? null,
-            true,
-            true,
-            true,
-            true,
-            $context['single'] ?? false,
-            $context['autoReload'] ?? true,
+            context: $context['context'] ?? 'index',
+            size: $size,
+            inputName: $context['name'] ?? null,
+            single: $context['single'] ?? false,
+            autoReload: $context['autoReload'] ?? true,
         );
     }
 }

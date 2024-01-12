@@ -9,6 +9,7 @@ import './updates.scss';
     criticalUpdateAvailable: false,
     allowUpdates: null,
     installableUpdates: null,
+    availableUpdatesCount: null,
 
     init: function () {
       this.$body = $('#content');
@@ -17,6 +18,7 @@ import './updates.scss';
         $status = $('#status');
 
       this.installableUpdates = [];
+      this.availableUpdatesCount = 0;
 
       var data = {
         forceRefresh: true,
@@ -42,13 +44,13 @@ import './updates.scss';
           $graphic.remove();
           $status.remove();
 
-          if (this.installableUpdates.length) {
+          if (this.availableUpdatesCount > 0) {
             // Add the page title
             var headingText = Craft.t(
               'app',
               '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
               {
-                num: this.installableUpdates.length,
+                num: this.availableUpdatesCount,
               }
             );
 
@@ -74,6 +76,9 @@ import './updates.scss';
         var update = new Update(this, updateInfo, isPlugin);
         if (update.installable) {
           this.installableUpdates.push(update);
+        }
+        if (update.available) {
+          this.availableUpdatesCount++;
         }
       }
     },
@@ -132,6 +137,7 @@ import './updates.scss';
     updateInfo: null,
     isPlugin: null,
     installable: false,
+    available: false,
 
     $container: null,
     $header: null,
@@ -147,7 +153,7 @@ import './updates.scss';
       this.updatesPage = updatesPage;
       this.updateInfo = updateInfo;
       this.isPlugin = isPlugin;
-      this.installable = !!this.updateInfo.releases.length;
+      this.installable = this.available = !!this.updateInfo.releases.length;
 
       this.createPane();
       this.initReleases();
@@ -170,10 +176,12 @@ import './updates.scss';
             '</p></blockquote>'
         ).insertBefore(this.$releaseContainer);
 
-        if (
-          this.updateInfo.status === 'expired' ||
-          this.updateInfo.latestVersion === null
-        ) {
+        if (this.updateInfo.latestVersion === null) {
+          this.installable = false;
+          this.available = false;
+        }
+
+        if (this.updateInfo.status === 'expired') {
           this.installable = false;
         }
       }
@@ -195,7 +203,7 @@ import './updates.scss';
     createHeading: function () {
       $('<div class="readable left"/>')
         .appendTo(this.$header)
-        .append($('<h1/>', {text: this.updateInfo.name}));
+        .append($('<h2/>', {text: this.updateInfo.name}));
     },
 
     createCta: function () {
@@ -237,19 +245,20 @@ import './updates.scss';
       notesId: null,
 
       $container: null,
-      $headingContainer: null,
+      $accordionTrigger: null,
 
       init: function (update, releaseInfo) {
         this.update = update;
         this.releaseInfo = releaseInfo;
         this.notesId = 'notes-' + Math.floor(Math.random() * 1000000);
+        this.triggerId = `${this.notesId}-trigger`;
 
         this.createContainer();
         this.createHeading();
 
         if (this.releaseInfo.notes) {
           this.createReleaseNotes();
-          new Craft.FieldToggle(this.$headingContainer);
+          new Craft.Accordion(this.$accordionTrigger);
         }
       },
 
@@ -259,47 +268,73 @@ import './updates.scss';
         );
 
         if (this.releaseInfo.critical) {
-          this.$container.addClass('critical');
+          this.$container.addClass('release--critical');
         }
       },
 
       createHeading: function () {
+        const $headingContainer = $('<h3/>', {
+          class: 'release-heading',
+        }).appendTo(this.$container);
+        let $headingContents;
+
         if (this.releaseInfo.notes) {
-          this.$headingContainer = $('<a/>', {
+          $headingContents = $('<a/>', {
+            id: this.triggerId,
             class: 'release-info fieldtoggle',
-            'data-target': this.notesId,
+            'aria-controls': this.notesId,
+            'aria-expanded': 'false',
+            tabindex: '0',
+            role: 'button',
           });
+          this.$accordionTrigger = $headingContents;
         } else {
-          this.$headingContainer = $('<div/>', {class: 'release-info'});
+          $headingContents = $('<div/>', {class: 'release-info'});
         }
-        this.$headingContainer.appendTo(this.$container);
-        $('<h2/>', {text: this.releaseInfo.version}).appendTo(
-          this.$headingContainer
-        );
+
+        $headingContents.appendTo($headingContainer);
+
+        // Title text
+        const accordionTitle = $('<span/>', {
+          text: this.releaseInfo.version,
+        }).appendTo($headingContents);
         if (this.releaseInfo.critical) {
           $('<strong/>', {
-            class: 'critical',
+            class: 'release-badge',
             text: Craft.t('app', 'Critical'),
-          }).appendTo(this.$headingContainer);
+          }).appendTo($headingContents);
         }
         if (this.releaseInfo.date) {
           $('<span/>', {
-            class: 'date',
+            class: 'release-date',
             text: Craft.formatDate(this.releaseInfo.date),
-          }).appendTo(this.$headingContainer);
+          }).appendTo($headingContents);
         }
       },
 
       createReleaseNotes: function () {
-        var $notes = $('<div/>', {id: this.notesId})
+        var $notes = $('<div/>', {
+          id: this.notesId,
+          role: 'region',
+          'aria-labelledby': this.triggerId,
+        })
           .appendTo(this.$container)
           .append(
-            $('<div/>', {class: 'release-notes'}).html(this.releaseInfo.notes)
+            $('<div/>', {class: 'release-notes'}).html(
+              this.releaseInfo.notes.replace(
+                /(<\/?h)(3|4|5)\b/g,
+                (m, pre, num) => `${pre}${parseInt(num) + 1} class="h${num}"`
+              )
+            )
           );
 
         // Auto-expand if this is a critical release, or there are any tips/warnings in the release notes
         if (this.releaseInfo.critical || $notes.find('blockquote').length) {
-          this.$headingContainer.addClass('expanded');
+          if (!this.$accordionTrigger) return;
+
+          this.$accordionTrigger
+            .addClass('expanded')
+            .attr('aria-expanded', 'true');
         } else {
           $notes.addClass('hidden');
         }

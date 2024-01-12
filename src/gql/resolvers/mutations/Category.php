@@ -19,7 +19,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 use Throwable;
 
 /**
- * Class Categoy
+ * Class Category
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0

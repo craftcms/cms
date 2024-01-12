@@ -81,7 +81,7 @@ class RecentEntries extends Widget
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings',
+        return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings.twig',
             [
                 'widget' => $this,
             ]);
@@ -93,7 +93,7 @@ class RecentEntries extends Widget
     public function getTitle(): ?string
     {
         if (is_numeric($this->section)) {
-            $section = Craft::$app->getSections()->getSectionById((int)$this->section);
+            $section = Craft::$app->getEntries()->getSectionById((int)$this->section);
 
             if ($section) {
                 $title = Craft::t('app', 'Recent {section} Entries', [
@@ -143,7 +143,7 @@ class RecentEntries extends Widget
 
         $entries = $this->_getEntries();
 
-        return $view->renderTemplate('_components/widgets/RecentEntries/body',
+        return $view->renderTemplate('_components/widgets/RecentEntries/body.twig',
             [
                 'entries' => $entries,
             ]);
@@ -178,12 +178,12 @@ class RecentEntries extends Widget
         /** @var Entry[] */
         return Entry::find()
             ->sectionId($targetSectionId)
-            ->editable(true)
+            ->editable()
             ->status(null)
             ->siteId($targetSiteId)
             ->limit($this->limit ?: 100)
             ->with(['author'])
-            ->orderBy('elements.dateCreated desc')
+            ->orderBy(['dateCreated' => SORT_DESC])
             ->all();
     }
 
@@ -196,7 +196,7 @@ class RecentEntries extends Widget
     {
         $sectionIds = [];
 
-        foreach (Craft::$app->getSections()->getEditableSections() as $section) {
+        foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
             if ($section->type != Section::TYPE_SINGLE) {
                 $sectionIds[] = $section->id;
             }

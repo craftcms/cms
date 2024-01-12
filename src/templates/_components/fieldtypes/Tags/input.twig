@@ -11,7 +11,10 @@
 <div id="{{ id }}" class="elementselect tagselect">
     <div class="elements">
         {% for element in elements %}
-            {% include "_elements/element" with { context: 'field' } %}
+            {{ elementChip(element, {
+                context: 'field',
+                inputName: (name ?? false) ? "#{name}[]" : null,
+            }) }}
         {% endfor %}
     </div>
 
@@ -19,6 +22,7 @@
         {{ text({
             width: 'auto',
             placeholder: selectionLabel,
+            describedBy: describedBy ?? false,
         }) }}
         <div class="spinner hidden"></div>
     </div>
@@ -29,7 +33,8 @@
     name: name|namespaceInputName,
     tagGroupId: tagGroupId,
     sourceElementId: sourceElementId ?: null,
-    targetSiteId: targetSiteId
+    targetSiteId: targetSiteId,
+    allowSelfRelations: allowSelfRelations ?? false,
 } %}
 
 {% js %}

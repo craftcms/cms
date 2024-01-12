@@ -17,6 +17,7 @@ use craft\gql\types\TableRow;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
@@ -25,7 +26,6 @@ use craft\web\assets\timepicker\TimepickerAsset;
 use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
-use LitEmoji\LitEmoji;
 use yii\db\Schema;
 use yii\validators\EmailValidator;
 
@@ -48,10 +48,24 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'array|null';
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): array|string|null
+    {
+        return Schema::TYPE_JSON;
+    }
+
+    /**
+     * @var bool Whether the rows should be static.
+     * @since 4.5.0
+     */
+    public bool $staticRows = false;
 
     /**
      * @var string|null Custom add row button label
@@ -82,20 +96,14 @@ class Table extends Field
     /**
      * @var array|null The default row values that new elements should have
      */
-    public ?array $defaults = null;
-
-    /**
-     * @var string The type of database column the field should have in the content table
-     * @phpstan-var 'auto'|Schema::TYPE_STRING|Schema::TYPE_TEXT|'mediumtext'
-     */
-    public string $columnType = Schema::TYPE_TEXT;
+    public ?array $defaults = [[]];
 
     /**
      * @inheritdoc
      */
     public function __construct($config = [])
     {
-        // Config normalization}
+        // Config normalization
         if (array_key_exists('columns', $config)) {
             if (!is_array($config['columns'])) {
                 unset($config['columns']);
@@ -143,6 +151,9 @@ class Table extends Field
             }
         }
 
+        // remove unused settings
+        unset($config['columnType']);
+
         parent::__construct($config);
     }
 
@@ -155,6 +166,11 @@ class Table extends Field
 
         if (!isset($this->addRowLabel)) {
             $this->addRowLabel = Craft::t('app', 'Add a row');
+        }
+
+        if ($this->staticRows) {
+            $this->minRows = null;
+            $this->maxRows = null;
         }
     }
 
@@ -220,14 +236,6 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
-    {
-        return $this->columnType;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSettingsHtml(): ?string
     {
         $typeOptions = [
@@ -236,6 +244,7 @@ class Table extends Field
             'date' => Craft::t('app', 'Date'),
             'select' => Craft::t('app', 'Dropdown'),
             'email' => Craft::t('app', 'Email'),
+            'heading' => Craft::t('app', 'Row heading'),
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),
@@ -305,21 +314,30 @@ class Table extends Field
             'initJs' => false,
         ]);
 
+        // Replace heading columns with singleline, for the Default Values table
+        $columns = array_map(function(array $column) {
+            if ($column['type'] === 'heading') {
+                $column['type'] = 'singleline';
+                $column['class'] = 'heading';
+            }
+            return $column;
+        }, $this->columns);
+
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(TimepickerAsset::class);
         $view->registerAssetBundle(TableSettingsAsset::class);
         $view->registerJs('new Craft.TableFieldSettings(' .
-            Json::encode($view->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($this->columns, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($this->defaults ?? [], JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($dropdownSettingsHtml, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($dropdownSettingsCols, JSON_UNESCAPED_UNICODE) .
+            Json::encode($view->namespaceInputName('columns')) . ', ' .
+            Json::encode($view->namespaceInputName('defaults')) . ', ' .
+            Json::encode($columns) . ', ' .
+            Json::encode($this->defaults ?? []) . ', ' .
+            Json::encode($columnSettings) . ', ' .
+            Json::encode($dropdownSettingsHtml) . ', ' .
+            Json::encode($dropdownSettingsCols) .
             ');');
 
-        $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable', [
+        $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable.twig', [
             'cols' => $columnSettings,
             'rows' => $this->columns,
             'errors' => $this->getErrors('columns'),
@@ -333,12 +351,12 @@ class Table extends Field
             'allowAdd' => true,
             'allowReorder' => true,
             'allowDelete' => true,
-            'cols' => $this->columns,
-            'rows' => $this->defaults ?? [[]],
+            'cols' => $columns,
+            'rows' => $this->defaults,
             'initJs' => false,
         ]);
 
-        return $view->renderTemplate('_components/fieldtypes/Table/settings', [
+        return $view->renderTemplate('_components/fieldtypes/Table/settings.twig', [
             'field' => $this,
             'columnsField' => $columnsField,
             'defaultsField' => $defaultsField,
@@ -356,7 +374,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
         return $this->_getInputHtml($value, $element, false);
@@ -398,29 +416,76 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        if (is_string($value) && !empty($value)) {
-            $value = Json::decodeIfJson($value);
-        } elseif ($value === null && $this->isFresh($element)) {
-            $value = array_values($this->defaults ?? []);
-        }
+        return $this->_normalizeValueInternal($value, $element, false);
+    }
 
-        if (!is_array($value) || empty($this->columns)) {
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
+    {
+        return $this->_normalizeValueInternal($value, $element, true);
+    }
+
+    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ?array
+    {
+        if (empty($this->columns)) {
             return null;
         }
 
-        // Normalize the values and make them accessible from both the col IDs and the handles
-        foreach ($value as &$row) {
+        $defaults = $this->defaults ?? [];
+
+        // Apply static translations
+        foreach ($defaults as &$row) {
             foreach ($this->columns as $colId => $col) {
-                if (array_key_exists($colId, $row)) {
+                if ($col['type'] === 'heading' && isset($row[$colId])) {
+                    $row[$colId] = Craft::t('site', $row[$colId]);
+                }
+            }
+        }
+
+        if (is_string($value) && !empty($value)) {
+            $value = Json::decodeIfJson($value);
+        } elseif ($value === null && $this->isFresh($element)) {
+            $value = $defaults;
+        }
+
+        if (!is_array($value)) {
+            $value = [];
+        }
+
+        // Normalize the values and make them accessible from both the col IDs and the handles
+        $value = array_values($value);
+
+        if ($this->staticRows) {
+            $valueRows = count($value);
+            $totalRows = count($defaults);
+            if ($valueRows < $totalRows) {
+                $value = array_pad($value, $totalRows, []);
+            } elseif ($valueRows > $totalRows) {
+                array_splice($value, $totalRows);
+            }
+        }
+
+        // If the value is still empty, return null
+        if (empty($value)) {
+            return null;
+        }
+
+        foreach ($value as $rowIndex => &$row) {
+            foreach ($this->columns as $colId => $col) {
+                if ($col['type'] === 'heading') {
+                    $cellValue = $defaults[$rowIndex][$colId] ?? '';
+                } elseif (array_key_exists($colId, $row)) {
                     $cellValue = $row[$colId];
                 } elseif ($col['handle'] && array_key_exists($col['handle'], $row)) {
                     $cellValue = $row[$col['handle']];
                 } else {
                     $cellValue = null;
                 }
-                $cellValue = $this->_normalizeCellValue($col['type'], $cellValue);
+                $cellValue = $this->_normalizeCellValue($col['type'], $cellValue, $fromRequest);
                 $row[$colId] = $cellValue;
                 if ($col['handle']) {
                     $row[$col['handle']] = $cellValue;
@@ -434,24 +499,29 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (!is_array($value) || empty($this->columns)) {
             return null;
         }
 
         $serialized = [];
+        $supportsMb4 = Craft::$app->getDb()->getSupportsMb4();
 
         foreach ($value as $row) {
             $serializedRow = [];
-            foreach (array_keys($this->columns) as $colId) {
-                $value = $row[$colId];
-
-                if (is_string($value) && in_array($this->columns[$colId]['type'], ['singleline', 'multiline'], true)) {
-                    $value = LitEmoji::unicodeToShortcode($value);
+            foreach ($this->columns as $colId => $column) {
+                if ($column['type'] === 'heading') {
+                    continue;
                 }
 
-                $serializedRow[$colId] = parent::serializeValue($value ?? null);
+                $value = $row[$colId];
+
+                if (is_string($value) && !$supportsMb4) {
+                    $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
+                }
+
+                $serializedRow[$colId] = parent::serializeValue($value ?? null, null);
             }
             $serialized[] = $serializedRow;
         }
@@ -507,20 +577,10 @@ class Table extends Field
     {
         $typeName = $this->handle . '_TableRowInput';
 
-        if ($argumentType = GqlEntityRegistry::getEntity($typeName)) {
-            return Type::listOf($argumentType);
-        }
-
-        $contentFields = TableRow::prepareRowFieldDefinition($this->columns, false);
-
-        $argumentType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return Type::listOf(GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => function() use ($contentFields) {
-                return $contentFields;
-            },
-        ]));
-
-        return Type::listOf($argumentType);
+            'fields' => fn() => TableRow::prepareRowFieldDefinition($this->columns, false),
+        ])));
     }
 
     /**
@@ -528,10 +588,11 @@ class Table extends Field
      *
      * @param string $type The cell type
      * @param mixed $value The cell value
+     * @param bool $fromRequest
      * @return mixed
      * @see normalizeValue()
      */
-    private function _normalizeCellValue(string $type, mixed $value): mixed
+    private function _normalizeCellValue(string $type, mixed $value, bool $fromRequest): mixed
     {
         switch ($type) {
             case 'color':
@@ -558,7 +619,9 @@ class Table extends Field
             case 'multiline':
             case 'singleline':
                 if ($value !== null) {
-                    $value = LitEmoji::shortcodeToUnicode($value);
+                    if (!$fromRequest) {
+                        $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
+                    }
                     return trim(preg_replace('/\R/u', "\n", $value));
                 }
                 // no break
@@ -619,10 +682,15 @@ class Table extends Field
             return '';
         }
 
-        // Translate the column headings
+        // Translate the column headings and dropdown option labels
         foreach ($this->columns as &$column) {
             if (!empty($column['heading'])) {
                 $column['heading'] = Craft::t('site', $column['heading']);
+            }
+            if (!empty($column['options'])) {
+                array_walk($column['options'], function(&$option) {
+                    $option['label'] = Craft::t('site', $option['label']);
+                });
             }
         }
         unset($column);
@@ -653,7 +721,7 @@ class Table extends Field
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable.twig', [
             'id' => $this->getInputId(),
             'name' => $this->handle,
             'cols' => $this->columns,
@@ -661,6 +729,7 @@ class Table extends Field
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'static' => $static,
+            'staticRows' => $this->staticRows,
             'allowAdd' => true,
             'allowDelete' => true,
             'allowReorder' => true,

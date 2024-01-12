@@ -6,6 +6,7 @@
 Craft.Preview = Garnish.Base.extend(
   {
     elementEditor: null,
+    formObserver: null,
 
     $shade: null,
     $editorContainer: null,
@@ -59,6 +60,7 @@ Craft.Preview = Garnish.Base.extend(
 
     iframeHeight: null,
     scrollTop: null,
+    scrollLeft: null,
 
     dragger: null,
     dragStartEditorWidth: null,
@@ -85,7 +87,6 @@ Craft.Preview = Garnish.Base.extend(
         'LivePreview.editorWidth',
         Craft.Preview.defaultEditorWidth
       );
-      this.setAnimationDuration();
 
       Craft.Preview.instances.push(this);
     },
@@ -119,16 +120,11 @@ Craft.Preview = Garnish.Base.extend(
       this._editorWidthInPx = inPx;
     },
 
-    setAnimationDuration: function () {
-      this.animationDuration = Garnish.prefersReducedMotion() ? 0 : 'slow';
-    },
-
     open: function () {
       if (this.isActive) {
         return;
       }
 
-      this.setAnimationDuration();
       this.isActive = true;
       this.trigger('beforeOpen');
 
@@ -248,7 +244,7 @@ Craft.Preview = Garnish.Base.extend(
             type: 'button',
             class: 'btn disabled',
             'data-icon': 'rotate',
-            'aria-disabled': 'false',
+            'aria-disabled': 'true',
             text: Craft.t('app', 'Rotate'),
             'aria-label': Craft.t('app', 'Rotate'),
           }).appendTo($buttonContainer);
@@ -268,13 +264,6 @@ Craft.Preview = Garnish.Base.extend(
           // Get the last stored orientation
           this.deviceOrientation = Craft.getLocalStorage(
             'LivePreview.orientation'
-          );
-
-          // Device type input change handler
-          this.addListener(
-            $('input', this.$deviceTypeContainer),
-            'change',
-            'switchDeviceType'
           );
         }
 
@@ -346,6 +335,9 @@ Craft.Preview = Garnish.Base.extend(
 
       this.updateIframe();
 
+      this.formObserver = new Craft.FormObserver(this.$editor, () => {
+        this.elementEditor.checkForm();
+      });
       this.elementEditor.on('update', this._updateIframeProxy);
 
       Craft.ElementThumbLoader.retryAll();
@@ -376,104 +368,54 @@ Craft.Preview = Garnish.Base.extend(
     },
 
     _buildDeviceTypeFieldset: function () {
-      this.$deviceTypeContainer = $('<fieldset/>', {
-        class: 'lp-device-type',
+      // Device type buttons
+      this.$deviceTypeContainer = $('<section/>', {
+        class: 'btngroup lp-device-type',
+        'aria-label': Craft.t('app', 'Device type'),
       }).appendTo(this.$previewHeader);
-
-      $('<legend/>', {
-        text: Craft.t('app', 'Device type'),
-        class: 'visually-hidden',
-      }).appendTo(this.$deviceTypeContainer);
-
-      const $radioGroup = $('<div/>', {
-        class: 'lp-device-type__radio-group',
-      }).appendTo(this.$deviceTypeContainer);
-
-      // Desktop
-      const $desktopWrapper = $('<div/>', {
-        class: 'lp-device-type__item',
-      }).appendTo($radioGroup);
-
-      $('<input/>', {
-        class: 'lp-device-type__input visually-hidden',
-        type: 'radio',
-        name: 'device',
-        value: 'desktop',
-        id: 'device-desktop',
-        checked: true,
+      $('<button/>', {
+        type: 'button',
+        class: 'btn lp-device-type-btn--desktop active',
+        title: Craft.t('app', 'Desktop'),
+        'aria-label': Craft.t('app', 'Desktop'),
+        'aria-pressed': 'true',
         data: {
           width: '',
           height: '',
+          deviceType: 'desktop',
         },
-      }).appendTo($desktopWrapper);
-
-      const $desktopLabel = $('<label/>', {
-        for: 'device-desktop',
-        class:
-          'btn lp-device-type__label lp-device-type__label--desktop active',
-        title: this._getDeviceTypeTranslation('desktop'),
-      }).appendTo($desktopWrapper);
-
-      $('<span/>', {
-        class: 'visually-hidden',
-        text: this._getDeviceTypeTranslation('desktop'),
-      }).appendTo($desktopLabel);
-
-      // Tablet
-      const $tabletWrapper = $('<div/>', {
-        class: 'lp-device-type__item',
-      }).appendTo($radioGroup);
-
-      $('<input/>', {
-        class: 'lp-device-type__input visually-hidden',
-        type: 'radio',
-        name: 'device',
-        value: 'tablet',
-        id: 'device-tablet',
+      }).appendTo(this.$deviceTypeContainer);
+      $('<button/>', {
+        type: 'button',
+        class: 'btn lp-device-type-btn--tablet',
+        title: Craft.t('app', 'Tablet'),
+        'aria-label': Craft.t('app', 'Tablet'),
+        'aria-pressed': 'false',
         data: {
           width: 768,
           height: 1024,
+          deviceType: 'tablet',
         },
-      }).appendTo($tabletWrapper);
-
-      const $tabletLabel = $('<label/>', {
-        for: 'device-tablet',
-        class: 'btn lp-device-type__label lp-device-type__label--tablet',
-        title: this._getDeviceTypeTranslation('tablet'),
-      }).appendTo($tabletWrapper);
-
-      $('<span/>', {
-        class: 'visually-hidden',
-        text: this._getDeviceTypeTranslation('tablet'),
-      }).appendTo($tabletLabel);
-
-      // Mobile
-      const $mobileWrapper = $('<div/>', {
-        class: 'lp-device-type__item',
-      }).appendTo($radioGroup);
-
-      $('<input/>', {
-        class: 'lp-device-type__input visually-hidden',
-        type: 'radio',
-        name: 'device',
-        value: 'phone',
-        id: 'device-phone',
+      }).appendTo(this.$deviceTypeContainer);
+      $('<button/>', {
+        type: 'button',
+        class: 'btn lp-device-type-btn--phone',
+        title: Craft.t('app', 'Mobile'),
+        'aria-label': Craft.t('app', 'Mobile'),
+        'aria-pressed': 'false',
         data: {
           width: 375,
           height: 667,
+          deviceType: 'phone',
         },
-      }).appendTo($mobileWrapper);
+      }).appendTo(this.$deviceTypeContainer);
 
-      const $mobileLabel = $('<label/>', {
-        for: 'device-phone',
-        class: 'btn lp-device-type__label lp-device-type__label--phone',
-        title: this._getDeviceTypeTranslation('phone'),
-      }).appendTo($mobileWrapper);
-
-      $('<span/>', {
-        class: 'visually-hidden',
-        text: this._getDeviceTypeTranslation('phone'),
-      }).appendTo($mobileLabel);
+      // Add functionality
+      this.deviceBtnGroup = new Craft.Listbox(this.$deviceTypeContainer, {
+        onChange: ($selectedOption) => {
+          this.switchDeviceType($selectedOption);
+        },
+      });
     },
 
     _activeTarget: function () {
@@ -519,15 +461,22 @@ Craft.Preview = Garnish.Base.extend(
       this.$editorContainer
         .show()
         .velocity('stop')
-        .animateLeft(0, this.animationDuration, () => {
-          this.trigger('slideIn');
-          Garnish.$win.trigger('resize');
-        });
+        .animateLeft(
+          0,
+          Garnish.getUserPreferredAnimationDuration(this.animationDuration),
+          () => {
+            this.trigger('slideIn');
+            Garnish.$win.trigger('resize');
+          }
+        );
 
       this.$previewContainer
         .show()
         .velocity('stop')
-        .animateRight(0, this.animationDuration);
+        .animateRight(
+          0,
+          Garnish.getUserPreferredAnimationDuration(this.animationDuration)
+        );
 
       this.isVisible = true;
 
@@ -545,7 +494,6 @@ Craft.Preview = Garnish.Base.extend(
         return;
       }
 
-      this.setAnimationDuration();
       this.trigger('beforeClose');
 
       $('html').removeClass('noscroll');
@@ -567,21 +515,31 @@ Craft.Preview = Garnish.Base.extend(
 
       this.$editorContainer
         .velocity('stop')
-        .animateLeft(-this.editorWidthInPx, this.animationDuration, () => {
-          for (var i = 0; i < this.fields.length; i++) {
-            this.fields[i].$newClone.remove();
+        .animateLeft(
+          -this.editorWidthInPx,
+          Garnish.getUserPreferredAnimationDuration(this.animationDuration),
+          () => {
+            for (var i = 0; i < this.fields.length; i++) {
+              this.fields[i].$newClone.remove();
+            }
+            this.$editorContainer.hide();
+            this.trigger('slideOut');
           }
-          this.$editorContainer.hide();
-          this.trigger('slideOut');
-        });
+        );
 
       this.$previewContainer
         .velocity('stop')
-        .animateRight(-this.getIframeWidth(), this.animationDuration, () => {
-          this.$iframeContainer.removeClass('lp-iframe-container--rotating');
-          this.$previewContainer.hide();
-        });
+        .animateRight(
+          -this.getIframeWidth(),
+          Garnish.getUserPreferredAnimationDuration(this.animationDuration),
+          () => {
+            this.$iframeContainer.removeClass('lp-iframe-container--rotating');
+            this.$previewContainer.hide();
+          }
+        );
 
+      this.formObserver.destroy();
+      this.formObserver = null;
       this.elementEditor.off('update', this._updateIframeProxy);
 
       Craft.ElementThumbLoader.retryAll();
@@ -672,16 +630,22 @@ Craft.Preview = Garnish.Base.extend(
           let sameHost;
           if (resetScroll) {
             this.scrollTop = null;
+            this.scrollLeft = null;
           } else if (this.iframeLoaded && this.$iframe) {
             if (this._useIframeResizer()) {
               this.iframeHeight = this.$iframe.height();
               this.scrollTop = this.$iframeContainer.scrollTop();
+              this.scrollLeft = this.$iframeContainer.scrollLeft();
             } else {
               sameHost = Craft.isSameHost(url);
               if (sameHost && this.$iframe[0].contentWindow) {
                 this.scrollTop = $(
                   this.$iframe[0].contentWindow.document
                 ).scrollTop();
+
+                this.scrollLeft = $(
+                  this.$iframe[0].contentWindow.document
+                ).scrollLeft();
               }
             }
           }
@@ -706,6 +670,7 @@ Craft.Preview = Garnish.Base.extend(
             if (!resetScroll && this.iframeHeight !== null) {
               $iframe.height(this.iframeHeight);
               this.$iframeContainer.scrollTop(this.scrollTop);
+              this.$iframeContainer.scrollLeft(this.scrollLeft);
             }
 
             iFrameResize(
@@ -718,6 +683,7 @@ Craft.Preview = Garnish.Base.extend(
                     this.iframeLoaded = true;
                     this.iframeHeight = null;
                     this.scrollTop = null;
+                    this.scrollLeft = null;
                     iframe.scrolling = 'no';
                   },
                 },
@@ -728,8 +694,18 @@ Craft.Preview = Garnish.Base.extend(
           } else {
             $iframe.on('load', () => {
               this.iframeLoaded = true;
-              if (!resetScroll && sameHost && this.scrollTop !== null) {
-                $($iframe[0].contentWindow.document).scrollTop(this.scrollTop);
+              if (!resetScroll && sameHost) {
+                if (this.scrollTop !== null) {
+                  $($iframe[0].contentWindow.document).scrollTop(
+                    this.scrollTop
+                  );
+                }
+
+                if (this.scrollLeft !== null) {
+                  $($iframe[0].contentWindow.document).scrollLeft(
+                    this.scrollLeft
+                  );
+                }
               }
             });
           }
@@ -784,13 +760,10 @@ Craft.Preview = Garnish.Base.extend(
       }, 200);
     },
 
-    switchDeviceType: function (ev) {
+    switchDeviceType: function ($option) {
       this.$iframeContainer.removeClass('lp-iframe-container--rotating');
 
-      const $input = $(ev.target);
-      const $inputWrapper = $input.closest('.lp-device-type__item');
-      const newDeviceType = $input.val();
-
+      const newDeviceType = $option.data('deviceType');
       // Bail if we’re just smashing the same button
       if (newDeviceType === this.currentDeviceType) {
         return false;
@@ -798,13 +771,8 @@ Craft.Preview = Garnish.Base.extend(
 
       // Store new device type data
       this.currentDeviceType = newDeviceType;
-      this.deviceWidth = $input.data('width');
-      this.deviceHeight = $input.data('height');
-
-      // Set the active state on the label
-      this.$deviceTypeContainer.find('.btn').removeClass('active');
-
-      $inputWrapper.find('.btn').addClass('active');
+      this.deviceWidth = $option.data('width');
+      this.deviceHeight = $option.data('height');
 
       if (this.currentDeviceType === 'desktop') {
         // Disable the orientation button
@@ -979,6 +947,7 @@ Craft.Preview = Garnish.Base.extend(
       }
 
       this.updateWidths();
+      this.trigger('drag');
     },
 
     _onDragStop: function () {
@@ -999,11 +968,19 @@ Craft.Preview = Garnish.Base.extend(
     instances: [],
 
     refresh: function () {
-      for (preview of Craft.Preview.instances) {
+      for (let preview of Craft.Preview.instances) {
         preview.updateIframe();
       }
-      for (preview of Craft.LivePreview.instances) {
+      for (let preview of Craft.LivePreview.instances) {
         preview.forceUpdateIframe();
+      }
+    },
+
+    getActive: function () {
+      for (let preview of Craft.Preview.instances) {
+        if (preview.isActive) {
+          return preview;
+        }
       }
     },
   }

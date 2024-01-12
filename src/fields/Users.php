@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\UserQuery;
+use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\interfaces\elements\User as UserInterface;
@@ -55,9 +56,9 @@ class Users extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
-        return UserQuery::class;
+        return sprintf('\\%s|\\%s<\\%s>', UserQuery::class, ElementCollection::class, User::class);
     }
 
     /**

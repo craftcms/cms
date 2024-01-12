@@ -8,9 +8,10 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\ElementInterface;
+use craft\base\NestedElementInterface;
 use craft\config\GeneralConfig;
+use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
@@ -18,7 +19,6 @@ use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
-use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\FsException;
@@ -102,6 +102,8 @@ class Gc extends Component
         $this->_purgePendingUsers();
         $this->_deleteStaleSessions();
         $this->_deleteStaleAnnouncements();
+        $this->_deleteStaleElementActivity();
+        $this->_deleteStaleBulkElementOps();
 
         // elements should always go first
         $this->hardDeleteElements();
@@ -109,7 +111,6 @@ class Gc extends Component
         $this->hardDelete([
             Table::CATEGORYGROUPS,
             Table::ENTRYTYPES,
-            Table::FIELDGROUPS,
             Table::SECTIONS,
             Table::TAGGROUPS,
         ]);
@@ -118,19 +119,15 @@ class Gc extends Component
         $this->deletePartialElements(Category::class, Table::CATEGORIES, 'id');
         $this->deletePartialElements(Entry::class, Table::ENTRIES, 'id');
         $this->deletePartialElements(GlobalSet::class, Table::GLOBALSETS, 'id');
-        $this->deletePartialElements(MatrixBlock::class, Table::MATRIXBLOCKS, 'id');
         $this->deletePartialElements(Tag::class, Table::TAGS, 'id');
         $this->deletePartialElements(User::class, Table::USERS, 'id');
 
-        $this->deletePartialElements(Asset::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(Category::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(Entry::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(GlobalSet::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(Tag::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(User::class, Table::CONTENT, 'elementId');
+        $this->_deleteUnsupportedSiteEntries();
 
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
+        $this->_deleteOrphanedRelations();
+        $this->_deleteOrphanedStructureElements();
 
         // Fire a 'run' event
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
@@ -146,6 +143,9 @@ class Gc extends Component
         $this->hardDeleteVolumes();
         $this->removeEmptyTempFolders();
         $this->_gcCache();
+
+        // Invalidate all element caches so any hard-deleted elements don't look like they still exist
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
@@ -157,7 +157,7 @@ class Gc extends Component
             return;
         }
 
-        Console::stdout("    > deleting trashed volumes and their folders ... ");
+        $this->_stdout("    > deleting trashed volumes and their folders ... ");
         $condition = $this->_hardDeleteCondition();
 
         $volumes = (new Query())->select(['id'])->from([Table::VOLUMES])->where($condition)->all();
@@ -177,7 +177,7 @@ class Gc extends Component
         }
 
         Volume::deleteAll(['id' => $volumeIds]);
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -197,14 +197,14 @@ class Gc extends Component
         $blockElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            if (is_subclass_of($elementType, BlockElementInterface::class)) {
+            if (is_subclass_of($elementType, NestedElementInterface::class)) {
                 $blockElementTypes[] = $elementType;
             } else {
                 $normalElementTypes[] = $elementType;
             }
         }
 
-        Console::stdout('    > deleting trashed elements ... ');
+        $this->_stdout('    > deleting trashed elements ... ');
 
         if ($normalElementTypes) {
             Db::delete(Table::ELEMENTS, [
@@ -247,7 +247,7 @@ SQL;
             $this->db->createCommand($sql, $params)->execute();
         }
 
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -268,9 +268,9 @@ SQL;
         }
 
         foreach ($tables as $table) {
-            Console::stdout("    > deleting trashed rows in the `$table` table ... ");
+            $this->_stdout("    > deleting trashed rows in the `$table` table ... ");
             Db::delete($table, $condition);
-            Console::stdout("done\n", Console::FG_GREEN);
+            $this->_stdout("done\n", Console::FG_GREEN);
         }
     }
 
@@ -286,7 +286,7 @@ SQL;
     public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
         /** @var string|ElementInterface $elementType */
-        Console::stdout(sprintf('    > deleting partial %s data in the `%s` table ... ', $elementType::lowerDisplayName(), $table));
+        $this->_stdout(sprintf('    > deleting partial %s data in the `%s` table ... ', $elementType::lowerDisplayName(), $table));
 
         $elementsTable = Table::ELEMENTS;
 
@@ -311,7 +311,7 @@ SQL;
         }
 
         $this->db->createCommand($sql, ['type' => $elementType])->execute();
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     private function _purgeUnsavedDrafts()
@@ -320,9 +320,9 @@ SQL;
             return;
         }
 
-        Console::stdout('    > purging unsaved drafts that have gone stale ... ');
+        $this->_stdout('    > purging unsaved drafts that have gone stale ... ');
         Craft::$app->getDrafts()->purgeUnsavedDrafts();
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     private function _purgePendingUsers()
@@ -331,9 +331,9 @@ SQL;
             return;
         }
 
-        Console::stdout('    > purging pending users with stale activation codes ... ');
+        $this->_stdout('    > purging pending users with stale activation codes ... ');
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -346,15 +346,18 @@ SQL;
      */
     public function removeEmptyTempFolders(): void
     {
+        $this->_stdout('    > removing empty temp folders ... ');
+
         $emptyFolders = (new Query())
-            ->from(['folders' => Table::VOLUMEFOLDERS])
             ->select(['folders.id', 'folders.path'])
+            ->from(['folders' => Table::VOLUMEFOLDERS])
             ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
             ->where([
                 'folders.volumeId' => null,
                 'assets.id' => null,
             ])
             ->andWhere(['not', ['folders.parentId' => null]])
+            ->andWhere(['not', ['folders.path' => null]])
             ->pairs();
 
         $fs = Craft::createObject(Temp::class);
@@ -366,6 +369,7 @@ SQL;
         }
 
         VolumeFolder::deleteAll(['id' => array_keys($emptyFolders)]);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -387,12 +391,12 @@ SQL;
             return;
         }
 
-        Console::stdout('    > deleting stale user sessions ... ');
+        $this->_stdout('    > deleting stale user sessions ... ');
         $interval = DateTimeHelper::secondsToInterval($this->_generalConfig->purgeStaleUserSessionDuration);
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
         Db::delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -400,18 +404,93 @@ SQL;
      */
     private function _deleteStaleAnnouncements(): void
     {
-        Console::stdout('    > deleting stale feature announcements ... ');
+        $this->_stdout('    > deleting stale feature announcements ... ');
         Db::delete(Table::ANNOUNCEMENTS, ['<', 'dateRead', Db::prepareDateForDb(new DateTime('7 days ago'))]);
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
+    /**
+     * Deletes any stale element activity logs.
+     */
+    private function _deleteStaleElementActivity(): void
+    {
+        $this->_stdout('    > deleting stale element activity records ... ');
+        Db::delete(Table::ELEMENTACTIVITY, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('1 minute ago'))]);
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Deletes any stale bulk element operation records.
+     */
+    private function _deleteStaleBulkElementOps(): void
+    {
+        $this->_stdout('    > deleting stale bulk element operation records ... ');
+        Db::delete(Table::ELEMENTS_BULKOPS, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('2 weeks ago'))]);
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Deletes entries for sites that aren’t enabled by their section.
+     *
+     * This can happen if you entrify a category group, disable one of the sites in the newly-created section’s
+     * settings, then deploy those changes to another environment, apply project config changes, and re-run the
+     * entrify command. (https://github.com/craftcms/cms/issues/13383)
+     */
+    private function _deleteUnsupportedSiteEntries(): void
+    {
+        $this->_stdout('    > deleting entries in unsupported sites ... ');
+
+        $sectionsToCheck = [];
+        $siteIds = Craft::$app->getSites()->getAllSiteIds(true);
+
+        // get sections that are not enabled for given site
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+            $sectionSettings = $section->getSiteSettings();
+            foreach ($siteIds as $siteId) {
+                if (!isset($sectionSettings[$siteId])) {
+                    $sectionsToCheck[] = [
+                        'siteId' => $siteId,
+                        'sectionId' => $section->id,
+                    ];
+                }
+            }
+        }
+
+        if (!empty($sectionsToCheck)) {
+            $elementsSitesTable = Table::ELEMENTS_SITES;
+            $entriesTable = Table::ENTRIES;
+
+            if ($this->db->getIsMysql()) {
+                $sql = <<<SQL
+    DELETE [[es]].* FROM $elementsSitesTable [[es]]
+    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[es.elementId]]
+    WHERE [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
+    SQL;
+            } else {
+                $sql = <<<SQL
+    DELETE FROM $elementsSitesTable
+    USING $elementsSitesTable [[es]]
+    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[es.elementId]]
+    WHERE
+      $elementsSitesTable.[[id]] = [[es.id]] AND
+      [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
+    SQL;
+            }
+
+            foreach ($sectionsToCheck as $params) {
+                $this->db->createCommand($sql, $params)->execute();
+            }
+        }
+
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
 
     /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.
      */
     private function _deleteOrphanedDraftsAndRevisions(): void
     {
-        Console::stdout('    > deleting orphaned drafts and revisions ... ');
+        $this->_stdout('    > deleting orphaned drafts and revisions ... ');
 
         $elementsTable = Table::ELEMENTS;
 
@@ -436,14 +515,69 @@ SQL;
             $this->db->createCommand($sql)->execute();
         }
 
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     private function _deleteOrphanedSearchIndexes(): void
     {
-        Console::stdout('    > deleting orphaned search indexes ... ');
+        $this->_stdout('    > deleting orphaned search indexes ... ');
         Craft::$app->getSearch()->deleteOrphanedIndexes();
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedRelations(): void
+    {
+        $this->_stdout('    > deleting orphaned relations ... ');
+        $relationsTable = Table::RELATIONS;
+        $elementsTable = Table::ELEMENTS;
+
+        if ($this->db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[r]].* FROM $relationsTable [[r]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[r.targetId]]
+WHERE [[e.id]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $relationsTable
+USING $relationsTable [[r]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[r.targetId]]
+WHERE
+  $relationsTable.[[id]] = [[r.id]] AND
+  [[e.id]] IS NULL
+SQL;
+        }
+
+        $this->db->createCommand($sql)->execute();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedStructureElements(): void
+    {
+        $this->_stdout('    > deleting orphaned structure elements ... ');
+        $structureElementsTable = Table::STRUCTUREELEMENTS;
+        $elementsTable = Table::ELEMENTS;
+
+        if ($this->db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[se]].* FROM $structureElementsTable [[se]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[se.elementId]]
+WHERE [[se.elementId]] IS NOT NULL AND [[e.id]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $structureElementsTable
+USING $structureElementsTable [[se]]
+LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[se.elementId]]
+WHERE
+  $structureElementsTable.[[id]] = [[se.id]] AND
+  [[se.elementId]] IS NOT NULL AND
+  [[e.id]] IS NULL
+SQL;
+        }
+
+        $this->db->createCommand($sql)->execute();
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     private function _gcCache(): void
@@ -471,7 +605,7 @@ SQL;
             return;
         }
 
-        Console::stdout('    > garbage-collecting data caches ... ');
+        $this->_stdout('    > garbage-collecting data caches ... ');
 
         if ($hasForceArg) {
             $cache->gc(true);
@@ -479,7 +613,7 @@ SQL;
             $cache->gc();
         }
 
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -503,5 +637,12 @@ SQL;
         }
 
         return $condition;
+    }
+
+    private function _stdout(string $string, ...$format): void
+    {
+        if (Craft::$app instanceof ConsoleApplication) {
+            Console::stdout($string, ...$format);
+        }
     }
 }

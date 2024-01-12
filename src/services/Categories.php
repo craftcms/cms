@@ -28,6 +28,7 @@ use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use craft\web\View;
+use DateTime;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -94,7 +95,7 @@ class Categories extends Component
      */
     public function getAllGroupIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllGroups(), 'id');
+        return array_map(fn(CategoryGroup $group) => $group->id, $this->getAllGroups());
     }
 
     /**
@@ -104,7 +105,7 @@ class Categories extends Component
      */
     public function getEditableGroupIds(): array
     {
-        return ArrayHelper::getColumn($this->getEditableGroups(), 'id');
+        return array_map(fn(CategoryGroup $group) => $group->id, $this->getEditableGroups());
     }
 
     /**
@@ -115,19 +116,15 @@ class Categories extends Component
     private function _groups(): MemoizableArray
     {
         if (!isset($this->_groups)) {
-            $groups = [];
-
-            /** @var CategoryGroupRecord[] $groupRecords */
             $groupRecords = CategoryGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->with('structure')
                 ->all();
 
-            foreach ($groupRecords as $groupRecord) {
-                $groups[] = $this->_createCategoryGroupFromRecord($groupRecord);
-            }
-
-            $this->_groups = new MemoizableArray($groups);
+            $this->_groups = new MemoizableArray(
+                $groupRecords,
+                fn(CategoryGroupRecord $record) => $this->_createCategoryGroupFromRecord($record),
+            );
         }
 
         return $this->_groups;
@@ -202,11 +199,25 @@ class Categories extends Component
      * Returns a group by its handle.
      *
      * @param string $groupHandle
+     * @param bool $withTrashed
      * @return CategoryGroup|null
      */
-    public function getGroupByHandle(string $groupHandle): ?CategoryGroup
+    public function getGroupByHandle(string $groupHandle, bool $withTrashed = false): ?CategoryGroup
     {
-        return $this->_groups()->firstWhere('handle', $groupHandle, true);
+        /** @var CategoryGroup|null $group */
+        $group = $this->_groups()->firstWhere('handle', $groupHandle, true);
+
+        if (!$group && $withTrashed) {
+            /** @var CategoryGroupRecord|null $record */
+            $record = CategoryGroupRecord::findWithTrashed()
+                ->andWhere(['handle' => $groupHandle])
+                ->one();
+            if ($record) {
+                $group = $this->_createCategoryGroupFromRecord($record);
+            }
+        }
+
+        return $group;
     }
 
     /**
@@ -217,6 +228,7 @@ class Categories extends Component
      */
     public function getGroupSiteSettings(int $groupId): array
     {
+        /** @var CategoryGroup_SiteSettingsRecord[] $results */
         $results = CategoryGroup_SiteSettingsRecord::find()
             ->where(['groupId' => $groupId])
             ->all();
@@ -407,8 +419,6 @@ class Categories extends Component
                 // site rows
                 $affectedSiteUids = array_keys($siteData);
 
-                // todo: remove comment when phpstan#5401 is fixed
-                /** @phpstan-ignore-next-line */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {
@@ -579,16 +589,40 @@ class Categories extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the categories
-            /** @var Category[] $categories */
-            $categories = Category::find()
-                ->groupId($categoryGroupRecord->id)
-                ->status(null)
-                ->all();
-            $elementsService = Craft::$app->getElements();
+            $elementsTable = Table::ELEMENTS;
+            $categoriesTable = Table::CATEGORIES;
+            $now = Db::prepareDateForDb(new DateTime());
+            $db = Craft::$app->getDb();
 
-            foreach ($categories as $category) {
-                $category->deletedWithGroup = true;
-                $elementsService->deleteElement($category);
+            $conditionSql = <<<SQL
+[[categories.groupId]] = $group->id AND
+[[categories.id]] = [[elements.id]] AND
+[[elements.canonicalId]] IS NULL AND
+[[elements.revisionId]] IS NULL AND
+[[elements.dateDeleted]] IS NULL
+SQL;
+
+            if ($db->getIsMysql()) {
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]], $categoriesTable [[categories]]
+SET [[elements.dateDeleted]] = '$now',
+  [[categories.deletedWithGroup]] = 1
+WHERE $conditionSql
+SQL)->execute();
+            } else {
+                // Not possible to update two tables simultaneously with Postgres
+                $db->createCommand(<<<SQL
+UPDATE $categoriesTable [[categories]]
+SET [[deletedWithGroup]] = TRUE
+FROM $elementsTable [[elements]]
+WHERE $conditionSql
+SQL)->execute();
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+SET [[dateDeleted]] = '$now'
+FROM $categoriesTable [[categories]]
+WHERE $conditionSql
+SQL)->execute();
             }
 
             // Delete the structure
@@ -728,6 +762,7 @@ class Categories extends Component
             'name',
             'handle',
             'defaultPlacement',
+            'dateDeleted',
             'uid',
         ]));
 

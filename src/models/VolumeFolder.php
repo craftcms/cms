@@ -8,7 +8,9 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\FsInterface;
 use craft\base\Model;
+use craft\helpers\Html;
 use yii\base\InvalidConfigException;
 
 /**
@@ -53,9 +55,21 @@ class VolumeFolder extends Model
     public ?string $uid = null;
 
     /**
+     * @var FsInterface|null
+     * @see getFs()
+     * @see setFs()
+     */
+    private ?FsInterface $_fs;
+
+    /**
      * @var VolumeFolder[]|null
      */
     private ?array $_children = null;
+
+    /**
+     * @var bool
+     */
+    private bool $_hasChildren;
 
     /**
      * @inheritdoc
@@ -78,6 +92,8 @@ class VolumeFolder extends Model
     }
 
     /**
+     * Returns the volume this folder belongs to.
+     *
      * @return Volume
      * @throws InvalidConfigException if [[volumeId]] is invalid
      */
@@ -92,6 +108,114 @@ class VolumeFolder extends Model
         }
 
         return $volume;
+    }
+
+    /**
+     * Return the filesystem this folder belongs to.
+     *
+     * @return FsInterface
+     * @since 5.0.0
+     */
+    public function getFs(): FsInterface
+    {
+        return $this->_fs ?? $this->getVolume()->getFs();
+    }
+
+    /**
+     * Sets the filesystem this folder belongs to.
+     *
+     * @param FsInterface $fs
+     * @since 5.0.0
+     */
+    public function setFs(FsInterface $fs): void
+    {
+        $this->_fs = $fs;
+    }
+
+    /**
+     * Returns info about the folder for an element index’s source path configuration.
+     *
+     * @return array|null
+     * @since 4.4.0
+     */
+    public function getSourcePathInfo(): ?array
+    {
+        if (!$this->volumeId) {
+            return null;
+        }
+
+        $volume = $this->getVolume();
+        $userSession = Craft::$app->getUser();
+        $canView = $userSession->checkPermission("viewAssets:$volume->uid");
+        $canCreate = $userSession->checkPermission("createFolders:$volume->uid");
+        $canDelete = $userSession->checkPermission("deletePeerAssets:$volume->uid");
+        $canMove = $canDelete && $userSession->checkPermission("savePeerAssets:$volume->uid");
+
+        $info = [
+            'uri' => sprintf('assets/%s%s', $volume->handle, $this->path ? sprintf('/%s', trim($this->path, '/')) : ''),
+            'folderId' => (int)$this->id,
+            'hasChildren' => $this->getHasChildren(),
+            'canView' => $canView,
+            'canCreate' => $canCreate,
+            'canMoveSubItems' => $canMove,
+        ];
+
+        // Is this a root folder?
+        if (!$this->parentId) {
+            $info += [
+                'key' => "volume:$volume->uid",
+                'icon' => 'home',
+                'label' => Craft::t('app', '{volume} root', [
+                    'volume' => Html::encode(Craft::t('site', $volume->name)),
+                ]),
+                'handle' => $volume->handle,
+            ];
+        } else {
+            $canRename = $canCreate & $userSession->checkPermission("deleteAssets:$volume->uid");
+
+            $info += [
+                'key' => "folder:$this->uid",
+                'label' => Html::encode($this->name),
+                'criteria' => [
+                    'folderId' => $this->id,
+                ],
+                'canRename' => $canRename,
+                'canMove' => $canMove,
+                'canDelete' => $canDelete,
+            ];
+        }
+
+        return $info;
+    }
+
+    /**
+     * Returns whether the folder has any child folders.
+     *
+     * @return bool
+     * @since 4.4.0
+     */
+    public function getHasChildren(): bool
+    {
+        if (isset($this->_children)) {
+            return !empty($this->_children);
+        }
+
+        if (!isset($this->_hasChildren)) {
+            $this->_hasChildren = Craft::$app->getAssets()->foldersExist(['parentId' => $this->id]);
+        }
+
+        return $this->_hasChildren;
+    }
+
+    /**
+     * Sets whether the folder has any child folders.
+     *
+     * @param bool $value
+     * @since 4.4.0
+     */
+    public function setHasChildren(bool $value)
+    {
+        $this->_hasChildren = $value;
     }
 
     /**

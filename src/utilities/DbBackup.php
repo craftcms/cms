@@ -53,6 +53,6 @@ class DbBackup extends Utility
         $view->registerAssetBundle(DbBackupAsset::class);
         $view->registerJs('new Craft.DbBackupUtility(\'db-backup\');');
 
-        return $view->renderTemplate('_components/utilities/DbBackup');
+        return $view->renderTemplate('_components/utilities/DbBackup.twig');
     }
 }

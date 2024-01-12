@@ -286,6 +286,7 @@ class Formatter extends \yii\i18n\Formatter
     private function _formatDateTimeValueWithPhpFormat(mixed $value, string $format, string $type): string
     {
         // special cases for PHP format characters not supported by ICU
+        /** @var string[] $split */
         $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U|A|a)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);
         $formatted = '';
 

@@ -8,7 +8,9 @@
 namespace craft\elements\db;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
@@ -43,6 +45,20 @@ class AssetQuery extends ElementQuery
 {
     // General parameters
     // -------------------------------------------------------------------------
+
+    /**
+     * @var bool|null Whether to only return assets that the user has permission to view.
+     * @used-by editable()
+     * @since 4.4.0
+     */
+    public ?bool $editable = null;
+
+    /**
+     * @var bool|null Whether to only return entries that the user has permission to save.
+     * @used-by savable()
+     * @since 4.4.0
+     */
+    public ?bool $savable = null;
 
     /**
      * @var mixed The volume ID(s) that the resulting assets must be in.
@@ -233,6 +249,34 @@ class AssetQuery extends ElementQuery
     }
 
     /**
+     * Sets the [[$editable]] property.
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return self self reference
+     * @uses $editable
+     * @since 4.4.0
+     */
+    public function editable(?bool $value = true): self
+    {
+        $this->editable = $value;
+        return $this;
+    }
+
+    /**
+     * Sets the [[$savable]] property.
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return self self reference
+     * @uses $savable
+     * @since 4.4.0
+     */
+    public function savable(?bool $value = true): self
+    {
+        $this->savable = $value;
+        return $this;
+    }
+
+    /**
      * Narrows the query results based on the volume the assets belong to.
      *
      * Possible values include:
@@ -262,10 +306,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $volumeId
      */
-    public function volume(mixed $value): self
+    public function volume(mixed $value): static
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
@@ -318,10 +362,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $volumeId
      */
-    public function volumeId(mixed $value): self
+    public function volumeId(mixed $value): static
     {
         $this->volumeId = $value;
         return $this;
@@ -362,10 +406,10 @@ class AssetQuery extends ElementQuery
      * :::
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $folderId
      */
-    public function folderId(mixed $value): self
+    public function folderId(mixed $value): static
     {
         $this->folderId = $value;
         return $this;
@@ -398,11 +442,11 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param int|User|null $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $uploaderId
      * @since 3.4.0
      */
-    public function uploader(int|User|null $value): self
+    public function uploader(int|User|null $value): static
     {
         if ($value instanceof User) {
             $this->uploaderId = $value->id;
@@ -446,10 +490,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $filename
      */
-    public function filename(mixed $value): self
+    public function filename(mixed $value): static
     {
         $this->filename = $value;
         return $this;
@@ -505,10 +549,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $kind
      */
-    public function kind(mixed $value): self
+    public function kind(mixed $value): static
     {
         $this->kind = $value;
         return $this;
@@ -518,10 +562,10 @@ class AssetQuery extends ElementQuery
      * Narrows the query results based on whether the assets have alternative text.
      *
      * @param bool|null $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $hasAlt
      */
-    public function hasAlt(?bool $value = true): self
+    public function hasAlt(?bool $value = true): static
     {
         $this->hasAlt = $value;
         return $this;
@@ -557,10 +601,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $width
      */
-    public function width(mixed $value): self
+    public function width(mixed $value): static
     {
         $this->width = $value;
         return $this;
@@ -596,10 +640,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $height
      */
-    public function height(mixed $value): self
+    public function height(mixed $value): static
     {
         $this->height = $value;
         return $this;
@@ -633,10 +677,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $size
      */
-    public function size(mixed $value): self
+    public function size(mixed $value): static
     {
         $this->size = $value;
         return $this;
@@ -650,8 +694,9 @@ class AssetQuery extends ElementQuery
      * | Value | Fetches assets…
      * | - | -
      * | `'>= 2018-04-01'` | that were modified on or after 2018-04-01.
-     * | `'< 2018-05-01'` | that were modified before 2018-05-01
+     * | `'< 2018-05-01'` | that were modified before 2018-05-01.
      * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that were modified between 2018-04-01 and 2018-05-01.
+     * | `now`/`today`/`tomorrow`/`yesterday` | that were modified at midnight of the specified relative date.
      *
      * ---
      *
@@ -674,10 +719,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $dateModified
      */
-    public function dateModified(mixed $value): self
+    public function dateModified(mixed $value): static
     {
         $this->dateModified = $value;
         return $this;
@@ -711,10 +756,10 @@ class AssetQuery extends ElementQuery
      * :::
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $includeSubfolders
      */
-    public function includeSubfolders(bool $value = true): self
+    public function includeSubfolders(bool $value = true): static
     {
         $this->includeSubfolders = $value;
         return $this;
@@ -750,11 +795,11 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $folderPath
      * @since 3.7.39
      */
-    public function folderPath(mixed $value): self
+    public function folderPath(mixed $value): static
     {
         $this->folderPath = $value;
         return $this;
@@ -804,10 +849,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param string|array|null $value The transforms to include.
-     * @return self The query object itself
+     * @return static The query object itself
      * @uses $withTransforms
      */
-    public function withTransforms(string|array|null $value = null): self
+    public function withTransforms(string|array|null $value = null): static
     {
         $this->withTransforms = $value;
         return $this;
@@ -839,6 +884,10 @@ class AssetQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->_normalizeVolumeId();
 
         // See if 'volume' was set to an invalid handle
@@ -846,7 +895,12 @@ class AssetQuery extends ElementQuery
             return false;
         }
 
-        $this->joinElementTable('assets');
+        $this->joinElementTable(Table::ASSETS);
+        $this->query->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
+            'and',
+            '[[assets_sites.assetId]] = [[assets.id]]',
+            '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
+        ]);
         $this->subQuery->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
         $this->query->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
 
@@ -856,14 +910,15 @@ class AssetQuery extends ElementQuery
             'assets.uploaderId',
             'assets.filename',
             'assets.kind',
-            'assets.alt',
             'assets.width',
             'assets.height',
             'assets.size',
+            'assets.alt',
             'assets.focalPoint',
             'assets.keptFile',
             'assets.dateModified',
-            'volumeFolders.path AS folderPath',
+            'siteAlt' => 'assets_sites.alt',
+            'folderPath' => 'volumeFolders.path',
         ]);
 
         if ($this->volumeId) {
@@ -910,7 +965,18 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->hasAlt !== null) {
-            $this->subQuery->andWhere($this->hasAlt ? ['not', ['assets.alt' => null]] : ['assets.alt' => null]);
+            $hasAltCondition = [
+                'or',
+                ['assets.alt' => null],
+                ['assets_site.alt' => null],
+            ];
+            $this->subQuery
+                ->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
+                    'and',
+                    '[[assets_sites.assetId]] = [[assets.id]]',
+                    '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
+                ])
+                ->andWhere($this->hasAlt ? ['not', $hasAltCondition] : $hasAltCondition);
         }
 
         if ($this->width) {
@@ -929,7 +995,84 @@ class AssetQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseDateParam('assets.dateModified', $this->dateModified));
         }
 
-        return parent::beforePrepare();
+        $this->_applyAuthParam($this->editable, 'viewAssets', 'viewPeerAssets');
+        $this->_applyAuthParam($this->savable, 'saveAssets', 'savePeerAssets');
+
+        return true;
+    }
+
+    /**
+     * @param bool|null $value
+     * @param string $permissionPrefix
+     * @param string $peerPermissionPrefix
+     * @throws QueryAbortedException
+     */
+    private function _applyAuthParam(?bool $value, string $permissionPrefix, string $peerPermissionPrefix): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if (!$user) {
+            throw new QueryAbortedException();
+        }
+
+        $fullyAuthorizedVolumeIds = [];
+        $partiallyAuthorizedVolumeIds = [];
+        $unauthorizedVolumeIds = [];
+
+        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+            if ($user->can("$peerPermissionPrefix:$volume->uid")) {
+                $fullyAuthorizedVolumeIds[] = $volume->id;
+            } elseif ($user->can("$permissionPrefix:$volume->uid")) {
+                $partiallyAuthorizedVolumeIds[] = $volume->id;
+            } else {
+                $unauthorizedVolumeIds[] = $volume->id;
+            }
+        }
+
+        if ($value) {
+            if (!$fullyAuthorizedVolumeIds && !$partiallyAuthorizedVolumeIds) {
+                throw new QueryAbortedException();
+            }
+
+            $this->subQuery->andWhere(array_filter([
+                'or',
+                $fullyAuthorizedVolumeIds
+                    ? ['assets.volumeId' => $fullyAuthorizedVolumeIds]
+                    : null,
+                $partiallyAuthorizedVolumeIds
+                    ? [
+                        'assets.volumeId' => $partiallyAuthorizedVolumeIds,
+                        'assets.uploaderId' => $user->id,
+                    ]
+                    : null,
+            ]));
+        } else {
+            if (!$unauthorizedVolumeIds && !$partiallyAuthorizedVolumeIds) {
+                throw new QueryAbortedException();
+            }
+
+            $this->subQuery->andWhere(array_filter([
+                'or',
+                $unauthorizedVolumeIds
+                    ? ['assets.volumeId' => $unauthorizedVolumeIds]
+                    : null,
+                $partiallyAuthorizedVolumeIds
+                    ? [
+                        'and',
+                        ['assets.volumeId' => $partiallyAuthorizedVolumeIds],
+                        [
+                            'or',
+                            ['not', ['assets.uploaderId' => $user->id]],
+                            ['assets.uploaderId' => null],
+                        ],
+                    ]
+                    : null,
+            ]));
+        }
     }
 
     /**
@@ -956,6 +1099,20 @@ class AssetQuery extends ElementQuery
 
     /**
      * @inheritdoc
+     */
+    public function createElement(array $row): ElementInterface
+    {
+        // Use the site-specific alt text, if set
+        $siteAlt = ArrayHelper::remove($row, 'siteAlt');
+        if ($siteAlt !== null && $siteAlt !== '') {
+            $row['alt'] = $siteAlt;
+        }
+
+        return parent::createElement($row);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.0
      */
     protected function cacheTags(): array
@@ -967,5 +1124,25 @@ class AssetQuery extends ElementQuery
             }
         }
         return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        if ($this->volumeId && $this->volumeId !== ':empty:') {
+            $fieldLayouts = [];
+            $volumesService = Craft::$app->getVolumes();
+            foreach ($this->volumeId as $volumeId) {
+                $volume = $volumesService->getVolumeById($volumeId);
+                if ($volume) {
+                    $fieldLayouts[] = $volume->getFieldLayout();
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
     }
 }

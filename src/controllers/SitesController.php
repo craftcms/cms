@@ -36,10 +36,14 @@ class SitesController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All actions require an admin account
         $this->requireAdmin();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
@@ -82,7 +86,7 @@ class SitesController extends Controller
             'Delete {site}',
         ]);
 
-        return $this->renderTemplate('settings/sites/index', compact(
+        return $this->renderTemplate('settings/sites/index.twig', compact(
             'crumbs',
             'allGroups',
             'group',
@@ -278,7 +282,7 @@ class SitesController extends Controller
             ];
         }
 
-        return $this->renderTemplate('settings/sites/_edit', [
+        return $this->renderTemplate('settings/sites/_edit.twig', [
             'brandNewSite' => $brandNewSite,
             'title' => $title,
             'crumbs' => $crumbs,

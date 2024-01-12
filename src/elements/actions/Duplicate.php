@@ -10,6 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
+use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use Throwable;
 
@@ -39,6 +40,39 @@ class Duplicate extends ElementAction
         return $this->deep
             ? Craft::t('app', 'Duplicate (with descendants)')
             : Craft::t('app', 'Duplicate');
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getTriggerHtml(): ?string
+    {
+        // Only enable for duplicatable elements, per canDuplicate()
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+(() => {
+  new Craft.ElementActionTrigger({
+    type: $type,
+    validateSelection: (selectedItems, elementIndex) => {
+      for (let i = 0; i < selectedItems.length; i++) {
+        if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-duplicatable')) {
+          return false;
+        }
+      }
+
+      return elementIndex.settings.canDuplicateElements(selectedItems);
+    },
+    beforeActivate: async (selectedItems, elementIndex) => {
+      await elementIndex.settings.onBeforeDuplicateElements(selectedItems);
+    },
+    afterActivate: async (selectedItems, elementIndex) => {
+      await elementIndex.settings.onDuplicateElements(selectedItems);
+    },
+  });
+})();
+JS, [static::class]);
+
+        return null;
     }
 
     /**
@@ -92,8 +126,15 @@ class Duplicate extends ElementAction
                 continue;
             }
 
+            $attributes = [];
+
+            // If the element was loaded for a non-primary owner, set its primary owner to it
+            if ($element instanceof NestedElementInterface) {
+                $attributes['primaryOwner'] = $element->getOwner();
+            }
+
             try {
-                $duplicate = $elementsService->duplicateElement($element);
+                $duplicate = $elementsService->duplicateElement($element, $attributes);
             } catch (Throwable) {
                 // Validation error
                 $failCount++;

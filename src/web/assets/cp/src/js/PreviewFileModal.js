@@ -20,6 +20,15 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
      * @returns {*|void}
      */
     init: function (assetId, elementSelect, settings) {
+      // (assetId, settings)
+      if (
+        typeof settings === 'undefined' &&
+        jQuery.isPlainObject(elementSelect)
+      ) {
+        settings = elementSelect;
+        elementSelect = null;
+      }
+
       settings = $.extend(this.defaultSettings, settings);
       this.$triggerElement = Garnish.getFocusedElement();
 
@@ -105,6 +114,18 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         .append(this.$bumperButtonEnd);
     },
 
+    _addModalName: function () {
+      const headingId = 'preview-heading';
+
+      $('<h1/>', {
+        class: 'visually-hidden',
+        id: headingId,
+        text: Craft.t('app', 'Preview file'),
+      }).prependTo(this.$container);
+
+      this.$container.attr('aria-labelledby', headingId);
+    },
+
     /**
      * Disappear immediately forever.
      * @returns {boolean}
@@ -125,9 +146,9 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
     /**
      * Load an asset, using starting width and height, if applicable
-     * @param assetId
-     * @param startingWidth
-     * @param startingHeight
+     * @param {number} assetId
+     * @param {number} [startingWidth]
+     * @param {number} [startingHeight]
      */
     loadAsset: function (assetId, startingWidth, startingHeight) {
       this.assetId = assetId;
@@ -209,22 +230,24 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
           }
 
           this.$container.removeClass('zilch');
+          this.$container.attr('data-asset-id', this.assetId);
           this.$container.append(response.data.previewHtml);
           this._addBumperButtons();
+          this._addModalName();
           Craft.appendHeadHtml(response.data.headHtml);
           Craft.appendBodyHtml(response.data.bodyHtml);
         })
         .catch(({response}) => {
           onResponse();
-          alert(response.data.message);
+          Craft.cp.displayError(response.data.message);
           this.hide();
         });
     },
 
     /**
      * Resize the container to specified dimensions
-     * @param containerWidth
-     * @param containerHeight
+     * @param {number} containerWidth
+     * @param {number} containerHeight
      * @private
      */
     _resizeContainer: function (containerWidth, containerHeight) {
@@ -242,6 +265,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
   },
   {
     defaultSettings: {
+      minGutter: 50,
       startingWidth: null,
       startingHeight: null,
     },

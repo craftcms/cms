@@ -10,8 +10,10 @@ namespace craft\gql\resolvers\elements;
 use Craft;
 use craft\elements\Category as CategoryElement;
 use craft\elements\db\ElementQuery;
+use craft\elements\ElementCollection;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use yii\base\UnknownMethodException;
 
 /**
  * Class Category
@@ -40,13 +42,19 @@ class Category extends ElementResolver
         }
 
         foreach ($arguments as $key => $value) {
-            $query->$key($value);
+            try {
+                $query->$key($value);
+            } catch (UnknownMethodException $e) {
+                if ($value !== null) {
+                    throw $e;
+                }
+            }
         }
 
         $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!GqlHelper::canQueryCategories()) {
-            return [];
+            return ElementCollection::empty();
         }
 
         $categoriesService = Craft::$app->getCategories();

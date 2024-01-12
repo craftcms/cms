@@ -45,10 +45,13 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
      */
     protected function inputHtml(): string
     {
+        $unitId = 'unit';
         return Html::tag('div',
             parent::inputHtml() .
+            Html::hiddenLabel(Craft::t('app', 'Unit'), $unitId) .
             Cp::selectHtml([
                 'name' => 'unit',
+                'id' => $unitId,
                 'options' => [
                     ['value' => self::UNIT_B, 'label' => self::UNIT_B],
                     ['value' => self::UNIT_KB, 'label' => self::UNIT_KB],

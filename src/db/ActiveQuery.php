@@ -7,6 +7,9 @@
 
 namespace craft\db;
 
+use Illuminate\Support\Collection;
+use yii\db\Connection as YiiConnection;
+
 /**
  * Active Query class.
  *
@@ -16,6 +19,19 @@ namespace craft\db;
  */
 class ActiveQuery extends \yii\db\ActiveQuery
 {
+    /**
+     * Executes the query and returns all results as a collection.
+     *
+     * @param YiiConnection|null $db The database connection used to generate the SQL statement.
+     * If null, the DB connection returned by [[modelClass]] will be used.
+     * @return Collection A collection of the resulting records.
+     * @since 4.3.0
+     */
+    public function collect(?YiiConnection $db = null): Collection
+    {
+        return Collection::make($this->all($db));
+    }
+
     /**
      * Returns the table alias for [[modelClass]].
      *

@@ -35,8 +35,13 @@ class RebrandController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         Craft::$app->requireEdition(Craft::Pro);
-        return parent::beforeAction($action);
+
+        return true;
     }
 
     /**
@@ -84,7 +89,7 @@ class RebrandController extends Controller
         }
 
         $imagesService->loadImage($fileDestination)->scaleToFit(300, 300)->saveAs($fileDestination);
-        $html = $this->getView()->renderTemplate('settings/general/_images/' . $type);
+        $html = $this->getView()->renderTemplate("settings/general/_images/$type.twig");
 
         return $this->asJson([
             'html' => $html,
@@ -102,12 +107,12 @@ class RebrandController extends Controller
         $type = $this->request->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes, true)) {
-            $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
+            return $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
         }
 
         FileHelper::clearDirectory(Craft::$app->getPath()->getRebrandPath() . '/' . $type);
 
-        $html = $this->getView()->renderTemplate('settings/general/_images/' . $type);
+        $html = $this->getView()->renderTemplate("settings/general/_images/$type.twig");
 
         return $this->asJson([
             'html' => $html,

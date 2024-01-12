@@ -24,4 +24,7 @@
       @include border-bottom-left-radius(0);
     }
   }
+  .money-placeholder {
+    color: var(--light-sel-color);
+  }
 }

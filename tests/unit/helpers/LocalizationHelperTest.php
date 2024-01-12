@@ -63,7 +63,7 @@ class LocalizationHelperTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeLanguageDataProvider(): array
+    public static function normalizeLanguageDataProvider(): array
     {
         return [
             ['nl', 'nl'],
@@ -78,7 +78,7 @@ class LocalizationHelperTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeNumberDataProvider(): array
+    public static function normalizeNumberDataProvider(): array
     {
         return [
             ['2000000000', '20,0000,0000', null],

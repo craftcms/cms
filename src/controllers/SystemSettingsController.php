@@ -12,6 +12,8 @@ use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
+use craft\helpers\Html;
 use craft\helpers\MailerHelper;
 use craft\helpers\UrlHelper;
 use craft\mail\Mailer;
@@ -40,10 +42,14 @@ class SystemSettingsController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All system setting actions require an admin
         $this->requireAdmin();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
@@ -55,7 +61,7 @@ class SystemSettingsController extends Controller
     {
         $this->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
-        return $this->renderTemplate('settings/general/_index', [
+        return $this->renderTemplate('settings/general/_index.twig', [
             'system' => Craft::$app->getProjectConfig()->get('system') ?? [],
         ]);
     }
@@ -147,7 +153,7 @@ class SystemSettingsController extends Controller
             }
         }
 
-        return $this->renderTemplate('settings/email/_index', [
+        return $this->renderTemplate('settings/email/_index.twig', [
             'settings' => $settings,
             'adapter' => $adapter,
             'transportTypeOptions' => $transportTypeOptions,
@@ -212,7 +218,7 @@ class SystemSettingsController extends Controller
                 ->composeFromKey('test_email', [
                     'settings' => MailerHelper::settingsReport($mailer, $adapter),
                 ])
-                ->setTo(Craft::$app->getUser()->getIdentity());
+                ->setTo(static::currentUser());
 
             if ($message->send()) {
                 $this->setSuccessFlash(Craft::t('app', 'Email sent successfully! Check your inbox.'));
@@ -253,7 +259,9 @@ class SystemSettingsController extends Controller
         }
 
         if ($globalSet->id) {
-            $title = trim($globalSet->name) ?: Craft::t('app', 'Edit Global Set');
+            $title = trim($globalSet->name) ?: Craft::t('app', 'Edit {type}', [
+                'type' => GlobalSet::displayName(),
+            ]);
         } else {
             $title = Craft::t('app', 'Create a new global set');
         }
@@ -271,7 +279,7 @@ class SystemSettingsController extends Controller
         ];
 
         // Render the template!
-        return $this->renderTemplate('settings/globals/_edit', [
+        return $this->renderTemplate('settings/globals/_edit.twig', [
             'globalSetId' => $globalSetId,
             'globalSet' => $globalSet,
             'title' => $title,
@@ -293,7 +301,7 @@ class SystemSettingsController extends Controller
         $settings->fromName = $this->request->getBodyParam('fromName');
         $settings->template = $this->request->getBodyParam('template');
         $settings->transportType = $this->request->getBodyParam('transportType');
-        $settings->transportSettings = $this->request->getBodyParam('transportTypes.' . $settings->transportType);
+        $settings->transportSettings = Component::cleanseConfig($this->request->getBodyParam(sprintf('transportTypes.%s', Html::id($settings->transportType))) ?? []);
 
         return $settings;
     }

@@ -36,11 +36,11 @@ use yii\base\Component;
 class Utilities extends Component
 {
     /**
-     * @event RegisterComponentTypesEvent The event that is triggered when registering utility types.
+     * @event RegisterComponentTypesEvent The event that is triggered when registering utilities.
      *
-     * Utility types must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
+     * Utilities must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
      *
-     * See [Utility Types](https://craftcms.com/docs/4.x/extend/utility-types.html) for documentation on creating utility types.
+     * Read more about creating utilities in the [documentation](https://craftcms.com/docs/4.x/extend/utilities.html).
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -48,14 +48,14 @@ class Utilities extends Component
      * use yii\base\Event;
      *
      * Event::on(Utilities::class,
-     *     Utilities::EVENT_REGISTER_UTILITY_TYPES,
+     *     Utilities::EVENT_REGISTER_UTILITIES,
      *     function(RegisterComponentTypesEvent $event) {
      *         $event->types[] = MyUtilityType::class;
      *     }
      * );
      * ```
      */
-    public const EVENT_REGISTER_UTILITY_TYPES = 'registerUtilityTypes';
+    public const EVENT_REGISTER_UTILITIES = 'registerUtilities';
 
     /**
      * Returns all available utility type classes.
@@ -94,9 +94,14 @@ class Utilities extends Component
         $event = new RegisterComponentTypesEvent([
             'types' => $utilityTypes,
         ]);
-        $this->trigger(self::EVENT_REGISTER_UTILITY_TYPES, $event);
+        $this->trigger(self::EVENT_REGISTER_UTILITIES, $event);
 
-        return $event->types;
+        $disabledUtilities = array_flip(Craft::$app->getConfig()->getGeneral()->disabledUtilities);
+
+        return array_values(array_filter($event->types, function(string $class) use ($disabledUtilities) {
+            /** @var string|UtilityInterface $class */
+            return !isset($disabledUtilities[$class::id()]);
+        }));
     }
 
     /**

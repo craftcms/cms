@@ -295,7 +295,7 @@ class ElementQueryConditionBuilder extends Component
                 'uploader' => [AssetField::class, 'canBeAliased' => false],
                 'parent' => [BaseRelationField::class, 'canBeAliased' => false],
                 'ancestors' => [BaseRelationField::class, 'canBeAliased' => false],
-                'children' => [BaseRelationField::class, 'canBeAliased' => false],
+                'children' => [BaseRelationField::class, 'canBeAliased' => true],
                 'descendants' => [BaseRelationField::class, 'canBeAliased' => false],
                 'currentRevision' => [BaseRelationField::class, 'canBeAliased' => false],
                 'draftCreator' => [BaseRelationField::class, 'canBeAliased' => false],
@@ -518,7 +518,7 @@ class ElementQueryConditionBuilder extends Component
                                 return $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
                             };
                         }
-                        $plan->criteria = array_merge_recursive($plan->criteria, $arguments);
+                        $plan->criteria = array_merge_recursive($plan->criteria, $this->_argumentManager->prepareArguments($arguments));
                     }
 
                     // If it has any more selections, build the plans recursively

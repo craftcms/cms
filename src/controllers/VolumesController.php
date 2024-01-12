@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Field;
 use craft\base\FsInterface;
 use craft\elements\Asset;
+use craft\helpers\Assets;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\Volume;
 use craft\web\Controller;
@@ -35,10 +37,14 @@ class VolumesController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All asset volume actions require an admin
         $this->requireAdmin();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
@@ -51,7 +57,7 @@ class VolumesController extends Controller
         $variables = [];
         $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
 
-        return $this->renderTemplate('settings/assets/volumes/_index', $variables);
+        return $this->renderTemplate('settings/assets/volumes/_index.twig', $variables);
     }
 
     /**
@@ -93,21 +99,17 @@ class VolumesController extends Controller
         $allVolumes = $volumesServices->getAllVolumes();
         /** @var Collection<string> $takenFsHandles */
         $takenFsHandles = Collection::make($allVolumes)
+            ->filter(fn(Volume $volume) => !$volume->getSubpath())
             ->map(fn(Volume $volume) => $volume->getFsHandle());
         $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
-            ->filter(fn(FsInterface $fs) => $fs->handle === $fsHandle || !$takenFsHandles->contains($fs->handle))
             ->sortBy(fn(FsInterface $fs) => $fs->name)
             ->map(fn(FsInterface $fs) => [
                 'label' => $fs->name,
                 'value' => $fs->handle,
+                'disabled' => Assets::isTempUploadFs($fs) || ($takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle),
             ])
             ->all();
-
-        if (empty($fsOptions)) {
-            $fsOptions = [
-
-            ];
-        }
+        array_unshift($fsOptions, ['label' => Craft::t('app', 'Select a filesystem'), 'value' => '']);
 
         return $this->asCpScreen()
             ->title($title)
@@ -118,7 +120,7 @@ class VolumesController extends Controller
             ->redirectUrl('settings/assets')
             ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
             ->editUrl($volume->id ? "settings/assets/volumes/$volume->id" : null)
-            ->contentTemplate('settings/assets/volumes/_edit', [
+            ->contentTemplate('settings/assets/volumes/_edit.twig', [
                 'volumeId' => $volumeId,
                 'volume' => $volume,
                 'isNewVolume' => $isNewVolume,
@@ -148,6 +150,11 @@ class VolumesController extends Controller
             }
         }
 
+        // prepare subpath for saving
+        $subpath = $this->request->getBodyParam('subpath');
+        if (!empty($subpath)) {
+            $subpath = FileHelper::normalizePath(ltrim(trim($subpath), '/'));
+        }
         $volume = new Volume([
             'id' => $volumeId,
             'uid' => $oldVolume->uid ?? null,
@@ -155,6 +162,7 @@ class VolumesController extends Controller
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'fsHandle' => $this->request->getBodyParam('fsHandle'),
+            'subpath' => $subpath ?? null,
             'transformFsHandle' => $this->request->getBodyParam('transformFsHandle'),
             'transformSubpath' => $this->request->getBodyParam('transformSubpath', ""),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),

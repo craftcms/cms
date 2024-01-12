@@ -171,7 +171,7 @@ body,
       @include menu-styles;
 
       li {
-        @include menu-option-styles;
+        @include menu-item-styles;
         text-align: left;
         padding-left: 24px;
         max-width: unset;

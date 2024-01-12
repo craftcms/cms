@@ -8,7 +8,7 @@
 namespace craft\errors;
 
 use Throwable;
-use yii\base\Exception;
+use yii\base\UserException;
 use yii\db\Migration;
 
 /**
@@ -17,7 +17,7 @@ use yii\db\Migration;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class MigrationException extends Exception
+class MigrationException extends UserException
 {
     /**
      * @var Migration The migration being executed

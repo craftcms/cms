@@ -18,6 +18,7 @@ use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
+use craft\models\Site;
 use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
@@ -59,13 +60,17 @@ class GraphqlController extends Controller
             throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
         }
 
-        Craft::$app->requireEdition(Craft::Pro);
-
         if ($action->id === 'api') {
             $this->enableCsrfValidation = false;
         }
 
-        return parent::beforeAction($action);
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        Craft::$app->requireEdition(Craft::Pro);
+
+        return true;
     }
 
     /**
@@ -109,6 +114,9 @@ class GraphqlController extends Controller
 
         $gqlService = Craft::$app->getGql();
         $schema = $this->_schema($gqlService);
+
+        $this->_enforceSiteAccess($schema);
+
         $query = $operationName = $variables = null;
 
         // Check the body if it's a POST request
@@ -158,6 +166,15 @@ class GraphqlController extends Controller
             }
         }
 
+        if ($generalConfig->maxGraphqlBatchSize && count($queries) > $generalConfig->maxGraphqlBatchSize) {
+            throw new BadRequestHttpException(sprintf(
+                'No more than %s GraphQL %s can be executed in a single batch.',
+                $generalConfig->maxGraphqlBatchSize,
+                $generalConfig->maxGraphqlBatchSize === 1 ? 'query' : 'queries'
+            ));
+        }
+
+
         // Generate all transforms immediately
         $generalConfig->generateTransformsBeforePageLoad = true;
 
@@ -169,6 +186,7 @@ class GraphqlController extends Controller
         }
 
         $result = [];
+
         foreach ($queries as $key => [$query, $variables, $operationName]) {
             try {
                 if (empty($query)) {
@@ -283,6 +301,45 @@ class GraphqlController extends Controller
     }
 
     /**
+     * Enforce site access based on used schema.
+     *
+     * @param GqlSchema $schema
+     * @return void
+     * @throws ForbiddenHttpException
+     * @throws \craft\errors\SiteNotFoundException
+     */
+    private function _enforceSiteAccess(GqlSchema $schema): void
+    {
+        $sitesService = Craft::$app->getSites();
+        $allowedSites = GqlHelper::getAllowedSites($schema);
+        $allowedSiteIds = array_flip(array_map(fn(Site $site) => $site->id, $allowedSites));
+
+        // check if schema has access to the current site
+        $currentSite = $sitesService->getCurrentSite();
+        if (isset($allowedSiteIds[$currentSite->id])) {
+            return;
+        }
+
+        // if not, check if it has access to the primary site (if different from the current site)
+        $primarySite = $sitesService->getPrimarySite();
+        if ($currentSite->id !== $primarySite->id && isset($allowedSiteIds[$primarySite->id])) {
+            $sitesService->setCurrentSite($primarySite);
+            return;
+        }
+
+        // otherwise, loop through all sites until we find one that the token has access to
+        foreach ($sitesService->getAllSites() as $site) {
+            if (isset($allowedSiteIds[$site->id])) {
+                $sitesService->setCurrentSite($site);
+                return;
+            }
+        }
+
+        // no allowed sites could be found, so throw a ForbiddenHttpException
+        throw new ForbiddenHttpException(sprintf('Schema doesn’t have access to the “%s” site.', $currentSite->getName()));
+    }
+
+    /**
      * @return Response
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
@@ -319,7 +376,7 @@ class GraphqlController extends Controller
             $schemas[$name] = $schema->uid;
         }
 
-        return $this->renderTemplate('graphql/graphiql', [
+        return $this->renderTemplate('graphql/graphiql.twig', [
             'url' => UrlHelper::actionUrl('graphql/api'),
             'schemas' => $schemas,
             'selectedSchema' => $selectedSchema,
@@ -362,7 +419,7 @@ class GraphqlController extends Controller
         // Ensure the public schema is created.
         Craft::$app->getGql()->getPublicSchema();
 
-        return $this->renderTemplate('graphql/schemas/_index');
+        return $this->renderTemplate('graphql/schemas/_index.twig');
     }
 
     /**
@@ -419,7 +476,7 @@ class GraphqlController extends Controller
             ]);
         }
 
-        return $this->renderTemplate('graphql/tokens/_edit', compact(
+        return $this->renderTemplate('graphql/tokens/_edit.twig', compact(
             'token',
             'title',
             'accessToken',
@@ -503,7 +560,7 @@ class GraphqlController extends Controller
     public function actionViewTokens(): Response
     {
         $this->requireAdmin(false);
-        return $this->renderTemplate('graphql/tokens/_index');
+        return $this->renderTemplate('graphql/tokens/_index.twig');
     }
 
     /**
@@ -536,7 +593,7 @@ class GraphqlController extends Controller
         }
 
 
-        return $this->renderTemplate('graphql/schemas/_edit', compact(
+        return $this->renderTemplate('graphql/schemas/_edit.twig', compact(
             'schema',
             'title'
         ));
@@ -562,7 +619,7 @@ class GraphqlController extends Controller
         $token = $gqlService->getPublicToken();
         $title = Craft::t('app', 'Edit the public GraphQL schema');
 
-        return $this->renderTemplate('graphql/schemas/_edit', compact(
+        return $this->renderTemplate('graphql/schemas/_edit.twig', compact(
             'schema',
             'token',
             'title'

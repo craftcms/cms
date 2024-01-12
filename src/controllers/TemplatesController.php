@@ -130,7 +130,7 @@ class TemplatesController extends Controller
      */
     public function actionManualUpdateNotification(): Response
     {
-        return $this->renderTemplate('_special/dbupdate');
+        return $this->renderTemplate('_special/dbupdate.twig');
     }
 
     /**
@@ -163,7 +163,7 @@ class TemplatesController extends Controller
                 throw new ServerErrorHttpException(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
             }
 
-            return $this->renderTemplate('_special/cantrun', [
+            return $this->renderTemplate('_special/cantrun.twig', [
                 'reqCheck' => $reqCheck,
             ]);
         }

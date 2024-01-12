@@ -1,6 +1,7 @@
 import Garnish from './Garnish.js';
 import Base from './Base.js';
 import $ from 'jquery';
+import ResizeHandle from './icons/ResizeHandle';
 
 /**
  * Modal
@@ -79,9 +80,9 @@ export default Base.extend(
       }
 
       if (this.settings.resizable) {
-        var $resizeDragHandle = $('<div class="resizehandle"/>').appendTo(
-          this.$container
-        );
+        var $resizeDragHandle = $('<div class="resizehandle"/>')
+          .appendTo(this.$container)
+          .append(ResizeHandle);
 
         this.resizeDragger = new Garnish.BaseDrag($resizeDragHandle, {
           onDragStart: this._handleResizeStart.bind(this),
@@ -111,8 +112,8 @@ export default Base.extend(
 
       if (this.$container) {
         // Move it to the end of <body> so it gets the highest sub-z-index
-        this.$shade.appendTo(Garnish.$bod);
-        this.$container.appendTo(Garnish.$bod);
+        this.$shade.appendTo(Garnish.$bod).velocity('stop');
+        this.$container.appendTo(Garnish.$bod).velocity('stop');
 
         this.$container.show();
         this.updateSizeAndPosition();
@@ -150,10 +151,10 @@ export default Base.extend(
         Garnish.hideModalBackgroundLayers();
 
         if (this.settings.hideOnEsc) {
-          Garnish.uiLayerManager.registerShortcut(
-            Garnish.ESC_KEY,
-            this.hide.bind(this)
-          );
+          Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+            this.trigger('escape');
+            this.hide();
+          });
         }
 
         this.onShow();
@@ -189,8 +190,10 @@ export default Base.extend(
       }
 
       if (this.$container) {
-        this.$container.velocity('fadeOut', {duration: Garnish.FX_DURATION});
-        this.$shade.velocity('fadeOut', {
+        this.$container
+          .velocity('stop')
+          .velocity('fadeOut', {duration: Garnish.FX_DURATION});
+        this.$shade.velocity('stop').velocity('fadeOut', {
           duration: Garnish.FX_DURATION,
           complete: this.onFadeOut.bind(this),
         });

@@ -9,9 +9,11 @@ namespace craft\console;
 
 use Craft;
 use craft\base\ApplicationTrait;
+use craft\console\controllers\HelpController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
+use craft\helpers\App;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
 use IntlDateFormatter;
@@ -21,7 +23,6 @@ use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\base\Response as BaseResponse;
 use yii\console\controllers\CacheController;
-use yii\console\controllers\HelpController;
 use yii\console\controllers\MigrateController;
 use yii\console\Response;
 
@@ -70,7 +71,7 @@ class Application extends \yii\console\Application
      */
     public function runAction($route, $params = []): int|BaseResponse|null
     {
-        if (!$this->getIsInstalled() && $this->_requireInfoTable($route, $params)) {
+        if ($this->_requireInfoTable($route, $params) && !$this->getIsInstalled(true)) {
             // Is the connection valid at least?
             if (!$this->getIsDbConnectionValid()) {
                 Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');
@@ -179,9 +180,11 @@ class Application extends \yii\console\Application
         return $component;
     }
 
-    private function _requireInfoTable(string $route, array $params): bool
+    private function _requireInfoTable(string $route, array &$params): bool
     {
-        if (isset($params['help'])) {
+        $skipCheck = App::env('CRAFT_NO_DB') ?? false;
+
+        if ($skipCheck || isset($params['help'])) {
             return false;
         }
 

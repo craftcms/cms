@@ -51,7 +51,7 @@
     <plugin-actions :plugin="plugin" :edition="edition" />
 
     <p v-if="!isPluginEditionFree(edition)" class="tw-text-gray-700">
-      {{ 'Price includes 1 year of updates.' | t('app') }}
+      {{ 'Includes one year of updates.' | t('app') }}
       {{
         '{renewalPrice}/year per site for updates after that.'
           | t('app', {

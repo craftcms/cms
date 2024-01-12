@@ -15,16 +15,18 @@ class AssetCondition extends ElementCondition
     /**
      * @inheritdoc
      */
-    protected function conditionRuleTypes(): array
+    protected function selectableConditionRules(): array
     {
-        return array_merge(parent::conditionRuleTypes(), [
+        return array_merge(parent::selectableConditionRules(), [
             DateModifiedConditionRule::class,
             FileSizeConditionRule::class,
             FileTypeConditionRule::class,
             FilenameConditionRule::class,
             HasAltConditionRule::class,
             HeightConditionRule::class,
+            SavableConditionRule::class,
             UploaderConditionRule::class,
+            ViewableConditionRule::class,
             VolumeConditionRule::class,
             WidthConditionRule::class,
         ]);

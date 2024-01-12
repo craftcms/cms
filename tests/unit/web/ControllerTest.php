@@ -64,7 +64,7 @@ class ControllerTest extends TestCase
         // We need to render a template from the site dir.
         Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
 
-        $response = $this->controller->renderTemplate('template');
+        $response = $this->controller->renderTemplate('template.twig');
         (new TemplateResponseFormatter())->format($response);
 
         // Again. If this is all good. We can expect Yii to do its thing.
@@ -84,7 +84,7 @@ class ControllerTest extends TestCase
         Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
         Craft::$app->getResponse()->getHeaders()->set('content-type', 'HEADERS');
 
-        $response = $this->controller->renderTemplate('template');
+        $response = $this->controller->renderTemplate('template.twig');
         (new TemplateResponseFormatter())->format($response);
 
         // Again. If this is all good. We can expect Yii to do its thing.
@@ -100,6 +100,11 @@ class ControllerTest extends TestCase
      */
     public function testRedirectToPostedUrl(): void
     {
+        $this->tester->mockCraftMethods('request', [
+            'getPathInfo' => '',
+        ]);
+        $this->controller->request = Craft::$app->getRequest();
+
         $redirect = Craft::$app->getSecurity()->hashData('craft/do/stuff');
 
         // Default

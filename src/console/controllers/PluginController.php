@@ -29,6 +29,12 @@ class PluginController extends Controller
     public bool $force = false;
 
     /**
+     * @var bool Whether the action should be run for all Composer-installed plugins.
+     * @since 4.4.0
+     */
+    public bool $all = false;
+
+    /**
      * @inheritdoc
      */
     public $defaultAction = 'list';
@@ -41,8 +47,14 @@ class PluginController extends Controller
         $options = parent::options($actionID);
 
         switch ($actionID) {
+            case 'install':
+            case 'enable':
+            case 'disable':
+                $options[] = 'all';
+                break;
             case 'uninstall':
                 $options[] = 'force';
+                $options[] = 'all';
                 break;
         }
 
@@ -103,10 +115,150 @@ class PluginController extends Controller
     /**
      * Installs a plugin.
      *
-     * @param string|null $handle The plugin handle.
+     * @param string|null $handle The plugin handle (omitted if --all provided).
      * @return int
      */
     public function actionInstall(?string $handle = null): int
+    {
+        if ($this->all) {
+            // get all plugins’ info
+            $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+
+            // filter out the ones that are already installed
+            $pluginInfo = array_filter($pluginInfo, function(array $info) {
+                return !$info['isInstalled'];
+            });
+
+            // if all plugins are already installed, we're done here
+            if (empty($pluginInfo)) {
+                $this->stdout('There aren’t any uninstalled plugins present.' . PHP_EOL);
+                return ExitCode::OK;
+            }
+
+            // install them one by one
+            foreach (array_keys($pluginInfo) as $handle) {
+                $this->_installPluginByHandle($handle);
+            }
+        } else {
+            $this->_installPluginByHandle($handle);
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Uninstalls a plugin.
+     *
+     * @param string|null $handle The plugin handle (omitted if --all provided).
+     * @return int
+     */
+    public function actionUninstall(?string $handle = null): int
+    {
+        if ($this->all) {
+            // get all plugins’ info
+            $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+
+            // filter out the ones that are uninstalled/disabled
+            $pluginInfo = array_filter($pluginInfo, function(array $info) {
+                return $info['isInstalled'] && ($info['isEnabled'] || $this->force);
+            });
+
+            // if all plugins are already uninstalled/disabled, we're done here
+            if (empty($pluginInfo)) {
+                if ($this->force) {
+                    $this->stdout('There aren’t any installed plugins present.' . PHP_EOL);
+                } else {
+                    $this->stdout('There aren’t any installed and enabled plugins present.' . PHP_EOL);
+                }
+                return ExitCode::OK;
+            }
+
+            // uninstall them one by one
+            foreach (array_keys($pluginInfo) as $handle) {
+                $this->_uninstallPluginByHandle($handle);
+            }
+        } else {
+            $this->_uninstallPluginByHandle($handle);
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Enables a plugin.
+     *
+     * @param string|null $handle The plugin handle (omitted if --all provided).
+     * @return int
+     */
+    public function actionEnable(?string $handle = null): int
+    {
+        if ($this->all) {
+            // get all plugins’ info
+            $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+
+            // filter out the ones that are uninstalled/enabled
+            $pluginInfo = array_filter($pluginInfo, function(array $info) {
+                return $info['isInstalled'] && !$info['isEnabled'];
+            });
+
+            // if all plugins are already uninstalled/enabled, we're done here
+            if (empty($pluginInfo)) {
+                $this->stdout('There aren’t any installed and disabled plugins present.' . PHP_EOL);
+                return ExitCode::OK;
+            }
+
+            // enable them one by one
+            foreach (array_keys($pluginInfo) as $handle) {
+                $this->_enablePluginByHandle($handle);
+            }
+        } else {
+            $this->_enablePluginByHandle($handle);
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Disables a plugin.
+     *
+     * @param string|null $handle The plugin handle (omitted if --all provided).
+     * @return int
+     */
+    public function actionDisable(?string $handle = null): int
+    {
+        if ($this->all) {
+            // get all plugins’ info
+            $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+
+            // filter out the ones that are uninstalled/disabled
+            $pluginInfo = array_filter($pluginInfo, function(array $info) {
+                return $info['isInstalled'] && $info['isEnabled'];
+            });
+
+            // if all plugins are already uninstalled/enabled, we're done here
+            if (empty($pluginInfo)) {
+                $this->stdout('There aren’t any installed and enabled plugins present.' . PHP_EOL);
+                return ExitCode::OK;
+            }
+
+            // disable them one by one
+            foreach (array_keys($pluginInfo) as $handle) {
+                $this->_disablePluginByHandle($handle);
+            }
+        } else {
+            $this->_disablePluginByHandle($handle);
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Process installing plugin by handle
+     *
+     * @param null|string $handle
+     * @return int
+     */
+    private function _installPluginByHandle(?string $handle = null): int
     {
         if ($handle === null) {
             $handle = $this->_pluginPrompt(
@@ -142,12 +294,12 @@ class PluginController extends Controller
     }
 
     /**
-     * Uninstalls a plugin.
+     * Process uninstalling plugin by handle
      *
-     * @param string|null $handle The plugin handle.
+     * @param string $handle
      * @return int
      */
-    public function actionUninstall(?string $handle = null): int
+    private function _uninstallPluginByHandle(?string $handle = null): int
     {
         if ($handle === null) {
             $handle = $this->_pluginPrompt(
@@ -187,12 +339,12 @@ class PluginController extends Controller
     }
 
     /**
-     * Enables a plugin.
+     * Process enabling plugin by handle
      *
-     * @param string|null $handle The plugin handle.
+     * @param string $handle
      * @return int
      */
-    public function actionEnable(?string $handle = null): int
+    private function _enablePluginByHandle(?string $handle = null): int
     {
         if ($handle === null) {
             $handle = $this->_pluginPrompt(
@@ -228,12 +380,12 @@ class PluginController extends Controller
     }
 
     /**
-     * Disables a plugin.
+     * Process disabling plugin by handle
      *
-     * @param string|null $handle The plugin handle.
+     * @param string|null $handle
      * @return int
      */
-    public function actionDisable(?string $handle = null): int
+    private function _disablePluginByHandle(?string $handle = null): int
     {
         if ($handle === null) {
             $handle = $this->_pluginPrompt(
@@ -311,6 +463,10 @@ class PluginController extends Controller
         ]);
     }
 
+    /**
+     * @param bool $value
+     * @return string
+     */
     private function _boolToString(bool $value): string
     {
         return $value ? 'Yes' : 'No';

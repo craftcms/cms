@@ -82,16 +82,13 @@ Craft.FieldToggle = Garnish.Base.extend({
         return 'select';
       case 'A':
         return 'link';
-      case 'FIELDSET':
+      default:
         return 'fieldset';
     }
-
-    console.warn('Unexpected field toggle:', this.$toggle[0]);
   },
 
   findTargets: function () {
     if (this.type === 'select' || this.type === 'fieldset') {
-      var toggleVal = this.getToggleVal();
       this._$target = $(
         this.normalizeTargetSelector(this.targetPrefix + this.getToggleVal())
       );

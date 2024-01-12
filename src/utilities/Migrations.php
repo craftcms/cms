@@ -62,7 +62,7 @@ class Migrations extends Utility
         $migrationHistory = $migrator->getMigrationHistory();
         $newMigrations = $migrator->getNewMigrations();
 
-        return $view->renderTemplate('_components/utilities/Migrations', [
+        return $view->renderTemplate('_components/utilities/Migrations.twig', [
             'migrationHistory' => $migrationHistory,
             'newMigrations' => $newMigrations,
         ]);

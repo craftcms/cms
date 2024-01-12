@@ -11,11 +11,10 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
-use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
@@ -59,15 +58,10 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
-        return CategoryQuery::class;
+        return sprintf('\\%s|\\%s<\\%s>', CategoryQuery::class, ElementCollection::class, Category::class);
     }
-
-    /**
-     * @inheritdoc
-     */
-    public bool $allowLimit = false;
 
     /**
      * @inheritdoc
@@ -75,36 +69,27 @@ class Categories extends BaseRelationField
     public bool $allowMultipleSources = false;
 
     /**
-     * @var int|null Branch limit
-     */
-    public ?int $branchLimit = null;
-
-    /**
      * @inheritdoc
      */
-    protected string $settingsTemplate = '_components/fieldtypes/Categories/settings';
-
-    /**
-     * @inheritdoc
-     */
-    protected string $inputTemplate = '_components/fieldtypes/Categories/input';
-
-    /**
-     * @inheritdoc
-     */
-    protected ?string $inputJsClass = 'Craft.CategorySelectInput';
-
-    /**
-     * @inheritdoc
-     */
-    protected bool $sortable = false;
-
-    /**
-     * @inheritdoc
-     */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function __construct(array $config = [])
     {
-        if (is_array($value)) {
+        // allow categories to limit selection if `maintainHierarchy` isn't checked
+        $config['allowLimit'] = true;
+
+        // Default maintainHierarchy to true for existing Assets fields
+        if (isset($config['id']) && !isset($config['maintainHierarchy'])) {
+            $config['maintainHierarchy'] = true;
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
+    {
+        if (is_array($value) && $this->maintainHierarchy) {
             /** @var Category[] $categories */
             $categories = Category::find()
                 ->siteId($this->targetSiteId($element))
@@ -121,7 +106,7 @@ class Categories extends BaseRelationField
                 $structuresService->applyBranchLimitToElements($categories, $this->branchLimit);
             }
 
-            $value = ArrayHelper::getColumn($categories, 'id');
+            $value = array_map(fn(Category $category) => $category->id, $categories);
         }
 
         return parent::normalizeValue($value, $element);
@@ -130,7 +115,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
@@ -141,25 +126,7 @@ class Categories extends BaseRelationField
             return '<p class="error">' . Craft::t('app', 'This field is not set to a valid category group.') . '</p>';
         }
 
-        return parent::inputHtml($value, $element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputTemplateVariables(array|ElementQueryInterface $value = null, ?ElementInterface $element = null): array
-    {
-        $variables = parent::inputTemplateVariables($value, $element);
-        $variables['branchLimit'] = $this->branchLimit;
-
-        return $variables;
-    }
-
-    public function getEagerLoadingMap(array $sourceElements): array|null|false
-    {
-        $map = parent::getEagerLoadingMap($sourceElements);
-        $map['criteria']['orderBy'] = ['structureelements.lft' => SORT_ASC];
-        return $map;
+        return parent::inputHtml($value, $element, $inline);
     }
 
     /**

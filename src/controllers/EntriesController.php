@@ -10,7 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\elements\Entry;
+use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
+use craft\errors\MutexException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -20,7 +22,6 @@ use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use Throwable;
-use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -53,7 +54,7 @@ class EntriesController extends BaseEntriesController
             $sectionHandle = $this->request->getRequiredBodyParam('section');
         }
 
-        $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);
+        $section = Craft::$app->getEntries()->getSectionByHandle($sectionHandle);
         if (!$section) {
             throw new BadRequestHttpException("Invalid section handle: $sectionHandle");
         }
@@ -77,8 +78,8 @@ class EntriesController extends BaseEntriesController
 
         if (!in_array($site->id, $editableSiteIds)) {
             // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
-            if (count($editableSiteIds) > 1 && $section->propagationMethod !== Section::PROPAGATION_METHOD_ALL) {
-                return $this->renderTemplate('_special/sitepicker', [
+            if (count($editableSiteIds) > 1 && $section->propagationMethod !== PropagationMethod::All) {
+                return $this->renderTemplate('_special/sitepicker.twig', [
                     'siteIds' => $editableSiteIds,
                     'baseUrl' => "entries/$section->handle/new",
                 ]);
@@ -88,27 +89,31 @@ class EntriesController extends BaseEntriesController
             $site = $sitesService->getSiteById($editableSiteIds[0]);
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = static::currentUser();
 
         // Create & populate the draft
         $entry = Craft::createObject(Entry::class);
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
-        $entry->authorId = $this->request->getQueryParam('authorId', $user->id);
+
+        $authorIds = $this->request->getQueryParam('authorIds') ?? $this->request->getQueryParam('authorId');
+        if ($authorIds !== null) {
+            $entry->setAuthorIds($authorIds);
+        }
 
         // Type
-        if (($typeHandle = $this->request->getQueryParam('type')) !== null) {
+        if (($typeHandle = $this->request->getParam('type')) !== null) {
             $type = ArrayHelper::firstWhere($entry->getAvailableEntryTypes(), 'handle', $typeHandle);
             if ($type === null) {
                 throw new BadRequestHttpException("Invalid entry type handle: $typeHandle");
             }
             $entry->typeId = $type->id;
         } else {
-            $entry->typeId = $this->request->getQueryParam('typeId') ?? $entry->getAvailableEntryTypes()[0]->id;
+            $entry->typeId = $this->request->getParam('typeId') ?? $entry->getAvailableEntryTypes()[0]->id;
         }
 
         // Status
-        if (($status = $this->request->getQueryParam('status')) !== null) {
+        if (($status = $this->request->getParam('status')) !== null) {
             $enabled = $status === 'enabled';
         } else {
             // Set the default status based on the section's settings
@@ -134,13 +139,13 @@ class EntriesController extends BaseEntriesController
         }
 
         // Make sure the user is allowed to create this entry
-        if (!$entry->canSave($user)) {
+        if (!Craft::$app->getElements()->canSave($entry, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this entry.');
         }
 
         // Title & slug
-        $entry->title = $this->request->getQueryParam('title');
-        $entry->slug = $this->request->getQueryParam('slug');
+        $entry->title = $this->request->getParam('title');
+        $entry->slug = $this->request->getParam('slug');
         if ($entry->title && !$entry->slug) {
             $entry->slug = ElementHelper::generateSlug($entry->title, null, $site->language);
         }
@@ -152,19 +157,19 @@ class EntriesController extends BaseEntriesController
         DateTimeHelper::pause();
 
         // Post & expiry dates
-        if (($postDate = $this->request->getQueryParam('postDate')) !== null) {
+        if (($postDate = $this->request->getParam('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate);
         } else {
             $entry->postDate = DateTimeHelper::now();
         }
 
-        if (($expiryDate = $this->request->getQueryParam('expiryDate')) !== null) {
+        if (($expiryDate = $this->request->getParam('expiryDate')) !== null) {
             $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate);
         }
 
         // Custom fields
         foreach ($entry->getFieldLayout()->getCustomFields() as $field) {
-            if (($value = $this->request->getQueryParam($field->handle)) !== null) {
+            if (($value = $this->request->getParam($field->handle)) !== null) {
                 $entry->setFieldValue($field->handle, $value);
             }
         }
@@ -231,14 +236,14 @@ class EntriesController extends BaseEntriesController
         // Permission enforcement
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = static::currentUser();
         $section = $entry->getSection();
 
         // Is this another user’s entry (and it’s not a Single)?
         if (
             $entry->id &&
             !$duplicate &&
-            $entry->authorId != $currentUser->id &&
+            !in_array($currentUser->id, $entry->getAuthorIds(), true) &&
             $section->type !== Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
@@ -272,11 +277,12 @@ class EntriesController extends BaseEntriesController
 
                 return $this->asModelFailure(
                     $entry,
-                    Craft::t('app', 'Couldn’t duplicate entry.'),
+                    Craft::t('app', 'Couldn’t duplicate {type}.', [
+                        'type' => Entry::lowerDisplayName(),
+                    ]),
                     'entry'
                 );
             } catch (Throwable $e) {
-                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }
@@ -309,7 +315,7 @@ class EntriesController extends BaseEntriesController
             $lockKey = "entry:$entry->id";
             $mutex = Craft::$app->getMutex();
             if (!$mutex->acquire($lockKey, 15)) {
-                throw new Exception('Could not acquire a lock to save the entry.');
+                throw new MutexException($lockKey, 'Could not acquire a lock to save the entry.');
             }
         }
 
@@ -337,7 +343,7 @@ class EntriesController extends BaseEntriesController
         $provisional = Entry::find()
             ->provisionalDrafts()
             ->draftOf($entry->id)
-            ->draftCreator(Craft::$app->getUser()->getIdentity())
+            ->draftCreator(static::currentUser())
             ->siteId($entry->siteId)
             ->status(null)
             ->one();
@@ -366,7 +372,7 @@ class EntriesController extends BaseEntriesController
             $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
 
             if ($this->request->getIsCpRequest()) {
-                $data['elementHtml'] = Cp::elementHtml($entry);
+                $data['elementHtml'] = Cp::elementChipHtml($entry);
             }
         }
 
@@ -396,7 +402,7 @@ class EntriesController extends BaseEntriesController
                 $entry = Entry::find()
                     ->provisionalDrafts()
                     ->draftOf($entryId)
-                    ->draftCreator(Craft::$app->getUser()->getIdentity())
+                    ->draftCreator(static::currentUser())
                     ->siteId($siteId)
                     ->status(null)
                     ->one();
@@ -463,14 +469,13 @@ class EntriesController extends BaseEntriesController
         $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
         $entry->setFieldValuesFromRequest($fieldsLocation);
 
-        // Author
-        $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: Craft::$app->getUser()->getIdentity()->id));
-
-        if (is_array($authorId)) {
-            $authorId = $authorId[0] ?? null;
+        // Authors
+        $authorIds = $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author');
+        if ($authorIds !== null) {
+            $entry->setAuthorIds($authorIds);
+        } elseif (!$entry->id) {
+            $entry->setAuthor(static::currentUser());
         }
-
-        $entry->authorId = $authorId;
 
         // Parent
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {

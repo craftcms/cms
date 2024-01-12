@@ -25,6 +25,11 @@ class AddressField extends BaseField
     /**
      * @inheritdoc
      */
+    public bool $includeInCards = true;
+
+    /**
+     * @inheritdoc
+     */
     public function attribute(): string
     {
         return 'address';
@@ -49,6 +54,23 @@ class AddressField extends BaseField
     /**
      * @inheritdoc
      */
+    public function previewable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewHtml(ElementInterface $element): string
+    {
+        /** @var Address $element */
+        return Craft::$app->getAddresses()->formatAddress($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function showLabel(): bool
     {
         return false;
@@ -65,18 +87,16 @@ class AddressField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
+    public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException('AddressField can only be used in address field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', __CLASS__));
         }
 
         $view = Craft::$app->getView();
 
         $view->registerJsWithVars(fn($namespace) => <<<JS
 (() => {
-    const container = $('#' + Craft.namespaceId('address-field', $namespace)).find('> .input');
-
     const initFields = (values) => {
         const fields = {};
         const fieldNames = [
@@ -105,9 +125,11 @@ class AddressField extends BaseField
             if (field.prop('nodeName') !== 'SELECT') {
                 break;
             }
+
+            let oldFieldVal = field.val();
             const spinner = $('#' + Craft.namespaceId(name + '-spinner', $namespace));
             field.off().on('change', () => {
-                if (!field.val()) {
+                if (!field.val() || oldFieldVal === field.val()) {
                     return;
                 }
                 spinner.removeClass('hidden');
@@ -128,10 +150,16 @@ class AddressField extends BaseField
                         Object.fromEntries(hotFieldNames.map(name => [name, hotValues[name] || null]))
                     );
                     const activeElementId = document.activeElement ? document.activeElement.id : null;
-                    container.html(response.data.fieldsHtml);
-                    initFields(values);
+                    const \$addressFields = $(
+                        Object.entries(fields)
+                            .filter(([name]) => name !== 'countryCode')
+                            .map(([, \$field]) => \$field.closest('.field')[0])
+                    );
+                    \$addressFields.eq(0).replaceWith(response.data.fieldsHtml);
+                    \$addressFields.remove();
                     Craft.appendHeadHtml(response.data.headHtml);
                     Craft.appendBodyHtml(response.data.bodyHtml);
+                    initFields(values);
                     if (activeElementId) {
                         $('#' + activeElementId).focus();                        
                     }
@@ -152,5 +180,14 @@ JS, [
         ]);
 
         return Cp::addressFieldsHtml($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        // Not actually needed since we're overriding formHtml()
+        return null;
     }
 }

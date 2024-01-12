@@ -17,6 +17,7 @@ export default Base.extend(
     $mainContainer: null,
     $main: null,
     $shade: null,
+    $nextFocusableElement: null,
 
     showing: false,
     orientation: null,
@@ -44,7 +45,9 @@ export default Base.extend(
         Garnish.HUD.activeHUDs = {};
       }
 
-      this.$shade = $('<div/>', {class: this.settings.shadeClass});
+      if (this.settings.withShade) {
+        this.$shade = $('<div/>', {class: this.settings.shadeClass});
+      }
       this.$hud = $('<div/>', {class: this.settings.hudClass}).data(
         'hud',
         this
@@ -82,14 +85,9 @@ export default Base.extend(
         this.$hud.css('position', 'absolute');
       }
 
-      // Hide the HUD until it gets positioned
-      this.$hud.css('opacity', 0);
-      this.show();
-      this.$hud.css('opacity', 1);
-
       this.addListener(this.$body, 'submit', '_handleSubmit');
 
-      if (this.settings.hideOnShadeClick) {
+      if (this.settings.withShade && this.settings.hideOnShadeClick) {
         this.addListener(this.$shade, 'tap,click', 'hide');
       }
 
@@ -108,6 +106,53 @@ export default Base.extend(
           'scroll',
           'updateSizeAndPosition'
         );
+      }
+
+      // When the menu is expanded, tabbing on the trigger should move focus into it
+      this.addListener(this.$trigger, 'keydown', (ev) => {
+        if (ev.keyCode === Garnish.TAB_KEY && !ev.shiftKey && this.showing) {
+          const $focusableElement = Garnish.getKeyboardFocusableElements(
+            this.$hud
+          ).first();
+          if ($focusableElement.length) {
+            ev.preventDefault();
+            $focusableElement.focus();
+          }
+        }
+      });
+
+      // Add listener to manage focus
+      this.addListener(this.$hud, 'keydown', function (event) {
+        const {keyCode} = event;
+
+        if (keyCode !== Garnish.TAB_KEY) return;
+
+        const $focusableElements = Garnish.getKeyboardFocusableElements(
+          this.$hud
+        );
+        const index = $focusableElements.index(event.target);
+
+        if (index === 0 && event.shiftKey) {
+          event.preventDefault();
+          this.$trigger.focus();
+        } else if (
+          index === $focusableElements.length - 1 &&
+          !event.shiftKey &&
+          this.$nextFocusableElement
+        ) {
+          event.preventDefault();
+          this.$nextFocusableElement.focus();
+        }
+      });
+
+      if (this.settings.showOnInit) {
+        // Hide the HUD until it gets positioned
+        this.$hud.css('opacity', 0);
+        this.show();
+        this.$hud.css('opacity', 1);
+      } else {
+        this.$hud.appendTo(Garnish.$bod);
+        this.hideContainer();
       }
     },
 
@@ -170,11 +215,14 @@ export default Base.extend(
       }
 
       // Move it to the end of <body> so it gets the highest sub-z-index
-      this.$shade.appendTo(Garnish.$bod);
-      this.$hud.appendTo(Garnish.$bod);
+      if (this.settings.withShade) {
+        this.$shade.appendTo(Garnish.$bod);
+        this.$shade.show();
+      }
 
-      this.$hud.show();
-      this.$shade.show();
+      this.$hud.appendTo(Garnish.$bod);
+      this.showContainer();
+
       this.showing = true;
       Garnish.HUD.activeHUDs[this._namespace] = this;
 
@@ -187,6 +235,25 @@ export default Base.extend(
         );
       }
 
+      // Find the next focusable element in the DOM after the trigger.
+      // Shift-tabbing on it should take focus back into the container.
+      const $focusableElements = Garnish.$bod.find(':focusable');
+      const triggerIndex = $focusableElements.index(this.$trigger[0]);
+      if (triggerIndex !== -1 && $focusableElements.length > triggerIndex + 1) {
+        this.$nextFocusableElement = $focusableElements.eq(triggerIndex + 1);
+        this.addListener(this.$nextFocusableElement, 'keydown', (ev) => {
+          if (ev.keyCode === Garnish.TAB_KEY && ev.shiftKey) {
+            const $focusableElement = Garnish.getKeyboardFocusableElements(
+              this.$hud
+            ).last();
+            if ($focusableElement.length) {
+              ev.preventDefault();
+              $focusableElement.focus();
+            }
+          }
+        });
+      }
+
       this.onShow();
       this.enable();
 
@@ -196,6 +263,10 @@ export default Base.extend(
 
         this.updateSizeAndPosition(true);
       }
+    },
+
+    showContainer: function () {
+      this.$hud.show();
     },
 
     onShow: function () {
@@ -515,14 +586,30 @@ export default Base.extend(
       }
 
       this.disable();
+      this.hideContainer();
 
-      this.$hud.hide();
-      this.$shade.hide();
+      if (this.settings.withShade) {
+        this.$shade.hide();
+      }
 
       this.showing = false;
       delete Garnish.HUD.activeHUDs[this._namespace];
       Garnish.uiLayerManager.removeLayer();
+
+      if (Garnish.focusIsInside(this.$hud)) {
+        this.$trigger.trigger('focus');
+      }
+
+      if (this.$nextFocusableElement) {
+        this.removeListener(this.$nextFocusableElement, 'keydown');
+        this.$nextFocusableElement = null;
+      }
+
       this.onHide();
+    },
+
+    hideContainer: function () {
+      this.$hud.hide();
     },
 
     onHide: function () {
@@ -558,7 +645,7 @@ export default Base.extend(
         this.$hud.remove();
       }
 
-      if (this.$shade) {
+      if (this.settings.withShade && this.$shade) {
         this.$shade.remove();
       }
 
@@ -583,10 +670,12 @@ export default Base.extend(
       tipWidth: 30,
       minBodyWidth: 200,
       minBodyHeight: 0,
+      withShade: true,
       onShow: $.noop,
       onHide: $.noop,
       onSubmit: $.noop,
       closeBtn: null,
+      showOnInit: true,
       closeOtherHUDs: true,
       hideOnEsc: true,
       hideOnShadeClick: true,

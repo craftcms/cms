@@ -16,7 +16,7 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.2.0
  */
-class IndexKeywordsEvent extends Event
+class IndexKeywordsEvent extends CancelableEvent
 {
     /**
      * @var ElementInterface The element being indexed

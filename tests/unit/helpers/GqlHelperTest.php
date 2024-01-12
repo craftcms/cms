@@ -85,7 +85,6 @@ class GqlHelperTest extends TestCase
         $permissionSet = [
             'usergroups.allUsers:read',
             'globalsets.someSet:read',
-            'entrytypes.someEntry:read',
             'sections.someSection:read',
         ];
 
@@ -172,7 +171,7 @@ class GqlHelperTest extends TestCase
     }
 
 
-    public function actionExtractionDataProvider(): array
+    public static function actionExtractionDataProvider(): array
     {
         return [
             [
@@ -217,7 +216,7 @@ class GqlHelperTest extends TestCase
         ];
     }
 
-    public function schemaPermissionDataProvider(): array
+    public static function schemaPermissionDataProvider(): array
     {
         return [
             [
@@ -225,7 +224,6 @@ class GqlHelperTest extends TestCase
                     'usergroups.allUsers:read',
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
-                    'entrytypes.someEntry:read',
                     'sections.someSection:read',
                 ],
                 'volumes.someVolume',
@@ -238,7 +236,6 @@ class GqlHelperTest extends TestCase
                     'volumes.someVolume:read',
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
-                    'entrytypes.someEntry:write',
                     'sections.someSection:write',
                 ],
                 'volumes.someVolume',
@@ -255,7 +252,7 @@ class GqlHelperTest extends TestCase
         ];
     }
 
-    public function schemaPermissionDataProviderForExtraction(): array
+    public static function schemaPermissionDataProviderForExtraction(): array
     {
         return [
             [
@@ -263,14 +260,12 @@ class GqlHelperTest extends TestCase
                     'usergroups.allUsers:read',
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
-                    'entrytypes.someEntry:read',
                     'sections.someSection:read',
                 ],
                 [
                     'usergroups' => ['allUsers'],
                     'volumes' => ['someVolume'],
                     'globalsets' => ['someSet'],
-                    'entrytypes' => ['someEntry'],
                     'sections' => ['someSection'],
                 ],
             ],
@@ -296,22 +291,9 @@ class GqlHelperTest extends TestCase
                     'usergroups.allUsers:write',
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
-                    'entrytypes.someEntry:write',
                     'sections.someSection:write',
                 ],
                 [],
-            ],
-            [
-                [
-                    'usergroups.allUsers:write',
-                    'volumes.someVolume:write',
-                    'globalsets.someSet:write',
-                    'entrytypes.someEntry:read',
-                    'sections.someSection:write',
-                ],
-                [
-                    'entrytypes' => ['someEntry'],
-                ],
             ],
             [
                 [],

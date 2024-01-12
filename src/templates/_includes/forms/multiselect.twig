@@ -38,10 +38,15 @@
                 {% endif %}
                 <optgroup label="{{ option.optgroup }}">
             {% else %}
-                {% set optionLabel = (option.label is defined ? option.label : option) %}
                 {% set optionValue = (option.value is defined ? option.value : key) %}
-                {% set optionDisabled = (option.disabled is defined ? option.disabled : false) %}
-                <option value="{{ optionValue }}"{% if optionValue in values %} selected{% endif %}{% if optionDisabled %} disabled{% endif %}>{{ optionLabel }}</option>
+                {{ tag('option', {
+                  value: optionValue ?? '',
+                  selected: optionValue in values,
+                  disabled: option.disabled ?? false,
+                  hidden: option.hidden ?? false,
+                  text: option.label is defined ? option.label : option,
+                  data: option.data ?? false,
+                }) }}
             {% endif %}
         {%- endfor %}
         {% if hasOptgroups %}

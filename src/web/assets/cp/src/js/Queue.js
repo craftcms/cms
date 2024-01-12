@@ -32,7 +32,7 @@ Craft.Queue = Garnish.Base.extend({
   /**
    * Adds a job to the queue.
    * @param {function} job
-   * @return {Promise}
+   * @returns {Promise}
    */
   push: function (job) {
     return this._add(job, 'push');
@@ -41,7 +41,7 @@ Craft.Queue = Garnish.Base.extend({
   /**
    * Adds a job to the beginning of the queue.
    * @param {function} job
-   * @return {Promise}
+   * @returns {Promise}
    */
   unshift: function (job) {
     return this._add(job, 'unshift');
@@ -67,7 +67,7 @@ Craft.Queue = Garnish.Base.extend({
    * Adds a job to the queue.
    * @param {function} job
    * @param {string} method
-   * @return {Promise}
+   * @returns {Promise}
    * @private
    */
   _add: function (job, method) {

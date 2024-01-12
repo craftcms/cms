@@ -45,7 +45,7 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
      */
     public function init(): void
     {
-        $this->_sections = Craft::$app->getSections()->getAllSections();
+        $this->_sections = Craft::$app->getEntries()->getAllSections();
 
         parent::init();
     }
@@ -84,7 +84,7 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $sections = Craft::$app->getSections();
+        $sections = Craft::$app->getEntries();
         $query->typeId($this->paramValue(fn($uid) => $sections->getEntryTypeByUid($uid)->id ?? null));
     }
 
@@ -94,6 +94,6 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
-        return $this->matchValue((string)$element->getType()->id);
+        return $this->matchValue((string)$element->getType()->uid);
     }
 }

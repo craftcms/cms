@@ -1,6 +1,6 @@
 {% requireAdmin %}
 
-{% extends "_layouts/cp" %}
+{% extends '_layouts/cp.twig' %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
@@ -9,7 +9,7 @@
 {% set fullPageForm = true %}
 {% set title = "Email Settings"|t('app') %}
 
-{% import "_includes/forms" as forms %}
+{% import '_includes/forms.twig' as forms %}
 
 {% do view.registerTranslations('app', [
     "Email sent successfully! Check your inbox.",
@@ -106,7 +106,7 @@
     {% for _adapter in allTransportAdapters %}
         {% set isCurrent = (className(_adapter) == className(adapter)) %}
         <div id="{{ className(_adapter)|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-            {% namespace 'transportTypes['~className(_adapter)~']' %}
+            {% namespace 'transportTypes['~className(_adapter)|id~']' %}
                 {{ (isCurrent ? adapter : _adapter).getSettingsHtml()|raw }}
             {% endnamespace %}
         </div>

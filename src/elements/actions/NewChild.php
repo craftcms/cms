@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\base\ElementInterface;
 
 /**
  * NewChild represents a New Child element action.
@@ -36,10 +37,16 @@ class NewChild extends ElementAction
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function setElementType(string $elementType): void
     {
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface> $elementType */
+        parent::setElementType($elementType);
+
         if (!isset($this->label)) {
-            $this->label = Craft::t('app', 'New child');
+            $this->label = Craft::t('app', 'Create a new child {type}', [
+                'type' => $elementType::lowerDisplayName(),
+            ]);
         }
     }
 
@@ -60,16 +67,22 @@ class NewChild extends ElementAction
 (() => {
     let trigger = new Craft.ElementActionTrigger({
         type: $type,
-        batch: false,
-        validateSelection: \$selectedItems => !$maxLevels || $maxLevels > \$selectedItems.find('.element').data('level'),
-        activate: \$selectedItems => {
-            const url = Craft.getUrl($newChildUrl, 'parentId=' + \$selectedItems.find('.element').data('id'));
+        bulk: false,
+        validateSelection: (selectedItems, elementIndex) => {
+            const element = selectedItems.find('.element');
+            return (
+                (!$maxLevels || $maxLevels > element.data('level')) &&
+                !Garnish.hasAttr(element, 'data-disallow-new-children')
+            );
+        },
+        activate: (selectedItems, elementIndex) => {
+            const url = Craft.getUrl($newChildUrl, 'parentId=' + selectedItems.find('.element').data('id'));
             Craft.redirectTo(url);
         },
     });
 
-    if (Craft.elementIndex.view.structureTableSort) {
-        Craft.elementIndex.view.structureTableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
+    if (Craft.currentElementIndex.view.tableSort) {
+        Craft.currentElementIndex.view.tableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
     }
 })();
 JS, [static::class, $this->maxLevels, $this->newChildUrl]);

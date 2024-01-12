@@ -11,6 +11,8 @@ use Craft;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\events\UserGroupPermissionsEvent;
+use craft\events\UserPermissionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\services\UserPermissions;
 use craft\test\TestCase;
@@ -144,7 +146,10 @@ class UserPermissionsTest extends TestCase
             $this->userPermissions->doesUserHavePermission($user->id, 'invalidPermission')
         );
 
-        $this->userPermissions->saveUserPermissions($user->id, ['editUsers']);
+        $this->tester->expectEvent(UserPermissions::class, UserPermissions::EVENT_AFTER_SAVE_USER_PERMISSIONS, function() use ($user) {
+            $this->userPermissions->saveUserPermissions($user->id, ['editUsers']);
+        }, UserPermissionsEvent::class);
+
         self::assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
         );
@@ -189,7 +194,9 @@ class UserPermissionsTest extends TestCase
     public function testChangedGroupPermissions(): void
     {
         // Setup user and craft
-        $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
+        $this->tester->expectEvent(UserPermissions::class, UserPermissions::EVENT_AFTER_SAVE_GROUP_PERMISSIONS, function() {
+            $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
+        }, UserGroupPermissionsEvent::class);
 
         /** @var User $user */
         $user = User::find()

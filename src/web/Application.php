@@ -12,9 +12,11 @@ use craft\base\ApplicationTrait;
 use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
+use craft\debug\DumpPanel;
 use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
+use craft\errors\ExitException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -24,16 +26,18 @@ use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use IntlDateFormatter;
 use IntlException;
+use ReflectionClass;
 use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\ExitException;
+use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\base\Response as BaseResponse;
 use yii\db\Exception as DbException;
+use yii\debug\Module as YiiDebugModule;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
 use yii\debug\panels\LogPanel;
@@ -258,20 +262,30 @@ class Application extends \yii\web\Application
                 return $this->_processUpdateLogic($request) ?: $this->getResponse();
             }
 
-            // If this is a plugin template request, make sure the user has access to the plugin
-            // If this is a non-login, non-validate, non-setPassword control panel request, make sure the user has access to the control panel
-            if (
-                $request->getIsCpRequest() &&
-                !$request->getIsActionRequest() &&
-                ($firstSeg = $request->getSegment(1)) !== null &&
-                ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
-            ) {
-                $user = $this->getUser();
-                if ($user->getIsGuest()) {
-                    return $user->loginRequired();
+            if ($request->getIsCpRequest() && !$request->getIsActionRequest()) {
+                $userSession = $this->getUser();
+
+                // If this is a plugin template request, make sure the user has access to the plugin
+                // If this is a non-login, non-validate, non-setPassword control panel request, make sure the user has access to the control panel
+                if (
+                    ($firstSeg = $request->getSegment(1)) !== null &&
+                    ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
+                ) {
+                    if ($userSession->getIsGuest()) {
+                        return $userSession->loginRequired();
+                    }
+                    if (!$userSession->checkPermission('accessPlugin-' . $plugin->id)) {
+                        throw new ForbiddenHttpException();
+                    }
                 }
-                if (!$user->checkPermission('accessPlugin-' . $plugin->id)) {
-                    throw new ForbiddenHttpException();
+
+                // If this is a CP request, see if the user is expected to have 2FA enabled
+                if (!$userSession->getIsGuest()) {
+                    $auth = $this->getAuth();
+                    $user = $userSession->getIdentity();
+                    if ($auth->is2faRequired($user) && !$auth->hasActiveMethod($user)) {
+                        return $this->runAction('users/setup-2fa');
+                    }
                 }
             }
         }
@@ -307,32 +321,6 @@ class Application extends \yii\web\Application
         $response = $this->getResponse();
         $response->data = $result;
         return $response;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setVendorPath($path): void
-    {
-        parent::setVendorPath($path);
-
-        // Override the @bower and @npm aliases if using asset-packagist.org
-        // todo: remove this whenever Yii is updated with support for asset-packagist.org
-        $altBowerPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'bower-asset';
-        $altNpmPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'npm-asset';
-        if (is_dir($altBowerPath)) {
-            Craft::setAlias('@bower', $altBowerPath);
-        }
-        if (is_dir($altNpmPath)) {
-            Craft::setAlias('@npm', $altNpmPath);
-        }
-
-        // Override where Yii should find its asset deps
-        $assetsPath = Craft::getAlias('@craft') . '/web/assets';
-        Craft::setAlias('@bower/jquery/dist', $assetsPath . '/jquery/dist');
-        Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
-        Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');
-        Craft::setAlias('@bower/yii2-pjax', $assetsPath . '/yii2pjax/dist');
     }
 
     /**
@@ -432,9 +420,13 @@ class Application extends \yii\web\Application
         $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c-debug.svg'));
         DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,$svg");
 
+        // Determine the base path using reflection in case it wasn't loaded from @vendor
+        $ref = new ReflectionClass(YiiDebugModule::class);
+        $basePath = dirname($ref->getFileName());
+
         $this->setModule('debug', [
             'class' => DebugModule::class,
-            'basePath' => '@vendor/yiisoft/yii2-debug/src',
+            'basePath' => $basePath,
             'allowedIPs' => ['*'],
             'panels' => [
                 'config' => false,
@@ -450,10 +442,11 @@ class Application extends \yii\web\Application
                 ],
                 'request' => RequestPanel::class,
                 'log' => LogPanel::class,
+                'dump' => DumpPanel::class,
                 'deprecated' => DeprecatedPanel::class,
                 'profiling' => ProfilingPanel::class,
                 'db' => DbPanel::class,
-                'assets' => AssetPanel::class,
+                'asset' => AssetPanel::class,
                 'mail' => MailPanel::class,
             ],
         ]);
@@ -499,25 +492,9 @@ class Application extends \yii\web\Application
         $resourceUri = substr($requestPath, strlen($resourceBaseUri));
         $slash = strpos($resourceUri, '/');
         $hash = substr($resourceUri, 0, $slash);
+        $sourcePath = $this->resourceSourcePathByHash($hash);
 
-        $sourcePath = Craft::$app->getCache()->getOrSet(
-            Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash),
-            function() use ($hash) {
-                try {
-                    return (new Query())
-                        ->select(['path'])
-                        ->from(Table::RESOURCEPATHS)
-                        ->where(['hash' => $hash])
-                        ->scalar();
-                } catch (DbException) {
-                    // Craft isn't installed yet
-                }
-
-                return false;
-            }
-        );
-
-        if (empty($sourcePath)) {
+        if (!$sourcePath) {
             return;
         }
 
@@ -548,6 +525,20 @@ class Application extends \yii\web\Application
         $this->end();
     }
 
+    private function resourceSourcePathByHash(string $hash): string|false
+    {
+        try {
+            return (new Query())
+                ->select(['path'])
+                ->from(Table::RESOURCEPATHS)
+                ->where(['hash' => $hash])
+                ->scalar();
+        } catch (DbException) {
+            // Craft isn't installed yet. See if it's cached as a fallback.
+            return Craft::$app->getCache()->get(Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash));
+        }
+    }
+
     /**
      * Processes install requests.
      *
@@ -555,7 +546,7 @@ class Application extends \yii\web\Application
      * @return null|Response
      * @throws NotFoundHttpException
      * @throws ServiceUnavailableHttpException
-     * @throws ExitException
+     * @throws YiiExitException
      */
     private function _processInstallRequest(Request $request): ?Response
     {
@@ -728,9 +719,9 @@ class Application extends \yii\web\Application
             $this->state === self::STATE_SENDING_RESPONSE &&
             $this->getResponse()->format === TemplateResponseFormatter::FORMAT
         ) {
-            throw new ExitException();
+            throw new ExitException(output: ob_get_contents() ?: null);
         }
 
-        parent::end($status, $response); // TODO: Change the autogenerated stub
+        parent::end($status, $response);
     }
 }

@@ -7,6 +7,7 @@ import $ from 'jquery';
  */
 Craft.CP = Garnish.Base.extend(
   {
+    elementThumbLoader: null,
     authManager: null,
 
     $nav: null,
@@ -14,10 +15,15 @@ Craft.CP = Garnish.Base.extend(
     $globalSidebar: null,
     $globalContainer: null,
     $mainContainer: null,
+    $pageContainer: null,
     $alerts: null,
     $crumbs: null,
-    $breadcrumbList: null,
-    $breadcrumbItems: null,
+    $crumbList: null,
+    $crumbItems: null,
+    $crumbMenuTriggerItem: null,
+    $crumbMenu: null,
+    $crumbMenuList: null,
+    $crumbMenuItems: null,
     $notificationContainer: null,
     $main: null,
     $primaryForm: null,
@@ -38,12 +44,6 @@ Craft.CP = Garnish.Base.extend(
     isMobile: null,
     fixedHeader: false,
 
-    breadcrumbListWidth: 0,
-    breadcrumbDisclosureItem: `<li class="breadcrumb-toggle-wrapper" data-disclosure-item><button data-disclosure-trigger aria-controls="breadcrumb-disclosure" aria-haspopup="true">${Craft.t(
-      'app',
-      'More…'
-    )}</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>`,
-
     tabManager: null,
 
     enableQueue: true,
@@ -52,6 +52,8 @@ Craft.CP = Garnish.Base.extend(
     displayedJobInfo: null,
     displayedJobInfoUnchanged: 1,
     trackJobProgressTimeout: null,
+    trackingJobProgress: false,
+    jobProgressCancelToken: null,
     jobProgressIcon: null,
 
     checkingForUpdates: false,
@@ -62,6 +64,8 @@ Craft.CP = Garnish.Base.extend(
     resizeTimeout: null,
 
     init: function () {
+      this.elementThumbLoader = new Craft.ElementThumbLoader();
+
       // Is this session going to expire?
       if (Craft.remainingSessionTime !== 0) {
         this.authManager = new Craft.AuthManager();
@@ -73,10 +77,11 @@ Craft.CP = Garnish.Base.extend(
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
       this.$mainContainer = $('#main-container');
+      this.$pageContainer = $('#page-container');
       this.$alerts = $('#alerts');
       this.$crumbs = $('#crumbs');
-      this.$breadcrumbList = $('.breadcrumb-list');
-      this.$breadcrumbItems = $('.breadcrumb-list li');
+      this.$crumbList = $('#crumb-list');
+      this.$crumbItems = this.$crumbList.children('li');
       this.$notificationContainer = $('#notifications');
       this.$main = $('#main');
       this.$primaryForm = $('#main-form');
@@ -242,8 +247,13 @@ Craft.CP = Garnish.Base.extend(
       if (Craft.announcements.length) {
         let $btn = $('#announcements-btn').removeClass('hidden');
         const hasUnreads = Craft.announcements.some((a) => a.unread);
+        let $unreadMessage;
         if (hasUnreads) {
-          $btn.addClass('unread');
+          $unreadMessage = $('<span/>', {
+            class: 'visually-hidden',
+            html: Craft.t('app', 'Unread messages'),
+          });
+          $btn.addClass('unread').append($unreadMessage);
         }
         let hud;
         this.addListener($btn, 'click', () => {
@@ -251,18 +261,25 @@ Craft.CP = Garnish.Base.extend(
             let contents = '';
             Craft.announcements.forEach((a) => {
               contents +=
-                `<div class="announcement ${a.unread ? 'unread' : ''}">` +
+                `<div class="announcement ${
+                  a.unread ? 'unread' : ''
+                }" role="listitem">` +
+                '<div class="announcement__header">' +
+                `<h3 class="announcement__heading h2">${a.heading}</h3>` +
                 '<div class="announcement-label-container">' +
-                `<div class="announcement-icon">${a.icon}</div>` +
+                `<div class="announcement-icon" aria-hidden="true">${a.icon}</div>` +
                 `<div class="announcement-label">${a.label}</div>` +
                 '</div>' +
-                `<h2>${a.heading}</h2>` +
+                '</div>' +
                 `<p>${a.body}</p>` +
                 '</div>';
             });
             hud = new Garnish.HUD(
               $btn,
-              `<div id="announcements">${contents}</div>`,
+              `<h2 class="visually-hidden">${Craft.t(
+                'app',
+                'Announcements'
+              )}</h2><div id="announcements" role="list">${contents}</div>`,
               {
                 onShow: () => {
                   $btn.addClass('active');
@@ -286,6 +303,7 @@ Craft.CP = Garnish.Base.extend(
 
             if (hasUnreads) {
               $btn.removeClass('unread');
+              $unreadMessage.remove();
               Craft.sendActionRequest(
                 'POST',
                 'users/mark-announcements-as-read',
@@ -301,6 +319,25 @@ Craft.CP = Garnish.Base.extend(
           }
         });
       }
+
+      // Add .stuck class to #footer when stuck
+      // h/t https://stackoverflow.com/a/61115077/1688568
+      const footer = document.getElementById('footer');
+      if (footer) {
+        const observer = new IntersectionObserver(
+          ([ev]) => {
+            ev.target.classList.toggle('stuck', ev.intersectionRatio < 1);
+          },
+          {
+            rootMargin: '0px 0px -1px 0px',
+            threshold: [1],
+          }
+        );
+        observer.observe(footer);
+      }
+
+      // Load any element thumbs
+      this.elementThumbLoader.load(this.$pageContainer);
     },
 
     get $contentHeader() {
@@ -337,14 +374,10 @@ Craft.CP = Garnish.Base.extend(
 
       for (let i = 0; i < $forms.length; i++) {
         const $form = $forms.eq(i);
-        let serialized;
         if (!$form.data('initialSerializedValue')) {
-          if (typeof $form.data('serializer') === 'function') {
-            serialized = $form.data('serializer')();
-          } else {
-            serialized = $form.serialize();
-          }
-          $form.data('initialSerializedValue', serialized);
+          const serializer =
+            $form.data('serializer') || (() => $form.serialize());
+          $form.data('initialSerializedValue', serializer());
         }
         this.addListener($form, 'submit', function (ev) {
           if (Garnish.hasAttr($form, 'data-confirm-unload')) {
@@ -352,15 +385,11 @@ Craft.CP = Garnish.Base.extend(
           }
           if (Garnish.hasAttr($form, 'data-delta')) {
             ev.preventDefault();
-            let serialized;
-            if (typeof $form.data('serializer') === 'function') {
-              serialized = $form.data('serializer')();
-            } else {
-              serialized = $form.serialize();
-            }
+            const serializer =
+              $form.data('serializer') || (() => $form.serialize());
             const data = Craft.findDeltaData(
               $form.data('initialSerializedValue'),
-              serialized,
+              serializer(),
               $form.data('delta-names'),
               null,
               $form.data('initial-delta-values'),
@@ -553,16 +582,13 @@ Craft.CP = Garnish.Base.extend(
         // Fixes Redactor fixed toolbars on previously hidden panes
         Garnish.$doc.trigger('scroll');
 
-        // If there is a revision menu, set its links to this tab ID
+        // If there is a site crumb menu or context menu, set their links to this tab ID
         if (href && href.charAt(0) === '#') {
-          const menuBtn = $('#context-btn').menubtn().data('menubtn');
-          if (menuBtn) {
-            for (let i = 0; i < menuBtn.menu.$options.length; i++) {
-              let a = menuBtn.menu.$options[i];
-              if (a.href) {
-                a.href = a.href.match(/^[^#]*/)[0] + href;
-              }
-            }
+          const contextLinks = document.querySelectorAll(
+            '#site-crumb-menu a[href], #context-menu a[href]'
+          );
+          for (const link of contextLinks) {
+            link.href = link.href.match(/^[^#]*/)[0] + href;
           }
         }
 
@@ -642,7 +668,7 @@ Craft.CP = Garnish.Base.extend(
       return this.tabManager ? this.tabManager.$focusableTab : undefined;
     },
     /**
-     * @param {object} tab
+     * @param {(jQuery|HTMLElement|string)} tab
      * @deprecated in 3.7.0
      */
     selectTab: function (tab) {
@@ -659,87 +685,82 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
+    handleBreadcrumbVisibility: function () {
+      if (!this.$crumbItems.length) {
+        return;
+      }
+
+      if (this.$crumbMenuItems) {
+        // put everything back
+        this.$crumbItems.css('max-width', '');
+        this.$crumbMenuItems.insertAfter(this.$crumbMenuTriggerItem);
+        this.$crumbMenuTriggerItem.detach();
+        this.$crumbMenuItems = null;
+      }
+
+      const maxWidth = Math.ceil(
+        this.$crumbs[0].getBoundingClientRect().width -
+          this.$navToggle[0].getBoundingClientRect().width
+      );
+      const itemWidths = [];
+
+      for (let i = 0; i < this.$crumbItems.length; i++) {
+        const $crumb = this.$crumbItems.eq(i);
+        itemWidths[i] = $crumb[0].getBoundingClientRect().width;
+      }
+
+      const totalWidth = itemWidths.reduce((sum, width) => sum + width, 0);
+
+      if (totalWidth > maxWidth) {
+        // add the menu trigger
+        if (!this.$crumbMenuTriggerItem) {
+          this.$crumbMenuTriggerItem = $('<li/>', {
+            class: 'crumb',
+          }).prependTo(this.$crumbList);
+          const $labelContainer = $('<div/>', {
+            class: 'crumb-label',
+          }).appendTo(this.$crumbMenuTriggerItem);
+          const $trigger = $('<button/>', {
+            id: 'crumb-menu-trigger',
+            'data-icon': 'ellipsis',
+            'data-disclosure-trigger': 'true',
+            'aria-controls': 'crumb-menu',
+            'aria-haspopup': 'true',
+            'aria-label': Craft.t('app', 'More…'),
+            title: Craft.t('app', 'More…'),
+          }).appendTo($labelContainer);
+
+          this.$crumbMenu = $('<div/>', {
+            id: 'crumb-menu',
+            class: 'menu menu--disclosure',
+            'data-disclosure-menu': 'true',
+          }).appendTo($labelContainer);
+          this.$crumbMenuList = $('<ul/>').appendTo(this.$crumbMenu);
+
+          $trigger.disclosureMenu();
+        } else {
+          this.$crumbMenuTriggerItem.prependTo(this.$crumbList);
+        }
+
+        // see how many crumbs we can include, starting at the end
+        let visibleTotalWidth =
+          this.$crumbMenuTriggerItem[0].getBoundingClientRect().width;
+
+        for (let i = this.$crumbItems.length - 1; i >= 0; i--) {
+          if (visibleTotalWidth + itemWidths[i] > maxWidth) {
+            this.$crumbMenuItems = this.$crumbItems.slice(0, i + 1);
+            this.$crumbMenuItems.appendTo(this.$crumbMenuList);
+            break;
+          }
+
+          visibleTotalWidth += itemWidths[i];
+        }
+      }
+    },
+
     handleWindowResize: function () {
       this.updateResponsiveTables();
       this.handleBreadcrumbVisibility();
-    },
-
-    breadcrumbItemsWrap: function () {
-      if (!this.$breadcrumbItems[0]) return;
-
-      this.$breadcrumbList.css(
-        Craft.orientation === 'ltr' ? 'margin-right' : 'margin-left',
-        ''
-      );
-      const listWidth = this.$breadcrumbList[0].getBoundingClientRect().width;
-      let totalItemWidth = 0;
-
-      // Iterate through all list items (inclusive of more button)
-      const $items = this.$breadcrumbList.find('li');
-      for (let i = 0; i < $items.length; i++) {
-        totalItemWidth += $items.get(i).getBoundingClientRect().width;
-      }
-
-      this.breadcrumbListWidth = listWidth;
-
-      if (totalItemWidth <= listWidth) {
-        return false;
-      }
-
-      // If it's less than a pixel off, it's probably just a rounding error.
-      // Give the container an extra pixel to be safe, though
-      if (totalItemWidth < listWidth + 1) {
-        this.$breadcrumbList.css(
-          Craft.orientation === 'ltr' ? 'margin-right' : 'margin-left',
-          '-1px'
-        );
-        return false;
-      }
-
-      return true;
-    },
-
-    handleBreadcrumbVisibility: function () {
-      if (!this.breadcrumbItemsWrap()) return;
-
-      if (this.$breadcrumbList.find('[data-disclosure-item]').length === 0) {
-        this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
-      }
-
-      const triggerWidth = this.$breadcrumbList.find(
-        '[data-disclosure-item]'
-      )[0].offsetWidth;
-      let visibleItemWidth = triggerWidth;
-      let finalIndex;
-      let newWidth;
-      const listWidth = this.breadcrumbListWidth;
-
-      // Find breadcrumbs that should remain visible without overflowing
-      this.$breadcrumbItems.each(function (index) {
-        newWidth = visibleItemWidth + this.offsetWidth;
-
-        if (newWidth < listWidth) {
-          finalIndex = index;
-          visibleItemWidth += this.offsetWidth;
-        } else {
-          return false;
-        }
-      });
-
-      // Separate breadcrums that should remain visible vs. hidden
-      const shownItems = this.$breadcrumbItems.slice(0, finalIndex + 1);
-      const hiddenItems = this.$breadcrumbItems.slice(finalIndex + 1);
-
-      // Empty list DOM and add shown items and trigger item
-      this.$breadcrumbList.html('');
-      this.$breadcrumbList.append(shownItems);
-      this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
-
-      // Add hidden items to disclosure menu and initialize
-      this.$breadcrumbList
-        .find('[data-disclosure-menu] ul')
-        .append(hiddenItems);
-      this.$breadcrumbList.find('[data-disclosure-trigger]').disclosureMenu();
     },
 
     updateResponsiveTables: function () {
@@ -810,9 +831,8 @@ Craft.CP = Garnish.Base.extend(
         this.$main.length &&
         this.$headerContainer[0].getBoundingClientRect().top < 0
       ) {
+        const headerHeight = this.$headerContainer.height();
         if (!this.fixedHeader) {
-          var headerHeight = this.$headerContainer.height();
-
           // Hard-set the minimum content container height
           this.$contentContainer.css(
             'min-height',
@@ -823,31 +843,43 @@ Craft.CP = Garnish.Base.extend(
           this.$headerContainer.height(headerHeight);
           Garnish.$bod.addClass('fixed-header');
 
-          // Fix the sidebar and details pane positions if they are taller than #content-container
-          var contentHeight = this.$contentContainer.outerHeight();
-          var $detailsHeight = this.$details.outerHeight();
-          var css = {
-            top: headerHeight + 'px',
-            'max-height': 'calc(100vh - ' + headerHeight + 'px)',
-          };
-          this.$sidebar.addClass('fixed').css(css);
-          this.$details.addClass('fixed').css(css);
           this.fixedHeader = true;
         }
+
+        this._setFixedTopPos(this.$sidebar, headerHeight);
+        this._setFixedTopPos(this.$details, headerHeight);
       } else if (this.fixedHeader) {
         this.$headerContainer.height('auto');
         Garnish.$bod.removeClass('fixed-header');
         this.$contentContainer.css('min-height', '');
-        this.$sidebar.removeClass('fixed').css({
-          top: '',
-          'max-height': '',
-        });
-        this.$details.removeClass('fixed').css({
-          top: '',
-          'max-height': '',
-        });
+        this.$sidebar.removeClass('fixed').css('top', '');
+        this.$details.removeClass('fixed').css('top', '');
         this.fixedHeader = false;
       }
+    },
+
+    _setFixedTopPos: function ($element, headerHeight) {
+      if (!$element.length || !this.$contentContainer.length) {
+        return;
+      }
+
+      if ($element.outerHeight() >= this.$contentContainer.outerHeight()) {
+        $element.removeClass('fixed').css('top', '');
+        return;
+      }
+
+      $element
+        .addClass('fixed')
+        .css(
+          'top',
+          Math.min(
+            headerHeight + 14,
+            Math.max(
+              this.$mainContent[0].getBoundingClientRect().top,
+              document.documentElement.clientHeight - $element.outerHeight()
+            )
+          ) + 'px'
+        );
     },
 
     /**
@@ -859,7 +891,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displayNotification: function (type, message, settings) {
       const notification = new Craft.CP.Notification(type, message, settings);
@@ -881,7 +913,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displayNotice: function (message, settings) {
       return this.displayNotification(
@@ -905,7 +937,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displaySuccess: function (message, settings) {
       return this.displayNotification(
@@ -929,7 +961,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displayError: function (message, settings) {
       if (!message || typeof message === 'object') {
@@ -966,25 +998,35 @@ Craft.CP = Garnish.Base.extend(
       );
     },
 
-    displayAlerts: function (alerts) {
+    displayAlerts: function (alerts, animate = true) {
       this.$alerts.remove();
 
-      if (Garnish.isArray(alerts) && alerts.length) {
-        this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
+      if (Array.isArray(alerts) && alerts.length) {
+        this.$alerts = $('<ul id="alerts"/>').prependTo(this.$pageContainer);
 
-        for (var i = 0; i < alerts.length; i++) {
-          $(
-            `<li><span data-icon="alert" aria-label="${Craft.t(
+        for (let alert of alerts) {
+          if (!$.isPlainObject(alert)) {
+            alert = {
+              content: alert,
+              showIcon: true,
+            };
+          }
+          let content = alert.content;
+          if (alert.showIcon) {
+            content = `<span data-icon="alert" aria-label="${Craft.t(
               'app',
               'Error'
-            )}"></span> ${alerts[i]}</li>`
-          ).appendTo(this.$alerts);
+            )}"></span> ${content}`;
+          }
+          $(`<li>${content}</li>`).appendTo(this.$alerts);
         }
 
-        var height = this.$alerts.outerHeight();
-        this.$alerts
-          .css('margin-top', -height)
-          .velocity({'margin-top': 0}, 'fast');
+        if (animate) {
+          const height = this.$alerts.outerHeight();
+          this.$alerts
+            .css('margin-top', -height)
+            .velocity({'margin-top': 0}, 'fast');
+        }
 
         this.initAlerts();
       }
@@ -1018,6 +1060,88 @@ Craft.CP = Garnish.Base.extend(
           );
         });
       }
+
+      const $resolvableButtonsContainer = this.$alerts.find(
+        '.resolvable-alert-buttons'
+      );
+      if ($resolvableButtonsContainer.length) {
+        const $refreshBtn = Craft.ui
+          .createButton({
+            label: Craft.t('app', 'Refresh'),
+            spinner: true,
+          })
+          .appendTo($resolvableButtonsContainer);
+        $refreshBtn.on('click', async () => {
+          $refreshBtn.addClass('loading');
+          try {
+            await Craft.sendApiRequest('GET', 'ping');
+            const alerts = await this.fetchAlerts();
+            this.displayAlerts(alerts, false);
+          } finally {
+            $refreshBtn.removeClass('loading');
+          }
+        });
+      }
+    },
+
+    updateContext: function (label, description) {
+      const contextBtnLabel = document.querySelector(
+        '#context-menu-container > span'
+      );
+      if (contextBtnLabel) {
+        contextBtnLabel.textContent = label;
+      }
+
+      const menuItem = document.querySelector('#context-menu a.sel');
+      if (menuItem) {
+        const labelEl = menuItem.querySelector('.menu-item-label');
+        labelEl.textContent = label;
+
+        let descriptionEl = menuItem.querySelector('.menu-item-description');
+        if (description) {
+          if (!descriptionEl) {
+            descriptionEl = document.createElement('div');
+            descriptionEl.className = 'menu-item-description smalltext light';
+            menuItem.append(descriptionEl);
+          }
+          descriptionEl.textContent = description;
+        } else if (descriptionEl) {
+          descriptionEl.remove();
+        }
+      }
+    },
+
+    showSiteCrumbMenuItem: function (siteId) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        const li = menuItem.closest('li');
+        li.classList.remove('hidden');
+        const group = li.closest('.menu-group');
+        if (group) {
+          group.classList.remove('hidden');
+        }
+      }
+    },
+
+    setSiteCrumbMenuItemStatus: function (siteId, status) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        let statusEl = menuItem.querySelector('.status');
+
+        if (status) {
+          if (!statusEl) {
+            statusEl = document.createElement('div');
+            menuItem.prepend(statusEl);
+          }
+          statusEl.className = `status ${status}`;
+        } else if (statusEl) {
+          statusEl.remove();
+        }
+      }
     },
 
     checkForUpdates: function (forceRefresh, includeDetails, callback) {
@@ -1042,7 +1166,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Callback function?
       if (typeof callback === 'function') {
-        if (!Garnish.isArray(this.checkForUpdatesCallbacks)) {
+        if (!Array.isArray(this.checkForUpdatesCallbacks)) {
           this.checkForUpdatesCallbacks = [];
         }
 
@@ -1058,7 +1182,7 @@ Craft.CP = Garnish.Base.extend(
           this.updateUtilitiesBadge();
           this.checkingForUpdates = false;
 
-          if (Garnish.isArray(this.checkForUpdatesCallbacks)) {
+          if (Array.isArray(this.checkForUpdatesCallbacks)) {
             var callbacks = this.checkForUpdatesCallbacks;
             this.checkForUpdatesCallbacks = null;
 
@@ -1215,49 +1339,90 @@ Craft.CP = Garnish.Base.extend(
     },
 
     trackJobProgress: function (delay, force) {
-      if (force && this.trackJobProgressTimeout) {
-        clearTimeout(this.trackJobProgressTimeout);
-        this.trackJobProgressTimeout = null;
-      }
-
       // Ignore if we're already tracking jobs, or the queue is disabled
-      if (this.trackJobProgressTimeout || !this.enableQueue) {
+      if ((this.trackJobProgressTimeout && !force) || !this.enableQueue) {
         return;
       }
 
-      if (delay === true) {
+      this.cancelJobTracking();
+
+      if (delay) {
         // Determine the delay based on how long the displayed job info has remained unchanged
-        var timeout = Math.min(60000, this.displayedJobInfoUnchanged * 500);
+        if (delay === true) {
+          delay = this.getNextJobDelay();
+        }
         this.trackJobProgressTimeout = setTimeout(
           this._trackJobProgressInternal.bind(this),
-          timeout
+          delay
         );
       } else {
         this._trackJobProgressInternal();
       }
     },
 
+    getNextJobDelay: function () {
+      return Math.min(60000, this.displayedJobInfoUnchanged * 500);
+    },
+
     _trackJobProgressInternal: function () {
-      Craft.queue.push(
-        () =>
-          new Promise((resolve, reject) => {
-            Craft.sendActionRequest(
-              'POST',
-              'queue/get-job-info?limit=50&dontExtendSession=1'
-            )
-              .then(({data}) => {
-                this.trackJobProgressTimeout = null;
-                this.totalJobs = data.total;
-                this.setJobInfo(data.jobs);
-                if (this.jobInfo.length) {
-                  // Check again after a delay
-                  this.trackJobProgress(true);
-                }
-                resolve();
-              })
-              .catch(reject);
-          })
-      );
+      this.trackingJobProgress = true;
+
+      Craft.queue.push(async () => {
+        // has this been cancelled?
+        if (!this.trackingJobProgress) {
+          return;
+        }
+
+        // Tell other browser windows to stop tracking job progress
+        if (Craft.broadcaster) {
+          Craft.broadcaster.postMessage({
+            event: 'beforeTrackJobProgress',
+          });
+        }
+
+        this.jobProgressCancelToken = axios.CancelToken.source();
+
+        let data;
+        try {
+          const response = await Craft.sendActionRequest(
+            'POST',
+            'queue/get-job-info?limit=50&dontExtendSession=1',
+            {
+              cancelToken: this.jobProgressCancelToken.token,
+            }
+          );
+          data = response.data;
+        } catch (e) {
+          // only throw if we weren't expecting this
+          if (this.trackingJobProgress) {
+            throw e;
+          }
+        } finally {
+          this.trackingJobProgress = false;
+          this.trackJobProgressTimeout = null;
+          this.jobProgressCancelToken = null;
+        }
+
+        this.setJobData(data);
+
+        if (this.jobInfo.length) {
+          // Check again after a delay
+          this.trackJobProgress(true);
+        }
+
+        // Notify the other browser tabs about the jobs
+        if (Craft.broadcaster) {
+          Craft.broadcaster.postMessage({
+            event: 'trackJobProgress',
+            jobData: data,
+          });
+        }
+      });
+    },
+
+    setJobData: function (data) {
+      this.totalJobs = data.total;
+      this.setJobInfo(data.jobs);
     },
 
     setJobInfo: function (jobInfo) {
@@ -1290,6 +1455,19 @@ Craft.CP = Garnish.Base.extend(
 
       // Fire a setJobInfo event
       this.trigger('setJobInfo');
+    },
+
+    cancelJobTracking: function () {
+      this.trackingJobProgress = false;
+
+      if (this.trackJobProgressTimeout) {
+        clearTimeout(this.trackJobProgressTimeout);
+        this.trackJobProgressTimeout = null;
+      }
+
+      if (this.jobProgressCancelToken) {
+        this.jobProgressCancelToken.cancel();
+      }
     },
 
     /**
@@ -1359,7 +1537,7 @@ Craft.CP = Garnish.Base.extend(
     /**
      * Returns the active site for the control panel
      *
-     * @return {number}
+     * @returns {number}
      */
     getSiteId: function () {
       // If the old BaseElementIndex.siteId value is in localStorage, go aheand and remove & return that
@@ -1451,9 +1629,9 @@ Craft.CP.Notification = Garnish.Base.extend({
       'data-type': this.type,
     }).appendTo(Craft.cp.$notificationContainer);
 
-    const $body = $('<div class="notification-body"/>')
-      .appendTo(this.$container)
-      .attr('role', 'status');
+    const $body = $('<div class="notification-body"/>').appendTo(
+      this.$container
+    );
 
     if (this.settings.icon) {
       const $icon = $('<span/>', {
@@ -1490,17 +1668,11 @@ Craft.CP.Notification = Garnish.Base.extend({
         .append(this.settings.details)
         .appendTo($main);
 
-      const $focusableElement = $detailsContainer.find('button,input');
-      if ($focusableElement.length) {
-        Garnish.uiLayerManager.addLayer(this.$container);
-        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
-          this.close();
-        });
+      if ($detailsContainer.find('button,input').length) {
         this.originalActiveElement = document.activeElement;
         this.$container.attr('tabindex', '-1').focus();
-        this.$container.on('keydown', (ev) => {
+        this.addListener(this.$container, 'keydown', (ev) => {
           if (ev.keyCode === Garnish.ESC_KEY) {
-            ev.stopPropagation();
             this.close();
           }
         });
@@ -1538,11 +1710,11 @@ Craft.CP.Notification = Garnish.Base.extend({
     this.delayedClose();
 
     this.$container.on(
-      'keypress keyup change focus blur click mousedown mouseup',
+      'keypress keyup change focus click mousedown mouseup',
       (ev) => {
         if (ev.target != this.$closeBtn[0]) {
           this.$container.off(
-            'keypress keyup change focus blur click mousedown mouseup'
+            'keypress keyup change focus click mousedown mouseup'
           );
           this.preventDelayedClose();
         }
@@ -1580,7 +1752,7 @@ Craft.CP.Notification = Garnish.Base.extend({
       {
         duration: 'fast',
         complete: () => {
-          this.$container.remove();
+          this.destroy();
         },
       }
     );
@@ -1614,6 +1786,11 @@ Craft.CP.Notification = Garnish.Base.extend({
     }
 
     this.$container.off('mouseover mouseout');
+  },
+
+  destroy: function () {
+    this.$container.remove();
+    this.base();
   },
 });
 

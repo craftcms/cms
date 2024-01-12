@@ -86,7 +86,6 @@ class UrlRule extends \yii\web\UrlRule
 
             if (isset($result[1]['variables']['template'])) {
                 $result[1]['template'] = $result[1]['variables']['template'];
-                /** @phpstan-ignore-next-line */
                 unset($result[1]['variables']['template']);
             }
 

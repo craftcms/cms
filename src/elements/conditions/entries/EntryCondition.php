@@ -16,16 +16,19 @@ class EntryCondition extends ElementCondition
     /**
      * @inheritdoc
      */
-    protected function conditionRuleTypes(): array
+    protected function selectableConditionRules(): array
     {
-        return array_merge(parent::conditionRuleTypes(), [
+        return array_merge(parent::selectableConditionRules(), [
             AuthorConditionRule::class,
             AuthorGroupConditionRule::class,
             ExpiryDateConditionRule::class,
             LevelConditionRule::class,
             PostDateConditionRule::class,
+            SavableConditionRule::class,
             SectionConditionRule::class,
+            MatrixFieldConditionRule::class,
             TypeConditionRule::class,
+            ViewableConditionRule::class,
         ]);
     }
 }

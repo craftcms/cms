@@ -26,12 +26,10 @@
 
       this.initFields();
 
-      var $menuBtn = this.$form.find('> .buttons > .btngroup > .menubtn'),
+      const $menuBtn = this.$form.find('> .buttons > .btngroup > .menubtn'),
         $saveAndContinueEditingBtn = $menuBtn
-          .data('menubtn')
-          .menu.$container.find('> ul > li > a');
-
-      $menuBtn.menubtn();
+          .data('trigger')
+          .$container.find('> ul > li > a');
 
       this.addListener(this.$form, 'submit', 'handleFormSubmit');
       this.addListener(
@@ -39,6 +37,16 @@
         'click',
         'saveAndContinueEditing'
       );
+
+      this.addListener($saveAndContinueEditingBtn, 'keydown', (event) => {
+        if (
+          event.keyCode === Garnish.SPACE_KEY ||
+          event.keyCode === Garnish.RETURN_KEY
+        ) {
+          event.preventDefault();
+          this.saveAndContinueEditing();
+        }
+      });
     },
 
     handleFormSubmit: function (event) {
@@ -96,7 +104,9 @@
 
                 for (var i = 0; i < response.errors[attribute].length; i++) {
                   var error = response.errors[attribute][i];
-                  $('<li>' + error + '</li>').appendTo(this.$errorList);
+                  $('<li/>', {
+                    text: error,
+                  }).appendTo(this.$errorList);
                 }
               }
             }

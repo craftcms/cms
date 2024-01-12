@@ -147,12 +147,16 @@ class HtmlHelperTest extends TestCase
 
     /**
      * @dataProvider idDataProvider
-     * @param string $expected
+     * @param string|null $expected
      * @param string $id
      */
-    public function testId(string $expected, string $id): void
+    public function testId(?string $expected, string $id): void
     {
-        self::assertSame($expected, Html::id($id));
+        if ($expected) {
+            self::assertSame($expected, Html::id($id));
+        } else {
+            self::assertEquals(10, strlen(Html::id($id)));
+        }
     }
 
     /**
@@ -266,9 +270,30 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testSvg(): void
+    {
+        $path = dirname(__DIR__, 2) . '/_data/assets/files/craft-logo.svg';
+        $contents = file_get_contents($path);
+
+        $svg = Html::svg($path);
+        self::assertStringStartsWith('<svg', $svg);
+        self::assertStringContainsString('id="Symbols"', $svg);
+
+        $svg = Html::svg($contents);
+        self::assertStringStartsWith('<svg', $svg);
+        self::assertRegExp('/id="\w+\-Symbols"/', $svg);
+
+        $svg = Html::svg($contents, namespace: false);
+        self::assertStringStartsWith('<svg', $svg);
+        self::assertStringContainsString('id="Symbols"', $svg);
+    }
+
+    /**
      * @return array
      */
-    public function encodeParamsDataProvider(): array
+    public static function encodeParamsDataProvider(): array
     {
         $htmlTagString = '<p>Im a paragraph. What am i, {whatIsThis}</p>';
         $pureVariableString = '{variable1}, {variable2}';
@@ -295,7 +320,7 @@ class HtmlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function encodeSpacesDataProvider(): array
+    public static function encodeSpacesDataProvider(): array
     {
         return [
             ['foo%20bar', 'foo bar'],
@@ -306,7 +331,7 @@ class HtmlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function parseTagDataProvider(): array
+    public static function parseTagDataProvider(): array
     {
         return [
             [
@@ -342,7 +367,7 @@ class HtmlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function appendToTagDataProvider(): array
+    public static function appendToTagDataProvider(): array
     {
         return [
             ['<div><p>Foo</p><p>Bar</p></div>', '<div><p>Foo</p></div>', '<p>Bar</p>', null],
@@ -356,7 +381,7 @@ class HtmlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function prependToTagDataProvider(): array
+    public static function prependToTagDataProvider(): array
     {
         return [
             ['<div><p>Foo</p><p>Bar</p></div>', '<div><p>Bar</p></div>', '<p>Foo</p>', null],
@@ -370,7 +395,7 @@ class HtmlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function parseTagAttributesDataProvider(): array
+    public static function parseTagAttributesDataProvider(): array
     {
         return [
             [[], '<div/>'],
@@ -395,6 +420,8 @@ class HtmlHelperTest extends TestCase
             [['data' => ['foo' => true]], '<div data-foo>'],
             [['class' => ['foo', 'bar']], '<div class="foo bar">'],
             [['style' => ['color' => 'black', 'background' => 'red']], '<div style="color: black; background: red">'],
+            // https://github.com/craftcms/cms/issues/12887
+            [['class' => ['[&[disabled]]:opacity-50']], '<button class="[&amp;[disabled]]:opacity-50"></button>'],
             [false, '<div'],
             [false, '<div x-foo=">'],
             [false, "<div x-foo='>"],
@@ -406,7 +433,7 @@ class HtmlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function modifyTagAttributesDataProvider(): array
+    public static function modifyTagAttributesDataProvider(): array
     {
         return [
             ['<input type="text">', '<input type="text" disabled>', ['disabled' => false]],
@@ -426,13 +453,15 @@ class HtmlHelperTest extends TestCase
             // https://github.com/craftcms/cms/issues/7234
             ['<div>', '<div class="foo">', ['class' => false]],
             ['<div>', '<div style="background: red">', ['style' => false]],
+            // https://github.com/craftcms/cms/issues/12887
+            ['<button class="[&amp;[disabled]]:opacity-50" disabled></button>', '<button class="[&amp;[disabled]]:opacity-50"></button>', ['disabled' => true]],
         ];
     }
 
     /**
      * @return array
      */
-    public function normalizeTagAttributesDataProvider(): array
+    public static function normalizeTagAttributesDataProvider(): array
     {
         return [
             [['type' => 'text', 'disabled' => true], ['type' => 'text', 'disabled' => true]],
@@ -453,20 +482,23 @@ class HtmlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function idDataProvider(): array
+    public static function idDataProvider(): array
     {
         return [
             ['foo', '-foo-'],
             ['foo-bar', 'foo--bar'],
             ['foo-bar-baz', 'foo[bar][baz]'],
             ['foo-bar-baz', 'foo bar baz'],
+            ['foo.bar', 'foo.bar'],
+            ['foo-bar', 'foo bar'],
+            [null, '100'],
         ];
     }
 
     /**
      * @return array
      */
-    public function namespaceInputNameDataProvider(): array
+    public static function namespaceInputNameDataProvider(): array
     {
         return [
             ['foo[bar]', 'bar', 'foo'],
@@ -478,24 +510,29 @@ class HtmlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function namespaceIdDataProvider(): array
+    public static function namespaceIdDataProvider(): array
     {
         return [
             ['foo-bar', 'bar', 'foo'],
             ['foo-bar-baz', 'bar[baz]', 'foo'],
             ['foo-bar-baz', 'baz', 'foo[bar]'],
             ['foo-bar', 'foo[bar]', null],
+            ['foo__', '__foo__', null],
+            ['__FOO__', '__FOO__', null],
+            ['__FOO_BAR__', '__FOO_BAR__', null],
         ];
     }
 
     /**
      * @return array
      */
-    public function namespaceInputsDataProvider(): array
+    public static function namespaceInputsDataProvider(): array
     {
         return [
             ['<input name="foo[bar]">', '<input name="bar">', 'foo'],
             ['<input name="foo[bar][baz]">', '<input name="bar[baz]">', 'foo'],
+            ['<textarea name="foo[bar]"></textarea>', '<textarea name="bar"></textarea>', 'foo'],
+            ['<textarea name="foo[bar]">blah</textarea>', '<textarea name="bar">blah</textarea>', 'foo'],
             ['<textarea name="foo[bar]"><input name="foo"></textarea>', '<textarea name="bar"><input name="foo"></textarea>', 'foo'],
             ['<input name="3[foo]">', '<input name="foo">', '3'],
         ];
@@ -504,7 +541,7 @@ class HtmlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function namespaceAttributesDataProvider(): array
+    public static function namespaceAttributesDataProvider(): array
     {
         return [
             ['<div id="foo-bar"></div>', '<div id="bar"></div>', 'foo', false],
@@ -535,13 +572,15 @@ class HtmlHelperTest extends TestCase
             ['<linearGradient id="foo-bar"></linearGradient><path fill="url(#foo-bar)"></path>', '<linearGradient id="bar"></linearGradient><path fill="url(#bar)"></path>', 'foo', false],
             ['<style>.foo-st4{mask:url(#foo-bar);fill-rule:evenodd;fill:url(#foo-bla);}</style><mask id="foo-bar"></mask><linearGradient id="foo-bla"></linearGradient>', '<style>.st4{mask:url(#bar);fill-rule:evenodd;fill:url(#bla);}</style><mask id="bar"></mask><linearGradient id="bla"></linearGradient>', 'foo', true],
             ['<circle id="foo-bar"></circle><use xlink:href="#foo-bar"></use>', '<circle id="bar"></circle><use xlink:href="#bar"></use>', 'foo', false],
+            // https://github.com/craftcms/cms/pull/13251
+            ['<style>.foo-a, .foo-b:hover</style>', '<style>.a, .b:hover</style>', 'foo', true],
         ];
     }
 
     /**
      * @return array
      */
-    public function widontDataProvider(): array
+    public static function widontDataProvider(): array
     {
         return [
             ['foo', 'foo'],
@@ -553,7 +592,7 @@ class HtmlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function encodeInvalidTagsDataProvider(): array
+    public static function encodeInvalidTagsDataProvider(): array
     {
         return [
             ['foo<br>bar', 'foo<br>bar'],

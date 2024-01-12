@@ -106,7 +106,7 @@ class ClearCaches extends Utility
         $view->registerAssetBundle(ClearCachesAsset::class);
         $view->registerJs('new Craft.ClearCachesUtility(\'clear-caches\');');
 
-        return $view->renderTemplate('_components/utilities/ClearCaches', [
+        return $view->renderTemplate('_components/utilities/ClearCaches.twig', [
             'cacheOptions' => $cacheOptions,
             'tagOptions' => $tagOptions,
         ]);
@@ -136,6 +136,7 @@ class ClearCaches extends Utility
                     $dirs = [
                         $pathService->getAssetSourcesPath(false),
                         $pathService->getAssetsIconsPath(false),
+                        $pathService->getImageTransformsPath(false),
                     ];
                     foreach ($dirs as $dir) {
                         try {

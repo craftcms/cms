@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use craft\htmlpurifier\VideoEmbedUrlDef;
 use HTMLPurifier_Config;
 use HTMLPurifier_Encoder;
 
@@ -76,6 +77,12 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
 
             // https://github.com/ezyang/htmlpurifier/issues/152#issuecomment-414192516
             $def->addAttribute('a', 'download', 'URI');
+
+            // https://github.com/craftcms/ckeditor/issues/80
+            $def->addAttribute('div', 'data-oembed-url',  new VideoEmbedUrlDef());
+
+            $def->addElement('oembed', 'Block', 'Inline', 'Common');
+            $def->addAttribute('oembed', 'url', new VideoEmbedUrlDef());
         }
     }
 }

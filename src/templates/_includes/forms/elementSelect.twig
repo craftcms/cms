@@ -11,35 +11,54 @@
 {% set sourceElementId = sourceElementId ?? null -%}
 {% set storageKey = storageKey ?? null -%}
 {% set viewMode = viewMode ?? 'list' %}
-{% set sortable = sortable ?? true %}
 {% set prevalidate = prevalidate ?? false %}
 {% set fieldId = fieldId ?? null %}
 {% set single = single ?? false %}
 {% set limit = single ? 1 : (limit ?? null) %}
+{% set showActionMenu = showActionMenu ?? true %}
+{% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
 {% set disabled = (disabled ?? false) ? true : false %}
+{% set maintainHierarchy = maintainHierarchy ?? false %}
+{% set registerJs = registerJs ?? true %}
 
 {% set containerAttributes = {
     id: id,
     class: ['elementselect']|merge((class ?? [])|explodeClass),
 }|merge(containerAttributes ?? [], recursive=true) %}
 
+{% set modalSettings = {
+    modalTitle: selectionLabel ?? 'Choose'|t('app'),
+}|merge(modalSettings ?? [], recursive=true) %}
+
 {%- if block('attr') is defined %}
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
 {% tag 'div' with containerAttributes %}
-    <div class="elements">
-        {% for element in elements %}
-            {% set element = include('_elements/element', {
-                context: 'field',
-                size: (viewMode == 'large' ? 'large' : 'small')
-            }) %}
-            {% if disabled %}
-                {% set element = element|removeClass('removable') %}
-            {% endif %}
-            {{ element|raw }}
-        {% endfor %}
-    </div>
+    {% if maintainHierarchy %}
+        {{ include('_elements/structurelist.twig', {
+            id,
+            elements,
+            context: 'field',
+            sortable: false,
+        }) }}
+    {% elseif viewMode == 'cards' %}
+        {{ include('_elements/cards.twig', {
+            elements,
+            viewMode,
+            disabled,
+            context: 'field',
+            sortable: false,
+        }) }}
+    {% else %}
+        {{ include('_elements/list.twig', {
+            elements,
+            viewMode,
+            disabled,
+            context: 'field',
+            sortable: false,
+        }) }}
+    {% endif %}
 
     <div class="flex flex-nowrap">
         {{ tag('button', {
@@ -63,15 +82,19 @@
     </div>
 {% endtag %}
 
-{% if not disabled %}
+{% if not disabled and registerJs %}
     {% set jsSettings = {
         id: id|namespaceInputId,
         name: name|namespaceInputName,
         elementType: elementType,
         sources: sources,
         condition: condition ? condition.getConfig() : null,
+        referenceElementId: referenceElement.id ?? null,
+        referenceElementSiteId: referenceElement.siteId ?? null,
         criteria: criteria,
         allowSelfRelations: allowSelfRelations ?? false,
+        maintainHierarchy: maintainHierarchy,
+        branchLimit: branchLimit ?? null,
         sourceElementId: sourceElementId,
         disabledElementIds: disabledElementIds ?? null,
         viewMode: viewMode,
@@ -81,6 +104,7 @@
         modalStorageKey: storageKey,
         fieldId: fieldId,
         sortable: sortable,
+        showActionMenu: showActionMenu,
         prevalidate: prevalidate,
         modalSettings: modalSettings ?? {},
     } %}

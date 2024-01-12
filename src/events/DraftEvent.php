@@ -24,9 +24,9 @@ class DraftEvent extends Event
     public ElementInterface $canonical;
 
     /**
-     * @var int The creator ID
+     * @var int|null The creator ID
      */
-    public int $creatorId;
+    public ?int $creatorId = null;
 
     /**
      * @var bool Whether this is a provisional draft

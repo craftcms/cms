@@ -67,7 +67,7 @@ class ProjectConfig extends Utility
             $invert = false;
         }
 
-        return $view->renderTemplate('_components/utilities/ProjectConfig', [
+        return $view->renderTemplate('_components/utilities/ProjectConfig.twig', [
             'readOnly' => $projectConfig->readOnly,
             'invert' => $invert,
             'yamlExists' => $projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist(),

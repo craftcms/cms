@@ -31,14 +31,6 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
-    {
-        return SingleOptionFieldData::class;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function useFieldset(): bool
     {
         return true;
@@ -47,18 +39,18 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var SingleOptionFieldData $value */
         if (!$value->valid) {
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/radioGroup', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/radioGroup.twig', [
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $this->encodeValue($value),
-            'options' => $this->translatedOptions(true),
+            'options' => $this->translatedOptions(true, $value, $element),
         ]);
     }
 

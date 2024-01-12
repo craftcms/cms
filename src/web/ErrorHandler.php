@@ -19,6 +19,8 @@ use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Template as TwigTemplate;
+use yii\base\ErrorException;
+use yii\base\Exception;
 use yii\base\UserException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -127,16 +129,24 @@ class ErrorHandler extends \yii\web\ErrorHandler
         // Return JSON for JSON requests
         if ($request && $request->getAcceptsJson()) {
             $response->format = Response::FORMAT_JSON;
-            if ($this->_showExceptionView()) {
-                $response->data = $this->_exceptionAsArray($exception);
-            } else {
-                $message = $exception instanceof UserException ? $exception->getMessage() : Craft::t('app', 'A server error occurred.');
-                $response->data = [
-                    'message' => $message,
+            $includeFullInfo = $this->_showExceptionView();
+            $message = ($includeFullInfo || $exception instanceof UserException)
+                ? $exception->getMessage()
+                : Craft::t('app', 'A server error occurred.');
+            $response->data = [
+                'name' => ($exception instanceof Exception || $exception instanceof ErrorException) ? $exception->getName() : 'Exception',
+                'message' => $message,
+                'code' => $exception->getCode(),
+                // TODO: remove in v5; error message should only be in `message`
+                'error' => $message,
+            ];
 
-                    // TODO: remove in v5; error message should only be in `message`
-                    'error' => $message,
-                ];
+            if ($exception instanceof HttpException) {
+                $response->data['status'] = $exception->statusCode;
+            }
+
+            if ($includeFullInfo) {
+                $response->data += $this->_exceptionAsArray($exception, false);
             }
 
             // Override the status code and error message if this is a Guzzle client exception
@@ -182,10 +192,9 @@ class ErrorHandler extends \yii\web\ErrorHandler
         parent::renderException($exception);
     }
 
-    private function _exceptionAsArray(Throwable  $exception)
+    private function _exceptionAsArray(Throwable $exception, bool $withMessage)
     {
         $array = [
-            'message' => $exception->getMessage(),
             'exception' => get_class($exception),
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
@@ -193,14 +202,15 @@ class ErrorHandler extends \yii\web\ErrorHandler
                 unset($step['args']);
                 return $step;
             }, $exception->getTrace()),
-
-            // TODO: remove in v5; error message should only be in `message`
-            'error' => $exception->getMessage(),
         ];
+
+        if ($withMessage) {
+            $array = ['message' => $exception->getMessage()] + $array;
+        }
 
         $prev = $exception->getPrevious();
         if ($prev !== null) {
-            $array['previous'] = $this->_exceptionAsArray($prev);
+            $array['previous'] = $this->_exceptionAsArray($prev, true);
         }
 
         return $array;
