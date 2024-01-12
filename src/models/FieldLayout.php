@@ -13,8 +13,6 @@ use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
-use craft\base\PreviewableFieldInterface;
-use craft\base\ThumbableFieldInterface;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
@@ -175,20 +173,16 @@ class FieldLayout extends Model
     {
         $tabConfigs = ArrayHelper::remove($config, 'tabs');
         $layout = new self($config);
-        $tabs = [];
 
         if (is_array($tabConfigs)) {
-            foreach ($tabConfigs as $tabConfig) {
-                $tab = FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig);
-
-                // Ignore empty tabs
-                if (!empty($tab->getElements())) {
-                    $tabs[] = $tab;
-                }
-            }
+            $layout->setTabs(array_values(array_map(
+                fn(array $tabConfig) => FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig),
+                $tabConfigs,
+            )));
+        } else {
+            $layout->setTabs([]);
         }
 
-        $layout->setTabs($tabs);
         return $layout;
     }
 
@@ -235,7 +229,7 @@ class FieldLayout extends Model
     /**
      * @var FieldLayoutTab[]
      */
-    private array $_tabs = [];
+    private array $_tabs;
 
     /**
      * @inheritdoc
@@ -246,6 +240,11 @@ class FieldLayout extends Model
 
         if (!isset($this->uid)) {
             $this->uid = StringHelper::UUID();
+        }
+
+        if (!isset($this->_tabs)) {
+            // go through setTabs() so any mandatory fields get added
+            $this->setTabs([]);
         }
     }
 
@@ -298,6 +297,11 @@ class FieldLayout extends Model
      */
     public function getTabs(): array
     {
+        if (!isset($this->_tabs)) {
+            // go through setTabs() so any mandatory fields get added
+            $this->setTabs([]);
+        }
+
         return $this->_tabs;
     }
 
@@ -512,14 +516,10 @@ class FieldLayout extends Model
      */
     public function getConfig(): ?array
     {
-        $tabConfigs = [];
-
-        foreach ($this->getTabs() as $tab) {
-            $tabConfig = $tab->getConfig();
-            if (!empty($tabConfig['elements'])) {
-                $tabConfigs[] = $tabConfig;
-            }
-        }
+        $tabConfigs = array_values(array_map(
+            fn(FieldLayoutTab $tab) => $tab->getConfig(),
+            $this->getTabs(),
+        ));
 
         if (empty($tabConfigs)) {
             return null;
@@ -528,6 +528,19 @@ class FieldLayout extends Model
         return [
             'tabs' => $tabConfigs,
         ];
+    }
+
+    /**
+     * Returns a layout element by its UID.
+     *
+     * @param string $uid
+     * @return FieldLayoutElement|null
+     * @since 5.0.0
+     */
+    public function getElementByUid(string $uid): ?FieldLayoutElement
+    {
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement->uid === $uid;
+        return $this->_element($filter);
     }
 
     /**
@@ -642,39 +655,34 @@ class FieldLayout extends Model
     /**
      * Returns the field layout’s designated thumbnail field.
      *
-     * @return ThumbableFieldInterface|null
+     * @return BaseField|null
      * @since 5.0.0
      */
-    public function getThumbField(): ?ThumbableFieldInterface
+    public function getThumbField(): ?BaseField
     {
-        /** @var CustomField|null $layoutElement */
-        $layoutElement = $this->_element(fn(FieldLayoutElement $layoutElement) => (
-            $layoutElement instanceof CustomField &&
-            $layoutElement->providesThumbs &&
-            $layoutElement->getField() instanceof ThumbableFieldInterface
+        /** @var BaseField|null */
+        return $this->_element(fn(FieldLayoutElement $layoutElement) => (
+            $layoutElement instanceof BaseField &&
+            $layoutElement->thumbable() &&
+            $layoutElement->providesThumbs
         ));
-        /** @var ThumbableFieldInterface|null */
-        return $layoutElement?->getField();
     }
 
     /**
      * Returns the custom fields that should be used in element card bodies.
      *
      * @param ElementInterface|null $element
-     * @return PreviewableFieldInterface[]
+     * @return BaseField[]
      * @since 5.0.0
      */
     public function getCardBodyFields(?ElementInterface $element): array
     {
-        /** @var PreviewableFieldInterface[] */
-        return array_map(
-            fn(CustomField $layoutElement) => $layoutElement->getField(),
-            iterator_to_array($this->_elements(fn(FieldLayoutElement $layoutElement) => (
-                $layoutElement instanceof CustomField &&
-                $layoutElement->includeInCards &&
-                $layoutElement->getField() instanceof PreviewableFieldInterface
-            ), $element)),
-        );
+        /** @var BaseField[] */
+        return iterator_to_array($this->_elements(fn(FieldLayoutElement $layoutElement) => (
+            $layoutElement instanceof BaseField &&
+            $layoutElement->previewable() &&
+            $layoutElement->includeInCards
+        ), $element));
     }
 
     /**
@@ -690,6 +698,24 @@ class FieldLayout extends Model
                 $element,
             )),
         );
+    }
+
+    /**
+     * Returns a custom field by its ID.
+     *
+     * @param int $id The field ID.
+     * @return FieldInterface|null
+     * @since 5.0.0
+     */
+    public function getFieldById(int $id): ?FieldInterface
+    {
+        foreach ($this->getCustomFields() as $field) {
+            if ($field->id === $id) {
+                return $field;
+            }
+        }
+
+        return null;
     }
 
     /**

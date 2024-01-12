@@ -7,6 +7,9 @@ import './css/charts.scss';
 // Load Craft first
 import './js/Craft.js';
 
+// UI
+import './js/UI.js';
+
 // Utilities
 import './js/Queue.js';
 
@@ -31,7 +34,6 @@ import './js/ElementThumbLoader.js';
 
 // Finally load the remaining files
 import './js/Accordion';
-import './js/AddressesInput.js';
 import './js/AdminTable.js';
 import './js/AssetImageEditor.js';
 import './js/AssetIndex.js';
@@ -54,10 +56,12 @@ import './js/EditableTable.js';
 import './js/ElementActionTrigger.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
+import './js/ElementTableSorter.js';
 import './js/ElevatedSessionForm.js';
 import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';
 import './js/FieldLayoutDesigner.js';
+import './js/FormObserver.js';
 import './js/VolumeFolderSelectorModal.js';
 import './js/FieldToggle.js';
 import './js/Grid.js';
@@ -67,6 +71,8 @@ import './js/InfoIcon.js';
 import './js/LightSwitch.js';
 import './js/Listbox.js';
 import './js/LivePreview.js';
+import './js/LoginForm.js';
+import './js/NestedElementManager.js';
 import './js/PasswordInput.js';
 import './js/Preview.js';
 import './js/PreviewFileModal.js';
@@ -77,12 +83,10 @@ import './js/SlideRuleInput.js';
 import './js/SlugGenerator.js';
 import './js/Structure.js';
 import './js/StructureDrag.js';
-import './js/StructureTableSorter.js';
 import './js/TableElementIndexView.js';
 import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
 import './js/Tooltip.js';
-import './js/UI.js';
 import './js/Uploader.js';
 import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';

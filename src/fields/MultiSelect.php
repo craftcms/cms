@@ -42,15 +42,7 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public static function phpType(): string
-    {
-        return sprintf('\\%s', MultiOptionsFieldData::class);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var MultiOptionsFieldData $value */
         if (ArrayHelper::contains($value, 'valid', false, true)) {
@@ -65,6 +57,23 @@ class MultiSelect extends BaseOptionsField
             'values' => $this->encodeValue($value),
             'options' => $this->translatedOptions(true, $value, $element),
             'multi' => true,
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return Cp::selectizeHtml([
+            'id' => $this->getInputId(),
+            'describedBy' => $this->describedBy,
+            'class' => 'selectize',
+            'name' => $this->handle,
+            'values' => $this->encodeValue($value),
+            'options' => $this->translatedOptions(true, $value, $element),
+            'multi' => true,
+            'disabled' => true,
         ]);
     }
 

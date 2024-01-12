@@ -7,10 +7,10 @@
 
 namespace craft\db\pgsql;
 
-use Composer\Util\Platform;
 use Craft;
 use craft\db\Connection;
 use craft\db\TableSchema;
+use craft\helpers\App;
 use yii\db\Exception;
 
 /**
@@ -150,7 +150,6 @@ class Schema extends \yii\db\pgsql\Schema
             ' --no-acl' .
             ' --file="{file}"' .
             ' --schema={schema}' .
-            ' --column-inserts' .
             ' ' . implode(' ', $ignoredTableArgs);
     }
 
@@ -333,6 +332,6 @@ ORDER BY i.relname, k';
      */
     private function _pgpasswordCommand(): string
     {
-        return Platform::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
+        return App::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
     }
 }

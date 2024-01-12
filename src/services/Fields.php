@@ -18,14 +18,17 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
+use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
 use craft\events\FieldLayoutEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\Addresses as AddressesField;
 use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\Checkboxes;
 use craft\fields\Color;
+use craft\fields\Country;
 use craft\fields\Date;
 use craft\fields\Dropdown;
 use craft\fields\Email;
@@ -90,6 +93,13 @@ class Fields extends Component
      * ```
      */
     public const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
+
+    /**
+     * @event DefineCompatibleFieldTypesEvent The event that is triggered when defining the compatible field types for a field.
+     * @see getCompatibleFieldTypes()
+     * @since 4.5.7
+     */
+    public const EVENT_DEFINE_COMPATIBLE_FIELD_TYPES = 'defineCompatibleFieldTypes';
 
     /**
      * @event FieldEvent The event that is triggered before a field is saved.
@@ -184,10 +194,12 @@ class Fields extends Component
     public function getAllFieldTypes(): array
     {
         $fieldTypes = [
+            AddressesField::class,
             AssetsField::class,
             CategoriesField::class,
             Checkboxes::class,
             Color::class,
+            Country::class,
             Date::class,
             Dropdown::class,
             Email::class,
@@ -242,34 +254,40 @@ class Fields extends Component
             $field = $this->getFieldById($field->id);
         }
 
+        $types = [];
         $dbType = $field::dbType();
 
-        if (!is_string($dbType)) {
-            return $includeCurrent ? [get_class($field)] : [];
-        }
+        if (is_string($dbType)) {
+            foreach ($this->getAllFieldTypes() as $class) {
+                /** @var string|FieldInterface $class */
+                /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
+                if ($class === get_class($field)) {
+                    if ($includeCurrent) {
+                        $types[] = $class;
+                    }
+                    continue;
+                }
 
-        $types = [];
+                $otherDbType = $class::dbType();
 
-        foreach ($this->getAllFieldTypes() as $class) {
-            /** @var string|FieldInterface $class */
-            /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
-            if ($class === get_class($field)) {
-                if ($includeCurrent) {
+                if (is_string($otherDbType) && Db::areColumnTypesCompatible($dbType, $otherDbType)) {
                     $types[] = $class;
                 }
-                continue;
-            }
-
-            $otherDbType = $class::dbType();
-
-            if (is_string($otherDbType) && Db::areColumnTypesCompatible($dbType, $otherDbType)) {
-                $types[] = $class;
             }
         }
 
         // Make sure the current field class is in there if it's supposed to be
         if ($includeCurrent && !in_array(get_class($field), $types, true)) {
             $types[] = get_class($field);
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
+            $event = new DefineCompatibleFieldTypesEvent([
+                'field' => $field,
+                'compatibleTypes' => $types,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $event);
+            return $event->compatibleTypes;
         }
 
         return $types;
@@ -308,7 +326,7 @@ class Fields extends Component
     }
 
     /**
-     * Returns a memoizable array of all fields.
+     * Returns a memoizable array of fields.
      *
      * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
@@ -317,20 +335,17 @@ class Fields extends Component
      */
     private function _fields(mixed $context = null): MemoizableArray
     {
+        $context ??= $this->fieldContext;
+
         if (!isset($this->_fields)) {
-            $fields = [];
-            foreach ($this->_createFieldQuery()->all() as $result) {
-                $fields[] = $this->createField($result);
-            }
-            $this->_fields = new MemoizableArray($fields);
+            $this->_fields = new MemoizableArray(
+                $this->_createFieldQuery()->all(),
+                fn(array $config) => $this->createField($config),
+            );
         }
 
         if ($context === false) {
             return $this->_fields;
-        }
-
-        if ($context === null) {
-            $context = $this->fieldContext;
         }
 
         if (is_array($context)) {
@@ -727,28 +742,32 @@ class Fields extends Component
     private function _layouts(): MemoizableArray
     {
         if (!isset($this->_layouts)) {
-            $layouts = [];
             if (Craft::$app->getIsInstalled()) {
-                foreach ($this->_createLayoutQuery()->all() as $result) {
-                    if (array_key_exists('config', $result)) {
-                        $config = ArrayHelper::remove($result, 'config');
-                        if ($config) {
-                            $result += Json::decode($config);
-                        }
-                        $loadTabs = false;
-                    } else {
-                        $loadTabs = true;
-                    }
-
-                    $layouts[] = $layout = $this->createLayout($result);
-
-                    // todo: remove after the next breakpoint
-                    if ($loadTabs) {
-                        $this->_legacyTabsByLayoutId($layout);
-                    }
-                }
+                $layoutConfigs = $this->_createLayoutQuery()->all();
+            } else {
+                $layoutConfigs = [];
             }
-            $this->_layouts = new MemoizableArray($layouts);
+
+            $this->_layouts = new MemoizableArray($layoutConfigs, function($config) {
+                if (array_key_exists('config', $config)) {
+                    $nestedConfig = ArrayHelper::remove($config, 'config');
+                    if ($nestedConfig) {
+                        $config += Json::decode($nestedConfig);
+                    }
+                    $loadTabs = false;
+                } else {
+                    $loadTabs = true;
+                }
+
+                $layout = $this->createLayout($config);
+
+                // todo: remove after the next breakpoint
+                if ($loadTabs) {
+                    $this->_legacyTabsByLayoutId($layout);
+                }
+
+                return $layout;
+            });
         }
 
         return $this->_layouts;

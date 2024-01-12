@@ -33,7 +33,7 @@ class QueryParamTest extends TestCase
     /**
      * @return array
      */
-    public function toArrayDataProvider(): array
+    public static function toArrayDataProvider(): array
     {
         $date = new DateTime();
         return [
@@ -64,7 +64,7 @@ class QueryParamTest extends TestCase
     /**
      * @return array
      */
-    public function extractOperatorDataProvider(): array
+    public static function extractOperatorDataProvider(): array
     {
         return [
             ['and', ['foo', 'bar'], ['and', 'foo', 'bar']],

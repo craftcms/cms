@@ -8,7 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\ElementContainerFieldInterface;
 use craft\elements\Entry;
+use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
@@ -48,18 +50,42 @@ class EntryTypesController extends Controller
         $entryTypes = $sectionsService->getAllEntryTypes();
         usort($entryTypes, fn(EntryType $a, EntryType $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name));
 
-        $sectionsByEntryType = [];
-        $sections = $sectionsService->getAllSections();
-        usort($sections, fn(Section $a, Section $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name));
-        foreach ($sections as $section) {
+        $entryTypeUsages = [];
+
+        // Sections
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             foreach ($section->getEntryTypes() as $entryType) {
-                $sectionsByEntryType[$entryType->id][] = $section;
+                $entryTypeUsages[$entryType->id][] = [
+                    'section',
+                    Craft::t('site', $section->name),
+                    $section->getCpEditUrl(),
+                ];
             }
+        }
+
+        // Fields
+        foreach (Craft::$app->getFields()->getAllFields() as $field) {
+            if ($field instanceof ElementContainerFieldInterface) {
+                foreach ($field->getFieldLayoutProviders() as $provider) {
+                    if ($provider instanceof EntryType) {
+                        $entryTypeUsages[$provider->id][] = [
+                            'field',
+                            Craft::t('site', $field->name),
+                            UrlHelper::cpUrl("settings/fields/edit/$field->id"),
+                        ];
+                    }
+                }
+            }
+        }
+
+        // sort by name
+        foreach ($entryTypeUsages as &$usages) {
+            usort($usages, fn($a, $b) => $a[1] <=> $b[1]);
         }
 
         return $this->renderTemplate('settings/entry-types/_index.twig', [
             'entryTypes' => $entryTypes,
-            'sectionsByEntryType' => $sectionsByEntryType,
+            'entryTypeUsages' => $entryTypeUsages,
         ]);
     }
 
@@ -139,6 +165,10 @@ class EntryTypesController extends Controller
         $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
         $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
         $entryType->titleFormat = $this->request->getBodyParam('titleFormat', $entryType->titleFormat);
+        $entryType->showSlugField = $this->request->getBodyParam('showSlugField', $entryType->showSlugField);
+        $entryType->slugTranslationMethod = $this->request->getBodyParam('slugTranslationMethod', $entryType->slugTranslationMethod);
+        $entryType->slugTranslationKeyFormat = $this->request->getBodyParam('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
+        $entryType->showStatusField = $this->request->getBodyParam('showStatusField', $entryType->showStatusField);
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();

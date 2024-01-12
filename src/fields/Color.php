@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -23,7 +23,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Color extends Field implements PreviewableFieldInterface
+class Color extends Field implements InlineEditableFieldInterface
 {
     /**
      * @inheritdoc
@@ -87,7 +87,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof ColorData) {
             return $value;
@@ -121,7 +121,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var ColorData|null $value */
         return Craft::$app->getView()->renderTemplate('_includes/forms/color.twig', [
@@ -143,7 +143,7 @@ class Color extends Field implements PreviewableFieldInterface
         }
 
         return Html::encodeParams(
-            '<div class="color" style="cursor: default;"><div class="color-preview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
+            '<div class="color noteditable"><div class="color-preview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
             [
                 'bgColor' => $value->getHex(),
             ]);

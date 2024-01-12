@@ -1000,6 +1000,15 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function search(mixed $value): static;
 
     /**
+     * Narrows the query results to only {elements} that were involved in a bulk element operation.
+     *
+     * @param string|null $value The property value
+     * @return static self reference
+     * @since 5.0.0
+     */
+    public function inBulkOp(?string $value): static;
+
+    /**
      * Narrows the query results based on a reference string.
      *
      * @param mixed $value The property value
@@ -1438,6 +1447,15 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
 
     // Query preparation/execution
     // -------------------------------------------------------------------------
+
+    /**
+     * Prepares the query for lazy eager loading.
+     *
+     * @param string $handle The eager loading handle the query is for
+     * @param ElementInterface $sourceElement One of the source elements the query is fetching elements for
+     * @since 5.0.0
+     */
+    public function prepForEagerLoading(string $handle, ElementInterface $sourceElement): static;
 
     /**
      * Returns whether the query results were already eager loaded by the query's source element.

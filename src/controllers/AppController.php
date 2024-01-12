@@ -365,11 +365,8 @@ class AppController extends Controller
         $currentTime = DateTimeHelper::currentUTCDateTime();
         $tomorrow = $currentTime->add(new DateInterval('P1D'));
 
-        if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
-            return $this->asSuccess();
-        }
-
-        return $this->asFailure(Craft::t('app', 'A server error occurred.'));
+        Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow);
+        return $this->asSuccess();
     }
 
     /**
@@ -569,7 +566,7 @@ class AppController extends Controller
                             'isEnabled' => false,
                             'licenseKey' => $pluginLicenseInfo['key'],
                             'licensedEdition' => $pluginLicenseInfo['edition'],
-                            'licenseKeyStatus' => LicenseKeyStatus::Valid,
+                            'licenseKeyStatus' => LicenseKeyStatus::Valid->value,
                             'licenseIssues' => [],
                             'name' => $pluginInfo['name'],
                             'description' => $pluginInfo['shortDescription'],
@@ -667,7 +664,6 @@ class AppController extends Controller
                 ->revisions(null)
                 ->siteId($siteId)
                 ->status(null)
-                ->indexBy('siteId')
                 ->all();
 
             foreach ($elements as $element) {
@@ -682,8 +678,12 @@ class AppController extends Controller
             }
         }
 
+        $view = Craft::$app->getView();
+
         return $this->asJson([
             'elements' => $elementHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
         ]);
     }
 }

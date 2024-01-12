@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
+use craft\errors\MutexException;
 use craft\errors\StructureNotFoundException;
 use craft\events\MoveElementEvent;
 use craft\models\Structure;
@@ -503,7 +504,7 @@ class Structures extends Component
         $lockName = 'structure:' . $structureId;
         $mutex = Craft::$app->getMutex();
         if (!$mutex->acquire($lockName, $this->mutexTimeout)) {
-            throw new Exception('Unable to acquire a lock for the structure ' . $structureId);
+            throw new MutexException($lockName, sprintf('Unable to acquire a lock for the structure %s', $structureId));
         }
 
         $elementRecord = null;
@@ -532,7 +533,7 @@ class Structures extends Component
             self::MODE_UPDATE => [self::EVENT_BEFORE_MOVE_ELEMENT, self::EVENT_AFTER_MOVE_ELEMENT],
         };
 
-        $targetElementId = $targetElementRecord->isRoot() ? null : $targetElementRecord->id;
+        $targetElementId = $targetElementRecord->isRoot() ? null : $targetElementRecord->elementId;
 
         if ($this->hasEventHandlers($beforeEvent)) {
             // Fire a 'beforeInsertElement' or 'beforeMoveElement' event

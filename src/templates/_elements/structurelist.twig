@@ -9,7 +9,8 @@
                 {{ elementChip(element, {
                     context: context ?? 'index',
                     inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
-                    checkbox: showCheckboxes ?? false,
+                    showActionMenu: showActionMenu ?? false,
+                    checkbox: selectable ?? false,
                 }) }}
             </div>
 

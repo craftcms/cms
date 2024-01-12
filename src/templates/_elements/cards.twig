@@ -8,7 +8,9 @@
       {% set html = elementCard(element, {
         context: context ?? 'index',
         inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
-        checkbox: showCheckboxes ?? false,
+        selectable: selectable ?? false,
+        showActionMenu: showActionMenu ?? false,
+        sortable: sortable ?? false,
       }) %}
       {% if disabled %}
         {% set html = html|removeClass('removable') %}

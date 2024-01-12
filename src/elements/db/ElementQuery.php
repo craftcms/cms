@@ -43,6 +43,7 @@ use ReflectionProperty;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidValueException;
 use yii\base\NotSupportedException;
 use yii\db\Connection as YiiConnection;
 use yii\db\Expression;
@@ -67,7 +68,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public const EVENT_BEFORE_PREPARE = 'beforePrepare';
 
     /**
-     * @event Event An event that is triggered at the end of preparing an element query for the query builder.
+     * @event CancelableEvent An event that is triggered at the end of preparing an element query for the query builder.
      */
     public const EVENT_AFTER_PREPARE = 'afterPrepare';
 
@@ -100,6 +101,9 @@ class ElementQuery extends Query implements ElementQueryInterface
      * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
      */
     public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
+
+    // Base config attributes
+    // -------------------------------------------------------------------------
 
     /**
      * @var string The name of the [[ElementInterface]] class.
@@ -344,6 +348,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     public mixed $search = null;
 
     /**
+     * @var string|null The bulk element operation key that the resulting elements were involved in.
+     *
+     * @used-by ElementQuery::inBulkOp()
+     * @since 5.0.0
+     */
+    public ?string $inBulkOp = null;
+
+    /**
      * @var mixed The reference code(s) used to identify the element(s).
      *
      * This property is set when accessing elements via their reference tags, e.g. `{entry:section/slug}`.
@@ -513,7 +525,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private ?array $_resultCriteria = null;
 
     /**
-     * @var int[]|null
+     * @var array<string,int>|null
      * @see _applySearchParam()
      * @see _applyOrderByParams()
      * @see populate()
@@ -858,6 +870,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         parent::addOrderBy($columns);
 
         // If $this->>orderBy is empty, just set it to null
+        /** @phpstan-ignore-next-line */
         if ($this->orderBy === []) {
             $this->orderBy = null;
         }
@@ -975,6 +988,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @return static
      * @uses $unique
      * @since 3.2.0
      */
@@ -1071,6 +1085,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function search($value): static
     {
         $this->search = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $inBulkOp
+     */
+    public function inBulkOp(?string $value): static
+    {
+        $this->inBulkOp = $value;
         return $this;
     }
 
@@ -1280,6 +1304,20 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    public function prepForEagerLoading(string $handle, ElementInterface $sourceElement): static
+    {
+        // Prefix the handle with the provider's handle, if there is one
+        $providerHandle = $sourceElement->getFieldLayout()?->provider?->getHandle();
+        $this->eagerLoadHandle = $providerHandle ? "$providerHandle:$handle" : $handle;
+
+        $this->eagerLoadSourceElement = $sourceElement;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function wasEagerLoaded(?string $alias = null): bool
     {
         if (!isset($this->eagerLoadHandle, $this->eagerLoadSourceElement)) {
@@ -1331,6 +1369,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @return Query
      * @throws QueryAbortedException if it can be determined that there won’t be any results
      */
     public function prepare($builder): Query
@@ -1386,6 +1425,14 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Normalize the orderBy param in case it was set directly
         if (!empty($this->orderBy)) {
             $this->orderBy = $this->normalizeOrderBy($this->orderBy);
+        }
+
+        // Normalize `offset` and `limit` for _applySearchParam()
+        if (is_numeric($this->offset)) {
+            $this->offset = (int)$this->offset;
+        }
+        if (is_numeric($this->limit)) {
+            $this->limit = (int)$this->limit;
         }
 
         // Build the query
@@ -1515,7 +1562,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_applyRelatedToParam();
         $this->_applyStructureParams($class);
         $this->_applyRevisionParams();
-        $this->_applySearchParam($db);
+        $this->_applySearchParam();
+        $this->_applyInBulkOpParam();
         $this->_applyOrderByParams($db);
         $this->_applySelectParam();
         $this->_applyJoinParams();
@@ -1598,7 +1646,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             // Should we eager-load some elements onto these?
             if ($this->with) {
-                Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
+                $elementsService->eagerLoadElements($this->elementType, $elements, $this->with);
             }
         }
 
@@ -2128,7 +2176,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             // If specific IDs were requested, then use those
             if (is_numeric($this->id) || (is_array($this->id) && ArrayHelper::isNumeric($this->id))) {
-                $queryTags = (array)$this->id;
+                array_push($this->_cacheTags, ...array_map(fn($id) => "element::$id", (array)$this->id));
             } else {
                 $queryTags = $this->cacheTags();
 
@@ -2150,10 +2198,14 @@ class ElementQuery extends Query implements ElementQueryInterface
                 } else {
                     $queryTags[] = '*';
                 }
-            }
 
-            foreach ($queryTags as $tag) {
-                $this->_cacheTags[] = "element::$this->elementType::$tag";
+                foreach ($queryTags as $tag) {
+                    // tags can be provided fully-formed, or relative to the element type
+                    if (!str_starts_with($tag, 'element::')) {
+                        $tag = sprintf('element::%s::%s', $this->elementType, $tag);
+                    }
+                    $this->_cacheTags[] = $tag;
+                }
             }
         }
 
@@ -2326,21 +2378,25 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (is_array($this->customFields)) {
             $fieldAttributes = $this->getBehavior('customFields');
 
-            // Group the fields by handle
-            /** @var FieldInterface[][] $fieldsByHandle */
+            // Group the fields by handle and field UUID
+            /** @var FieldInterface[][][] $fieldsByHandle */
             $fieldsByHandle = ArrayHelper::index($this->customFields, null, [
                 fn(FieldInterface $field) => $field->handle,
+                fn(FieldInterface $field) => $field->uid,
             ]);
 
-            foreach ($fieldsByHandle as $handle => $instances) {
+            foreach ($fieldsByHandle as $handle => $instancesByUid) {
                 // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...
                 // ($fieldAttributes->$handle will return true even if it's set to null, so can't use isset() alone here)
-                if ($handle !== 'owner' && ($fieldAttributes->$handle ?? null) !== null) {
-                    // Ignore any field instances that aren't the same custom field as the first one
-                    $firstInstance = $instances[0];
-                    $instances = array_filter($instances, fn(FieldInterface $field) => $field->uid === $firstInstance->uid);
+                if ($handle === 'owner' || ($fieldAttributes->$handle ?? null) === null) {
+                    continue;
+                }
 
-                    $params = [];
+                $conditions = [];
+                $params = [];
+
+                foreach ($instancesByUid as $instances) {
+                    $firstInstance = $instances[0];
                     $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
 
                     // aborting?
@@ -2349,7 +2405,15 @@ class ElementQuery extends Query implements ElementQueryInterface
                     }
 
                     if ($condition !== null) {
-                        $this->subQuery->andWhere($condition, $params);
+                        $conditions[] = $condition;
+                    }
+                }
+
+                if (!empty($conditions)) {
+                    if (count($conditions) === 1) {
+                        $this->subQuery->andWhere(reset($conditions), $params);
+                    } else {
+                        $this->subQuery->andWhere(['or', ...$conditions], $params);
                     }
                 }
             }
@@ -2802,36 +2866,76 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'search' param to the query being prepared.
      *
-     * @param Connection $db
-     * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
-    private function _applySearchParam(Connection $db): void
+    private function _applySearchParam(): void
     {
         $this->_searchResults = null;
 
-        if ($this->search) {
+        if (!$this->search) {
+            return;
+        }
+
+        if (isset($this->orderBy['score'])) {
+            // Get the scored results up front
             $searchResults = Craft::$app->getSearch()->searchElements($this);
 
-            // No results?
+            if ($this->orderBy['score'] === SORT_ASC) {
+                $searchResults = array_reverse($searchResults, true);
+            }
+
+            if (array_key_first($this->orderBy) === 'score') {
+                // Only use the portion we're actually querying for
+                if (is_int($this->offset) && $this->offset !== 0) {
+                    $searchResults = array_slice($searchResults, $this->offset, null, true);
+                    $this->subQuery->offset(null);
+                }
+                if (is_int($this->limit) && $this->limit !== 0) {
+                    $searchResults = array_slice($searchResults, 0, $this->limit, true);
+                    $this->subQuery->limit(null);
+                }
+            }
+
             if (empty($searchResults)) {
                 throw new QueryAbortedException();
             }
 
             $this->_searchResults = $searchResults;
-
             $this->subQuery->andWhere(['elements.id' => array_keys($searchResults)]);
+        } else {
+            // Just filter the main query by the search query
+            $searchQuery = Craft::$app->getSearch()->createDbQuery($this->search, $this);
+
+            if ($searchQuery === false) {
+                throw new QueryAbortedException();
+            }
+
+            $this->subQuery->andWhere([
+                'elements.id' => $searchQuery->select(['elementId']),
+            ]);
+        }
+    }
+
+    /**
+     * Applies the 'inBulkOp' param to the query being prepared.
+     */
+    private function _applyInBulkOpParam(): void
+    {
+        if ($this->inBulkOp) {
+            $this->subQuery
+                ->innerJoin(['elements_bulkops' => Table::ELEMENTS_BULKOPS], '[[elements_bulkops.elementId]] = [[elements.id]]')
+                ->andWhere(['elements_bulkops.key' => $this->inBulkOp]);
         }
     }
 
     /**
      * Applies the 'fixedOrder' and 'orderBy' params to the query being prepared.
      *
-     * @param Connection $db
+     * @param YiiConnection $db
      * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
-    private function _applyOrderByParams(Connection $db): void
+    private function _applyOrderByParams(YiiConnection $db): void
     {
         if (!isset($this->orderBy) || !empty($this->query->orderBy)) {
             return;
@@ -2881,6 +2985,38 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
+        // swap `score` direction value with a fixed order expression
+        if (isset($this->_searchResults)) {
+            $scoreSql = 'CASE';
+            $scoreParams = [];
+            $paramSuffix = StringHelper::randomString(10);
+            $keys = array_keys($this->_searchResults);
+            if ($this->inReverse) {
+                $keys = array_reverse($keys);
+            }
+            $i = -1;
+            foreach ($keys as $i => $key) {
+                [$elementId, $siteId] = array_pad(explode('-', $key, 2), 2, null);
+                if ($siteId === null) {
+                    throw new InvalidValueException("Invalid element search score key: \"$key\". Search scores should be indexed by element ID and site ID (e.g. \"100-1\").");
+                }
+                $keyParamSuffix = sprintf('%s_%s', $paramSuffix, $i);
+                $scoreSql .= sprintf(
+                    ' WHEN [[elements.id]] = :elementId_%s AND [[elements_sites.siteId]] = :siteId_%s THEN :value_%s',
+                    $keyParamSuffix, $keyParamSuffix, $keyParamSuffix
+                );
+                $scoreParams[":elementId_$keyParamSuffix"] = $elementId;
+                $scoreParams[":siteId_$keyParamSuffix"] = $siteId;
+                $scoreParams[":value_$keyParamSuffix"] = $i;
+            }
+            $defaultParam = sprintf(':value_%s_%s', $paramSuffix, $i + 1);
+            $scoreSql .= sprintf(' ELSE %s END', $defaultParam);
+            $scoreParams[$defaultParam] = $i + 1;
+            $orderBy['score'] = new Expression($scoreSql, $scoreParams);
+        } else {
+            unset($orderBy['score']);
+        }
+
         if ($this->inReverse) {
             foreach ($orderBy as &$direction) {
                 if ($direction instanceof FixedOrderExpression) {
@@ -2892,41 +3028,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
             }
             unset($direction);
-        }
-
-        // swap `score` direction value with a case expression
-        if (
-            !empty($this->_searchResults) &&
-            isset($orderBy['score']) &&
-            in_array($orderBy['score'], [SORT_ASC, SORT_DESC], true)
-        ) {
-            $elementIdsByScore = [];
-            foreach ($this->_searchResults as $elementId => $score) {
-                if ($score !== 0) {
-                    $elementIdsByScore[$score][] = $elementId;
-                }
-            }
-            if (!empty($elementIdsByScore)) {
-                $caseSql = 'CASE';
-                foreach ($elementIdsByScore as $score => $elementIds) {
-                    $caseSql .= ' WHEN (';
-                    if (count($elementIds) === 1) {
-                        $caseSql .= "[[elements.id]] = $elementIds[0]";
-                    } else {
-                        $caseSql .= '[[elements.id]] IN (' . implode(',', $elementIds) . ')';
-                    }
-                    $caseSql .= ") THEN $score";
-                }
-                $caseSql .= ' ELSE 0 END';
-                if ($orderBy['score'] === SORT_DESC) {
-                    $caseSql .= ' DESC';
-                }
-                $orderBy['score'] = new Expression($caseSql);
-            } else {
-                unset($orderBy['score']);
-            }
-        } else {
-            unset($orderBy['score']);
         }
 
         $this->query->orderBy($orderBy);
@@ -3012,9 +3113,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'unique' param to the query being prepared
      *
-     * @param Connection $db
+     * @param YiiConnection $db
      */
-    private function _applyUniqueParam(Connection $db): void
+    private function _applyUniqueParam(YiiConnection $db): void
     {
         if (
             !$this->unique ||

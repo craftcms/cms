@@ -10,10 +10,11 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Money as MoneyType;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\MoneyHelper;
 use craft\validators\MoneyValidator;
@@ -34,7 +35,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Money extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Money extends Field implements InlineEditableFieldInterface, SortableFieldInterface
 {
     /**
      * @inheritdoc
@@ -167,7 +168,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof MoneyLibrary) {
             return $value;
@@ -183,15 +184,14 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
         }
 
         if (is_array($value)) {
-            // Was this submitted with a locale ID?
-            $value['locale'] = $value['locale'] ?? Craft::$app->getFormattingLocale()->id;
-            $value['value'] = $value['value'] !== '' ? $value['value'] ?? null : null;
-
-            if ($value['value'] === null) {
+            if (!isset($value['value']) || $value['value'] === '') {
                 return null;
             }
 
-            $value['currency'] = $this->currency;
+            $value += [
+                'locale' => Craft::$app->getFormattingLocale()->id,
+                'currency' => $this->currency,
+            ];
 
             return MoneyHelper::toMoney($value);
         }
@@ -242,7 +242,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
 
@@ -275,8 +275,10 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
         ]);
 
-        return $view->renderTemplate('_components/fieldtypes/Money/input.twig', [
+        return Cp::moneyInputHtml([
             'id' => $this->getInputId(),
+            'name' => $this->handle,
+            'size' => $this->size,
             'currency' => $this->currency,
             'currencyLabel' => $currencyLabel,
             'showCurrency' => $this->showCurrency,

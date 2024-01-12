@@ -369,7 +369,7 @@ class CreateMutationsTest extends TestCase
         self::assertArrayNotHasKey('appendToRoot', $draftMutation['args']);
     }
 
-    public function assetMutationDataProvider(): array
+    public static function assetMutationDataProvider(): array
     {
         return [
             [
@@ -391,7 +391,7 @@ class CreateMutationsTest extends TestCase
         ];
     }
 
-    public function categoryMutationDataProvider(): array
+    public static function categoryMutationDataProvider(): array
     {
         return [
             [
@@ -413,7 +413,7 @@ class CreateMutationsTest extends TestCase
         ];
     }
 
-    public function tagMutationDataProvider(): array
+    public static function tagMutationDataProvider(): array
     {
         return [
             [
@@ -435,7 +435,7 @@ class CreateMutationsTest extends TestCase
         ];
     }
 
-    public function entryMutationDataProvider(): array
+    public static function entryMutationDataProvider(): array
     {
         return [
             [
@@ -461,7 +461,7 @@ class CreateMutationsTest extends TestCase
         ];
     }
 
-    public function globalSetMutationDataProvider(): array
+    public static function globalSetMutationDataProvider(): array
     {
         return [
             [

@@ -10,12 +10,11 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\DateFieldConditionRule;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
@@ -34,7 +33,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Date extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Date extends Field implements InlineEditableFieldInterface, SortableFieldInterface
 {
     /**
      * @inheritdoc
@@ -237,7 +236,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var DateTime|null $value */
         $view = Craft::$app->getView();
@@ -361,15 +360,16 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof DateTime) {
             return $value;
         }
 
-        // tz => timezone
+        // Is this coming from the DB?
         if (is_array($value) && array_key_exists('tz', $value)) {
-            $value['timezone'] = ArrayHelper::remove($value, 'tz');
+            $timeZone = $value['tz'];
+            $value = $value['date'];
         }
 
         if (
@@ -385,8 +385,8 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             return null;
         }
 
-        if ($this->showTimeZone && is_array($value) && !empty($value['timezone'])) {
-            $date->setTimezone(new DateTimeZone($value['timezone']));
+        if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && !empty($value['timezone'])))) {
+            $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
         }
 
         return $date;
@@ -395,7 +395,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (!$value) {
             return null;
@@ -405,7 +405,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'date' => Db::prepareDateForDb($value),
         ];
 
-        if ($this->showTimeZone) {
+        if ($this->showTimeZone && $value->getTimezone()->getLocation()) {
             $serialized += [
                 'tz' => $value->getTimezone()->getName(),
             ];
@@ -450,9 +450,12 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getContentGqlMutationArgumentType(): Type|array
     {
+        $type = DateTimeType::getType();
+        $type->setToSystemTimeZone = !$this->showTimeZone;
+
         return [
             'name' => $this->handle,
-            'type' => DateTimeType::getType(),
+            'type' => $type,
             'description' => $this->instructions,
         ];
     }

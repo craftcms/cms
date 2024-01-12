@@ -9,6 +9,7 @@ namespace craft\base;
 
 use Craft;
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\AttributeStatus;
 use craft\events\DefineFieldHtmlEvent;
 use craft\events\DefineFieldKeywordsEvent;
 use craft\events\FieldElementEvent;
@@ -28,6 +29,7 @@ use Exception;
 use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\ExpressionInterface;
 use yii\db\Schema;
@@ -206,13 +208,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Returns a coalescing value SQL expression for the given field instances.
      *
      * @param static[] $instances
+     * @param string|null $key The data key to fetch, if this field stores multiple values
      * @return string|null
      * @since 5.0.0
      */
-    protected static function valueSql(array $instances): ?string
+    protected static function valueSql(array $instances, string $key = null): ?string
     {
         $valuesSql = array_filter(
-            array_map(fn(self $field) => $field->getValueSql(), $instances),
+            array_map(fn(self $field) => $field->getValueSql($key), $instances),
             fn(?string $valueSql) => $valueSql !== null,
         );
 
@@ -377,6 +380,11 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'propagateAll',
                 'propagating',
                 'ref',
+                'relatedToAssets',
+                'relatedToCategories',
+                'relatedToEntries',
+                'relatedToTags',
+                'relatedToUsers',
                 'resaving',
                 'revisionId',
                 'rgt',
@@ -443,7 +451,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(?ElementInterface $element = null): bool
+    public function getIsTranslatable(?ElementInterface $element): bool
     {
         if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
             return $element === null || $this->getTranslationKey($element) !== '';
@@ -454,7 +462,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(?ElementInterface $element = null): ?string
+    public function getTranslationDescription(?ElementInterface $element): ?string
     {
         if (!$this->getIsTranslatable($element)) {
             return null;
@@ -478,14 +486,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         if ($element->isFieldModified($this->handle)) {
             return [
-                Element::ATTR_STATUS_MODIFIED,
+                AttributeStatus::Modified,
                 Craft::t('app', 'This field has been modified.'),
             ];
         }
 
         if ($element->isFieldOutdated($this->handle)) {
             return [
-                Element::ATTR_STATUS_OUTDATED,
+                AttributeStatus::Outdated,
                 Craft::t('app', 'This field was updated in the Current revision.'),
             ];
         }
@@ -520,7 +528,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $value;
     }
@@ -528,7 +536,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->normalizeValue($value, $element);
     }
@@ -536,14 +544,39 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml(mixed $value, ?ElementInterface $element = null): string
+    public function getInputHtml(mixed $value, ?ElementInterface $element): string
     {
-        $html = $this->inputHtml($value, $element);
+        $html = $this->inputHtml($value, $element, false);
 
         // Give plugins a chance to modify it
         $event = new DefineFieldHtmlEvent([
             'value' => $value,
             'element' => $element,
+            'inline' => false,
+            'html' => $html,
+        ]);
+
+        $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
+        return $event->html;
+    }
+
+    /**
+     * Returns the HTML that should be shown for this field’s inline inputs.
+     *
+     * @param mixed $value The field’s value
+     * @param ElementInterface|null $element The element the field is associated with
+     * @return string The HTML that should be shown for this field’s inline input
+     * @since 5.0.0
+     */
+    public function getInlineInputHtml(mixed $value, ?ElementInterface $element): string
+    {
+        $html = $this->inputHtml($value, $element, true);
+
+        // Give plugins a chance to modify it
+        $event = new DefineFieldHtmlEvent([
+            'value' => $value,
+            'element' => $element,
+            'inline' => true,
             'html' => $html,
         ]);
 
@@ -557,11 +590,12 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param mixed $value The field’s value. This will either be the [[normalizeValue()|normalized value]],
      * raw POST data (i.e. if there was a validation error), or null
      * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @param bool $inline Whether this is for an inline edit form.
      * @return string The input HTML.
      * @see getInputHtml()
      * @since 3.5.0
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Html::textarea($this->handle, $value);
     }
@@ -669,7 +703,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If the object explicitly defines its savable value, use that
         if ($value instanceof Serializable) {
@@ -709,7 +743,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getValueSql(): ?string
+    public function getValueSql(?string $key = null): ?string
     {
         if (!isset($this->layoutElement)) {
             return null;
@@ -721,12 +755,17 @@ abstract class Field extends SavableComponent implements FieldInterface
             return null;
         }
 
+        if ($key !== null && (!is_array($dbType) || !isset($dbType[$key]))) {
+            throw new InvalidArgumentException(sprintf('%s doesn’t store values under the key “%s”.', __CLASS__, $key));
+        }
+
         $jsonPath = [$this->layoutElement->uid];
 
         if (is_array($dbType)) {
-            // Focus on the primary value by default
-            $jsonPath[] = array_key_first($dbType);
-            $dbType = reset($dbType);
+            // Get the primary value by default
+            $key ??= array_key_first($dbType);
+            $jsonPath[] = $key;
+            $dbType = $dbType[$key];
         }
 
         $db = Craft::$app->getDb();

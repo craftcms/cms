@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
@@ -96,6 +97,12 @@ class View extends \yii\web\View
      * @event TemplateEvent The event that is triggered after a page template gets rendered
      */
     public const EVENT_AFTER_RENDER_PAGE_TEMPLATE = 'afterRenderPageTemplate';
+
+    /**
+     * @event AssetBundleEvent The event that is triggered after an asset bundle is registered
+     * @since 4.5.0
+     */
+    public const EVENT_AFTER_REGISTER_ASSET_BUNDLE = 'afterRegisterAssetBundle';
 
     /**
      * @const TEMPLATE_MODE_CP
@@ -268,6 +275,14 @@ class View extends \yii\web\View
      * @see clearHtmlBuffer()
      */
     private array $_htmlBuffers = [];
+
+    /**
+     * @var array
+     * @see startMetaTagBuffer()
+     * @see clearMetaTagBuffer()
+     * @since 4.5.8
+     */
+    private array $_metaTagBuffers = [];
 
     /**
      * @var array|null the registered generic `<script>` code blocks
@@ -1160,7 +1175,8 @@ class View extends \yii\web\View
 
         foreach ($bufferedJsFiles as $files) {
             foreach (array_keys($files) as $key) {
-                unset($this->_registeredJsFiles[$key]);
+                $hash = $this->resourceHash($key);
+                unset($this->_registeredJsFiles[$hash]);
             }
         }
 
@@ -1197,18 +1213,50 @@ class View extends \yii\web\View
     }
 
     /**
+     * Starts a buffer for any `<meta>` tags registered with [[registerMetaTag()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearMetaTagBuffer()]].
+     *
+     * @see clearMetaTagBuffer()
+     * @since 4.5.8
+     */
+    public function startMetaTagBuffer(): void
+    {
+        $this->_metaTagBuffers[] = $this->metaTags;
+        $this->metaTags = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startMetaTagBuffer()]], returning any `<meta>` tags that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     * @see startMetaTagBuffer()
+     * @since 4.5.8
+     */
+    public function clearMetaTagBuffer(): array|false
+    {
+        if (empty($this->_metaTagBuffers)) {
+            return false;
+        }
+
+        $bufferedMetaTags = $this->metaTags;
+        $this->metaTags = array_pop($this->_metaTagBuffers);
+        return $bufferedMetaTags;
+    }
+
+    /**
      * @inheritdoc
      */
     public function registerJsFile($url, $options = [], $key = null): void
     {
-        // If 'depends' is specified, ignore it for now because the file will
-        // get registered as an asset bundle
-        if (empty($options['depends'])) {
-            $key = $key ?: $url;
-            if (isset($this->_registeredJsFiles[$key])) {
+        // If the file lives within cpresources/, ignore it because it came from an asset bundle
+        if (!str_starts_with($url, $this->assetManager->baseUrl)) {
+            $hash = $this->resourceHash($key ?: $url);
+            if (isset($this->_registeredJsFiles[$hash])) {
                 return;
             }
-            $this->_registeredJsFiles[$key] = true;
+            $this->_registeredJsFiles[$hash] = true;
         }
 
         parent::registerJsFile($url, $options, $key);
@@ -1471,8 +1519,8 @@ JS;
      * Returns all of the registered delta input names.
      *
      * @return string[]
-     * @since 3.4.0
      * @see registerDeltaName()
+     * @since 3.4.0
      */
     public function getDeltaNames(): array
     {
@@ -1612,13 +1660,13 @@ JS;
             // If no namespace was passed in, just return the callable response directly.
             // No need to namespace it via the currently-set namespace in this case; if there is one, it should get applied later on.
             if ($namespace === null) {
-                return $html();
+                return (string)$html();
             }
 
             $oldNamespace = $this->getNamespace();
             $this->setNamespace($this->namespaceInputName($namespace));
             try {
-                $response = $this->namespaceInputs($html(), $namespace, $otherAttributes, $withClasses);
+                $response = $this->namespaceInputs((string)$html(), $namespace, $otherAttributes, $withClasses);
             } finally {
                 $this->setNamespace($oldNamespace);
             }
@@ -2042,11 +2090,30 @@ JS;
     protected function registerAssetFiles($name): void
     {
         // Don't re-register bundles
-        if (isset($this->_registeredAssetBundles[$name])) {
+        $hash = $this->resourceHash($name);
+        if (isset($this->_registeredAssetBundles[$hash])) {
             return;
         }
-        $this->_registeredAssetBundles[$name] = true;
+        $this->_registeredAssetBundles[$hash] = true;
         parent::registerAssetFiles($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetBundle($name, $position = null)
+    {
+        $bundle = parent::registerAssetBundle($name, $position);
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_REGISTER_ASSET_BUNDLE)) {
+            $this->trigger(self::EVENT_AFTER_REGISTER_ASSET_BUNDLE, new AssetBundleEvent([
+                'bundleName' => $name,
+                'position' => $position,
+                'bundle' => $bundle,
+            ]));
+        }
+
+        return $bundle;
     }
 
     /**
@@ -2185,6 +2252,11 @@ JS;
         return $this->_templateRoots[$which] = $roots;
     }
 
+    private function resourceHash(string $key): string
+    {
+        return sprintf('%x', crc32($key));
+    }
+
     /**
      * @param string $property
      * @param string[] $names
@@ -2198,10 +2270,10 @@ JS;
         $js = "if (typeof Craft !== 'undefined') {\n";
         foreach (array_keys($names) as $name) {
             if ($name) {
-                $jsName = Json::encode(str_replace(['<', '>'], '', $name));
+                $jsName = Json::encode($name);
                 // WARNING: the curly braces are needed here no matter what PhpStorm thinks
                 // https://youtrack.jetbrains.com/issue/WI-60044
-                $js .= "  Craft.{$property}[$jsName] = true;\n";
+                $js .= "  Craft.{$property}.push($jsName);\n";
             }
         }
         $js .= '}';

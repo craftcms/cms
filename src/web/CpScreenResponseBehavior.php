@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use craft\models\Site;
 use yii\base\Behavior;
 
 /**
@@ -61,6 +62,20 @@ class CpScreenResponseBehavior extends Behavior
      * @see selectedSubnavItem()
      */
     public ?string $selectedSubnavItem = null;
+
+    /**
+     * @var Site|null The site that should be displayed within the breadcrumbs.
+     * @see site()
+     * @since 5.0.0
+     */
+    public ?Site $site = null;
+
+    /**
+     * @var array<Site|array{site:Site,status?:string}>|null The sites that should be selectable by the site breadcrumb menu.
+     * @see selectableSites()
+     * @since 5.0.0
+     */
+    public ?array $selectableSites = null;
 
     /**
      * @var array|callable|null Breadcrumbs.
@@ -142,14 +157,18 @@ class CpScreenResponseBehavior extends Behavior
     public ?string $saveShortcutRedirectUrl = null;
 
     /**
-     * @var string|callable|null The context menu HTML.
-     *
-     * This will only be used by full-page screens.
-     *
-     * @see contextMenuHtml()
-     * @see contextMenuTemplate()
+     * @var callable|null Context menu items factory.
+     * @see contextMenuItems()
+     * @since 5.0.0
      */
-    public $contextMenuHtml = null;
+    public $contextMenuItems = null;
+
+    /**
+     * @var callable|null Action menu items factory.
+     * @see actionMenuItems()
+     * @since 5.0.0
+     */
+    public $actionMenuItems = null;
 
     /**
      * @var string|null The submit button label.
@@ -164,6 +183,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @see additionalButtonsHtml()
      * @see additionalButtonsTemplate()
+     * @since 5.0.0
      */
     public $additionalButtonsHtml = null;
 
@@ -171,6 +191,7 @@ class CpScreenResponseBehavior extends Behavior
      * @var string|callable|null The content HTML.
      * @see contentHtml()
      * @see contentTemplate()
+     * @since 5.0.0
      */
     public $contentHtml = null;
 
@@ -178,6 +199,7 @@ class CpScreenResponseBehavior extends Behavior
      * @var string|callable|null The right-hand meta sidebar HTML.
      * @see metaSidebarHtml()
      * @see metaSidebarTemplate()
+     * @since 5.0.0
      */
     public $metaSidebarHtml = null;
 
@@ -185,7 +207,7 @@ class CpScreenResponseBehavior extends Behavior
      * @var string|callable|null The left-hand page sidebar HTML (only used by full-page screens).
      * @see pageSidebarHtml()
      * @see pageSidebarTemplate()
-     * @since 4.5.0
+     * @since 5.0.0
      */
     public $pageSidebarHtml = null;
 
@@ -193,8 +215,17 @@ class CpScreenResponseBehavior extends Behavior
      * @var string|callable|null The content notice HTML.
      * @see noticeHtml()
      * @see noticeTemplate()
+     * @since 5.0.0
      */
     public $noticeHtml = null;
+
+    /**
+     * @var string|callable|null The errors summary HTML (DEV-212).
+     * @see errorSummary()
+     * @see errorSummaryTemplate()
+     * @since 4.5.0
+     */
+    public $errorSummary = null;
 
     /**
      * Sets a callable that will be called before other properties are added to the screen.
@@ -265,7 +296,14 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the breadcrumbs.
      *
-     * Each breadcrumb should be represented by a nested array with `label` and `url` keys.
+     * Breadcrumbs should be defined by arrays with the following keys:
+     *
+     * - `label` – The breadcrumb label, to be HTML-encoded
+     * - `url` – The URL that the breadcrumb should link to
+     * - `icon` – The icon which should be displayed beside the label
+     * - `menu` – The menu items which should be displayed alongside the breadcrumb
+     *   (see [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties)
+     * - `current` – Whether the breadcrumb represents the current page
      *
      * This will only be used by full-page screens.
      *
@@ -296,6 +334,32 @@ class CpScreenResponseBehavior extends Behavior
             'label' => $label,
             'url' => UrlHelper::cpUrl($url),
         ];
+        return $this->owner;
+    }
+
+    /**
+     * Sets the site that should be displayed within the breadcrumbs.
+     *
+     * @param Site|null $value
+     * @return Response
+     * @since 5.0.0
+     */
+    public function site(?Site $value): Response
+    {
+        $this->site = $value;
+        return $this->owner;
+    }
+
+    /**
+     * Sets the sites that should be selectable by the site breadcrumb menu.
+     *
+     * @param array<Site|array{site:Site,status?:string}>|null $value
+     * @return Response
+     * @since 5.0.0
+     */
+    public function selectableSites(?array $value): Response
+    {
+        $this->selectableSites = $value;
         return $this->owner;
     }
 
@@ -460,33 +524,33 @@ class CpScreenResponseBehavior extends Behavior
     }
 
     /**
-     * Sets the context menu HTML.
+     * Sets the context menu items.
      *
-     * This will only be used by full-page screens.
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
      *
-     * @param callable|string|null $value
+     * @param callable|null $value A callback function which returns the menu items
      * @return Response
+     * @since 5.0.0
      */
-    public function contextMenuHtml(callable|string|null $value): Response
+    public function contextMenuItems(?callable $value): Response
     {
-        $this->contextMenuHtml = $value;
+        $this->contextMenuItems = $value;
         return $this->owner;
     }
 
     /**
-     * Sets a template that should be used to render the context menu HTML.
+     * Sets the action menu items.
      *
-     * This will only be used by full-page screens.
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
      *
-     * @param string $template
-     * @param array $variables
+     * @param callable|null $value A callback function which returns the menu items
      * @return Response
+     * @since 5.0.0
      */
-    public function contextMenuTemplate(string $template, array $variables = []): Response
+    public function actionMenuItems(?callable $value): Response
     {
-        return $this->contextMenuHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
-        );
+        $this->actionMenuItems = $value;
+        return $this->owner;
     }
 
     /**
@@ -508,6 +572,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
     public function additionalButtonsHtml(callable|string|null $value): Response
     {
@@ -536,6 +601,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
     public function contentHtml(callable|string|null $value): Response
     {
@@ -562,6 +628,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
     public function metaSidebarHtml(callable|string|null $value): Response
     {
@@ -588,7 +655,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
-     * @since 4.5.0
+     * @since 5.0.0
      */
     public function pageSidebarHtml(callable|string|null $value): Response
     {
@@ -616,6 +683,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
     public function noticeHtml(callable|string|null $value): Response
     {
@@ -633,6 +701,34 @@ class CpScreenResponseBehavior extends Behavior
     public function noticeTemplate(string $template, array $variables = []): Response
     {
         return $this->noticeHtml(
+            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+        );
+    }
+
+    /**
+     * Sets the errors summary HTML.
+     *
+     * @param callable|string|null $value
+     * @return Response
+     * @since 4.5.0
+     */
+    public function errorSummary(callable|string|null $value): Response
+    {
+        $this->errorSummary = $value;
+        return $this->owner;
+    }
+
+    /**
+     * Sets a template that should be used to render the errors summary HTML.
+     *
+     * @param string $template
+     * @param array $variables
+     * @return Response
+     * @since 4.5.0
+     */
+    public function errorSummaryTemplate(string $template, array $variables = []): Response
+    {
+        return $this->errorSummary(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }

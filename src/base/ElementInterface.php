@@ -9,10 +9,12 @@ namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\User;
+use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
@@ -63,6 +65,14 @@ interface ElementInterface extends ComponentInterface
     public static function refHandle(): ?string;
 
     /**
+     * Returns whether element indexes should show the “Drafts” status option.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function hasDrafts(): bool;
+
+    /**
      * Returns whether Craft should keep track of attribute and custom field changes made to this element type,
      * including when the last time they were changed, and who was logged-in at the time.
      *
@@ -79,6 +89,14 @@ interface ElementInterface extends ComponentInterface
      * @return bool Whether elements of this type have traditional titles.
      */
     public static function hasTitles(): bool;
+
+    /**
+     * Returns whether element indexes should include a thumbnail view by default.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public static function hasThumbs(): bool;
 
     /**
      * Returns whether elements of this type can have their own slugs and URIs.
@@ -301,7 +319,7 @@ interface ElementInterface extends ComponentInterface
      * @return array|null
      * @since 4.4.0
      */
-    public static function findSource(string $sourceKey, ?string $context = null): ?array;
+    public static function findSource(string $sourceKey, ?string $context): ?array;
 
     /**
      * Returns the source path for a given source key, step key, and context.
@@ -324,7 +342,7 @@ interface ElementInterface extends ComponentInterface
      * @return FieldLayout[]
      * @since 3.5.0
      */
-    public static function fieldLayouts(?string $source = null): array;
+    public static function fieldLayouts(?string $source): array;
 
     /**
      * Modifies a custom source’s config, before it’s returned by [[craft\services\ElementSources::getSources()]]
@@ -408,10 +426,20 @@ interface ElementInterface extends ComponentInterface
      * @param string|null $sourceKey
      * @param string|null $context
      * @param bool $includeContainer
-     * @param bool $showCheckboxes
+     * @param bool $selectable
+     * @param bool $sortable
      * @return string The element index HTML
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, ?array $disabledElementIds, array $viewState, ?string $sourceKey, ?string $context, bool $includeContainer, bool $showCheckboxes): string;
+    public static function indexHtml(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $includeContainer,
+        bool $selectable,
+        bool $sortable,
+    ): string;
 
     /**
      * Returns the total number of elements that will be shown on an element index, for the given element query.
@@ -498,14 +526,14 @@ interface ElementInterface extends ComponentInterface
      *   query result data, and the first source element that the result was eager-loaded for
      *
      * ```php
+     * use craft\base\ElementInterface;
      * use craft\db\Query;
-     * use craft\helpers\ArrayHelper;
      *
      * public static function eagerLoadingMap(array $sourceElements, string $handle)
      * {
      *     switch ($handle) {
      *         case 'author':
-     *             $bookIds = ArrayHelper::getColumn($sourceElements, 'id');
+     *             $bookIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
      *             $map = (new Query)
      *                 ->select(['source' => 'id', 'target' => 'authorId'])
      *                 ->from('{{%books}}')
@@ -516,7 +544,7 @@ interface ElementInterface extends ComponentInterface
      *                 'map' => $map,
      *             ];
      *         case 'bookClubs':
-     *             $bookIds = ArrayHelper::getColumn($sourceElements, 'id');
+     *             $bookIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
      *             $map = (new Query)
      *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
      *                 ->from('{{%bookclub_books}}')
@@ -743,6 +771,14 @@ interface ElementInterface extends ComponentInterface
     public function getLink(): ?Markup;
 
     /**
+     * Returns the breadcrumbs that lead up to the element.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getCrumbs(): array;
+
+    /**
      * Returns what the element should be called within the control panel.
      *
      * @return string
@@ -773,6 +809,14 @@ interface ElementInterface extends ComponentInterface
      * @since 4.4.0
      */
     public function setUiLabelPath(array $path): void;
+
+    /**
+     * Returns the label HTML for element chips.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getChipLabelHtml(): string;
 
     /**
      * Returns the body HTML for element cards.
@@ -833,6 +877,15 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public function canDuplicate(User $user): bool;
+
+    /**
+     * Returns whether the given user is authorized to duplicate this element as an unpublished draft.
+     *
+     * @param User $user
+     * @return bool
+     * @since 5.0.0
+     */
+    public function canDuplicateAsDraft(User $user): bool;
 
     /**
      * Returns whether the given user is authorized to delete this element.
@@ -919,6 +972,16 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public function getAdditionalButtons(): string;
+
+    /**
+     * Returns action menu items for the element’s edit screens.
+     *
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getActionMenuItems(): array;
 
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
@@ -1035,7 +1098,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param self|null $parent
      */
-    public function setParent(?self $parent = null): void;
+    public function setParent(?self $parent): void;
 
     /**
      * Returns the element’s ancestors.
@@ -1163,7 +1226,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the status of a given attribute.
      *
      * @param string $attribute
-     * @return array|null
+     * @return array{0:AttributeStatus|value-of<AttributeStatus>,1:string}|null
      * @since 3.4.0
      */
     public function getAttributeStatus(string $attribute): ?array;
@@ -1258,8 +1321,41 @@ interface ElementInterface extends ComponentInterface
      * to the target site.
      *
      * @return string The translation key
+     * @since 3.5.0
      */
     public function getTitleTranslationKey(): string;
+
+    /**
+     * Returns whether the Slug field should be shown as translatable in the UI.
+     *
+     * Note this method has no effect on whether slugs will get copied over to other
+     * sites when the element is actually getting saved. That is determined by [[getSlugTranslationKey()]].
+     *
+     * @return bool
+     * @since 4.5.0
+     */
+    public function getIsSlugTranslatable(): bool;
+
+    /**
+     * Returns the description of the Slug field’s translation support.
+     *
+     * @return string|null
+     * @since 4.5.0
+     */
+    public function getSlugTranslationDescription(): ?string;
+
+    /**
+     * Returns the Slug’s translation key.
+     *
+     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
+     * then `getSlugTranslationKey()` will be called for each site the element should be propagated to.
+     * If the method returns the same value as it did for the initial site, then the initial site’s slug will be copied over
+     * to the target site.
+     *
+     * @return string The translation key
+     * @since 4.5.0
+     */
+    public function getSlugTranslationKey(): string;
 
     /**
      * Returns whether a field is empty.
@@ -1458,8 +1554,9 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $handle The handle that was used to eager-load the elements
      * @param self[] $elements The eager-loaded elements
+     * @param EagerLoadPlan $plan The eager-loading plan
      */
-    public function setEagerLoadedElements(string $handle, array $elements): void;
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void;
 
     /**
      * Sets whether the given eager-loaded element handles were eager-loaded lazily.
@@ -1509,7 +1606,7 @@ interface ElementInterface extends ComponentInterface
      * @param int|null $creatorId
      * @since 3.2.0
      */
-    public function setRevisionCreatorId(?int $creatorId = null): void;
+    public function setRevisionCreatorId(?int $creatorId): void;
 
     /**
      * Sets the revision notes to be saved.
@@ -1517,7 +1614,7 @@ interface ElementInterface extends ComponentInterface
      * @param string|null $notes
      * @since 3.2.0
      */
-    public function setRevisionNotes(?string $notes = null): void;
+    public function setRevisionNotes(?string $notes): void;
 
     /**
      * Returns the element’s current revision, if one exists.
@@ -1558,6 +1655,15 @@ interface ElementInterface extends ComponentInterface
      * @since 5.0.0
      */
     public function getAttributeHtml(string $attribute): string;
+
+    /**
+     * Returns the HTML that should be shown for a given attribute's inline editing input.
+     *
+     * @param string $attribute The attribute name.
+     * @return string The HTML that should be shown for the element input.
+     * @since 5.0.0
+     */
+    public function getInlineAttributeInputHtml(string $attribute): string;
 
     /**
      * Returns the HTML for any fields/info that should be shown within the editor sidebar.

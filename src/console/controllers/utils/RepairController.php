@@ -15,7 +15,6 @@ use craft\console\Controller;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\ElementHelper;
 use craft\models\Section;
@@ -202,8 +201,14 @@ class RepairController extends Controller
                     } else {
                         // Make sure that the element has at least one site in common with the parent
                         $parentElement = $ancestors[$newLevel - 2];
-                        $elementSites = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
-                        $parentSites = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($parentElement), 'siteId');
+                        $elementSites = array_map(
+                            fn(array $siteInfo) => $siteInfo['siteId'],
+                            ElementHelper::supportedSitesForElement($element),
+                        );
+                        $parentSites = array_map(
+                            fn(array $siteInfo) => $siteInfo['siteId'],
+                            ElementHelper::supportedSitesForElement($parentElement),
+                        );
 
                         if (!array_intersect($elementSites, $parentSites)) {
                             $issue = 'no supported sites in common with parent';

@@ -101,7 +101,6 @@ class Matrix extends InputObjectType
     {
         $preparedEntries = [];
         $entryCounter = 1;
-        $missingId = false;
 
         if (!isset($value['entries']) && isset($value['blocks'])) {
             $value['entries'] = ArrayHelper::remove($value, 'blocks');
@@ -112,7 +111,6 @@ class Matrix extends InputObjectType
                 if (!empty($entry)) {
                     $type = array_key_first($entry);
                     $entry = reset($entry);
-                    $missingId = $missingId || empty($entry['id']);
                     $entryId = !empty($entry['id']) ? $entry['id'] : 'new:' . ($entryCounter++);
 
                     unset($entry['id']);
@@ -122,10 +120,6 @@ class Matrix extends InputObjectType
                         'fields' => $entry,
                     ];
                 }
-            }
-
-            if ($missingId) {
-                Craft::$app->getDeprecator()->log('MatrixInput::normalizeValue()', 'The `id` field will be required when mutating Matrix fields as of Craft 4.0.');
             }
 
             $value['entries'] = $preparedEntries;

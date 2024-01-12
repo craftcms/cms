@@ -23,7 +23,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         '<form class="modal fitted deleteusermodal" method="post" accept-charset="UTF-8">' +
           Craft.getCsrfInput() +
           '<input type="hidden" name="action" value="users/delete-user"/>' +
-          (!Garnish.isArray(this.userId)
+          (!Array.isArray(this.userId)
             ? '<input type="hidden" name="userId" value="' + this.userId + '"/>'
             : '') +
           (settings.redirect
@@ -48,7 +48,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
           '<div id="transferselect' +
           this.id +
           '" class="elementselect">' +
-          '<div class="elements"></div>' +
+          '<ul class="elements"></ul>' +
           '<button type="button" class="btn add icon dashed">' +
           Craft.t('app', 'Choose a user') +
           '</button>' +
@@ -68,14 +68,15 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         text: Craft.t('app', 'Cancel'),
       }).appendTo($buttons);
 
+      const $contentSummary = $body.find('.content-summary');
       if (settings.contentSummary.length) {
         for (let i = 0; i < settings.contentSummary.length; i++) {
-          $body
+          $contentSummary
             .find('ul')
             .append($('<li/>', {text: settings.contentSummary[i]}));
         }
       } else {
-        $body.find('ul').remove();
+        $contentSummary.find('ul').remove();
       }
 
       this.$deleteActionRadios = $body.find('input[type=radio]');
@@ -89,7 +90,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 
       var idParam;
 
-      if (Garnish.isArray(this.userId)) {
+      if (Array.isArray(this.userId)) {
         idParam = ['and'];
 
         for (let i = 0; i < this.userId.length; i++) {
@@ -142,7 +143,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         : 'Delete {num, plural, =1{user} other{users}}';
 
       return Craft.t('app', message, {
-        num: Garnish.isArray(this.userId) ? this.userId.length : 1,
+        num: Array.isArray(this.userId) ? this.userId.length : 1,
       });
     },
 

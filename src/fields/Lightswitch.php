@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\ArrayHelper;
@@ -26,7 +26,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Lightswitch extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Lightswitch extends Field implements InlineEditableFieldInterface, SortableFieldInterface
 {
     /**
      * @inheritdoc
@@ -130,7 +130,28 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    {
+        return $this->_inputHtmlInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return $this->_inputHtmlInternal($value, $element, true);
+    }
+
+    /**
+     * Render html for both static and interactive lightswitch field
+     *
+     * @param mixed $value
+     * @param ElementInterface|null $element
+     * @param bool $static
+     * @return string
+     */
+    private function _inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
     {
         $id = $this->getInputId();
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch.twig', [
@@ -141,13 +162,14 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
             'on' => (bool)$value,
             'onLabel' => Craft::t('site', $this->onLabel),
             'offLabel' => Craft::t('site', $this->offLabel),
+            'disabled' => $static,
         ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If this is a new entry, look for a default option
         if ($value === null) {

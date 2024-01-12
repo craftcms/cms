@@ -226,7 +226,7 @@ $radioSize: 16px;
 
 @mixin icon {
   font-family: 'Craft';
-  speak: none;
+  speak: never;
   -webkit-font-feature-settings: 'liga', 'dlig';
   -moz-font-feature-settings: 'liga=1, dlig=1';
   -moz-font-feature-settings: 'liga', 'dlig';
@@ -612,7 +612,7 @@ $radioSize: 16px;
     0 5px 20px transparentize($grey900, 0.75);
 }
 
-@mixin menu-option-styles {
+@mixin menu-item-styles {
   margin: 0 -14px;
   padding: 10px 14px;
   color: $menuOptionColor;
@@ -620,7 +620,7 @@ $radioSize: 16px;
   white-space: nowrap;
 }
 
-@mixin menu-option-active-styles {
+@mixin menu-item-active-styles {
   color: $menuOptionActiveColor;
   background-color: $menuOptionActiveBackgroundColor;
 }
@@ -892,4 +892,31 @@ $radioSize: 16px;
   .go:after {
     font-size: 14px;
   }
+}
+
+@mixin checkered-bg($size) {
+  // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
+  $halfSize: $size * 0.5;
+  background-image: linear-gradient(
+      45deg,
+      #{transparentize($grey300, 0.75)} 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      135deg,
+      #{transparentize($grey300, 0.75)} 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 75%,
+      #{transparentize($grey300, 0.75)} 75%
+    ),
+    linear-gradient(
+      135deg,
+      transparent 75%,
+      #{transparentize($grey300, 0.75)} 75%
+    );
+  background-size: $size $size;
+  background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
 }

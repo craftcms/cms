@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\App;
 use craft\helpers\Cp;
@@ -24,7 +24,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Email extends Field implements PreviewableFieldInterface
+class Email extends Field implements InlineEditableFieldInterface
 {
     /**
      * @inheritdoc
@@ -100,7 +100,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
             'type' => 'email',

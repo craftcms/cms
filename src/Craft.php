@@ -15,6 +15,7 @@ use craft\models\FieldLayout;
 use GuzzleHttp\Client;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use yii\base\ExitException;
+use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 use function GuzzleHttp\default_user_agent;
@@ -48,6 +49,10 @@ class Craft extends Yii
      */
     public static function createObject($type, array $params = [])
     {
+        if (is_array($type) && isset($type['__class']) && isset($type['class'])) {
+            throw new InvalidConfigException('`__class` and `class` cannot both be specified.');
+        }
+
         return parent::createObject($type, $params);
     }
 
@@ -343,10 +348,19 @@ EOD;
      */
     private static function _fields(): array
     {
-        return array_merge(...array_map(
-            fn(FieldLayout $fieldLayout) => $fieldLayout->getCustomFields(),
-            Craft::$app->getFields()->getAllLayouts(),
-        ));
+        // Return all fields merged with all layouts' field instances, to be sure we're not missing anything
+        $fields = array_merge(
+            static::$app->getFields()->getAllFields(false),
+            ...array_map(
+                fn(FieldLayout $fieldLayout) => $fieldLayout->getCustomFields(),
+                Craft::$app->getFields()->getAllLayouts(),
+            ),
+        );
+
+        // Sort by handle
+        usort($fields, fn(FieldInterface $a, FieldInterface $b) => $a->handle <=> $b->handle);
+
+        return $fields;
     }
 
     /**

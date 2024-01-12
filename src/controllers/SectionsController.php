@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\enums\PropagationMethod;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
@@ -153,7 +154,9 @@ class SectionsController extends Controller
         $section->handle = $this->request->getBodyParam('handle');
         $section->type = $this->request->getBodyParam('type') ?? Section::TYPE_CHANNEL;
         $section->enableVersioning = $this->request->getBodyParam('enableVersioning', true);
-        $section->propagationMethod = $this->request->getBodyParam('propagationMethod', Section::PROPAGATION_METHOD_ALL);
+        $section->maxAuthors = $this->request->getBodyParam('maxAuthors', true);
+        $section->propagationMethod = PropagationMethod::tryFrom($this->request->getBodyParam('propagationMethod') ?? '')
+            ?? PropagationMethod::All;
         $section->previewTargets = $this->request->getBodyParam('previewTargets') ?: [];
 
         // Type-specific settings
@@ -166,13 +169,13 @@ class SectionsController extends Controller
                 $section->defaultPlacement = $this->request->getBodyParam('defaultPlacement') ?? $section->defaultPlacement;
                 // no break
             case Section::TYPE_CHANNEL:
-                $entryTypeIds = $this->request->getBodyParam('entryTypes') ?? [];
+                $entryTypeIds = $this->request->getBodyParam('entryTypes') ?: [];
                 break;
             default:
                 throw new BadRequestHttpException("Invalid entry type: $section->type");
         }
 
-        $section->setEntryTypes(array_map(fn(int $id) => $sectionsService->getEntryTypeById($id), array_filter($entryTypeIds)));
+        $section->setEntryTypes(array_map(fn($id) => $sectionsService->getEntryTypeById((int)$id), array_filter($entryTypeIds)));
 
         // Site-specific settings
         $allSiteSettings = [];

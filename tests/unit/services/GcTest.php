@@ -162,7 +162,7 @@ class GcTest extends TestCase
      * @return array
      * @todo Other GC tables
      */
-    public function gcDataProvider(): array
+    public static function gcDataProvider(): array
     {
         return [
             [1, '1005', Table::SESSIONS, ['1003', '1004', '1005']],

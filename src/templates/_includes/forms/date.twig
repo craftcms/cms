@@ -2,6 +2,8 @@
 {% set id = (id ?? "date#{random()}") ~ '-date' -%}
 {% set name = name ?? null -%}
 {% set value = (value ?? false) ? date(value, false) : null -%}
+{% set locale = craft.app.getFormattingLocale() %}
+{% set outputLocaleParam = outputLocaleParam ?? true %}
 {% set timeZone = timeZone ?? null %}
 {% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
@@ -22,7 +24,7 @@
         {% set formatRefId = "#{id}-format" %}
         {% set describedBy = [formatRefId, describedBy ?? null]|filter|join(' ') %}
         <span id="{{ formatRefId }}" class="visually-hidden">
-            {{ craft.app.getFormattingLocale().getDateFormat('short', 'human') }}
+            {{ locale.getDateFormat('short', 'human') }}
         </span>
     {% endif %}
     {%- include "_includes/forms/text" with {
@@ -40,6 +42,9 @@
         },
     } -%}
     <div data-icon="date"></div>
+    {%- if name and outputLocaleParam -%}
+        {{- hiddenInput("#{name}[locale]", locale.id) -}}
+    {%- endif -%}
     {%- if name and outputTzParam -%}
         {{- hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) -}}
     {%- endif -%}

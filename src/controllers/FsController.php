@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Fs;
 use craft\base\FsInterface;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Html;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -116,6 +117,11 @@ class FsController extends Controller
             ->addCrumb(Craft::t('app', 'Filesystems'), 'settings/filesystems')
             ->action('fs/save')
             ->redirectUrl('settings/filesystems')
+            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => 'settings/filesystems/{handle}',
+                'shortcut' => true,
+                'retainScroll' => true,
+            ])
             ->contentTemplate('settings/filesystems/_edit.twig', [
                 'oldHandle' => $handle,
                 'filesystem' => $filesystem,
@@ -144,7 +150,7 @@ class FsController extends Controller
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'oldHandle' => $this->request->getBodyParam('oldHandle'),
-            'settings' => $this->request->getBodyParam("types.$type"),
+            'settings' => $this->request->getBodyParam(sprintf('types.%s', Html::id($type))),
         ]);
 
         if (!$fsService->saveFilesystem($fs)) {

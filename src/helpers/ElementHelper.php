@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\NestedElementInterface;
@@ -152,7 +153,7 @@ class ElementHelper
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $maxSlugIncrement = Craft::$app->getConfig()->getGeneral()->maxSlugIncrement;
-        $originalSlug = $element->slug;
+        $originalSlug = $element->slug ?? '';
         $originalSlugLen = mb_strlen($originalSlug);
 
         for ($i = 1; $i <= $maxSlugIncrement; $i++) {
@@ -283,7 +284,7 @@ class ElementHelper
      *
      * @param ElementInterface $element The element to return supported site info for
      * @param bool $withUnpropagatedSites Whether to include sites the element is currently not being propagated to
-     * @return array
+     * @return array[]
      * @throws Exception if any of the element’s supported sites are invalid
      */
     public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
@@ -373,7 +374,8 @@ class ElementHelper
             $element->siteSettingsId &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
-            !$element->mergingCanonicalChanges
+            !$element->mergingCanonicalChanges &&
+            !$element->resaving
         );
     }
 
@@ -443,6 +445,30 @@ class ElementHelper
                 return static::rootElement($owner);
             }
         }
+
+        return $element;
+    }
+
+    /**
+     * Returns the root element of a given element, unless the element or any of its owners are not canonical.
+     *
+     * @param ElementInterface $element
+     * @return ElementInterface|null
+     * @since 5.0.0
+     */
+    public static function rootElementIfCanonical(ElementInterface $element): ?ElementInterface
+    {
+        if (!$element->getIsCanonical()) {
+            return null;
+        }
+
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::rootElementIfCanonical($owner);
+            }
+        }
+
         return $element;
     }
 
@@ -758,5 +784,90 @@ class ElementHelper
         }
 
         return Html::encode(StringHelper::stripHtml($value));
+    }
+
+    /**
+     * Returns the searchable attributes for a given element, ensuring that `slug` and `title` are included.
+     *
+     * @param ElementInterface $element
+     * @return string[]
+     * @since 4.6.0
+     */
+    public static function searchableAttributes(ElementInterface $element): array
+    {
+        $searchableAttributes = array_flip($element::searchableAttributes());
+        $searchableAttributes['slug'] = true;
+        if ($element::hasTitles()) {
+            $searchableAttributes['title'] = true;
+        }
+        return array_keys($searchableAttributes);
+    }
+
+    /**
+     * Returns a generic editor URL for the given element.
+     *
+     * @param ElementInterface $element
+     * @param bool $withParams Whether to include the necessary query string params
+     * @return string
+     * @since 5.0.0
+     */
+    public static function elementEditorUrl(ElementInterface $element, bool $withParams = true): string
+    {
+        $url = sprintf('edit/%s', $element->getCanonicalId());
+
+        if ($element->slug && !static::isTempSlug($element->slug)) {
+            $url .= "-$element->slug";
+        }
+
+        if ($withParams) {
+            return static::addElementEditorUrlParams($url, $element);
+        }
+
+        return UrlHelper::cpUrl($url);
+    }
+
+    /**
+     * Ensures the given element edit URL includes the necessary query string params.
+     *
+     * @param string $url
+     * @param ElementInterface $element
+     * @return string
+     * @since 5.0.0
+     */
+    public static function addElementEditorUrlParams(string $url, ElementInterface $element): string
+    {
+        $params = [];
+
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $element->getSite()->handle;
+        }
+
+        if ($element->getIsDraft() && !$element->isProvisionalDraft) {
+            $params['draftId'] = $element->draftId;
+        } elseif ($element->getIsRevision()) {
+            $params['revisionId'] = $element->revisionId;
+        }
+
+        return UrlHelper::cpUrl($url, $params);
+    }
+
+    /**
+     * Returns an element action’s JavaScript configuration.
+     *
+     * @param ElementActionInterface $action
+     * @return array
+     * @since 5.0.0
+     */
+    public static function actionConfig(ElementActionInterface $action): array
+    {
+        return [
+            'type' => $action::class,
+            'destructive' => $action->isDestructive(),
+            'download' => $action->isDownload(),
+            'name' => $action->getTriggerLabel(),
+            'trigger' => $action->getTriggerHtml(),
+            'confirm' => $action->getConfirmationMessage(),
+            'settings' => $action->getSettings() ?: null,
+        ];
     }
 }

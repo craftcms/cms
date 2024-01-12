@@ -536,6 +536,22 @@ class ExtensionTest extends TestCase
             'foo zar zazzy',
             '{{ "foo bar baz"|replace({"/b(\\\w+)/": "z$1", zaz: "zazzy"}) }}',
         );
+
+        // https://github.com/craftcms/cms/issues/13618
+        $this->testRenderResult(
+            'qux',
+            '{{ "https://foo.com/bar/baz/"|replace("/(http(s?):)?\\\/\\\/foo\\\.com\\\/bar\\\/baz\\\//", "qux") }}',
+        );
+
+        $this->testRenderResult(
+            '/baz/bar/',
+            '{{ "/foo/bar/"|replace({"/foo/": "baz"}, regex=true) }}',
+        );
+
+        $this->testRenderResult(
+            'bazbar/',
+            '{{ "/foo/bar/"|replace({"/foo/": "baz"}, regex=false) }}',
+        );
     }
 
     /**
@@ -789,7 +805,7 @@ class ExtensionTest extends TestCase
         $this->testRenderResult($expected, $renderString, $variables);
     }
 
-    public function addressFilterDataProvider(): array
+    public static function addressFilterDataProvider(): array
     {
         return [
             ['{{ myAddress|address }}', ['myAddress' => Craft::createObject(Address::class, ['config' => ['attributes' => ['addressLine1' => '1 Main Stree', 'postalCode' => '12345', 'countryCode' => 'US', 'administrativeArea' => 'OR']]])], '<p translate="no">

@@ -17,6 +17,7 @@ use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -27,6 +28,7 @@ use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Collection;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -346,7 +348,7 @@ class Cp extends Component
         // Figure out which item is selected, and normalize the items
         $path = Craft::$app->getRequest()->getPathInfo();
 
-        if ($path === 'myaccount') {
+        if ($path === 'myaccount' || str_starts_with($path, 'myaccount/')) {
             $path = 'users';
         }
 
@@ -412,6 +414,10 @@ class Cp extends Component
         $settings[$label]['users'] = [
             'iconMask' => '@appicons/users.svg',
             'label' => Craft::t('app', 'Users'),
+        ];
+        $settings[$label]['addresses'] = [
+            'iconMask' => '@appicons/location.svg',
+            'label' => Craft::t('app', 'Addresses'),
         ];
         $settings[$label]['email'] = [
             'iconMask' => '@appicons/envelope.svg',
@@ -557,7 +563,7 @@ class Cp extends Component
 
             $resolvableLicenseItem = null;
 
-            if ($licenseInfo['status'] === LicenseKeyStatus::Trial) {
+            if ($licenseInfo['status'] === LicenseKeyStatus::Trial->value) {
                 $resolvableLicenseItem = array_filter([
                     'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
                     'plugin' => !$isCraft ? $handle : null,
@@ -703,13 +709,11 @@ class Cp extends Component
                     $data['hint'] = $security->redactIfSensitive($var, Craft::getAlias($value, false));
                 }
 
-                $options[] = [
+                $options[] = array_filter([
                     'label' => "$$var",
                     'value' => "$$var",
-                    'data' => [
-                        'data' => !empty($data) ? $data : false,
-                    ],
-                ];
+                    'data' => !empty($data) ? $data : null,
+                ]);
             }
         }
 
@@ -740,9 +744,7 @@ class Cp extends Component
                     'label' => "$$var",
                     'value' => "$$var",
                     'data' => [
-                        'data' => [
-                            'boolean' => $booleanValue,
-                        ],
+                        'boolean' => $booleanValue ? '1' : '0',
                     ],
                 ];
             }
@@ -812,13 +814,11 @@ class Cp extends Component
 
             $offsets[] = $offset;
             $timezoneIds[] = $timezoneId;
-            $options[] = [
+            $options[] = array_filter([
                 'value' => $timezoneId,
                 'label' => $label,
-                'data' => [
-                    'data' => !empty($data) ? $data : false,
-                ],
-            ];
+                'data' => !empty($data) ? $data : null,
+            ]);
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
@@ -835,8 +835,8 @@ class Cp extends Component
     public function getEntryTypeOptions(): array
     {
         $options = array_map(fn(EntryType $entryType) => [
-            'label' => $entryType->name,
-            'value' => $entryType->handle,
+            'label' => Craft::t('site', $entryType->name),
+            'value' => $entryType->id,
         ], Craft::$app->getEntries()->getAllEntryTypes());
 
         ArrayHelper::multisort($options, 'label');
@@ -852,14 +852,14 @@ class Cp extends Component
      */
     public function getFsOptions(): array
     {
-        $options = array_map(fn(FsInterface $fs) => [
-            'label' => $fs->name,
-            'value' => $fs->handle,
-        ], Craft::$app->getFs()->getAllFilesystems());
-
-        ArrayHelper::multisort($options, 'label');
-
-        return $options;
+        return Collection::make(Craft::$app->getFs()->getAllFilesystems())
+            ->filter(fn(FsInterface $fs) => !Assets::isTempUploadFs($fs))
+            ->sortBy(fn(FsInterface $fs) => $fs->name)
+            ->map(fn(FsInterface $fs) => [
+                'label' => $fs->name,
+                'value' => $fs->handle,
+            ])
+            ->all();
     }
 
     /**

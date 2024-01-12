@@ -435,7 +435,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * Update uploaded byte count.
      */
-    _onUploadProgress: function (event, data) {
+    _onUploadProgress: function (event, data = null) {
       data = event instanceof CustomEvent ? event.detail : data;
 
       var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
@@ -449,7 +449,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @param {Object} data
      * @private
      */
-    _onUploadSuccess: function (event, data) {
+    _onUploadSuccess: function (event, data = null) {
       const result = event instanceof CustomEvent ? event.detail : data.result;
 
       // Add the uploaded file to the selected ones, if appropriate
@@ -463,6 +463,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
             {value: 'replace', title: Craft.t('app', 'Replace it')},
           ],
+          modalSettings: {
+            hideOnEsc: false,
+            hideOnShadeClick: false,
+          },
         };
 
         this.promptHandler.addPrompt(result);
@@ -490,11 +494,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * On Upload Failure.
      */
-    _onUploadFailure: function (event, data) {
+    _onUploadFailure: function (event, data = null) {
       const response =
         event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
       let {message, filename, errors} = response || {};
+      filename = filename || data?.files?.[0].name;
       let errorMessages = errors ? Object.values(errors).flat() : [];
 
       if (!message) {
@@ -623,7 +628,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _onUpdateElements: function (append, $newElements) {
       this.removeListener(this.$elements, 'keydown');
       this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
-      this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
+      if (this.view.elementSelect) {
+        this.view.elementSelect.on(
+          'focusItem',
+          this._onElementFocus.bind(this)
+        );
+      }
 
       this.$listedFolders = $newElements.find(
         '.element[data-is-folder][data-folder-name]'
@@ -688,7 +698,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
         if (Craft.PreviewFileModal.openInstance) {
           Craft.PreviewFileModal.openInstance.selfDestruct();
-        } else {
+        } else if (this.view.elementSelect) {
           var $element = this.view.elementSelect.$focusedItem.find('.element');
 
           if ($element.length) {
@@ -785,7 +795,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
               label: Craft.t('app', 'Delete folder'),
               destructive: true,
               onSelect: () => {
-                this._deleteFolder();
+                this.deleteCurrentFolder();
               },
             });
           }
@@ -822,37 +832,43 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       }
     },
 
-    _deleteFolder: function () {
-      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
-
+    deleteCurrentFolder: async function () {
       if (
-        confirm(
+        await this.deleteFolder(this.sourcePath[this.sourcePath.length - 1])
+      ) {
+        this.sourcePath = this.sourcePath.slice(0, this.sourcePath.length - 1);
+        this.updateElements();
+      }
+    },
+
+    deleteFolder: async function (folder) {
+      if (
+        !confirm(
           Craft.t('app', 'Really delete folder “{folder}”?', {
-            folder: currentFolder.label,
+            folder: folder.label,
           })
         )
       ) {
-        const data = {
-          folderId: currentFolder.folderId,
-        };
-
-        this.setIndexBusy();
-
-        Craft.sendActionRequest('POST', 'assets/delete-folder', {data})
-          .then((response) => {
-            this.setIndexAvailable();
-            Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
-            this.sourcePath = this.sourcePath.slice(
-              0,
-              this.sourcePath.length - 1
-            );
-            this.updateElements();
-          })
-          .catch(({response}) => {
-            this.setIndexAvailable();
-            Craft.cp.displayError(response.data.message);
-          });
+        return false;
       }
+
+      this.setIndexBusy();
+
+      try {
+        await Craft.sendActionRequest('POST', 'assets/delete-folder', {
+          data: {
+            folderId: folder.folderId,
+          },
+        });
+      } catch (e) {
+        Craft.cp.displayError(e?.response?.data?.message);
+        return false;
+      } finally {
+        this.setIndexAvailable();
+      }
+
+      Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
+      return true;
     },
 
     /**

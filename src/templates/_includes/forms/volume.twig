@@ -10,6 +10,9 @@
         });
     });
     slideout.on('close', () => {
+        if (selectize.lastValidValue === '__add__') {
+            selectize.lastValidValue = '';
+        }
         selectize.focus();
     });
 }

@@ -301,6 +301,30 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           this.hasCpLink = false;
         }
 
+        if (data.actionMenu) {
+          const labelId = Craft.namespaceId(
+            'action-menu-label',
+            this.namespace
+          );
+          const menuId = Craft.namespaceId('action-menu', this.namespace);
+          $('<label/>', {
+            id: labelId,
+            class: 'visually-hidden',
+            text: Craft.t('app', 'Actions'),
+          }).insertBefore(this.$editLink);
+          const $trigger = $('<button/>', {
+            class: 'btn action-btn header-btn',
+            type: 'button',
+            title: Craft.t('app', 'Actions'),
+            'aria-controls': menuId,
+            'aria-describedby': labelId,
+            'data-disclosure-trigger': 'true',
+            'data-icon': 'ellipsis',
+          }).insertBefore(this.$editLink);
+          $(data.actionMenu).insertBefore(this.$editLink);
+          $trigger.disclosureMenu();
+        }
+
         if (data.sidebar) {
           this.$container.addClass('has-sidebar');
           this.$sidebarBtn.removeClass('hidden');
@@ -551,11 +575,15 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     isDirty: function () {
-      return (
-        typeof this.$container.data('initialSerializedValue') !== 'undefined' &&
-        this.$container.serialize() !==
-          this.$container.data('initialSerializedValue')
-      );
+      const initialValue = this.$container.data('initialSerializedValue');
+      if (typeof initialValue === 'undefined') {
+        return false;
+      }
+
+      const serializer =
+        this.$container.data('serializer') ||
+        (() => this.$container.serialize());
+      return initialValue !== serializer();
     },
 
     closeMeMaybe: function () {

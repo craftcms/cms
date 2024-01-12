@@ -51,7 +51,7 @@ class MysqlDbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getTextualColumnStorageCapacityDataProvider(): array
+    public static function getTextualColumnStorageCapacityDataProvider(): array
     {
         return [
             [null, MysqlSchema::TYPE_ENUM],
@@ -85,7 +85,7 @@ class MysqlDbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getTextualColumnTypeByContentLengthDataProvider(): array
+    public static function getTextualColumnTypeByContentLengthDataProvider(): array
     {
         return [
             ['string', 254],
@@ -98,7 +98,7 @@ class MysqlDbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function parseParamDataProvider(): array
+    public static function parseParamDataProvider(): array
     {
         return [
             'multi-:empty:-param' => [
@@ -144,7 +144,7 @@ class MysqlDbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function sqlTypesDataProvider(): array
+    public static function sqlTypesDataProvider(): array
     {
         $mysqlSchema = new MysqlSchema();
         $pgsqlSchema = new PgsqlSchema();

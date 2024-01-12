@@ -38,17 +38,22 @@ use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\fieldlayoutelements\TitleField;
-use craft\fieldlayoutelements\users\AddressesField;
+use craft\fieldlayoutelements\users\EmailField;
+use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
+use craft\fieldlayoutelements\users\PhotoField;
+use craft\fieldlayoutelements\users\UsernameField;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
+use craft\log\Dispatcher;
 use craft\mail\Mailer;
 use craft\markdown\GithubMarkdown;
 use craft\markdown\Markdown;
 use craft\markdown\MarkdownExtra;
+use craft\markdown\PreEncodedMarkdown;
 use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
@@ -133,7 +138,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read AssetIndexer $assetIndexer The asset indexer service
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read Assets $assets The assets service
- * @property-read Auth $auth The auth service
+ * @property-read Auth $auth The user authentication service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
  * @property-read Conditions $conditions The conditions service
@@ -278,6 +283,12 @@ trait ApplicationTrait
      * @see saveInfoAfterRequest()
      */
     private bool $_waitingToSaveInfo = false;
+
+    /**
+     * @var callable[]
+     * @see onAfterRequest()
+     */
+    private array $afterRequestCallbacks = [];
 
     /**
      * @inheritdoc
@@ -455,7 +466,7 @@ trait ApplicationTrait
     }
 
     /**
-     * Invokes a callback method when Craft is fully initialized.
+     * Invokes a callback function when Craft is fully initialized.
      *
      * If Craft is already fully initialized, the callback will be invoked immediately.
      *
@@ -471,6 +482,45 @@ trait ApplicationTrait
                 $callback();
             });
         }
+    }
+
+    /**
+     * Invokes a callback function at the end of the request.
+     *
+     * If the request is already ending, the callback will be invoked immediately.
+     *
+     * @param callable $callback
+     * @since 4.5.11
+     */
+    public function onAfterRequest(callable $callback): void
+    {
+        if (in_array($this->state, [
+            Application::STATE_AFTER_REQUEST,
+            Application::STATE_SENDING_RESPONSE,
+            Application::STATE_END,
+        ], true)) {
+            $callback();
+        } else {
+            $this->afterRequestCallbacks[] = $callback;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function trigger($name, Event $event = null)
+    {
+        // call the onAfterRequest() callbacks directly
+        if ($name === self::EVENT_AFTER_REQUEST && !empty($this->afterRequestCallbacks)) {
+            $event ??= new Event();
+            $event->sender = $this;
+            $event->name = $name;
+            while ($callback = array_shift($this->afterRequestCallbacks)) {
+                $callback($event);
+            }
+        }
+
+        parent::trigger($name, $event);
     }
 
     /**
@@ -779,16 +829,9 @@ trait ApplicationTrait
         if (!$this->_waitingToSaveInfo) {
             $this->_waitingToSaveInfo = true;
 
-            // If the request is already over, trigger this immediately
-            if (in_array($this->state, [
-                Application::STATE_AFTER_REQUEST,
-                Application::STATE_SENDING_RESPONSE,
-                Application::STATE_END,
-            ], true)) {
+            $this->onAfterRequest(function() {
                 $this->saveInfoAfterRequestHandler();
-            } else {
-                Craft::$app->on(WebApplication::EVENT_AFTER_REQUEST, [$this, 'saveInfoAfterRequestHandler']);
-            }
+            });
         }
     }
 
@@ -891,10 +934,15 @@ trait ApplicationTrait
         try {
             $this->getDb()->open();
         } catch (DbConnectException|InvalidConfigException $e) {
-            Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
-            /** @var ErrorHandler $errorHandler */
-            $errorHandler = $this->getErrorHandler();
-            $errorHandler->logException($e);
+
+            // Only log for web requests
+            if ($this instanceof WebApplication) {
+                Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
+                /** @var ErrorHandler $errorHandler */
+                $errorHandler = $this->getErrorHandler();
+                $errorHandler->logException($e);
+            }
+
             return false;
         }
 
@@ -962,9 +1010,10 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the auth service.
+     * Returns the user authentication service.
      *
-     * @return Auth The addresses service
+     * @return Auth The Auth service
+     * @since 5.0.0
      */
     public function getAuth(): Auth
     {
@@ -1218,6 +1267,17 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('locale');
+    }
+
+    /**
+     * Returns the log dispatcher component.
+     *
+     * @return Dispatcher the log dispatcher application component.
+     */
+    public function getLog(): Dispatcher
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('log');
     }
 
     /**
@@ -1542,13 +1602,14 @@ trait ApplicationTrait
         // Use our own Markdown parser classes
         $flavors = [
             'original' => Markdown::class,
+            'pre-encoded' => PreEncodedMarkdown::class,
             'gfm' => GithubMarkdown::class,
             'gfm-comment' => GithubMarkdown::class,
             'extra' => MarkdownExtra::class,
         ];
 
         foreach ($flavors as $flavor => $class) {
-            if (isset(MarkdownHelper::$flavors[$flavor]) && !is_object(MarkdownHelper::$flavors[$flavor])) {
+            if (!isset(MarkdownHelper::$flavors[$flavor]) || !is_object(MarkdownHelper::$flavors[$flavor])) {
                 MarkdownHelper::$flavors[$flavor]['class'] = $class;
             }
         }
@@ -1660,7 +1721,12 @@ trait ApplicationTrait
                     $event->fields[] = EntryTitleField::class;
                     break;
                 case User::class:
-                    $event->fields[] = AddressesField::class;
+                    if (!$this->getConfig()->getGeneral()->useEmailAsUsername) {
+                        $event->fields[] = UsernameField::class;
+                    }
+                    $event->fields[] = UserFullNameField::class;
+                    $event->fields[] = PhotoField::class;
+                    $event->fields[] = EmailField::class;
                     break;
             }
         });

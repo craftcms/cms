@@ -52,7 +52,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       Craft.cp.elementThumbLoader.load($elements);
 
       if (this.settings.selectable) {
-        console.log($elements);
         this.elementSelect = new Garnish.Select(
           this.$elementContainer,
           this.filterSelectableElements($elements),
@@ -80,15 +79,14 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
 
       // Enable inline element editing if this is an index page
-      if (this.settings.context === 'index') {
+      if (this.elementIndex.isAdministrative) {
         this._handleElementEditing = (ev) => {
-          var $target = $(ev.target);
-
-          if ($target.prop('nodeName') === 'A') {
+          if (['A', 'BUTTON'].includes(ev.target.nodeName)) {
             // Let the link do its thing
             return;
           }
 
+          const $target = $(ev.target);
           var $element;
 
           if ($target.hasClass('element')) {
@@ -101,7 +99,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             }
           }
 
-          if (Garnish.hasAttr($element, 'data-editable')) {
+          if (
+            Garnish.hasAttr($element, 'data-editable') &&
+            !$element.closest('.elementselect').length
+          ) {
             Craft.createElementEditor($element.data('type'), $element);
           }
         };
@@ -119,7 +120,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       this.afterInit();
 
       // Set up lazy-loading
-      if (this.settings.batchSize) {
+      if (!this.elementIndex.paginated && this.settings.batchSize) {
         if (this.settings.context === 'index') {
           this.$scroller = Garnish.$scrollContainer;
         } else {
@@ -201,7 +202,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       let ids = [];
       if ($selectedElements) {
         for (var i = 0; i < $selectedElements.length; i++) {
-          ids.push($selectedElements.eq(i).data('id'));
+          const id = $selectedElements.eq(i).data('id');
+          if (id) {
+            ids.push(id);
+          }
         }
       }
       return ids;
@@ -324,6 +328,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           this.loadingMore = false;
           this.$loadingMoreSpinner.addClass('hidden');
 
+          if (this.isAdministrative) {
+            // set Craft.currentElementIndex for actions
+            Craft.currentElementIndex = this;
+          }
+
           let $newElements = $(response.data.html);
 
           this.appendElements($newElements);
@@ -423,9 +432,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       multiSelect: false,
       canSelectElement: null,
       checkboxMode: false,
+      sortable: false,
       loadMoreElementsAction: 'element-indexes/get-more-elements',
       onAppendElements: $.noop,
       onSelectionChange: $.noop,
+      onSortChange: $.noop,
     },
   }
 );

@@ -178,7 +178,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertNotSame($entry->title, $arguments['title']);
     }
 
-    public function populatingElementWithDataProvider(): array
+    public static function populatingElementWithDataProvider(): array
     {
         return [
             [

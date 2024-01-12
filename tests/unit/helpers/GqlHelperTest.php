@@ -171,7 +171,7 @@ class GqlHelperTest extends TestCase
     }
 
 
-    public function actionExtractionDataProvider(): array
+    public static function actionExtractionDataProvider(): array
     {
         return [
             [
@@ -216,7 +216,7 @@ class GqlHelperTest extends TestCase
         ];
     }
 
-    public function schemaPermissionDataProvider(): array
+    public static function schemaPermissionDataProvider(): array
     {
         return [
             [
@@ -252,7 +252,7 @@ class GqlHelperTest extends TestCase
         ];
     }
 
-    public function schemaPermissionDataProviderForExtraction(): array
+    public static function schemaPermissionDataProviderForExtraction(): array
     {
         return [
             [

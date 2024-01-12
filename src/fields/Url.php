@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -29,7 +29,7 @@ use yii\validators\EmailValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Url extends Field implements PreviewableFieldInterface
+class Url extends Field implements InlineEditableFieldInterface
 {
     /**
      * @since 3.6.0
@@ -149,7 +149,7 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (is_array($value) && isset($value['value'])) {
             $type = $value['type'] ?? self::TYPE_URL;
@@ -193,7 +193,7 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if (is_string($value)) {
             $valueType = $this->_urlType($value);

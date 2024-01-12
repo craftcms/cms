@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\StringHelper;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.
@@ -31,18 +32,6 @@ class CustomField extends BaseField
      * @since 5.0.0
      */
     public ?string $handle = null;
-
-    /**
-     * @var bool Whether this field should be used to define element thumbnails.
-     * @since 5.0.0
-     */
-    public bool $providesThumbs = false;
-
-    /**
-     * @var bool Whether this field’s contents should be included in element cards.
-     * @since 5.0.0
-     */
-    public bool $includeInCards = false;
 
     /**
      * @var FieldInterface|null The custom field this layout field is based on.
@@ -80,6 +69,14 @@ class CustomField extends BaseField
 
     /**
      * @inheritdoc
+     */
+    public function showAttribute(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.2
      */
     protected function value(?ElementInterface $element = null): mixed
@@ -93,6 +90,46 @@ class CustomField extends BaseField
     public function requirable(): bool
     {
         return $this->_field::isRequirable();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function thumbable(): bool
+    {
+        return $this->_field instanceof ThumbableFieldInterface;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewable(): bool
+    {
+        return $this->_field instanceof PreviewableFieldInterface;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function thumbHtml(ElementInterface $element, int $size): ?string
+    {
+        $field = $this->getField();
+        if (!$field instanceof ThumbableFieldInterface) {
+            return null;
+        }
+        return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewHtml(ElementInterface $element): string
+    {
+        $field = $this->getField();
+        if (!$field instanceof PreviewableFieldInterface) {
+            return '';
+        }
+        return $field->getPreviewHtml($element->getFieldValue($field->handle), $element);
     }
 
     /**
@@ -164,34 +201,8 @@ class CustomField extends BaseField
         return ArrayHelper::merge(parent::selectorAttributes(), [
             'data' => [
                 'id' => $this->_field->id,
-                'thumbable' => $this->_field instanceof ThumbableFieldInterface,
-                'previewable' => $this->_field instanceof PreviewableFieldInterface,
             ],
         ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function selectorIndicators(): array
-    {
-        $indicators = parent::selectorIndicators();
-
-        if ($this->_field instanceof ThumbableFieldInterface && $this->providesThumbs) {
-            $indicators[] = [
-                'label' => Craft::t('app', 'This field provides thumbnails for elements'),
-                'icon' => 'asset',
-            ];
-        }
-
-        if ($this->_field instanceof PreviewableFieldInterface && $this->includeInCards) {
-            $indicators[] = [
-                'label' => Craft::t('app', 'This field is included in element cards'),
-                'icon' => 'check',
-            ];
-        }
-
-        return $indicators;
     }
 
     /**
@@ -252,7 +263,7 @@ class CustomField extends BaseField
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $this->_field->getStatus($element))) {
-            return $status[0];
+            return StringHelper::toString($status[0]);
         }
         return null;
     }
@@ -325,7 +336,7 @@ class CustomField extends BaseField
      */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $value = $element ? $element->getFieldValue($this->_field->handle) : $this->_field->normalizeValue(null);
+        $value = $element ? $element->getFieldValue($this->_field->handle) : $this->_field->normalizeValue(null, null);
 
         if ($static) {
             return $this->_field->getStaticHtml($value, $element);

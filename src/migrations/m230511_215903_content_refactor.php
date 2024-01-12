@@ -46,7 +46,7 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
         // update addresses
         $this->updateElements(
             (new Query())->from(Table::ADDRESSES),
-            Craft::$app->getAddresses()->getLayout(),
+            Craft::$app->getAddresses()->getFieldLayout(),
         );
 
         // update assets

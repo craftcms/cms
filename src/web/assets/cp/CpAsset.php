@@ -22,6 +22,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
+use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
@@ -126,7 +127,6 @@ JS;
             'Apply',
             'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to close this screen? Any changes will be lost.',
-            'Are you sure you want to delete this address?',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',
@@ -136,6 +136,9 @@ JS;
             'Breadcrumbs',
             'Buy {name}',
             'Cancel',
+            'Changes saved.',
+            'Check your email for instructions to reset your password.',
+            'Choose a page',
             'Choose a user',
             'Choose which sites this source should be visible for.',
             'Choose which table columns should be visible for this source by default.',
@@ -145,12 +148,15 @@ JS;
             'Close',
             'Color hex value',
             'Color picker',
+            'Content',
             'Continue',
             'Copied to clipboard.',
             'Copy the URL',
             'Copy the reference tag',
             'Copy to clipboard',
+            'Could not save due to validation errors.',
             'Couldn’t delete “{name}”.',
+            'Couldn’t reorder items.',
             'Couldn’t save new order.',
             'Create',
             'Customize sources',
@@ -183,7 +189,6 @@ JS;
             'Enabled for all sites',
             'Enabled',
             'Enter the name of the folder',
-            'Enter your password to continue.',
             'Enter your password to log back in.',
             'Error',
             'Export Type',
@@ -198,6 +203,7 @@ JS;
             'Folder renamed.',
             'Folder renamed.',
             'Format',
+            'Found {num, number} {num, plural, =1{error} other{errors}}',
             'From {date}',
             'From',
             'Give your tab a name.',
@@ -210,6 +216,9 @@ JS;
             'Incorrect password.',
             'Information',
             'Instructions',
+            'Invalid email.',
+            'Invalid username or email.',
+            'Items reordered.',
             'Keep both',
             'Keep me signed in',
             'Keep them',
@@ -247,6 +256,7 @@ JS;
             'New entry, choose a section',
             'New heading',
             'New order saved.',
+            'New position saved.',
             'New position saved.',
             'New subfolder',
             'New {group} category',
@@ -305,7 +315,6 @@ JS;
             'Show',
             'Show/hide children',
             'Showing your unsaved changes.',
-            'Sign in',
             'Sign out now',
             'Sites',
             'Skip to {title}',
@@ -342,6 +351,7 @@ JS;
             'Top of preview',
             'Transfer it to:',
             'Try again',
+            'Try another way',
             'Undo',
             'Unread announcements',
             'Update {type}',
@@ -362,7 +372,6 @@ JS;
             'You must specify a tab name.',
             'Your changes could not be stored.',
             'Your changes have been stored.',
-            'Your session has ended.',
             'Your session will expire in {time}.',
             'by {creator}',
             'day',
@@ -395,6 +404,11 @@ JS;
             '{type} saved.',
             '“{name}” deleted.',
         ]);
+
+        $view->registerTranslations('yii', [
+            '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
+            '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
+        ]);
     }
 
     private function _craftData(): array
@@ -411,6 +425,8 @@ JS;
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
 
         $data = [
+            'Pro' => Craft::Pro,
+            'Solo' => Craft::Solo,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
@@ -426,23 +442,25 @@ JS;
             'fileKinds' => Assets::getFileKinds(),
             'language' => Craft::$app->language,
             'left' => $orientation === 'ltr' ? 'left' : 'right',
+            'maxPasswordLength' => UserPasswordValidator::MAX_PASSWORD_LENGTH,
+            'minPasswordLength' => UserPasswordValidator::MIN_PASSWORD_LENGTH,
             'omitScriptNameInUrls' => $generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'pageNum' => $request->getPageNum(),
             'pageTrigger' => 'p',
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
-            'Pro' => Craft::Pro,
-            'registeredAssetBundles' => ['' => ''], // force encode as JS object
-            'registeredJsFiles' => ['' => ''], // force encode as JS object
+            'registeredAssetBundles' => [], // force encode as JS object
+            'registeredJsFiles' => [], // force encode as JS object
+            'resourceBaseUrl' => Craft::$app->getAssetManager()->baseUrl,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'scriptName' => basename($request->getScriptFile()),
-            'Solo' => Craft::Solo,
             'systemUid' => Craft::$app->getSystemUid(),
             'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
             'timezone' => Craft::$app->getTimeZone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
+            'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
             'usePathInfo' => $generalConfig->usePathInfo,
         ];
 
@@ -481,6 +499,7 @@ JS;
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'elementTypeNames' => $elementTypeNames,
+            'elevatedSessionDuration' => $generalConfig->elevatedSessionDuration,
             'fieldsWithoutContent' => array_map(fn(FieldInterface $field) => $field->handle, Craft::$app->getFields()->getFieldsWithoutContent(false)),
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => $this->_httpProxy($generalConfig),
@@ -499,6 +518,8 @@ JS;
             'sites' => $this->_sites($sitesService),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
+            'userEmail' => $currentUser->email,
+            'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($currentUser),
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
         ];
@@ -645,13 +666,17 @@ JS;
 
     private function _timepickerOptions(Locale $formattingLocale, string $orientation): array
     {
+        // normalize the AM/PM names consistently with time2int() in jQuery Timepicker
+        $am = preg_replace('/[\s.]/', '', $formattingLocale->getAMName());
+        $pm = preg_replace('/[\s.]/', '', $formattingLocale->getPMName());
+
         return [
             'closeOnWindowScroll' => false,
             'lang' => [
-                'AM' => $formattingLocale->getAMName(),
-                'am' => mb_strtolower($formattingLocale->getAMName()),
-                'PM' => $formattingLocale->getPMName(),
-                'pm' => mb_strtolower($formattingLocale->getPMName()),
+                'AM' => $am,
+                'am' => mb_strtolower($am),
+                'PM' => $pm,
+                'pm' => mb_strtolower($pm),
             ],
             'orientation' => $orientation[0],
             'timeFormat' => $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),

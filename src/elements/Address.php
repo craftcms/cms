@@ -6,10 +6,11 @@ use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
 use Craft;
 use craft\base\Element;
-use craft\base\ElementContainerFieldInterface;
-use craft\base\ElementInterface;
 use craft\base\NameTrait;
 use craft\base\NestedElementInterface;
+use craft\base\NestedElementTrait;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AddressQuery;
@@ -18,6 +19,7 @@ use craft\fieldlayoutelements\addresses\OrganizationField;
 use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
+use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
 use yii\base\InvalidConfigException;
@@ -31,6 +33,7 @@ use yii\base\InvalidConfigException;
 class Address extends Element implements AddressInterface, NestedElementInterface
 {
     use NameTrait;
+    use NestedElementTrait;
 
     /**
      * @since 5.0.0
@@ -158,17 +161,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
-     * @var int|null Owner ID
-     */
-    public ?int $ownerId = null;
-
-    /**
-     * @var ElementInterface|null The owner element
-     * @see getOwner()
-     */
-    private ?ElementInterface $_owner = null;
-
-    /**
      * @var string Two-letter country code
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
@@ -253,6 +245,10 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             unset($values['countryCode']);
         }
 
+        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            $this->fullName = null;
+        }
+
         parent::setAttributes($values, $safeOnly);
     }
 
@@ -279,43 +275,15 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getOwner(): ?ElementInterface
-    {
-        if (!isset($this->ownerId)) {
-            return null;
-        }
-
-        if (!isset($this->_owner)) {
-            $owner = Craft::$app->getElements()->getElementById($this->ownerId);
-            if ($owner === null) {
-                throw new InvalidConfigException("Invalid owner ID: $this->ownerId");
-            }
-            $this->_owner = $owner;
-        }
-
-        return $this->_owner;
-    }
-
-    /**
-     * Sets the owner element.
+     * Returns whether the address belongs to the currently logged-in user.
      *
-     * @param ElementInterface|null $owner
-     * @since 4.4.16
+     * @return bool
+     * @since 4.5.13
      */
-    public function setOwner(?ElementInterface $owner): void
+    public function getBelongsToCurrentUser(): bool
     {
-        $this->_owner = $owner;
-        $this->ownerId = $owner?->id;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getField(): ?ElementContainerFieldInterface
-    {
-        return null;
+        $owner = $this->getOwner();
+        return $owner instanceof User && $owner->getIsCurrent();
     }
 
     /**
@@ -522,7 +490,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     {
         $rules = parent::defineRules();
 
-        $rules[] = [['ownerId'], 'number'];
+        $rules[] = [['fieldId', 'ownerId', 'primaryOwnerId'], 'number'];
         $rules[] = [['countryCode'], 'required'];
 
         $addressesService = Craft::$app->getAddresses();
@@ -553,6 +521,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             LatLongField::class,
         ];
 
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $fieldLayout = $this->getFieldLayout();
 
         foreach ($requirableNativeFields as $class) {
@@ -560,30 +529,29 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             $field = $fieldLayout->getFirstVisibleElementByType($class, $this);
             if ($field && $field->required) {
                 $attribute = $field->attribute();
-                if ($attribute === 'latLong') {
-                    $attribute = ['latitude', 'longitude'];
+                switch ($attribute) {
+                    case 'latLong':
+                        $attribute = ['latitude', 'longitude'];
+                        break;
+                    case 'fullName':
+                        if ($generalConfig->showFirstAndLastNameFields) {
+                            $attribute = ['firstName', 'lastName'];
+                        }
+                        break;
                 }
+
                 $rules[] = [$attribute, 'required', 'on' => self::SCENARIO_LIVE];
             }
         }
 
         $rules[] = [['longitude', 'latitude'], 'safe'];
         $rules[] = [self::_addressAttributes(), 'safe'];
-        return $rules;
-    }
 
-    /**
-     * @inheritdoc
-     */
-    protected function cacheTags(): array
-    {
-        $tags = [];
-
-        if ($this->ownerId) {
-            $tags[] = "owner:$this->ownerId";
+        if ($generalConfig->showFirstAndLastNameFields) {
+            $rules[] = [['firstName', 'lastName'], 'safe'];
         }
 
-        return $tags;
+        return $rules;
     }
 
     /**
@@ -605,7 +573,8 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         $this->prepareNamesForSave();
 
-        $record->ownerId = $this->ownerId;
+        $record->fieldId = $this->fieldId;
+        $record->primaryOwnerId = $this->primaryOwnerId ?? $this->ownerId;
         $record->countryCode = $this->countryCode;
         $record->administrativeArea = $this->administrativeArea;
         $record->locality = $this->locality;
@@ -627,6 +596,35 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         $record->save(false);
 
+        // ownerId will be null when creating a revision
+        if (isset($this->fieldId, $this->ownerId) && $this->saveOwnership) {
+            if (($isNew && $this->getIsCanonical()) || !isset($this->sortOrder)) {
+                $max = (new Query())
+                    ->from(['eo' => Table::ELEMENTS_OWNERS])
+                    ->innerJoin(['a' => Table::ADDRESSES], '[[a.id]] = [[eo.elementId]]')
+                    ->where([
+                        'eo.ownerId' => $this->ownerId,
+                        'a.fieldId' => $this->fieldId,
+                    ])
+                    ->max('[[eo.sortOrder]]');
+                $this->sortOrder = $max ? $max + 1 : 1;
+            }
+            if ($isNew) {
+                Db::insert(Table::ELEMENTS_OWNERS, [
+                    'elementId' => $this->id,
+                    'ownerId' => $this->ownerId,
+                    'sortOrder' => $this->sortOrder,
+                ]);
+            } else {
+                Db::update(Table::ELEMENTS_OWNERS, [
+                    'sortOrder' => $this->sortOrder,
+                ], [
+                    'elementId' => $this->id,
+                    'ownerId' => $this->ownerId,
+                ]);
+            }
+        }
+
         $this->setDirtyAttributes($dirtyAttributes);
 
         parent::afterSave($isNew);
@@ -637,6 +635,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return Craft::$app->getAddresses()->getLayout();
+        return Craft::$app->getAddresses()->getFieldLayout();
     }
 }

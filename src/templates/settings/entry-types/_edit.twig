@@ -29,20 +29,22 @@
 
 <hr>
 
-{{ forms.checkboxField({
+{{ forms.lightswitchField({
     label: "Show the Title field"|t('app'),
     name: 'hasTitleField',
     toggle: 'title-container',
     reverseToggle: '#titleFormat-container, .fld-title-field-icon',
-    checked: entryType.hasTitleField
+    on: entryType.hasTitleField
 }) }}
 
 {% if craft.app.getIsMultiSite() %}
     <div id="title-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
         {{ forms.selectField({
-            label: 'Title Translation Method'|t('app'),
-            instructions: 'How should {type} titles be translated?'|t('app', {
-                type: lowerTypeName,
+            label: '{name} Translation Method'|t('app', {
+                name: 'Title'|t('app'),
+            }),
+            instructions: 'How should {name} values be translated?'|t('app', {
+                name: 'Title'|t('app'),
             }),
             id: 'translation-method',
             name: 'titleTranslationMethod',
@@ -60,9 +62,11 @@
 
         <div id="translation-method-custom" {% if entryType.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
             {{ forms.textField({
-                label: 'Title Translation Key Format'|t('app'),
-                instructions: 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'|t('app', {
-                    type: typeName,
+                label: '{name} Translation Key Format'|t('app', {
+                    name: 'Title'|t('app'),
+                }),
+                instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+                    name: 'Title'|t('app'),
                 }),
                 id: 'translation-key-format',
                 name: 'titleTranslationKeyFormat',
@@ -84,6 +88,62 @@
         errors: entryType.getErrors('titleFormat'),
     }) }}
 </div>
+
+{{ forms.lightswitchField({
+    label: "Show the Slug field"|t('app'),
+    name: 'showSlugField',
+    toggle: 'slug-container',
+    reverseToggle: '#slugFormat-container, .fld-slug-field-icon',
+    on: entryType.showSlugField
+}) }}
+
+{% if craft.app.getIsMultiSite() %}
+    <div id="slug-container"{% if not entryType.showSlugField %} class="hidden"{% endif %}>
+        {{ forms.selectField({
+            label: '{name} Translation Method'|t('app', {
+                name: 'Slug'|t('app'),
+            }),
+            instructions: 'How should {name} values be translated?'|t('app', {
+                name: 'Slug'|t('app'),
+            }),
+            id: 'slug-translation-method',
+            name: 'slugTranslationMethod',
+            options: [
+                { value: 'none', label: 'Not translatable'|t('app') },
+                { value: 'site', label: 'Translate for each site'|t('app') },
+                { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
+                { value: 'language', label: 'Translate for each language'|t('app') },
+                { value: 'custom', label: 'Custom…'|t('app') },
+            ]|filter,
+            value: entryType.slugTranslationMethod,
+            toggle: true,
+            targetPrefix: 'slug-translation-method-'
+        }) }}
+
+        <div id="slug-translation-method-custom" {% if entryType.slugTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+            {{ forms.textField({
+                label: '{name} Translation Key Format'|t('app', {
+                    name: 'Slug'|t('app'),
+                }),
+                instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+                    name: 'Slug'|t('app'),
+                }),
+                id: 'slug-translation-key-format',
+                name: 'slugTranslationKeyFormat',
+                value: entryType.slugTranslationKeyFormat,
+                errors: entryType.getErrors('slugTranslationKeyFormat')
+            }) }}
+        </div>
+    </div>
+{% endif %}
+
+{{ forms.lightswitchField({
+    label: "Show the Status field"|t('app'),
+    id: 'showStatusField',
+    name: 'showStatusField',
+    on: entryType.showStatusField,
+    errors: entryType.getErrors('showStatusField')
+}) }}
 
 <hr>
 

@@ -281,10 +281,10 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         try {
-            return parent::inputHtml($value, $element);
+            return parent::inputHtml($value, $element, $inline);
         } catch (InvalidSubpathException) {
             return Html::tag('p', Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
                 'path' => '<code>' . $this->restrictedLocationSubpath . '</code>',
@@ -388,7 +388,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (is_array($value) && isset($value['data']) && !empty($value['data'])) {
@@ -601,7 +601,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                     // Find the files with temp sources and just move those.
                     /** @var Asset[] $assetsToMove */
                     $assetsToMove = $assetsService->createTempAssetQuery()
-                        ->id(ArrayHelper::getColumn($assets, 'id'))
+                        ->id(array_map(fn(Asset $asset) => $asset->id, $assets))
                         ->all();
                 }
 
@@ -747,7 +747,6 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                 $variables['defaultSourcePath'] = array_map(function(VolumeFolder $folder) {
                     return $folder->getSourcePathInfo();
                 }, $folders);
-                $variables['preferStoredSource'] = true;
             }
         }
 

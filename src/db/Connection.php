@@ -7,7 +7,6 @@
 
 namespace craft\db;
 
-use Composer\Util\Platform;
 use Craft;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
 use craft\db\mysql\Schema as MysqlSchema;
@@ -17,11 +16,13 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use Throwable;
+use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
@@ -65,6 +66,12 @@ class Connection extends \yii\db\Connection
      * @event RestoreEvent The event that is triggered after the restore occurred.
      */
     public const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
+
+    /**
+     * @var callable[]
+     * @see onAfterTransaction()
+     */
+    private array $afterTransactionCallbacks = [];
 
     /**
      * @var bool|null whether this is MariaDB.
@@ -159,6 +166,10 @@ class Connection extends \yii\db\Connection
      */
     public function open(): void
     {
+        if (App::env('CRAFT_NO_DB')) {
+            throw new DbConnectException('Craft CMS can’t connect to the database.');
+        }
+
         try {
             parent::open();
         } catch (DbException $e) {
@@ -440,6 +451,40 @@ class Connection extends \yii\db\Connection
     }
 
     /**
+     * Invokes a callback function once the connection is no longer in a transaction.
+     *
+     * If no transaction is currently active, the callback will be invoked immediately.
+     *
+     * @param callable $callback
+     * @since 4.5.12
+     */
+    public function onAfterTransaction(callable $callback): void
+    {
+        if ($this->getTransaction() === null) {
+            $callback();
+        } else {
+            $this->afterTransactionCallbacks[] = $callback;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function trigger($name, Event $event = null)
+    {
+        if (
+            in_array($name, [self::EVENT_COMMIT_TRANSACTION, self::EVENT_ROLLBACK_TRANSACTION]) &&
+            !$this->getTransaction()
+        ) {
+            while ($callback = array_shift($this->afterTransactionCallbacks)) {
+                $callback();
+            }
+        }
+
+        parent::trigger($name, $event);
+    }
+
+    /**
      * Generates a FK, index, or PK name.
      *
      * @param string $prefix
@@ -515,7 +560,7 @@ class Connection extends \yii\db\Connection
 
         // PostgreSQL specific cleanup.
         if ($this->getIsPgsql()) {
-            if (Platform::isWindows()) {
+            if (App::isWindows()) {
                 $envCommand = 'set PGPASSWORD=';
             } else {
                 $envCommand = 'unset PGPASSWORD';

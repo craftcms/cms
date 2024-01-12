@@ -738,7 +738,7 @@ class EntryQuery extends ElementQuery
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getEntries()->getEntryTypesByHandle($item);
+                $item = Craft::$app->getEntries()->getEntryTypeByHandle($item);
             }
             return $item instanceof EntryType ? $item->id : null;
         })) {
@@ -793,7 +793,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the entries’ authors.
+     * Narrows the query results based on the entries’ author ID(s).
      *
      * Possible values include:
      *
@@ -802,6 +802,7 @@ class EntryQuery extends ElementQuery
      * | `1` | with an author with an ID of 1.
      * | `'not 1'` | not with an author with an ID of 1.
      * | `[1, 2]` | with an author with an ID of 1 or 2.
+     * | `['and', 1, 2]` |  with authors with IDs of 1 and 2.
      * | `['not', 1, 2]` | not with an author with an ID of 1 or 2.
      *
      * ---
@@ -1161,7 +1162,7 @@ class EntryQuery extends ElementQuery
         try {
             $this->primaryOwnerId = $this->_normalizeOwnerId($this->primaryOwnerId);
         } catch (InvalidArgumentException) {
-            throw new InvalidConfigException('Invalid ownerId param value');
+            throw new InvalidConfigException('Invalid primaryOwnerId param value');
         }
 
         try {
@@ -1177,26 +1178,25 @@ class EntryQuery extends ElementQuery
             'entries.fieldId',
             'entries.primaryOwnerId',
             'entries.typeId',
-            'entries.authorId',
             'entries.postDate',
             'entries.expiryDate',
         ]);
 
         if (!empty($this->fieldId) || !empty($this->ownerId) || !empty($this->primaryOwnerId)) {
-            // Join in the entries_owners table
+            // Join in the elements_owners table
             $ownersCondition = [
                 'and',
-                '[[entries_owners.entryId]] = [[elements.id]]',
-                $this->ownerId ? ['entries_owners.ownerId' => $this->ownerId] : '[[entries_owners.ownerId]] = [[entries.primaryOwnerId]]',
+                '[[elements_owners.elementId]] = [[elements.id]]',
+                $this->ownerId ? ['elements_owners.ownerId' => $this->ownerId] : '[[elements_owners.ownerId]] = [[entries.primaryOwnerId]]',
             ];
 
             $this->query
                 ->addSelect([
-                    'entries_owners.ownerId',
-                    'entries_owners.sortOrder',
+                    'elements_owners.ownerId',
+                    'elements_owners.sortOrder',
                 ])
-                ->innerJoin(['entries_owners' => Table::ENTRIES_OWNERS], $ownersCondition);
-            $this->subQuery->innerJoin(['entries_owners' => Table::ENTRIES_OWNERS], $ownersCondition);
+                ->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
+            $this->subQuery->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
 
             if ($this->fieldId) {
                 $this->subQuery->andWhere(['entries.fieldId' => $this->fieldId]);
@@ -1213,7 +1213,7 @@ class EntryQuery extends ElementQuery
             if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
                 $this->subQuery->innerJoin(
                     ['owners' => Table::ELEMENTS],
-                    $this->ownerId ? '[[owners.id]] = [[entries_owners.ownerId]]' : '[[owners.id]] = [[entries.primaryOwnerId]]'
+                    $this->ownerId ? '[[owners.id]] = [[elements_owners.ownerId]]' : '[[owners.id]] = [[entries.primaryOwnerId]]'
                 );
 
                 if (!$allowOwnerDrafts) {
@@ -1225,7 +1225,7 @@ class EntryQuery extends ElementQuery
                 }
             }
 
-            $this->defaultOrderBy = ['entries_owners.sortOrder' => SORT_ASC];
+            $this->defaultOrderBy = ['elements_owners.sortOrder' => SORT_ASC];
         } else {
             $this->_applySectionIdParam();
         }
@@ -1251,13 +1251,48 @@ class EntryQuery extends ElementQuery
 
         if (Craft::$app->getEdition() === Craft::Pro) {
             if ($this->authorId) {
-                $this->subQuery->andWhere(Db::parseNumericParam('entries.authorId', $this->authorId));
+                // Checking multiple authors?
+                if (
+                    is_array($this->authorId) &&
+                    is_string(reset($this->authorId)) &&
+                    strtolower(reset($this->authorId)) === 'and'
+                ) {
+                    $authorIdChecks = array_slice($this->authorId, 1);
+                } else {
+                    $authorIdChecks = [$this->authorId];
+                }
+
+                foreach ($authorIdChecks as $i => $authorIdCheck) {
+                    if (
+                        is_array($authorIdCheck) &&
+                        is_string(reset($authorIdCheck)) &&
+                        strtolower(reset($authorIdCheck)) === 'not'
+                    ) {
+                        $authorIdOperator = 'not exists';
+                        array_shift($authorIdCheck);
+                        if (empty($authorIdCheck)) {
+                            continue;
+                        }
+                    } else {
+                        $authorIdOperator = 'exists';
+                    }
+
+                    $this->subQuery->andWhere([
+                        $authorIdOperator, (new Query())
+                            ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
+                            ->where('[[entries.id]] = [[entries_authors.entryId]]')
+                            ->andWhere(Db::parseNumericParam('authorId', $authorIdCheck)),
+                    ]);
+                }
             }
 
             if ($this->authorGroupId) {
-                $this->subQuery
-                    ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries.authorId]]')
-                    ->andWhere(Db::parseNumericParam('usergroups_users.groupId', $this->authorGroupId));
+                $this->subQuery->andWhere(['exists', (new Query())
+                    ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
+                    ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries_authors.authorId]]')
+                    ->where('[[entries.id]] = [[entries_authors.entryId]]')
+                    ->andWhere(Db::parseNumericParam('usergroups_users.groupId', $this->authorGroupId)),
+                ]);
             }
         }
 
@@ -1266,6 +1301,44 @@ class EntryQuery extends ElementQuery
         $this->_applyRefParam();
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterPopulate($elements): array
+    {
+        if (!$this->asArray && !empty($elements)) {
+            $this->loadAuthorIds($elements);
+        }
+
+        return parent::afterPopulate($elements);
+    }
+
+    private function loadAuthorIds(array $entries): void
+    {
+        /** @var Entry[][] $indexedEntries */
+        $indexedEntries = ArrayHelper::index($entries, null, [
+            fn(Entry $entry) => $entry->id,
+        ]);
+        $indexedAuthorIds = [];
+
+        $results = (new Query())
+            ->select(['entryId', 'authorId'])
+            ->from(Table::ENTRIES_AUTHORS)
+            ->where(['entryId' => array_keys($indexedEntries)])
+            ->orderBy(['sortOrder' => SORT_ASC])
+            ->all();
+
+        foreach ($results as $result) {
+            $indexedAuthorIds[$result['entryId']][] = (int)$result['authorId'];
+        }
+
+        foreach ($indexedEntries as $entryId => $entriesOfId) {
+            foreach ($entriesOfId as $entry) {
+                $entry->setAuthorIds($indexedAuthorIds[$entryId] ?? []);
+            }
+        }
     }
 
     /**
@@ -1361,7 +1434,10 @@ class EntryQuery extends ElementQuery
                     ['entries.sectionId' => $section->id],
                 ];
                 if ($excludePeerEntries) {
-                    $sectionCondition[] = ['entries.authorId' => $user->id];
+                    $sectionCondition[] = ['exists', (new Query())
+                        ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
+                        ->where('[[entries_authors.entryId]] = [[entries.id]]')
+                        ->andWhere(['entries_authors.authorId' => $user->id]), ];
                 }
                 if ($excludePeerDrafts) {
                     $sectionCondition[] = [
@@ -1562,6 +1638,16 @@ class EntryQuery extends ElementQuery
         } elseif ($this->sectionId) {
             foreach ($this->sectionId as $sectionId) {
                 $tags[] = "section:$sectionId";
+            }
+        }
+        if ($this->primaryOwnerId) {
+            foreach ($this->primaryOwnerId as $ownerId) {
+                $tags[] = "element::$ownerId";
+            }
+        }
+        if ($this->ownerId) {
+            foreach ($this->ownerId as $ownerId) {
+                $tags[] = "element::$ownerId";
             }
         }
         return $tags;

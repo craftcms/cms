@@ -37,26 +37,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  defineElementActions: function ($element) {
-    const actions = this.base($element);
-    const viewIndex = actions.findIndex((a) => a.icon === 'share');
-    const previewAction = {
-      icon: 'view',
-      label: Craft.t('app', 'Preview file'),
-      callback: () => {
-        this.openPreview($element);
-      },
-    };
-
-    if (viewIndex !== -1) {
-      actions.splice(viewIndex + 1, 0, previewAction);
-    } else {
-      actions.push(previewAction);
-    }
-
-    return actions;
-  },
-
   clearOpenPreviewTimeout: function () {
     if (this.openPreviewTimeout) {
       clearTimeout(this.openPreviewTimeout);
@@ -167,11 +147,16 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       options
     );
 
-    this.uploader.setParams({
-      elementId: this.settings.sourceElementId,
-      siteId: this.settings.criteria.siteId,
+    const params = {
       fieldId: this.settings.fieldId,
-    });
+    };
+    if (this.settings.sourceElementId) {
+      params.elementId = this.settings.sourceElementId;
+    }
+    if (this.settings.criteria.siteId) {
+      params.siteId = this.settings.criteria.siteId;
+    }
+    this.uploader.setParams(params);
 
     if (this.$uploadBtn) {
       this.$uploadBtn.on('click', (ev) => {
@@ -240,7 +225,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   /**
    * On upload progress.
    */
-  _onUploadProgress: function (event, data) {
+  _onUploadProgress: function (event, data = null) {
     data = event instanceof CustomEvent ? event.detail : data;
 
     var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
@@ -250,7 +235,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   /**
    * On a file being uploaded.
    */
-  _onUploadComplete: function (event, data) {
+  _onUploadComplete: function (event, data = null) {
     const result = event instanceof CustomEvent ? event.detail : data.result;
 
     Craft.sendActionRequest('POST', 'app/render-elements', {
@@ -274,8 +259,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       },
     })
       .then(({data}) => {
-        const html = $(data.elements[result.assetId][0]);
-        this.selectUploadedFile(Craft.getElementInfo(html));
+        const elementInfo = Craft.getElementInfo(
+          data.elements[result.assetId][0]
+        );
+        this.selectElements([elementInfo]);
+
+        Craft.appendHeadHtml(data.headHtml);
+        Craft.appendBodyHtml(data.bodyHtml);
 
         // Last file
         if (this.uploader.isLastUpload()) {
@@ -284,8 +274,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
           this.$container.trigger('change');
         }
       })
-      .catch(({response}) => {
-        Craft.cp.displayError(response.data.message);
+      .catch((error) => {
+        if (error && error.response) {
+          Craft.cp.displayError(response.data.message);
+        } else {
+          Craft.cp.displayError();
+          throw error;
+        }
       });
 
     Craft.cp.runQueue();
@@ -294,11 +289,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   /**
    * On Upload Failure.
    */
-  _onUploadFailure: function (event, data) {
+  _onUploadFailure: function (event, data = null) {
     const response =
       event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
     let {message, filename, errors} = response || {};
+
+    filename = filename || data?.files?.[0].name;
 
     let errorMessages = errors ? Object.values(errors).flat() : [];
 

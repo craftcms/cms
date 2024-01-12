@@ -308,6 +308,18 @@ class AppHelperTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testSilence(): void
+    {
+        self::assertSame('foo', App::silence(fn() => 'foo'));
+        self::assertNull(App::silence(function() {
+        }));
+        self::assertNull(App::silence(function(): void {
+        }));
+    }
+
+    /**
      * @todo More needed here to test with constant and invalid file path.
      * See coverage report for more info.
      */
@@ -364,7 +376,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function envConfigDataProvider(): array
+    public static function envConfigDataProvider(): array
     {
         return [
             [
@@ -415,7 +427,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function parseBooleanEnvDataProvider(): array
+    public static function parseBooleanEnvDataProvider(): array
     {
         return [
             [true, true],
@@ -439,7 +451,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function editionHandleDataProvider(): array
+    public static function editionHandleDataProvider(): array
     {
         return [
             ['solo', Craft::Solo],
@@ -451,7 +463,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function editionNameDataProvider(): array
+    public static function editionNameDataProvider(): array
     {
         return [
             ['Solo', Craft::Solo],
@@ -463,7 +475,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function editionIdByHandleDataProvider(): array
+    public static function editionIdByHandleDataProvider(): array
     {
         return [
             [Craft::Solo, 'solo'],
@@ -476,7 +488,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function validEditionsDataProvider(): array
+    public static function validEditionsDataProvider(): array
     {
         return [
             [true, Craft::Pro],
@@ -496,7 +508,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function configsDataProvider(): array
+    public static function configsDataProvider(): array
     {
         return [
             ['assetManagerConfig', ['class', 'basePath', 'baseUrl', 'fileMode', 'dirMode', 'appendTimestamp']],
@@ -512,7 +524,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function phpSizeToBytesDataProvider(): array
+    public static function phpSizeToBytesDataProvider(): array
     {
         return [
             [1, '1B'],
@@ -525,7 +537,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function humanizeClassDataProvider(): array
+    public static function humanizeClassDataProvider(): array
     {
         return [
             ['entries', Entries::class],
@@ -537,7 +549,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeValueDataProvider(): array
+    public static function normalizeValueDataProvider(): array
     {
         return [
             [true, 'true'],
@@ -556,7 +568,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeVersionDataProvider(): array
+    public static function normalizeVersionDataProvider(): array
     {
         return [
             ['21', 'version 21'],

@@ -36,14 +36,6 @@ class Checkboxes extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public static function phpType(): string
-    {
-        return sprintf('\\%s', MultiOptionsFieldData::class);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function useFieldset(): bool
     {
         return true;
@@ -52,7 +44,7 @@ class Checkboxes extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var MultiOptionsFieldData $value */
         if (ArrayHelper::contains($value, 'valid', false, true)) {
