@@ -8,6 +8,7 @@
 namespace craft\log;
 
 use Craft;
+use craft\events\LogTargetEvent;
 use craft\helpers\App;
 use Illuminate\Support\Collection;
 use Psr\Log\LogLevel;
@@ -28,6 +29,8 @@ class Dispatcher extends \yii\log\Dispatcher
 
     /** @since 4.0.0 */
     public const TARGET_QUEUE = 'queue';
+
+    public const EVENT_CREATE_TARGET = 'createTarget';
 
     /**
      * @var array Config to pass to each MonologTarget
@@ -67,7 +70,9 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) {
             $allowLineBreaks = (bool) (App::env('CRAFT_LOG_ALLOW_LINE_BREAKS') ?? App::devMode());
-            $config = $this->monologTargetConfig + [
+            $config = [
+                'class' => MonologTarget::class,
+            ] + $this->monologTargetConfig + [
                 'name' => $name,
                 'enabled' => false,
                 'extractExceptionTrace' => !App::devMode(),
@@ -75,7 +80,12 @@ class Dispatcher extends \yii\log\Dispatcher
                 'level' => App::devMode() ? LogLevel::INFO : LogLevel::WARNING,
             ];
 
-            return [$name => new MonologTarget($config)];
+            $target = Craft::createObject($config);
+            $this->trigger(static::EVENT_CREATE_TARGET, new LogTargetEvent([
+                'target' => $target,
+            ]));
+
+            return [$name => $target];
         });
 
         // Queue is enabled via QueueLogBehavior
