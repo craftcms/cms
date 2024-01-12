@@ -19,6 +19,7 @@
 - Improved checkbox-style deselection behavior for control panel items, to account for double-clicks. 
 - Table views are no longer available for element indexes on mobile.
 - Address conditions now have “Address Line 1”, “Address Line 2”, “Administrative Area”, “Country”, “Dependent Locality”, “First Name”, “Full Name”, “Last Name”, “Locality”, “Organization Tax ID”, “Organization”, “Postal Code”, and “Sorting Code” rules.
+- Added live conditional field support to user edit pages. ([#14115](https://github.com/craftcms/cms/pull/14115))
 
 ### User Management
 - Added two-step verification support, with built-in “Authenticator App” (TOTP) and “Recovery Codes” methods. Additional methods can be provided by plugins.
@@ -39,6 +40,7 @@
 - Elements within relational fields are no longer focusable at the container level.
 - Relational fields now use the proper list semantics.
 - Improved the accessibility of the login page, login modal, and elevated session modal.
+- Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
 
 ### Administration
 - Field layouts can now designate an Assets field as the source for elements’ thumbnails. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
