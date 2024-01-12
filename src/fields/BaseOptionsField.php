@@ -496,15 +496,11 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        if ($value instanceof SingleOptionFieldData) {
-            return $value->value === null || $value->value === '';
-        }
-
         if ($value instanceof MultiOptionsFieldData) {
             return count($value) === 0;
         }
 
-        return $value === null || $value === '';
+        return $value->value === null || $value->value === '';
     }
 
     /**
