@@ -1,5 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
+import $ from 'jquery';
+import * as d3 from 'd3';
 
 // Use old jQuery prefilter behavior
 // see https://jquery.com/upgrade-guide/3.5/
