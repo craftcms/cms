@@ -8,6 +8,7 @@
 - Fixed a bug where `craft\db\Migration::renameTable()` was renaming the table for the primary database connection, rather than the migration’s connection. ([#14131](https://github.com/craftcms/cms/issues/14131))
 - Fixed a bug where `Craft.FormObserver` wasn’t working reliably for non-`<form>` containers.
 - Fixed a bug where Selectize inputs were triggering autosaves, even when the value didn’t change.
+- Fixed a bug where custom source labels weren’t getting translated. ([#14137](https://github.com/craftcms/cms/issues/14137))
 
 ## 4.6.0 - 2024-01-09
 
