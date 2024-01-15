@@ -348,29 +348,16 @@ class Cp extends Component
             });
 
         // Figure out which item is selected, and normalize the items
-        $path = Craft::$app->getRequest()->getPathInfo();
+        $path = Craft::$app->getRequest()->getSegment(1);
 
         if ($path === 'myaccount' || str_starts_with($path, 'myaccount/')) {
             $path = 'users';
         }
 
-        $foundSelectedItem = false;
-
-        foreach ($navItems as $item) {
-            if (!$foundSelectedItem && $item->getPath() === $path || str_starts_with($path, $item->getPath() . '/')) {
-                $item->selected();
-                $foundSelectedItem = true;
-            } else {
-                $item->selected(false);
-            }
-
-            if (!$item->getId()) {
-                $item->id('nav-' . preg_replace('/[^\w\-_]/', '', $item->getPath()));
-            }
-        }
-
         return Nav::make()
+            ->id('nav')
             ->label('Primary')
+            ->selectedItem($path)
             ->items($navItems->toArray())
             ->render();
     }

@@ -1,28 +1,32 @@
-<li id="{{ id }}">
-    <a
-        href="{{ url }}"
-        class="{% if external %}external{% endif %} {% if selected and not items | length %}sel{% endif %}"
-        {% if external %}target="_blank" rel="nofollow noopener"{% endif %}
-    >
-        {{ icon }}
+<li {% if id %}id="{{ id }}"{% endif%} class="{% if type == 'heading' %}heading{% endif %}">
+    {% if type == 'heading' %}
+        <span>{{ label }}</span>
+    {% else %}
+        <a
+            href="{{ url }}"
+            class="{% if external %}external{% endif %} {% if selected and not items | length %}sel{% endif %}"
+            {% if external %}target="_blank" rel="nofollow noopener"{% endif %}
+        >
+            {{ icon }}
 
-        <span class="label">{{ label }}</span>
+            <span class="label">{{ label }}</span>
 
-        {%- if badgeCount -%}
-            <span class="badge" aria-hidden="true">{{ badgeCount|number(decimals=0) }}</span>
-            {{ tag('span', {
-                class: 'visually-hidden',
-                data: {
-                    notification: true,
-                },
-                text: '{num, number} {num, plural, =1{notification} other{notifications}}'|t('app', {
-                    num: badgeCount,
-                }),
-            }) }}
-        {%- endif -%}
-    </a>
+            {%- if badgeCount -%}
+                <span class="badge" aria-hidden="true">{{ badgeCount|number(decimals=0) }}</span>
+                {{ tag('span', {
+                    class: 'visually-hidden',
+                    data: {
+                        notification: true,
+                    },
+                    text: '{num, number} {num, plural, =1{notification} other{notifications}}'|t('app', {
+                        num: badgeCount,
+                    }),
+                }) }}
+            {%- endif -%}
+        </a>
+    {% endif %}
 
-    {% if items | length %}
+    {% if selected and items | length %}
         <ul class="subnav">
             {% for item in items %}
                 {{ item | raw }}

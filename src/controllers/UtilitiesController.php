@@ -13,6 +13,8 @@ use craft\errors\MigrationException;
 use craft\helpers\FileHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
+use craft\ui\components\Nav;
+use craft\ui\components\NavItem;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
 use craft\utilities\Upgrade;
@@ -88,7 +90,12 @@ class UtilitiesController extends Controller
             'contentHtml' => $class::contentHtml(),
             'toolbarHtml' => $class::toolbarHtml(),
             'footerHtml' => $class::footerHtml(),
-            'utilities' => $this->_utilityInfo(),
+            'sidebarHtml' => Nav::make()
+                ->id('utilities-nav')
+                ->label('Utilities')
+                ->selectedItem($id)
+                ->items($this->_utilityInfo())
+                ->render(),
         ]);
     }
 
@@ -299,13 +306,13 @@ class UtilitiesController extends Controller
         foreach (Craft::$app->getUtilities()->getAuthorizedUtilityTypes() as $class) {
             /** @var string|UtilityInterface $class */
             /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
-            $info[] = [
-                'id' => $class::id(),
-                'iconSvg' => $this->_getUtilityIconSvg($class),
-                'displayName' => $class::displayName(),
-                'iconPath' => $class::iconPath(),
-                'badgeCount' => $class::badgeCount(),
-            ];
+            $info[] = NavItem::make()
+                ->id($class::id())
+                ->path('utilities/' . $class::id())
+                ->icon($class::iconPath() ?? $this->_getUtilityIconSvg($class))
+                ->selected($this->id === $class::id())
+                ->label($class::displayName())
+                ->badgeCount($class::badgeCount());
         }
 
         return $info;

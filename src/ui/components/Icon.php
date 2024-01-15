@@ -59,7 +59,7 @@ class Icon
         }
 
         // TODO: Probably a better way to handle this
-        if (str_starts_with($this->icon, '<svg') || str_starts_with($this->icon, '@')) {
+        if (str_starts_with($this->icon, '<svg') || str_starts_with($this->icon, '@') || str_starts_with($this->icon, '/')) {
             return 'svg';
         }
 

@@ -14,10 +14,13 @@ class Nav
 
     protected array $items = [];
 
+    /**
+     * @var string|null ID of the selected item
+     */
+    protected ?string $selectedItem = null;
+
     public function __construct()
     {
-        // TODO: not sure this is the best place for this kind of thing. Probably should be in a "setup" method of some kind.
-        $this->id('nav');
     }
 
     public static function make(): self
@@ -35,12 +38,28 @@ class Nav
     {
         return Collection::make($this->items)
             ->map(function($item) {
-                if ($item instanceof NavItem) {
-                    return $item->render();
+                if (!($item instanceof NavItem)) {
+                    $item = NavItem::make()
+                        ->withProps($item);
                 }
 
-                return NavItem::make()->render();
+                if ($this->getSelectedItem()) {
+                    $item->selected($item->getId() === $this->getSelectedItem());
+                }
+
+                return $item->render();
             });
+    }
+
+    public function selectedItem(?string $item): self
+    {
+        $this->selectedItem = $item;
+        return $this;
+    }
+
+    public function getSelectedItem(): ?string
+    {
+        return $this->selectedItem;
     }
 
     public function render(): string
@@ -49,6 +68,7 @@ class Nav
             'items' => $this->getItems(),
             'id' => $this->getId(),
             'label' => $this->getLabel(),
+            'selectedItem' => $this->getSelectedItem(),
         ]);
     }
 }

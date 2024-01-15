@@ -22,6 +22,7 @@ class NavItem
     protected ?string $url = null;
     protected bool $selected = false;
     protected ?string $path = null;
+    protected string $type = 'default';
 
     public function __construct()
     {
@@ -30,6 +31,19 @@ class NavItem
     public static function make(): self
     {
         return new self();
+    }
+
+    public function getId(): ?string
+    {
+        if ($this->id) {
+            return $this->id;
+        }
+
+        if ($this->path) {
+            return $this->path;
+        }
+
+        return null;
     }
 
     public function withProps(array $properties): self
@@ -146,6 +160,17 @@ class NavItem
         return $this->path;
     }
 
+    public function type(string $type): self
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
     public function render(): string
     {
         return Cp::renderTemplate('_ui/nav-item.twig', [
@@ -157,6 +182,7 @@ class NavItem
             'external' => $this->getExternal(),
             'items' => $this->getItems(),
             'selected' => $this->getSelected(),
+            'type' => $this->getType(),
         ]);
     }
 }
