@@ -228,7 +228,9 @@
         z-index: 1;
         background-image: url(../images/preview/chrome-phone-top.svg),
           url(../images/preview/chrome-phone-bottom.svg);
-        background-position: top center, bottom center;
+        background-position:
+          top center,
+          bottom center;
         background-repeat: no-repeat;
         background-size: contain;
         background-color: #fff;

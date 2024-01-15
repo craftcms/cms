@@ -265,15 +265,15 @@ Craft.Grid = Garnish.Base.extend(
             )
               ? this.refreshCols._.$item.data('colspan')
               : this.refreshCols._.$item.data('min-colspan')
-              ? this.refreshCols._.$item.data('min-colspan')
-              : 1;
+                ? this.refreshCols._.$item.data('min-colspan')
+                : 1;
             this.refreshCols._.maxColspan = this.refreshCols._.$item.data(
               'colspan'
             )
               ? this.refreshCols._.$item.data('colspan')
               : this.refreshCols._.$item.data('max-colspan')
-              ? this.refreshCols._.$item.data('max-colspan')
-              : this.totalCols;
+                ? this.refreshCols._.$item.data('max-colspan')
+                : this.totalCols;
 
             if (this.refreshCols._.minColspan > this.totalCols) {
               this.refreshCols._.minColspan = this.totalCols;
