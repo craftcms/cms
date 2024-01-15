@@ -57,8 +57,8 @@
                   isLoading
                     ? false
                     : button.enabled != undefined
-                    ? button.enabled
-                    : true
+                      ? button.enabled
+                      : true
                 "
               ></admin-table-button>
             </div>

@@ -593,8 +593,8 @@ Craft.ui = {
       'aria-checked': config.on
         ? 'true'
         : config.indeterminate
-        ? 'mixed'
-        : 'false',
+          ? 'mixed'
+          : 'false',
       'aria-labelledby': config.labelId,
       'data-target': config.toggle,
       'data-reverse-target': config.reverseToggle,
@@ -627,8 +627,8 @@ Craft.ui = {
         value: config.on
           ? value
           : config.indeterminate
-          ? indeterminateValue
-          : '',
+            ? indeterminateValue
+            : '',
         disabled: config.disabled,
       }).appendTo($container);
     }

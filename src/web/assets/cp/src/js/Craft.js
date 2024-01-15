@@ -2809,8 +2809,8 @@ $.extend($.fn, {
         let $anchor = $btn.closest('.menu--disclosure').length
           ? $btn.closest('.menu--disclosure').data('trigger').$trigger
           : $btn.data('menu')
-          ? $btn.data('menu').$anchor
-          : $btn;
+            ? $btn.data('menu').$anchor
+            : $btn;
 
         let isFullPage = $anchor.parents('.slideout').length == 0;
 
@@ -2818,8 +2818,8 @@ $.extend($.fn, {
           $form = $anchor.attr('data-form')
             ? $('#' + $anchor.attr('data-form'))
             : $btn.attr('data-form')
-            ? $('#' + $btn.attr('data-form'))
-            : $anchor.closest('form');
+              ? $('#' + $btn.attr('data-form'))
+              : $anchor.closest('form');
         } else {
           $form = $anchor.closest('form');
           namespace = $anchor.parents('.slideout').data('cpScreen').namespace;

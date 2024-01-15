@@ -1035,8 +1035,8 @@ $.extend($.event.special, {
         data && typeof data.delay !== 'undefined'
           ? data.delay
           : ev.data && ev.data.delay !== undefined
-          ? ev.data.delay
-          : null;
+            ? ev.data.delay
+            : null;
       var handleObj = ev.handleObj;
       var targetData = $.data(ev.target);
 

@@ -5,7 +5,9 @@
 .widget {
   position: relative;
   perspective: 1000px;
-  transition: opacity linear 200ms, transform linear 200ms;
+  transition:
+    opacity linear 200ms,
+    transform linear 200ms;
   margin-bottom: 14px;
 
   &.scaleout {
