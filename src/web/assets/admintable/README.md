@@ -65,6 +65,7 @@ new Craft.VueAdminTable({...options...});
 | search                    | Bool     | `false`                                      | Whether or not to show the search field.                                                                                                                 |
 | searchClear               | String   | `Clear`                                      | Title of the button that clears search value.                                                                                                            |
 | searchPlaceholder         | String   | `Search`                                     | Search placeholder text.                                                                                                                                 |
+| noSearchResults           | String   | `No results`                                 | No search results found text.                                                                                                                            |
 | tableData                 | Array    | `null`                                       | Array of objects used to populate the table data for data mode.                                                                                          |
 | tableDataEndpoint         | String   | `null`                                       | Endpoint for api mode to retrieve table data, pagination and table metadata (e.g. total count).                                                          |
 
