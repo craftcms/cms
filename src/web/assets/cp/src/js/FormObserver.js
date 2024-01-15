@@ -142,7 +142,9 @@ Craft.FormObserver = Garnish.Base.extend({
       this.pause();
     });
     this.addListener(input, 'selectizedropdownclose', () => {
-      this.resume();
+      setTimeout(() => {
+        this.resume();
+      }, 100);
     });
   },
 
