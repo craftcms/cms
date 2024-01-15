@@ -637,7 +637,6 @@
         if (this.$refs.vuetable.currentPage !== 1) {
           this.$refs.vuetable.changePage(1);
         }
-        this.deselectAll();
         this.reload();
       }, 250),
 
