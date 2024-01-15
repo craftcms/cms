@@ -79,7 +79,7 @@ class I18N extends \yii\i18n\I18N
             foreach ($this->_allLocaleIds as $i => $locale) {
                 $this->_allLocaleIds[$i] = str_replace('_', '-', $locale);
             }
-            
+
             // Merge in any custom aliases
             $generalConfig = Craft::$app->getConfig()->getGeneral();
             if (!empty($generalConfig->localeAliases)) {
