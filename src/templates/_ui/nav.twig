@@ -1,0 +1,8 @@
+<nav id="{{ id }}" {% if label %}aria-label="{{ label }}"{% endif %}>
+    <ul>
+        {% for item in items %}
+            {{ item | raw }}
+        {% endfor %}
+    </ul>
+</nav>
+

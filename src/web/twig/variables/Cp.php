@@ -25,6 +25,8 @@ use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
+use craft\ui\components\Nav;
+use craft\ui\components\NavItem;
 use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use DateTimeZone;
@@ -203,61 +205,56 @@ class Cp extends Component
      * {% set selectedSubnavItem = 'orders' %}
      * ```
      *
-     * @return array
+     * @return string
      * @throws InvalidConfigException
      */
-    public function nav(): array
+    public function nav(): string
     {
         $craftPro = Craft::$app->getEdition() === Craft::Pro;
         $isAdmin = Craft::$app->getUser()->getIsAdmin();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
+        /** @var NavItem[] $navItems */
         $navItems = [
-            [
-                'label' => Craft::t('app', 'Dashboard'),
-                'url' => 'dashboard',
-                'fontIcon' => 'gauge',
-            ],
+            NavItem::make()
+                ->label('Dashboard')
+                ->path('dashboard')
+                ->icon('gauge'),
         ];
 
         if (Craft::$app->getEntries()->getTotalEditableSections()) {
-            $navItems[] = [
-                'label' => Craft::t('app', 'Entries'),
-                'url' => 'entries',
-                'fontIcon' => 'section',
-            ];
+            $navItems[] = NavItem::make()
+                ->label('Entries')
+                ->path('entries')
+                ->icon('section');
         }
 
         if (!empty(Craft::$app->getGlobals()->getEditableSets())) {
-            $navItems[] = [
-                'label' => Craft::t('app', 'Globals'),
-                'url' => 'globals',
-                'fontIcon' => 'globe',
-            ];
+            $navItems[] = NavItem::make()
+                ->label('Globals')
+                ->path('globals')
+                ->icon('globe');
         }
 
         if (Craft::$app->getCategories()->getEditableGroupIds()) {
-            $navItems[] = [
-                'label' => Craft::t('app', 'Categories'),
-                'url' => 'categories',
-                'fontIcon' => 'tree',
-            ];
+            $navItems[] = NavItem::make()
+                ->label('Categories')
+                ->path('categories')
+                ->icon('tree');
         }
 
         if (Craft::$app->getVolumes()->getTotalViewableVolumes()) {
-            $navItems[] = [
-                'label' => Craft::t('app', 'Assets'),
-                'url' => 'assets',
-                'fontIcon' => 'assets',
-            ];
+            $navItems[] = NavItem::make()
+                ->label('Assets')
+                ->path('assets')
+                ->icon('assets');
         }
 
         if ($craftPro && Craft::$app->getUser()->checkPermission('editUsers')) {
-            $navItems[] = [
-                'label' => Craft::t('app', 'Users'),
-                'url' => 'users',
-                'fontIcon' => 'users',
-            ];
+            $navItems[] = NavItem::make()
+                ->label('Users')
+                ->path('users')
+                ->icon('users');
         }
 
         // Add any Plugin nav items
@@ -278,29 +275,27 @@ class Cp extends Component
                 $subNavItems = [];
 
                 if ($generalConfig->allowAdminChanges) {
-                    $subNavItems['schemas'] = [
-                        'label' => Craft::t('app', 'Schemas'),
-                        'url' => 'graphql/schemas',
-                    ];
+                    $subNavItems[] = NavItem::make()
+                        ->label('Schemas')
+                        ->selected(Craft::$app->getRequest()->getSegment(2) === 'schemas')
+                        ->path('graphql/schemas');
                 }
 
-                $subNavItems['tokens'] = [
-                    'label' => Craft::t('app', 'Tokens'),
-                    'url' => 'graphql/tokens',
-                ];
+                $subNavItems[] = NavItem::make()
+                    ->label('Tokens')
+                    ->selected(Craft::$app->getRequest()->getSegment(2) === 'tokens')
+                    ->path('graphql/tokens');
 
-                $subNavItems['graphiql'] = [
-                    'label' => 'GraphiQL',
-                    'url' => 'graphiql',
-                    'external' => true,
-                ];
+                $subNavItems[] = NavItem::make()
+                    ->label('GraphiQL')
+                    ->path('graphiql')
+                    ->external();
 
-                $navItems[] = [
-                    'label' => 'GraphQL',
-                    'url' => 'graphql',
-                    'icon' => '@appicons/graphql.svg',
-                    'subnav' => $subNavItems,
-                ];
+                $navItems[] = NavItem::make()
+                    ->label('GraphQL')
+                    ->path('graphql')
+                    ->icon('@appicons/graphql.svg')
+                    ->items($subNavItems);
             }
         }
 
@@ -314,28 +309,25 @@ class Cp extends Component
                 $badgeCount += $class::badgeCount();
             }
 
-            $navItems[] = [
-                'url' => 'utilities',
-                'label' => Craft::t('app', 'Utilities'),
-                'fontIcon' => 'tool',
-                'badgeCount' => $badgeCount,
-            ];
+            $navItems[] = NavItem::make()
+                ->path('utilities')
+                ->label('Utilities')
+                ->icon('tool')
+                ->badgeCount($badgeCount);
         }
 
         if ($isAdmin) {
             if ($generalConfig->allowAdminChanges) {
-                $navItems[] = [
-                    'url' => 'settings',
-                    'label' => Craft::t('app', 'Settings'),
-                    'fontIcon' => 'settings',
-                ];
+                $navItems[] = NavItem::make()
+                    ->path('settings')
+                    ->label('Settings')
+                    ->icon('settings');
             }
 
-            $navItems[] = [
-                'url' => 'plugin-store',
-                'label' => Craft::t('app', 'Plugin Store'),
-                'fontIcon' => 'plugin',
-            ];
+            $navItems[] = NavItem::make()
+                ->path('plugin-store')
+                ->label('Plugin Store')
+                ->icon('plugin');
         }
 
         // Allow plugins to modify the nav
@@ -343,7 +335,17 @@ class Cp extends Component
             'navItems' => $navItems,
         ]);
         $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
-        $navItems = $event->navItems;
+
+        $navItems = Collection::make($event->navItems)
+            ->map(function($item) {
+                if ($item instanceof NavItem) {
+                    return $item;
+                }
+
+                return NavItem::make()
+                    ->withProps($item)
+                    ->icon($item['icon'] ?? 'default');
+            });
 
         // Figure out which item is selected, and normalize the items
         $path = Craft::$app->getRequest()->getPathInfo();
@@ -354,34 +356,23 @@ class Cp extends Component
 
         $foundSelectedItem = false;
 
-        foreach ($navItems as &$item) {
-            if (!$foundSelectedItem && ($item['url'] == $path || str_starts_with($path, $item['url'] . '/'))) {
-                $item['sel'] = true;
-                if (!isset($item['subnav'])) {
-                    $item['subnav'] = false;
-                }
+        foreach ($navItems as $item) {
+            if (!$foundSelectedItem && $item->getPath() === $path || str_starts_with($path, $item->getPath() . '/')) {
+                $item->selected();
                 $foundSelectedItem = true;
             } else {
-                $item['sel'] = false;
-                $item['subnav'] = false;
+                $item->selected(false);
             }
 
-            if (!isset($item['id'])) {
-                $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', $item['url']);
-            }
-
-            $item['url'] = UrlHelper::url($item['url']);
-
-            if (!isset($item['external'])) {
-                $item['external'] = false;
-            }
-
-            if (!isset($item['badgeCount'])) {
-                $item['badgeCount'] = 0;
+            if (!$item->getId()) {
+                $item->id('nav-' . preg_replace('/[^\w\-_]/', '', $item->getPath()));
             }
         }
 
-        return $navItems;
+        return Nav::make()
+            ->label('Primary')
+            ->items($navItems->toArray())
+            ->render();
     }
 
     /**

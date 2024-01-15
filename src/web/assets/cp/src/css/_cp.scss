@@ -1641,10 +1641,6 @@ li.breadcrumb-toggle-wrapper {
           }
         }
 
-        .label {
-          flex: 1;
-        }
-
         .badge {
           @include margin(0, -4px, 0, 10px);
           flex-shrink: 1;
