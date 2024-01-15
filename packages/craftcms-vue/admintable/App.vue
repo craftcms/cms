@@ -67,7 +67,8 @@
 
     <div :class="{'content-pane': fullPage}">
       <div v-if="this.isEmpty" class="zilch">
-        <p>{{ emptyMessage }}</p>
+        <p v-if="this.searchTerm.length">{{ noSearchResults }}</p>
+        <p v-else>{{ emptyMessage }}</p>
       </div>
 
       <div
@@ -421,6 +422,10 @@
         type: String,
         default: Craft.t('app', 'Search'),
       },
+      noSearchResults: {
+        type: String,
+        default: Craft.t('app', 'No results'),
+      },
       tableData: {
         type: Array,
         default: () => {
@@ -646,6 +651,7 @@
         if (!this.isApiMode && this.tableData.length) {
           let tableData = this.$refs.vuetable.tableData;
           let searchTerm = this.searchTerm.toLowerCase();
+          let visibleRowsCount = tableData.length;
 
           tableData.forEach((row, index) => {
             let includes = false;
@@ -661,10 +667,14 @@
 
             if (!includes) {
               this.rows[index].classList.add('hidden');
+              this.removeCheck(row.id);
+              visibleRowsCount--;
             } else {
               this.rows[index].classList.remove('hidden');
             }
           });
+
+          this.isEmpty = visibleRowsCount == 0;
         } else {
           this.reload();
         }
