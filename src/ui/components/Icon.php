@@ -4,9 +4,10 @@ namespace craft\ui\components;
 
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\ui\Component;
 use craft\ui\concerns\HasLabel;
 
-class Icon
+class Icon extends Component
 {
     use HasLabel;
 
@@ -25,15 +26,6 @@ class Icon
         'users',
         // TODO
     ];
-
-    public function __construct()
-    {
-    }
-
-    public static function make(): self
-    {
-        return new self();
-    }
 
     public function icon(string $icon): self
     {
@@ -81,7 +73,7 @@ class Icon
         };
     }
 
-    public function render(): ?string
+    public function render(): string
     {
         return Html::tag('span', $this->getBody(), [
             'class' => 'icon icon-mask',

@@ -2,15 +2,17 @@
 
 namespace craft\ui\components;
 
-use craft\helpers\Cp;
+use craft\ui\Component;
 use craft\ui\concerns\HasId;
 use craft\ui\concerns\HasLabel;
 use Illuminate\Support\Collection;
 
-class Nav
+class Nav extends Component
 {
     use HasId;
     use HasLabel;
+
+    protected string $view = '_ui/nav.twig';
 
     protected array $items = [];
 
@@ -18,15 +20,6 @@ class Nav
      * @var string|null ID of the selected item
      */
     protected ?string $selectedItem = null;
-
-    public function __construct()
-    {
-    }
-
-    public static function make(): self
-    {
-        return new self();
-    }
 
     public function items(array $items): self
     {
@@ -37,10 +30,12 @@ class Nav
     public function getItems(): Collection
     {
         return Collection::make($this->items)
-            ->map(function($item) {
-                if (!($item instanceof NavItem)) {
+            ->map(function(array|NavItem $config) {
+                if (is_array($config)) {
                     $item = NavItem::make()
-                        ->withProps($item);
+                        ->withProps($config);
+                } else {
+                    $item = $config;
                 }
 
                 if ($this->getSelectedItem()) {
@@ -60,15 +55,5 @@ class Nav
     public function getSelectedItem(): ?string
     {
         return $this->selectedItem;
-    }
-
-    public function render(): string
-    {
-        return Cp::renderTemplate('_ui/nav.twig', [
-            'items' => $this->getItems(),
-            'id' => $this->getId(),
-            'label' => $this->getLabel(),
-            'selectedItem' => $this->getSelectedItem(),
-        ]);
     }
 }

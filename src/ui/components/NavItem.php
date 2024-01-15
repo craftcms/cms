@@ -3,17 +3,18 @@
 namespace craft\ui\components;
 
 use Craft;
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use craft\ui\Component;
 use craft\ui\concerns\HasId;
 use craft\ui\concerns\HasLabel;
 use Illuminate\Support\Collection;
-use Twig\Markup;
 
-class NavItem
+class NavItem extends Component
 {
     use HasLabel;
     use HasId;
+
+    protected string $view = '_ui/nav-item.twig';
 
     protected string|Icon|null $icon = null;
     protected ?int $badgeCount = null;
@@ -23,15 +24,6 @@ class NavItem
     protected bool $selected = false;
     protected ?string $path = null;
     protected string $type = 'default';
-
-    public function __construct()
-    {
-    }
-
-    public static function make(): self
-    {
-        return new self();
-    }
 
     public function getId(): ?string
     {
@@ -44,15 +36,6 @@ class NavItem
         }
 
         return null;
-    }
-
-    public function withProps(array $properties): self
-    {
-        foreach ($properties as $key => $value) {
-            $this->{$key}($value);
-        }
-
-        return $this;
     }
 
     public function badgeCount(?int $count): self
@@ -92,17 +75,21 @@ class NavItem
         return $this;
     }
 
-    public function getIcon(): ?Icon
+    public function getIcon(): ?string
     {
-        if (is_string($this->icon)) {
-            return Icon::make()
+        $icon = $this->icon;
+
+        if (is_string($icon)) {
+            $icon = Icon::make()
                 ->icon($this->icon)
                 ->label($this->getLabel());
-        } elseif ($this->icon instanceof Icon) {
-            return $this->icon;
         }
 
-        return null;
+        if (!$icon) {
+            return null;
+        }
+
+        return $icon->render();
     }
 
     public function external(bool $value = true): self
@@ -169,20 +156,5 @@ class NavItem
     public function getType(): string
     {
         return $this->type;
-    }
-
-    public function render(): string
-    {
-        return Cp::renderTemplate('_ui/nav-item.twig', [
-            'icon' => $this->getIcon() ? new Markup($this->getIcon()->render(), 'UTF-8') : null,
-            'label' => $this->getLabel(),
-            'badgeCount' => $this->getBadgeCount(),
-            'url' => $this->getUrl(),
-            'id' => $this->getId(),
-            'external' => $this->getExternal(),
-            'items' => $this->getItems(),
-            'selected' => $this->getSelected(),
-            'type' => $this->getType(),
-        ]);
     }
 }

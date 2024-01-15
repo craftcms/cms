@@ -7,7 +7,7 @@
             class="{% if external %}external{% endif %} {% if selected and not items | length %}sel{% endif %}"
             {% if external %}target="_blank" rel="nofollow noopener"{% endif %}
         >
-            {{ icon }}
+            {{ icon | raw }}
 
             <span class="label">{{ label }}</span>
 
