@@ -5155,13 +5155,17 @@ JS, [
                 $url = $this->getUrl();
 
                 if ($url !== null) {
-                    return Html::a('', $url, [
+                    return Html::beginTag('a', [
+                        'href' => $url,
                         'rel' => 'noopener',
                         'target' => '_blank',
-                        'data-icon' => 'world',
                         'title' => Craft::t('app', 'Visit webpage'),
                         'aria-label' => Craft::t('app', 'View'),
-                    ]);
+                    ]) .
+                        Html::tag('span', Cp::iconSvg('world'), [
+                            'class' => 'icon',
+                        ]) .
+                        Html::endTag('a');
                 }
 
                 return '';

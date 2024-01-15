@@ -336,7 +336,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           let $items = $();
 
           if (safeActions.length) {
-            const $ul = $('<ul/>', {class: 'padded'}).appendTo($actionMenu);
+            const $ul = $('<ul/>').appendTo($actionMenu);
             for (let action of safeActions) {
               const $li = $('<li/>').appendTo($ul);
               const $a = $('<a/>', {
@@ -355,7 +355,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
           }
           if (destructiveActions.length) {
-            const $ul = $('<ul/>', {class: 'padded'}).appendTo($actionMenu);
+            const $ul = $('<ul/>').appendTo($actionMenu);
             for (let action of destructiveActions) {
               const $li = $('<li/>').appendTo($ul);
               const $a = $('<a/>', {

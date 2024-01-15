@@ -2332,6 +2332,7 @@ JS;
      *
      *  - `id` – The item’s ID
      *  - `label` – The item label, to be HTML-encoded
+     *  - `icon` – The item icon name
      *  - `html` - The item label, which will be output verbatim, without being HTML-encoded
      *  - `description` – The item description
      *  - `status` – The status indicator that should be shown beside the item label
@@ -2525,6 +2526,110 @@ JS;
         }
 
         return $items;
+    }
+
+    /**
+     * Returns an SVG icon’s contents for the control panel.
+     *
+     * @param string $icon
+     * @return string
+     * @throws InvalidArgumentException
+     * @since 5.0.0
+     */
+    public static function iconSvg(string $icon): string
+    {
+        // BC support for some legacy icon names
+        $icon = match ($icon) {
+            'alert' => 'triangle-exclamation',
+            'asc' => 'arrow-down-short-wide',
+            'asset', 'assets' => 'image',
+            'brush' => 'paintbrush',
+            'circleuarr' => 'circle-arrow-up',
+            'collapse' => 'down-left-and-up-right-to-center',
+            'condition' => 'diamond',
+            'darr' => 'arrow-down',
+            'date' => 'calendar',
+            'desc' => 'arrow-down-wide-short',
+            'disabled' => 'circle-dashed',
+            'done' => 'circle-check',
+            'downangle' => 'angle-down',
+            'download' => 'cloud-arrow-down',
+            'draft' => 'scribble',
+            'edit' => 'pencil',
+            'enabled' => 'circle',
+            'expand' => 'up-right-and-down-left-from-center',
+            'external' => 'arrow-up-right-from-square',
+            'field' => 'pen-to-square',
+            'help' => 'circle-question',
+            'home' => 'house',
+            'info' => 'circle-info',
+            'insecure' => 'unlock',
+            'larr' => 'arrow-left',
+            'layout' => 'table-layout',
+            'leftangle' => 'angle-left',
+            'listrtl' => 'list-flip',
+            'location' => 'location-dot',
+            'mail' => 'envelope',
+            'menu' => 'bars',
+            'move' => 'grip-dots',
+            'newstamp' => 'certificate',
+            'paperplane' => 'paper-plane',
+            'plugin' => 'plug',
+            'rarr' => 'arrow-right',
+            'refresh' => 'arrows-rotate',
+            'remove' => 'xmark',
+            'rightangle' => 'angle-right',
+            'rotate' => 'rotate-left',
+            'routes' => 'signs-post',
+            'search' => 'magnifying-glass',
+            'section' => 'newspaper',
+            'secure' => 'lock',
+            'settings' => 'gear',
+            'shareleft' => 'share-flip',
+            'shuteye' => 'eye-slash',
+            'sidebar-left' => 'sidebar',
+            'sidebar-right' => 'sidebar-flip',
+            'structure' => 'list-tree',
+            'structurertl' => 'list-tree-flip',
+            'template' => 'file-code',
+            'time' => 'clock',
+            'tool' => 'wrench',
+            'uarr' => 'arrow-up',
+            'upangle' => 'angle-up',
+            'upload' => 'cloud-arrow-up',
+            'view' => 'eye',
+            'wand' => 'wand-magic-sparkles',
+            'world', 'earth' => self::earthIcon(),
+            default => $icon,
+        };
+
+        if (preg_match('/^[a-z\-]+$/', $icon)) {
+            $path = Craft::getAlias("@appicons/$icon.svg");
+            if (!file_exists($path)) {
+                throw new InvalidArgumentException("Invalid control panel icon: $icon");
+            }
+            return file_get_contents($path);
+        }
+
+        return Html::svg($icon, true);
+    }
+
+    /**
+     * Returns the appropriate Earth icon, depending on the system time zone.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public static function earthIcon(): string
+    {
+        $tzGroup = explode('/', Craft::$app->getTimeZone(), 2)[0];
+        return match ($tzGroup) {
+            'Africa' => 'earth-africa',
+            'Asia' => 'earth-asia',
+            'Australia' => 'earth-oceania',
+            'Europe', 'GMT', 'UTC' => 'earth-europe',
+            default => 'earth-americas',
+        };
     }
 
     /**

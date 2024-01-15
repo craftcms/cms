@@ -391,8 +391,8 @@ export default Base.extend(
       delete this._menuHeight;
     },
 
-    isPadded: function () {
-      return this.$container.children('.padded').length;
+    isPadded: function (tag = 'ul') {
+      return this.$container.children(`${tag}.padded`).length;
     },
 
     createItem: function (item) {
@@ -503,7 +503,7 @@ export default Base.extend(
 
     addHr: function (before) {
       const hr = document.createElement('hr');
-      if (this.isPadded()) {
+      if (this.isPadded('hr')) {
         hr.className = 'padded';
       }
 
