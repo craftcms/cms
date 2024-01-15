@@ -69,7 +69,8 @@
 
     <div :class="{'content-pane': fullPage}">
       <div v-if="this.isEmpty" class="zilch">
-        <p>{{ emptyMessage }}</p>
+        <p v-if="this.searchTerm.length">{{ noSearchResults }}</p>
+        <p v-else>{{ emptyMessage }}</p>
       </div>
 
       <div
@@ -416,6 +417,10 @@
       searchPlaceholder: {
         type: String,
         default: Craft.t('app', 'Search'),
+      },
+      noSearchResults: {
+        type: String,
+        default: Craft.t('app', 'No results.'),
       },
       tableData: {
         type: Array,
