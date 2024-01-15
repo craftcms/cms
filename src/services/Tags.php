@@ -395,7 +395,7 @@ SQL;
 
             if ($db->getIsMysql()) {
                 $db->createCommand(<<<SQL
-UPDATE $elementsTable [[elements]], $tagsTable [[tags]] 
+UPDATE $elementsTable [[elements]], $tagsTable [[tags]]
 SET [[elements.dateDeleted]] = '$now',
   [[tags.deletedWithGroup]] = 1
 WHERE $conditionSql

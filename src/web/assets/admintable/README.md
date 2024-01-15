@@ -134,11 +134,11 @@ new Craft.VueAdminTable({
   // ...
   onLoaded: function() { console.log('LOADED!'); },
   onData: function(data) { console.log('Data:', data); },
-  onQueryParams: function(params) { 
-    console.log('Query Params:', params); 
-    
+  onQueryParams: function(params) {
+    console.log('Query Params:', params);
+
     params.foo = 'bar';
-    return params; 
+    return params;
   },
   onCellClicked: function(data, field, event) { console.log('Cell Clicked:', data, field, event); },
   onCellDoubleClicked: function(data, field, event) { console.log('Cell Double Clicked:', data, field, event); },

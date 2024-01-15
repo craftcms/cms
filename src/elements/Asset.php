@@ -1598,7 +1598,7 @@ JS, [
             $userSession->checkPermission("editImages:$volume->uid") &&
             ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
         ) {
-            $editImageId = sprintf('action-edit-image-%s', mt_rand());
+            $editImageId = sprintf('action-image-edit-%s', mt_rand());
             $items[] = [
                 'type' => MenuItemType::Button,
                 'id' => $editImageId,

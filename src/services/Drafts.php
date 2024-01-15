@@ -168,8 +168,8 @@ class Drafts extends Component
             // Duplicate nested element ownership
             Craft::$app->getDb()->createCommand(sprintf(
                 <<<SQL
-INSERT INTO %s ([[elementId]], [[ownerId]], [[sortOrder]]) 
-SELECT [[o.elementId]], :draftId, [[o.sortOrder]] 
+INSERT INTO %s ([[elementId]], [[ownerId]], [[sortOrder]])
+SELECT [[o.elementId]], :draftId, [[o.sortOrder]]
 FROM %s AS [[o]]
 WHERE [[o.ownerId]] = :canonicalId
 SQL,

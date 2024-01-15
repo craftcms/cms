@@ -50,7 +50,7 @@ class DeleteAssets extends Delete
 
       return true;
     },
-    
+
     activate: (selectedItems, elementIndex) => {
       const element = selectedItems.find('.element:first');
       if (Garnish.hasAttr(element, 'data-is-folder')) {
