@@ -1563,8 +1563,8 @@ ul.icons {
   }
 
   [data-icon] {
-    margin-top: -2px;
-    @include margin-right(4px);
+    margin-top: -3px;
+    @include margin-right(5px);
 
     &.light:before {
       color: var(--gray-300);
@@ -2854,7 +2854,7 @@ table {
     }
 
     .icon {
-      margin-top: -4px;
+      margin: -4px -1px 0;
     }
   }
 
@@ -3204,7 +3204,7 @@ table {
     }
 
     .move {
-      margin-top: -2px !important;
+      margin-top: -3px !important;
     }
   }
 
@@ -3919,8 +3919,8 @@ ul.tree,
   display: inline-block;
   position: relative;
   @include margin-right(10px);
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border: 1px solid transparent;
   border-radius: 100%;
   box-sizing: border-box;
@@ -5965,14 +5965,14 @@ $min2ColWidth: 400px;
         a,
         .menu-item,
         .menu-option {
-          @include padding-left(30px);
+          @include padding-left(32px);
 
           &[data-icon],
           &.icon,
           &.sel {
             &:before {
               @include floatleft;
-              @include margin(3px, 0, 0, -20px);
+              @include margin(4px, 0, 0, -22px);
               width: 14px;
               font-size: 14px;
               color: var(--ui-control-color);
@@ -5987,7 +5987,10 @@ $min2ColWidth: 400px;
             background: var(--gray-050);
 
             &:not([data-icon]):before {
-              content: '\f00e';
+              content: 'check';
+              font-size: 14px;
+              width: 14px;
+              margin-top: 3px !important;
             }
           }
         }
@@ -6076,13 +6079,14 @@ $min2ColWidth: 400px;
   }
 }
 
-.menubtn,
 .menu {
   span.icon {
+    position: relative;
+    top: -2px;
     display: inline-block;
-    margin-top: -1px;
-    width: 10px;
-    @include margin-right(10px);
+    width: 14px;
+    @include margin-left(-1px);
+    @include margin-right(9px);
     text-align: center;
     font-size: 14px;
     color: var(--ui-control-color);
@@ -6617,7 +6621,7 @@ div.checkbox.checked:not(.indeterminate):before,
   .disabled
   .checkbox:before {
   content: 'check';
-  font-size: 15px;
+  font-size: 14px;
 }
 
 input.checkbox:indeterminate + label:before,

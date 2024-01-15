@@ -309,7 +309,7 @@ trait ApplicationTrait
         }
 
         // Override where Yii should find its asset deps
-        $assetsPath = Craft::getAlias('@craft') . '/web/assets';
+        $assetsPath = Craft::getAlias('@app/web/assets');
         Craft::setAlias('@bower/jquery/dist', $assetsPath . '/jquery/dist');
         Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
         Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');

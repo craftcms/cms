@@ -412,11 +412,11 @@ class Cp extends Component
         }
 
         $settings[$label]['users'] = [
-            'iconMask' => '@appicons/users.svg',
+            'iconMask' => '@appicons/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
         $settings[$label]['addresses'] = [
-            'iconMask' => '@appicons/location.svg',
+            'iconMask' => '@appicons/map-location.svg',
             'label' => Craft::t('app', 'Addresses'),
         ];
         $settings[$label]['email'] = [
@@ -435,7 +435,7 @@ class Cp extends Component
             'label' => Craft::t('app', 'Fields'),
         ];
         $settings[$label]['entry-types'] = [
-            'iconMask' => '@appicons/entry-types.svg',
+            'iconMask' => '@appicons/files.svg',
             'label' => Craft::t('app', 'Entry Types'),
         ];
         $settings[$label]['sections'] = [
