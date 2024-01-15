@@ -133,6 +133,11 @@
 {% endmacro %}
 
 
+{% macro iconPicker(config) %}
+    {% include '_includes/forms/iconPicker' with config only %}
+{% endmacro %}
+
+
 {% macro entryType(config) %}
     {% include "_includes/forms/entryType" with config only %}
 {% endmacro %}
@@ -357,6 +362,12 @@
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/timeZone') }}
+{% endmacro %}
+
+
+{% macro iconPickerField(config) %}
+    {% set config = config|merge({id: config.id ?? "iconselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/iconPicker') }}
 {% endmacro %}
 
 

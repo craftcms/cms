@@ -48,6 +48,12 @@ class EntryType extends Model implements FieldLayoutProviderInterface
     public ?string $handle = null;
 
     /**
+     * @var string|null Icon
+     * @since 5.0.0
+     */
+    public ?string $icon = null;
+
+    /**
      * @var bool Has title field
      */
     public bool $hasTitleField = true;
@@ -248,6 +254,7 @@ class EntryType extends Model implements FieldLayoutProviderInterface
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
+            'icon' => $this->icon,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat,

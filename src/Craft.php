@@ -49,9 +49,9 @@ class Craft extends Yii
             $alias = '@app' . substr($alias, 6);
         }
 
-        // @app/icons => @appicons
-        if ($alias === '@app/icons' || str_starts_with($alias, '@app/icons/')) {
-            $alias = '@appicons' . substr($alias, 10);
+        // @app/icons/file.svg => @appicons/file.svg
+        if (preg_match('/^@app\/icons\/([\w\-]+\.svg)$/', $alias, $match)) {
+            $alias = "@appicons/$match[1]";
         }
 
         return parent::getAlias($alias, $throwException);

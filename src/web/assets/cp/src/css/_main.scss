@@ -6839,10 +6839,6 @@ td.errors .text,
       @include left(9px);
       color: var(--ui-control-color);
     }
-
-    .text {
-      @include padding-left(26px);
-    }
   }
 
   .texticon-icon {
@@ -6853,6 +6849,10 @@ td.errors .text,
     justify-content: center;
     align-items: center;
     @include left(9px);
+  }
+
+  .text {
+    @include padding-left(calc(26rem / 16));
   }
 
   .clear-btn {
@@ -6902,8 +6902,6 @@ td.errors .text,
     }
 
     .text {
-      @include padding-left(calc(26rem / 16));
-
       &.clearable {
         @include padding-right(calc(30px + var(--touch-target-size)));
       }
@@ -7499,6 +7497,93 @@ body {
   &:focus {
     a.active {
       background-color: var(--light-sel-color);
+    }
+  }
+}
+
+/* icon picker */
+.icon-picker {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--xs);
+}
+
+.icon-picker--icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include input-styles;
+  border-radius: var(--ui-control-border-radius);
+  width: var(--ui-control-height);
+  height: var(--ui-control-height);
+  background: var(--gray-050);
+
+  svg {
+    width: calc(20rem / 16);
+    height: calc(20rem / 16);
+    @include svg-mask(var(--ui-control-color));
+  }
+}
+
+.icon-picker-modal {
+  --width: calc(var(--ui-control-height) * 10 + var(--s) * 9 + var(--xl) * 2);
+  width: var(--width) !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 20px) !important;
+
+  .body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--l);
+
+    .icon-picker-modal--list {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+
+      &:not(.loading) {
+        .spinner {
+          display: none;
+        }
+      }
+
+      &.loading {
+        &:after {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          content: '';
+          background-color: rgba(255, 255, 255, 0.75);
+        }
+
+        .spinner {
+          top: calc(50% - 10px);
+          z-index: 1;
+        }
+      }
+
+      ul {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: start;
+        gap: var(--s);
+        max-height: 100%;
+        overflow: auto;
+
+        .icon-picker--icon {
+          --focus-ring: var(--inner-focus-ring);
+
+          &:hover {
+            border-color: var(--link-color);
+            background-color: var(--blue-100);
+          }
+        }
+      }
     }
   }
 }

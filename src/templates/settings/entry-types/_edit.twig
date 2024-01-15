@@ -27,6 +27,14 @@
     required: true
 }) }}
 
+{{ forms.iconPickerField({
+    label: 'Icon'|t('app'),
+    id: 'icon',
+    name: 'icon',
+    value: entryType.icon,
+    errors: entryType.getErrors('icon'),
+}) }}
+
 <hr>
 
 {{ forms.lightswitchField({

@@ -20,6 +20,8 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
+use craft\helpers\Search;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
@@ -685,5 +687,75 @@ class AppController extends Controller
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
         ]);
+    }
+
+    /**
+     * Returns icon picker options.
+     *
+     * @return Response
+     * @since 5.0.0
+     */
+    public function actionIconPickerOptions(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+
+        $search = $this->request->getRequiredBodyParam('search');
+        if ($search !== '') {
+            $searchTerms = explode(' ', Search::normalizeKeywords($search));
+        } else {
+            $searchTerms = null;
+        }
+
+        $icons = require Craft::getAlias('@app/icons/index.php');
+        $output = [];
+        $scores = [];
+
+        foreach ($icons as $name => $icon) {
+            if ($searchTerms) {
+                $score = $this->matchTerms($searchTerms, $icon['name']) * 5 + $this->matchTerms($searchTerms, $icon['terms']);
+                if ($score === 0) {
+                    continue;
+                }
+                $scores[] = $score;
+            }
+
+            $file = Craft::getAlias("@appicons/$name.svg");
+            $output[] = Html::beginTag('li') .
+                Html::button(file_get_contents($file), [
+                    'class' => 'icon-picker--icon',
+                    'title' => $name,
+                    'aria' => [
+                        'label' => $name,
+                    ],
+                ]) .
+                Html::endTag('li');
+        }
+
+        if ($searchTerms) {
+            array_multisort($scores, SORT_DESC, $output);
+        }
+
+        return $this->asJson([
+            'listHtml' => implode('', $output),
+        ]);
+    }
+
+    private function matchTerms(array $searchTerms, string $indexTerms): int
+    {
+        $score = 0;
+
+        foreach ($searchTerms as $searchTerm) {
+            // extra points for whole word matches
+            if (str_contains($indexTerms, " $searchTerm ")) {
+                $score += 10;
+            } elseif (str_contains($indexTerms, " $searchTerm")) {
+                $score += 1;
+            } else {
+                return 0;
+            }
+        }
+
+        return $score;
     }
 }

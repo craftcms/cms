@@ -751,6 +751,7 @@ return [
     'How you’ll refer to this tag group in the templates.' => 'How you’ll refer to this tag group in the templates.',
     'How-to’s and other questions' => 'How-to’s and other questions',
     'ID' => 'ID',
+    'Icon' => 'Icon',
     'If the URI looks like this' => 'If the URI looks like this',
     'Image Format' => 'Image Format',
     'Image Height' => 'Image Height',
@@ -2086,4 +2087,5 @@ return [
     '“{handle}” is a reserved word.' => '“{handle}” is a reserved word.',
     '“{handle}” isn’t a valid handle.' => '“{handle}” isn’t a valid handle.',
     '“{name}” deleted.' => '“{name}” deleted.',
+    'Change' => 'Change',
 ];

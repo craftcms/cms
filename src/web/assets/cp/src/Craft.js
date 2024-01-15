@@ -66,6 +66,7 @@ import './js/VolumeFolderSelectorModal.js';
 import './js/FieldToggle.js';
 import './js/Grid.js';
 import './js/HandleGenerator.js';
+import './js/IconPicker.js';
 import './js/ImageUpload.js';
 import './js/InfoIcon.js';
 import './js/LightSwitch.js';

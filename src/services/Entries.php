@@ -1212,6 +1212,7 @@ SQL)->execute();
                 'fieldLayoutId',
                 'name',
                 'handle',
+                'icon',
                 'hasTitleField',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
@@ -1368,6 +1369,7 @@ SQL)->execute();
 
             $entryTypeRecord->name = $data['name'];
             $entryTypeRecord->handle = $data['handle'];
+            $entryTypeRecord->icon = $data['icon'] ?? null;
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
