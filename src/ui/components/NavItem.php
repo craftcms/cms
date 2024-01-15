@@ -157,4 +157,14 @@ class NavItem extends Component
     {
         return $this->type;
     }
+
+    public function getAttributes(): array
+    {
+        return [
+            'class' => array_filter([
+                $this->getType() === 'heading' ? 'heading' : null,
+            ]),
+            'id' => $this->getId(),
+        ];
+    }
 }

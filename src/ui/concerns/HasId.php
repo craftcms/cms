@@ -5,16 +5,26 @@ namespace craft\ui\concerns;
 trait HasId
 {
     /**
-     * @var string|null HTML ID of the element
+     * @var string|null Raw ID of the element
      */
     protected ?string $id = null;
 
-    public function id(string $id = null): self
+    /**
+     * Set the ID
+     *
+     * @param string|null $id
+     */
+    public function id(string $id = null): static
     {
         $this->id = $id;
         return $this;
     }
 
+    /**
+     * Get the ID
+     *
+     * @return string|null
+     */
     public function getId(): ?string
     {
         return $this->id;

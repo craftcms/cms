@@ -9,7 +9,14 @@ use ReflectionMethod;
 
 abstract class Component
 {
+    /**
+     * @var string The view template path to render.
+     */
     protected string $view;
+
+    /**
+     * @var array Raw view data to pass to the view.
+     */
     protected array $viewData = [];
 
     /**
@@ -23,9 +30,14 @@ abstract class Component
 
     public function setup(): void
     {
-
     }
 
+    /**
+     * Create an instance of a component
+     *
+     * @return static
+     * @throws \yii\base\InvalidConfigException
+     */
     public static function make(): static
     {
         $component = Craft::createObject(static::class);
@@ -34,7 +46,13 @@ abstract class Component
         return $component;
     }
 
-    public function withProps(array $properties): self
+    /**
+     * Allows mass assignment of properties
+     *
+     * @param array $properties
+     * @return $this
+     */
+    public function withProps(array $properties): static
     {
         foreach ($properties as $key => $value) {
             $this->{$key}($value);
@@ -43,7 +61,13 @@ abstract class Component
         return $this;
     }
 
-    public function viewData(array $data): self
+    /**
+     * Set view data for the component
+     *
+     * @param array $data
+     * @return $this
+     */
+    public function viewData(array $data): static
     {
         $this->viewData = [
             ...$this->viewData,
@@ -53,17 +77,35 @@ abstract class Component
         return $this;
     }
 
-    public function view(string $value): self
+    /**
+     * Set the view template path
+     *
+     * @param string $value
+     * @return $this
+     */
+    public function view(string $value): static
     {
         $this->view = $value;
         return $this;
     }
 
+    /**
+     * Get the view template path
+     *
+     * @return string
+     */
     public function getView(): string
     {
         return $this->view;
     }
 
+    /**
+     * Transform all public `get` methods into data for the view.
+     * Public methods beginning with `get` will be exposed to the view template
+     * as a variable with the `get` prefix removed.
+     *
+     * @return array
+     */
     public function extractPublicMethods(): array
     {
         if (!isset($this->methodCache[$this::class])) {
@@ -87,15 +129,30 @@ abstract class Component
         return $values;
     }
 
+    /**
+     * Get an array of HTML attributes for the parent element.
+     *
+     * @return array
+     */
+    public function getAttributes(): array
+    {
+        return [];
+    }
+
+    /**
+     * Render the component
+     *
+     * @return string
+     * @throws \craft\web\twig\TemplateLoaderException
+     */
     public function render(): string
     {
         return Cp::renderTemplate($this->getView(),
             [
-                'attributes' => [],
+                'attributes' => new ComponentAttributeBag(array_filter($this->getAttributes())),
                 ...$this->extractPublicMethods(),
                 ...$this->viewData,
             ]
         );
     }
-
 }

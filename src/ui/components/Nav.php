@@ -56,4 +56,12 @@ class Nav extends Component
     {
         return $this->selectedItem;
     }
+
+    public function getAttributes(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'aria-label' => $this->getLabel(),
+        ];
+    }
 }

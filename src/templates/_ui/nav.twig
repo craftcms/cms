@@ -1,4 +1,4 @@
-<nav id="{{ id }}" {% if label %}aria-label="{{ label }}"{% endif %}>
+<nav {{ attr(attributes) }}>
     <ul>
         {% for item in items %}
             {{ item | raw }}

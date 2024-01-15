@@ -1,4 +1,4 @@
-<li {% if id %}id="{{ id }}"{% endif%} class="{% if type == 'heading' %}heading{% endif %}">
+<li {{ attr(attributes) }}>
     {% if type == 'heading' %}
         <span>{{ label }}</span>
     {% else %}
