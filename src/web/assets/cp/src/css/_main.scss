@@ -3603,6 +3603,11 @@ $checkboxPadding: $checkboxSize + 4;
       flex-direction: column;
     }
 
+    &.large-thumbs {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+
     li {
       max-width: 100%;
     }

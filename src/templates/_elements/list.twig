@@ -6,6 +6,7 @@
   class: [
     'elements',
     (inline ?? false) ? 'inline-chips' : null,
+    (viewMode == 'large') ? 'large-thumbs': null,
   ]|filter,
 } %}
   {% for element in elements %}
