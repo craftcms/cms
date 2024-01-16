@@ -4,16 +4,12 @@ namespace craft\fields\conditions;
 
 use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
-use craft\elements\Entry;
 use craft\fields\Money;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use craft\helpers\MoneyHelper;
-use craft\web\assets\money\MoneyAsset;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
-use yii\db\QueryInterface;
 
 /**
  * Money field condition rule.
