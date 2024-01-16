@@ -820,7 +820,7 @@ $.extend(Craft, {
    * @returns {Promise}
    * @since 3.3.16
    */
-  sendApiRequest: function (method, uri, options) {
+  sendApiRequest: function (method, uri, options = {}) {
     return new Promise((resolve, reject) => {
       options = options ? $.extend({}, options) : {};
       let cancelToken = options.cancelToken || null;
@@ -2443,6 +2443,26 @@ if (typeof BroadcastChannel !== 'undefined') {
   const channelName = `CraftCMS:${Craft.appId}`;
   Craft.broadcaster = new BroadcastChannel(channelName);
   Craft.messageReceiver = new BroadcastChannel(channelName);
+
+  Craft.broadcaster.addEventListener('message', (ev) => {
+    switch (ev.data.event) {
+      case 'beforeTrackJobProgress':
+        Craft.cp.cancelJobTracking();
+        break;
+
+      case 'trackJobProgress':
+        Craft.cp.setJobData(ev.data.jobData);
+
+        if (Craft.cp.jobInfo.length) {
+          // Check again after a longer delay than usual,
+          // as it looks like another browser tab is driving for now
+          const delay = Craft.cp.getNextJobDelay() + 1000;
+          Craft.cp.trackJobProgress(delay);
+        }
+
+        break;
+    }
+  });
 
   Craft.messageReceiver.addEventListener('message', (ev) => {
     if (ev.data.event === 'saveElement') {

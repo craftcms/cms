@@ -263,6 +263,10 @@ class Address extends Element implements AddressInterface, BlockElementInterface
             unset($values['countryCode']);
         }
 
+        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            $this->fullName = null;
+        }
+
         parent::setAttributes($values, $safeOnly);
     }
 
@@ -318,6 +322,18 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     {
         $this->_owner = $owner;
         $this->ownerId = $owner?->id;
+    }
+
+    /**
+     * Returns whether the address belongs to the currently logged-in user.
+     *
+     * @return bool
+     * @since 4.5.13
+     */
+    public function getBelongsToCurrentUser(): bool
+    {
+        $owner = $this->getOwner();
+        return $owner instanceof User && $owner->getIsCurrent();
     }
 
     /**
@@ -546,6 +562,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
             LatLongField::class,
         ];
 
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $fieldLayout = $this->getFieldLayout();
 
         foreach ($requirableNativeFields as $class) {
@@ -553,15 +570,28 @@ class Address extends Element implements AddressInterface, BlockElementInterface
             $field = $fieldLayout->getFirstVisibleElementByType($class, $this);
             if ($field && $field->required) {
                 $attribute = $field->attribute();
-                if ($attribute === 'latLong') {
-                    $attribute = ['latitude', 'longitude'];
+                switch ($attribute) {
+                    case 'latLong':
+                        $attribute = ['latitude', 'longitude'];
+                        break;
+                    case 'fullName':
+                        if ($generalConfig->showFirstAndLastNameFields) {
+                            $attribute = ['firstName', 'lastName'];
+                        }
+                        break;
                 }
+
                 $rules[] = [$attribute, 'required', 'on' => self::SCENARIO_LIVE];
             }
         }
 
         $rules[] = [['longitude', 'latitude'], 'safe'];
         $rules[] = [self::_addressAttributes(), 'safe'];
+
+        if ($generalConfig->showFirstAndLastNameFields) {
+            $rules[] = [['firstName', 'lastName'], 'safe'];
+        }
+
         return $rules;
     }
 

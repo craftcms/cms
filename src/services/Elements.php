@@ -63,7 +63,6 @@ use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
-use craft\web\Application;
 use DateTime;
 use Throwable;
 use UnitEnum;
@@ -183,6 +182,16 @@ class Elements extends Component
      * ```
      */
     public const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
+
+    /**
+     * @event ElementEvent The event that is triggered when setting a unique URI on an element.
+     *
+     * Event handlers must set `$event->handled` to `true` for their change to take effect.
+     *
+     * @see setElementUri()
+     * @since 4.6.0
+     */
+    public const EVENT_SET_ELEMENT_URI = 'setElementUri';
 
     /**
      * @event ElementEvent The event that is triggered before indexing an element’s search keywords,
@@ -1107,6 +1116,28 @@ class Elements extends Component
     }
 
     /**
+     * Sets the URI on an element.
+     *
+     * @param ElementInterface $element
+     * @throws OperationAbortedException if a unique URI could not be found
+     * @since 4.6.0
+     */
+    public function setElementUri(ElementInterface $element): void
+    {
+        if ($this->hasEventHandlers(self::EVENT_SET_ELEMENT_URI)) {
+            $event = new ElementEvent([
+                'element' => $element,
+            ]);
+            $this->trigger(self::EVENT_SET_ELEMENT_URI, $event);
+            if ($event->handled) {
+                return;
+            }
+        }
+
+        ElementHelper::setUniqueUri($element);
+    }
+
+    /**
      * Merges recent canonical element changes into a given derivative, such as a draft.
      *
      * @param ElementInterface $element The derivative element
@@ -1261,7 +1292,7 @@ class Elements extends Component
 
         $updatedCanonical = $this->duplicateElement($element, $newAttributes);
 
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($canonical, $updatedCanonical, $changedAttributes, $changedFields) {
+        Craft::$app->onAfterRequest(function() use ($canonical, $updatedCanonical, $changedAttributes, $changedFields) {
             // Update change tracking for the canonical element
             $timestamp = Db::prepareDateForDb($updatedCanonical->dateUpdated);
 
@@ -1703,7 +1734,7 @@ class Elements extends Component
 
                         // Set a unique URI on the site clone
                         try {
-                            ElementHelper::setUniqueUri($siteClone);
+                            $this->setElementUri($siteClone);
                         } catch (OperationAbortedException) {
                             // Oh well, not worth bailing over
                         }
@@ -1758,7 +1789,7 @@ class Elements extends Component
         }
 
         if ($element::hasUris()) {
-            ElementHelper::setUniqueUri($element);
+            $this->setElementUri($element);
         }
 
         // Fire a 'beforeUpdateSlugAndUri' event
@@ -3211,13 +3242,16 @@ class Elements extends Component
             }
         }
 
+        $fieldLayout = $element->getFieldLayout();
+        $dirtyFields = $element->getDirtyFields();
+
         // Validate
         if ($runValidation) {
             // If we're propagating, only validate changed custom fields
             if ($element->propagating) {
                 $names = array_map(
                     fn(string $handle) => "field:$handle",
-                    array_unique(array_merge($element->getDirtyFields(), $element->getModifiedFields()))
+                    array_unique(array_merge($dirtyFields, $element->getModifiedFields()))
                 );
             } else {
                 $names = null;
@@ -3262,7 +3296,7 @@ class Elements extends Component
                 $elementRecord->canonicalId = $element->getIsDerivative() ? $element->getCanonicalId() : null;
                 $elementRecord->draftId = (int)$element->draftId ?: null;
                 $elementRecord->revisionId = (int)$element->revisionId ?: null;
-                $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $element->getFieldLayout()->id ?? 0) ?: null;
+                $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout?->id ?? 0) ?: null;
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
                 $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
@@ -3382,6 +3416,9 @@ class Elements extends Component
             // It is now officially saved
             $element->afterSave($isNewElement);
 
+            // Update the list of dirty attributes
+            $dirtyAttributes = $element->getDirtyAttributes();
+
             // Update the element across the other sites?
             if ($propagate) {
                 $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
@@ -3468,31 +3505,38 @@ class Elements extends Component
         }
 
         // Update search index
-        if ($updateSearchIndex && !ElementHelper::isRevision($element)) {
-            $event = new ElementEvent([
-                'element' => $element,
-            ]);
-            $this->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $event);
-            if ($event->isValid) {
-                if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                    Craft::$app->getSearch()->indexElementAttributes($element);
-                } else {
-                    Queue::push(new UpdateSearchIndex([
-                        'elementType' => get_class($element),
-                        'elementId' => $element->id,
-                        'siteId' => $propagate ? '*' : $element->siteId,
-                        'fieldHandles' => $element->getDirtyFields(),
-                    ]), 2048);
+        if ($updateSearchIndex && !$element->getIsRevision() && !ElementHelper::isRevision($element)) {
+            $searchableDirtyFields = array_filter(
+                $dirtyFields,
+                fn(string $handle) => $fieldLayout?->getFieldByHandle($handle)?->searchable,
+            );
+
+            if (
+                !$trackChanges ||
+                !empty($searchableDirtyFields) ||
+                !empty(array_intersect($dirtyAttributes, ElementHelper::searchableAttributes($element)))
+            ) {
+                $event = new ElementEvent([
+                    'element' => $element,
+                ]);
+                $this->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $event);
+                if ($event->isValid) {
+                    if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+                        Craft::$app->getSearch()->indexElementAttributes($element, $searchableDirtyFields);
+                    } else {
+                        Queue::push(new UpdateSearchIndex([
+                            'elementType' => get_class($element),
+                            'elementId' => $element->id,
+                            'siteId' => $propagate ? '*' : $element->siteId,
+                            'fieldHandles' => $searchableDirtyFields,
+                        ]), 2048);
+                    }
                 }
             }
         }
 
         // Update the changed attributes & fields
         if ($trackChanges) {
-            $dirtyAttributes = $element->getDirtyAttributes();
-            $fieldLayout = $element->getFieldLayout();
-            $dirtyFields = $fieldLayout ? $element->getDirtyFields() : null;
-
             $userId = Craft::$app->getUser()->getId();
             $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
 
@@ -3631,7 +3675,7 @@ class Elements extends Component
         ) {
             // Set a unique URI on the site clone
             try {
-                ElementHelper::setUniqueUri($siteElement);
+                $this->setElementUri($siteElement);
             } catch (OperationAbortedException) {
                 // carry on
             }
