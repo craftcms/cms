@@ -215,6 +215,7 @@
 - Added `craft\fields\Money::subunits()`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait::fieldInstances()`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait::setLayoutElementUid()`.
+- Added `craft\fields\conditions\MoneyFieldConditionRule`.
 - Added `craft\helpers\App::isWindows()`.
 - Added `craft\helpers\App::silence()`.
 - Added `craft\helpers\ArrayHelper::lastValue()`.
