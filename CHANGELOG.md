@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- `craft\log\MonologTarget` instances are now created via `Craft::createObject()`. ([#13341](https://github.com/craftcms/cms/issues/13341))
+- Fixed a bug where `craft\helpers\Db::prepareValueForDb()` wasn’t converting objects to arrays for JSON columns.
+- Fixed a bug where Checkboxes, Multi-select, Dropdown, and Radio Buttons fields weren’t displaying `0` option labels within element indexes. ([#14127](https://github.com/craftcms/cms/issues/14127))
+- Fixed a bug where `craft\db\Migration::renameTable()` was renaming the table for the primary database connection, rather than the migration’s connection. ([#14131](https://github.com/craftcms/cms/issues/14131))
+- Fixed a bug where `Craft.FormObserver` wasn’t working reliably for non-`<form>` containers.
+- Fixed a bug where Selectize inputs were triggering autosaves, even when the value didn’t change.
+- Fixed a bug where custom source labels weren’t getting translated. ([#14137](https://github.com/craftcms/cms/issues/14137))
+- Fixed a bug where Dropdown columns within Table fields were loosing their options when the field was edited. ([#14134](https://github.com/craftcms/cms/issues/14134))
+
 ## 4.6.0 - 2024-01-09
 
 ### Content Management
