@@ -2,17 +2,22 @@
 
 ## Unreleased
 
+- Admin tables now have sticky footers. ([#14149](https://github.com/craftcms/cms/pull/14149))
 - Money field condition rules now use money inputs. ([#14148](https://github.com/craftcms/cms/pull/14148))
 - Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
+- Reduced the system font file size, and prevented the flash of unstyled type for it. ([#13879](https://github.com/craftcms/cms/pull/13879))
+- Log message timestamps are now set to the system time zone. ([#13341](https://github.com/craftcms/cms/issues/13341))
 - Added `craft\fields\Money::currencyLabel()`.
 - Added `craft\fields\Money::subunits()`.
 - Added `craft\fields\conditions\MoneyFieldConditionRule`.
 - `craft\base\BaseFsInterface::renameFile()` and `copyFile()` now have a `$config` argument. ([#14147](https://github.com/craftcms/cms/pull/14147))
 - Fixed a bug where `craft\helpers\Db::prepareValueForDb()` wasn’t converting objects to arrays for JSON columns.
-- Fixed a bug where Checkboxes, Multi-select, Dropdown, and Radio Buttons fields weren’t displaying `0` option labels within element indexes. ([#14127](https://github.com/craftcms/cms/issues/14127))
+- Fixed a bug where Checkboxes, Multi-select, Dropdown, and Radio Buttons fields weren’t displaying `0` options within element indexes or condition rules. ([#14127](https://github.com/craftcms/cms/issues/14127), [#14143](https://github.com/craftcms/cms/pull/14143))
 - Fixed a bug where `craft\db\Migration::renameTable()` was renaming the table for the primary database connection, rather than the migration’s connection. ([#14131](https://github.com/craftcms/cms/issues/14131))
 - Fixed a bug where `Craft.FormObserver` wasn’t working reliably for non-`<form>` containers.
 - Fixed a bug where Selectize inputs were triggering autosaves, even when the value didn’t change.
+- Fixed a bug where custom source labels weren’t getting translated. ([#14137](https://github.com/craftcms/cms/issues/14137))
+- Fixed a bug where Dropdown columns within Table fields were loosing their options when the field was edited. ([#14134](https://github.com/craftcms/cms/issues/14134))
 - Fixed a bug where asset edit screens didn’t include the “Open in Image Editor” action item. ([#14125](https://github.com/craftcms/cms/pull/14125))
 - Updated Monolog to v3.
 - Updated Axios to 1.6.5.

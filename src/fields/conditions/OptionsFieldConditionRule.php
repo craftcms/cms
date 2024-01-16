@@ -24,7 +24,7 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
         /** @var BaseOptionsField $field */
         $field = $this->field();
         return Collection::make($field->options)
-            ->filter(fn(array $option) => !empty($option['value']) && !empty($option['label']))
+            ->filter(fn(array $option) => $option['value'] !== null && $option['value'] !== '' && !empty($option['label']))
             ->map(fn(array $option) => [
                 'value' => $option['value'],
                 'label' => $option['label'],

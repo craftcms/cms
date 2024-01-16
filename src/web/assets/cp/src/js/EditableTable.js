@@ -99,26 +99,33 @@ Craft.EditableTable = Garnish.Base.extend(
       this.updateAddRowButton();
       this.addListener(this.$addRowBtn, 'activate', 'addRow');
 
-      // Lazily create the row objects
-      this.addListener(
-        this.$tbody,
-        'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
-        (ev) => {
-          const $target = $(ev.target);
-          const $tr = $target.closest('tr');
-          if ($tr.length && !$tr.data('editable-table-row')) {
-            const $textarea = $target.hasClass('editable-table-preview')
-              ? $target.next()
-              : null;
-            this.createRowObj($tr);
-            setTimeout(() => {
-              if ($textarea && !$textarea.is(':focus')) {
-                $textarea.trigger('focus');
-              }
-            }, 100);
+      if (this.settings.lazyInitRows) {
+        // Lazily create the row objects
+        this.addListener(
+          this.$tbody,
+          'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
+          (ev) => {
+            const $target = $(ev.target);
+            const $tr = $target.closest('tr');
+            if ($tr.length && !$tr.data('editable-table-row')) {
+              const $textarea = $target.hasClass('editable-table-preview')
+                ? $target.next()
+                : null;
+              this.createRowObj($tr);
+              setTimeout(() => {
+                if ($textarea && !$textarea.is(':focus')) {
+                  $textarea.trigger('focus');
+                }
+              }, 100);
+            }
           }
+        );
+      } else {
+        const $rows = this.$tbody.children();
+        for (let i = 0; i < $rows.length; i++) {
+          this.createRowObj($rows.eq(i));
         }
-      );
+      }
 
       return true;
     },
@@ -419,6 +426,7 @@ Craft.EditableTable = Garnish.Base.extend(
       allowDelete: false,
       minRows: null,
       maxRows: null,
+      lazyInitRows: true,
       onAddRow: $.noop,
       onDeleteRow: $.noop,
     },
