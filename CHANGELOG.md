@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-alpha.6 - 2024-01-16
 
 - Admin tables now have sticky footers. ([#14149](https://github.com/craftcms/cms/pull/14149))
 - Money field condition rules now use money inputs. ([#14148](https://github.com/craftcms/cms/pull/14148))
