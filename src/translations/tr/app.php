@@ -259,6 +259,7 @@ return [
     'Checkout' => 'Ödeme',
     'Choose a currency…' => 'Bir değer seçin…',
     'Choose a new password' => 'Yeni şifrenizi seçin',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'Parola seçin',
     'Choose a site' => 'Bir site seçin',
     'Choose a user group that publicly-registered members will be added to by default.' => 'Umumi kayıt oluşturan kullanıcıların ekleneceği kullanıcı grubunu seçiniz.',

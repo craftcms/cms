@@ -259,6 +259,7 @@ return [
     'Checkout' => 'Оформити замовлення',
     'Choose a currency…' => 'Виберіть валюту…',
     'Choose a new password' => 'Уведіть новий пароль',
+    'Choose a page' => 'Choose a page',
     'Choose a password' => 'Уведіть пароль',
     'Choose a site' => 'Виберіть сайт',
     'Choose a user group that publicly-registered members will be added to by default.' => 'Виберіть групу користувачів, до якої за замовчуванням додаватимуться публічно зареєстровані учасники.',

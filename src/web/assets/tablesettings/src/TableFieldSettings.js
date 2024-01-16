@@ -66,6 +66,7 @@
           allowAdd: true,
           allowReorder: true,
           allowDelete: true,
+          lazyInitRows: false,
           onAddRow: this.onAddColumn.bind(this),
           onDeleteRow: this.reconstructDefaultsTable.bind(this),
         }
