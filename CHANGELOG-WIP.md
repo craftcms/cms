@@ -330,6 +330,7 @@
 - Renamed `craft\web\CpScreenResponseBehavior::$notice()` and `notice()` to `$noticeHtml` and `noticeHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$pageSidebar()` and `pageSidebar()` to `$pageSidebarHtml` and `pageSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- `craft\base\BaseFsInterface::renameFile()` and `copyFile()` now have a `$config` argument. ([#14147](https://github.com/craftcms/cms/pull/14147))
 - `craft\base\ConfigurableComponent::getSettings()` now converts backed enum cases to their values.
 - `craft\base\Element::getCpEditUrl()` now returns a URL to `edit/<ID>` if `cpEditUrl()` returns `null`.
 - `craft\base\ElementInterface::findSource()` no longer needs to specify a default value for the `context` argument.

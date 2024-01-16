@@ -7,6 +7,7 @@
 - Added `craft\fields\Money::currencyLabel()`.
 - Added `craft\fields\Money::subunits()`.
 - Added `craft\fields\conditions\MoneyFieldConditionRule`.
+- `craft\base\BaseFsInterface::renameFile()` and `copyFile()` now have a `$config` argument. ([#14147](https://github.com/craftcms/cms/pull/14147))
 - Fixed a bug where `craft\helpers\Db::prepareValueForDb()` wasn’t converting objects to arrays for JSON columns.
 - Fixed a bug where Checkboxes, Multi-select, Dropdown, and Radio Buttons fields weren’t displaying `0` option labels within element indexes. ([#14127](https://github.com/craftcms/cms/issues/14127))
 - Fixed a bug where `craft\db\Migration::renameTable()` was renaming the table for the primary database connection, rather than the migration’s connection. ([#14131](https://github.com/craftcms/cms/issues/14131))
