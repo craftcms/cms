@@ -5,6 +5,7 @@ namespace craft\fields\conditions;
 use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
 use craft\fields\Money;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\MoneyHelper;
@@ -22,29 +23,19 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
     use FieldConditionRuleTrait;
 
     /**
-     * @var mixed
-     */
-    private mixed $_tempValue;
-
-    /**
-     * @var mixed
-     */
-    private mixed $_tempMaxValue;
-
-    /**
      * @inheritdoc
      */
     public function setAttributes($values, $safeOnly = true): void
     {
         // Hold setting of the value attribute until we have all the info we need
         if (isset($values['value']) && is_array($values['value'])) {
-            $this->_tempValue = $values['value'];
-            unset($values['value']);
+            /** @var array $value */
+            $value = ArrayHelper::remove($values, 'value');
         }
 
         if (isset($values['maxValue']) && is_array($values['maxValue'])) {
-            $this->_tempMaxValue = $values['maxValue'];
-            unset($values['maxValue']);
+            /** @var array $maxValue */
+            $maxValue = ArrayHelper::remove($values, 'maxValue');
         }
 
         parent::setAttributes($values, $safeOnly);
@@ -52,24 +43,18 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         /** @var Money $field */
         $field = $this->field();
 
-        if (isset($this->_tempValue) && is_array($this->_tempValue) && isset($this->_fieldUid)) {
-            if (!isset($this->_tempValue['currency'])) {
-                $this->_tempValue['currency'] = $field->currency;
+        if (isset($value) && isset($this->_fieldUid)) {
+            if (!isset($value['currency'])) {
+                $value['currency'] = $field->currency;
             }
-
-            $this->_tempValue = MoneyHelper::toMoney($this->_tempValue);
-            $this->value = MoneyHelper::toDecimal($this->_tempValue);
-            $this->_tempValue = null;
+            $this->value = MoneyHelper::toDecimal(MoneyHelper::toMoney($value));
         }
 
-        if (isset($this->_tempMaxValue) && is_array($this->_tempMaxValue) && isset($this->_fieldUid)) {
-            if (!isset($this->_tempMaxValue['currency'])) {
-                $this->_tempMaxValue['currency'] = $field->currency;
+        if (isset($maxValue) && isset($this->_fieldUid)) {
+            if (!isset($maxValue['currency'])) {
+                $maxValue['currency'] = $field->currency;
             }
-
-            $this->_tempMaxValue = MoneyHelper::toMoney($this->_tempMaxValue);
-            $this->maxValue = MoneyHelper::toDecimal($this->_tempMaxValue);
-            $this->_tempMaxValue = null;
+            $this->maxValue = MoneyHelper::toDecimal(MoneyHelper::toMoney($maxValue));
         }
     }
 
