@@ -1326,7 +1326,7 @@ class Fields extends Component
     }
 
     /**
-     * Returns the sql expression to be used in the 'where' param for the query.
+     * Returns the array of sql "like" params to be used in the 'where' param for the query.
      *
      * @param string $term
      * @return array
