@@ -20,6 +20,7 @@ use yii\db\QueryInterface;
  *
  * @mixin Query
  * @mixin ElementQuery
+ * @phpstan-require-extends ElementQuery
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
