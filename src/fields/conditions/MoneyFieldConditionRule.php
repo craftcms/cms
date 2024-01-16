@@ -49,9 +49,12 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
 
         parent::setAttributes($values, $safeOnly);
 
+        /** @var Money $field */
+        $field = $this->field();
+
         if (isset($this->_tempValue) && is_array($this->_tempValue) && isset($this->_fieldUid)) {
             if (!isset($this->_tempValue['currency'])) {
-                $this->_tempValue['currency'] = $this->field()->currency;
+                $this->_tempValue['currency'] = $field->currency;
             }
 
             $this->_tempValue = MoneyHelper::toMoney($this->_tempValue);
@@ -61,7 +64,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
 
         if (isset($this->_tempMaxValue) && is_array($this->_tempMaxValue) && isset($this->_fieldUid)) {
             if (!isset($this->_tempMaxValue['currency'])) {
-                $this->_tempMaxValue['currency'] = $this->field()->currency;
+                $this->_tempMaxValue['currency'] = $field->currency;
             }
 
             $this->_tempMaxValue = MoneyHelper::toMoney($this->_tempMaxValue);
