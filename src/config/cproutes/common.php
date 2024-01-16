@@ -64,7 +64,6 @@ return [
     'settings/sections' => 'sections/index',
     'settings/sections/new' => 'sections/edit-section',
     'settings/sections/<sectionId:\d+>' => 'sections/edit-section',
-    'settings/entry-types' => 'entry-types/index',
     'settings/entry-types/new' => 'entry-types/edit',
     'settings/entry-types/<entryTypeId:\d+>' => 'entry-types/edit',
     'settings/sites' => 'sites/settings-index',

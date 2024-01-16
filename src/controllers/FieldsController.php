@@ -331,6 +331,30 @@ JS;
     }
 
     /**
+     * Returns data formatted for AdminTable vue component
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionTableData(): Response
+    {
+        $this->requireAcceptsJson();
+
+        $fieldsService = Craft::$app->getFields();
+
+        $page = $this->request->getParam('page', 1);
+        $limit = $this->request->getParam('per_page', 100);
+        $searchTerm = $this->request->getParam('search', null);
+
+        [$pagination, $tableData] = $fieldsService->getTableData($page, $limit, $searchTerm);
+
+        return $this->asSuccess(data: [
+            'pagination' => $pagination,
+            'data' => $tableData,
+        ]);
+    }
+
+    /**
      * Returns the posted settings.
      *
      * @return array

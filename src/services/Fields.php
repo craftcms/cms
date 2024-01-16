@@ -13,6 +13,7 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\MemoizableArray;
+use craft\base\MissingComponentInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\db\Query;
 use craft\db\Table;
@@ -46,12 +47,14 @@ use craft\fields\Tags as TagsField;
 use craft\fields\Time;
 use craft\fields\Url;
 use craft\fields\Users as UsersField;
+use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\records\Field as FieldRecord;
@@ -1266,6 +1269,80 @@ class Fields extends Component
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
+    }
+
+
+    /**
+     * Returns data for vue AdminTable (pagination and tableData).
+     *
+     * @param int $page
+     * @param int $limit
+     * @param string|null $searchTerm
+     * @return array
+     */
+    public function getTableData(int $page, int $limit, ?string $searchTerm = null): array
+    {
+        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+
+        $offset = ($page - 1) * $limit;
+        $query = $this->_createFieldQuery();
+
+        if ($searchTerm !== null && $searchTerm !== '') {
+            $searchParams = $this->_getSearchParams($searchTerm);
+            if (!empty($searchParams)) {
+                $query->where(['or', ...$searchParams]);
+            }
+        }
+
+        $total = $query->count();
+
+        $query->limit($limit);
+        $query->offset($offset);
+
+        $result = $query->all();
+
+        $tableData = [];
+        foreach ($result as $item) {
+            $field = $this->createField($item);
+            $fieldIsMissing = $field instanceof MissingComponentInterface;
+
+            $tableData[] = [
+                'id' => $field->id,
+                'title' => Craft::t('site', $field->name),
+                'translatable' => $field->getIsTranslatable(null) ? ($field->getTranslationDescription(null) ?? Craft::t('app', 'This field is translatable.')) : false,
+                'searchable' => (bool)$field->searchable,
+                'url' => UrlHelper::url('settings/fields/edit/' . $field->id),
+                'handle' => $field->handle,
+                'type' => [
+                    'isMissing' => $fieldIsMissing,
+                    'label' => $fieldIsMissing ? $field->expectedType : $field->displayName(),
+                ],
+            ];
+        }
+
+        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+
+        return [$pagination, $tableData];
+    }
+
+    /**
+     * Returns the sql expression to be used in the 'where' param for the query.
+     *
+     * @param string $term
+     * @return array
+     */
+    private function _getSearchParams(string $term): array
+    {
+        $searchParams = ['name', 'handle', 'instructions', 'type'];
+        $searchQueries = [];
+
+        if ($term !== '') {
+            foreach ($searchParams as $param) {
+                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+            }
+        }
+
+        return $searchQueries;
     }
 
     /**

@@ -30,8 +30,8 @@
             type="text"
             autocomplete="off"
             :placeholder="searchPlaceholderText"
-            v-model="searchTerm"
-            @input="handleSearch"
+            v-bind:value="searchTerm"
+            v-on:input="handleSearch($event.target.value)"
           />
           <button
             v-if="searchTerm.length"
@@ -39,7 +39,7 @@
             :title="searchClearTitle"
             role="button"
             :aria-label="searchClearTitle"
-            @click="resetSearch"
+            @click="handleSearch('')"
           ></button>
         </div>
 
@@ -424,7 +424,7 @@
       },
       noSearchResults: {
         type: String,
-        default: Craft.t('app', 'No results'),
+        default: Craft.t('app', 'No results.'),
       },
       tableData: {
         type: Array,
@@ -479,6 +479,7 @@
         isEmpty: false,
         isLoading: true,
         rows: [],
+        searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
         searchTerm: '',
         selectAll: null,
         sortable: null,
@@ -647,7 +648,15 @@
         this.handleOnSelectCallback(this.checks);
       },
 
-      handleSearch: debounce(function () {
+      handleSearch(val) {
+        if (this.searchTerm != val) {
+          this.searchTerm = val;
+          this.search();
+        }
+      },
+
+      search: debounce(function () {
+        // in data mode - match and show/hide via JS
         if (!this.isApiMode && this.tableData.length) {
           let tableData = this.$refs.vuetable.tableData;
           let searchTerm = this.searchTerm.toLowerCase();
@@ -676,21 +685,13 @@
 
           this.isEmpty = visibleRowsCount == 0;
         } else {
+          // in API mode - send to the endpoint to handle
+          if (this.$refs.vuetable.currentPage !== 1) {
+            this.$refs.vuetable.changePage(1);
+          }
           this.reload();
         }
-      }, 200),
-
-      resetSearch() {
-        this.searchTerm = '';
-
-        if (!this.isApiMode && this.tableData.length) {
-          this.rows.forEach((row) => {
-            row.classList.remove('hidden');
-          });
-        } else {
-          this.reload();
-        }
-      },
+      }, 250),
 
       handleSelectAll() {
         var tableData = this.$refs.vuetable.tableData;
