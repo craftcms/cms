@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.6.1 - 2024-01-16
 
 - `craft\log\MonologTarget` instances are now created via `Craft::createObject()`. ([#13341](https://github.com/craftcms/cms/issues/13341))
 - Fixed a bug where `craft\helpers\Db::prepareValueForDb()` wasn’t converting objects to arrays for JSON columns.
