@@ -23,6 +23,7 @@ use yii\validators\Validator;
  * @mixin YiiComponent
  * @mixin Model
  * @mixin SavableComponentTrait
+ * @phpstan-require-extends Field
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

@@ -328,7 +328,7 @@ class Local extends Fs implements LocalFsInterface
     /**
      * @inheritdoc
      */
-    public function renameFile(string $path, string $newPath): void
+    public function renameFile(string $path, string $newPath, array $config = []): void
     {
         $this->createDirectory(pathinfo($newPath, PATHINFO_DIRNAME));
         @rename($this->prefixPath($path), $this->prefixPath($newPath));
@@ -337,7 +337,7 @@ class Local extends Fs implements LocalFsInterface
     /**
      * @inheritdoc
      */
-    public function copyFile(string $path, string $newPath): void
+    public function copyFile(string $path, string $newPath, array $config = []): void
     {
         $this->createDirectory(pathinfo($newPath, PATHINFO_DIRNAME));
         @copy($this->prefixPath($path), $this->prefixPath($newPath));

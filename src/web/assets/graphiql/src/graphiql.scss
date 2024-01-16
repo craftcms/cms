@@ -125,7 +125,8 @@ body,
 
       .variable-editor-title {
         background: var(--gray-050);
-        box-shadow: 0 -1px 0 var(--hairline-color),
+        box-shadow:
+          0 -1px 0 var(--hairline-color),
           0 1px 0 var(--hairline-color);
         z-index: 4;
         color: var(--light-text-color);

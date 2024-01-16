@@ -605,8 +605,8 @@ Craft.ElementEditor = Garnish.Base.extend(
           typeof status != 'undefined'
             ? status
             : this.settings.siteStatuses.hasOwnProperty(site.id)
-            ? this.settings.siteStatuses[site.id]
-            : true,
+              ? this.settings.siteStatuses[site.id]
+              : true,
         disabled: !!this.settings.revisionId,
       });
 
@@ -2069,8 +2069,10 @@ Craft.ElementEditor = Garnish.Base.extend(
                         !this.settings.isProvisionalDraft
                           ? Craft.t('app', 'draft')
                           : Craft.elementTypeNames[this.settings.elementType]
-                          ? Craft.elementTypeNames[this.settings.elementType][2]
-                          : Craft.t('app', 'element'),
+                            ? Craft.elementTypeNames[
+                                this.settings.elementType
+                              ][2]
+                            : Craft.t('app', 'element'),
                     }),
                     {
                       details: $reloadBtn,

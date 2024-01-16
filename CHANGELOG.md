@@ -1,8 +1,28 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Money field condition rules now use money inputs. ([#14148](https://github.com/craftcms/cms/pull/14148))
+- Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
+- Added `craft\fields\Money::currencyLabel()`.
+- Added `craft\fields\Money::subunits()`.
+- Added `craft\fields\conditions\MoneyFieldConditionRule`.
+- `craft\base\BaseFsInterface::renameFile()` and `copyFile()` now have a `$config` argument. ([#14147](https://github.com/craftcms/cms/pull/14147))
+- Fixed a bug where `craft\helpers\Db::prepareValueForDb()` wasn’t converting objects to arrays for JSON columns.
+- Fixed a bug where Checkboxes, Multi-select, Dropdown, and Radio Buttons fields weren’t displaying `0` option labels within element indexes. ([#14127](https://github.com/craftcms/cms/issues/14127))
+- Fixed a bug where `craft\db\Migration::renameTable()` was renaming the table for the primary database connection, rather than the migration’s connection. ([#14131](https://github.com/craftcms/cms/issues/14131))
+- Fixed a bug where `Craft.FormObserver` wasn’t working reliably for non-`<form>` containers.
+- Fixed a bug where Selectize inputs were triggering autosaves, even when the value didn’t change.
+- Fixed a bug where asset edit screens didn’t include the “Open in Image Editor” action item. ([#14125](https://github.com/craftcms/cms/pull/14125))
+- Updated Monolog to v3.
+- Updated Axios to 1.6.5.
+- Updated D3 to 7.8.5.
+- Updated Punycode to 2.0.1.
+- Updated XRegExp to 5.1.1.
+
 ## 5.0.0-alpha.5 - 2024-01-09
 
-- Added live conditional field support to asset edit pages, as well as asset, user, and tag slideouts. ([#14115](https://github.com/craftcms/cms/pull/14115))
+- Added live conditional field support to asset and user edit pages, as well as all element slideouts. ([#14115](https://github.com/craftcms/cms/pull/14115))
 - It’s now possible to delete volume folders using the “Delete” asset action. ([#13086](https://github.com/craftcms/cms/discussions/13086))
 - The “Save as a new entry” action is now available to all users with the “Create entries” permission, and will create a new unpublished draft rather than a fully-saved entry. ([#9577](https://github.com/craftcms/cms/issues/9577), [#10244](https://github.com/craftcms/cms/discussions/10244))
 - Custom field condition rules now show their field handles, for users with the “Show field handles in edit forms” preference enabled. ([#13300](https://github.com/craftcms/cms/pull/13300))
@@ -26,7 +46,7 @@
 - Fixed some global header styling issues.
 - Fixed an error that occurred when logged in with an account that didn’t have permission to edit any sites.
 - Fixed a bug where conditionally-added field layout tabs weren’t showing their content.
-- Fixed a bug where nested Matrix entries weren’t always retaining their sort order when applying a draft. ([#14111](https://github.com/craftcms/cms/issues/14111)) 
+- Fixed a bug where nested Matrix entries weren’t always retaining their sort order when applying a draft. ([#14111](https://github.com/craftcms/cms/issues/14111))
 - Added `Craft.FormObserver`. ([#14114](https://github.com/craftcms/cms/pull/14114))
 - Updated `web-auth/webauthn-lib` to ^4.7.
 

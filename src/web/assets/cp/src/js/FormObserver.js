@@ -142,7 +142,9 @@ Craft.FormObserver = Garnish.Base.extend({
       this.pause();
     });
     this.addListener(input, 'selectizedropdownclose', () => {
-      this.resume();
+      setTimeout(() => {
+        this.resume();
+      }, 100);
     });
   },
 
@@ -184,7 +186,7 @@ Craft.FormObserver = Garnish.Base.extend({
     if (this.$container[0].nodeName === 'FORM') {
       this._formData = this.$container.serialize();
     } else {
-      this._formData = $('<form/>').html(this.$container.html()).serialize();
+      this._formData = $('<form/>').append(this.$container.clone()).serialize();
     }
     return this._formData;
   },

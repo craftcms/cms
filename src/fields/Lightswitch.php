@@ -228,7 +228,7 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
         if (!$value) {
             return '';
         }
-        
+
         $label = $this->onLabel ?: Craft::t('app', 'Enabled');
 
         return Html::tag('span', '', [

@@ -1216,8 +1216,8 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
     return $(`
 <div class="fld-tab fld-insertion" style="height: ${this.$draggee.height()}px;">
   <div class="tabs"><div class="tab sel draggable" style="width: ${$tab.outerWidth()}px; height: ${
-      $tab.outerHeight() + 2
-    }px;"></div></div>
+    $tab.outerHeight() + 2
+  }px;"></div></div>
   <div class="fld-tabcontent" style="height: ${
     this.$draggee.find('.fld-tabcontent').height() - 2
   }px;"></div>

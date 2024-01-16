@@ -388,7 +388,7 @@ abstract class Migration extends \yii\db\Migration
     public function renameTable($table, $newName)
     {
         $time = $this->beginCommand("rename table $table to $newName");
-        Db::renameTable($table, $newName);
+        Db::renameTable($table, $newName, $this->db);
         $this->endCommand($time);
     }
 
