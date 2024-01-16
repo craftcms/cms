@@ -19,7 +19,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\services\Auth;
+use craft\services\AuthSSO;
 
 /**
  * We should always trust an external provider; therefore we need to perform additional
@@ -97,7 +97,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
      */
     protected function getRequestUrl(): ?string
     {
-        return UrlHelper::actionUrl('auth/request', ['provider' => $this->handle], null, false);
+        return UrlHelper::actionUrl('auth-sso/request', ['provider' => $this->handle], null, false);
     }
 
     /**
@@ -107,7 +107,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
      */
     protected function getResponseUrl(): ?string
     {
-        return UrlHelper::actionUrl('auth/response', ['provider' => $this->handle], null, false);
+        return UrlHelper::actionUrl('auth-sso/response', ['provider' => $this->handle], null, false);
     }
 
     /**
@@ -234,7 +234,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
             'groupIds' => $groupIds,
         ]);
 
-        $this->trigger(Auth::EVENT_POPULATE_USER_GROUPS, $event);
+        $this->trigger(AuthSSO::EVENT_POPULATE_USER_GROUPS, $event);
 
         return Craft::$app->getUsers()->assignUserToGroups(
             $user->getId(),
@@ -310,7 +310,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
             'sender' => $data,
         ]);
 
-        $this->trigger(Auth::EVENT_POPULATE_USER, $event);
+        $this->trigger(AuthSSO::EVENT_POPULATE_USER, $event);
 
         return $event->user;
     }

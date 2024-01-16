@@ -63,6 +63,7 @@ use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Auth;
+use craft\services\AuthSSO;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Conditions;
@@ -139,6 +140,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read Assets $assets The assets service
  * @property-read Auth $auth The user authentication service
+ * @property-read AuthSSO $authsso
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
  * @property-read Conditions $conditions The conditions service
@@ -1019,6 +1021,18 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('auth');
+    }
+
+    /**
+     * Returns the user authentication service.
+     *
+     * @return AuthSSO The AuthSSO service
+     * @since 5.0.0
+     */
+    public function getAuthSSO(): AuthSSO
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('authSso');
     }
 
     /**

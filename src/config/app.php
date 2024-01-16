@@ -29,6 +29,9 @@ return [
         'auth' => [
             'class' => craft\services\Auth::class,
         ],
+        'authSso' => [
+            'class' => craft\services\AuthSSO::class,
+        ],
         'categories' => [
             'class' => craft\services\Categories::class,
         ],

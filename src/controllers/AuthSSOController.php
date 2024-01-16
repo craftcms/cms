@@ -16,7 +16,7 @@ use craft\web\Controller;
 use yii\web\HttpException;
 use yii\web\Response;
 
-class AuthController extends Controller
+class AuthSSOController extends Controller
 {
     /**
      * @inheritdoc
@@ -152,7 +152,7 @@ class AuthController extends Controller
             $message,
             "auth"
         );
- 
+
         throw new HttpException(500, $message, 0, $exception);
     }
 }
