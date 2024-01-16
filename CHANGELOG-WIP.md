@@ -211,6 +211,8 @@
 - Added `craft\fields\Matrix::getSupportedSitesForElement()`.
 - Added `craft\fields\Matrix::setEntryTypes()`.
 - Added `craft\fields\Matrix::supportedSiteIds()`.
+- Added `craft\fields\Money::currencyLabel()`.
+- Added `craft\fields\Money::subunits()`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait::fieldInstances()`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait::setLayoutElementUid()`.
 - Added `craft\helpers\App::isWindows()`.
