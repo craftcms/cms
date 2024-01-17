@@ -288,6 +288,7 @@
     },
 
     props: {
+      // NOTE: all the properties here, should also be listed in the src/web/assets/admintable/src/main.js file, under defaults
       actions: {
         type: Array,
         default: () => {
@@ -476,9 +477,9 @@
         lastPage: 1,
         detailRow: AdminTableDetailRow,
         dragging: false,
+        initTableData: [],
         isEmpty: false,
         isLoading: true,
-        rows: [],
         searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
         searchTerm: '',
         selectAll: null,
@@ -527,15 +528,7 @@
           this.$emit('data', this.tableData);
 
           this.$nextTick(() => {
-            var tableData = this.$refs.vuetable.tableData;
-            tableData.forEach((row, index) => {
-              if (this.rows[index] == undefined) {
-                let $el = this.$refs.vuetable.$el.querySelector(
-                  '[item-index="' + index + '"]'
-                );
-                this.rows[index] = $el;
-              }
-            });
+            this.initTableData = this.$refs.vuetable.tableData;
           });
         }
 
@@ -651,32 +644,28 @@
       handleSearch: debounce(function () {
         // in data mode - match and show/hide via JS
         if (!this.isApiMode && this.tableData.length) {
-          let tableData = this.$refs.vuetable.tableData;
+          let tableData = this.initTableData;
           let searchTerm = this.searchTerm.toLowerCase();
-          let visibleRowsCount = tableData.length;
+          let results = [];
 
           tableData.forEach((row, index) => {
             let includes = false;
 
             this.searchParams.some((param) => {
-              return Object.entries(row).some(([key, value]) => {
+              Object.entries(row).some(([key, value]) => {
                 if (key === param && value.toLowerCase().includes(searchTerm)) {
-                  includes = true;
-                  return includes;
+                  return (includes = true);
                 }
               });
             });
 
-            if (!includes) {
-              this.rows[index].classList.add('hidden');
-              this.removeCheck(row.id);
-              visibleRowsCount--;
-            } else {
-              this.rows[index].classList.remove('hidden');
+            if (includes) {
+              results.push(tableData[index]);
             }
           });
 
-          this.isEmpty = visibleRowsCount == 0;
+          this.isEmpty = results.length == 0;
+          this.$refs.vuetable.tableData = results;
         } else {
           // in API mode - send to the endpoint to handle
           if (this.$refs.vuetable.currentPage !== 1) {
