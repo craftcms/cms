@@ -539,6 +539,22 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element that was just deleted
      */
     public function afterElementDelete(ElementInterface $element): void;
+    /**
+     * Performs actions before an element is deleted for a site.
+     *
+     * @param ElementInterface $element The element that is about to be deleted
+     * @return bool Whether the element should be deleted for a site
+     * @since 4.7.0
+     */
+    public function beforeElementDeleteForSite(ElementInterface $element): bool;
+
+    /**
+     * Performs actions after the element has been deleted.
+     *
+     * @param ElementInterface $element The element that was just deleted for a site
+     * @since 4.7.0
+     */
+    public function afterElementDeleteForSite(ElementInterface $element): void;
 
     /**
      * Performs actions before an element is restored.

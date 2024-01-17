@@ -1148,6 +1148,28 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
+    public function beforeElementDeleteForSite(ElementInterface $element): bool
+    {
+        $elementsService = Craft::$app->getElements();
+
+        /** @var MatrixBlock[] $matrixBlocks */
+        $matrixBlocks = MatrixBlock::find()
+            ->primaryOwnerId($element->id)
+            ->status(null)
+            ->siteId($element->siteId)
+            ->all();
+
+        foreach ($matrixBlocks as $matrixBlock) {
+            $matrixBlock->deletedWithOwner = true;
+            $elementsService->deleteElementForSite($matrixBlock);
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any Matrix blocks for this element
