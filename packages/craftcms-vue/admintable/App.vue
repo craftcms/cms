@@ -288,20 +288,15 @@
     },
 
     props: {
-      container: {
-        type: String,
-      },
       actions: {
         type: Array,
         default: () => {
           return [];
         },
       },
-      footerActions: {
-        type: Array,
-        default: () => {
-          return [];
-        },
+      allowMultipleDeletions: {
+        type: Boolean,
+        default: false,
       },
       allowMultipleSelections: {
         type: Boolean,
@@ -335,9 +330,8 @@
           return [];
         },
       },
-      allowMultipleDeletions: {
-        type: Boolean,
-        default: false,
+      container: {
+        type: String,
       },
       deleteAction: {
         type: String,
@@ -359,6 +353,12 @@
         type: String,
         default: Craft.t('app', 'No data available.'),
       },
+      footerActions: {
+        type: Array,
+        default: () => {
+          return [];
+        },
+      },
       fullPage: {
         type: Boolean,
         default: false,
@@ -379,9 +379,19 @@
       minItems: {
         type: Number,
       },
+      moveToPageAction: {
+        type: String,
+      },
+      noSearchResults: {
+        type: String,
+        default: Craft.t('app', 'No results.'),
+      },
       padded: {
         type: Boolean,
         default: false,
+      },
+      paginatedReorderAction: {
+        type: String,
       },
       perPage: {
         type: Number,
@@ -390,19 +400,13 @@
       reorderAction: {
         type: String,
       },
-      moveToPageAction: {
+      reorderFailMessage: {
         type: String,
-      },
-      paginatedReorderAction: {
-        type: String,
+        default: Craft.t('app', 'Couldn’t reorder items.'),
       },
       reorderSuccessMessage: {
         type: String,
         default: Craft.t('app', 'Items reordered.'),
-      },
-      reorderFailMessage: {
-        type: String,
-        default: Craft.t('app', 'Couldn’t reorder items.'),
       },
       search: {
         type: Boolean,
@@ -422,10 +426,6 @@
         type: String,
         default: Craft.t('app', 'Search'),
       },
-      noSearchResults: {
-        type: String,
-        default: Craft.t('app', 'No results.'),
-      },
       tableData: {
         type: Array,
         default: () => {
@@ -437,19 +437,25 @@
       },
 
       // Events
+      onCellClicked: {
+        default: function () {},
+      },
+      onCellDoubleClicked: {
+        default: function () {},
+      },
+      onData: {
+        default: function () {},
+      },
       onLoaded: {
         default: function () {},
       },
       onLoading: {
         default: function () {},
       },
-      onData: {
+      onPagination: {
         default: function () {},
       },
-      onCellClicked: {
-        default: function () {},
-      },
-      onCellDoubleClicked: {
+      onQueryParams: {
         default: function () {},
       },
       onRowClicked: {
@@ -458,13 +464,7 @@
       onRowDoubleClicked: {
         default: function () {},
       },
-      onPagination: {
-        default: function () {},
-      },
       onSelect: {
-        default: function () {},
-      },
-      onQueryParams: {
         default: function () {},
       },
     },
