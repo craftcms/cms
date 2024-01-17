@@ -30,8 +30,8 @@
             type="text"
             autocomplete="off"
             :placeholder="searchPlaceholderText"
-            v-bind:value="searchTerm"
-            v-on:input="handleSearch($event.target.value)"
+            v-model="searchTerm"
+            @input="handleSearch"
           />
           <button
             v-if="searchTerm.length"
@@ -39,7 +39,7 @@
             :title="searchClearTitle"
             role="button"
             :aria-label="searchClearTitle"
-            @click="handleSearch('')"
+            @click="resetSearch"
           ></button>
         </div>
 
@@ -648,14 +648,7 @@
         this.handleOnSelectCallback(this.checks);
       },
 
-      handleSearch(val) {
-        if (this.searchTerm != val) {
-          this.searchTerm = val;
-          this.search();
-        }
-      },
-
-      search: debounce(function () {
+      handleSearch: debounce(function () {
         // in data mode - match and show/hide via JS
         if (!this.isApiMode && this.tableData.length) {
           let tableData = this.$refs.vuetable.tableData;
@@ -692,6 +685,11 @@
           this.reload();
         }
       }, 250),
+
+      resetSearch: function () {
+        this.searchTerm = '';
+        this.handleSearch();
+      },
 
       handleSelectAll() {
         var tableData = this.$refs.vuetable.tableData;
