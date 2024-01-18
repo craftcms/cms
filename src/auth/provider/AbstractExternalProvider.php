@@ -248,7 +248,8 @@ abstract class AbstractExternalProvider extends AbstractProvider
      */
     private function enableUser(User $user)
     {
-        if (!$user->getId() || Craft::$app->getUsers()->activateUser($user)) {
+        if (!$user->getId()) {
+            Craft::$app->getUsers()->activateUser($user);
             $user->enabled = true;
             $user->archived = false;
 
