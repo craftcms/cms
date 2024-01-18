@@ -27,6 +27,7 @@ use craft\models\FieldLayoutTab;
 use craft\models\Site;
 use craft\services\Elements;
 use craft\services\ElementSources;
+use craft\ui\components\StatusIndicator;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use Illuminate\Support\Collection;
@@ -616,28 +617,11 @@ class Cp
      */
     public static function statusIndicatorHtml(string $status, array $attributes = null): ?string
     {
-        if ($status === 'draft') {
-            return Html::tag('span', '', [
-                'data' => ['icon' => 'draft'],
-                'class' => 'icon',
-                'role' => 'img',
-                'aria' => [
-                    'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
-                ],
-            ]);
-        }
-
-        return Html::tag('span', '', [
-            'class' => array_filter([
-                'status',
-                $status,
-                $attributes['color'] ?? null,
-            ]),
-            'role' => 'img',
-            'aria' => [
-                'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $attributes['label'] ?? ucfirst($status)),
-            ],
-        ]);
+        return StatusIndicator::make()
+            ->status($status)
+            ->label($attributes['label'] ?? null)
+            ->color($attributes['color'] ?? null)
+            ->render();
     }
 
 

@@ -40,10 +40,10 @@ trait HasLabel
     /**
      * Set the label property
      *
-     * @param string $label
+     * @param ?string $label
      * @return $this
      */
-    public function label(string $label): static
+    public function label(?string $label): static
     {
         $this->label = $label;
         return $this;
