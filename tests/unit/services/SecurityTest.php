@@ -7,8 +7,6 @@
 
 namespace crafttests\unit\services;
 
-use Codeception\Test\Unit;
-use Craft;
 use craft\services\Security;
 use craft\test\TestCase;
 
@@ -22,65 +20,43 @@ use craft\test\TestCase;
 class SecurityTest extends TestCase
 {
     /**
-     * @var Security
-     */
-    protected Security $security;
-
-    /**
      * @dataProvider redactIfSensitiveDataProvider
      * @param mixed $expected
      * @param string $name
      * @param mixed $value
-     * @param string[] $characters
+     * @param string[] $sensitiveKeywords
      */
-    public function testRedactIfSensitive(mixed $expected, string $name, mixed $value, array $characters): void
+    public function testRedactIfSensitive(mixed $expected, string $name, mixed $value, array $sensitiveKeywords): void
     {
-        $this->security->sensitiveKeywords = $characters;
-        self::assertSame($expected, $this->security->redactIfSensitive($name, $value));
+        $security = new Security(['sensitiveKeywords' => $sensitiveKeywords]);
+        self::assertSame($expected, $security->redactIfSensitive($name, $value));
     }
 
     /**
      * @return array
      */
-    public function redactIfSensitiveDataProvider(): array
+    public static function redactIfSensitiveDataProvider(): array
     {
         return [
             ['••••••••••••••••••••', 'Name', 'test stuff craft cms', []],
-            ['test stuff craft cms', 'Name', 'test stuff craft cms', ['Name']],
-
-            // Capitals. Nothing done
-            ['test stuff craft cms', 'Name', 'test stuff craft cms', ['Name', 'Raaaa']],
-            ['test stuff craft cms', 'Name Addition', 'test stuff craft cms', ['Name']],
-            ['test stuff craft cms', 'Name Addition', 'test stuff craft cms', ['Name', 'Addition']],
-
-            // Various casing
+            ['test stuff craft cms', 'Name', 'test stuff craft cms', ['Foo']],
+            ['••••••••••••••••••••', 'Name', 'test stuff craft cms', ['Name']],
+            ['••••••••••••••••••••', 'Name', 'test stuff craft cms', ['Name', 'Raaaa']],
+            ['••••••••••••••••••••', 'Name Addition', 'test stuff craft cms', ['Name']],
+            ['••••••••••••••••••••', 'Name Addition', 'test stuff craft cms', ['Name', 'Addition']],
             ['••••••••••••••••••••', 'not', 'test stuff craft cms', ['not', 'Naaah']],
             ['test stuff craft cms', 'naah', 'test stuff craft cms', ['not', 'naaah']],
-
             ['••••••••••••••••••••', 'Not', 'test stuff craft cms', ['not', 'Naaah']],
-            ['test stuff craft cms', 'not', 'test stuff craft cms', ['Not', 'Naaah']],
-
-            ['test stuff craft cms', 'not naaah', 'test stuff craft cms', ['Not', 'Naaah']],
+            ['••••••••••••••••••••', 'not', 'test stuff craft cms', ['Not', 'Naaah']],
+            ['••••••••••••••••••••', 'not naaah', 'test stuff craft cms', ['Not', 'Naaah']],
             ['••••••••••••••••••••', 'not naaah', 'test stuff craft cms', ['not', 'naaah']],
-            ['test stuff craft cms', 'name addition', 'test stuff craft cms', ['Name', 'Addition']],
-
+            ['••••••••••••••••••••', 'name addition', 'test stuff craft cms', ['Name', 'Addition']],
             ['test stuff craft cms', ' ', 'test stuff craft cms', ['   ']],
             ['test stuff craft cms', '😀', 'test stuff craft cms', ['😀😘']],
             ['test stuff craft cms', '😀 😘', 'test stuff craft cms', ['😀', '😘']],
-
             ['test stuff craft cms', '😀⛄', 'test stuff craft cms', []],
-
             ['not stuff craft cms', '', 'not stuff craft cms', ['not']],
+            ['•••••••••••••••••••', 'NOT_STUFF_CRAFT_CMS', 'not stuff craft cms', ['NOT_STUFF']],
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function _before(): void
-    {
-        parent::_before();
-
-        $this->security = Craft::$app->getSecurity();
     }
 }

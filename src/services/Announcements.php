@@ -8,9 +8,9 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\PluginInterface;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Queue;
@@ -41,13 +41,15 @@ class Announcements extends Component
      * @param string $heading The announcement heading.
      * @param string $body The announcement body.
      * @param string|null $pluginHandle The plugin handle, if this announcement belongs to a plugin
+     * @param bool $adminsOnly Whether only admin users should receive the announcement
      */
-    public function push(string $heading, string $body, ?string $pluginHandle = null): void
+    public function push(string $heading, string $body, ?string $pluginHandle = null, bool $adminsOnly = false): void
     {
         Queue::push(new Announcement([
             'heading' => $heading,
             'body' => $body,
             'pluginHandle' => $pluginHandle,
+            'adminsOnly' => $adminsOnly,
         ]));
     }
 
@@ -77,7 +79,10 @@ class Announcements extends Component
 
         // Any enabled plugins?
         $pluginsService = Craft::$app->getPlugins();
-        $enabledPluginHandles = ArrayHelper::getColumn($pluginsService->getAllPlugins(), 'id');
+        $enabledPluginHandles = array_map(
+            fn(PluginInterface $plugin) => $plugin->getHandle(),
+            $pluginsService->getAllPlugins(),
+        );
         if (!empty($enabledPluginHandles)) {
             $query
                 ->addSelect(['pluginHandle' => 'p.handle'])

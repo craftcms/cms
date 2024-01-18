@@ -73,12 +73,14 @@ class ImageTransform extends Model
     public string $mode = 'crop';
 
     /**
-     * @var 'top-left'|'top-center'|'top-right'|'center-left'|'center-center'|'center-right'|'bottom-left'|'bottom-center'|'bottom-right' Position
+     * @var string Position
+     * @phpstan-var 'top-left'|'top-center'|'top-right'|'center-left'|'center-center'|'center-right'|'bottom-left'|'bottom-center'|'bottom-right'
      */
     public string $position = 'center-center';
 
     /**
-     * @var 'none'|'line'|'plane'|'partition' Interlace
+     * @var string Interlace
+     * @phpstan-var 'none'|'line'|'plane'|'partition'
      */
     public string $interlace = 'none';
 
@@ -109,6 +111,24 @@ class ImageTransform extends Model
      * @phpstan-var class-string<ImageTransformerInterface>
      */
     protected string $transformer = self::DEFAULT_TRANSFORMER;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (isset($config['width']) && !$config['width']) {
+            unset($config['width']);
+        }
+        if (isset($config['height']) && !$config['height']) {
+            unset($config['height']);
+        }
+        if (isset($config['quality']) && !$config['quality']) {
+            unset($config['quality']);
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -276,5 +296,28 @@ class ImageTransform extends Model
         }
 
         $this->transformer = $transformer;
+    }
+
+    /**
+     * Returns the transform’s config.
+     *
+     * @return array
+     * @since 4.4.2
+     */
+    public function getConfig(): array
+    {
+        return [
+            'fill' => $this->fill,
+            'format' => $this->format,
+            'handle' => $this->handle,
+            'height' => $this->height,
+            'interlace' => $this->interlace,
+            'mode' => $this->mode,
+            'name' => $this->name,
+            'position' => $this->position,
+            'quality' => $this->quality,
+            'upscale' => $this->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages,
+            'width' => $this->width,
+        ];
     }
 }

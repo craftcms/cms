@@ -156,12 +156,10 @@ class ImageTransforms
     public static function getLocalImageSource(Asset $asset): string
     {
         $volume = $asset->getVolume();
-        $fs = $volume->getFs();
-
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
         try {
-            if (!$fs instanceof LocalFsInterface) {
+            if (!$volume->getFs() instanceof LocalFsInterface) {
                 // This is a non-local fs
                 if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
                     if (is_file($imageSourcePath)) {
@@ -189,7 +187,7 @@ class ImageTransforms
                         }
                     }
 
-                    Assets::downloadFile($fs, $asset->getPath(), $tempFilePath);
+                    Assets::downloadFile($volume, $asset->getPath(), $tempFilePath);
 
                     if (!is_file($tempFilePath) || filesize($tempFilePath) === 0) {
                         if (is_file($tempFilePath) && !FileHelper::unlink($tempFilePath)) {
@@ -475,7 +473,10 @@ class ImageTransforms
         }
 
         // Save it!
-        $tempFilename = sprintf('%s.%s', uniqid($asset->getFilename(false), true), $format);
+
+        // It's important that the temp filename has the target file extension, as craft\image\Raster::saveAs() uses it
+        // to determine the options that should be passed to Imagine\Image\ManipulatorInterface::save().
+        $tempFilename = FileHelper::uniqueName(sprintf('%s.%s', $asset->getFilename(false), $format));
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
         $image->saveAs($tempPath);
         clearstatcache(true, $tempPath);

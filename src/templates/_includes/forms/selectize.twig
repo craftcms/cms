@@ -3,21 +3,33 @@
     dropdownParent: 'body',
 }|merge(selectizeOptions ?? []) %}
 
+{% set multi = multi ?? false %}
+{% if multi %}
+    {% set selectizeOptions = selectizeOptions|merge({
+        plugins: (selectizeOptions.plugins ?? [])|push('remove_button')
+    }) %}
+{% else %}
+    {% set selectizeOptions = selectizeOptions|merge({
+        plugins: (selectizeOptions.plugins ?? [])|push('select_on_focus')
+    }) %}
+{% endif %}
+
 {# Normalize the options #}
 {% set options = (options ?? [])|map((o, k) => (o.optgroup is defined or o.value is defined) ? o : {
     value: k,
     label: o.label is defined ? o.label : o,
 }) %}
+{% set options = options|map(o => o|merge({
+    data: (o.data ?? {})|merge(o.data.data ?? {})
+})) %}
 
 {% if includeEnvVars ?? false %}
     {% if allowedEnvValues is not defined %}
         {% set allowedEnvValues = options|filter(o => o.optgroup is not defined)|map(o => o.value) %}
     {% endif %}
-    {% set options = options|map(o => o.data.data.hint is defined ? o : o|merge({
+    {% set options = options|map(o => o.data.hint is defined ? o : o|merge({
         data: {
-            data: {
-                hint: o.value,
-            }
+            hint: o.value,
         },
     }, recursive=true)) %}
 {% endif %}
@@ -31,87 +43,151 @@
             {value: '', label: ' '},
         ] %}
     {% endif %}
-    {% set options = options|merge([
-        {
-            label: addOptionLabel ,
-            value: '__add__',
-            data: {
-                data: {
-                    addOption: true,
-                },
-            },
+    {% set options = options|push({
+        label: addOptionLabel ,
+        value: '__add__',
+        data: {
+            addOption: true,
         },
-    ]) %}
+    }) %}
 {% endif %}
 
 {% if includeEnvVars ?? false %}
     {% set options = options|merge(craft.cp.getEnvOptions(allowedEnvValues)) %}
 {% endif %}
 
-{% include '_includes/forms/select' with {
+{% include (multi ? '_includes/forms/multiselect.twig' : '_includes/forms/select.twig') with {
     class: (class ?? [])|explodeClass|push('selectize')|unique,
+    inputAttributes: {
+        style: {display: 'none'},
+        autocomplete: (not multi and autocomplete is defined) ? autocomplete : false
+    }|merge(inputAttributes ?? [], recursive=true),
 } %}
 
 {% js %}
 (() => {
+    const id = {{ id|namespaceInputId|json_encode|raw }};
+
+    const hasData = (data, option) => {
+        return typeof data[option] !== 'undefined' || typeof data[option.toLowerCase()] !== 'undefined';
+    };
+    const getData = (data, option) => {
+        if (typeof data[option] !== 'undefined') {
+            return data[option];
+        }
+        return data[option.toLowerCase()];
+    };
     const label = (data, showHint) => {
         let label = '';
-        if (data.addOption) {
+        if (hasData(data, 'addOption')) {
             label += '<span class="icon add"></span> ';
         }
         const status = (() => {
-            if (typeof data.status !== 'undefined') {
-                return data.status;
+            if (hasData(data, 'status')) {
+                return getData(data, 'status');
             }
-            if (typeof data.boolean !== 'undefined') {
-                return data.boolean ? 'green' : 'white';
+            if (hasData(data, 'boolean')) {
+                return getData(data, 'boolean') ? 'green' : 'white';
             }
             return null;
         })();
         if (status) {
             label += `<span class="status ${status}"></span>`;
         }
-        label += `<span>${Craft.escapeHtml(data.text)}</span>`;
-        if (showHint && typeof data.hint === 'string' && data.hint !== '') {
-            label += `<span class="light">– ${Craft.escapeHtml(data.hint)}</span>`;
+        label += `<span>${Craft.escapeHtml(getData(data, 'text'))}</span>`;
+        if (showHint && hasData(data, 'hint') && getData(data, 'hint') !== '') {
+            const hintLang = getData(data, 'hintLang');
+            const langAttr = hintLang ? ` lang="${hintLang}"` : '';
+            label += `<span class="light"${langAttr}>– ${Craft.escapeHtml(getData(data, 'hint'))}</span>`;
         }
         return `<div class="flex flex-nowrap">${label}</div>`;
     };
 
-    const $select = $("#{{ id|namespaceInputId|e('js') }}");
+    const $select = $(`#${id}`);
 
     const onChange = () => {
         const selectize = $select.data('selectize');
-        const $item = selectize.$wrapper.find('.item');
+        const $items = selectize.$wrapper.find('.item');
+        const isSelect = $select.is('select');
 
-        const boolean = $item.data('boolean');
-        if (typeof boolean !== 'undefined') {
-            $select.data('boolean', !!boolean);
-        } else {
-            $select.removeData('boolean');
-        }
+        for (let i = 0; i < $items.length; i++) {
+            const $item = $items.eq(i);
 
-        {% if addOptionFn is defined and addOptionLabel is defined %}
-        if ($item.data('add-option')) {
-            selectize.setValue('', true);
-            ({{ addOptionFn|raw }})(item => {
-                selectize.addOption(item);
+            if (isSelect) {
+                const boolean = $item.data('boolean');
+                if (typeof boolean !== 'undefined') {
+                    $select.data('boolean', !!boolean);
+                } else {
+                    $select.removeData('boolean');
+                }
+            }
 
-                // Remove the “Create” option and re-place it at the end
-                selectize.removeOption('__add__', true);
-                selectize.addOption({
-                    text: {{ addOptionLabel|json_encode|raw }} ,
-                    value: '__add__',
-                    addOption: true,
-                    hint: null,
+            {% if addOptionFn is defined and addOptionLabel is defined %}
+            if ($item.data('add-option')) {
+                selectize.close();
+                selectize.blur();
+
+                ({{ addOptionFn|raw }})(item => {
+                    selectize.addOption(item);
+
+                    // Remove the “Create” option and re-place it at the end
+                    selectize.removeOption('__add__', true);
+                    selectize.addOption({
+                        text: {{ addOptionLabel|json_encode|raw }} ,
+                        value: '__add__',
+                        addOption: true,
+                        hint: null,
+                    });
+
+                    selectize.refreshOptions(false);
+
+                    if (isSelect) {
+                        selectize.setValue(item.value, true);
+                    } else {
+                        selectize.addItem(item.value, true);
+                    }
+                }, selectize);
+
+                Garnish.requestAnimationFrame(() => {
+                    if (isSelect) {
+                        selectize.setValue({{ ((options|first).value ?? '')|json_encode|raw }}, true);
+                    } else {
+                        selectize.removeItem('__add__');
+                    }
                 });
-
-                selectize.refreshOptions(false);
-                selectize.setValue(item.value);
-            }, selectize);
+            }
+            {% endif %}
         }
-        {% endif %}
     };
+
+    const positionDropdown = () => {
+        const selectize = $select.data('selectize');
+
+        // adjust dropdown position - if there's not enough space to display it below the field
+        // display it above the field
+        const bodyHeight = $('body').height();
+        const windowInnerHeight = window.innerHeight;
+        let offsetAdjustment = 0;
+        if (bodyHeight > windowInnerHeight) {
+            offsetAdjustment = bodyHeight - windowInnerHeight;
+        }
+
+        const controlOffset = selectize.settings.dropdownParent === 'body' ? selectize.$control.offset() : selectize.$control.position();
+        const controlHeight = selectize.$control.outerHeight();
+        const dropdownHeight = selectize.$dropdown.outerHeight();
+        const exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
+
+        if (exceededWindowHeight) {
+            selectize.$dropdown.css({
+                top: controlOffset.top - dropdownHeight - 4,
+            });
+        }
+    };
+
+    {% if not multi %}
+        const selectizeDropdownOpenEvent = new Event("selectizedropdownopen");
+        const selectizeDropdownCloseEvent = new Event("selectizedropdownclose");
+    {% endif %}
 
     $select.selectize($.extend({
         searchField: ['text', 'hint', 'value', 'keywords'],
@@ -125,10 +201,10 @@
             },
             item: data => {
                 const attrs = ['class="item"'];
-                if (typeof data.boolean !== 'undefined') {
-                    attrs.push(`data-boolean="${data.boolean ? '1' : ''}"`);
+                if (hasData(data, 'boolean')) {
+                    attrs.push(`data-boolean="${getData(data, 'boolean') ? '1' : ''}"`);
                 }
-                if (typeof data.addOption !== 'undefined') {
+                if (hasData(data, 'addOption')) {
                     attrs.push('data-add-option="1"');
                 }
                 return `<div ${attrs.join(' ')}>${label(data, false)}</div>`;
@@ -137,17 +213,36 @@
         onChange: onChange,
         onInitialize: function () {
             // Copy all ARIA attributes from initial select to selectize
-            var s = this;
-            var attrs = {}
-            var initialSelect = $(this.$input)[0];
-            $(initialSelect.attributes).filter(function (index, attribute) {
-                return /^aria-/.test(attribute.name);
-            })
-            .each(function (index, attribute) {
-                attrs[attribute.name] = attribute.value;
-            });
-            $(this.$control_input).attr(attrs);
-        }
+            [...$select[0].attributes]
+                .filter(attr => /^aria-/.test(attr.name))
+                .forEach((attr) => {
+                    this.$control_input.attr(attr.name, attr.value);
+                });
+
+            // allow autocomplete;
+            // despite what the documentation says, the "autofill_disable" seems to be ON by default,
+            // and there's no "proper" way to disable it
+            // more info: https://github.com/selectize/selectize.js/issues/1535
+            const autocomplete = $select.attr('autocomplete');
+            if (autocomplete) {
+                const selectize = $select.data('selectize');
+                selectize.$control_input
+                    .removeAttr('autofill')
+                    .attr('autocomplete', autocomplete);
+            }
+        },
+        onDropdownOpen: function() {
+            positionDropdown();
+            {% if not multi %}
+                $select[0].dispatchEvent(selectizeDropdownOpenEvent);
+            {% endif %}
+        },
+        onDropdownClose: function() {
+            {% if not multi %}
+                $select[0].dispatchEvent(selectizeDropdownCloseEvent);
+            {% endif %}
+        },
+        onItemAdd: positionDropdown,
     }, {{ selectizeOptions|json_encode|raw }}));
 
     onChange();

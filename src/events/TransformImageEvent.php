@@ -18,7 +18,7 @@ use craft\models\ImageTransformIndex;
 class TransformImageEvent extends AssetEvent
 {
     /**
-     * @var ImageTransformIndex Image transform index that is being generated.
+     * @var ImageTransformIndex The asset transform index that is being generated.
      */
     public ImageTransformIndex $transformIndex;
 }

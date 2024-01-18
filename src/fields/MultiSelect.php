@@ -24,6 +24,16 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
+    protected static bool $multi = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optgroups = true;
+
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         return Craft::t('app', 'Multi-select');
@@ -32,54 +42,38 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
-    {
-        return sprintf('\\%s', MultiOptionsFieldData::class);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected bool $multi = true;
-
-    /**
-     * @inheritdoc
-     */
-    protected bool $optgroups = true;
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var MultiOptionsFieldData $value */
         if (ArrayHelper::contains($value, 'valid', false, true)) {
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 
-        $id = $this->getInputId();
-
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn($id) => <<<JS
-$('#' + $id).selectize({
-  plugins: ['remove_button'],
-});
-JS, [
-            $view->namespaceInputId($id),
-        ]);
-
-        return Cp::multiSelectHtml([
-            'id' => $id,
+        return Cp::selectizeHtml([
+            'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'class' => 'selectize',
             'name' => $this->handle,
             'values' => $this->encodeValue($value),
             'options' => $this->translatedOptions(true, $value, $element),
-            'inputAttributes' => [
-                'style' => [
-                    'display' => 'none', // Hide it before selectize does its thing
-                ],
-            ],
+            'multi' => true,
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return Cp::selectizeHtml([
+            'id' => $this->getInputId(),
+            'describedBy' => $this->describedBy,
+            'class' => 'selectize',
+            'name' => $this->handle,
+            'values' => $this->encodeValue($value),
+            'options' => $this->translatedOptions(true, $value, $element),
+            'multi' => true,
+            'disabled' => true,
         ]);
     }
 

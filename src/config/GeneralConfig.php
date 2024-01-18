@@ -82,8 +82,8 @@ class GeneralConfig extends BaseConfig
      * ])
      * ```
      *
-     * @since 3.6.4
      * @group System
+     * @since 3.6.4
      */
     public array $accessibilityDefaults = [
         'alwaysShowFocusRings' => false,
@@ -178,8 +178,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.1.0
      * @group System
+     * @since 3.1.0
      */
     public bool $allowAdminChanges = true;
 
@@ -200,8 +200,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.0
      * @group GraphQL
+     * @since 3.5.0
      */
     public array|null|false $allowedGraphqlOrigins = null;
 
@@ -228,9 +228,9 @@ class GeneralConfig extends BaseConfig
      *
      * ```php Static Config
      * // Nothing bug GIFs!
-     * 'allowedFileExtensions' => [
+     * ->allowedFileExtensions([
      *     'gif',
-     * ],
+     * ])
      * ```
      *
      * @see extraAllowedFileExtensions
@@ -387,22 +387,17 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether drafts should be saved automatically as they are edited.
      *
-     * ::: warning
-     * Disabling this will also disable Live Preview.
-     * :::
+     * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
      *
      * ::: code
-     * ```php Static Config
-     * 'autosaveDrafts' => false,
-     * ```
      * ```shell Environment Override
      * CRAFT_AUTOSAVE_DRAFTS=false
      * ```
      * :::
      *
+     * @group System
      * @since 3.5.6
      * @deprecated in 4.0.0
-     * @group System
      */
     public bool $autosaveDrafts = true;
 
@@ -429,12 +424,13 @@ class GeneralConfig extends BaseConfig
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
      *
-     * You may provide your own command optionally using several tokens Craft will swap out at runtime:
+     * You may provide your own command, which can include several tokens Craft will substitute at runtime:
      *
-     * - `{path}` - the target backup file path
+     * - `{file}` - the target backup file path
      * - `{port}` - the current database port
      * - `{server}` - the current database hostname
-     * - `{user}` - the user to connect to the database
+     * - `{user}` - user that was used to connect to the database
+     * - `{password}` - password for the specified `{user}`
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
      *
@@ -515,8 +511,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.0
      * @group Image Handling
+     * @since 3.5.0
      */
     public ?string $brokenImagePath = null;
 
@@ -534,8 +530,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 4.0.0
      * @group Environment
+     * @since 4.0.0
      */
     public ?string $buildId = null;
 
@@ -622,8 +618,8 @@ class GeneralConfig extends BaseConfig
      * ])
      * ```
      *
-     * @since 3.5.0
      * @group System
+     * @since 3.5.0
      */
     public array $cpHeadTags = [];
 
@@ -693,6 +689,25 @@ class GeneralConfig extends BaseConfig
     public string $defaultCookieDomain = '';
 
     /**
+     * @var string The two-letter country code that addresses will be set to by default.
+     *
+     * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->defaultCountryCode('GB')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEFAULT_COUNTRY_CODE=GB
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 4.5.0
+     */
+    public string $defaultCountryCode = 'US';
+
+    /**
      * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      *
      * ::: code
@@ -723,8 +738,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.0
      * @group System
+     * @since 3.5.0
      */
     public ?string $defaultCpLocale = null;
 
@@ -807,16 +822,16 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * ->defaultTemplateExtensions(['html', 'twig', 'txt'])
+     * ->defaultTemplateExtensions(['twig', 'html', 'txt'])
      * ```
      * ```shell Environment Override
-     * CRAFT_DEFAULT_TEMPLATE_EXTENSIONS=html,twig,txt
+     * CRAFT_DEFAULT_TEMPLATE_EXTENSIONS=twig,html,txt
      * ```
      * :::
      *
      * @group System
      */
-    public array $defaultTemplateExtensions = ['html', 'twig'];
+    public array $defaultTemplateExtensions = ['twig', 'html'];
 
     /**
      * @var mixed The default amount of time tokens can be used before expiring.
@@ -826,7 +841,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // One week
-     * 'defaultTokenDuration' => 604800,
+     * ->defaultTokenDuration(604800)
      * ```
      * ```shell Environment Override
      * # One week
@@ -914,7 +929,7 @@ class GeneralConfig extends BaseConfig
      * This can also be set to `'*'` to disable **all** plugins.
      *
      * ```php
-     * ->disabledPlugins'('*')
+     * ->disabledPlugins('*')
      * ```
      *
      * ::: warning
@@ -934,10 +949,30 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.1.9
      * @group System
+     * @since 3.1.9
      */
     public string|array|null $disabledPlugins = null;
+
+    /**
+     * @var string[] Array of utility IDs that should be disabled.
+     *
+     * ::: code
+     * ```php Static Config
+     *  ->disabledUtilities([
+     *      'updates',
+     *      'find-replace',
+     *  ])
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DISABLED_UTILITIES=updates,find-replace
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 4.6.0
+     */
+    public array $disabledUtilities = [];
 
     /**
      * @var bool Whether front end requests should respond with `X-Robots-Tag: none` HTTP headers, indicating that pages should not be indexed,
@@ -956,8 +991,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.10
      * @group System
+     * @since 3.5.10
      */
     public bool $disallowRobots = false;
 
@@ -973,8 +1008,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group GraphQL
+     * @since 3.6.0
      */
     public bool $disableGraphqlTransformDirective = false;
 
@@ -990,8 +1025,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.0
      * @group Security
+     * @since 3.5.0
      */
     public bool $enableBasicHttpAuth = false;
 
@@ -1026,8 +1061,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group GraphQL
+     * @since 3.6.0
      */
     public bool $enableGraphqlIntrospection = true;
 
@@ -1045,8 +1080,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.3.1
      * @group GraphQL
+     * @since 3.3.1
      */
     public bool $enableGql = true;
 
@@ -1107,8 +1142,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.3.12
      * @group GraphQL
+     * @since 3.3.12
      */
     public bool $enableGraphqlCaching = true;
 
@@ -1124,8 +1159,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.7.0
      * @group GraphQL
+     * @since 3.7.0
      */
     public bool $setGraphqlDatesToSystemTimeZone = false;
 
@@ -1193,8 +1228,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.0.24
      * @group System
+     * @since 3.0.24
      */
     public ?array $extraAppLocales = null;
 
@@ -1221,8 +1256,8 @@ class GeneralConfig extends BaseConfig
      * the <config4:extraAllowedFileExtensions> config setting.
      * :::
      *
-     * @since 3.0.37
      * @group Assets
+     * @since 3.0.37
      */
     public array $extraFileKinds = [];
 
@@ -1231,7 +1266,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'extraLastNamePrefixes' => ['Dal', 'Van Der'],
+     * ->extraLastNamePrefixes(['Dal', 'Van Der'])
      * ```
      * ```shell Environment Override
      * CRAFT_EXTRA_LAST_NAME_PREFIXES="Dal,Van Der"
@@ -1248,7 +1283,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'extraNameSalutations' => ['Lady', 'Sire'],
+     * ->extraNameSalutations(['Lady', 'Sire'])
      * ```
      * ```shell Environment Override
      * CRAFT_EXTRA_NAME_SALUTATIONS=Lady,Sire
@@ -1265,7 +1300,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'extraNameSuffixes' => ['CCNA', 'OBE'],
+     * ->extraNameSuffixes(['CCNA', 'OBE'])
      * ```
      * ```shell Environment Override
      * CRAFT_EXTRA_NAME_SUFFIXES=CCNA,OBE
@@ -1278,7 +1313,7 @@ class GeneralConfig extends BaseConfig
     public array $extraNameSuffixes = [];
 
     /**
-     * @var string|false The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     * @var string|false The string to use to separate words when uploading assets. If set to `false`, spaces will be left alone.
      *
      * ::: code
      * ```php Static Config
@@ -1344,8 +1379,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group System
+     * @since 3.6.0
      */
     public string $handleCasing = self::CAMEL_CASE;
 
@@ -1376,8 +1411,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.3.0
      * @group System
+     * @since 3.3.0
      */
     public bool $headlessMode = false;
 
@@ -1470,7 +1505,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 day
-     * 'invalidLoginWindowDuration' => 86400,
+     * ->invalidLoginWindowDuration(86400)
      * ```
      * ```shell Environment Override
      * # 1 day
@@ -1492,7 +1527,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 day
-     * 'invalidUserTokenPath' => 'nope',
+     * ->invalidUserTokenPath('nope')
      * ```
      * ```shell Environment Override
      * # 1 day
@@ -1563,6 +1598,20 @@ class GeneralConfig extends BaseConfig
     public bool $limitAutoSlugsToAscii = false;
 
     /**
+     * @var array Custom locale aliases, which will be included when fetching all known locales.
+     *
+     * Each locale alias should be defined as an array with the following keys:
+     *
+     * - `id`: The alias locale ID
+     * - `aliasOf`: The original locale ID
+     * - `displayName`: The locale alias’s display name _(optional)_
+     *
+     * @since 5.0.0
+     * @group System
+     */
+    public array $localeAliases = [];
+
+    /**
      * @var mixed The URI Craft should use for user login on the front end.
      *
      * This can be set to `false` to disable front-end login.
@@ -1625,8 +1674,24 @@ class GeneralConfig extends BaseConfig
     public int $maxCachedCloudImageSize = 2000;
 
     /**
+     * @var int The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allow any number of queries.
+     *
+     *  ::: code
+     *  ```php Static Config
+     *  ->maxGraphqlBatchSize(5)
+     *  ```
+     *  ```shell Environment Override
+     *  CRAFT_MAX_GRAPHQL_BATCH_SIZE=5
+     *  ```
+     *  :::
+     *
+     * @group GraphQL
+     * @since 4.5.5
+     */
+    public int $maxGraphqlBatchSize = 0;
+
+    /**
      * @var int The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
-     * @since 3.6.0
      *
      * ::: code
      * ```php Static Config
@@ -1638,6 +1703,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
+     * @since 3.6.0
      */
     public int $maxGraphqlComplexity = 0;
 
@@ -1653,8 +1719,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group GraphQL
+     * @since 3.6.0
      */
     public int $maxGraphqlDepth = 0;
 
@@ -1670,8 +1736,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group GraphQL
+     * @since 3.6.0
      */
     public int $maxGraphqlResults = 0;
 
@@ -1722,8 +1788,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.2.0
      * @group System
+     * @since 3.2.0
      */
     public ?int $maxRevisions = 50;
 
@@ -1751,7 +1817,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 25MB
-     * 'maxUploadFileSize' => 26214400,
+     * ->maxUploadFileSize(26214400)
      * ```
      * ```shell Environment Override
      * # 25MB
@@ -1879,8 +1945,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.14
      * @group System
+     * @since 3.6.14
      */
     public ?string $permissionsPolicyHeader = null;
 
@@ -1995,10 +2061,34 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.6
      * @group GraphQL
+     * @since 3.6.6
      */
     public bool $prefixGqlRootTypes = true;
+
+    /**
+     * @var bool Whether Single section entries should be preloaded for Twig templates.
+     *
+     * When enabled, Craft will make an educated guess on which Singles should be preloaded for each template based on
+     * the variable names that are referenced.
+     *
+     * ::: warning
+     * You will need to clear your compiled templates from the Caches utility before this setting will take effect.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * ->preloadSingles()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PRELOAD_SINGLES=true
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 4.4.0
+     */
+    public bool $preloadSingles = false;
 
     /**
      * @var bool Whether CMYK should be preserved as the colorspace when manipulating images.
@@ -2015,8 +2105,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.0.8
      * @group Image Handling
+     * @since 3.0.8
      */
     public bool $preserveCmykColorspace = false;
 
@@ -2088,8 +2178,8 @@ class GeneralConfig extends BaseConfig
      * ])
      * ```
      *
-     * @since 3.5.0
      * @group System
+     * @since 3.5.0
      */
     public array $previewIframeResizerOptions = [];
 
@@ -2103,7 +2193,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 hour
-     * 'previewTokenDuration' => 3600,
+     * ->previewTokenDuration(3600)
      * ```
      * ```shell Environment Override
      * # 1 hour
@@ -2152,7 +2242,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 2 weeks
-     * 'purgePendingUsersDuration' => 1209600,
+     * ->purgePendingUsersDuration(1209600)
      * ```
      * ```shell Environment Override
      * # 2 weeks
@@ -2174,7 +2264,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 week
-     * 'purgeStaleUserSessionDuration' => 604800,
+     * ->purgeStaleUserSessionDuration(604800)
      * ```
      * ```shell Environment Override
      * # 1 week
@@ -2182,9 +2272,9 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.3.0
      * @group Garbage Collection
      * @defaultAlt 90 days
+     * @since 3.3.0
      */
     public mixed $purgeStaleUserSessionDuration = 7776000;
 
@@ -2204,9 +2294,9 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.2.0
      * @group Garbage Collection
      * @defaultAlt 30 days
+     * @since 3.2.0
      */
     public mixed $purgeUnsavedDraftsDuration = 2592000;
 
@@ -2224,8 +2314,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group Image Handling
+     * @since 3.6.0
      */
     public bool $rasterizeSvgThumbs = false;
 
@@ -2376,8 +2466,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.7.0
      * @group Assets
+     * @since 3.7.0
      */
     public bool $revAssetUrls = false;
 
@@ -2438,13 +2528,14 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.6.0
      * @group Security
+     * @since 3.6.0
      */
     public bool $sanitizeCpImageUploads = true;
 
     /**
-     * @var 'None'|'Lax'|'Strict'|null The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
+     * @var string|null The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
+     * @phpstan-var 'None'|'Lax'|'Strict'|null
      *
      * This can be set to `'None'`, `'Lax'`, `'Strict'`, or `null`.
      *
@@ -2457,8 +2548,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.1.33
      * @group System
+     * @since 3.1.33
      */
     public ?string $sameSiteCookieValue = null;
 
@@ -2505,8 +2596,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.7.3
      * @group System
+     * @since 3.7.3
      */
     public bool $sendContentLengthHeader = false;
 
@@ -2610,8 +2701,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.0
      * @group Routing
+     * @since 3.5.0
      */
     public string $siteToken = 'siteToken';
 
@@ -2684,6 +2775,23 @@ class GeneralConfig extends BaseConfig
     public ?array $secureProtocolHeaders = null;
 
     /**
+     * @var bool Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->showFirstAndLastNameFields()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SHOW_FIRST_AND_LAST_NAME_FIELDS=true
+     * ```
+     * :::
+     *
+     * @group Users
+     * @since 4.6.0
+     */
+    public bool $showFirstAndLastNameFields = false;
+
+    /**
      * @var mixed The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
      *
      * Set to `0` if you don’t ever want to delete soft-deleted items.
@@ -2699,9 +2807,9 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.1.0
      * @group Garbage Collection
      * @defaultAlt 30 days
+     * @since 3.1.0
      */
     public mixed $softDeleteDuration = 2592000;
 
@@ -2717,10 +2825,28 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.1.0
      * @group Security
+     * @since 3.1.0
      */
     public bool $storeUserIps = false;
+
+    /**
+     * @var string|null The handle of the filesystem that should be used for storing temporary asset uploads. A local temp folder will
+     * be used by default.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_TEMP_ASSET_UPLOAD_FS=tempAssetUploads
+     * ```
+     * :::
+     *
+     * @group Assets
+     * @since 5.0.0
+     */
+    public ?string $tempAssetUploadFs = null;
 
     /**
      * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
@@ -2772,8 +2898,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.0.7
      * @group Image Handling
+     * @since 3.0.7
      */
     public bool $transformGifs = true;
 
@@ -2789,8 +2915,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.7.1
      * @group Image Handling
+     * @since 3.7.1
      */
     public bool $transformSvgs = true;
 
@@ -2859,8 +2985,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.4.0
      * @group Image Handling
+     * @since 3.4.0
      */
     public bool $upscaleImages = true;
 
@@ -2913,8 +3039,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
-     * @since 3.5.5
      * @group System
+     * @since 3.5.5
      */
     public bool $useIframeResizer = false;
 
@@ -2985,7 +3111,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 3 hours
-     * 'userSessionDuration' => 10800,
+     * ->userSessionDuration(10800)
      * ```
      * ```shell Environment Override
      * # 3 hours
@@ -3027,7 +3153,7 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * // 1 hour
-     * 'verificationCodeDuration' => 3600,
+     * ->verificationCodeDuration(3600)
      * ```
      * ```shell Environment Override
      * # 1 hour
@@ -3057,8 +3183,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getVerifyEmailPath()
-     * @since 3.4.0
      * @group Routing
+     * @since 3.4.0
      */
     public mixed $verifyEmailPath = 'verifyemail';
 
@@ -3077,8 +3203,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getVerifyEmailSuccessPath()
-     * @since 3.1.20
      * @group Routing
+     * @since 3.1.20
      */
     public mixed $verifyEmailSuccessPath = '';
 
@@ -3420,12 +3546,13 @@ class GeneralConfig extends BaseConfig
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
      *
-     * You may provide your own command optionally using several tokens Craft will swap out at runtime:
+     * You may provide your own command, which can include several tokens Craft will substitute at runtime:
      *
-     * - `{path}` - the target backup file path
+     * - `{file}` - the target backup file path
      * - `{port}` - the current database port
      * - `{server}` - the current database hostname
-     * - `{user}` - the user to connect to the database
+     * - `{user}` - user that was used to connect to the database
+     * - `{password}` - password for the specified `{user}`
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
      *
@@ -3722,6 +3849,27 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * The two-letter country code that addresses will be set to by default.
+     *
+     * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
+     *
+     * ```php
+     * ->defaultCountryCode('GB')
+     * ```
+     *
+     * @group System
+     * @param string $value
+     * @return self
+     * @see $defaultCountryCode
+     * @since 4.5.0
+     */
+    public function defaultCountryCode(string $value): self
+    {
+        $this->defaultCountryCode = $value;
+        return $this;
+    }
+
+    /**
      * The default language the control panel should use for users who haven’t set a preferred language yet.
      *
      * ```php
@@ -3732,8 +3880,8 @@ class GeneralConfig extends BaseConfig
      * @param string|null $value
      * @return self
      * @throws InvalidConfigException
-     * @since 4.2.0
      * @see $defaultCpLanguage
+     * @since 4.2.0
      */
     public function defaultCpLanguage(?string $value): self
     {
@@ -3866,7 +4014,7 @@ class GeneralConfig extends BaseConfig
      * The template file extensions Craft will look for when matching a template path to a file on the front end.
      *
      * ```php
-     * ->defaultTemplateExtensions(['html', 'twig', 'txt'])
+     * ->defaultTemplateExtensions(['twig', 'html', 'txt'])
      * ```
      *
      * @group System
@@ -3990,7 +4138,7 @@ class GeneralConfig extends BaseConfig
      * ```php
      * ->dev([
      *     'disabledPlugins' => '*',
-     * ],
+     * ])
      * ```
      *
      * ::: warning
@@ -4015,6 +4163,33 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->disabledPlugins = $value;
+        return $this;
+    }
+
+    /**
+     * Array of utility IDs that should be disabled.
+     *
+     *  ::: code
+     *  ```php Static Config
+     *   ->disabledUtilities([
+     *       'updates',
+     *       'find-replace',
+     *   ])
+     *  ```
+     *  ```shell Environment Override
+     *  CRAFT_DISABLED_UTILITIES=updates,find-replace
+     *  ```
+     *  :::
+     *
+     * @group System
+     * @param string[] $value
+     * @return self
+     * @see $disabledUtilities
+     * @since 4.6.0
+     */
+    public function disabledUtilities(array $value): self
+    {
+        $this->disabledUtilities = $value;
         return $this;
     }
 
@@ -4303,8 +4478,8 @@ class GeneralConfig extends BaseConfig
      * @param string[]|null $value
      * @return self
      * @throws InvalidConfigException
-     * @since 4.2.0
      * @see $extraAppLocales
+     * @since 4.2.0
      */
     public function extraAppLocales(?array $value): self
     {
@@ -4415,7 +4590,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     * The string to use to separate words when uploading assets. If set to `false`, spaces will be left alone.
      *
      * ```php
      * ->filenameWordSeparator(false)
@@ -4731,6 +4906,26 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Custom locale aliases, which will be included when fetching all known locales.
+     *
+     * Each item in the array should have a key that defines the custom locale ID, and its value should be set
+     * to an array with the following keys:
+     *
+     * - `aliasOf`: The original locale ID
+     * - `displayName`: The locale alias’s display name _(optional)_
+     *
+     * @param array $value
+     * @return self
+     * @group System
+     * @since 5.0.0
+     */
+    public function localeAliases(array $value): self
+    {
+        $this->localeAliases = $value;
+        return $this;
+    }
+
+    /**
      * The URI Craft should use for user login on the front end.
      *
      * This can be set to `false` to disable front-end login.
@@ -4796,6 +4991,25 @@ class GeneralConfig extends BaseConfig
     public function maxCachedCloudImageSize(int $value): self
     {
         $this->maxCachedCloudImageSize = $value;
+        return $this;
+    }
+
+    /**
+     * The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allow any number of queries.
+     *
+     * ```php
+     * ->maxGraphqlBatchSize(500)
+     * ```
+     *
+     * @group GraphQL
+     * @param int $value
+     * @return self
+     * @see $maxGraphqlBatchSize
+     * @since 4.5.5
+     */
+    public function maxGraphqlBatchSize(int $value): self
+    {
+        $this->maxGraphqlBatchSize = $value;
         return $this;
     }
 
@@ -5215,6 +5429,37 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Whether Single section entries should be preloaded for Twig templates.
+     *
+     * When enabled, Craft will make an educated guess on which Singles should be preloaded for each template based on
+     * the variable names that are referenced.
+     *
+     * ::: warning
+     * You will need to clear your compiled templates from the Caches utility before this setting will take effect.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * ->preloadSingles()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PRELOAD_SINGLES=true
+     * ```
+     * :::
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $preloadSingles
+     * @since 4.4.0
+     */
+    public function preloadSingles(bool$value = true): self
+    {
+        $this->preloadSingles = $value;
+        return $this;
+    }
+
+    /**
      * Whether CMYK should be preserved as the colorspace when manipulating images.
      *
      * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB, but on some ImageMagick versions it can cause
@@ -5334,7 +5579,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 1 hour
-     * ->previewTokenDuration(3600),
+     * ->previewTokenDuration(3600)
      * ```
      *
      * @group Security
@@ -5387,7 +5632,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 2 weeks
-     * ->purgePendingUsersDuration(1209600),
+     * ->purgePendingUsersDuration(1209600)
      * ```
      *
      * @group Garbage Collection
@@ -5411,7 +5656,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 1 week
-     * ->purgeStaleUserSessionDuration(604800),
+     * ->purgeStaleUserSessionDuration(604800)
      * ```
      *
      * @group Garbage Collection
@@ -5992,7 +6237,7 @@ class GeneralConfig extends BaseConfig
      *     'CF-Visitor' => [
      *         '{\"scheme\":\"https\"}',
      *     ],
-     * ],
+     * ])
      * ```
      *
      * @group Security
@@ -6004,6 +6249,25 @@ class GeneralConfig extends BaseConfig
     public function secureProtocolHeaders(?array $value): self
     {
         $this->secureProtocolHeaders = $value;
+        return $this;
+    }
+
+    /**
+     * Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
+     *
+     * ```php
+     * ->showFirstAndLastNameFields()
+     * ```
+     *
+     * @group Users
+     * @param bool $value
+     * @return self
+     * @see $showFirstAndLastNameFields
+     * @since 4.6.0
+     */
+    public function showFirstAndLastNameFields(bool $value = true): self
+    {
+        $this->showFirstAndLastNameFields = $value;
         return $this;
     }
 
@@ -6047,6 +6311,26 @@ class GeneralConfig extends BaseConfig
     public function storeUserIps(bool $value = true): self
     {
         $this->storeUserIps = $value;
+        return $this;
+    }
+
+    /**
+     * The handle of the filesystem that should be used for storing temporary asset uploads. A local temp folder will
+     * be used by default.
+     *
+     *  ```php
+     *  ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
+     *  ```
+     *
+     * @group Assets
+     * @param string|null $value
+     * @return self
+     * @see $tempAssetUploadFs
+     * @since 5.0.0
+     */
+    public function tempAssetUploadFs(string|null $value): self
+    {
+        $this->tempAssetUploadFs = $value;
         return $this;
     }
 
@@ -6447,8 +6731,8 @@ class GeneralConfig extends BaseConfig
      * @param mixed $value
      * @return self
      * @see $verifyEmailSuccessPath
-     * @since 4.2.0
      * @see getVerifyEmailSuccessPath()
+     * @since 4.2.0
      */
     public function verifyEmailSuccessPath(mixed $value): self
     {

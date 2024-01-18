@@ -18,12 +18,10 @@ use craft\elements\db\AssetQuery;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\EntryQuery;
 use craft\elements\db\GlobalSetQuery;
-use craft\elements\db\MatrixBlockQuery;
 use craft\elements\db\TagQuery;
 use craft\elements\db\UserQuery;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
-use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
@@ -202,19 +200,6 @@ class CraftVariable extends ServiceLocator
     public function globalSets(array $criteria = []): GlobalSetQuery
     {
         $query = GlobalSet::find();
-        Craft::configure($query, $criteria);
-        return $query;
-    }
-
-    /**
-     * Returns a new [Matrix block query](https://craftcms.com/docs/4.x/matrix-blocks.html#querying-matrix-blocks).
-     *
-     * @param array $criteria
-     * @return MatrixBlockQuery
-     */
-    public function matrixBlocks(array $criteria = []): MatrixBlockQuery
-    {
-        $query = MatrixBlock::find();
         Craft::configure($query, $criteria);
         return $query;
     }

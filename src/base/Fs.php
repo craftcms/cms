@@ -38,7 +38,12 @@ abstract class Fs extends SavableComponent implements FsInterface
             return null;
         }
 
-        return App::parseEnv($this->url) ?: null;
+        $url = App::parseEnv($this->url);
+        if (is_string($url)) {
+            $url = rtrim($url, '/');
+        }
+
+        return $url ? "$url/" : null;
     }
 
     /**
@@ -49,7 +54,24 @@ abstract class Fs extends SavableComponent implements FsInterface
         return [
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
+            'url' => Craft::t('app', 'Base URL'),
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShowHasUrlSetting(): bool
+    {
+        return static::$showHasUrlSetting;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getShowUrlSetting(): bool
+    {
+        return static::$showUrlSetting;
     }
 
     /**
@@ -59,6 +81,12 @@ abstract class Fs extends SavableComponent implements FsInterface
     {
         $rules = parent::defineRules();
         $rules[] = [['name', 'handle'], 'required'];
+        $rules[] = [
+            'url',
+            'required',
+            'when' => fn(self $fs) => $fs->hasUrls && $this->getShowUrlSetting(),
+        ];
+
         $rules[] = [
             ['handle'],
             HandleValidator::class,

@@ -49,43 +49,50 @@ class MoveAssets extends ElementAction
     type: $actionClass,
     bulk: true,
     requireId: false,
-    validateSelection: function(\$selectedItems) {
-      for (let i = 0; i < \$selectedItems.length; i++) {
-        if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-movable')) {
+    validateSelection: (selectedItems, elementIndex) => {
+      for (let i = 0; i < selectedItems.length; i++) {
+        if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-movable')) {
           return false;
         }
       }
-      return Craft.elementIndex.getMoveTargetSourceKeys(peerFiles(...groupItems(\$selectedItems))).length;
+      return elementIndex.getMoveTargetSourceKeys(peerFiles(...groupItems(selectedItems))).length;
     },
-    activate: function(\$selectedItems) {
-      const [\$folders, \$assets] = groupItems(\$selectedItems);
-      const folderIds = \$folders.toArray().map((item) => {
+    activate: (selectedItems, elementIndex) => {
+      const [\$folders, \$assets] = groupItems(selectedItems);
+      const selectedFolderIds = \$folders.toArray().map((item) => {
         return parseInt($(item).find('.element:first').data('folder-id'));
       });
-      const assetIds = \$assets.toArray().map((item) => {
+      const disabledFolderIds = selectedFolderIds.slice();
+      if (elementIndex.sourcePath.length) {
+        const currentFolder = elementIndex.sourcePath[elementIndex.sourcePath.length - 1];
+        if (currentFolder.folderId) {
+          disabledFolderIds.push(currentFolder.folderId);
+        }
+      }
+      const selectedAssetIds = \$assets.toArray().map((item) => {
         return parseInt($(item).data('id'));
       });
 
       new Craft.VolumeFolderSelectorModal({
-        sources: Craft.elementIndex.getMoveTargetSourceKeys(peerFiles(\$folders, \$assets)),
+        sources: elementIndex.getMoveTargetSourceKeys(peerFiles(\$folders, \$assets)),
         showTitle: true,
         modalTitle: Craft.t('app', 'Move to'),
         selectBtnLabel: Craft.t('app', 'Move'),
+        disabledFolderIds: disabledFolderIds,
         indexSettings: {
-          defaultSource: Craft.elementIndex.sourceKey,
-          defaultSourcePath: Craft.elementIndex.sourcePath,
-          disabledFolderIds: folderIds,
+          defaultSource: elementIndex.sourceKey,
+          defaultSourcePath: elementIndex.sourcePath,
         },
         onSelect: ([targetFolder]) => {
           const mover = new Craft.AssetMover();
-          mover.moveFolders(folderIds, targetFolder.folderId).then((totalFoldersMoved) => {
-            mover.moveAssets(assetIds, targetFolder.folderId).then((totalAssetsMoved) => {
+          mover.moveFolders(selectedFolderIds, targetFolder.folderId).then((totalFoldersMoved) => {
+            mover.moveAssets(selectedAssetIds, targetFolder.folderId).then((totalAssetsMoved) => {
               const totalItemsMoved = totalFoldersMoved + totalAssetsMoved;
               if (totalItemsMoved) {
                 Craft.cp.displayNotice(Craft.t('app', '{totalItems, plural, =1{Item} other{Items}} moved.', {
                   totalItems: totalItemsMoved,
                 }));
-                Craft.elementIndex.updateElements(true);
+                elementIndex.updateElements(true);
               }
             });
           });

@@ -8,13 +8,15 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\BaseFsInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\elements\Asset;
-use craft\enums\PeriodType;
+use craft\enums\TimePeriod;
 use craft\errors\FsException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
+use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\models\VolumeFolder;
 use DateTime;
@@ -34,7 +36,7 @@ class Assets
     public const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
     /**
-     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining an asset’s filename.
+     * @event SetAssetFilenameEvent The event that is triggered when defining an asset’s filename.
      */
     public const EVENT_SET_FILENAME = 'setFilename';
 
@@ -79,14 +81,14 @@ class Assets
     /**
      * Generates the URL for an asset.
      *
-     * @param FsInterface $fs
+     * @param BaseFsInterface $fs
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
      * @throws InvalidConfigException if the asset doesn’t have a filename.
      */
-    public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    public static function generateUrl(BaseFsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
@@ -110,16 +112,22 @@ class Assets
      */
     public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
     {
-        /** @var DateTime $dateModified */
-        $dateModified = max($asset->dateModified, $dateUpdated ?? null);
-        $v = $dateModified->getTimestamp();
+        $v = [];
+
+        $dateModified = max($asset->dateModified, $dateUpdated);
+        if ($dateModified) {
+            $v[] = $dateModified->getTimestamp();
+        }
 
         if ($asset->getHasFocalPoint()) {
             $fp = $asset->getFocalPoint();
-            $v .= ",{$fp['x']},{$fp['y']}";
+            $v[] = $fp['x'];
+            $v[] = $fp['y'];
         }
 
-        return compact('v');
+        return array_filter([
+            'v' => implode(',', $v),
+        ]);
     }
 
     /**
@@ -136,7 +144,12 @@ class Assets
     {
         if ($fsOnly) {
             $volume = $asset->getVolume();
-            $fss = array_unique([$volume->getFs(), $volume->getTransformFs()], SORT_REGULAR);
+            $fs = $volume->getFs();
+            $fss = [$fs];
+            $transformFs = $volume->getTransformFs();
+            if ($transformFs !== $fs) {
+                $fss[] = $transformFs;
+            }
             $matchingFs = ArrayHelper::contains($fss, function(FsInterface $fs) use ($url): bool {
                 if (!$fs->hasUrls) {
                     return false;
@@ -239,16 +252,22 @@ class Assets
      */
     public static function filename2Title(string $filename): string
     {
-        return StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename, false, true)));
+        $title = StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename, false, true)));
+
+        if (strlen($title) > 255) {
+            $title = rtrim(substr($title, 255), ' ');
+        }
+
+        return $title;
     }
 
     /**
-     * Mirror a folder structure on a Volume.
+     * Mirrors a folder structure on a volume.
      *
      * @param VolumeFolder $sourceParentFolder Folder who's children folder structure should be mirrored.
      * @param VolumeFolder $destinationFolder The destination folder
-     * @param array $targetTreeMap map of relative path => existing folder id
-     * @return array map of original folder id => new folder id
+     * @param array $targetTreeMap map of relative path => existing folder ID
+     * @return array map of original folder ID => new folder ID
      */
     public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = []): array
     {
@@ -282,11 +301,11 @@ class Assets
     }
 
     /**
-     * Create an Asset transfer list based on a list of Assets and an array of
-     * changing folder ids.
+     * Create an asset transfer list based on a list of assets and an array of
+     * changing folder IDs.
      *
      * @param array $assets List of assets
-     * @param array $folderIdChanges A map of folder id changes
+     * @param array $folderIdChanges A map of folder ID changes
      * @return array
      */
     public static function fileTransferList(array $assets, array $folderIdChanges): array
@@ -315,17 +334,17 @@ class Assets
     public static function periodList(): array
     {
         return [
-            PeriodType::Seconds => Craft::t('app', 'Seconds'),
-            PeriodType::Minutes => Craft::t('app', 'Minutes'),
-            PeriodType::Hours => Craft::t('app', 'Hours'),
-            PeriodType::Days => Craft::t('app', 'Days'),
-            PeriodType::Months => Craft::t('app', 'Months'),
-            PeriodType::Years => Craft::t('app', 'Years'),
+            TimePeriod::Seconds->value => Craft::t('app', 'Seconds'),
+            TimePeriod::Minutes->value => Craft::t('app', 'Minutes'),
+            TimePeriod::Hours->value => Craft::t('app', 'Hours'),
+            TimePeriod::Days->value => Craft::t('app', 'Days'),
+            TimePeriod::Months->value => Craft::t('app', 'Months'),
+            TimePeriod::Years->value => Craft::t('app', 'Years'),
         ];
     }
 
     /**
-     * Sorts a folder tree by Volume sort order.
+     * Sorts a folder tree by the volume sort order.
      *
      * @param VolumeFolder[] $tree array passed by reference of the sortable folders.
      * @deprecated in 4.4.0
@@ -685,7 +704,7 @@ class Assets
     }
 
     /**
-     * Return an image path to use in Image Editor for an Asset by id and size.
+     * Return an image path to use in the Image Editor for an asset by its ID and size.
      *
      * @param int $assetId
      * @param int $size
@@ -840,14 +859,14 @@ class Assets
     /**
      * Save a file from a filesystem locally.
      *
-     * @param FsInterface $fs
+     * @param BaseFsInterface $fs
      * @param string $uriPath
      * @param string $localPath
      * @return int
      * @throws FsException
      * @since 4.0.0
      */
-    public static function downloadFile(FsInterface $fs, string $uriPath, string $localPath): int
+    public static function downloadFile(BaseFsInterface $fs, string $uriPath, string $localPath): int
     {
         $stream = $fs->getFileStream($uriPath);
         $outputStream = fopen($localPath, 'wb');
@@ -866,6 +885,7 @@ class Assets
      * @param string $extension
      * @return string
      * @since 4.0.0
+     * @deprecated in 4.5.0
      */
     public static function iconUrl(string $extension): string
     {
@@ -880,8 +900,30 @@ class Assets
      * @param string $extension
      * @return string
      * @since 4.0.0
+     * @deprecated in 4.5.0. [[iconSvg()]] or [[Asset::getThumbSvg()]] should be used instead.
      */
     public static function iconPath(string $extension): string
+    {
+        $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        $svg = static::iconSvg($extension);
+
+        FileHelper::writeToFile($path, $svg);
+        return $path;
+    }
+
+    /**
+     * Returns the SVG contents for an asset icon with a given extension.
+     *
+     * @param string $extension
+     * @return string
+     * @since 4.5.0
+     */
+    public static function iconSvg(string $extension): string
     {
         if (!preg_match('/^\w+$/', $extension)) {
             throw new InvalidArgumentException("$extension isn’t a valid file extension.");
@@ -897,20 +939,42 @@ class Assets
 
         $extLength = strlen($extension);
         if ($extLength <= 3) {
-            $textSize = '20';
+            $textSize = '19';
         } elseif ($extLength === 4) {
-            $textSize = '17';
+            $textSize = '16';
         } else {
-            if ($extLength > 5) {
-                $extension = substr($extension, 0, 4) . '…';
-            }
-            $textSize = '14';
+            $extension = substr($extension, 0, 3) . '…';
+            $textSize = '15';
+        }
+        $textNode = Html::tag('text', strtoupper($extension), [
+            'x' => 50,
+            'y' => 73,
+            'text-anchor' => 'middle',
+            'font-family' => 'sans-serif',
+            'fill' => 'hsl(210, 10%, 47%)',
+            'font-size' => $textSize,
+        ]);
+
+        return Html::appendToTag($svg, $textNode);
+    }
+
+    /**
+     * Returns whether the given filesystem is used to store temporary asset uploads.
+     *
+     * @param FsInterface $fs
+     * @return bool
+     */
+    public static function isTempUploadFs(FsInterface $fs): bool
+    {
+        if ($fs instanceof Temp) {
+            return true;
         }
 
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"$textSize\">" . strtoupper($extension) . '</text>';
-        $svg = str_replace('<!-- EXT -->', $textNode, $svg);
+        if (!$fs->handle) {
+            return false;
+        }
 
-        FileHelper::writeToFile($path, $svg);
-        return $path;
+        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
+        return $fs->handle === $handle;
     }
 }

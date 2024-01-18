@@ -95,7 +95,7 @@ class Categories extends Component
      */
     public function getAllGroupIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllGroups(), 'id');
+        return array_map(fn(CategoryGroup $group) => $group->id, $this->getAllGroups());
     }
 
     /**
@@ -105,7 +105,7 @@ class Categories extends Component
      */
     public function getEditableGroupIds(): array
     {
-        return ArrayHelper::getColumn($this->getEditableGroups(), 'id');
+        return array_map(fn(CategoryGroup $group) => $group->id, $this->getEditableGroups());
     }
 
     /**
@@ -116,19 +116,15 @@ class Categories extends Component
     private function _groups(): MemoizableArray
     {
         if (!isset($this->_groups)) {
-            $groups = [];
-
-            /** @var CategoryGroupRecord[] $groupRecords */
             $groupRecords = CategoryGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->with('structure')
                 ->all();
 
-            foreach ($groupRecords as $groupRecord) {
-                $groups[] = $this->_createCategoryGroupFromRecord($groupRecord);
-            }
-
-            $this->_groups = new MemoizableArray($groups);
+            $this->_groups = new MemoizableArray(
+                $groupRecords,
+                fn(CategoryGroupRecord $record) => $this->_createCategoryGroupFromRecord($record),
+            );
         }
 
         return $this->_groups;
@@ -203,11 +199,25 @@ class Categories extends Component
      * Returns a group by its handle.
      *
      * @param string $groupHandle
+     * @param bool $withTrashed
      * @return CategoryGroup|null
      */
-    public function getGroupByHandle(string $groupHandle): ?CategoryGroup
+    public function getGroupByHandle(string $groupHandle, bool $withTrashed = false): ?CategoryGroup
     {
-        return $this->_groups()->firstWhere('handle', $groupHandle, true);
+        /** @var CategoryGroup|null $group */
+        $group = $this->_groups()->firstWhere('handle', $groupHandle, true);
+
+        if (!$group && $withTrashed) {
+            /** @var CategoryGroupRecord|null $record */
+            $record = CategoryGroupRecord::findWithTrashed()
+                ->andWhere(['handle' => $groupHandle])
+                ->one();
+            if ($record) {
+                $group = $this->_createCategoryGroupFromRecord($record);
+            }
+        }
+
+        return $group;
     }
 
     /**
@@ -218,6 +228,7 @@ class Categories extends Component
      */
     public function getGroupSiteSettings(int $groupId): array
     {
+        /** @var CategoryGroup_SiteSettingsRecord[] $results */
         $results = CategoryGroup_SiteSettingsRecord::find()
             ->where(['groupId' => $groupId])
             ->all();
@@ -583,32 +594,36 @@ class Categories extends Component
             $now = Db::prepareDateForDb(new DateTime());
             $db = Craft::$app->getDb();
 
+            $conditionSql = <<<SQL
+[[categories.groupId]] = $group->id AND
+[[categories.id]] = [[elements.id]] AND
+[[elements.canonicalId]] IS NULL AND
+[[elements.revisionId]] IS NULL AND
+[[elements.dateDeleted]] IS NULL
+SQL;
+
             if ($db->getIsMysql()) {
-                $sql = <<<SQL
-UPDATE $elementsTable [[elements]], $categoriesTable [[categories]] 
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]], $categoriesTable [[categories]]
 SET [[elements.dateDeleted]] = '$now',
   [[categories.deletedWithGroup]] = 1
-WHERE [[categories.groupId]] = $group->id AND
-  [[categories.id]] = [[elements.id]] AND
-  [[elements.canonicalId]] IS NULL AND
-  [[elements.revisionId]] IS NULL AND
-  [[elements.dateDeleted]] IS NULL
-SQL;
+WHERE $conditionSql
+SQL)->execute();
             } else {
-                $sql = <<<SQL
-UPDATE $elementsTable
-SET [[elements.dateDeleted]] = '$now',
-  [[categories.deletedWithGroup]] = TRUE
-FROM $categoriesTable
-WHERE [[categories.groupId]] = $group->id AND
-  [[categories.id]] = [[elements.id]] AND
-  [[elements.canonicalId]] IS NULL AND
-  [[elements.revisionId]] IS NULL AND
-  [[elements.dateDeleted]] IS NULL
-SQL;
+                // Not possible to update two tables simultaneously with Postgres
+                $db->createCommand(<<<SQL
+UPDATE $categoriesTable [[categories]]
+SET [[deletedWithGroup]] = TRUE
+FROM $elementsTable [[elements]]
+WHERE $conditionSql
+SQL)->execute();
+                $db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+SET [[dateDeleted]] = '$now'
+FROM $categoriesTable [[categories]]
+WHERE $conditionSql
+SQL)->execute();
             }
-
-            $db->createCommand($sql)->execute();
 
             // Delete the structure
             Craft::$app->getStructures()->deleteStructureById($categoryGroupRecord->structureId);
@@ -747,6 +762,7 @@ SQL;
             'name',
             'handle',
             'defaultPlacement',
+            'dateDeleted',
             'uid',
         ]));
 

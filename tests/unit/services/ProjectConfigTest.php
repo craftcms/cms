@@ -44,7 +44,7 @@ class ProjectConfigTest extends TestCase
         'dateModified' => 1609452000,
     ];
 
-    protected array $external = [
+    protected static array $external = [
         'aa' => 'bb',
         'bb' => [
             'vc' => 'dd',
@@ -80,7 +80,7 @@ class ProjectConfigTest extends TestCase
     protected function getProjectConfig(?array $internal = null, ?array $external = null, array $additionalConfig = []): ProjectConfig
     {
         $internal = $internal ?? $this->internal;
-        $external = $external ?? $this->external;
+        $external = $external ?? static::$external;
 
         $mockConfig = [
             'getExternalConfig' => function() use ($external) {
@@ -89,7 +89,7 @@ class ProjectConfigTest extends TestCase
             'getInternalConfig' => new ReadOnlyProjectConfigData($internal),
             'persistInternalConfigValues' => null,
             'removeInternalConfigValuesByPaths' => null,
-            'updateYamlFiles' => true,
+            'writeYamlFiles' => true,
             'updateConfigVersion' => true,
         ];
         $mockConfig = array_merge($mockConfig, $additionalConfig);
@@ -271,7 +271,7 @@ class ProjectConfigTest extends TestCase
         ];
     }
 
-    public function getValueDataProvider(): array
+    public static function getValueDataProvider(): array
     {
         return [
             ['a', false, 'b'],
@@ -281,11 +281,11 @@ class ProjectConfigTest extends TestCase
             ['b.c', false, 'd'],
             ['ee.1', true, 22],
             ['ee', true, [11, 22, 33]],
-            [null, true, $this->external],
+            [null, true, static::$external],
         ];
     }
 
-    public function setValueDataProvider(): array
+    public static function setValueDataProvider(): array
     {
         return [
             ['a', 'bar'],

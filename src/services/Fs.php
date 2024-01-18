@@ -70,13 +70,21 @@ class Fs extends Component
      */
     public function createFilesystemConfig(FsInterface $fs): array
     {
-        return [
+        $config = [
             'name' => $fs->name,
             'type' => get_class($fs),
-            'hasUrls' => $fs->hasUrls,
-            'url' => $fs->url,
             'settings' => ProjectConfigHelper::packAssociativeArrays($fs->getSettings()),
         ];
+
+        if ($fs->getShowHasUrlSetting()) {
+            $config['hasUrls'] = $fs->hasUrls;
+        }
+
+        if ($fs->getShowUrlSetting()) {
+            $config['url'] = $fs->url;
+        }
+
+        return $config;
     }
 
     /**
@@ -109,12 +117,12 @@ class Fs extends Component
     {
         if (!isset($this->_filesystems)) {
             $configs = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_FS) ?? [];
-            $filesystems = array_map(function(string $handle, array $config) {
+            $configs = array_map(function(string $handle, array $config) {
                 $config['handle'] = $handle;
-                $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings']);
-                return $this->createFilesystem($config);
+                $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings'] ?? []);
+                return $config;
             }, array_keys($configs), $configs);
-            $this->_filesystems = new MemoizableArray($filesystems);
+            $this->_filesystems = new MemoizableArray($configs, fn(array $config) => $this->createFilesystem($config));
         }
 
         return $this->_filesystems;

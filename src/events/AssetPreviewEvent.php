@@ -20,7 +20,7 @@ use yii\base\Event;
 class AssetPreviewEvent extends Event
 {
     /**
-     * @var Asset The asset Element associated with the event.
+     * @var Asset The asset associated with the event.
      */
     public Asset $asset;
 

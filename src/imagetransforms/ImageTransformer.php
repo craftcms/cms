@@ -78,17 +78,28 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
         $fs = $asset->getVolume()->getTransformFs();
+        $mimeType = $asset->getMimeType();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         if (!$fs->hasUrls) {
             throw new NotSupportedException('The asset’s volume’s transform filesystem doesn’t have URLs.');
         }
 
+        if ($mimeType === 'image/gif' && !$generalConfig->transformGifs) {
+            throw new NotSupportedException('GIF files shouldn’t be transformed.');
+        }
+
+        if ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs) {
+            throw new NotSupportedException('SVG files shouldn’t be transformed.');
+        }
+
         $index = $this->getTransformIndex($asset, $imageTransform);
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $index);
 
-        // If it's a local filesystem, double-check that the transform exists
-        if ($fs instanceof LocalFsInterface && $index->fileExists && !$fs->fileExists($uri)) {
-            $index->fileExists = false;
+        // If it's a local filesystem, make sure `fileExists` is accurate
+        if ($fs instanceof LocalFsInterface && $index->fileExists !== $fs->fileExists($uri)) {
+            // Flip it and save it
+            $index->fileExists = !$index->fileExists;
             $this->storeTransformIndexData($index);
         }
 
@@ -192,8 +203,8 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         try {
             $asset->getVolume()->getTransformFs()->deleteFile($path);
-        } catch (InvalidConfigException) {
-            // nbd
+        } catch (InvalidConfigException|NotSupportedException) {
+            // NBD
         }
     }
 
@@ -356,7 +367,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             }
 
             try {
-                $volume->getFs()->deleteFile($transformPath);
+                $volume->deleteFile($transformPath);
             } catch (Throwable) {
                 // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
             }
@@ -386,7 +397,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             Craft::$app->getErrorHandler()->logException($e);
         }
 
-        fclose($stream);
+        // when Google Cloud Storage is done with the $stream, it's no longer recognised as a valid resource
+        // it comes back with type=Unknown and then causes fclose to trigger an error:
+        // TypeError: fclose(): supplied resource is not a valid stream resource
+        // https://github.com/craftcms/cms/issues/12878
+        if (is_resource($stream)) {
+            fclose($stream);
+        }
+
         FileHelper::unlink($tempPath);
     }
 
@@ -520,6 +538,9 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             $this->deleteImageTransformFile($asset, $existingIndex);
         }
 
+        $detectedFormat = $transform->format ?: TransformHelper::detectTransformFormat($asset);
+        $transformFilename = pathinfo($asset->getFilename(), PATHINFO_FILENAME) . '.' . $detectedFormat;
+
         // Create a new record
         $index = new ImageTransformIndex([
             'assetId' => $asset->id,
@@ -529,6 +550,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             'transformString' => $transformString,
             'fileExists' => false,
             'inProgress' => false,
+            'filename' => $transformFilename,
             'transform' => $transform,
         ]);
 
@@ -642,8 +664,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     {
         $imageCopy = $asset->getCopyOfFile();
 
-        /** @var Raster $image */
-        $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($asset->height, $asset->width));
+        if (FileHelper::isSvg($imageCopy)) {
+            $size = max($asset->width, $asset->height) ?? 1000;
+            /** @var Raster $image */
+            $image = Craft::$app->getImages()->loadImage($imageCopy, true, $size);
+        } else {
+            /** @var Raster $image */
+            $image = Craft::$app->getImages()->loadImage($imageCopy);
+        }
 
         // TODO Is this hacky? It seems hacky.
         // We're rasterizing SVG, we have to make sure that the filename change does not get lost

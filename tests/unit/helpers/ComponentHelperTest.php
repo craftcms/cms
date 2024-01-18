@@ -116,9 +116,19 @@ class ComponentHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider cleanseConfigDataProvider
+     * @param array $expected
+     * @param array $config
+     */
+    public function testCleanseConfig(array $expected, array $config)
+    {
+        self::assertSame($expected, Component::cleanseConfig($config));
+    }
+
+    /**
      * @return array
      */
-    public function validateComponentClassDataProvider(): array
+    public static function validateComponentClassDataProvider(): array
     {
         return [
             [true, PlainText::class],
@@ -136,7 +146,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function successfulComponentCreationDataProvider(): array
+    public static function successfulComponentCreationDataProvider(): array
     {
         return [
             'string-to-class-conversion' => [
@@ -163,9 +173,9 @@ class ComponentHelperTest extends TestCase
                         ],
                     ]);
 
-                    $this->assertEquals('value1', $component->dependency1);
-                    $this->assertEquals('value2', $component->dependency2);
-                    $this->assertEquals('value', $component->settingsdependency1);
+                    self::assertEquals('value1', $component->dependency1);
+                    self::assertEquals('value2', $component->dependency2);
+                    self::assertEquals('value', $component->settingsdependency1);
                     return $component;
                 },
             ],
@@ -178,7 +188,7 @@ class ComponentHelperTest extends TestCase
      *
      * @return array
      */
-    public function failingComponentCreationDataProvider(): array
+    public static function failingComponentCreationDataProvider(): array
     {
         return [
             'invalid-required-parent-class' => [
@@ -224,7 +234,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function mergeSettingsDataProvider(): array
+    public static function mergeSettingsDataProvider(): array
     {
         $mergedComponentArray = [
             'name' => 'Component',
@@ -293,7 +303,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function iconSvgDataProvider(): array
+    public static function iconSvgDataProvider(): array
     {
         return [
             'default' => ['<title>Default</title>', null, 'Default'],
@@ -302,6 +312,23 @@ class ComponentHelperTest extends TestCase
             'file-does-not-exist' => ['<title>Default</title>', '/file/does/not/exist.svg', 'Default'],
             'not-an-svg' => ['<title>Default</title>', dirname(__DIR__, 2) . '/_data/assets/files/background.jpeg', 'Default'],
             'aria-hidden' => ['aria-hidden="true"', '<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>', 'Default'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function cleanseConfigDataProvider(): array
+    {
+        return [
+            [
+                ['f' => 'foo', 'b' => 'bar'],
+                ['f' => 'foo', 'b' => 'bar', 'as f' => 'f', 'on b' => 'b'],
+            ],
+            [
+                ['nested' => ['f' => 'foo', 'b' => 'bar']],
+                ['nested' => ['f' => 'foo', 'b' => 'bar', 'as f' => 'f', 'on b' => 'b']],
+            ],
         ];
     }
 }

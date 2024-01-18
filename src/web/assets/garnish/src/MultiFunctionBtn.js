@@ -34,19 +34,29 @@ export default Base.extend(
 
       if (this.$btn.prev().attr('role') === 'status') {
         this.$liveRegion = this.$btn.prev();
+      } else {
+        this.$liveRegion = $('<div/>', {
+          class: 'visually-hidden',
+          role: 'status',
+        });
+        this.$btn.before(this.$liveRegion);
       }
 
-      this.busyMessage = this.$btn.data('busy-message');
+      this.busyMessage = this.$btn.data('busy-message')
+        ? this.$btn.data('busy-message')
+        : Craft.t('app', 'Loading');
       this.failureMessage = this.$btn.data('failure-message');
       this.retryMessage = this.$btn.data('retry-message');
-      this.successMessage = this.$btn.data('success-message');
+      this.successMessage = this.$btn.data('success-message')
+        ? this.$btn.data('success-message')
+        : Craft.t('app', 'Success');
     },
 
     busyEvent: function () {
       this.$btn.addClass(this.settings.busyClass);
 
       if (this.busyMessage) {
-        this.updateMessages(this.busyMessage, false);
+        this.updateMessages(this.busyMessage);
       }
     },
 
@@ -79,10 +89,10 @@ export default Base.extend(
       }
     },
 
-    updateMessages: function (message, updateLabel = true) {
+    updateMessages: function (message) {
       this.$liveRegion.text(message);
 
-      if (updateLabel) {
+      if (this.settings.changeButtonText) {
         this.$btnLabel.text(message);
       }
 
@@ -109,6 +119,7 @@ export default Base.extend(
       busyClass: 'loading',
       clearLiveRegionTimeout: 2500,
       failureMessageDuration: 3000,
+      changeButtonText: false,
     },
   }
 );

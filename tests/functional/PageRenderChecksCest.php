@@ -140,28 +140,16 @@ class PageRenderChecksCest
                 ['rendered' => 'New field'],
             ],
             ],
-            [
-                'url' => '/settings/fields/1', 'title' => 'Fields', 'extraContent' => [
-                ['rendered' => 'New field'],
-            ],
-            ],
 
             [
                 'url' => '/settings/assets', 'title' => 'Volumes - Asset Settings', 'extraContent' => [
                 ['rendered' => 'New volume'],
                 ['rendered' => 'Image Transforms'],
-                ['rendered' => 'Settings'],
             ],
             ],
             [
                 'url' => '/settings/assets/transforms', 'title' => 'Image Transforms - Asset Settings', 'extraContent' => [
                 ['rendered' => 'New image transform'],
-            ],
-            ],
-            [
-                'url' => '/settings/assets/settings', 'title' => 'Settings - Asset Settings', 'extraContent' => [
-                ['rendered' => 'Temp Uploads Location'],
-                ['rendered' => 'Where do you want to store temporary asset uploads?'],
             ],
             ],
 

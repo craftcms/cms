@@ -87,7 +87,8 @@ $gridColor: hsl(212, 50%, 95%);
 .fld-new-tab-btn,
 .fld-new-tab-btn:hover {
   background-color: var(--white);
-  box-shadow: 0 0 0 1px transparentize($grey900, 0.9),
+  box-shadow:
+    0 0 0 1px transparentize($grey900, 0.9),
     0 2px 5px -2px transparentize($grey900, 0.8);
 }
 
@@ -278,11 +279,6 @@ $gridColor: hsl(212, 50%, 95%);
       margin: 0;
     }
   }
-}
-
-body.dragging {
-  cursor: move !important;
-  cursor: grabbing !important;
 }
 
 .fld-hr,

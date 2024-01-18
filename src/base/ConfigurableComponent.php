@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use BackedEnum;
 use craft\events\DefineValueEvent;
 use craft\helpers\DateTimeHelper;
 use DateTime;
@@ -65,6 +66,8 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
             $value = $this->$attribute;
             if ($value instanceof DateTime || isset($datetimeAttributes[$attribute])) {
                 $value = DateTimeHelper::toIso8601($value) ?: null;
+            } elseif ($value instanceof BackedEnum) {
+                $value = $value->value;
             }
             $settings[$attribute] = $value;
         }

@@ -35,12 +35,10 @@ class FormatDateTime extends Directive
      */
     public static function create(): GqlDirective
     {
-        if ($type = GqlEntityRegistry::getEntity(self::name())) {
-            return $type;
-        }
+        $typeName = static::name();
 
-        return GqlEntityRegistry::createEntity(static::name(), new self([
-            'name' => static::name(),
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new self([
+            'name' => $typeName,
             'locations' => [
                 DirectiveLocation::FIELD,
             ],
@@ -94,7 +92,7 @@ class FormatDateTime extends Directive
             }
 
             if (!empty($arguments['locale'])) {
-                $formatter = (new Locale($arguments['locale']))->getFormatter();
+                $formatter = Craft::$app->getI18n()->getLocaleById($arguments['locale'])->getFormatter();
             } else {
                 $formatter = Craft::$app->getFormatter();
             }

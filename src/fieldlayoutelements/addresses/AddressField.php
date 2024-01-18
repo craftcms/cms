@@ -25,6 +25,11 @@ class AddressField extends BaseField
     /**
      * @inheritdoc
      */
+    public bool $includeInCards = true;
+
+    /**
+     * @inheritdoc
+     */
     public function attribute(): string
     {
         return 'address';
@@ -49,6 +54,23 @@ class AddressField extends BaseField
     /**
      * @inheritdoc
      */
+    public function previewable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewHtml(ElementInterface $element): string
+    {
+        /** @var Address $element */
+        return Craft::$app->getAddresses()->formatAddress($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function showLabel(): bool
     {
         return false;
@@ -68,7 +90,7 @@ class AddressField extends BaseField
     public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException('AddressField can only be used in address field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', __CLASS__));
         }
 
         $view = Craft::$app->getView();
@@ -103,9 +125,11 @@ class AddressField extends BaseField
             if (field.prop('nodeName') !== 'SELECT') {
                 break;
             }
+
+            let oldFieldVal = field.val();
             const spinner = $('#' + Craft.namespaceId(name + '-spinner', $namespace));
             field.off().on('change', () => {
-                if (!field.val()) {
+                if (!field.val() || oldFieldVal === field.val()) {
                     return;
                 }
                 spinner.removeClass('hidden');
@@ -133,9 +157,9 @@ class AddressField extends BaseField
                     );
                     \$addressFields.eq(0).replaceWith(response.data.fieldsHtml);
                     \$addressFields.remove();
-                    initFields(values);
                     Craft.appendHeadHtml(response.data.headHtml);
                     Craft.appendBodyHtml(response.data.bodyHtml);
+                    initFields(values);
                     if (activeElementId) {
                         $('#' + activeElementId).focus();                        
                     }

@@ -10,19 +10,20 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\console\Controller;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
-use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
-use craft\events\BatchElementActionEvent;
+use craft\events\MultiElementActionEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\models\Site;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use Throwable;
@@ -52,7 +53,7 @@ class ResaveController extends Controller
         // empty
         if ($to === ':empty:') {
             return function() {
-                return null;
+                return '';
             };
         }
 
@@ -118,9 +119,18 @@ class ResaveController extends Controller
     public ?string $uid = null;
 
     /**
-     * @var string|null The site handle to save elements from.
+     * @var string|null The site handle to fetch elements from.
      */
     public ?string $site = null;
+
+    /**
+     * @var string|int[]|null Comma-separated site handles to propagate entries to.
+     *
+     * When this is set, the entry will *only* be saved for this site.
+     *
+     * @since 4.4.7
+     */
+    public string|array|null $propagateTo = null;
 
     /**
      * @var string The status(es) of elements to resave. Can be set to multiple comma-separated statuses.
@@ -170,15 +180,33 @@ class ResaveController extends Controller
     public ?string $volume = null;
 
     /**
-     * @var string|null The field handle to save Matrix blocks for.
+     * @var string|null The field handle to save nested entries for.
      */
     public ?string $field = null;
+
+    /**
+     * @var string|int[]|null Comma-separated list of owner element IDs.
+     * @since 4.5.6
+     */
+    public string|array|null $ownerId = null;
+
+    /**
+     * @var string|null Comma-separated list of country codes.
+     * @since 4.5.6
+     */
+    public ?string $countryCode = null;
 
     /**
      * @var string|null An attribute name that should be set for each of the elements. The value will be determined by --to.
      * @since 3.7.29
      */
     public ?string $set = null;
+
+    /**
+     * @var bool|null The site-enabled status that should be set on the entry, for the site it’s initially being saved/propagated to.
+     * @since 4.4.7
+     */
+    public ?bool $setEnabledForSite = null;
 
     /**
      * @var string|null The value that should be set on the --set attribute.
@@ -217,6 +245,10 @@ class ResaveController extends Controller
         $options[] = 'touch';
 
         switch ($actionID) {
+            case 'addresses':
+                $options[] = 'ownerId';
+                $options[] = 'countryCode';
+                break;
             case 'assets':
                 $options[] = 'volume';
                 break;
@@ -227,14 +259,14 @@ class ResaveController extends Controller
                 break;
             case 'entries':
                 $options[] = 'section';
+                $options[] = 'field';
+                $options[] = 'ownerId';
                 $options[] = 'type';
                 $options[] = 'drafts';
                 $options[] = 'provisionalDrafts';
                 $options[] = 'revisions';
-                break;
-            case 'matrix-blocks':
-                $options[] = 'field';
-                $options[] = 'type';
+                $options[] = 'propagateTo';
+                $options[] = 'setEnabledForSite';
                 break;
         }
 
@@ -254,12 +286,49 @@ class ResaveController extends Controller
             return false;
         }
 
+        if (isset($this->propagateTo)) {
+            $siteHandles = array_filter(StringHelper::split($this->propagateTo));
+            $this->propagateTo = [];
+            $sitesService = Craft::$app->getSites();
+            foreach ($siteHandles as $siteHandle) {
+                $site = $sitesService->getSiteByHandle($siteHandle, true);
+                if (!$site) {
+                    $this->stderr("Invalid site handle: $siteHandle" . PHP_EOL, Console::FG_RED);
+                    return false;
+                }
+                $this->propagateTo[] = $site->id;
+            }
+
+            if (isset($this->set)) {
+                $this->stderr('--propagate-to can’t be coupled with --set.' . PHP_EOL, Console::FG_RED);
+                return false;
+            }
+        }
+
         if (isset($this->set) && !isset($this->to)) {
             $this->stderr('--to is required when using --set.' . PHP_EOL, Console::FG_RED);
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * Re-saves user addresses.
+     *
+     * @return int
+     * @since 4.5.6
+     */
+    public function actionAddresses(): int
+    {
+        $criteria = [];
+        if (isset($this->ownerId)) {
+            $criteria['ownerId'] = array_map(fn(string $id) => (int)$id, explode(',', (string)$this->ownerId));
+        }
+        if (isset($this->countryCode)) {
+            $criteria['countryCode'] = explode(',', (string)$this->countryCode);
+        }
+        return $this->resaveElements(Address::class, $criteria);
     }
 
     /**
@@ -301,30 +370,16 @@ class ResaveController extends Controller
         if (isset($this->section)) {
             $criteria['section'] = explode(',', $this->section);
         }
+        if (isset($this->field)) {
+            $criteria['field'] = explode(',', $this->field);
+        }
+        if (isset($this->ownerId)) {
+            $criteria['ownerId'] = array_map(fn(string $id) => (int)$id, explode(',', (string)$this->ownerId));
+        }
         if (isset($this->type)) {
             $criteria['type'] = explode(',', $this->type);
         }
         return $this->resaveElements(Entry::class, $criteria);
-    }
-
-    /**
-     * Re-saves Matrix blocks.
-     *
-     * You must supply the `--field` or `--element-id` argument for this to work properly.
-     *
-     * @return int
-     * @since 3.2.0
-     */
-    public function actionMatrixBlocks(): int
-    {
-        $criteria = [];
-        if (isset($this->field)) {
-            $criteria['field'] = explode(',', $this->field);
-        }
-        if (isset($this->type)) {
-            $criteria['type'] = explode(',', $this->type);
-        }
-        return $this->resaveElements(MatrixBlock::class, $criteria);
     }
 
     /**
@@ -478,28 +533,44 @@ class ResaveController extends Controller
 
         $to = isset($this->set) ? self::normalizeTo($this->to) : null;
 
+        $label = isset($this->propagateTo) ? 'Propagating' : 'Resaving';
         $elementsText = $count === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName();
-        $this->stdout("Resaving $count $elementsText ..." . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("$label $count $elementsText ..." . PHP_EOL, Console::FG_YELLOW);
 
         $elementsService = Craft::$app->getElements();
         $fail = false;
 
-        $beforeCallback = function(BatchElementActionEvent $e) use ($query, $count, $to) {
+        $beforeCallback = function(MultiElementActionEvent $e) use ($query, $count, $to) {
             if ($e->query === $query) {
+                $label = isset($this->propagateTo) ? 'Propagating' : 'Resaving';
                 $element = $e->element;
-                $this->stdout("    - [$e->position/$count] Resaving $element ($element->id) ... ");
+                $this->stdout("    - [$e->position/$count] $label $element ($element->id) ... ");
 
-                try {
-                    if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($element, $this->set))) {
-                        $element->{$this->set} = $to($element);
+                if (isset($this->propagateTo)) {
+                    // Set the full array for all sites, so the propagated element gets the right status
+                    $siteStatuses = ElementHelper::siteStatusesForElement($element);
+                    foreach ($this->propagateTo as $siteId) {
+                        $siteStatuses[$siteId] = $this->setEnabledForSite ?? $siteStatuses[$siteId] ?? $element->getEnabledForSite();
                     }
-                } catch (Throwable $e) {
-                    throw new InvalidElementException($element, $e->getMessage());
+                    $element->setEnabledForSite($siteStatuses);
+                } else {
+                    if (isset($this->setEnabledForSite)) {
+                        // Just set it for this site
+                        $element->setEnabledForSite($this->setEnabledForSite);
+                    }
+
+                    try {
+                        if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($element, $this->set))) {
+                            $element->{$this->set} = $to($element);
+                        }
+                    } catch (Throwable $e) {
+                        throw new InvalidElementException($element, $e->getMessage());
+                    }
                 }
             }
         };
 
-        $afterCallback = function(BatchElementActionEvent $e) use ($query, &$fail) {
+        $afterCallback = function(MultiElementActionEvent $e) use ($query, &$fail) {
             if ($e->query === $query) {
                 $element = $e->element;
                 if ($e->exception) {
@@ -514,15 +585,23 @@ class ResaveController extends Controller
             }
         };
 
-        $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
-        $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
 
-        $elementsService->resaveElements($query, true, !$this->revisions, $this->updateSearchIndex, $this->touch);
+        if (isset($this->propagateTo)) {
+            $elementsService->on(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $beforeCallback);
+            $elementsService->on(Elements::EVENT_AFTER_PROPAGATE_ELEMENT, $afterCallback);
+            $elementsService->propagateElements($query, $this->propagateTo, true);
+            $elementsService->off(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $beforeCallback);
+            $elementsService->off(Elements::EVENT_AFTER_PROPAGATE_ELEMENT, $afterCallback);
+        } else {
+            $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
+            $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
+            $elementsService->resaveElements($query, true, !$this->revisions, $this->updateSearchIndex, $this->touch);
+            $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
+            $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
+        }
 
-        $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
-        $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
-
-        $this->stdout("Done resaving $elementsText." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+        $label = isset($this->propagateTo) ? 'propagating' : 'resaving';
+        $this->stdout("Done $label $elementsText." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
         return $fail ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;
     }
 }

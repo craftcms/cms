@@ -13,9 +13,10 @@ use yii\base\InvalidConfigException;
  * @property ConditionInterface $condition The condition associated with this rule
  * @property-read array $config The rule’s portable config
  * @property-read string $label The rule’s option label
+ * @mixin BaseConditionRule
+ * @phpstan-require-extends BaseConditionRule
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @mixin BaseConditionRule
  */
 interface ConditionRuleInterface extends ComponentInterface
 {
@@ -32,6 +33,14 @@ interface ConditionRuleInterface extends ComponentInterface
      * @return string
      */
     public function getLabel(): string;
+
+    /**
+     * Returns the rule’s option label hint.
+     *
+     * @return string|null
+     * @since 4.6.0
+     */
+    public function getLabelHint(): ?string;
 
     /**
      * Returns the optgroup label the condition rule should be grouped under.

@@ -6,6 +6,7 @@
 Craft.Preview = Garnish.Base.extend(
   {
     elementEditor: null,
+    formObserver: null,
 
     $shade: null,
     $editorContainer: null,
@@ -334,6 +335,9 @@ Craft.Preview = Garnish.Base.extend(
 
       this.updateIframe();
 
+      this.formObserver = new Craft.FormObserver(this.$editor, () => {
+        this.elementEditor.checkForm();
+      });
       this.elementEditor.on('update', this._updateIframeProxy);
 
       Craft.ElementThumbLoader.retryAll();
@@ -534,6 +538,8 @@ Craft.Preview = Garnish.Base.extend(
           }
         );
 
+      this.formObserver.destroy();
+      this.formObserver = null;
       this.elementEditor.off('update', this._updateIframeProxy);
 
       Craft.ElementThumbLoader.retryAll();
@@ -941,6 +947,7 @@ Craft.Preview = Garnish.Base.extend(
       }
 
       this.updateWidths();
+      this.trigger('drag');
     },
 
     _onDragStop: function () {
@@ -961,11 +968,19 @@ Craft.Preview = Garnish.Base.extend(
     instances: [],
 
     refresh: function () {
-      for (preview of Craft.Preview.instances) {
+      for (let preview of Craft.Preview.instances) {
         preview.updateIframe();
       }
-      for (preview of Craft.LivePreview.instances) {
+      for (let preview of Craft.LivePreview.instances) {
         preview.forceUpdateIframe();
+      }
+    },
+
+    getActive: function () {
+      for (let preview of Craft.Preview.instances) {
+        if (preview.isActive) {
+          return preview;
+        }
       }
     },
   }

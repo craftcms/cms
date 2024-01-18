@@ -311,7 +311,7 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
             ],
           },
           {
-            test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|woff2|svg)$/,
+            test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|woff2|svg|eot)$/,
             type: 'asset/resource',
             generator: {
               filename: 'fonts/[name][ext][query]',
@@ -335,7 +335,6 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
       ],
       externals: {
         jquery: 'jQuery',
-        d3: 'd3',
         axios: 'axios',
         fabric: 'fabric',
         'element-resize-detector': 'elementResizeDetectorMaker',

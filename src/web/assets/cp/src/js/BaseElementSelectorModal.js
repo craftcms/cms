@@ -221,6 +221,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       if (!this.elementIndex) {
         this._createElementIndex();
       } else {
+        // make sure we're able to scroll the entire elementIndex if more elements were added
+        // after modal was first initialised
+        this.updateModalBottomPadding();
+
         // Auto-focus the Search box
         if (!Garnish.isMobileBrowser(true)) {
           this.elementIndex.$search.trigger('focus');
@@ -294,7 +298,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     selectElements: function () {
       if (this.hasSelection()) {
         // TODO: This code shouldn't know about views' elementSelect objects
-        if (this.elementSelect) {
+        if (this.elementIndex.view && this.elementIndex.view.elementSelect) {
           this.elementIndex.view.elementSelect.clearMouseUpTimeout();
         }
 
@@ -415,6 +419,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           function (ev, touchData) {
             // Make sure the touch targets are the same
             // (they may be different if Command/Ctrl/Shift-clicking on multiple elements quickly)
+            // and make sure the element is actually selectable
             if (touchData.firstTap.target === touchData.secondTap.target) {
               this.selectElements();
             }
@@ -436,17 +441,29 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           modal: this,
           storageKey: this.settings.storageKey,
           condition: this.settings.condition,
-          criteria: this.settings.criteria,
+          referenceElementId: this.settings.referenceElementId,
+          referenceElementSiteId: this.settings.referenceElementSiteId,
+          criteria: Object.assign({}, this.settings.criteria),
           disabledElementIds: this.settings.disabledElementIds,
           selectable: true,
           multiSelect: this.settings.multiSelect,
           buttonContainer: this.$secondaryButtons,
-          onSelectionChange: this.onSelectionChange.bind(this),
+          onSelectionChange: () => {
+            if (this.elementIndex) {
+              this.onSelectionChange();
+            }
+          },
+          onSourcePathChange: () => {
+            if (this.elementIndex) {
+              this.onSelectionChange();
+            }
+          },
           onSelectSource: this.onSelectSource.bind(this),
           hideSidebar: this.settings.hideSidebar,
           defaultSiteId: this.settings.defaultSiteId,
           defaultSource: this.settings.defaultSource,
           defaultSourcePath: this.settings.defaultSourcePath,
+          preferStoredSource: this.settings.preferStoredSource,
           showSourcePath: this.settings.showSourcePath,
         },
         this.settings.indexSettings
@@ -460,6 +477,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       storageKey: null,
       sources: null,
       condition: null,
+      referenceElementId: null,
+      referenceElementSiteId: null,
       criteria: null,
       multiSelect: false,
       showSiteMenu: null,
@@ -475,6 +494,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       defaultSiteId: null,
       defaultSource: null,
       defaultSourcePath: null,
+      preferStoredSource: false,
       showSourcePath: true,
       bodyAction: 'element-selector-modals/body',
       indexSettings: {},
