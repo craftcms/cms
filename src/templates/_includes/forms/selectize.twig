@@ -1,6 +1,7 @@
 {% set id = id ?? "selectize#{random()}" %}
 {% set selectizeOptions = {
     dropdownParent: 'body',
+    plugins: ['auto_position']
 }|merge(selectizeOptions ?? []) %}
 
 {% set multi = multi ?? false %}
@@ -160,30 +161,6 @@
         }
     };
 
-    const positionDropdown = () => {
-        const selectize = $select.data('selectize');
-
-        // adjust dropdown position - if there's not enough space to display it below the field
-        // display it above the field
-        const bodyHeight = $('body').height();
-        const windowInnerHeight = window.innerHeight;
-        let offsetAdjustment = 0;
-        if (bodyHeight > windowInnerHeight) {
-            offsetAdjustment = bodyHeight - windowInnerHeight;
-        }
-
-        const controlOffset = selectize.settings.dropdownParent === 'body' ? selectize.$control.offset() : selectize.$control.position();
-        const controlHeight = selectize.$control.outerHeight();
-        const dropdownHeight = selectize.$dropdown.outerHeight();
-        const exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
-
-        if (exceededWindowHeight) {
-            selectize.$dropdown.css({
-                top: controlOffset.top - dropdownHeight - 4,
-            });
-        }
-    };
-
     {% if not multi %}
         const selectizeDropdownOpenEvent = new Event("selectizedropdownopen");
         const selectizeDropdownCloseEvent = new Event("selectizedropdownclose");
@@ -232,7 +209,6 @@
             }
         },
         onDropdownOpen: function() {
-            positionDropdown();
             {% if not multi %}
                 $select[0].dispatchEvent(selectizeDropdownOpenEvent);
             {% endif %}
@@ -242,7 +218,6 @@
                 $select[0].dispatchEvent(selectizeDropdownCloseEvent);
             {% endif %}
         },
-        onItemAdd: positionDropdown,
     }, {{ selectizeOptions|json_encode|raw }}));
 
     onChange();
