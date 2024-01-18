@@ -1,7 +1,7 @@
 {% set id = id ?? "selectize#{random()}" %}
 {% set selectizeOptions = {
     dropdownParent: 'body',
-    plugins: ['auto_position']
+    plugins: ['auto_position'],
 }|merge(selectizeOptions ?? []) %}
 
 {% set multi = multi ?? false %}
