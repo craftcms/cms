@@ -181,6 +181,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[provider]], [[identityId]], [[userId]])',
+        ]);
         $this->createTable(Table::ASSETS_SITES, [
             'assetId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),

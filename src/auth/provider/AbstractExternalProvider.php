@@ -136,7 +136,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
     {
         // First, look in storage
         if ($idpIdentifier) {
-            $user = Craft::$app->getAuth()->findUser(
+            $user = Craft::$app->getAuthSSO()->findUser(
                 $this,
                 (string) $idpIdentifier
             );
@@ -197,7 +197,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
         }
 
         // Link User to IdP for future logins
-        Craft::$app->getAuth()->linkUserToIdentity($user, $this, $idpIdentifier);
+        Craft::$app->getAuthSSO()->linkUserToIdentity($user, $this, $idpIdentifier);
 
         // Assign User Groups
         $this->assignUserToGroups($user, $data);

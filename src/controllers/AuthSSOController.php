@@ -39,7 +39,7 @@ class AuthSSOController extends Controller
      */
     public function actionRequest(?string $provider = null): ?Response
     {
-        $authProvider = Craft::$app->getAuth()->getProviderByHandle(
+        $authProvider = Craft::$app->getAuthSSO()->getProviderByHandle(
             $provider ?? $this->request->getRequiredParam('provider')
         );
 
@@ -55,7 +55,7 @@ class AuthSSOController extends Controller
 
     public function actionResponse(?string $provider = null): ?Response
     {
-        $authProvider = Craft::$app->getAuth()->getProviderByHandle(
+        $authProvider = Craft::$app->getAuthSSO()->getProviderByHandle(
             $provider ?? $this->request->getRequiredParam('provider')
         );
 
