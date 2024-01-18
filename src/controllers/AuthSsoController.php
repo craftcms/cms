@@ -16,7 +16,7 @@ use craft\web\Controller;
 use yii\web\HttpException;
 use yii\web\Response;
 
-class AuthSSOController extends Controller
+class AuthSsoController extends Controller
 {
     /**
      * @inheritdoc
@@ -39,7 +39,7 @@ class AuthSSOController extends Controller
      */
     public function actionRequest(?string $provider = null): ?Response
     {
-        $authProvider = Craft::$app->getAuthSSO()->getProviderByHandle(
+        $authProvider = Craft::$app->getAuthSso()->getProviderByHandle(
             $provider ?? $this->request->getRequiredParam('provider')
         );
 
@@ -55,7 +55,7 @@ class AuthSSOController extends Controller
 
     public function actionResponse(?string $provider = null): ?Response
     {
-        $authProvider = Craft::$app->getAuthSSO()->getProviderByHandle(
+        $authProvider = Craft::$app->getAuthSso()->getProviderByHandle(
             $provider ?? $this->request->getRequiredParam('provider')
         );
 

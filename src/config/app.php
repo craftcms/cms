@@ -30,7 +30,7 @@ return [
             'class' => craft\services\Auth::class,
         ],
         'authSso' => [
-            'class' => craft\services\AuthSSO::class,
+            'class' => craft\services\AuthSso::class,
         ],
         'categories' => [
             'class' => craft\services\Categories::class,

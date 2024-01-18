@@ -20,7 +20,7 @@ use craft\db\Table;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
-class AuthSSO extends ActiveRecord
+class AuthSso extends ActiveRecord
 {
     /**
      * @inheritdoc

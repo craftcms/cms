@@ -16,24 +16,24 @@ use craft\elements\User;
 use craft\errors\AuthFailedException;
 use craft\errors\AuthProviderNotFoundException;
 use craft\helpers\User as UserHelper;
-use craft\records\AuthSSO as AuthRecord;
+use craft\records\AuthSso as AuthRecord;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
-class AuthSSO extends Component
+class AuthSso extends Component
 {
     /**
-     * @event UserEvent The event that is triggered when populating user groups from an AuthSSO provider.
+     * @event UserEvent The event that is triggered when populating user groups from an AuthSso provider.
      *
      * ---
      * ```php
      * use craft\events\UserGroupsAssignEvent;
-     * use craft\services\AuthSSO;
+     * use craft\services\AuthSso;
      * use yii\base\Event;
      *
      * Event::on(
      *     \some\provider\Type::class,
-     *     AuthSSO::EVENT_POPULATE_USER_GROUPS,
+     *     AuthSso::EVENT_POPULATE_USER_GROUPS,
      *     function(UserGroupsAssignEvent $event) {
      *         $providerData = $event->sender;
      *
@@ -49,17 +49,17 @@ class AuthSSO extends Component
     public const EVENT_POPULATE_USER_GROUPS = 'populateUserGroups';
 
     /**
-     * @event UserEvent The event that is triggered when populating a user from an AuthSSO provider.
+     * @event UserEvent The event that is triggered when populating a user from an AuthSso provider.
      *
      * ---
      * ```php
      * use craft\events\UserEvent;
-     * use craft\services\AuthSSO;
+     * use craft\services\AuthSso;
      * use yii\base\Event;
      *
      * Event::on(
      *     \some\provider\Type::class,
-     *     AuthSSO::EVENT_POPULATE_USER,
+     *     AuthSso::EVENT_POPULATE_USER,
      *     function(UserEvent $event) {
      *         $providerData = $event->sender;
      *

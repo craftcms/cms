@@ -19,7 +19,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\services\AuthSSO;
+use craft\services\AuthSso;
 
 /**
  * We should always trust an external provider; therefore we need to perform additional
@@ -136,7 +136,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
     {
         // First, look in storage
         if ($idpIdentifier) {
-            $user = Craft::$app->getAuthSSO()->findUser(
+            $user = Craft::$app->getAuthSso()->findUser(
                 $this,
                 (string) $idpIdentifier
             );
@@ -197,7 +197,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
         }
 
         // Link User to IdP for future logins
-        Craft::$app->getAuthSSO()->linkUserToIdentity($user, $this, $idpIdentifier);
+        Craft::$app->getAuthSso()->linkUserToIdentity($user, $this, $idpIdentifier);
 
         // Assign User Groups
         $this->assignUserToGroups($user, $data);
@@ -234,7 +234,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
             'groupIds' => $groupIds,
         ]);
 
-        $this->trigger(AuthSSO::EVENT_POPULATE_USER_GROUPS, $event);
+        $this->trigger(AuthSso::EVENT_POPULATE_USER_GROUPS, $event);
 
         return Craft::$app->getUsers()->assignUserToGroups(
             $user->getId(),
@@ -311,7 +311,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
             'sender' => $data,
         ]);
 
-        $this->trigger(AuthSSO::EVENT_POPULATE_USER, $event);
+        $this->trigger(AuthSso::EVENT_POPULATE_USER, $event);
 
         return $event->user;
     }
