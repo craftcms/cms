@@ -169,13 +169,23 @@ class Raster extends Image
         $mimeType = FileHelper::getMimeType($path, null, false);
 
         if ($mimeType !== null && !str_starts_with($mimeType, 'image/') && !str_starts_with($mimeType, 'application/pdf')) {
-            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => basename($path)]));
+            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', [
+                'name' => basename($path),
+            ]));
         }
 
         try {
             $this->_image = $this->_instance->open($path);
         } catch (Throwable $e) {
-            throw new ImageException(Craft::t('app', 'The file “{path}” does not appear to be an image.', ['path' => $path]), 0, $e);
+            // Imagick can throw all sorts of errors via the open() method
+            // we should log them to better know what's going on
+            Craft::warning($e->getMessage(), $e->getFile());
+            if (($instanceException = $e->getPrevious()) !== null) {
+                Craft::warning($instanceException->getMessage(), $instanceException->getFile() . ':' . $instanceException->getLine());
+            }
+            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', [
+                'name' => basename($path),
+            ]), 0, $e);
         }
 
         // For Imagick, convert CMYK to RGB, save and re-open.
@@ -269,6 +279,7 @@ class Raster extends Image
     {
         $upscale = $upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
 
+        $this->normalizeDimensions($targetWidth, $targetHeight);
         $this->scaleToFit($targetWidth, $targetHeight, $upscale);
         $this->setFill($fill);
 
@@ -724,7 +735,9 @@ class Raster extends Image
     private function _autoGuessImageQuality(string $tempFileName, int $originalSize, string $extension, int $minQuality, int $maxQuality, int $step = 0): string
     {
         if ($step === 0) {
-            $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . pathinfo($tempFileName, PATHINFO_FILENAME) . '-temp.' . $extension;
+            $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME) .
+                DIRECTORY_SEPARATOR .
+                FileHelper::uniqueName(sprintf('%s.%s', pathinfo($tempFileName, PATHINFO_FILENAME), $extension));
         }
 
         // Find our target quality by splitting the min and max qualities
@@ -791,8 +804,10 @@ class Raster extends Image
                 return ['jpeg_quality' => $quality, 'flatten' => true];
 
             case 'gif':
-            case 'webp':
                 return ['animated' => $this->_isAnimated];
+
+            case 'webp':
+                return ['animated' => $this->_isAnimated, 'webp_quality' => $quality];
 
             case 'png':
                 // Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression

@@ -54,10 +54,11 @@ class Image
             return [(int)$sourceWidth, (int)$sourceHeight];
         }
 
-        // Fill in the blank
+        // Fill in the blank,
+        // ensure that the target width/height is at least 1
         return [
-            (int)($targetWidth ?: round($targetHeight * ($sourceWidth / $sourceHeight))),
-            (int)($targetHeight ?: round($targetWidth * ($sourceHeight / $sourceWidth))),
+            (int)($targetWidth ?: max(round($targetHeight * ($sourceWidth / $sourceHeight)), 1)),
+            (int)($targetHeight ?: max(round($targetWidth * ($sourceHeight / $sourceWidth)), 1)),
         ];
     }
 
@@ -113,8 +114,9 @@ class Image
         }
 
         // Since we don't want to upscale, make sure the calculated ratios aren't bigger than the actual image size.
-        $newWidth = min($sourceWidth, $transformWidth, (int)round($sourceHeight * $transformRatio));
-        $newHeight = min($sourceHeight, $transformHeight, (int)round($sourceWidth / $transformRatio));
+        // transformWidth and transformHeight can be null, so check for that and if they are, use the calculatedMissingDimensions
+        $newWidth = min($sourceWidth, $transformWidth ?? $width, (int)round($sourceHeight * $transformRatio));
+        $newHeight = min($sourceHeight, $transformHeight ?? $height, (int)round($sourceWidth / $transformRatio));
 
         return [$newWidth, $newHeight];
     }
@@ -272,7 +274,8 @@ class Image
 
             $image = Craft::$app->getImages()->loadImage($filePath);
             return [$image->getWidth(), $image->getHeight()];
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
             return [0, 0];
         }
     }

@@ -14,7 +14,6 @@ use craft\fields\Entries;
 use craft\fields\Matrix;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
-use craft\models\MatrixBlockType;
 use craft\test\TestCase;
 use crafttests\fixtures\GqlSchemasFixture;
 use Exception;
@@ -62,14 +61,10 @@ class ExtractEagerLoadingParameterTest extends TestCase
                         'handle' => 'matrixField',
                         'context' => 'global',
                         'getEagerLoadingGqlConditions' => [],
-                        'getGqlFragmentEntityByName' => $this->make(MatrixBlockType::class, [
-                            'getEagerLoadingPrefix' => 'mockedBlockHandle',
-                            'getFieldContext' => 'matrix',
-                        ]),
                     ]),
                     $this->make(Entries::class, [
                         'handle' => 'entriesInMatrix',
-                        'context' => 'matrix',
+                        'context' => 'global',
                         'getEagerLoadingGqlConditions' => [],
                     ]),
                     $this->make(Entries::class, [
@@ -79,7 +74,7 @@ class ExtractEagerLoadingParameterTest extends TestCase
                     ]),
                     $this->make(Assets::class, [
                         'handle' => 'image',
-                        'context' => 'matrix',
+                        'context' => 'global',
                         'getEagerLoadingGqlConditions' => [],
                     ]),
                     $this->make(Assets::class, [
@@ -188,15 +183,15 @@ GQL;
                     'handle' => 'matrixField', 'alias' => 'matrixField', 'when' => function() {
                     }, 'nested' => [
                         new EagerLoadPlan([
-                            'handle' => 'mockedBlockHandle:image', 'alias' => 'im', 'criteria' => ['volumeId' => 2], 'when' => function() {
+                            'handle' => 'image', 'alias' => 'im', 'criteria' => ['volumeId' => 2], 'when' => function() {
                             },
                         ]),
                         new EagerLoadPlan([
-                            'handle' => 'mockedBlockHandle:image', 'alias' => 'im', 'criteria' => ['volumeId' => 2], 'when' => function() {
+                            'handle' => 'image', 'alias' => 'im', 'criteria' => ['volumeId' => 2], 'when' => function() {
                             },
                         ]),
                         new EagerLoadPlan([
-                            'handle' => 'mockedBlockHandle:entriesInMatrix', 'alias' => 'mockedBlockHandle:entriesInMatrix', 'criteria' => ['id' => 80], 'when' => function() {
+                            'handle' => 'entriesInMatrix', 'alias' => 'entriesInMatrix', 'criteria' => ['id' => 80], 'when' => function() {
                             }, 'nested' => [
                                 new EagerLoadPlan([
                                     'handle' => 'linkedEntriesThroughMatrix', 'alias' => 'linkedEntriesThroughMatrix', 'when' => function() {
@@ -292,6 +287,7 @@ GQL;
                 '{entry { author { photo { id }}}}',
                 [],
                 ['with' => [new EagerLoadPlan(['handle' => 'author', 'alias' => 'author', 'nested' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]])]],
+
                 'EntryInterface',
             ],
             [

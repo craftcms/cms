@@ -95,7 +95,7 @@ class Categories extends Component
      */
     public function getAllGroupIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllGroups(), 'id');
+        return array_map(fn(CategoryGroup $group) => $group->id, $this->getAllGroups());
     }
 
     /**
@@ -105,7 +105,7 @@ class Categories extends Component
      */
     public function getEditableGroupIds(): array
     {
-        return ArrayHelper::getColumn($this->getEditableGroups(), 'id');
+        return array_map(fn(CategoryGroup $group) => $group->id, $this->getEditableGroups());
     }
 
     /**
@@ -116,19 +116,15 @@ class Categories extends Component
     private function _groups(): MemoizableArray
     {
         if (!isset($this->_groups)) {
-            $groups = [];
-
-            /** @var CategoryGroupRecord[] $groupRecords */
             $groupRecords = CategoryGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->with('structure')
                 ->all();
 
-            foreach ($groupRecords as $groupRecord) {
-                $groups[] = $this->_createCategoryGroupFromRecord($groupRecord);
-            }
-
-            $this->_groups = new MemoizableArray($groups);
+            $this->_groups = new MemoizableArray(
+                $groupRecords,
+                fn(CategoryGroupRecord $record) => $this->_createCategoryGroupFromRecord($record),
+            );
         }
 
         return $this->_groups;
@@ -232,6 +228,7 @@ class Categories extends Component
      */
     public function getGroupSiteSettings(int $groupId): array
     {
+        /** @var CategoryGroup_SiteSettingsRecord[] $results */
         $results = CategoryGroup_SiteSettingsRecord::find()
             ->where(['groupId' => $groupId])
             ->all();
@@ -607,7 +604,7 @@ SQL;
 
             if ($db->getIsMysql()) {
                 $db->createCommand(<<<SQL
-UPDATE $elementsTable [[elements]], $categoriesTable [[categories]] 
+UPDATE $elementsTable [[elements]], $categoriesTable [[categories]]
 SET [[elements.dateDeleted]] = '$now',
   [[categories.deletedWithGroup]] = 1
 WHERE $conditionSql
@@ -621,7 +618,7 @@ FROM $elementsTable [[elements]]
 WHERE $conditionSql
 SQL)->execute();
                 $db->createCommand(<<<SQL
-UPDATE $elementsTable
+UPDATE $elementsTable [[elements]]
 SET [[dateDeleted]] = '$now'
 FROM $categoriesTable [[categories]]
 WHERE $conditionSql

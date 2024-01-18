@@ -85,7 +85,7 @@ class Globals extends Component
      */
     public function getAllSetIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllSets(), 'id');
+        return array_map(fn(GlobalSet $globalSet) => $globalSet->id, $this->getAllSets());
     }
 
     /**
@@ -104,7 +104,7 @@ class Globals extends Component
      */
     public function getEditableSetIds(): array
     {
-        return ArrayHelper::getColumn($this->getEditableSets(), 'id');
+        return array_map(fn(GlobalSet $globalSet) => $globalSet->id, $this->getEditableSets());
     }
 
     /**
@@ -298,7 +298,9 @@ class Globals extends Component
             ]));
         }
 
-        // Don't validate required custom fields
+        // Prevent most custom field validators
+        $globalSet->setScenario(GlobalSet::SCENARIO_SAVE_SET);
+
         if ($runValidation && !$globalSet->validate()) {
             Craft::info('Global set not saved due to validation error.', __METHOD__);
             return false;

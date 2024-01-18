@@ -14,6 +14,7 @@ namespace craft\base;
  * @mixin WidgetTrait
  * @mixin SavableComponentTrait
  * @mixin Model
+ * @phpstan-require-extends Widget
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

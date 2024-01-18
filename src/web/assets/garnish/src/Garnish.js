@@ -79,7 +79,7 @@ Garnish = $.extend(Garnish, {
   X_AXIS: 'x',
   Y_AXIS: 'y',
 
-  FX_DURATION: 100,
+  FX_DURATION: 200,
 
   // Node types
   TEXT_NODE: 3,
@@ -155,9 +155,10 @@ Garnish = $.extend(Garnish, {
    *
    * @param {object} val
    * @return {boolean}
+   * @deprecated
    */
   isArray: function (val) {
-    return val instanceof Array;
+    return Array.isArray(val);
   },
 
   /**
@@ -504,6 +505,7 @@ Garnish = $.extend(Garnish, {
    * Handles keyboard activation of non-semantic buttons
    * @param {Object} event The keypress event
    * @param {Object} callback The callback to perform if SPACE or ENTER keys are pressed on the non-semantic button
+   * @deprecated The `activate` event should be used instead
    */
   handleActivatingKeypress: function (event, callback) {
     const key = event.keyCode;
@@ -718,7 +720,7 @@ Garnish = $.extend(Garnish, {
 
     // Flatten any array values whose input name doesn't end in "[]"
     //  - e.g. a multi-select
-    else if (Garnish.isArray(val) && $input.attr('name').slice(-2) !== '[]') {
+    else if (Array.isArray(val) && $input.attr('name').slice(-2) !== '[]') {
       if (val.length) {
         return val[val.length - 1];
       } else {
@@ -784,7 +786,7 @@ Garnish = $.extend(Garnish, {
         }
       }
 
-      if (!Garnish.isArray(inputVal)) {
+      if (!Array.isArray(inputVal)) {
         inputVal = [inputVal];
       }
 
@@ -812,6 +814,16 @@ Garnish = $.extend(Garnish, {
 
       $targetInputs.eq(i).val($sourceInputs.eq(i).val());
     }
+  },
+
+  /**
+   * Returns whether a mouse event is for the primary mouse button.
+   *
+   * @param ev The mouse event
+   * @return {boolean}
+   */
+  isPrimaryClick: function (ev) {
+    return ev.which === this.PRIMARY_CLICK && !ev.ctrlKey && !ev.metaKey;
   },
 
   /**
@@ -1023,8 +1035,8 @@ $.extend($.event.special, {
         data && typeof data.delay !== 'undefined'
           ? data.delay
           : ev.data && ev.data.delay !== undefined
-          ? ev.data.delay
-          : null;
+            ? ev.data.delay
+            : null;
       var handleObj = ev.handleObj;
       var targetData = $.data(ev.target);
 

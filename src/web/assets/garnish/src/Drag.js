@@ -287,6 +287,13 @@ export default BaseDrag.extend(
       var $draggee = this.$draggee.eq(index),
         $draggeeHelper = $draggee.clone().addClass('draghelper');
 
+      if ($draggee.parents('#content').length) {
+        $draggeeHelper.addClass('drag-in-content');
+      }
+      if ($draggee.parents('.slideout-container').length) {
+        $draggeeHelper.addClass('drag-in-slideout');
+      }
+
       if (this.settings.copyDraggeeInputValuesToHelper) {
         Garnish.copyInputValues($draggee, $draggeeHelper);
       }

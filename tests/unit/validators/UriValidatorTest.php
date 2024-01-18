@@ -54,7 +54,7 @@ class UriValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function validateValueDataProvider(): array
+    public static function validateValueDataProvider(): array
     {
         return [
             [true, 'test'],

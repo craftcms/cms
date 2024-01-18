@@ -51,6 +51,15 @@
   {%- set tableAttributes = tableAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
+{% for col in cols %}
+    {%- switch col.type %}
+        {%- case 'time' %}
+            {%- do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') %}
+        {%- case 'template' %}
+            {%- do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
+    {%- endswitch %}
+{% endfor %}
+
 <span aria-live="assertive" class="visually-hidden" data-status-message></span>
 {% tag 'table' with tableAttributes %}
     {% for col in cols %}
@@ -62,34 +71,30 @@
         {% if allowDelete %}<col>{% endif %}
         {% if allowReorder %}<col>{% endif %}
     {% endif %}
-    <thead>
-        <tr>
-            {% for col in cols %}
-                {%- switch col.type %}
-                    {%- case 'time' %}
-                        {%- do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') %}
-                    {%- case 'template' %}
-                        {%- do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
-                {%- endswitch %}
-                {% set columnHeadingId = "#{id}-heading-#{loop.index}" %}
-                <th id="{{ columnHeadingId }}" scope="col" class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }}">
-                    {%- if col.headingHtml is defined %}
-                        {{- col.headingHtml|raw }}
-                    {%- elseif col.heading ?? false %}
-                        {{- col.heading }}
-                    {%- else %}
-                        &nbsp;
-                    {%- endif %}
-                    {%- if col.info is defined -%}
-                        <span class="info">{{ col.info|md|raw }}</span>
-                    {%- endif -%}
-                </th>
-            {% endfor %}
-            {% if (allowDelete or allowReorder) %}
-                <th colspan="{{ not allowDelete or not allowReorder ? 1 : 2 }}" scope="colgroup"><span class="visually-hidden">{{ 'Row actions'|t('app') }}</span></th>
-            {% endif %}
-        </tr>
-    </thead>
+    {% if cols|filter(c => (c.headingHtml ?? c.heading ?? c.info ?? '') is not same as(''))|length %}
+        <thead>
+            <tr>
+                {% for col in cols %}
+                    {% set columnHeadingId = "#{id}-heading-#{loop.index}" %}
+                    <th id="{{ columnHeadingId }}" scope="col" class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }}">
+                        {%- if col.headingHtml is defined %}
+                            {{- col.headingHtml|raw }}
+                        {%- elseif col.heading ?? false %}
+                            {{- col.heading }}
+                        {%- else %}
+                            &nbsp;
+                        {%- endif %}
+                        {%- if col.info is defined -%}
+                            <span class="info">{{ col.info|md|raw }}</span>
+                        {%- endif -%}
+                    </th>
+                {% endfor %}
+                {% if (allowDelete or allowReorder) %}
+                    <th colspan="{{ not allowDelete or not allowReorder ? 1 : 2 }}" scope="colgroup"><span class="visually-hidden">{{ 'Row actions'|t('app') }}</span></th>
+                {% endif %}
+            </tr>
+        </thead>
+    {% endif %}
     <tbody>
         {% for rowId, row in rows %}
             {% set rowNumber = loop.index %}
@@ -188,9 +193,21 @@
                                         } only %}
                                     {%- default -%}
                                         {% if static %}
-                                            <pre class="disabled">{{ value }}</pre>
+                                            <pre class="noteditable">{{ value }}</pre>
                                         {% else %}
-                                            <textarea aria-labelledby="{{ headingId }}" aria-describedby="{{ describedBy }}" name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                            {% if value %}
+                                                <div class="editable-table-preview" aria-hidden="true">{{ value }}</div>
+                                            {% endif %}
+                                            {{ tag('textarea', {
+                                                name: cellName,
+                                                rows: col.rows ?? 1,
+                                                placeholder: col.placeholder ?? false,
+                                                aria: {
+                                                    labelledby: headingId,
+                                                    describedby: describedBy,
+                                                },
+                                                html: value,
+                                            }) }}
                                         {% endif %}
                                 {%- endswitch -%}
                             {% endblock %}

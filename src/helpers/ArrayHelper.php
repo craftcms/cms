@@ -237,12 +237,18 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param callable|string $key the column name or anonymous function which must be set to $value
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
+     * @param int|string|null $valueKey The key of the resulting value, or null if it can't be found
      * @return mixed the value, or null if it can't be found
      * @since 3.1.0
      */
-    public static function firstWhere(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
-    {
-        foreach ($array as $element) {
+    public static function firstWhere(
+        iterable $array,
+        callable|string $key,
+        mixed $value = true,
+        bool $strict = false,
+        int|string|null &$valueKey = null,
+    ): mixed {
+        foreach ($array as $valueKey => $element) {
             $elementValue = static::getValue($element, $key);
             /** @noinspection TypeUnsafeComparisonInspection */
             if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
@@ -250,6 +256,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             }
         }
 
+        $valueKey = null;
         return null;
     }
 
@@ -270,6 +277,34 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             $elementValue = static::getValue($element, $key);
             /** @noinspection TypeUnsafeComparisonInspection */
             if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether the given array, or any nested arrays, contain any values where a given key (the name of a
+     * sub-array key or sub-object property) is set to a given value.
+     *
+     * @param iterable $array the array that the value will be searched for in
+     * @param callable|string $key the column name or anonymous function which must be set to $value
+     * @param mixed $value the value that $key should be compared with
+     * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
+     * @return bool whether the value exists in the array, recursively
+     * @since 4.4.10
+     */
+    public static function containsRecursive(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
+    {
+        foreach ($array as $element) {
+            $elementValue = static::getValue($element, $key);
+            /** @noinspection TypeUnsafeComparisonInspection */
+            if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
+                return true;
+            }
+
+            if (is_array($element) && static::containsRecursive($element, $key, $value, $strict)) {
                 return true;
             }
         }
@@ -319,15 +354,11 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @param array $array
      * @return string|int|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $array isn’t an array, or is empty.
+     * @deprecated in 4.5.0. `array_key_first()` should be used instead.
      */
     public static function firstKey(array $array): int|string|null
     {
-        /** @noinspection LoopWhichDoesNotLoopInspection */
-        foreach ($array as $key => $value) {
-            return $key;
-        }
-
-        return null;
+        return array_key_first($array);
     }
 
     /**
@@ -339,6 +370,18 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     public static function firstValue(array $array): mixed
     {
         return !empty($array) ? reset($array) : null;
+    }
+
+    /**
+     * Returns the last value in a given array.
+     *
+     * @param array $array
+     * @return mixed The last value, or null if $array isn’t an array, or is empty.
+     * @since 5.0.0
+     */
+    public static function lastValue(array $array): mixed
+    {
+        return !empty($array) ? end($array) : null;
     }
 
     /**

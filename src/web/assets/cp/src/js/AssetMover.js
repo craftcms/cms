@@ -28,12 +28,13 @@ Craft.AssetMover = Garnish.Base.extend({
       ],
       handleConflictChoice: function (prompt) {
         const params = {
-          folderId: prompt.params.folderId,
+          folderId: prompt.request.params.folderId,
           assetId: prompt.assetId,
         };
         switch (prompt.choice) {
           case 'replace':
             params.force = true;
+            break;
           case 'keepBoth':
             params.filename = prompt.suggestedFilename;
             break;
@@ -163,7 +164,7 @@ Craft.AssetMover = Garnish.Base.extend({
           }
 
           if (response.error) {
-            alert(response.error);
+            Craft.cp.displayError(response.error);
           }
         }
 
@@ -218,15 +219,29 @@ Craft.AssetMover = Garnish.Base.extend({
           data: request.params,
         })
           .then((response) => {
-            responses.push(Object.assign({}, response.data, {request}));
-            if (response.data.success && request.onSuccess) {
+            responses.push(
+              Object.assign(
+                {
+                  success: true,
+                },
+                response.data,
+                {request}
+              )
+            );
+            if (request.onSuccess) {
               request.onSuccess(response.data);
             }
           })
           .catch((failure) => {
             if (failure.response && failure.response.data) {
               responses.push(
-                Object.assign({}, failure.response.data, {request})
+                Object.assign(
+                  {
+                    success: false,
+                  },
+                  failure.response.data,
+                  {request}
+                )
               );
             }
           })

@@ -10,9 +10,10 @@ namespace craft\gql\resolvers\elements;
 use Craft;
 use craft\elements\Asset as AssetElement;
 use craft\elements\db\ElementQuery;
+use craft\elements\ElementCollection;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
-use Illuminate\Support\Collection;
+use yii\base\UnknownMethodException;
 
 /**
  * Class Asset
@@ -41,13 +42,19 @@ class Asset extends ElementResolver
         }
 
         foreach ($arguments as $key => $value) {
-            $query->$key($value);
+            try {
+                $query->$key($value);
+            } catch (UnknownMethodException $e) {
+                if ($value !== null) {
+                    throw $e;
+                }
+            }
         }
 
         $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!GqlHelper::canQueryAssets()) {
-            return Collection::empty();
+            return ElementCollection::empty();
         }
 
         $volumesService = Craft::$app->getVolumes();

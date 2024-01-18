@@ -22,6 +22,7 @@ use FilesystemIterator;
 use Generator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use yii\validators\InlineValidator;
 
 /**
  * Local represents a local filesystem.
@@ -102,11 +103,49 @@ class Local extends Fs implements LocalFsInterface
     /**
      * @inheritdoc
      */
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'path' => Craft::t('app', 'Base Path'),
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['path'], 'required'];
+        $rules[] = [['path'], 'validatePath'];
         return $rules;
+    }
+
+    /**
+     * @param string $attribute
+     * @param array|null $params
+     * @param InlineValidator $validator
+     * @return void
+     * @since 4.4.6
+     */
+    public function validatePath(string $attribute, ?array $params, InlineValidator $validator): void
+    {
+        // Make sure it’s not within any of the system directories
+        $path = FileHelper::absolutePath($this->getRootPath(), '/');
+
+        $systemDirs = Craft::$app->getPath()->getSystemPaths();
+
+        foreach ($systemDirs as $dir) {
+            $dir = FileHelper::absolutePath($dir, '/');
+            if (str_starts_with("$path/", "$dir/")) {
+                $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located within system directories.'));
+                break;
+            }
+            if (str_starts_with("$dir/", "$path/")) {
+                $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located above system directories.'));
+                break;
+            }
+        }
     }
 
     /**
@@ -289,7 +328,7 @@ class Local extends Fs implements LocalFsInterface
     /**
      * @inheritdoc
      */
-    public function renameFile(string $path, string $newPath): void
+    public function renameFile(string $path, string $newPath, array $config = []): void
     {
         $this->createDirectory(pathinfo($newPath, PATHINFO_DIRNAME));
         @rename($this->prefixPath($path), $this->prefixPath($newPath));
@@ -298,7 +337,7 @@ class Local extends Fs implements LocalFsInterface
     /**
      * @inheritdoc
      */
-    public function copyFile(string $path, string $newPath): void
+    public function copyFile(string $path, string $newPath, array $config = []): void
     {
         $this->createDirectory(pathinfo($newPath, PATHINFO_DIRNAME));
         @copy($this->prefixPath($path), $this->prefixPath($newPath));

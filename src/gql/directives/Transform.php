@@ -43,12 +43,10 @@ class Transform extends Directive
      */
     public static function create(): GqlDirective
     {
-        if ($type = GqlEntityRegistry::getEntity(self::name())) {
-            return $type;
-        }
+        $typeName = static::name();
 
-        return GqlEntityRegistry::createEntity(static::name(), new self([
-            'name' => static::name(),
+        return GqlEntityRegistry::getOrCreate(static::name(), fn() => new self([
+            'name' => $typeName,
             'locations' => [
                 DirectiveLocation::FIELD,
             ],
@@ -86,6 +84,16 @@ class Transform extends Directive
                 }
             }
         } elseif ($source instanceof Asset) {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $allowTransform = match ($source->getMimeType()) {
+                'image/gif' => $generalConfig->transformGifs,
+                'image/svg+xml' => $generalConfig->transformSvgs,
+                default => true,
+            };
+            if (!$allowTransform) {
+                $transform = null;
+            }
+
             switch ($resolveInfo->fieldName) {
                 case 'format':
                     return $source->getFormat($transform);
@@ -94,7 +102,7 @@ class Transform extends Directive
                 case 'mimeType':
                     return $source->getMimeType($transform);
                 case 'url':
-                    $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+                    $generateNow = $arguments['immediately'] ?? $generalConfig->generateTransformsBeforePageLoad;
                     return $source->getUrl($transform, $generateNow);
                 case 'width':
                     return $source->getWidth($transform);

@@ -16,6 +16,7 @@ use craft\errors\AssetNotIndexableException;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\models\FsListing;
 use craft\models\Volume;
@@ -53,14 +54,30 @@ class IndexAssetsController extends Controller
     public bool $deleteMissingAssets = false;
 
     /**
+     * @var bool Whether empty folders should be deleted.
+     * @since 4.6.0
+     */
+    public bool $deleteEmptyFolders = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID): array
     {
         $options = parent::options($actionID);
-        $options[] = 'cacheRemoteImages';
-        $options[] = 'createMissingAssets';
-        $options[] = 'deleteMissingAssets';
+
+        switch ($actionID) {
+            case 'all':
+            case 'one':
+                if (!App::isEphemeral()) {
+                    $options[] = 'cacheRemoteImages';
+                }
+                $options[] = 'createMissingAssets';
+                $options[] = 'deleteMissingAssets';
+                $options[] = 'deleteEmptyFolders';
+                break;
+        }
+
         return $options;
     }
 
@@ -142,13 +159,14 @@ class IndexAssetsController extends Controller
 
         $this->stdout(PHP_EOL);
 
-        $session = $assetIndexer->createIndexingSession($volumes, $this->cacheRemoteImages, true);
+        $session = $assetIndexer->createIndexingSession($volumes, $this->cacheRemoteImages, true, $this->deleteEmptyFolders);
 
         foreach ($volumes as $volume) {
             $this->stdout('Indexing assets in ', Console::FG_YELLOW);
             $this->stdout($volume->name, Console::FG_CYAN);
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
             $fileList = $assetIndexer->getIndexListOnVolume($volume, $path);
+            $fsSubpath = $volume->getSubpath();
 
             $index = 0;
             /** @var MissingAssetException[] $missingRecords */
@@ -159,7 +177,7 @@ class IndexAssetsController extends Controller
             foreach ($fileList as $item) {
                 $count = $index;
                 $this->stdout('    > #' . $count . ': ');
-                $this->stdout($item->getUri() . ($item->getIsDir() ? '/' : ''), Console::FG_CYAN);
+                $this->stdout($item->getAdjustedUri($fsSubpath) . ($item->getIsDir() ? '/' : ''), Console::FG_CYAN);
                 $this->stdout(' ... ');
                 if ($index++ < $startAt) {
                     $this->stdout('skipped' . PHP_EOL, Console::FG_YELLOW);
@@ -168,9 +186,9 @@ class IndexAssetsController extends Controller
 
                 try {
                     if ($item->getIsDir()) {
-                        $assetIndexer->indexFolderByListing((int)$volume->id, $item, $session->id, $this->createMissingAssets);
+                        $assetIndexer->indexFolderByListing($volume, $item, $session->id, $this->createMissingAssets);
                     } else {
-                        $assetIndexer->indexFileByListing((int)$volume->id, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
+                        $assetIndexer->indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
                     }
                 } catch (MissingAssetException $e) {
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
@@ -209,7 +227,7 @@ class IndexAssetsController extends Controller
 
         // Manually close the indexing session.
         $session->actionRequired = true;
-        $missingEntries = $assetIndexer->getMissingEntriesForSession($session);
+        $missingEntries = $assetIndexer->getMissingEntriesForSession($session, $path);
         $missingFiles = $missingEntries['files'];
         $missingFolders = $missingEntries['folders'];
 
@@ -237,7 +255,7 @@ class IndexAssetsController extends Controller
 
         if (!empty($missingFolders)) {
             $totalMissing = count($missingFolders);
-            $this->stdout(($totalMissing === 1 ? 'One missing folder:' : "$totalMissing missing folders:") . PHP_EOL, Console::FG_YELLOW);
+            $this->stdout(($totalMissing === 1 ? 'One missing or empty folder:' : "$totalMissing missing or empty folders:") . PHP_EOL, Console::FG_YELLOW);
             foreach ($missingFolders as $folderId => $folderPath) {
                 $this->stdout("- $folderPath ($folderId)");
                 $this->stdout(PHP_EOL);
@@ -289,11 +307,11 @@ class IndexAssetsController extends Controller
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
-        if (!empty($missingFolders) && $this->deleteMissingAssets) {
+        if (!empty($missingFolders) && $this->deleteEmptyFolders) {
             $totalMissingFolders = count($missingFolders);
-            $this->stdout('Deleting the' . ($totalMissingFolders > 1 ? ' ' . $totalMissingFolders : '') . ' missing folder record' . ($totalMissingFolders > 1 ? 's' : '') . ' ... ');
+            $this->stdout('Deleting the' . ($totalMissingFolders > 1 ? ' ' . $totalMissingFolders : '') . ' missing and empty folders' . ($totalMissingFolders > 1 ? 's' : '') . ' ... ');
 
-            Craft::$app->getAssets()->deleteFoldersByIds(array_keys($missingFolders), false);
+            Craft::$app->getAssets()->deleteFoldersByIds(array_keys($missingFolders));
 
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }

@@ -39,14 +39,14 @@ class MailerHelper
      * use yii\base\Event;
      *
      * Event::on(MailerHelper::class,
-     *     MailerHelper::EVENT_REGISTER_MAILER_TRANSPORT_TYPES,
+     *     MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS,
      *     function(RegisterComponentTypesEvent $event) {
      *         $event->types[] = MyTransportType::class;
      *     }
      * );
      * ```
      */
-    public const EVENT_REGISTER_MAILER_TRANSPORT_TYPES = 'registerMailerTransportTypes';
+    public const EVENT_REGISTER_MAILER_TRANSPORTS = 'registerMailerTransports';
 
     /**
      * Returns all available mailer transport adapter classes.
@@ -65,7 +65,7 @@ class MailerHelper
         $event = new RegisterComponentTypesEvent([
             'types' => $transportTypes,
         ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_MAILER_TRANSPORT_TYPES, $event);
+        Event::trigger(static::class, self::EVENT_REGISTER_MAILER_TRANSPORTS, $event);
 
         return $event->types;
     }

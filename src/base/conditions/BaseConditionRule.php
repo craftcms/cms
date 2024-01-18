@@ -45,6 +45,14 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getLabelHint(): ?string
+    {
+        return null;
+    }
+
+    /**
      * @var string|null UUID
      */
     public ?string $uid = null;
@@ -210,7 +218,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     protected function defineRules(): array
     {
         return [
-            [['uid'], 'safe'],
+            [['uid', 'condition'], 'safe'],
             [
                 ['operator'],
                 function() {

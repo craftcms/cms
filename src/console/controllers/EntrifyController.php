@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\Event;
 use craft\console\Controller;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
 use craft\elements\Entry;
@@ -23,8 +24,8 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\EntryType;
 use craft\models\Section;
+use craft\services\Entries as EntriesService;
 use craft\services\ProjectConfig;
-use craft\services\Sections;
 use craft\services\Structures;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
@@ -104,7 +105,9 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigChanged = false;
+        $sectionCreated = false;
 
         if (
             !isset($this->section) &&
@@ -112,13 +115,14 @@ class EntrifyController extends Controller
         ) {
             $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
             // Capture the new section handle
-            Event::once(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
                 'fromCategoryGroup' => $categoryGroup->handle,
             ]);
             $projectConfigChanged = true;
+            $sectionCreated = true;
         }
 
         try {
@@ -127,6 +131,9 @@ class EntrifyController extends Controller
             $author = $this->_author();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                $projectConfigService->saveModifiedConfigData();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -141,7 +148,8 @@ class EntrifyController extends Controller
         $this->stdout(PHP_EOL);
 
         $categoryQuery = Category::find()
-            ->group($categoryGroup);
+            ->group($categoryGroup)
+            ->status(null);
 
         if ($categoryGroup->dateDeleted) {
             $categoryQuery
@@ -152,72 +160,98 @@ class EntrifyController extends Controller
         $structuresService = Craft::$app->getStructures();
         $entriesByLevel = [];
 
-        foreach (Db::each($categoryQuery) as $category) {
-            /** @var Category $category */
-            $this->do("Converting “{$category->title}” ($category->id)", function() use (
-                $section,
-                $entryType,
-                $author,
-                $structuresService,
-                &$entriesByLevel,
-                $categoryGroup,
-                $category
-            ) {
-                Db::insert(Table::ENTRIES, [
-                    'id' => $category->id,
-                    'sectionId' => $section->id,
-                    'typeId' => $entryType->id,
-                    'authorId' => $author->id,
-                    'postDate' => Db::prepareDateForDb($category->dateCreated),
-                    'dateCreated' => Db::prepareDateForDb($category->dateCreated),
-                    'dateUpdated' => Db::prepareDateForDb($category->dateUpdated),
-                ]);
+        foreach (Db::batch($categoryQuery) as $categories) {
+            $authorData = [];
 
-                Db::update(Table::ELEMENTS, [
-                    'type' => Entry::class,
-                    'dateDeleted' => null,
-                ], [
-                    'id' => $category->id,
-                ]);
+            foreach ($categories as $category) {
+                /** @var Category $category */
+                $this->do("Converting “{$category->title}” ($category->id)", function() use (
+                    $section,
+                    $entryType,
+                    $author,
+                    $structuresService,
+                    &$entriesByLevel,
+                    $categoryGroup,
+                    $category,
+                    &$authorData,
+                ) {
+                    Db::insert(Table::ENTRIES, [
+                        'id' => $category->id,
+                        'sectionId' => $section->id,
+                        'typeId' => $entryType->id,
+                        'postDate' => Db::prepareDateForDb($category->dateCreated),
+                        'dateCreated' => Db::prepareDateForDb($category->dateCreated),
+                        'dateUpdated' => Db::prepareDateForDb($category->dateUpdated),
+                    ]);
 
-                Db::delete(Table::CATEGORIES, [
-                    'id' => $category->id,
-                ]);
+                    Db::update(Table::ELEMENTS, [
+                        'type' => Entry::class,
+                        'dateDeleted' => null,
+                    ], [
+                        'id' => $category->id,
+                    ]);
 
-                Db::delete(Table::STRUCTUREELEMENTS, [
-                    'structureId' => $categoryGroup->structureId,
-                    'elementId' => $category->id,
-                ]);
+                    Db::delete(Table::CATEGORIES, [
+                        'id' => $category->id,
+                    ]);
 
-                if ($section->type === Section::TYPE_STRUCTURE) {
-                    $entry = Entry::find()
-                        ->id($category->id)
-                        ->drafts(null)
-                        ->revisions(null)
-                        ->status(null)
-                        ->one();
-                    $parentLevel = $category->level - 1;
-                    $parentEntry = null;
-                    while ($parentLevel >= 1) {
-                        if (isset($entriesByLevel[$parentLevel])) {
-                            $parentEntry = $entriesByLevel[$parentLevel];
-                            break;
+                    Db::delete(Table::STRUCTUREELEMENTS, [
+                        'structureId' => $categoryGroup->structureId,
+                        'elementId' => $category->id,
+                    ]);
+
+                    if ($section->type === Section::TYPE_STRUCTURE) {
+                        $entry = Entry::find()
+                            ->id($category->id)
+                            ->drafts(null)
+                            ->revisions(null)
+                            ->status(null)
+                            ->one();
+                        $parentLevel = $category->level - 1;
+                        $parentEntry = null;
+                        while ($parentLevel >= 1) {
+                            if (isset($entriesByLevel[$parentLevel])) {
+                                $parentEntry = $entriesByLevel[$parentLevel];
+                                break;
+                            }
+                            $parentLevel--;
                         }
-                        $parentLevel--;
+                        if ($parentEntry) {
+                            $structuresService->append($section->structureId, $entry, $parentEntry, Structures::MODE_INSERT);
+                        } else {
+                            $structuresService->appendToRoot($section->structureId, $entry, Structures::MODE_INSERT);
+                        }
+                        $entriesByLevel[$entry->level] = $entry;
                     }
-                    if ($parentEntry) {
-                        $structuresService->append($section->structureId, $entry, $parentEntry, Structures::MODE_INSERT);
-                    } else {
-                        $structuresService->appendToRoot($section->structureId, $entry, Structures::MODE_INSERT);
-                    }
-                    $entriesByLevel[$entry->level] = $entry;
-                }
-            });
+
+                    $authorData[] = [$category->id, $author->id, 1];
+                });
+            }
+
+            Db::batchInsert(Table::ENTRIES_AUTHORS, ['entryId', 'authorId', 'sortOrder'], $authorData);
         }
 
         $this->success('Categories converted.');
 
-        $projectConfigService = Craft::$app->getProjectConfig();
+        $this->_updateUserPermissions([
+            "viewCategories:$categoryGroup->uid" => [
+                "viewEntries:$section->uid",
+                "viewPeerEntries:$section->uid",
+            ],
+            "saveCategories:$categoryGroup->uid" => [
+                "createEntries:$section->uid",
+                "saveEntries:$section->uid",
+                "savePeerEntries:$section->uid",
+            ],
+            "deleteCategories:$categoryGroup->uid" => [
+                "deleteEntries:$section->uid",
+                "deletePeerEntries:$section->uid",
+            ],
+            "viewPeerCategoryDrafts:$categoryGroup->uid" => "viewPeerEntryDrafts:$section->uid",
+            "savePeerCategoryDrafts:$categoryGroup->uid" => "savePeerEntryDrafts:$section->uid",
+            "deletePeerCategoryDrafts:$categoryGroup->uid" => "deletePeerEntryDrafts:$section->uid",
+        ], $sectionCreated);
+
         if (!$projectConfigService->readOnly) {
             if (!$categoryGroup->dateDeleted && $this->confirm("Delete the “{$categoryGroup}” category group?", true)) {
                 $this->do('Deleting category group', function() use ($categoryGroup) {
@@ -279,6 +313,7 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigChanged = false;
 
         if (
@@ -287,7 +322,7 @@ class EntrifyController extends Controller
         ) {
             $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
             // Capture the new section handle
-            Event::once(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
@@ -302,11 +337,15 @@ class EntrifyController extends Controller
             $author = $this->_author();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                $projectConfigService->saveModifiedConfigData();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $tagQuery = Tag::find()
-            ->group($tagGroup);
+            ->group($tagGroup)
+            ->status(null);
 
         if ($tagGroup->dateDeleted) {
             $tagQuery
@@ -320,40 +359,47 @@ class EntrifyController extends Controller
                 ->andWhere(['tags.deletedWithGroup' => true]);
         }
 
-        foreach (Db::each($tagQuery) as $tag) {
-            /** @var Tag $tag */
-            $this->do("Converting “{$tag->title}” ($tag->id)", function() use (
-                $section,
-                $entryType,
-                $author,
-                $tag
-            ) {
-                Db::insert(Table::ENTRIES, [
-                    'id' => $tag->id,
-                    'sectionId' => $section->id,
-                    'typeId' => $entryType->id,
-                    'authorId' => $author->id,
-                    'postDate' => Db::prepareDateForDb($tag->dateCreated),
-                    'dateCreated' => Db::prepareDateForDb($tag->dateCreated),
-                    'dateUpdated' => Db::prepareDateForDb($tag->dateUpdated),
-                ]);
+        foreach (Db::batch($tagQuery) as $tags) {
+            $authorData = [];
 
-                Db::update(Table::ELEMENTS, [
-                    'type' => Entry::class,
-                    'dateDeleted' => null,
-                ], [
-                    'id' => $tag->id,
-                ]);
+            foreach ($tags as $tag) {
+                /** @var Tag $tag */
+                $this->do("Converting “{$tag->title}” ($tag->id)", function() use (
+                    $section,
+                    $entryType,
+                    $author,
+                    $tag,
+                    &$authorData
+                ) {
+                    Db::insert(Table::ENTRIES, [
+                        'id' => $tag->id,
+                        'sectionId' => $section->id,
+                        'typeId' => $entryType->id,
+                        'postDate' => Db::prepareDateForDb($tag->dateCreated),
+                        'dateCreated' => Db::prepareDateForDb($tag->dateCreated),
+                        'dateUpdated' => Db::prepareDateForDb($tag->dateUpdated),
+                    ]);
 
-                Db::delete(Table::TAGS, [
-                    'id' => $tag->id,
-                ]);
-            });
+                    Db::update(Table::ELEMENTS, [
+                        'type' => Entry::class,
+                        'dateDeleted' => null,
+                    ], [
+                        'id' => $tag->id,
+                    ]);
+
+                    Db::delete(Table::TAGS, [
+                        'id' => $tag->id,
+                    ]);
+
+                    $authorData[] = [$tag->id, $author->id, 1];
+                });
+            }
+
+            Db::batchInsert(Table::ENTRIES_AUTHORS, ['entryId', 'authorId', 'sortOrder'], $authorData);
         }
 
         $this->success('Tags converted.');
 
-        $projectConfigService = Craft::$app->getProjectConfig();
         if (!$projectConfigService->readOnly) {
             if (!$tagGroup->dateDeleted && $this->confirm("Delete the “{$tagGroup}” tag group?", true)) {
                 $this->do('Deleting tag group', function() use ($tagGroup) {
@@ -415,6 +461,7 @@ class EntrifyController extends Controller
         }
 
         $projectConfigChanged = false;
+        $sectionCreated = false;
 
         if (
             !isset($this->section) &&
@@ -422,13 +469,14 @@ class EntrifyController extends Controller
         ) {
             $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
             // Capture the new section handle
-            Event::once(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
                 'fromGlobalSet' => $globalSet->handle,
             ]);
             $projectConfigChanged = true;
+            $sectionCreated = true;
         }
 
         try {
@@ -436,10 +484,18 @@ class EntrifyController extends Controller
             $entryType = $this->_entryType();
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            if ($projectConfigChanged) {
+                Craft::$app->getProjectConfig()->saveModifiedConfigData();
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $this->do("Converting “{$globalSet->name}”", function() use ($section, $entryType, $globalSet) {
+        $this->do("Converting “{$globalSet->name}”", function() use (
+            $section,
+            $entryType,
+            $globalSet,
+            &$projectConfigChanged,
+        ) {
             if (!$globalSet->dateDeleted) {
                 Craft::$app->getGlobals()->deleteSet($globalSet);
                 $projectConfigChanged = true;
@@ -472,7 +528,7 @@ class EntrifyController extends Controller
                 'id' => $globalSet->id,
             ]);
 
-            Db::update(Table::CONTENT, [
+            Db::update(Table::ELEMENTS_SITES, [
                 'title' => $globalSet->name,
             ], [
                 'elementId' => $globalSet->id,
@@ -485,6 +541,16 @@ class EntrifyController extends Controller
 
         $this->success('Global set converted.');
 
+        $this->_updateUserPermissions([
+            "editGlobalSet:$globalSet->uid" => [
+                "viewEntries:$section->uid",
+                "saveEntries:$section->uid",
+                "viewPeerEntryDrafts:$section->uid",
+                "savePeerEntryDrafts:$section->uid",
+                "deletePeerEntryDrafts:$section->uid",
+            ],
+        ], $sectionCreated);
+
         if ($projectConfigChanged) {
             $this->_deployTip('global-set', $globalSet->handle);
         }
@@ -496,7 +562,7 @@ class EntrifyController extends Controller
     {
         if (!isset($this->_section)) {
             if ($this->section) {
-                $section = Craft::$app->getSections()->getSectionByHandle($this->section);
+                $section = Craft::$app->getEntries()->getSectionByHandle($this->section);
                 if (!$section) {
                     throw new InvalidConfigException("Invalid section handle: $this->section");
                 }
@@ -512,7 +578,7 @@ class EntrifyController extends Controller
                 if (!$this->interactive) {
                     throw new InvalidConfigException('The --section option is required when this command is run non-interactively.');
                 }
-                $allSections = ArrayHelper::index(Craft::$app->getSections()->getAllSections(), 'handle');
+                $allSections = ArrayHelper::index(Craft::$app->getEntries()->getAllSections(), 'handle');
                 if ($this->_forSingle) {
                     $allSections = array_filter($allSections, fn(Section $section) => $section->type === Section::TYPE_SINGLE);
                 } else {
@@ -585,6 +651,77 @@ class EntrifyController extends Controller
         }
 
         return $this->_author;
+    }
+
+    private function _updateUserPermissions(array $map, $updateUserGroups): void
+    {
+        // Normalize the permission map
+        $map = array_combine(
+            array_map('strtolower', array_keys($map)),
+            array_map(fn($newPermissions) => array_map('strtolower', (array)$newPermissions), $map)
+        );
+
+        $this->do('Updating user permissions', function() use ($map, $updateUserGroups) {
+            foreach ($map as $oldPermission => $newPermissions) {
+                $userIds = (new Query())
+                    ->select(['upu.userId'])
+                    ->from(['upu' => Table::USERPERMISSIONS_USERS])
+                    ->innerJoin(['up' => Table::USERPERMISSIONS], '[[up.id]] = [[upu.permissionId]]')
+                    ->where(['up.name' => $oldPermission])
+                    ->column();
+
+                $userIds = array_unique($userIds);
+
+                if (!empty($userIds)) {
+                    $insert = [];
+
+                    foreach ($newPermissions as $newPermission) {
+                        $newPermissionId = (new Query())
+                            ->select('id')
+                            ->from(Table::USERPERMISSIONS)
+                            ->where(['name' => $newPermission])
+                            ->scalar();
+
+                        if (!$newPermissionId) {
+                            Db::insert(Table::USERPERMISSIONS, [
+                                'name' => $newPermission,
+                            ]);
+                            $newPermissionId = Craft::$app->getDb()->getLastInsertID(Table::USERPERMISSIONS);
+                        }
+
+                        foreach ($userIds as $userId) {
+                            $insert[] = [$newPermissionId, $userId];
+                        }
+                    }
+
+                    Db::batchInsert(Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], $insert);
+                }
+            }
+
+            if ($updateUserGroups) {
+                $projectConfig = Craft::$app->getProjectConfig();
+
+                foreach ($projectConfig->get('users.groups') ?? [] as $uid => $group) {
+                    $groupPermissions = array_flip($group['permissions'] ?? []);
+                    $changed = false;
+
+                    foreach ($map as $oldPermission => $newPermissions) {
+                        if (isset($groupPermissions[$oldPermission])) {
+                            foreach ($newPermissions as $newPermission) {
+                                $groupPermissions[$newPermission] = true;
+                            }
+                            $changed = true;
+                        }
+                    }
+
+                    if ($changed) {
+                        $projectConfig->set("users.groups.$uid.permissions", array_keys($groupPermissions));
+                    }
+                }
+            }
+        });
+
+        $this->stdout(PHP_EOL);
     }
 
     private function _findInProjectConfig(ProjectConfig $projectConfigService, callable $check): array

@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Field;
 use craft\base\FsInterface;
 use craft\elements\Asset;
+use craft\helpers\Assets;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\Volume;
 use craft\web\Controller;
@@ -35,10 +37,14 @@ class VolumesController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All asset volume actions require an admin
         $this->requireAdmin();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
@@ -93,15 +99,17 @@ class VolumesController extends Controller
         $allVolumes = $volumesServices->getAllVolumes();
         /** @var Collection<string> $takenFsHandles */
         $takenFsHandles = Collection::make($allVolumes)
+            ->filter(fn(Volume $volume) => !$volume->getSubpath())
             ->map(fn(Volume $volume) => $volume->getFsHandle());
         $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
-            ->filter(fn(FsInterface $fs) => $fs->handle === $fsHandle || !$takenFsHandles->contains($fs->handle))
             ->sortBy(fn(FsInterface $fs) => $fs->name)
             ->map(fn(FsInterface $fs) => [
                 'label' => $fs->name,
                 'value' => $fs->handle,
+                'disabled' => Assets::isTempUploadFs($fs) || ($takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle),
             ])
             ->all();
+        array_unshift($fsOptions, ['label' => Craft::t('app', 'Select a filesystem'), 'value' => '']);
 
         return $this->asCpScreen()
             ->title($title)
@@ -142,6 +150,11 @@ class VolumesController extends Controller
             }
         }
 
+        // prepare subpath for saving
+        $subpath = $this->request->getBodyParam('subpath');
+        if (!empty($subpath)) {
+            $subpath = FileHelper::normalizePath(ltrim(trim($subpath), '/'));
+        }
         $volume = new Volume([
             'id' => $volumeId,
             'uid' => $oldVolume->uid ?? null,
@@ -149,6 +162,7 @@ class VolumesController extends Controller
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'fsHandle' => $this->request->getBodyParam('fsHandle'),
+            'subpath' => $subpath ?? null,
             'transformFsHandle' => $this->request->getBodyParam('transformFsHandle'),
             'transformSubpath' => $this->request->getBodyParam('transformSubpath', ""),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),

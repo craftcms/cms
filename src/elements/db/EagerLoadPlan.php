@@ -10,7 +10,7 @@ namespace craft\elements\db;
 use yii\base\BaseObject;
 
 /**
- * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
+ * Class EagerLoadPlan
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
@@ -57,4 +57,10 @@ class EagerLoadPlan extends BaseObject
      * @var EagerLoadPlan[] Nested eager-loading plans to apply to the eager-loaded elements.
      */
     public array $nested = [];
+
+    /**
+     * @var bool Whether the elements are being eager-loaded lazily.
+     * @since 5.0.0
+     */
+    public bool $lazy = false;
 }

@@ -9,6 +9,7 @@
     id: id ?? false,
     class: (class ?? [])|explodeClass|merge([
         'btn',
+        'btngroup-btn-first',
         not label ? 'btn-empty' : null,
     ]|filter),
     data: {
@@ -16,7 +17,7 @@
         'failure-message': failureMessage,
         'retry-message': retryMessage,
         'success-message': successMessage,
-    }
+    }|merge(attributes.data ?? {}),
 }|merge(attributes ?? {}) -%}
 
 {% apply spaceless %}

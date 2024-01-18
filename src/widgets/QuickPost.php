@@ -102,7 +102,7 @@ class QuickPost extends Widget
         // Find the sections the user has permission to create entries in
         $sections = [];
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE) {
                 if (Craft::$app->getUser()->checkPermission('createEntries:' . $section->uid)) {
                     $sections[] = $section;
@@ -162,7 +162,7 @@ class QuickPost extends Widget
         if ($this->entryType && isset($entryTypes[$this->entryType])) {
             $entryTypeId = $this->entryType;
         } else {
-            $entryTypeId = ArrayHelper::firstKey($entryTypes);
+            $entryTypeId = array_key_first($entryTypes);
         }
 
         $entryType = $entryTypes[$entryTypeId];
@@ -204,7 +204,7 @@ JS;
     {
         if (!isset($this->_section)) {
             if ($this->section) {
-                $this->_section = Craft::$app->getSections()->getSectionById($this->section);
+                $this->_section = Craft::$app->getEntries()->getSectionById($this->section);
             }
 
             if (!isset($this->_section)) {

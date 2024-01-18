@@ -8,6 +8,7 @@
 namespace crafttests\unit\helpers\FileHelper;
 
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use craft\test\TestCase;
 use UnitTester;
 use yii\base\ErrorException;
@@ -182,6 +183,17 @@ class FileHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider getExtensionByMimeTypeDataProvider
+     *
+     * @param string $expected
+     * @param string $mimeType
+     */
+    public function testGetExtensionByMimeType(string $expected, string $mimeType)
+    {
+        self::assertSame($expected, FileHelper::getExtensionByMimeType($mimeType));
+    }
+
+    /**
      * @dataProvider sanitizeFilenameDataProvider
      * @param string $expected
      * @param string $filename
@@ -284,9 +296,21 @@ class FileHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider uniqueNameDataProvider
+     *
+     * @param string $expectedPattern
+     * @param string $baseName
+     */
+    public function testUniqueName(string $expectedPattern, string $baseName): void
+    {
+        $expectedPattern = str_replace('{id}', '[\w\.]{23}', $expectedPattern);
+        self::assertRegExp("/^$expectedPattern$/", FileHelper::uniqueName($baseName));
+    }
+
+    /**
      * @return array
      */
-    public function normalizePathDataProvider(): array
+    public static function normalizePathDataProvider(): array
     {
         return [
             ['Im a string', 'Im a string', DIRECTORY_SEPARATOR],
@@ -306,7 +330,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function absolutePathDataProvider(): array
+    public static function absolutePathDataProvider(): array
     {
         return [
             ['/foo/bar', 'bar', '/foo', '/'],
@@ -314,13 +338,16 @@ class FileHelperTest extends TestCase
             ['\\foo\\bar', 'bar', '/foo', '\\'],
             [FileHelper::normalizePath(getcwd(), '/') . '/foo/bar', 'foo/bar', null, '/'],
             [FileHelper::normalizePath(getcwd(), '/') . '/baz/foo/bar', 'foo/bar', 'baz', '/'],
+            ['C:/Documents/Newsletters/Summer2018.pdf', 'C:\Documents\Newsletters\Summer2018.pdf', null, '/'],
+            ['C:\Documents\Newsletters\Summer2018.pdf', 'C:\Documents\Newsletters\Summer2018.pdf', null, '\\'],
+            ['C:\Documents\Newsletters\c:\Documents\Newsletters\Summer2018.pdf', 'c:\Documents\Newsletters\Summer2018.pdf', 'C:\Documents\Newsletters', '\\'],
         ];
     }
 
     /**
      * @return array
      */
-    public function relativePathDataProvider(): array
+    public static function relativePathDataProvider(): array
     {
         return [
             ['bar/baz', '/foo/bar/baz', '/foo', '/'],
@@ -332,7 +359,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isWithinDataProvider(): array
+    public static function isWithinDataProvider(): array
     {
         return [
             [true, '/foo/bar', '/foo'],
@@ -346,7 +373,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function mimeTypeDataProvider(): array
+    public static function mimeTypeDataProvider(): array
     {
         return [
             ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
@@ -363,7 +390,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isSvgDataProvider(): array
+    public static function isSvgDataProvider(): array
     {
         return [
             [true, dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true],
@@ -380,7 +407,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isGifDataProvider(): array
+    public static function isGifDataProvider(): array
     {
         return [
             [true, dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true],
@@ -397,7 +424,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isDirectoryEmptyDataProvider(): array
+    public static function isDirectoryEmptyDataProvider(): array
     {
         return [
             [true, __DIR__ . '/sandbox/isdirempty/yes'],
@@ -409,7 +436,18 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function sanitizeFilenameDataProvider(): array
+    public static function getExtensionByMimeTypeDataProvider(): array
+    {
+        return [
+            ['jpg', 'image/jpeg'],
+            ['svg', 'image/svg+xml'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function sanitizeFilenameDataProvider(): array
     {
         return [
             ['notafile', 'notafile', []],
@@ -424,7 +462,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function writeToFileDataProvider(): array
+    public static function writeToFileDataProvider(): array
     {
         $sandboxDir = __DIR__ . '/sandbox/writeto';
 
@@ -439,7 +477,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function findClosestFileDataProvider(): array
+    public static function findClosestFileDataProvider(): array
     {
         return [
             [
@@ -464,6 +502,22 @@ class FileHelperTest extends TestCase
                 false,
                 __DIR__ . '/sandbox/singlefile/nonexistent',
             ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function uniqueNameDataProvider(): array
+    {
+        $bigStr = StringHelper::randomString(300);
+
+        return [
+            ['{id}', ''],
+            ['foo{id}', 'foo'],
+            ['{id}.ext', '.ext'],
+            ['foo{id}.ext', 'foo.ext'],
+            [sprintf('%s{id}.ext', substr($bigStr, 0, 228)), "$bigStr.ext"],
         ];
     }
 

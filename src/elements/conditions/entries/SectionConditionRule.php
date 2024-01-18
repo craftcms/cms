@@ -40,7 +40,7 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
      */
     protected function options(): array
     {
-        $sections = Craft::$app->getSections()->getAllSections();
+        $sections = Craft::$app->getEntries()->getAllSections();
         return ArrayHelper::map($sections, 'uid', 'name');
     }
 
@@ -50,7 +50,7 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $sections = Craft::$app->getSections();
+        $sections = Craft::$app->getEntries();
         $query->sectionId($this->paramValue(fn($uid) => $sections->getSectionByUid($uid)->id ?? null));
     }
 
@@ -60,6 +60,6 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
-        return $this->matchValue($element->getSection()->uid);
+        return $this->matchValue($element->getSection()?->uid);
     }
 }

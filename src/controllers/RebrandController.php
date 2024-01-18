@@ -35,8 +35,13 @@ class RebrandController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         Craft::$app->requireEdition(Craft::Pro);
-        return parent::beforeAction($action);
+
+        return true;
     }
 
     /**
@@ -102,7 +107,7 @@ class RebrandController extends Controller
         $type = $this->request->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes, true)) {
-            $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
+            return $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
         }
 
         FileHelper::clearDirectory(Craft::$app->getPath()->getRebrandPath() . '/' . $type);
