@@ -22,15 +22,25 @@
 {% if showStatusMenu or isAdministrative %}
     <div>
         <label id="{{ idPrefix }}status-label" class="visually-hidden">{{ "Status"|t('app') }}</label>
-        <button id="{{ idPrefix }}status-button" aria-labelledby="{{ idPrefix }}status-label" type="button" class="btn menubtn statusmenubtn"><span class="status all"></span>{{ "All"|t('app') }}</button>
+        <button id="{{ idPrefix }}status-button" aria-labelledby="{{ idPrefix }}status-label" type="button" class="btn menubtn statusmenubtn">
+            {{ component('status-indicator', {status: 'all'}) }}{{ "All"|t('app') }}
+        </button>
         <div class="menu">
             <ul class="padded">
-                <li><a data-status="" class="sel"><span class="status all"></span>{{ "All"|t('app') }}</a></li>
+                <li>
+                    <a data-status="" class="sel">
+                        {{ component('status-indicator', {status: 'all'}) }}{{ "All"|t('app') }}
+                    </a>
+                </li>
                 {% if showStatusMenu %}
                     {% for status, info in elementInstance.statuses() %}
                         {% set label = info.label ?? info %}
                         {% set color = info.color ?? '' %}
-                        <li><a data-status="{{ status }}"><span class="status {{ status }} {{ color }}"></span>{{ label }}</a></li>
+                        <li>
+                            <a data-status="{{ status }}">
+                                {{ component('status-indicator', {status: status, color: color}) }}{{ label }}
+                            </a>
+                        </li>
                     {% endfor %}
                 {% endif %}
             </ul>
@@ -38,9 +48,9 @@
                 {% if showStatusMenu %}<hr class="padded">{% endif %}
                 <ul class="padded">
                     {% if canHaveDrafts ?? false %}
-                        <li><a data-drafts><span class="icon" data-icon="draft" aria-hidden="true"></span>{{ 'Drafts'|t('app') }}</a></li>
+                        <li><a data-drafts>{{ component('status-indicator', {status: 'draft'}) }}{{ 'Drafts'|t('app') }}</a></li>
                     {% endif %}
-                    <li><a data-trashed><span class="icon" data-icon="trash" aria-hidden="true"></span>{{ "Trashed"|t('app') }}</a></li>
+                    <li><a data-trashed>{{ component('status-indicator', {status: 'trashed'}) }}{{ "Trashed"|t('app') }}</a></li>
                 </ul>
             {% endif %}
         </div>

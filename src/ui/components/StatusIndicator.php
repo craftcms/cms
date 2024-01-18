@@ -52,11 +52,24 @@ class StatusIndicator extends Component
                 'data' => ['icon' => 'draft'],
                 'class' => 'icon',
                 'role' => 'img',
-                'aria-label' => sprintf(
+                'aria-label' => $this->getLabel() ? sprintf(
                     '%s %s',
                     Craft::t('app', 'Status:'),
                     Craft::t('app', 'Draft')
-                ),
+                ) : null,
+            ];
+        }
+
+        if ($this->getStatus() === 'trashed') {
+            return [
+                'data' => ['icon' => 'trashed'],
+                'class' => 'icon',
+                'role' => 'img',
+                'aria-label' => $this->getLabel() ? sprintf(
+                    '%s %s',
+                    Craft::t('app', 'Status:'),
+                    Craft::t('app', 'Trashed')
+                ) : null,
             ];
         }
 
@@ -67,11 +80,11 @@ class StatusIndicator extends Component
                 $this->getColor(),
             ]),
             'role' => 'img',
-            'aria-label' => sprintf(
+            'aria-label' => $this->getLabel() ? sprintf(
                 '%s %s',
                 Craft::t('app', 'Status:'),
-                $this->getLabel() ?? ucfirst($this->getStatus())
-            ),
+                $this->getLabel()
+            ) : null,
         ];
     }
 

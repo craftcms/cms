@@ -21,6 +21,7 @@ use craft\helpers\Path;
 use craft\helpers\StringHelper;
 use craft\ui\components\Icon;
 use craft\ui\components\Nav;
+use craft\web\twig\ComponentExtension;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
@@ -375,6 +376,7 @@ class View extends \yii\web\View
 
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
+        $twig->addExtension(new ComponentExtension());
 
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
             $twig->addExtension(new CpExtension());

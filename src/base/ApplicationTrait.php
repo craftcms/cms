@@ -95,6 +95,7 @@ use craft\services\SystemMessages;
 use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
+use craft\services\Ui;
 use craft\services\Updates;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
@@ -1466,6 +1467,12 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('tokens');
+    }
+
+    public function getUi(): Ui
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('ui');
     }
 
     /**
