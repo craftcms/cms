@@ -420,12 +420,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             // Make sure the touch targets are the same
             // (they may be different if Command/Ctrl/Shift-clicking on multiple elements quickly)
             // and make sure the element is actually selectable
-            if (
-              touchData.firstTap.target === touchData.secondTap.target &&
-              this.elementIndex.view.elementSelect.getItemIndex(
-                touchData.firstTap.target
-              ) != -1
-            ) {
+            if (touchData.firstTap.target === touchData.secondTap.target) {
               this.selectElements();
             }
           }
@@ -448,7 +443,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           condition: this.settings.condition,
           referenceElementId: this.settings.referenceElementId,
           referenceElementSiteId: this.settings.referenceElementSiteId,
-          criteria: this.settings.criteria,
+          criteria: Object.assign({}, this.settings.criteria),
           disabledElementIds: this.settings.disabledElementIds,
           selectable: true,
           multiSelect: this.settings.multiSelect,
@@ -468,6 +463,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           defaultSiteId: this.settings.defaultSiteId,
           defaultSource: this.settings.defaultSource,
           defaultSourcePath: this.settings.defaultSourcePath,
+          preferStoredSource: this.settings.preferStoredSource,
           showSourcePath: this.settings.showSourcePath,
         },
         this.settings.indexSettings
@@ -498,6 +494,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       defaultSiteId: null,
       defaultSource: null,
       defaultSourcePath: null,
+      preferStoredSource: false,
       showSourcePath: true,
       bodyAction: 'element-selector-modals/body',
       indexSettings: {},

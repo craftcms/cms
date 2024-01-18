@@ -54,7 +54,7 @@ class ResponseTest extends TestCase
 
         self::assertSame('cache', $headers->get('Pragma'));
         self::assertSame('cache', $headers->get('Pragma'));
-        self::assertSame('max-age=31536000', $headers->get('Cache-Control'));
+        self::assertSame('public, max-age=31536000', $headers->get('Cache-Control'));
         self::assertSame(gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT', $headers->get('Expires'));
     }
 
@@ -79,13 +79,13 @@ class ResponseTest extends TestCase
      */
     public function testRedirect(string $expected, mixed $url): void
     {
-        $this->assertEquals($expected, $this->response->redirect($url)->headers->get('location'));
+        self::assertEquals($expected, $this->response->redirect($url)->headers->get('location'));
     }
 
     /**
      * @return array
      */
-    public function getContentTypeDataProvider(): array
+    public static function getContentTypeDataProvider(): array
     {
         return [
             ['text/html', Response::FORMAT_HTML],
@@ -110,7 +110,7 @@ class ResponseTest extends TestCase
     /**
      * @return array
      */
-    public function testRedirectDataProvider(): array
+    public static function testRedirectDataProvider(): array
     {
         return [
             ['https://test.craftcms.test/', ''],

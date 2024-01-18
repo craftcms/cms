@@ -16,6 +16,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     uploader: null,
     promptHandler: null,
     progressBar: null,
+    currentFolderId: null,
 
     $listedFolders: null,
     itemDrag: null,
@@ -199,50 +200,28 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @private
      */
     initForFiles: function () {
-      if (!this.$uploadButton) {
-        this.$uploadButton = $('<button/>', {
-          type: 'button',
-          class: 'btn submit',
-          'data-icon': 'upload',
-          style: 'position: relative; overflow: hidden;',
-          text: Craft.t('app', 'Upload files'),
-        });
-        this.addButton(this.$uploadButton);
-
-        this.$uploadInput = $(
-          '<input type="file" multiple="multiple" name="assets-upload" />'
-        )
-          .hide()
-          .insertBefore(this.$uploadButton);
-      }
-
       this.promptHandler = new Craft.PromptHandler();
       this.progressBar = new Craft.ProgressBar(this.$main, false);
+    },
 
-      var options = {
-        url: Craft.getActionUrl('assets/upload'),
-        fileInput: this.$uploadInput,
-        dropZone: this.$container,
-      };
+    createUploadInputs: function () {
+      this.$uploadButton?.remove();
+      this.uploader?.$fileInput.remove();
 
-      options.events = {
-        fileuploadstart: this._onUploadStart.bind(this),
-        fileuploadprogressall: this._onUploadProgress.bind(this),
-        fileuploaddone: this._onUploadSuccess.bind(this),
-        fileuploadalways: this._onUploadAlways.bind(this),
-        fileuploadfail: this._onUploadFailure.bind(this),
-      };
+      this.$uploadButton = $('<button/>', {
+        type: 'button',
+        class: 'btn submit',
+        'data-icon': 'upload',
+        style: 'position: relative; overflow: hidden;',
+        text: Craft.t('app', 'Upload files'),
+      });
+      this.addButton(this.$uploadButton);
 
-      if (
-        this.settings.criteria &&
-        typeof this.settings.criteria.kind !== 'undefined'
-      ) {
-        options.allowedKinds = this.settings.criteria.kind;
-      }
-
-      this._currentUploaderSettings = options;
-
-      this.uploader = new Craft.Uploader(this.$uploadButton, options);
+      this.$uploadInput = $(
+        '<input type="file" multiple="multiple" name="assets-upload" />'
+      )
+        .hide()
+        .insertBefore(this.$uploadButton);
 
       this.$uploadButton.on('click', () => {
         if (this.$uploadButton.hasClass('disabled')) {
@@ -259,12 +238,46 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
     onSelectSource: function () {
       if (!this.settings.foldersOnly) {
-        const folderId = this.$source.data('folder-id');
-        if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
-          this.uploader.setParams({
-            folderId: this.$source.attr('data-folder-id'),
-          });
+        this.currentFolderId =
+          this.currentFolderId || this.$source.data('folder-id');
+        const fsType = this.$source.data('fs-type');
+
+        this.createUploadInputs();
+
+        if (
+          this.currentFolderId &&
+          Garnish.hasAttr(this.$source, 'data-can-upload')
+        ) {
+          this.uploader?.destroy();
+          this.$uploadInput.insertBefore(this.$uploadButton);
           this.$uploadButton.removeClass('disabled');
+
+          const options = {
+            fileInput: this.$uploadInput,
+            dropZone: this.$container,
+            events: {
+              fileuploadstart: this._onUploadStart.bind(this),
+              fileuploadprogressall: this._onUploadProgress.bind(this),
+              fileuploaddone: this._onUploadSuccess.bind(this),
+              fileuploadalways: this._onUploadAlways.bind(this),
+              fileuploadfail: this._onUploadFailure.bind(this),
+            },
+          };
+
+          if (this.settings?.criteria?.kind) {
+            options.allowedKinds = this.settings.criteria.kind;
+          }
+
+          this._currentUploaderSettings = options;
+
+          this.uploader = Craft.createUploader(
+            fsType,
+            this.$uploadButton,
+            options
+          );
+          this.uploader.setParams({
+            folderId: this.currentFolderId,
+          });
         } else {
           this.$uploadButton.addClass('disabled');
         }
@@ -274,22 +287,22 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     },
 
     onSourcePathChange: function () {
-      if (!this.settings.foldersOnly && this.sourcePath.length) {
-        const currentFolder = this.sourcePath[this.sourcePath.length - 1];
-        if (currentFolder.folderId) {
-          if (this.uploader) {
-            this.uploader.setParams({
-              folderId: currentFolder.folderId,
-            });
-          }
+      const currentFolder = this.sourcePath.length
+        ? this.sourcePath[this.sourcePath.length - 1]
+        : null;
+      this.currentFolderId = currentFolder?.folderId;
 
-          // will the user be allowed to move items in this folder?
-          const canMoveSubItems = !!currentFolder.canMoveSubItems;
-          this.settings.selectable =
-            this.settings.selectable || canMoveSubItems;
-          this.settings.multiSelect =
-            this.settings.multiSelect || canMoveSubItems;
-        }
+      if (!this.settings.foldersOnly && this.currentFolderId) {
+        this.uploader?.setParams({
+          folderId: this.currentFolderId,
+        });
+
+        // will the user be allowed to move items in this folder?
+        const canMoveSubItems =
+          this.context === 'index' && !!currentFolder.canMoveSubItems;
+        this.settings.selectable = this.settings.selectable || canMoveSubItems;
+        this.settings.multiSelect =
+          this.settings.multiSelect || canMoveSubItems;
       }
 
       this.base();
@@ -299,6 +312,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       // Does this source have subfolders?
       if (
         !this.settings.hideSidebar &&
+        this.sourcePath.length &&
         this.sourcePath[this.sourcePath.length - 1].hasChildren
       ) {
         if (this.$includeSubfoldersContainer === null) {
@@ -421,8 +435,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * Update uploaded byte count.
      */
-    _onUploadProgress: function (event, data) {
-      var progress = parseInt((data.loaded / data.total) * 100, 10);
+    _onUploadProgress: function (event, data = null) {
+      data = event instanceof CustomEvent ? event.detail : data;
+
+      var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
       this.progressBar.setProgressPercentage(progress);
     },
 
@@ -433,8 +449,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @param {Object} data
      * @private
      */
-    _onUploadSuccess: function (event, data) {
-      const {result} = data;
+    _onUploadSuccess: function (event, data = null) {
+      const result = event instanceof CustomEvent ? event.detail : data.result;
 
       // Add the uploaded file to the selected ones, if appropriate
       this.selectElementAfterUpdate(result.assetId);
@@ -447,6 +463,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
             {value: 'replace', title: Craft.t('app', 'Replace it')},
           ],
+          modalSettings: {
+            hideOnEsc: false,
+            hideOnShadeClick: false,
+          },
         };
 
         this.promptHandler.addPrompt(result);
@@ -474,17 +494,27 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * On Upload Failure.
      */
-    _onUploadFailure: function (event, data) {
-      const response = data.response();
-      let {message, filename} = response?.jqXHR?.responseJSON || {};
+    _onUploadFailure: function (event, data = null) {
+      const response =
+        event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
+
+      let {message, filename, errors} = response || {};
+      filename = filename || data?.files?.[0].name;
+      let errorMessages = errors ? Object.values(errors).flat() : [];
 
       if (!message) {
-        message = filename
-          ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
-          : Craft.t('app', 'Upload failed.');
+        if (errorMessages.length) {
+          message = errorMessages.join('\n');
+        } else if (filename) {
+          message = Craft.t('app', 'Upload failed for “{filename}”.', {
+            filename,
+          });
+        } else {
+          message = Craft.t('app', 'Upload failed.');
+        }
       }
 
-      alert(message);
+      Craft.cp.displayError(message);
     },
 
     /**
@@ -523,6 +553,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       var doFollowup = (parameterArray, parameterIndex, callback) => {
         var data = {};
         var action = null;
+        const {replaceAction, deleteAction} = this.uploader.settings;
 
         const followupAlways = () => {
           parameterIndex++;
@@ -543,12 +574,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           followupAlways();
         };
         const followupFailure = (data) => {
-          alert(data.message);
+          Craft.cp.displayError(data.message);
           followupAlways();
         };
 
         if (parameterArray[parameterIndex].choice === 'replace') {
-          action = 'assets/replace-file';
+          action = replaceAction;
           data.sourceAssetId = parameterArray[parameterIndex].assetId;
 
           if (parameterArray[parameterIndex].conflictingAssetId) {
@@ -557,7 +588,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             data.targetFilename = parameterArray[parameterIndex].filename;
           }
         } else if (parameterArray[parameterIndex].choice === 'cancel') {
-          action = 'assets/delete-asset';
+          action = deleteAction;
           data.assetId = parameterArray[parameterIndex].assetId;
         }
 
@@ -597,7 +628,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _onUpdateElements: function (append, $newElements) {
       this.removeListener(this.$elements, 'keydown');
       this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
-      this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
+      if (this.view.elementSelect) {
+        this.view.elementSelect.on(
+          'focusItem',
+          this._onElementFocus.bind(this)
+        );
+      }
 
       this.$listedFolders = $newElements.find(
         '.element[data-is-folder][data-folder-name]'
@@ -605,6 +641,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       for (let i = 0; i < this.$listedFolders.length; i++) {
         const $folder = this.$listedFolders.eq(i);
         const $label = $folder.find('.label');
+        const $link = $label.find('.label-link');
         const folderId = parseInt($folder.data('folder-id'));
         const folderName = $folder.data('folder-name');
         const label = Craft.t('app', '{name} folder', {
@@ -617,14 +654,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         }
         const sourcePath = $folder.data('source-path');
         if (sourcePath) {
-          const $a = $('<a/>', {
+          $link.attr({
             href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
-            text: folderName,
             role: 'button',
             'aria-label': label,
           });
-          $label.empty().append($a);
-          this.addListener($a, 'activate', (ev) => {
+          this.addListener($link, 'activate', (ev) => {
             this.sourcePath = sourcePath;
             this.clearSearch(false);
             this.updateElements().then(() => {
@@ -663,7 +698,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
         if (Craft.PreviewFileModal.openInstance) {
           Craft.PreviewFileModal.openInstance.selfDestruct();
-        } else {
+        } else if (this.view.elementSelect) {
           var $element = this.view.elementSelect.$focusedItem.find('.element');
 
           if ($element.length) {
@@ -760,7 +795,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
               label: Craft.t('app', 'Delete folder'),
               destructive: true,
               onSelect: () => {
-                this._deleteFolder();
+                this.deleteCurrentFolder();
               },
             });
           }
@@ -792,42 +827,48 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           })
           .catch(({response}) => {
             this.setIndexAvailable();
-            alert(response.data.message);
+            Craft.cp.displayError(response.data.message);
           });
       }
     },
 
-    _deleteFolder: function () {
-      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
-
+    deleteCurrentFolder: async function () {
       if (
-        confirm(
+        await this.deleteFolder(this.sourcePath[this.sourcePath.length - 1])
+      ) {
+        this.sourcePath = this.sourcePath.slice(0, this.sourcePath.length - 1);
+        this.updateElements();
+      }
+    },
+
+    deleteFolder: async function (folder) {
+      if (
+        !confirm(
           Craft.t('app', 'Really delete folder “{folder}”?', {
-            folder: currentFolder.label,
+            folder: folder.label,
           })
         )
       ) {
-        const data = {
-          folderId: currentFolder.folderId,
-        };
-
-        this.setIndexBusy();
-
-        Craft.sendActionRequest('POST', 'assets/delete-folder', {data})
-          .then((response) => {
-            this.setIndexAvailable();
-            Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
-            this.sourcePath = this.sourcePath.slice(
-              0,
-              this.sourcePath.length - 1
-            );
-            this.updateElements();
-          })
-          .catch(({response}) => {
-            this.setIndexAvailable();
-            alert(response.data.message);
-          });
+        return false;
       }
+
+      this.setIndexBusy();
+
+      try {
+        await Craft.sendActionRequest('POST', 'assets/delete-folder', {
+          data: {
+            folderId: folder.folderId,
+          },
+        });
+      } catch (e) {
+        Craft.cp.displayError(e?.response?.data?.message);
+        return false;
+      } finally {
+        this.setIndexAvailable();
+      }
+
+      Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
+      return true;
     },
 
     /**
@@ -861,7 +902,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           this.sourcePath = sourcePath;
         })
         .catch(({response}) => {
-          alert(response.data.message);
+          Craft.cp.displayError(response.data.message);
         })
         .finally(() => {
           this.setIndexAvailable();

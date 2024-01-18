@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use Closure;
 use Craft;
 use craft\behaviors\SessionBehavior;
 use craft\cache\FileCache;
@@ -33,12 +34,18 @@ use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
 use ReflectionClass;
+use ReflectionFunction;
+use ReflectionNamedType;
 use ReflectionProperty;
+use Symfony\Component\Process\PhpExecutableFinder;
 use yii\base\Event;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
+use yii\mutex\MysqlMutex;
+use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
 
 /**
@@ -61,6 +68,11 @@ class App
     private static array $_basePaths;
 
     /**
+     * @var string[]
+     */
+    private static array $_secrets;
+
+    /**
      * Returns whether Dev Mode is enabled.
      *
      * @return bool
@@ -72,14 +84,37 @@ class App
     }
 
     /**
-     * Returns an environment variable, falling back to a PHP constant of the same name.
+     * Returns an environment-specific value.
      *
-     * @param string $name The environment variable name
-     * @return mixed The environment variable, PHP constant, or `null` if neither are found
+     * Values will be looked for in the following places:
+     *
+     * 1. “Secret” values returned by a PHP file identified by a `CRAFT_SECRETS_PATH` environment variable
+     * 2. Environment variables stored in `$_SERVER`
+     * 3. Environment variables returned by `getenv()`
+     * 4. PHP constants
+     *
+     * If the value cannot be found, `null` will be returned.
+     *
+     * @param string $name The name to search for.
+     * @return mixed The value, or `null` if not found.
+     * @throws Exception
      * @since 3.4.18
      */
     public static function env(string $name): mixed
     {
+        if (!isset(self::$_secrets)) {
+            // set it to an empty array initially, so the nested env() call doesn’t cause infinite recursion
+            self::$_secrets = [];
+            $secretsPath = static::env('CRAFT_SECRETS_PATH');
+            if ($secretsPath && is_file($secretsPath)) {
+                self::$_secrets = require $secretsPath;
+            }
+        }
+
+        if (isset(self::$_secrets[$name])) {
+            return static::normalizeValue(self::$_secrets[$name]);
+        }
+
         if (isset($_SERVER[$name])) {
             return static::normalizeValue($_SERVER[$name]);
         }
@@ -279,19 +314,6 @@ class App
     }
 
     /**
-     * Returns whether Craft is running within [Nitro](https://getnitro.sh) v1.
-     *
-     * @return bool
-     * @since 3.4.19
-     * @deprecated in 3.7.9.
-     */
-    public static function isNitro(): bool
-    {
-        return static::env('CRAFT_NITRO') === '1';
-    }
-
-
-    /**
      * Returns an array of all known Craft editions’ IDs.
      *
      * @return array All the known Craft editions’ IDs.
@@ -410,14 +432,29 @@ class App
     }
 
     /**
-     * Removes distribution info from a version
+     * Removes distribution info from a version string, and returns the highest version number found in the remainder.
      *
      * @param string $version
      * @return string
      */
     public static function normalizeVersion(string $version): string
     {
-        return preg_replace('/^([^\s~+-]+).*$/', '$1', $version);
+        // Strip out the distribution info
+        $versionPattern = '\d[\d.]*(-(dev|alpha|beta|rc)(\.?\d[\d.]*)?)?';
+        if (!preg_match("/^((v|version\s*)?$versionPattern-?)+/i", $version, $match)) {
+            return '';
+        }
+        $version = $match[0];
+
+        // Return the highest version
+        preg_match_all("/$versionPattern/i", $version, $matches, PREG_SET_ORDER);
+        $versions = array_map(fn(array $match) => $match[0], $matches);
+        usort($versions, fn($a, $b) => match (true) {
+            version_compare($a, $b, '<') => 1,
+            version_compare($a, $b, '>') => -1,
+            default => 0,
+        });
+        return reset($versions) ?: '';
     }
 
     /**
@@ -561,6 +598,35 @@ class App
     }
 
     /**
+     * Returns the path to a PHP executable which should be used by sub processes.
+     *
+     * @return string|null The PHP executable path, or `null` if it can’t be determined.
+     * @since 4.5.6
+     */
+    public static function phpExecutable(): ?string
+    {
+        // If PHP_BINARY was set to $_SERVER, update the environment variable to match
+        if (isset($_SERVER['PHP_BINARY']) && $_SERVER['PHP_BINARY'] !== getenv('PHP_BINARY')) {
+            putenv(sprintf('PHP_BINARY=%s', $_SERVER['PHP_BINARY']));
+        }
+
+        if (
+            getenv('PHP_BINARY') === false &&
+            PHP_BINARY &&
+            PHP_SAPI === 'cgi-fcgi' &&
+            str_ends_with(PHP_BINARY, 'php-cgi')
+        ) {
+            // See if a `php` file exists alongside `php-cgi`, and if so, use that
+            $file = dirname(PHP_BINARY) . DIRECTORY_SEPARATOR . 'php';
+            if (@is_executable($file) && !@is_dir($file)) {
+                return $file;
+            }
+        }
+
+        return (new PhpExecutableFinder())->find() ?: null;
+    }
+
+    /**
      * Tests whether ini_set() works.
      *
      * @return bool
@@ -642,7 +708,6 @@ class App
      * Sets PHP’s memory limit to the maximum specified by the
      * <config4:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
-     *
      */
     public static function maxPowerCaptain(): void
     {
@@ -656,6 +721,37 @@ class App
         // Try to reset time limit
         if (!function_exists('set_time_limit') || !@set_time_limit(0)) {
             Craft::warning('set_time_limit() is not available', __METHOD__);
+        }
+    }
+
+    /**
+     * Calls the given closure with all error reporting silenced, and returns its response.
+     *
+     * @param Closure|string $callable
+     * @param int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
+     * @return mixed
+     * @since 5.0.0
+     */
+    public static function silence(Closure|string $callable, ?int $mask = null): mixed
+    {
+        // loosely based on Composer\Util\Silencer
+        if (!isset($mask)) {
+            $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT;
+        }
+
+        $old = error_reporting();
+        error_reporting($old & ~$mask);
+
+        try {
+            $returnType = (new ReflectionFunction($callable))->getReturnType();
+            if ($returnType instanceof ReflectionNamedType && $returnType->getName() === 'void') {
+                $callable();
+                return null;
+            } else {
+                return $callable();
+            }
+        } finally {
+            error_reporting($old);
         }
     }
 
@@ -702,12 +798,11 @@ class App
         foreach ($frames as $i => $frame) {
             $trace .= ($i !== 0 ? "\n" : '') .
                 '#' . $i . ' ' .
+                (isset($frame['file']) ? sprintf('%s%s: ', $frame['file'], isset($frame['line']) ? "({$frame['line']})" : '') : '') .
                 ($frame['class'] ?? '') .
                 ($frame['type'] ?? '') .
                 /** @phpstan-ignore-next-line */
-                ($frame['function'] ?? '') . '()' .
-                /** @phpstan-ignore-next-line */
-                (isset($frame['file']) ? ' called at [' . ($frame['file'] ?? '') . ':' . ($frame['line'] ?? '') . ']' : '');
+                (isset($frame['function']) ? "{$frame['function']}()" : '');
         }
 
         return $trace;
@@ -722,6 +817,16 @@ class App
     public static function isEphemeral(): bool
     {
         return self::parseBooleanEnv('$CRAFT_EPHEMERAL') === true;
+    }
+
+    /**
+     * Returns whether Craft is running on a Windows environment
+     *
+     * @since 5.0.0
+     */
+    public static function isWindows(): bool
+    {
+        return defined('PHP_WINDOWS_VERSION_BUILD');
     }
 
     /**
@@ -881,6 +986,32 @@ class App
     }
 
     /**
+     * Returns a database-based mutex driver config.
+     *
+     * @return array
+     * @since 4.6.0
+     */
+    public static function dbMutexConfig(): array
+    {
+        // Use a dedicated connection, to avoid erratic behavior when locks are used during transactions
+        // https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions
+        $dbConfig = static::dbConfig();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            return [
+                'class' => MysqlMutex::class,
+                'db' => $dbConfig,
+                'keyPrefix' => Craft::$app->id,
+            ];
+        }
+
+        return [
+            'class' => PgsqlMutex::class,
+            'db' => $dbConfig,
+        ];
+    }
+
+    /**
      * Returns a file-based mutex driver config.
      *
      * ::: tip
@@ -891,6 +1022,7 @@ class App
      *
      * @return array
      * @since 3.0.18
+     * @deprecated in 4.6.0
      */
     public static function mutexConfig(): array
     {
@@ -988,8 +1120,8 @@ class App
 
         if ($request->getIsCpRequest()) {
             $headers = $request->getHeaders();
-            $config['registeredAssetBundles'] = explode(',', $headers->get('X-Registered-Asset-Bundles', ''));
-            $config['registeredJsFiles'] = explode(',', $headers->get('X-Registered-Js-Files', ''));
+            $config['registeredAssetBundles'] = array_filter(explode(',', $headers->get('X-Registered-Asset-Bundles', '')));
+            $config['registeredJsFiles'] = array_filter(explode(',', $headers->get('X-Registered-Js-Files', '')));
         }
 
         return $config;

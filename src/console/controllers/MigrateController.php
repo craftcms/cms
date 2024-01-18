@@ -208,6 +208,10 @@ class MigrateController extends BaseMigrateController
         $projectConfig = Craft::$app->getProjectConfig();
         if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
             $projectConfig->regenerateExternalConfig();
+        } elseif ($projectConfig->areChangesPending(force: true)) {
+            // allow project config changes, but don't overwrite the pending changes
+            $projectConfig->readOnly = false;
+            $projectConfig->writeYamlAutomatically = false;
         }
 
         try {
@@ -362,6 +366,10 @@ class MigrateController extends BaseMigrateController
                     $this->stdout(PHP_EOL . "$applied from $total " . ($applied === 1 ? 'migration was' : 'migrations were') . ' applied.' . PHP_EOL, Console::FG_RED);
                     $this->stdout(PHP_EOL . 'Migration failed. The rest of the migrations are canceled.' . PHP_EOL, Console::FG_RED);
                     Craft::$app->disableMaintenanceMode();
+                    Craft::$app->getProjectConfig()->reset();
+                    if (!$this->restore()) {
+                        $this->stdout("\nRestore a database backup before trying again.\n", Console::FG_RED);
+                    }
                     return ExitCode::UNSPECIFIED_ERROR;
                 }
                 $applied++;
@@ -412,6 +420,14 @@ class MigrateController extends BaseMigrateController
         }
 
         $res = parent::actionUp($limit);
+
+        if ($res === ExitCode::UNSPECIFIED_ERROR) {
+            Craft::$app->getProjectConfig()->reset();
+            if (!$this->restore()) {
+                $this->stdout("\nRestore a database backup before trying again.\n", Console::FG_RED);
+            }
+            return $res;
+        }
 
         if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
             // Update any schema versions.

@@ -3,9 +3,9 @@
 namespace craft\elements\conditions;
 
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
+use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\helpers\Cp;
@@ -97,7 +97,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             /** @var string|ElementInterface $elementType */
             /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-            if (!is_subclass_of($elementType, BlockElementInterface::class)) {
+            if (!is_subclass_of($elementType, NestedElementInterface::class)) {
                 $options[] = [
                     'value' => $elementType,
                     'label' => $elementType::displayName(),

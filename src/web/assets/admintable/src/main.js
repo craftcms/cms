@@ -8,29 +8,44 @@ import AdminTable from '@craftcms/vue/admintable/App';
 
 Craft.VueAdminTable = Garnish.Base.extend(
   {
+    instance: null,
+    $table: null,
+
     init: function (settings) {
       this.setSettings(settings, Craft.VueAdminTable.defaults);
 
-      const props = this.settings;
+      const _this = this;
 
-      return new Vue({
+      this.instance = new Vue({
         components: {
           AdminTable,
         },
         data() {
-          return {};
+          return {
+            props: _this.settings,
+          };
         },
-        render: (h) => {
+        render(h) {
           return h(AdminTable, {
-            props: props,
+            ref: 'admin-table',
+            props: this.props,
           });
         },
-      }).$mount(this.settings.container);
+      });
+
+      this.instance.$mount(this.settings.container);
+      this.$table = this.instance.$refs['admin-table'];
+
+      return this.instance;
+    },
+    reload() {
+      this.$table.reload();
     },
   },
   {
     defaults: {
       actions: [],
+      allowMultipleDeletions: false,
       checkboxes: false,
       checkboxStatus: function () {
         return true;
@@ -38,7 +53,10 @@ Craft.VueAdminTable = Garnish.Base.extend(
       columns: [],
       container: null,
       deleteAction: null,
+      footerActions: [],
       reorderAction: null,
+      paginatedReorderAction: null,
+      moveToPageAction: null,
       reorderSuccessMessage: Craft.t('app', 'Items reordered.'),
       reorderFailMessage: Craft.t('app', 'Couldn’t reorder items.'),
       search: false,
@@ -49,8 +67,13 @@ Craft.VueAdminTable = Garnish.Base.extend(
       onLoaded: $.noop,
       onLoading: $.noop,
       onData: $.noop,
+      onCellClicked: $.noop,
+      onCellDoubleClicked: $.noop,
+      onRowClicked: $.noop,
+      onRowDoubleClicked: $.noop,
       onPagination: $.noop,
       onSelect: $.noop,
+      onQueryParams: $.noop,
     },
   }
 );

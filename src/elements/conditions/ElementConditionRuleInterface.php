@@ -13,6 +13,7 @@ use craft\elements\db\ElementQueryInterface;
 
 /**
  * ElementConditionRuleInterface defines the common interface to be implemented by element condition rule classes.
+ * A class implementing this interface should also use [[ElementConditionRuleTrait]].
  *
  * @property-read string[] $exclusiveQueryParams The query param names that this rule should have exclusive control over
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

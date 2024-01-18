@@ -10,6 +10,7 @@ namespace craft\queue;
 use Craft;
 use craft\db\Connection;
 use craft\db\Table;
+use craft\errors\MutexException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -40,6 +41,13 @@ use yii\web\Response;
  */
 class Queue extends \yii\queue\cli\Queue implements QueueInterface
 {
+    /**
+     * @event ExecEvent The event that is triggered after a job is executed and released.
+     * @see executeJob()
+     * @since 4.4.8
+     */
+    public const EVENT_AFTER_EXEC_AND_RELEASE = 'afterExecAndRelease';
+
     /**
      * @see isFailed()
      */
@@ -182,6 +190,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
             $this->release($payload['id']);
+
+            if ($this->hasEventHandlers(self::EVENT_AFTER_EXEC_AND_RELEASE)) {
+                // Can't just capture the exec event from handleMessage()
+                // because it was probably created in a subprocess
+                [$job, $error] = $this->unserializeMessage($payload['job']);
+                $this->trigger(self::EVENT_AFTER_EXEC_AND_RELEASE, new ExecEvent([
+                    'id' => $payload['id'],
+                    'job' => $job,
+                    'ttr' => $payload['ttr'],
+                    'attempt' => $payload['attempt'],
+                    'error' => $error,
+                ]));
+            }
         }
 
         return true;
@@ -596,26 +617,13 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 <script type="text/javascript">
 /*<![CDATA[*/
 (function(){
-    var XMLHttpFactories = [
-        function () {return new XMLHttpRequest()},
-        function () {return new ActiveXObject("Msxml2.XMLHTTP")},
-        function () {return new ActiveXObject("Msxml3.XMLHTTP")},
-        function () {return new ActiveXObject("Microsoft.XMLHTTP")}
-    ];
-    var req = false;
-    for (var i = 0; i < XMLHttpFactories.length; i++) {
-        try {
-            req = XMLHttpFactories[i]();
-        }
-        catch (e) {
-            continue;
-        }
-        break;
-    }
-    if (!req) return;
+  try {
+    var req = new XMLHttpRequest();
     req.open('GET', $url, true);
-    if (req.readyState == 4) return;
+    req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    if (req.readyState === 4) return;
     req.send();
+  } catch (e) {}
 })();
 /*]]>*/
 </script>
@@ -771,35 +779,33 @@ EOD;
     private function _moveExpired(): void
     {
         if ($this->_reserveTime !== time()) {
-            $this->_lock(function() {
-                $this->_reserveTime = time();
+            $this->_reserveTime = time();
 
-                $expiredIds = $this->db->usePrimary(function() {
-                    return (new Query())
-                        ->select(['id'])
-                        ->from([$this->tableName])
-                        ->where([
-                            'and',
-                            [
-                                'channel' => $this->channel(),
-                                'fail' => false,
-                            ],
-                            '[[timeUpdated]] < :time - [[ttr]]',
-                        ], [
-                            ':time' => $this->_reserveTime,
-                        ])
-                        ->column($this->db);
-                });
-
-                if (!empty($expiredIds)) {
-                    Db::update($this->tableName, [
-                        'dateReserved' => null,
-                        'timeUpdated' => null,
-                        'progress' => 0,
-                        'progressLabel' => null,
-                    ], ['id' => $expiredIds], [], false, $this->db);
-                }
+            $expiredIds = $this->db->usePrimary(function() {
+                return (new Query())
+                    ->select(['id'])
+                    ->from([$this->tableName])
+                    ->where([
+                        'and',
+                        [
+                            'channel' => $this->channel(),
+                            'fail' => false,
+                        ],
+                        '[[timeUpdated]] < :time - [[ttr]]',
+                    ], [
+                        ':time' => $this->_reserveTime,
+                    ])
+                    ->column($this->db);
             });
+
+            if (!empty($expiredIds)) {
+                Db::update($this->tableName, [
+                    'dateReserved' => null,
+                    'timeUpdated' => null,
+                    'progress' => 0,
+                    'progressLabel' => null,
+                ], ['id' => $expiredIds], [], false, $this->db);
+            }
         }
     }
 
@@ -899,16 +905,22 @@ EOD;
      * Acquires a lock and then executes the provided callback
      *
      * @param callable $callback
-     * @throws Exception
+     * @param int|null $timeout
+     * @param bool $throwException
+     * @throws MutexException
      */
-    private function _lock(callable $callback): void
+    private function _lock(callable $callback, ?int $timeout = null, bool $throwException = true): void
     {
         $acquireLock = !$this->_locked;
 
         if ($acquireLock) {
             $channel = $this->channel();
-            if (!$this->mutex->acquire(__CLASS__ . "::$channel", $this->mutexTimeout)) {
-                throw new Exception("Could not acquire a mutex lock for the queue ($channel).");
+            $mutexName = sprintf('%s::%s', __CLASS__, $channel);
+            if (!$this->mutex->acquire($mutexName, $timeout ?? $this->mutexTimeout)) {
+                if ($throwException) {
+                    throw new MutexException($mutexName, "Could not acquire a mutex lock for the queue ($channel).");
+                }
+                return;
             }
             $this->_locked = true;
         }
@@ -917,7 +929,7 @@ EOD;
             $callback();
         } finally {
             if ($acquireLock) {
-                $this->mutex->release(__CLASS__ . "::$channel");
+                $this->mutex->release($mutexName);
                 $this->_locked = false;
             }
         }

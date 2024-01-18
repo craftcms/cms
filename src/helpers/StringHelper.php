@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use BackedEnum;
 use Craft;
 use HTMLPurifier_Config;
 use IteratorAggregate;
@@ -38,6 +39,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * @see asciiCharMap()
      */
     private static array $_asciiCharMaps;
+
+    /**
+     * @var string[]|false
+     * @see escapeShortcodes()
+     */
+    private static array|false $_shortcodeEscapeMap;
 
     /**
      * Gets the substring after the first occurrence of a separator.
@@ -350,8 +357,7 @@ class StringHelper extends \yii\helpers\StringHelper
         if (App::checkForValidIconv()) {
             $str = HtmlPurifier::convertToUtf8($str, $config);
         } else {
-            $encoding = static::encoding($str);
-            $str = mb_convert_encoding($str, 'utf-8', $encoding);
+            $str = mb_convert_encoding($str, self::UTF8);
         }
 
         return $str;
@@ -460,7 +466,7 @@ class StringHelper extends \yii\helpers\StringHelper
         // So, by converting from UTF-8 to UTF-32, we magically
         // get the correct hex encoding.
         return static::replaceMb4($str, static function($char) {
-            $unpacked = unpack('H*', mb_convert_encoding($char, 'UTF-32', 'UTF-8'));
+            $unpacked = unpack('H*', mb_convert_encoding($char, 'UTF-32', self::UTF8));
             return isset($unpacked[1]) ? '&#x' . ltrim($unpacked[1], '0') . ';' : '';
         });
     }
@@ -815,7 +821,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUtf8(string $str): bool
     {
-        return static::encoding($str) === 'utf-8';
+        return mb_check_encoding($str, self::UTF8);
     }
 
     /**
@@ -1247,10 +1253,6 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function replaceMb4(string $str, callable|string $replace): string
     {
-        if (!static::containsMb4($str)) {
-            return $str;
-        }
-
         return preg_replace_callback('/./u', function(array $match) use ($replace): string {
             if (strlen($match[0]) >= 4) {
                 return is_callable($replace) ? $replace($match[0]) : $replace;
@@ -1706,6 +1708,10 @@ class StringHelper extends \yii\helpers\StringHelper
             return implode($glue, $stringValues);
         }
 
+        if ($object instanceof BackedEnum) {
+            return $object->value;
+        }
+
         return '';
     }
 
@@ -1806,10 +1812,10 @@ class StringHelper extends \yii\helpers\StringHelper
 
         // Remove inner-word punctuation
         $handle = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/', '', $handle);
-    
+
         // Make it lowercase
         $handle = static::toLowerCase($handle);
-    
+
         // Convert extended ASCII characters to basic ASCII
         $handle = static::toAscii($handle);
 
@@ -1977,5 +1983,56 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function shortcodesToEmoji(string $str): string
     {
         return LitEmoji::shortcodeToUnicode($str);
+    }
+
+    /**
+     * Escapes shortcodes.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.5.0
+     */
+    public static function escapeShortcodes(string $str): string
+    {
+        $map = self::shortcodeEscapeMap();
+        if ($map === false) {
+            return $str;
+        }
+        return str_replace(array_keys($map), $map, $str);
+    }
+
+    /**
+     * Unscapes shortcodes.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.5.0
+     */
+    public static function unescapeShortcodes(string $str): string
+    {
+        $map = self::shortcodeEscapeMap();
+        if ($map === false) {
+            return $str;
+        }
+        return str_replace($map, array_keys($map), $str);
+    }
+
+    private static function shortcodeEscapeMap(): array|false
+    {
+        if (!isset(self::$_shortcodeEscapeMap)) {
+            $path = Craft::$app->getPath()->getVendorPath() . '/elvanto/litemoji/src/shortcodes-array.php';
+            if (file_exists($path)) {
+                $shortcodes = array_keys(require $path);
+                self::$_shortcodeEscapeMap = array_combine(
+                    array_map(fn(string $shortcode) => ":$shortcode:", $shortcodes),
+                    array_map(fn(string $shortcode) => "\\:$shortcode\\:", $shortcodes),
+                );
+            } else {
+                Craft::warning('Unable to escape shortcodes: shortcodes-array.php doesn’t exist at the expected location.');
+                self::$_shortcodeEscapeMap = false;
+            }
+        }
+
+        return self::$_shortcodeEscapeMap;
     }
 }

@@ -9,7 +9,6 @@ namespace craft\console;
 
 use craft\console\controllers\ResaveController;
 use craft\events\DefineConsoleActionsEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -74,7 +73,7 @@ class Controller extends YiiController
     public const EVENT_DEFINE_ACTIONS = 'defineActions';
 
     /**
-     * @var array Custom actions that should be available.
+     * @var array[] Custom actions that should be available.
      * @see defineActions()
      */
     private array $_actions;
@@ -175,7 +174,7 @@ class Controller extends YiiController
      */
     public function actions(): array
     {
-        return ArrayHelper::getColumn($this->_actions, 'action');
+        return array_map(fn(array $action) => $action['action'], $this->_actions);
     }
 
     /**
@@ -458,7 +457,7 @@ class Controller extends YiiController
 
         $this->stdout('✓', Console::FG_GREEN, Console::BOLD);
         if ($withDuration) {
-            $this->stdout(sprintf(' (time: %.3fs', microtime(true) - $time), Console::FG_GREY);
+            $this->stdout(sprintf(' (time: %.3fs)', microtime(true) - $time), Console::FG_GREY);
         }
         $this->stdout(PHP_EOL);
     }
@@ -506,7 +505,10 @@ class Controller extends YiiController
      */
     public function writeJson(string $file, mixed $value): void
     {
-        $json = Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
-        $this->writeToFile($file, "$json\n");
+        $file = FileHelper::relativePath($file);
+        $description = file_exists($file) ? "Updating `$file`" : "Creating `$file`";
+        $this->do($description, function() use ($file, $value) {
+            Json::encodeToFile($file, $value);
+        });
     }
 }

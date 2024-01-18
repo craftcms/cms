@@ -126,11 +126,10 @@ class ImageTransforms extends Component
     private function _transforms(): MemoizableArray
     {
         if (!isset($this->_transforms)) {
-            $transforms = [];
-            foreach ($this->_createTransformQuery()->all() as $result) {
-                $transforms[] = new ImageTransform($result);
-            }
-            $this->_transforms = new MemoizableArray($transforms);
+            $this->_transforms = new MemoizableArray(
+                $this->_createTransformQuery()->all(),
+                fn(array $result) => new ImageTransform($result),
+            );
         }
 
         return $this->_transforms;
@@ -261,7 +260,7 @@ class ImageTransforms extends Component
             $transformRecord->interlace = $data['interlace'];
             $transformRecord->format = $data['format'];
             $transformRecord->fill = $data['fill'] ?? null;
-            $transformRecord->upscale = $data['upscale'] ?? null;
+            $transformRecord->upscale = $data['upscale'] ?? true;
             $transformRecord->uid = $transformUid;
 
             $transformRecord->save(false);

@@ -24,8 +24,8 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\EntryType;
 use craft\models\Section;
+use craft\services\Entries as EntriesService;
 use craft\services\ProjectConfig;
-use craft\services\Sections;
 use craft\services\Structures;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
@@ -115,7 +115,7 @@ class EntrifyController extends Controller
         ) {
             $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
             // Capture the new section handle
-            Event::once(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
@@ -160,67 +160,75 @@ class EntrifyController extends Controller
         $structuresService = Craft::$app->getStructures();
         $entriesByLevel = [];
 
-        foreach (Db::each($categoryQuery) as $category) {
-            /** @var Category $category */
-            $this->do("Converting “{$category->title}” ($category->id)", function() use (
-                $section,
-                $entryType,
-                $author,
-                $structuresService,
-                &$entriesByLevel,
-                $categoryGroup,
-                $category
-            ) {
-                Db::insert(Table::ENTRIES, [
-                    'id' => $category->id,
-                    'sectionId' => $section->id,
-                    'typeId' => $entryType->id,
-                    'authorId' => $author->id,
-                    'postDate' => Db::prepareDateForDb($category->dateCreated),
-                    'dateCreated' => Db::prepareDateForDb($category->dateCreated),
-                    'dateUpdated' => Db::prepareDateForDb($category->dateUpdated),
-                ]);
+        foreach (Db::batch($categoryQuery) as $categories) {
+            $authorData = [];
 
-                Db::update(Table::ELEMENTS, [
-                    'type' => Entry::class,
-                    'dateDeleted' => null,
-                ], [
-                    'id' => $category->id,
-                ]);
+            foreach ($categories as $category) {
+                /** @var Category $category */
+                $this->do("Converting “{$category->title}” ($category->id)", function() use (
+                    $section,
+                    $entryType,
+                    $author,
+                    $structuresService,
+                    &$entriesByLevel,
+                    $categoryGroup,
+                    $category,
+                    &$authorData,
+                ) {
+                    Db::insert(Table::ENTRIES, [
+                        'id' => $category->id,
+                        'sectionId' => $section->id,
+                        'typeId' => $entryType->id,
+                        'postDate' => Db::prepareDateForDb($category->dateCreated),
+                        'dateCreated' => Db::prepareDateForDb($category->dateCreated),
+                        'dateUpdated' => Db::prepareDateForDb($category->dateUpdated),
+                    ]);
 
-                Db::delete(Table::CATEGORIES, [
-                    'id' => $category->id,
-                ]);
+                    Db::update(Table::ELEMENTS, [
+                        'type' => Entry::class,
+                        'dateDeleted' => null,
+                    ], [
+                        'id' => $category->id,
+                    ]);
 
-                Db::delete(Table::STRUCTUREELEMENTS, [
-                    'structureId' => $categoryGroup->structureId,
-                    'elementId' => $category->id,
-                ]);
+                    Db::delete(Table::CATEGORIES, [
+                        'id' => $category->id,
+                    ]);
 
-                if ($section->type === Section::TYPE_STRUCTURE) {
-                    $entry = Entry::find()
-                        ->id($category->id)
-                        ->drafts(null)
-                        ->revisions(null)
-                        ->status(null)
-                        ->one();
-                    $parentLevel = $category->level - 1;
-                    $parentEntry = null;
-                    while ($parentLevel >= 1) {
-                        if (isset($entriesByLevel[$parentLevel])) {
-                            $parentEntry = $entriesByLevel[$parentLevel];
-                            break;
+                    Db::delete(Table::STRUCTUREELEMENTS, [
+                        'structureId' => $categoryGroup->structureId,
+                        'elementId' => $category->id,
+                    ]);
+
+                    if ($section->type === Section::TYPE_STRUCTURE) {
+                        $entry = Entry::find()
+                            ->id($category->id)
+                            ->drafts(null)
+                            ->revisions(null)
+                            ->status(null)
+                            ->one();
+                        $parentLevel = $category->level - 1;
+                        $parentEntry = null;
+                        while ($parentLevel >= 1) {
+                            if (isset($entriesByLevel[$parentLevel])) {
+                                $parentEntry = $entriesByLevel[$parentLevel];
+                                break;
+                            }
+                            $parentLevel--;
                         }
-                        $parentLevel--;
+                        if ($parentEntry) {
+                            $structuresService->append($section->structureId, $entry, $parentEntry, Structures::MODE_INSERT);
+                        } else {
+                            $structuresService->appendToRoot($section->structureId, $entry, Structures::MODE_INSERT);
+                        }
+                        $entriesByLevel[$entry->level] = $entry;
                     }
-                    if ($parentEntry) {
-                        $structuresService->append($section->structureId, $entry, $parentEntry, Structures::MODE_INSERT);
-                    } else {
-                        $structuresService->appendToRoot($section->structureId, $entry, Structures::MODE_INSERT);
-                    }
-                    $entriesByLevel[$entry->level] = $entry;
-                }
-            });
+
+                    $authorData[] = [$category->id, $author->id, 1];
+                });
+            }
+
+            Db::batchInsert(Table::ENTRIES_AUTHORS, ['entryId', 'authorId', 'sortOrder'], $authorData);
         }
 
         $this->success('Categories converted.');
@@ -314,7 +322,7 @@ class EntrifyController extends Controller
         ) {
             $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
             // Capture the new section handle
-            Event::once(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
@@ -351,35 +359,43 @@ class EntrifyController extends Controller
                 ->andWhere(['tags.deletedWithGroup' => true]);
         }
 
-        foreach (Db::each($tagQuery) as $tag) {
-            /** @var Tag $tag */
-            $this->do("Converting “{$tag->title}” ($tag->id)", function() use (
-                $section,
-                $entryType,
-                $author,
-                $tag
-            ) {
-                Db::insert(Table::ENTRIES, [
-                    'id' => $tag->id,
-                    'sectionId' => $section->id,
-                    'typeId' => $entryType->id,
-                    'authorId' => $author->id,
-                    'postDate' => Db::prepareDateForDb($tag->dateCreated),
-                    'dateCreated' => Db::prepareDateForDb($tag->dateCreated),
-                    'dateUpdated' => Db::prepareDateForDb($tag->dateUpdated),
-                ]);
+        foreach (Db::batch($tagQuery) as $tags) {
+            $authorData = [];
 
-                Db::update(Table::ELEMENTS, [
-                    'type' => Entry::class,
-                    'dateDeleted' => null,
-                ], [
-                    'id' => $tag->id,
-                ]);
+            foreach ($tags as $tag) {
+                /** @var Tag $tag */
+                $this->do("Converting “{$tag->title}” ($tag->id)", function() use (
+                    $section,
+                    $entryType,
+                    $author,
+                    $tag,
+                    &$authorData
+                ) {
+                    Db::insert(Table::ENTRIES, [
+                        'id' => $tag->id,
+                        'sectionId' => $section->id,
+                        'typeId' => $entryType->id,
+                        'postDate' => Db::prepareDateForDb($tag->dateCreated),
+                        'dateCreated' => Db::prepareDateForDb($tag->dateCreated),
+                        'dateUpdated' => Db::prepareDateForDb($tag->dateUpdated),
+                    ]);
 
-                Db::delete(Table::TAGS, [
-                    'id' => $tag->id,
-                ]);
-            });
+                    Db::update(Table::ELEMENTS, [
+                        'type' => Entry::class,
+                        'dateDeleted' => null,
+                    ], [
+                        'id' => $tag->id,
+                    ]);
+
+                    Db::delete(Table::TAGS, [
+                        'id' => $tag->id,
+                    ]);
+
+                    $authorData[] = [$tag->id, $author->id, 1];
+                });
+            }
+
+            Db::batchInsert(Table::ENTRIES_AUTHORS, ['entryId', 'authorId', 'sortOrder'], $authorData);
         }
 
         $this->success('Tags converted.');
@@ -453,7 +469,7 @@ class EntrifyController extends Controller
         ) {
             $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
             // Capture the new section handle
-            Event::once(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
@@ -512,7 +528,7 @@ class EntrifyController extends Controller
                 'id' => $globalSet->id,
             ]);
 
-            Db::update(Table::CONTENT, [
+            Db::update(Table::ELEMENTS_SITES, [
                 'title' => $globalSet->name,
             ], [
                 'elementId' => $globalSet->id,
@@ -546,7 +562,7 @@ class EntrifyController extends Controller
     {
         if (!isset($this->_section)) {
             if ($this->section) {
-                $section = Craft::$app->getSections()->getSectionByHandle($this->section);
+                $section = Craft::$app->getEntries()->getSectionByHandle($this->section);
                 if (!$section) {
                     throw new InvalidConfigException("Invalid section handle: $this->section");
                 }
@@ -562,7 +578,7 @@ class EntrifyController extends Controller
                 if (!$this->interactive) {
                     throw new InvalidConfigException('The --section option is required when this command is run non-interactively.');
                 }
-                $allSections = ArrayHelper::index(Craft::$app->getSections()->getAllSections(), 'handle');
+                $allSections = ArrayHelper::index(Craft::$app->getEntries()->getAllSections(), 'handle');
                 if ($this->_forSingle) {
                     $allSections = array_filter($allSections, fn(Section $section) => $section->type === Section::TYPE_SINGLE);
                 } else {

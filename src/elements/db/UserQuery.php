@@ -10,7 +10,9 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\QueryParam;
 use craft\db\Table;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\Db;
 use craft\models\UserGroup;
@@ -199,6 +201,13 @@ class UserQuery extends ElementQuery
      * @used-by lastLoginDate()
      */
     public mixed $lastLoginDate = null;
+
+    /**
+     * @var Entry|null The entry that the resulting users must be the author of.
+     * @used-by authorOf()
+     * @since 5.0.0
+     */
+    public ?Entry $authorOf = null;
 
     /**
      * @var bool Whether the users’ groups should be eager-loaded.
@@ -427,14 +436,14 @@ class UserQuery extends ElementQuery
         })) {
             $this->groupId = $value;
         } else {
-            $glue = Db::extractGlue($value);
+            $operator = QueryParam::extractOperator($value);
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-            if ($this->groupId && $glue !== null) {
-                array_unshift($this->groupId, $glue);
+            if ($this->groupId && $operator !== null) {
+                array_unshift($this->groupId, $operator);
             }
         }
 
@@ -711,6 +720,20 @@ class UserQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results to users who are teh author of the given entry.
+     *
+     * @param Entry|null $value
+     * @retun static self reference
+     * @uses $authorOf
+     * @since 5.0.0
+     */
+    public function authorOf(?Entry $value): static
+    {
+        $this->authorOf = $value;
+        return $this;
+    }
+
+    /**
      * Narrows the query results based on the users’ statuses.
      *
      * Possible values include:
@@ -791,6 +814,10 @@ class UserQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         // See if 'group' was set to an invalid handle
         if ($this->groupId === []) {
             return false;
@@ -835,7 +862,7 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere([
                 $this->authors ? 'exists' : 'not exists',
                 (new Query())
-                    ->from(Table::ENTRIES)
+                    ->from(Table::ENTRIES_AUTHORS)
                     ->where(['authorId' => new Expression('[[elements.id]]')]),
             ]);
         }
@@ -931,7 +958,18 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseDateParam('users.lastLoginDate', $this->lastLoginDate));
         }
 
-        return parent::beforePrepare();
+        if ($this->authorOf) {
+            if (!$this->authorOf->id) {
+                throw new QueryAbortedException();
+            }
+            $this->subQuery->andWhere(['exists', (new Query())
+                ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
+                ->where(['entryId' => $this->authorOf->id])
+                ->andWhere('[[entries_authors.authorId]] = [[users.id]]'),
+            ]);
+        }
+
+        return true;
     }
 
     /**

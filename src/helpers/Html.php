@@ -183,6 +183,22 @@ class Html extends \yii\helpers\Html
 
     /**
      * @inheritdoc
+     */
+    public static function tag($name, $content = '', $options = [])
+    {
+        return parent::tag($name, $content, static::normalizeTagAttributes($options));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function beginTag($name, $options = [])
+    {
+        return parent::beginTag($name, static::normalizeTagAttributes($options));
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public static function a($text, $url = null, $options = []): string
@@ -441,6 +457,7 @@ class Html extends \yii\helpers\Html
 
             switch ($name) {
                 case 'class':
+                case 'removeClass':
                     $normalized[$name] = static::explodeClass($value);
                     break;
                 case 'style':
@@ -457,6 +474,11 @@ class Html extends \yii\helpers\Html
                     }
                     $normalized[$name] = $value;
             }
+        }
+
+        if (isset($normalized['removeClass'])) {
+            $removeClasses = ArrayHelper::remove($normalized, 'removeClass');
+            $normalized['class'] = array_diff($normalized['class'] ?? [], $removeClasses);
         }
 
         return $normalized;
@@ -589,8 +611,8 @@ class Html extends \yii\helpers\Html
      * @param string $content
      * @return array[] An array containing the HTML content, and the condition (if there is one).
      * @phpstan-return array{string,string|null}
-     * @since 4.0.0
      * @see wrapIntoCondition()
+     * @since 4.0.0
      */
     public static function unwrapCondition(string $content): array
     {
@@ -633,7 +655,14 @@ class Html extends \yii\helpers\Html
      */
     public static function id(string $id = ''): string
     {
-        $id = trim(preg_replace('/[^\w]+/', '-', $id), '-');
+        // Ignore if it looks like a placeholder
+        if (preg_match('/^__[A-Z_]+__$/', $id)) {
+            return $id;
+        }
+
+        // IDs must begin with a letter
+        $id = preg_replace('/^[^A-Za-z]+/', '', $id);
+        $id = rtrim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
         return $id ?: StringHelper::randomString(10);
     }
 
@@ -712,9 +741,9 @@ class Html extends \yii\helpers\Html
      * @param string $html The HTML code
      * @param string $namespace The namespace
      * @return string The HTML with namespaced input names
-     * @since 3.5.0
      * @see namespaceHtml()
      * @see namespaceAttributes()
+     * @since 3.5.0
      */
     public static function namespaceInputs(string $html, string $namespace): string
     {
@@ -756,9 +785,9 @@ class Html extends \yii\helpers\Html
      * @param string $namespace The namespace
      * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and class name CSS selectors)
      * @return string The HTML with namespaced attributes
-     * @since 3.5.0
      * @see namespaceHtml()
      * @see namespaceInputs()
+     * @since 3.5.0
      */
     public static function namespaceAttributes(string $html, string $namespace, bool $withClasses = false): string
     {
@@ -836,7 +865,7 @@ class Html extends \yii\helpers\Html
                         return $match[0];
                     }, $match[2]);
                 if ($withClasses) {
-                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,\\s\\{])/", ".$namespace-$1", $match[2]);
+                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,:\\s{])/", ".$namespace-$1", $match[2]);
                 }
                 return $match[1] . $html . $match[3];
             }, $html);
@@ -851,11 +880,37 @@ class Html extends \yii\helpers\Html
     private static function _escapeTextareas(string &$html): array
     {
         $markers = [];
-        $html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', function(array $matches) use (&$markers) {
-            $marker = '{marker:' . StringHelper::randomString() . '}';
-            $markers[$marker] = $matches[2];
-            return $matches[1] . $marker . $matches[3];
-        }, $html);
+        $offset = 0;
+        $r = '';
+
+        while (($pos = stripos($html, '<textarea', $offset)) !== false) {
+            $gtPos = strpos($html, '>', $pos + 9);
+            if ($gtPos === false) {
+                break;
+            }
+            $innerHtmlPos = $gtPos + 1;
+            $closePos = stripos($html, '</textarea>', $innerHtmlPos);
+            if ($closePos === false) {
+                break;
+            }
+            $outerPos = $closePos + 11;
+            $innerHtml = $closePos !== $innerHtmlPos ? substr($html, $innerHtmlPos, $closePos - $innerHtmlPos) : null;
+
+            if ($innerHtml !== null && str_contains($innerHtml, '<')) {
+                $marker = sprintf('{marker:%s}', mt_rand());
+                $r .= substr($html, $offset, $innerHtmlPos - $offset) . $marker . substr($html, $closePos, 11);
+                $markers[$marker] = $innerHtml;
+            } else {
+                $r .= substr($html, $offset, $outerPos - $offset);
+            }
+
+            $offset = $outerPos;
+        }
+
+        if ($offset !== 0) {
+            $html = $r . substr($html, $offset);
+        }
+
         return $markers;
     }
 
@@ -868,7 +923,22 @@ class Html extends \yii\helpers\Html
      */
     private static function _restoreTextareas(string $html, array $markers): string
     {
-        return str_replace(array_keys($markers), array_values($markers), $html);
+        if (empty($markers)) {
+            return $html;
+        }
+
+        $r = '';
+        $offset = 0;
+
+        foreach ($markers as $marker => $textarea) {
+            $pos = strpos($html, $marker, $offset);
+            if ($pos !== false) {
+                $r .= substr($html, $offset, $pos - $offset) . $textarea;
+                $offset = $pos + strlen($marker);
+            }
+        }
+
+        return $r . substr($html, $offset);
     }
 
     /**
@@ -1001,7 +1071,7 @@ class Html extends \yii\helpers\Html
             $offset = $tag['end'];
         }
     }
-    
+
     /**
      * Returns the contents of a given SVG file.
      *

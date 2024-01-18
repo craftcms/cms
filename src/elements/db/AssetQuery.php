@@ -8,6 +8,7 @@
 namespace craft\elements\db;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -883,6 +884,10 @@ class AssetQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->_normalizeVolumeId();
 
         // See if 'volume' was set to an invalid handle
@@ -891,6 +896,11 @@ class AssetQuery extends ElementQuery
         }
 
         $this->joinElementTable(Table::ASSETS);
+        $this->query->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
+            'and',
+            '[[assets_sites.assetId]] = [[assets.id]]',
+            '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
+        ]);
         $this->subQuery->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
         $this->query->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
 
@@ -900,14 +910,15 @@ class AssetQuery extends ElementQuery
             'assets.uploaderId',
             'assets.filename',
             'assets.kind',
-            'assets.alt',
             'assets.width',
             'assets.height',
             'assets.size',
+            'assets.alt',
             'assets.focalPoint',
             'assets.keptFile',
             'assets.dateModified',
-            'volumeFolders.path AS folderPath',
+            'siteAlt' => 'assets_sites.alt',
+            'folderPath' => 'volumeFolders.path',
         ]);
 
         if ($this->volumeId) {
@@ -954,7 +965,18 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->hasAlt !== null) {
-            $this->subQuery->andWhere($this->hasAlt ? ['not', ['assets.alt' => null]] : ['assets.alt' => null]);
+            $hasAltCondition = [
+                'or',
+                ['assets.alt' => null],
+                ['assets_site.alt' => null],
+            ];
+            $this->subQuery
+                ->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
+                    'and',
+                    '[[assets_sites.assetId]] = [[assets.id]]',
+                    '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
+                ])
+                ->andWhere($this->hasAlt ? ['not', $hasAltCondition] : $hasAltCondition);
         }
 
         if ($this->width) {
@@ -976,7 +998,7 @@ class AssetQuery extends ElementQuery
         $this->_applyAuthParam($this->editable, 'viewAssets', 'viewPeerAssets');
         $this->_applyAuthParam($this->savable, 'saveAssets', 'savePeerAssets');
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**
@@ -1077,6 +1099,20 @@ class AssetQuery extends ElementQuery
 
     /**
      * @inheritdoc
+     */
+    public function createElement(array $row): ElementInterface
+    {
+        // Use the site-specific alt text, if set
+        $siteAlt = ArrayHelper::remove($row, 'siteAlt');
+        if ($siteAlt !== null && $siteAlt !== '') {
+            $row['alt'] = $siteAlt;
+        }
+
+        return parent::createElement($row);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.0
      */
     protected function cacheTags(): array
@@ -1088,5 +1124,25 @@ class AssetQuery extends ElementQuery
             }
         }
         return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        if ($this->volumeId && $this->volumeId !== ':empty:') {
+            $fieldLayouts = [];
+            $volumesService = Craft::$app->getVolumes();
+            foreach ($this->volumeId as $volumeId) {
+                $volume = $volumesService->getVolumeById($volumeId);
+                if ($volume) {
+                    $fieldLayouts[] = $volume->getFieldLayout();
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
     }
 }

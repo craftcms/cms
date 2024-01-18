@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
@@ -21,9 +22,11 @@ use craft\helpers\StringHelper;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
+use craft\web\twig\FeExtension;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
+use LogicException;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
@@ -94,6 +97,12 @@ class View extends \yii\web\View
      * @event TemplateEvent The event that is triggered after a page template gets rendered
      */
     public const EVENT_AFTER_RENDER_PAGE_TEMPLATE = 'afterRenderPageTemplate';
+
+    /**
+     * @event AssetBundleEvent The event that is triggered after an asset bundle is registered
+     * @since 4.5.0
+     */
+    public const EVENT_AFTER_REGISTER_ASSET_BUNDLE = 'afterRegisterAssetBundle';
 
     /**
      * @const TEMPLATE_MODE_CP
@@ -268,6 +277,14 @@ class View extends \yii\web\View
     private array $_htmlBuffers = [];
 
     /**
+     * @var array
+     * @see startMetaTagBuffer()
+     * @see clearMetaTagBuffer()
+     * @since 4.5.8
+     */
+    private array $_metaTagBuffers = [];
+
+    /**
      * @var array|null the registered generic `<script>` code blocks
      * @see registerScript()
      */
@@ -324,7 +341,7 @@ class View extends \yii\web\View
         }
 
         // Register the control panel hooks
-        $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
+        $this->hook('cp.elements.element', [$this, '_elementChipHtml']);
     }
 
     /**
@@ -359,6 +376,7 @@ class View extends \yii\web\View
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
             $twig->addExtension(new CpExtension());
         } elseif (Craft::$app->getIsInstalled()) {
+            $twig->addExtension(new FeExtension());
             $twig->addExtension(new GlobalsExtension());
 
             if (Craft::$app->getConfig()->getGeneral()->preloadSingles) {
@@ -402,12 +420,20 @@ class View extends \yii\web\View
 
         $this->_twigExtensions[$class] = $extension;
 
-        // Add it to any existing Twig environments
         if (isset($this->_cpTwig)) {
-            $this->_cpTwig->addExtension($extension);
+            try {
+                $this->_cpTwig->addExtension($extension);
+            } catch (LogicException) {
+                $this->_cpTwig = null;
+            }
         }
+
         if (isset($this->_siteTwig)) {
-            $this->_siteTwig->addExtension($extension);
+            try {
+                $this->_siteTwig->addExtension($extension);
+            } catch (LogicException) {
+                $this->_siteTwig = null;
+            }
         }
     }
 
@@ -580,7 +606,7 @@ class View extends \yii\web\View
     {
         // If there are no dynamic tags, just return the template
         if (!str_contains($template, '{')) {
-            return $template;
+            return trim($template);
         }
 
         $oldTemplateMode = $this->templateMode;
@@ -636,7 +662,7 @@ class View extends \yii\web\View
             // Render it!
             /** @var TwigTemplate $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
-            return $templateObj->render($variables);
+            return trim($templateObj->render($variables));
         } finally {
             $this->_renderingTemplate = $lastRenderingTemplate;
             $twig->setDefaultEscaperStrategy();
@@ -1149,7 +1175,8 @@ class View extends \yii\web\View
 
         foreach ($bufferedJsFiles as $files) {
             foreach (array_keys($files) as $key) {
-                unset($this->_registeredJsFiles[$key]);
+                $hash = $this->resourceHash($key);
+                unset($this->_registeredJsFiles[$hash]);
             }
         }
 
@@ -1186,18 +1213,50 @@ class View extends \yii\web\View
     }
 
     /**
+     * Starts a buffer for any `<meta>` tags registered with [[registerMetaTag()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearMetaTagBuffer()]].
+     *
+     * @see clearMetaTagBuffer()
+     * @since 4.5.8
+     */
+    public function startMetaTagBuffer(): void
+    {
+        $this->_metaTagBuffers[] = $this->metaTags;
+        $this->metaTags = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startMetaTagBuffer()]], returning any `<meta>` tags that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     * @see startMetaTagBuffer()
+     * @since 4.5.8
+     */
+    public function clearMetaTagBuffer(): array|false
+    {
+        if (empty($this->_metaTagBuffers)) {
+            return false;
+        }
+
+        $bufferedMetaTags = $this->metaTags;
+        $this->metaTags = array_pop($this->_metaTagBuffers);
+        return $bufferedMetaTags;
+    }
+
+    /**
      * @inheritdoc
      */
     public function registerJsFile($url, $options = [], $key = null): void
     {
-        // If 'depends' is specified, ignore it for now because the file will
-        // get registered as an asset bundle
-        if (empty($options['depends'])) {
-            $key = $key ?: $url;
-            if (isset($this->_registeredJsFiles[$key])) {
+        // If the file lives within cpresources/, ignore it because it came from an asset bundle
+        if (!str_starts_with($url, $this->assetManager->baseUrl)) {
+            $hash = $this->resourceHash($key ?: $url);
+            if (isset($this->_registeredJsFiles[$hash])) {
                 return;
             }
-            $this->_registeredJsFiles[$key] = true;
+            $this->_registeredJsFiles[$hash] = true;
         }
 
         parent::registerJsFile($url, $options, $key);
@@ -1460,8 +1519,8 @@ JS;
      * Returns all of the registered delta input names.
      *
      * @return string[]
-     * @since 3.4.0
      * @see registerDeltaName()
+     * @since 3.4.0
      */
     public function getDeltaNames(): array
     {
@@ -1601,13 +1660,13 @@ JS;
             // If no namespace was passed in, just return the callable response directly.
             // No need to namespace it via the currently-set namespace in this case; if there is one, it should get applied later on.
             if ($namespace === null) {
-                return $html();
+                return (string)$html();
             }
 
             $oldNamespace = $this->getNamespace();
             $this->setNamespace($this->namespaceInputName($namespace));
             try {
-                $response = $this->namespaceInputs($html(), $namespace, $otherAttributes, $withClasses);
+                $response = $this->namespaceInputs((string)$html(), $namespace, $otherAttributes, $withClasses);
             } finally {
                 $this->setNamespace($oldNamespace);
             }
@@ -2031,11 +2090,30 @@ JS;
     protected function registerAssetFiles($name): void
     {
         // Don't re-register bundles
-        if (isset($this->_registeredAssetBundles[$name])) {
+        $hash = $this->resourceHash($name);
+        if (isset($this->_registeredAssetBundles[$hash])) {
             return;
         }
-        $this->_registeredAssetBundles[$name] = true;
+        $this->_registeredAssetBundles[$hash] = true;
         parent::registerAssetFiles($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetBundle($name, $position = null)
+    {
+        $bundle = parent::registerAssetBundle($name, $position);
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_REGISTER_ASSET_BUNDLE)) {
+            $this->trigger(self::EVENT_AFTER_REGISTER_ASSET_BUNDLE, new AssetBundleEvent([
+                'bundleName' => $name,
+                'position' => $position,
+                'bundle' => $bundle,
+            ]));
+        }
+
+        return $bundle;
     }
 
     /**
@@ -2174,6 +2252,11 @@ JS;
         return $this->_templateRoots[$which] = $roots;
     }
 
+    private function resourceHash(string $key): string
+    {
+        return sprintf('%x', crc32($key));
+    }
+
     /**
      * @param string $property
      * @param string[] $names
@@ -2187,10 +2270,10 @@ JS;
         $js = "if (typeof Craft !== 'undefined') {\n";
         foreach (array_keys($names) as $name) {
             if ($name) {
-                $jsName = Json::encode(str_replace(['<', '>'], '', $name));
+                $jsName = Json::encode($name);
                 // WARNING: the curly braces are needed here no matter what PhpStorm thinks
                 // https://youtrack.jetbrains.com/issue/WI-60044
-                $js .= "  Craft.{$property}[$jsName] = true;\n";
+                $js .= "  Craft.{$property}.push($jsName);\n";
             }
         }
         $js .= '}';
@@ -2198,13 +2281,15 @@ JS;
     }
 
     /**
-     * Returns the HTML for an element in the control panel.
+     * Renders an element’s chip HTML.
      *
      * @param array $context
      * @return string|null
      */
-    private function _getCpElementHtml(array $context): ?string
+    private function _elementChipHtml(array $context): ?string
     {
+        Craft::$app->getDeprecator()->log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
+
         if (!isset($context['element'])) {
             return null;
         }
@@ -2217,15 +2302,11 @@ JS;
 
         return Cp::elementHtml(
             $context['element'],
-            $context['context'] ?? 'index',
-            $size,
-            $context['name'] ?? null,
-            true,
-            true,
-            true,
-            true,
-            $context['single'] ?? false,
-            $context['autoReload'] ?? true,
+            context: $context['context'] ?? 'index',
+            size: $size,
+            inputName: $context['name'] ?? null,
+            single: $context['single'] ?? false,
+            autoReload: $context['autoReload'] ?? true,
         );
     }
 }

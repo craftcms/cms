@@ -9,6 +9,7 @@ import './updates.scss';
     criticalUpdateAvailable: false,
     allowUpdates: null,
     installableUpdates: null,
+    availableUpdatesCount: null,
 
     init: function () {
       this.$body = $('#content');
@@ -17,6 +18,7 @@ import './updates.scss';
         $status = $('#status');
 
       this.installableUpdates = [];
+      this.availableUpdatesCount = 0;
 
       var data = {
         forceRefresh: true,
@@ -42,13 +44,13 @@ import './updates.scss';
           $graphic.remove();
           $status.remove();
 
-          if (this.installableUpdates.length) {
+          if (this.availableUpdatesCount > 0) {
             // Add the page title
             var headingText = Craft.t(
               'app',
               '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
               {
-                num: this.installableUpdates.length,
+                num: this.availableUpdatesCount,
               }
             );
 
@@ -74,6 +76,9 @@ import './updates.scss';
         var update = new Update(this, updateInfo, isPlugin);
         if (update.installable) {
           this.installableUpdates.push(update);
+        }
+        if (update.available) {
+          this.availableUpdatesCount++;
         }
       }
     },
@@ -132,6 +137,7 @@ import './updates.scss';
     updateInfo: null,
     isPlugin: null,
     installable: false,
+    available: false,
 
     $container: null,
     $header: null,
@@ -147,7 +153,7 @@ import './updates.scss';
       this.updatesPage = updatesPage;
       this.updateInfo = updateInfo;
       this.isPlugin = isPlugin;
-      this.installable = !!this.updateInfo.releases.length;
+      this.installable = this.available = !!this.updateInfo.releases.length;
 
       this.createPane();
       this.initReleases();
@@ -170,10 +176,12 @@ import './updates.scss';
             '</p></blockquote>'
         ).insertBefore(this.$releaseContainer);
 
-        if (
-          this.updateInfo.status === 'expired' ||
-          this.updateInfo.latestVersion === null
-        ) {
+        if (this.updateInfo.latestVersion === null) {
+          this.installable = false;
+          this.available = false;
+        }
+
+        if (this.updateInfo.status === 'expired') {
           this.installable = false;
         }
       }

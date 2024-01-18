@@ -28,6 +28,10 @@ class UserSettingsController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         // All user settings actions require an admin
         $this->requireAdmin();
 
@@ -35,7 +39,7 @@ class UserSettingsController extends Controller
             Craft::$app->requireEdition(Craft::Pro);
         }
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
@@ -142,6 +146,7 @@ class UserSettingsController extends Controller
             $settings['allowPublicRegistration'] = (bool)$this->request->getBodyParam('allowPublicRegistration');
             $settings['deactivateByDefault'] = (bool)$this->request->getBodyParam('deactivateByDefault');
             $settings['defaultGroup'] = $this->request->getBodyParam('defaultGroup');
+            $settings['require2fa'] = $this->request->getBodyParam('require2fa') ?: false;
         }
 
         $projectConfig->set('users', $settings, 'Update user settings');

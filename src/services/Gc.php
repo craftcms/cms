@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\ElementInterface;
+use craft\base\NestedElementInterface;
 use craft\config\GeneralConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
@@ -19,7 +19,6 @@ use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
-use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\FsException;
@@ -103,6 +102,8 @@ class Gc extends Component
         $this->_purgePendingUsers();
         $this->_deleteStaleSessions();
         $this->_deleteStaleAnnouncements();
+        $this->_deleteStaleElementActivity();
+        $this->_deleteStaleBulkElementOps();
 
         // elements should always go first
         $this->hardDeleteElements();
@@ -110,7 +111,6 @@ class Gc extends Component
         $this->hardDelete([
             Table::CATEGORYGROUPS,
             Table::ENTRYTYPES,
-            Table::FIELDGROUPS,
             Table::SECTIONS,
             Table::TAGGROUPS,
         ]);
@@ -119,16 +119,10 @@ class Gc extends Component
         $this->deletePartialElements(Category::class, Table::CATEGORIES, 'id');
         $this->deletePartialElements(Entry::class, Table::ENTRIES, 'id');
         $this->deletePartialElements(GlobalSet::class, Table::GLOBALSETS, 'id');
-        $this->deletePartialElements(MatrixBlock::class, Table::MATRIXBLOCKS, 'id');
         $this->deletePartialElements(Tag::class, Table::TAGS, 'id');
         $this->deletePartialElements(User::class, Table::USERS, 'id');
 
-        $this->deletePartialElements(Asset::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(Category::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(Entry::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(GlobalSet::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(Tag::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(User::class, Table::CONTENT, 'elementId');
+        $this->_deleteUnsupportedSiteEntries();
 
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
@@ -203,7 +197,7 @@ class Gc extends Component
         $blockElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            if (is_subclass_of($elementType, BlockElementInterface::class)) {
+            if (is_subclass_of($elementType, NestedElementInterface::class)) {
                 $blockElementTypes[] = $elementType;
             } else {
                 $normalElementTypes[] = $elementType;
@@ -415,6 +409,81 @@ SQL;
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
+    /**
+     * Deletes any stale element activity logs.
+     */
+    private function _deleteStaleElementActivity(): void
+    {
+        $this->_stdout('    > deleting stale element activity records ... ');
+        Db::delete(Table::ELEMENTACTIVITY, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('1 minute ago'))]);
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Deletes any stale bulk element operation records.
+     */
+    private function _deleteStaleBulkElementOps(): void
+    {
+        $this->_stdout('    > deleting stale bulk element operation records ... ');
+        Db::delete(Table::ELEMENTS_BULKOPS, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('2 weeks ago'))]);
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Deletes entries for sites that aren’t enabled by their section.
+     *
+     * This can happen if you entrify a category group, disable one of the sites in the newly-created section’s
+     * settings, then deploy those changes to another environment, apply project config changes, and re-run the
+     * entrify command. (https://github.com/craftcms/cms/issues/13383)
+     */
+    private function _deleteUnsupportedSiteEntries(): void
+    {
+        $this->_stdout('    > deleting entries in unsupported sites ... ');
+
+        $sectionsToCheck = [];
+        $siteIds = Craft::$app->getSites()->getAllSiteIds(true);
+
+        // get sections that are not enabled for given site
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+            $sectionSettings = $section->getSiteSettings();
+            foreach ($siteIds as $siteId) {
+                if (!isset($sectionSettings[$siteId])) {
+                    $sectionsToCheck[] = [
+                        'siteId' => $siteId,
+                        'sectionId' => $section->id,
+                    ];
+                }
+            }
+        }
+
+        if (!empty($sectionsToCheck)) {
+            $elementsSitesTable = Table::ELEMENTS_SITES;
+            $entriesTable = Table::ENTRIES;
+
+            if ($this->db->getIsMysql()) {
+                $sql = <<<SQL
+    DELETE [[es]].* FROM $elementsSitesTable [[es]]
+    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[es.elementId]]
+    WHERE [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
+    SQL;
+            } else {
+                $sql = <<<SQL
+    DELETE FROM $elementsSitesTable
+    USING $elementsSitesTable [[es]]
+    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[es.elementId]]
+    WHERE
+      $elementsSitesTable.[[id]] = [[es.id]] AND
+      [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
+    SQL;
+            }
+
+            foreach ($sectionsToCheck as $params) {
+                $this->db->createCommand($sql, $params)->execute();
+            }
+        }
+
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
 
     /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.

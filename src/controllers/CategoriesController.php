@@ -353,7 +353,9 @@ class CategoriesController extends Controller
 
                 return $this->asModelFailure(
                     $category,
-                    Craft::t('app', 'Couldn’t duplicate category.'),
+                    Craft::t('app', 'Couldn’t duplicate {type}.', [
+                        'type' => Category::lowerDisplayName(),
+                    ]),
                     'category'
                 );
             } catch (Throwable $e) {
@@ -372,7 +374,9 @@ class CategoriesController extends Controller
         if (!Craft::$app->getElements()->saveElement($category)) {
             return $this->asModelFailure(
                 $category,
-                Craft::t('app', 'Couldn’t save category.'),
+                Craft::t('app', 'Couldn’t save {type}.', [
+                    'type' => Category::lowerDisplayName(),
+                ]),
                 $categoryVariable
             );
         }

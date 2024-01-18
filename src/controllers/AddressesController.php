@@ -11,8 +11,6 @@ use Craft;
 use craft\elements\Address;
 use craft\helpers\Cp;
 use craft\web\Controller;
-use yii\web\BadRequestHttpException;
-use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -26,41 +24,6 @@ use yii\web\Response;
  */
 class AddressesController extends Controller
 {
-    /**
-     * Renders an address’ card HTML.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     */
-    public function actionCardHtml(): Response
-    {
-        $this->requireAcceptsJson();
-
-        $addressId = $this->request->getRequiredBodyParam('addressId');
-
-        /** @var Address|null $address */
-        $address = Address::find()
-            ->id($addressId)
-            ->one();
-
-        if (!$address) {
-            throw new BadRequestHttpException("Invalid address ID: $addressId");
-        }
-
-        if (!Craft::$app->getElements()->canView($address)) {
-            throw new ForbiddenHttpException('User not authorized to view this address.');
-        }
-
-        $html = Cp::addressCardHtml($address, [
-            'name' => $this->request->getBodyParam('name'),
-        ]);
-
-        return $this->asJson([
-            'html' => $html,
-        ]);
-    }
-
     /**
      * Returns address fields’ HTML (sans country) for the given country and subdivisions.
      *
@@ -108,7 +71,7 @@ class AddressesController extends Controller
             'address',
         ];
 
-        if (!Craft::$app->getAddresses()->saveLayout($fieldLayout)) {
+        if (!Craft::$app->getAddresses()->saveFieldLayout($fieldLayout)) {
             Craft::$app->getUrlManager()->setRouteParams([
                 'variables' => [
                     'fieldLayout' => $fieldLayout,

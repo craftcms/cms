@@ -7,6 +7,12 @@
         shortcut: true,
         retainScroll: true,
     },
+    {
+        label: 'Save and add another'|t('app'),
+        shortcut: true,
+        shift: true,
+        params: {addAnother: 1},
+    },
     fieldId ?? false ? {
         label: 'Delete'|t('app'),
         action: 'fields/delete-field',
@@ -22,24 +28,13 @@
 
 {% block content %}
     {{ actionInput('fields/save-field') }}
-    {{ redirectInput('settings/fields/{groupId}') }}
+    {{ redirectInput('settings/fields') }}
     {% if fieldId is defined and fieldId %}
         {{ hiddenInput('fieldId', fieldId) }}
     {% endif %}
 
-    {{ forms.selectField({
-        first: true,
-        label: "Group"|t('app'),
-        instructions: "Which group should this field be displayed in?"|t('app'),
-        id: 'group',
-        name: 'group',
-        options: groupOptions,
-        value: groupId,
-        required: true,
-        errors: field.getErrors('groupId'),
-    }) }}
-
     {{ forms.textField({
+        first: true,
         label: "Name"|t('app'),
         instructions: "What this field will be called in the control panel."|t('app'),
         id: 'name',
@@ -140,14 +135,14 @@
     <div id="settings">
         <div id="{{ className(field)|id }}">
             {% include 'settings/fields/_type-settings' with {
-                namespace: 'types['~className(field)~']'
+                namespace: 'types['~className(field)|id~']'
             } %}
         </div>
     </div>
 {% endblock %}
 
 
-{% if field is empty or field.handle is empty %}
+{% if not (field.handle ?? false) %}
     {% js %}
         new Craft.HandleGenerator('#name', '#handle');
     {% endjs %}

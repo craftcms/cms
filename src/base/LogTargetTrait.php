@@ -27,8 +27,8 @@ trait LogTargetTrait
 {
     /**
      * @var bool Whether the user IP should be included in the default log prefix.
-     * @since 3.0.25
      * @see Target::$prefix
+     * @since 3.0.25
      */
     public bool $includeUserIp = false;
 
