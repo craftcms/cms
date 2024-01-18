@@ -646,26 +646,34 @@
         if (!this.isApiMode && this.tableData.length) {
           let tableData = this.initTableData;
           let searchTerm = this.searchTerm.toLowerCase();
-          let results = [];
 
-          tableData.forEach((row, index) => {
-            let includes = false;
+          if (searchTerm !== '') {
+            tableData = tableData.filter((row) => {
+              let includes = false;
 
-            this.searchParams.some((param) => {
-              Object.entries(row).some(([key, value]) => {
-                if (key === param && value.toLowerCase().includes(searchTerm)) {
-                  return (includes = true);
-                }
+              this.searchParams.some((param) => {
+                Object.entries(row).some(([key, value]) => {
+                  // Force string values
+                  value = String(value);
+
+                  if (
+                    key === param &&
+                    value.toLowerCase().includes(searchTerm)
+                  ) {
+                    return (includes = true);
+                  }
+                });
+
+                // Break if we have a match
+                return includes;
               });
+
+              return includes;
             });
+          }
 
-            if (includes) {
-              results.push(tableData[index]);
-            }
-          });
-
-          this.isEmpty = results.length == 0;
-          this.$refs.vuetable.tableData = results;
+          this.isEmpty = tableData.length == 0;
+          this.$refs.vuetable.tableData = tableData;
         } else {
           // in API mode - send to the endpoint to handle
           if (this.$refs.vuetable.currentPage !== 1) {
@@ -673,7 +681,7 @@
           }
           this.reload();
         }
-      }, 250),
+      }, 500),
 
       resetSearch: function () {
         this.searchTerm = '';
