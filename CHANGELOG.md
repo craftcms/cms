@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where paths passed to `craft\web\CpScreenResponseBehavior::editUrl()` weren’t getting resolved to absolute URLs.
+
 ## 5.0.0-alpha.6 - 2024-01-16
 
 - Admin tables now have sticky footers. ([#14149](https://github.com/craftcms/cms/pull/14149))
