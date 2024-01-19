@@ -929,12 +929,15 @@ class Matrix extends Field implements
         $value = $element->getFieldValue($this->handle);
 
         if ($value instanceof EntryQuery) {
+            /** @var Entry[] $entries */
             $entries = $value->getCachedResult() ?? (clone $value)->status(null)->limit(null)->all();
 
             $allEntriesValidate = true;
             $scenario = $element->getScenario();
 
             foreach ($entries as $i => $entry) {
+                $entry->setOwner($element);
+
                 /** @var Entry $entry */
                 if (
                     $scenario === Element::SCENARIO_ESSENTIALS ||
