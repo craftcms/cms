@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where paths passed to `craft\web\CpScreenResponseBehavior::editUrl()` weren’t getting resolved to absolute URLs.
+- Fixed an error that occurred when switching entry types, if the entry had any Matrix fields.
 
 ## 5.0.0-alpha.6 - 2024-01-16
 
