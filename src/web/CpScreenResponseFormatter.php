@@ -91,7 +91,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $errorSummary = $behavior->errorSummary ? $view->namespaceInputs($behavior->errorSummary, $namespace) : null;
 
         $response->data = [
-            'editUrl' => $behavior->editUrl,
+            'editUrl' => $behavior->editUrl ? UrlHelper::cpUrl($behavior->editUrl) : null,
             'namespace' => $namespace,
             'title' => $behavior->title,
             'notice' => $notice,
