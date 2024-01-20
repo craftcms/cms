@@ -17,7 +17,12 @@ namespace craft\base;
 interface Iconic
 {
     /**
-     * Returns the HTML for the component’s thumbnail, if it has one.
+     * Returns the component’s icon, if it has one.
+     *
+     * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
+     * the path to an SVG file, or raw SVG markup.
+     *
+     * System icons can be found in `src/icons/solid/.`
      *
      * @return string|null
      */

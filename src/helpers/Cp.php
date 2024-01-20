@@ -2676,6 +2676,11 @@ JS;
     /**
      * Returns an SVG icon’s contents for the control panel.
      *
+     * The icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`), the
+     * path to an SVG file, or raw SVG markup.
+     *
+     * System icons can be found in `src/icons/solid/.`
+     *
      * @param string $icon
      * @return string
      * @throws InvalidArgumentException
