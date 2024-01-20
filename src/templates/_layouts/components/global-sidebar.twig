@@ -32,7 +32,7 @@
                     <a {{ attr(linkAttributes) }}>
                         <span class="icon icon-mask" aria-hidden="true">
                             {%- if item.icon is defined -%}
-                                {{ svg(item.icon, sanitize=true, namespace=true) }}
+                                {{ iconSvg(item.icon) }}
                             {%- elseif item.fontIcon is defined -%}
                                 <span data-icon="{{ item.fontIcon }}"></span>
                             {%- else -%}

@@ -215,7 +215,7 @@ class Cp extends Component
             [
                 'label' => Craft::t('app', 'Dashboard'),
                 'url' => 'dashboard',
-                'fontIcon' => 'gauge',
+                'icon' => 'gauge',
             ],
         ];
 
@@ -223,7 +223,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Entries'),
                 'url' => 'entries',
-                'fontIcon' => 'section',
+                'icon' => 'newspaper',
             ];
         }
 
@@ -231,7 +231,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Globals'),
                 'url' => 'globals',
-                'fontIcon' => 'globe',
+                'icon' => 'globe',
             ];
         }
 
@@ -239,7 +239,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Categories'),
                 'url' => 'categories',
-                'fontIcon' => 'tree',
+                'icon' => 'sitemap',
             ];
         }
 
@@ -247,7 +247,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Assets'),
                 'url' => 'assets',
-                'fontIcon' => 'assets',
+                'icon' => 'image',
             ];
         }
 
@@ -255,7 +255,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
-                'fontIcon' => 'users',
+                'icon' => 'user-group',
             ];
         }
 
@@ -297,7 +297,7 @@ class Cp extends Component
                 $navItems[] = [
                     'label' => 'GraphQL',
                     'url' => 'graphql',
-                    'icon' => '@appicons/graphql.svg',
+                    'icon' => 'graphql',
                     'subnav' => $subNavItems,
                 ];
             }
@@ -316,7 +316,7 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'utilities',
                 'label' => Craft::t('app', 'Utilities'),
-                'fontIcon' => 'tool',
+                'icon' => 'wrench',
                 'badgeCount' => $badgeCount,
             ];
         }
@@ -326,14 +326,14 @@ class Cp extends Component
                 $navItems[] = [
                     'url' => 'settings',
                     'label' => Craft::t('app', 'Settings'),
-                    'fontIcon' => 'settings',
+                    'icon' => 'gear',
                 ];
             }
 
             $navItems[] = [
                 'url' => 'plugin-store',
                 'label' => Craft::t('app', 'Plugin Store'),
-                'fontIcon' => 'plugin',
+                'icon' => 'plug',
             ];
         }
 
