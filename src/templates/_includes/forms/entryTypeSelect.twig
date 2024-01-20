@@ -1,5 +1,4 @@
 {% include '_includes/forms/componentSelect.twig' with {
   options: options ?? craft.app.entries.getAllEntryTypes(),
-  addOptionLabel: 'New entry type'|t('app'),
   createAction: (create ?? false) ? 'entry-types/edit' : null,
 } %}
