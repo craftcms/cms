@@ -25,19 +25,6 @@ class NavItem extends Component
     protected ?string $path = null;
     protected string $type = 'default';
 
-    public function getId(): ?string
-    {
-        if ($this->id) {
-            return $this->id;
-        }
-
-        if ($this->path) {
-            return $this->path;
-        }
-
-        return null;
-    }
-
     public function badgeCount(?int $count): self
     {
         $this->badgeCount = $count;
@@ -160,11 +147,10 @@ class NavItem extends Component
 
     public function getAttributes(): array
     {
-        return [
+        return array_merge_recursive(parent::getAttributes(), [
             'class' => array_filter([
                 $this->getType() === 'heading' ? 'heading' : null,
             ]),
-            'id' => $this->getId(),
-        ];
+        ]);
     }
 }

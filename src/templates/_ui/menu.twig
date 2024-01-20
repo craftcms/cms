@@ -1,0 +1,15 @@
+<div {{ attr(attributes) }}>
+    {% for group in groups %}
+        {% if group.getHeading() is not empty %}
+            {{ group.getHeading() | raw }}
+        {% endif %}
+        <ul class="padded" role="group" {% if group.getHeading() %}aria-labelledby="heading-{{ group.getId() }}"{% endif %}>
+            {% for item in group.getItems() %}
+                <li>
+                    {{ item.render() | raw }}
+                </li>
+            {% endfor %}
+        </ul>
+        {% if not loop.last %}<hr />{% endif %}
+    {% endfor %}
+</div>

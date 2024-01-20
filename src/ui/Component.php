@@ -2,13 +2,18 @@
 
 namespace craft\ui;
 
+use Closure;
 use Craft;
 use craft\helpers\Cp;
+use craft\helpers\StringHelper;
+use craft\ui\concerns\HasId;
 use ReflectionClass;
 use ReflectionMethod;
 
 abstract class Component
 {
+    use HasId;
+
     /**
      * @var string The view template path to render.
      */
@@ -24,12 +29,35 @@ abstract class Component
      */
     protected array $methodCache = [];
 
+    protected ?string $name = null;
+
+    public array $attributes = [];
+
     public function __construct()
     {
     }
 
     public function setup(): void
     {
+        $this->id($this->name . mt_rand());
+    }
+
+    public function name(?string $name): static
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function getName(): string
+    {
+        if ($this->name) {
+            return $this->name;
+        }
+
+        $segments = StringHelper::split(static::class, "\\");
+        $class = array_pop($segments);
+
+        return StringHelper::toKebabCase($class);
     }
 
     /**
@@ -129,6 +157,26 @@ abstract class Component
         return $values;
     }
 
+    public function evaluate(mixed $value): mixed
+    {
+        if (!$value instanceof Closure) {
+            return $value;
+        }
+
+        return $value();
+    }
+
+    public function attributes(array $attributes): static
+    {
+        $this->attributes = [
+            ...$this->attributes,
+            ...$attributes,
+        ];
+
+        return $this;
+    }
+
+
     /**
      * Get an array of HTML attributes for the parent element.
      *
@@ -136,7 +184,11 @@ abstract class Component
      */
     public function getAttributes(): array
     {
-        return [];
+        return $this->attributes + [
+                'data' => [
+                    'component' => $this->getName(),
+                ],
+            ];
     }
 
     /**

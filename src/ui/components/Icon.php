@@ -24,6 +24,7 @@ class Icon extends Component
         'tool',
         'tree',
         'users',
+        'ellipsis',
         // TODO
     ];
 
