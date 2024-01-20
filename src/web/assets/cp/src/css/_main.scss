@@ -1458,7 +1458,7 @@ ul.icons {
   align-items: center;
   justify-content: center;
   border-radius: var(--ui-control-border-radius);
-  padding: 7px 14px;
+  padding: 7px 10px;
   border: none;
   text-align: center;
   white-space: nowrap;
@@ -1538,6 +1538,12 @@ ul.icons {
 
   &:hover {
     text-decoration: none;
+  }
+
+  &:empty,
+  &.btn-empty {
+    padding-left: 12px;
+    padding-right: 12px;
   }
 
   &[data-icon]:not(:empty):not(.btn-empty):before,
@@ -2923,7 +2929,35 @@ table {
       max-width: 100%;
       max-height: 100%;
     }
+
+    &.cp-icon {
+      svg {
+        max-width: 20px;
+        max-height: 20px;
+        @include svg-mask(var(--ui-control-color));
+      }
+    }
   }
+}
+
+.chips,
+.cards {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--xs);
+
+  &:not(.inline-chips) {
+    flex-direction: column;
+  }
+
+  li {
+    max-width: 100%;
+  }
+}
+
+.chips:not(.inline-chips) .chip:not(:first-child),
+.cards .card:not(:first-child) {
+  margin-top: var(--s);
 }
 
 .inline-chips {
@@ -3598,25 +3632,6 @@ $checkboxPadding: $checkboxSize + 4;
 .elementselect {
   position: relative;
   min-height: 34px;
-
-  .elements {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--xs);
-
-    &:not(.inline-chips) {
-      flex-direction: column;
-    }
-
-    li {
-      max-width: 100%;
-    }
-  }
-
-  .chip:not(:first-child),
-  .card:not(:first-child) {
-    margin-top: var(--s);
-  }
 
   .flex,
   .btn {

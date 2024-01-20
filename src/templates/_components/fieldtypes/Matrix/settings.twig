@@ -1,12 +1,11 @@
 {% import "_includes/forms" as forms %}
 
-{{ forms.entryTypeField({
+{{ forms.entryTypeSelectField({
     label: 'Entry Types'|t('app'),
     instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
     id: 'entry-types',
-    name: 'entryTypes',
-    values: field.getEntryTypes()|map(entryType => entryType.id),
-    multi: true,
+    name: 'entryTypes[]',
+    values: field.getEntryTypes(),
     errors: field.getErrors('entryTypes'),
 }) }}
 
@@ -224,13 +223,13 @@
     sortable: true,
   }).appendTo($defaultColumnsContainer);
 
-  const selectize = $('#{{ 'entry-types'|namespaceInputId }}').data('selectize');
+  const componentSelect = $('#{{ 'entry-types'|namespaceInputId }}').data('componentSelect');
 
-  selectize.on('change', () => {
+  componentSelect.on('change', () => {
     const values = $defaultColumnsContainer.find('input:checked').toArray().map(input => input.value);
     Craft.sendActionRequest('POST', 'matrix/default-table-column-options', {
       data: {
-        entryTypeIds: selectize.getValue(),
+        entryTypeIds: componentSelect.getSelectedComponentIds(),
       },
     }).then(({data}) => {
       $defaultColumnsContainer.empty().append(

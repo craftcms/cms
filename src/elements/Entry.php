@@ -882,6 +882,19 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public function setAttributes($values, $safeOnly = true): void
+    {
+        // Ignore empty typeId values
+        if (isset($values['typeId']) && $values['typeId'] === '') {
+            unset($values['typeId']);
+        }
+
+        parent::setAttributes($values, $safeOnly);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSupportedSites(): array
     {
         if (isset($this->fieldId)) {
@@ -1898,44 +1911,20 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if ($section?->type !== Section::TYPE_SINGLE) {
             // Type
-            $fields[] = (function() use ($static, $view) {
+            $fields[] = (function() use ($static) {
                 $entryTypes = $this->getAvailableEntryTypes();
                 if (count($entryTypes) <= 1) {
                     return null;
                 }
 
-                $entryTypeOptions = [];
-                $fieldLayoutIds = [];
-
-                foreach ($entryTypes as $entryType) {
-                    $entryTypeOptions[] = [
-                        'label' => Craft::t('site', $entryType->name),
-                        'value' => $entryType->id,
-                    ];
-                    $fieldLayoutIds["type-$entryType->id"] = $entryType->fieldLayoutId;
-                }
-
-                if (!$static) {
-                    $typeInputId = $view->namespaceInputId('entryType');
-                    $js = <<<EOD
-(() => {
-    const \$typeInput = $('#$typeInputId');
-    const editor = \$typeInput.closest('form').data('elementEditor');
-    if (editor) {
-        editor.checkForm();
-    }
-})();
-EOD;
-                    $view->registerJs($js);
-                }
-
-                return Cp::selectFieldHtml([
+                return Cp::entryTypeSelectFieldHtml([
                     'status' => $this->getAttributeStatus('typeId'),
                     'label' => Craft::t('app', 'Entry Type'),
                     'id' => 'entryType',
                     'name' => 'typeId',
-                    'value' => $this->getTypeId(),
-                    'options' => $entryTypeOptions,
+                    'value' => $this->getType(),
+                    'options' => $entryTypes,
+                    'limit' => 1,
                     'disabled' => $static,
                     'attribute' => 'typeId',
                     'errors' => $this->getErrors('typeId'),

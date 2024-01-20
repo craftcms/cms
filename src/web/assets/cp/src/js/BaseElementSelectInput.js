@@ -85,7 +85,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.initElementSort();
       this.resetElements();
 
-      if (this.$addElementBtn) {
+      if (this.$addElementBtn.length) {
         this.addListener(this.$addElementBtn, 'activate', 'showModal');
       }
 
@@ -174,11 +174,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           collapseDraggees: true,
           magnetStrength: 4,
           helperLagBase: 1.5,
-          onSortChange: this.settings.selectable
-            ? () => {
-                this.elementSelect.resetItemOrder();
-              }
-            : null,
+          onSortChange: () => {
+            this.onSortChange();
+          },
         });
       }
     },
@@ -208,7 +206,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     enableAddElementsBtn: function () {
-      if (this.$addElementBtn) {
+      if (this.$addElementBtn.length) {
         this.$addElementBtn.removeClass('hidden');
       }
 
@@ -216,7 +214,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     disableAddElementsBtn: function () {
-      if (this.$addElementBtn) {
+      if (this.$addElementBtn.length) {
         this.$addElementBtn.addClass('hidden');
       }
 
@@ -241,7 +239,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     updateButtonContainer: function () {
       const $container =
-        this.$addElementBtn && this.$addElementBtn.parent('.flex');
+        this.$addElementBtn.length && this.$addElementBtn.parent('.flex');
       if ($container && $container.length) {
         if ($container.children(':not(.hidden)').length) {
           $container.removeClass('hidden');
@@ -254,10 +252,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     focusNextLogicalElement: function () {
       if (this.canAddMoreElements()) {
         // If can add more elements, focus ADD button
-        let $btn = this.$addElementBtn;
-
-        if ($btn) {
-          $btn.get(0).focus();
+        if (this.$addElementBtn.length) {
+          this.$addElementBtn.get(0).focus();
         }
       } else {
         // If can't add more elements, focus on the final remove
@@ -285,99 +281,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     addElements: function ($elements) {
       // add the action triggers
-      const actionSelector = ['list', 'large'].includes(this.settings.viewMode)
-        ? '.chip-actions'
-        : '.card-actions';
-
       for (let i = 0; i < $elements.length; i++) {
         const $element = $elements.eq(i);
-        const $label = $element.find('.label');
-        const $actions = $element.find(actionSelector);
         const actions = this.defineElementActions($element);
 
         if (actions.length) {
-          let $actionMenuBtn = $actions.find('.action-btn');
-          let $actionMenu;
-
-          if ($actionMenuBtn.length) {
-            $actionMenu = $actionMenuBtn
-              .disclosureMenu()
-              .data('disclosureMenu').$container;
-            $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
-          } else {
-            // the chip/card doesn't have an action menu yet, so add one
-            const menuId = `element-actions-${Math.floor(
-              Math.random() * 1000000
-            )}`;
-            const labelId = `${menuId}-label`;
-            const $label = $('<label/>', {
-              id: labelId,
-              class: 'visually-hidden',
-              text: Craft.t('app', 'Actions'),
-            }).appendTo($actions);
-            $actionMenuBtn = $('<button/>', {
-              class: 'btn action-btn',
-              type: 'button',
-              title: Craft.t('app', 'Actions'),
-              'aria-controls': menuId,
-              'aria-describedby': labelId,
-              'data-disclosure-trigger': 'true',
-              'data-icon': 'ellipsis',
-            }).insertAfter($label);
-            $actionMenu = $('<div/>', {
-              id: menuId,
-              class: 'menu menu--disclosure',
-            }).insertAfter($actionMenuBtn);
-            $actionMenuBtn.disclosureMenu();
-          }
-
-          const safeActions = actions.filter((a) => !a.destructive);
-          const destructiveActions = actions.filter((a) => a.destructive);
-          let $items = $();
-
-          if (safeActions.length) {
-            const $ul = $('<ul/>').appendTo($actionMenu);
-            for (let action of safeActions) {
-              const $li = $('<li/>').appendTo($ul);
-              const $a = $('<a/>', {
-                role: action.url ? null : 'button',
-                'data-icon': action.icon,
-                'aria-label': action.label,
-                text: action.label,
-                href: action.url,
-              })
-                .appendTo($li)
-                .data('actionCallback', action.callback);
-              $items = $items.add($a);
-            }
-          }
-          if (safeActions.length && destructiveActions.length) {
-            $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
-          }
-          if (destructiveActions.length) {
-            const $ul = $('<ul/>').appendTo($actionMenu);
-            for (let action of destructiveActions) {
-              const $li = $('<li/>').appendTo($ul);
-              const $a = $('<a/>', {
-                class: 'error',
-                type: 'button',
-                role: 'button',
-                'data-icon': action.icon,
-                'aria-label': action.label,
-                text: action.label,
-              })
-                .appendTo($li)
-                .data('actionCallback', action.callback);
-              $items = $items.add($a);
-            }
-          }
-
-          this.addListener($items, 'activate', (ev) => {
-            $actionMenuBtn.data('disclosureMenu').hide();
-            $(ev.currentTarget).data('actionCallback')();
-          });
-
-          Craft.initUiElements($actionMenu);
+          Craft.addActionsToChip($element, actions);
         }
 
         if (this.settings.sortable) {
@@ -386,8 +295,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             class: 'move icon',
             title: Craft.t('app', 'Reorder'),
             'aria-label': Craft.t('app', 'Reorder'),
-            'aria-describedby': $label.attr('id'),
-          }).appendTo($actions);
+            'aria-describedby': $element.find('.label').attr('id'),
+          }).appendTo($element.find('.chip-actions,.card-actions'));
         }
       }
 
@@ -434,12 +343,52 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.$elements = this.$elements.add($elements);
 
       this.updateAddElementsBtn();
-
       this.onAddElements();
+      this.onSortChange();
     },
 
     defineElementActions: function ($element) {
       const actions = [];
+
+      if (this.settings.sortable) {
+        const axis = this.getElementSortAxis();
+        actions.push({
+          icon:
+            axis === 'y'
+              ? 'arrow-up'
+              : Craft.orientation === 'ltr'
+                ? 'arrow-left'
+                : 'arrow-right',
+          label:
+            axis === 'y'
+              ? Craft.t('app', 'Move up')
+              : Craft.t('app', 'Move forward'),
+          callback: () => {
+            this.moveElementForward($element);
+          },
+          attributes: {
+            'data-move-forward': true,
+          },
+        });
+        actions.push({
+          icon:
+            axis === 'y'
+              ? 'arrow-down'
+              : Craft.orientation === 'ltr'
+                ? 'arrow-right'
+                : 'arrow-left',
+          label:
+            axis === 'y'
+              ? Craft.t('app', 'Move down')
+              : Craft.t('app', 'Move backward'),
+          callback: () => {
+            this.moveElementBackward($element);
+          },
+          attributes: {
+            'data-move-backward': true,
+          },
+        });
+      }
 
       actions.push({
         icon: 'remove',
@@ -532,6 +481,53 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       });
     },
 
+    onSortChange() {
+      this.elementSelect?.resetItemOrder();
+      this.$elements = $().add(this.$elements);
+
+      for (let i = 0; i < this.$elements.length; i++) {
+        const $element = this.$elements.eq(i);
+        const $actionMenuBtn = $element
+          .find('.chip-actions,.card-actions')
+          .find('.action-btn');
+        const $menu = $actionMenuBtn
+          .disclosureMenu()
+          .data('disclosureMenu').$container;
+        const $moveForward = $menu.find('[data-move-forward]').closest('li');
+        const $moveBackward = $menu.find('[data-move-backward]').closest('li');
+
+        if (i === 0) {
+          $moveForward.addClass('hidden');
+        } else {
+          $moveForward.removeClass('hidden');
+        }
+
+        if (i === this.$elements.length - 1) {
+          $moveBackward.addClass('hidden');
+        } else {
+          $moveBackward.removeClass('hidden');
+        }
+      }
+    },
+
+    moveElementForward($element) {
+      const $li = $element.closest('li');
+      const $prev = $li.prev();
+      if ($prev.length) {
+        $li.insertBefore($prev);
+        this.onSortChange();
+      }
+    },
+
+    moveElementBackward($element) {
+      const $li = $element.closest('li');
+      const $next = $li.next();
+      if ($next.length) {
+        $li.insertAfter($next);
+        this.onSortChange();
+      }
+    },
+
     removeElements: function ($elements) {
       if (this.settings.selectable) {
         this.elementSelect.removeItems($elements);
@@ -570,7 +566,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       this.$elements = this.$elements.not($elements);
       this.updateAddElementsBtn();
-
+      this.onSortChange();
       this.onRemoveElements();
     },
 

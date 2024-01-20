@@ -48,6 +48,7 @@ import './js/CategoryIndex.js';
 import './js/CategorySelectInput.js';
 import './js/Chart.js';
 import './js/ColorInput.js';
+import './js/ComponentSelectInput.js';
 import './js/CustomizeSourcesModal.js';
 import './js/DataTableSorter.js';
 import './js/DeleteUserModal.js';

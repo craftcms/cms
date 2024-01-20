@@ -8,9 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Chippable;
 use craft\base\ElementInterface;
+use craft\base\Iconic;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
+use craft\enums\MenuItemType;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
@@ -687,6 +690,70 @@ class AppController extends Controller
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
         ]);
+    }
+
+    /**
+     * Renders component chips the control panel.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 5.0.0
+     */
+    public function actionRenderComponents(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+
+        $components = $this->request->getRequiredBodyParam('components');
+        $withMenuItems = (bool)$this->request->getBodyParam('withMenuItems');
+        $menuId = $this->request->getBodyParam('menuId');
+
+        $componentHtml = [];
+        $menuItemHtml = [];
+
+        foreach ($components as $componentInfo) {
+            /** @var string|Chippable $componentType */
+            $componentType = $componentInfo['type'];
+            $id = $componentInfo['id'];
+
+            if (!$id || (!is_numeric($id) && !(is_array($id) && ArrayHelper::isNumeric($id)))) {
+                throw new BadRequestHttpException('Invalid component ID');
+            }
+
+            $component = $componentType::get($id);
+            if ($component) {
+                foreach ($componentInfo['instances'] as $config) {
+                    $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
+                }
+
+                if ($withMenuItems) {
+                    $menuItemHtml[$componentType][$id] = Cp::menuItem([
+                        'type' => MenuItemType::Button->value,
+                        'label' => $component->getUiLabel(),
+                        'icon' => $component instanceof Iconic ? $component->getIcon() : null,
+                        'attributes' => [
+                            'data' => [
+                                'type' => get_class($component),
+                                'id' => $component->getId(),
+                            ],
+                        ],
+                    ], $menuId);
+                }
+            }
+        }
+
+        $view = Craft::$app->getView();
+        $data = [
+            'components' => $componentHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ];
+
+        if ($withMenuItems) {
+            $data['menuItems'] = $menuItemHtml;
+        }
+
+        return $this->asJson($data);
     }
 
     /**

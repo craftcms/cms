@@ -118,6 +118,7 @@ class EntryTypesController extends Controller
         }
 
         return $this->asCpScreen()
+            ->editUrl($entryType->id ? "settings/entry-types/$entryType->id" : null)
             ->title($title)
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('app', 'Entry Types'), 'settings/entry-types')

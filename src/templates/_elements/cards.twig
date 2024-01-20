@@ -2,7 +2,7 @@
 {% set disabled = disabled ?? null %}
 {% set viewMode = viewMode ?? null %}
 
-<ul class="elements card-grid">
+<ul class="elements cards card-grid">
   {% for element in elements %}
     <li>
       {% set html = elementCard(element, {

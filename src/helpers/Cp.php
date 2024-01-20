@@ -8,9 +8,14 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\Actionable;
+use craft\base\Chippable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\Iconic;
+use craft\base\Statusable;
+use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\enums\LicenseKeyStatus;
@@ -71,12 +76,23 @@ class Cp
 
     /**
      * @since 3.5.8
+     * @deprecated in 5.0.0. [[CHIP_SIZE_SMALL]] should be used instead.
      */
     public const ELEMENT_SIZE_SMALL = 'small';
     /**
      * @since 3.5.8
+     * @deprecated in 5.0.0. [[CHIP_SIZE_LARGE]] should be used instead.
      */
     public const ELEMENT_SIZE_LARGE = 'large';
+
+    /**
+     * @since 5.0.0
+     */
+    public const CHIP_SIZE_SMALL = 'small';
+    /**
+     * @since 5.0.0
+     */
+    public const CHIP_SIZE_LARGE = 'large';
 
     /**
      * @var Site|false
@@ -399,18 +415,146 @@ class Cp
     }
 
     /**
+     * Renders a component’s chip HTML.
+     *
+     * The following config settings can be passed to `$config`:
+     *
+     * - `attributes` – Any custom HTML attributes that should be set on the chip
+     * - `autoReload` - Whether the element should auto-reload itself when it’s saved
+     * - `id` – The chip’s `id` attribute
+     * - `inputName` - The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
+     * - `selectable` – Whether the chip should include a checkbox input
+     * - `showActionMenu` – Whether the chip should include an action menu
+     * - `showLabel` - Whether the element label should be shown
+     * - `showStatus` - Whether the element status should be shown (if the element type has statuses)
+     * - `showThumb` - Whether the element thumb should be shown (if the element has one)
+     * - `size` - The size of the chip (`small` or `large`)
+     * - `sortable` – Whether the chip should include a drag handle
+     *
+     * @param Chippable $component The component that the chip represents
+     * @param array $config Chip configuration
+     * @return string
+     * @since 5.0.0
+     */
+    public static function chipHtml(Chippable $component, array $config = []): string
+    {
+        $config += [
+            'attributes' => [],
+            'autoReload' => true,
+            'id' => sprintf('chip-%s', mt_rand()),
+            'inputName' => null,
+            'labelHtml' => null,
+            'selectable' => false,
+            'showActionMenu' => false,
+            'showLabel' => true,
+            'showStatus' => true,
+            'showThumb' => true,
+            'size' => self::CHIP_SIZE_SMALL,
+            'sortable' => false,
+        ];
+
+        $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
+        $config['showStatus'] = $config['showStatus'] && $component instanceof Statusable;
+        $config['showThumb'] = $config['showThumb'] && ($component instanceof Thumbable || $component instanceof Iconic);
+
+        $label = $component->getUiLabel();
+
+        $attributes = ArrayHelper::merge([
+            'id' => $config['id'],
+            'class' => ['chip', $config['size']],
+            'title' => $label,
+            'data' => array_filter([
+                'type' => get_class($component),
+                'id' => $component->getId(),
+                'settings' => $config['autoReload'] ? [
+                    'selectable' => $config['selectable'],
+                    'id' => Craft::$app->getView()->namespaceInputId($config['id']),
+                    'showLabel' => $config['showLabel'],
+                    'showStatus' => $config['showStatus'],
+                    'showThumb' => $config['showThumb'],
+                    'size' => $config['size'],
+                    'ui' => 'chip',
+                ] : false,
+            ]),
+        ], $config['attributes']);
+
+        $html = Html::beginTag('div', $attributes);
+
+        if ($config['showThumb']) {
+            if ($component instanceof Thumbable) {
+                $thumbSize = $config['size'] === self::CHIP_SIZE_SMALL ? 30 : 120;
+                $html .= $component->getThumbHtml($thumbSize) ?? '';
+            } else {
+                /** @var Chippable&Iconic $component */
+                $icon = $component->getIcon();
+                if ($icon) {
+                    $html .= Html::tag('div', static::iconSvg($icon), [
+                        'class' => ['thumb', 'cp-icon'],
+                    ]);
+                }
+            }
+        }
+
+        $html .= Html::beginTag('div', ['class' => 'chip-content']);
+
+        if ($config['selectable']) {
+            $html .= self::componentCheckboxHtml(sprintf('%s-label', $config['id']));
+        }
+
+        if ($config['showStatus']) {
+            /** @var Chippable&Statusable $component */
+            $html .= self::componentStatusHtml($component) ?? '';
+        }
+
+        if ($config['showLabel']) {
+            $html .= $config['labelHtml'] ?? Html::encode($label);
+        }
+
+        $html .= Html::beginTag('div', ['class' => 'chip-actions']);
+        if ($config['showActionMenu']) {
+            /** @var Chippable&Actionable $component */
+            $html .= self::componentActionMenu($component);
+        }
+        if ($config['sortable']) {
+            $html .= Html::button('', [
+                'class' => ['move', 'icon'],
+                'title' => Craft::t('app', 'Reorder'),
+                'aria' => [
+                    'label' => Craft::t('app', 'Reorder'),
+                ],
+            ]);
+        }
+        $html .= Html::endTag('div'); // .chip-actions
+
+        if ($config['inputName'] !== null) {
+            $html .= Html::hiddenInput($config['inputName'], (string)$component->getId());
+        }
+
+        $html .= Html::endTag('div') . // .chip-content
+            Html::endTag('div'); // .element
+
+        return $html;
+    }
+
+    /**
      * Renders an element’s chip HTML.
      *
      * The following config settings can be passed to `$config`:
      *
+     *  - `attributes` – Any custom HTML attributes that should be set on the chip
      * - `autoReload` - Whether the element should auto-reload itself when it’s saved
      * - `context` - The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `id` – The chip’s `id` attribute
      * - `inputName` - The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `selectable` – Whether the element should include a checkbox input
+     * - `showActionMenu` – Whether the chip should include an action menu
      * - `showDraftName` - Whether to show the draft name beside the label if the element is a draft of a published element
      * - `showLabel` - Whether the element label should be shown
      * - `showStatus` - Whether the element status should be shown (if the element type has statuses)
      * - `showThumb` - Whether the element thumb should be shown (if the element has one)
      * - `size` - The size of the chip (`small` or `large`)
+     * - `sortable` – Whether the chip should include a drag handle
      *
      * @param ElementInterface $element The element to be rendered
      * @param array $config Chip configuration
@@ -420,18 +564,19 @@ class Cp
     public static function elementChipHtml(ElementInterface $element, array $config = []): string
     {
         $config += [
+            'attributes' => [],
             'autoReload' => true,
-            'selectable' => false,
-            'sortable' => false,
             'context' => 'index',
             'id' => sprintf('chip-%s', mt_rand()),
             'inputName' => null,
+            'selectable' => false,
+            'showActionMenu' => false,
             'showDraftName' => true,
             'showLabel' => true,
             'showStatus' => true,
             'showThumb' => true,
-            'showActionMenu' => false,
-            'size' => self::ELEMENT_SIZE_SMALL,
+            'size' => self::CHIP_SIZE_SMALL,
+            'sortable' => false,
         ];
 
         $title = implode('', array_map(fn(string $segment) => "$segment → ", $element->getUiLabelPath())) .
@@ -441,68 +586,32 @@ class Cp
             $title .= sprintf(' - %s', Craft::t('site', $element->getSite()->getName()));
         }
 
-        $attributes = ArrayHelper::merge(
+        $config['attributes'] = ArrayHelper::merge(
             self::baseElementAttributes($element, $config),
             [
-                'class' => array_filter([
-                    'chip',
-                    $config['size'],
-                ]),
                 'title' => $title,
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
-                        'selectable' => $config['selectable'],
                         'context' => $config['context'],
-                        'id' => Craft::$app->getView()->namespaceInputId($config['id']),
                         'showDraftName' => $config['showDraftName'],
-                        'showLabel' => $config['showLabel'],
-                        'showStatus' => $config['showStatus'],
-                        'showThumb' => $config['showThumb'],
-                        'size' => $config['size'],
-                        'ui' => 'chip',
                     ] : false,
                 ]),
             ],
+            $config['attributes'],
         );
 
-        $html = Html::beginTag('div', $attributes);
-
-        if ($config['showThumb']) {
-            $thumbSize = $config['size'] === self::ELEMENT_SIZE_SMALL ? 30 : 120;
-            $html .= $element->getThumbHtml($thumbSize) ?? '';
-        }
-
-        $html .= Html::beginTag('div', ['class' => 'chip-content']);
-
-        if ($config['selectable']) {
-            $html .= self::elementCheckboxHtml($element, $config) ?? '';
-        }
-
-        if ($config['showStatus']) {
-            $html .= self::elementStatusHtml($element) ?? '';
-        }
+        $config['showStatus'] = $config['showStatus'] && ($element->getIsDraft() || $element::hasStatuses());
 
         if ($config['showLabel']) {
-            $html .= self::elementLabelHtml($element, $config, $attributes, fn() => $element->getChipLabelHtml());
+            $config['labelHtml'] = self::elementLabelHtml(
+                $element,
+                $config,
+                $config['attributes'],
+                fn() => $element->getChipLabelHtml(),
+            );
         }
 
-        $html .= Html::beginTag('div', ['class' => 'chip-actions']) .
-            ($config['showActionMenu'] ? self::elementActionMenu($element) : '') .
-            ($config['sortable'] ? Html::button('', [
-                'class' => ['move', 'icon'],
-                'title' => Craft::t('app', 'Reorder'),
-                'aria' => [
-                    'label' => Craft::t('app', 'Reorder'),
-                ],
-            ]) : '') .
-            Html::endTag('div'); // .chip-actions
-
-        if ($config['context'] === 'field' && $config['inputName'] !== null) {
-            $html .= Html::hiddenInput($config['inputName'], (string)$element->id);
-        }
-
-        $html .= Html::endTag('div') . // .chip-content
-            Html::endTag('div'); // .element
+        $html = static::chipHtml($element, $config);
 
         // Allow plugins to modify the HTML
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CHIP_HTML)) {
@@ -570,9 +679,9 @@ class Cp
             Html::endTag('div') . // .card-content
             Html::beginTag('div', ['class' => 'card-actions-container']) .
             Html::beginTag('div', ['class' => 'card-actions']) .
-            (self::elementStatusHtml($element) ?? '') .
-            (self::elementCheckboxHtml($element, $config) ?? '') .
-            ($config['showActionMenu'] ? self::elementActionMenu($element) : '') .
+            (self::componentStatusHtml($element) ?? '') .
+            ($config['selectable'] ? self::componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '') .
+            ($config['showActionMenu'] ? self::componentActionMenu($element) : '') .
             ($config['sortable'] ? Html::button('', [
                 'class' => ['move', 'icon'],
                 'title' => Craft::t('app', 'Reorder'),
@@ -677,37 +786,29 @@ class Cp
         );
     }
 
-    private static function elementCheckboxHtml(ElementInterface $element, array $config): ?string
+    private static function componentCheckboxHtml(string $labelId): string
     {
-        $elementLabelId = sprintf('%s-label', $config['id']);
-        if ($config['selectable']) {
-            return Html::tag('div', options: [
-                'class' => 'checkbox',
-                'title' => Craft::t('app', 'Select'),
-                'role' => 'checkbox',
-                'tabindex' => '0',
-                'aria' => [
-                    'checked' => 'false',
-                    'labelledby' => $elementLabelId,
-                ],
-            ]);
-        }
-
-        return null;
+        return Html::tag('div', options: [
+            'class' => 'checkbox',
+            'title' => Craft::t('app', 'Select'),
+            'role' => 'checkbox',
+            'tabindex' => '0',
+            'aria' => [
+                'checked' => 'false',
+                'labelledby' => $labelId,
+            ],
+        ]);
     }
 
-    private static function elementStatusHtml(ElementInterface $element): ?string
+    private static function componentStatusHtml(Statusable $component): ?string
     {
-        if ($element->getIsDraft()) {
+        $status = $component->getStatus();
+
+        if ($status === 'draft') {
             return self::statusIndicatorHtml('draft');
         }
 
-        if (!$element::hasStatuses()) {
-            return null;
-        }
-
-        $status = $element->getStatus();
-        $statusDef = $element::statuses()[$status] ?? null;
+        $statusDef = $component::statuses()[$status] ?? null;
 
         // Just to give the `statusIndicatorHtml` clean types
         if (is_string($statusDef)) {
@@ -755,12 +856,12 @@ class Cp
         ]);
     }
 
-    private static function elementActionMenu(ElementInterface $element): string
+    private static function componentActionMenu(Actionable $component): string
     {
         return Craft::$app->getView()->namespaceInputs(
-            function() use ($element): string {
+            function() use ($component): string {
                 $actionMenuItems = array_filter(
-                    $element->getActionMenuItems(),
+                    $component->getActionMenuItems(),
                     fn(array $item) => !($item['destructive'] ?? false),
                 );
 
@@ -777,7 +878,7 @@ class Cp
                     ],
                 ]);
             },
-            sprintf('element-actions-%s', mt_rand()),
+            sprintf('action-menu-%s', mt_rand()),
         );
     }
 
@@ -801,7 +902,7 @@ class Cp
     public static function elementHtml(
         ElementInterface $element,
         string $context = 'index',
-        string $size = self::ELEMENT_SIZE_SMALL,
+        string $size = self::CHIP_SIZE_SMALL,
         ?string $inputName = null,
         bool $showStatus = true,
         bool $showThumb = true,
@@ -858,7 +959,7 @@ class Cp
      */
     public static function elementPreviewHtml(
         array $elements,
-        string $size = self::ELEMENT_SIZE_SMALL,
+        string $size = self::CHIP_SIZE_SMALL,
         bool $showStatus = true,
         bool $showThumb = true,
         bool $showLabel = true,
@@ -1734,6 +1835,31 @@ JS, [
     }
 
     /**
+     * Renders an entry type select input’s HTML
+     *
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function entryTypeSelectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/entryTypeSelect.twig', $config);
+    }
+
+    /**
+     * Renders an entry type select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function entryTypeSelectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'entrytypeselect' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/entryTypeSelect.twig', $config);
+    }
+
+    /**
      * Renders an autosuggest field’s HTML.
      *
      * @param array $config
@@ -2322,40 +2448,18 @@ JS;
     /**
      * Returns a disclosure menu’s HTML.
      *
-     * Each item can contain a `type` key set to a [[MenuItemType]] case. By default, it will be set to:
+     * See [[menuItem()]] for a list of supported item config options.
      *
-     * - [[MenuItemType::Button]] if an `action` key is set
-     * - [[MenuItemType::Group]] if `heading` or `items` keys are set
-     * - [[MenuItemType::Link]] in all other cases
+     * Horizontal rules can be defined with the following key:
      *
-     * Link and button items can contain the following keys:
+     * - `hr` - Set to `true`
      *
-     *  - `id` – The item’s ID
-     *  - `label` – The item label, to be HTML-encoded
-     *  - `icon` – The item icon name
-     *  - `html` - The item label, which will be output verbatim, without being HTML-encoded
-     *  - `description` – The item description
-     *  - `status` – The status indicator that should be shown beside the item label
-     *  - `url` – The URL that the item should link to
-     *  - `action` – The controller action that the item should trigger
-     *  - `params` – Request parameters that should be sent to the `action`
-     *  - `confirm` – A confirmation message that should be presented to the user before triggering the `action`
-     *  - `redirect` – The redirect path that the `action` should use
-     *  - `requireElevatedSession` – Whether an elevated session is required before the `action` is triggered
-     *  - `selected` – Whether the item should be marked as selected
-     *  - `hidden` – Whether the item should be hidden
-     *  - `attributes` – Any HTML attributes that should be set on the item’s `<a>` or `<button>` tag
+     * Groups of items can be defined as well, using the following keys:
      *
-     *  Horizontal rules can be defined with the following key:
-     *
-     *  - `hr` - Set to `true`
-     *
-     *  Groups of items can be defined as well, using the following keys:
-     *
-     *  - `group` – Set to `true`
-     *  - `heading` – The group heading
-     *  - `items` – The nested item definitions
-     *  - `listAttributes` - any HTML attributes that should be included on the `<ul>`
+     * - `group` – Set to `true`
+     * - `heading` – The group heading
+     * - `items` – The nested item definitions
+     * - `listAttributes` - any HTML attributes that should be included on the `<ul>`
      *
      * @param array $items The menu items.
      * @param array $config
@@ -2418,6 +2522,47 @@ JS;
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/disclosuremenu.twig', $config, View::TEMPLATE_MODE_CP);
+    }
+
+    /**
+     * Returns a menu item’s HTML.
+     *
+     * The item config can contain a `type` key set to a [[MenuItemType]] case. By default, it will be set to:
+     *
+     * - [[MenuItemType::Button]] if `action` is set
+     * - [[MenuItemType::Group]] if `heading` or `items` are set
+     * - [[MenuItemType::Link]] in all other cases
+     *
+     * Link and button item configs can contain the following keys:
+     *
+     *  - `id` – The item’s ID
+     *  - `label` – The item label, to be HTML-encoded
+     *  - `icon` – The item icon name
+     *  - `html` - The item label, which will be output verbatim, without being HTML-encoded
+     *  - `description` – The item description
+     *  - `status` – The status indicator that should be shown beside the item label
+     *  - `url` – The URL that the item should link to
+     *  - `action` – The controller action that the item should trigger
+     *  - `params` – Request parameters that should be sent to the `action`
+     *  - `confirm` – A confirmation message that should be presented to the user before triggering the `action`
+     *  - `redirect` – The redirect path that the `action` should use
+     *  - `requireElevatedSession` – Whether an elevated session is required before the `action` is triggered
+     *  - `selected` – Whether the item should be marked as selected
+     *  - `hidden` – Whether the item should be hidden
+     *  - `attributes` – Any HTML attributes that should be set on the item’s `<a>` or `<button>` tag
+     *  - `liAttributes` – Any HTML attributes that should be set on the item’s `<li>` tag
+     *
+     * @param array $config
+     * @param string $menuId,
+     * @return string
+     * @since 5.0.0
+     */
+    public static function menuItem(array $config, string $menuId): string
+    {
+        return Craft::$app->getView()->renderTemplate('_includes/menuitem.twig', [
+            'item' => $config,
+            'menuId' => $menuId,
+        ], View::TEMPLATE_MODE_CP);
     }
 
     /**

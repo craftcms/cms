@@ -21,7 +21,6 @@ use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
@@ -822,24 +821,6 @@ class Cp extends Component
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
-
-        return $options;
-    }
-
-    /**
-     * Returns all options for an entry type input.
-     *
-     * @return array
-     * @since 5.0.0
-     */
-    public function getEntryTypeOptions(): array
-    {
-        $options = array_map(fn(EntryType $entryType) => [
-            'label' => Craft::t('site', $entryType->name),
-            'value' => $entryType->id,
-        ], Craft::$app->getEntries()->getAllEntryTypes());
-
-        ArrayHelper::multisort($options, 'label');
 
         return $options;
     }
