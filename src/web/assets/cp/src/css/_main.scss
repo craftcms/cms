@@ -3628,6 +3628,13 @@ $checkboxPadding: $checkboxSize + 4;
   }
 }
 
+.elementselect .elements:not(:empty),
+.componentselect .components:not(:empty) {
+  & + .flex {
+    margin-top: var(--s);
+  }
+}
+
 /* element select fields */
 .elementselect {
   position: relative;
@@ -3640,10 +3647,6 @@ $checkboxPadding: $checkboxSize + 4;
 
   .chip {
     z-index: 1;
-  }
-
-  .elements:not(:empty) + .flex {
-    padding-top: 7px;
   }
 
   .structure ul {

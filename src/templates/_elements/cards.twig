@@ -3,19 +3,21 @@
 {% set viewMode = viewMode ?? null %}
 
 <ul class="elements cards card-grid">
-  {% for element in elements %}
-    <li>
-      {% set html = elementCard(element, {
-        context: context ?? 'index',
-        inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
-        selectable: selectable ?? false,
-        showActionMenu: showActionMenu ?? false,
-        sortable: sortable ?? false,
-      }) %}
-      {% if disabled %}
-        {% set html = html|removeClass('removable') %}
-      {% endif %}
-      {{ html|raw }}
-    </li>
-  {% endfor %}
+  {%- apply spaceless  %}
+    {% for element in elements %}
+      <li>
+        {% set html = elementCard(element, {
+          context: context ?? 'index',
+          inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
+          selectable: selectable ?? false,
+          showActionMenu: showActionMenu ?? false,
+          sortable: sortable ?? false,
+        }) %}
+        {% if disabled %}
+          {% set html = html|removeClass('removable') %}
+        {% endif %}
+        {{ html|raw }}
+      </li>
+    {% endfor %}
+  {% endapply -%}
 </ul>
