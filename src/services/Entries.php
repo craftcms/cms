@@ -1212,7 +1212,6 @@ SQL)->execute();
                 'fieldLayoutId',
                 'name',
                 'handle',
-                'icon',
                 'hasTitleField',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
@@ -1233,6 +1232,9 @@ SQL)->execute();
         }
         if ($db->columnExists(Table::ENTRYTYPES, 'showSlugField')) {
             $query->addSelect('showSlugField');
+        }
+        if ($db->columnExists(Table::ENTRYTYPES, 'icon')) {
+            $query->addSelect('icon');
         }
 
         return $query;
