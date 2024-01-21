@@ -1656,6 +1656,31 @@ JS, [
     }
 
     /**
+     * Renders a custom select input.
+     *
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function customSelectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/customSelect.twig', $config);
+    }
+
+    /**
+     * Renders a selectize field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function customSelectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'customselect' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/customSelect.twig', $config);
+    }
+
+    /**
      * Renders a selectize input.
      *
      * @param array $config

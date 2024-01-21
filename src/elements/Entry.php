@@ -1917,14 +1917,17 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     return null;
                 }
 
-                return Cp::entryTypeSelectFieldHtml([
+                return Cp::customSelectFieldHtml([
                     'status' => $this->getAttributeStatus('typeId'),
                     'label' => Craft::t('app', 'Entry Type'),
                     'id' => 'entryType',
                     'name' => 'typeId',
-                    'value' => $this->getType(),
-                    'options' => $entryTypes,
-                    'limit' => 1,
+                    'value' => $this->getType()->id,
+                    'options' => array_map(fn(EntryType $et) => [
+                        'icon' => $et->getIcon(),
+                        'label' => Craft::t('site', $et->name),
+                        'value' => $et->id,
+                    ], $entryTypes),
                     'disabled' => $static,
                     'attribute' => 'typeId',
                     'errors' => $this->getErrors('typeId'),

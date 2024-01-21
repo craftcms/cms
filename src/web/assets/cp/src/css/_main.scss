@@ -219,6 +219,8 @@ table.editable textarea {
 /* icons */
 .icon:before,
 .menu ul.padded li a.sel:before,
+.menu ul.padded li .menu-item.sel:before,
+.menu ul.padded li .menu-option.sel:before,
 .menu .flex.padded.sel:before,
 .texticon:before,
 #help:before,
@@ -4853,6 +4855,28 @@ $min2ColWidth: 400px;
   }
 }
 
+.meta > .field > .input > .custom-select {
+  display: block;
+  margin: calc(var(--s) * -1) 0;
+  width: 100%;
+  border-radius: 0;
+  box-shadow: none;
+  background-color: transparent;
+
+  .menubtn {
+    @include padding-left(0);
+    justify-content: start;
+    width: 100%;
+    background-color: transparent;
+
+    &:after {
+      position: absolute;
+      top: calc(50% - 5px);
+      @include right(0);
+    }
+  }
+}
+
 .body {
   position: relative;
 }
@@ -6144,27 +6168,33 @@ $min2ColWidth: 400px;
   }
 }
 
-.menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
-.menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
-  @include menu-item-active-styles;
-  --text-color: var(--white);
-  --light-text-color: var(--gray-100);
-  --ui-control-color: var(--gray-050);
-  --ui-control-hover-color: var(--gray-100);
-  --ui-control-active-color: var(--gray-100);
+.menu:not(.menu--disclosure) ul li,
+.menu:not(.menu--disclosure):not(:hover) ul li {
+  a,
+  .menu-item,
+  .menu-option {
+    &:not(.sel):not(.disabled):hover {
+      @include menu-item-active-styles;
+      --text-color: var(--white);
+      --light-text-color: var(--gray-100);
+      --ui-control-color: var(--gray-050);
+      --ui-control-hover-color: var(--gray-100);
+      --ui-control-active-color: var(--gray-100);
 
-  span.icon,
-  &:before,
-  div.code {
-    color: var(--menu-item-active-color);
-  }
+      span.icon,
+      &:before,
+      div.code {
+        color: var(--menu-item-active-color);
+      }
 
-  &.error {
-    color: var(--menu-item-active-color) !important;
-  }
+      &.error {
+        color: var(--menu-item-active-color) !important;
+      }
 
-  span.light {
-    color: var(--white) !important;
+      span.light {
+        color: var(--white) !important;
+      }
+    }
   }
 }
 
@@ -7189,13 +7219,15 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
   font-size: 11px;
 }
 
-/* selectize reset */
-.selectize-control .selectize-input.disabled {
+.selectize-control .selectize-input.disabled,
+.custom-select.disabled {
   opacity: 1;
   cursor: not-allowed !important;
+  pointer-events: auto !important;
 
   * {
     cursor: not-allowed !important;
+    pointer-events: auto !important;
   }
 }
 
