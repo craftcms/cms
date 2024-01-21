@@ -34,6 +34,7 @@ use craft\web\ServiceUnavailableHttpException;
 use DateInterval;
 use Throwable;
 use yii\base\InvalidConfigException;
+use yii\caching\FileDependency;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -768,13 +769,24 @@ class AppController extends Controller
         $this->requireAcceptsJson();
 
         $search = $this->request->getRequiredBodyParam('search');
-        if ($search !== '') {
-            $searchTerms = explode(' ', Search::normalizeKeywords($search));
-        } else {
+        $noSearch = $search === '';
+
+        if ($noSearch) {
+            $cache = Craft::$app->getCache();
+            $cacheKey = 'icon-picker-options-list-html';
+            $listHtml = $cache->get($cacheKey);
+            if ($listHtml !== false) {
+                return $this->asJson([
+                    'listHtml' => $listHtml,
+                ]);
+            }
             $searchTerms = null;
+        } else {
+            $searchTerms = explode(' ', Search::normalizeKeywords($search));
         }
 
-        $icons = require Craft::getAlias('@app/icons/index.php');
+        $indexPath = '@app/icons/index.php';
+        $icons = require Craft::getAlias($indexPath);
         $output = [];
         $scores = [];
 
@@ -803,8 +815,17 @@ class AppController extends Controller
             array_multisort($scores, SORT_DESC, $output);
         }
 
+        $listHtml = implode('', $output);
+
+        if ($noSearch) {
+            /** @phpstan-ignore-next-line */
+            $cache->set($cacheKey, $listHtml, dependency: new FileDependency([
+                'fileName' => $indexPath,
+            ]));
+        }
+
         return $this->asJson([
-            'listHtml' => implode('', $output),
+            'listHtml' => $listHtml,
         ]);
     }
 
