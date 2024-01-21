@@ -862,6 +862,7 @@ class Matrix extends Field implements
                 'sortable' => true,
                 'canCreate' => true,
                 'createAttributes' => array_map(fn(EntryType $entryType) => [
+                    'icon' => $entryType->icon,
                     'label' => Craft::t('site', $entryType->name),
                     'attributes' => [
                         'fieldId' => $this->id,
