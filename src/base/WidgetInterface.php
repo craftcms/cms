@@ -21,7 +21,12 @@ namespace craft\base;
 interface WidgetInterface extends SavableComponentInterface
 {
     /**
-     * Returns the path to the widget’s SVG icon, or the actual SVG contents.
+     * Returns the widget’s SVG icon, if it has one.
+     *
+     *  The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
+     *  the path to an SVG file, or raw SVG markup.
+     *
+     *  System icons can be found in `src/icons/solid/.`
      *
      * @return string|null
      * @since 3.2.0

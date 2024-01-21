@@ -45,7 +45,7 @@ class NewUsers extends Widget
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/users.svg');
+        return 'user-group';
     }
 
     /**

@@ -841,7 +841,7 @@ class Cp
                     ? ($attributes['data']['cp-url'] ?? null) : null,
             ]) : '') .
             ($config['context'] === 'field' && $element->hasErrors() ? Html::tag('span', '', [
-                'data' => ['icon' => 'alert'],
+                'data' => ['icon' => 'triangle-exclamation'],
                 'aria' => ['label' => Craft::t('app', 'Error')],
                 'role' => 'img',
             ]) : '');
@@ -2682,11 +2682,11 @@ JS;
      * System icons can be found in `src/icons/solid/.`
      *
      * @param string $icon
+     * @param string|null $fallbackLabel
      * @return string
-     * @throws InvalidArgumentException
      * @since 5.0.0
      */
-    public static function iconSvg(string $icon): string
+    public static function iconSvg(string $icon, ?string $fallbackLabel = null): string
     {
         // BC support for some legacy icon names
         $icon = match ($icon) {
@@ -2753,15 +2753,48 @@ JS;
             default => $icon,
         };
 
-        if (preg_match('/^[a-z\-]+$/', $icon)) {
-            $path = Craft::getAlias("@appicons/$icon.svg");
-            if (!file_exists($path)) {
-                throw new InvalidArgumentException("Invalid control panel icon: $icon");
+        try {
+            // system icon name?
+            if (preg_match('/^[a-z\-]+$/', $icon)) {
+                $path = Craft::getAlias("@appicons/$icon.svg");
+                if (!file_exists($path)) {
+                    throw new InvalidArgumentException("Invalid system icon: $icon");
+                }
+                $svg = file_get_contents($path);
+            } else {
+                $svg = Html::svg($icon, true, throwException: true);
             }
-            return file_get_contents($path);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning("Could not load icon: {$e->getMessage()}", __METHOD__);
+            if (!$fallbackLabel) {
+                return '';
+            }
+            return self::fallbackIconSvg($fallbackLabel);
         }
 
-        return Html::svg($icon, true);
+        // Add aria-hidden="true"
+        try {
+            $svg = Html::modifyTagAttributes($svg, [
+                'aria' => ['hidden' => 'true'],
+            ]);
+        } catch (InvalidArgumentException) {
+        }
+
+        return $svg;
+    }
+
+    /**
+     * Returns a fallback icon SVG for a component with a given label.
+     *
+     * @param string $label
+     * @return string
+     * @since 5.0.0
+     */
+    public static function fallbackIconSvg(string $label): string
+    {
+        return Craft::$app->getView()->renderTemplate('_includes/fallback-icon.svg.twig', [
+            'label' => $label,
+        ]);
     }
 
     /**

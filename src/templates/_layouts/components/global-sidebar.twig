@@ -4,9 +4,7 @@
             {% if hasSystemIcon %}
                 <img src="{{ craft.rebrand.icon.url }}" alt="">
             {% else %}
-                {{ svg('@appicons/c-outline.svg', namespace=true)|attr({
-                    aria: {hidden: 'true'},
-                }) }}
+                {{ iconSvg('c-outline') }}
             {% endif %}
         </div>
         <div id="system-name">
