@@ -1,7 +1,7 @@
 {% import '_includes/forms.twig' as forms %}
 
 {% if name ?? false %}
-  {{ hiddenInput(name, '') }}
+  {{ hiddenInput(name|replace('/\\[\\]$/', ''), '') }}
 {% endif -%}
 
 {% set id = id ?? "componentselect#{random()}" -%}
