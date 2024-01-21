@@ -383,7 +383,7 @@
 
 
 {% macro iconPickerField(config) %}
-    {% set config = config|merge({id: config.id ?? "iconselect#{random()}"}) %}
+    {% set config = config|merge({id: config.id ?? "iconpicker#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/iconPicker') }}
 {% endmacro %}
 

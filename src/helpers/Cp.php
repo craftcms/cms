@@ -1529,6 +1529,31 @@ JS, [
     }
 
     /**
+     * Renders an icon picker’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function iconPickerHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/iconPicker.twig', $config);
+    }
+
+    /**
+     * Renders an icon picker field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function iconPickerFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'iconpicker' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/iconPicker.twig', $config);
+    }
+
+    /**
      * Renders an editable table field’s HTML.
      *
      * @param array $config
