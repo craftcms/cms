@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'Yeni bir kategori grubu oluştur',
     'Create a new child {type}' => 'Yeni bir {type} alt kaydı oluştur',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'Yeni alan oluştur',
     'Create a new filesystem' => 'Yeni dosya sistemi oluştur',
     'Create a new filesystem…' => 'Yeni dosya sistemi oluştur…',
