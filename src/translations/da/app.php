@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'Opret en ny Kategori Gruppe',
     'Create a new child {type}' => 'Opret en ny underordnet {type}',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'Opret et nyt felt',
     'Create a new filesystem' => 'Opret et nyt filsystem',
     'Create a new filesystem…' => 'Opret et nyt filsystem…',
