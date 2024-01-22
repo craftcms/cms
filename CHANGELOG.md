@@ -42,6 +42,7 @@
 - Fixed an error that occurred when switching entry types, if the entry had any Matrix fields.
 - Fixed a bug where Assets fields set to the “Large Thumbnails” view mode were listing selected assets vertically. ([#14138](https://github.com/craftcms/cms/issues/14138))
 - Fixed an error that occurred when installing Craft with existing project config YAML files.
+- Fixed an error that occurred when duplicating entries via the “Duplicate” bulk element action.
 
 ## 5.0.0-alpha.6 - 2024-01-16
 
