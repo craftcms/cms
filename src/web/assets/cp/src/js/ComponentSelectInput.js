@@ -334,6 +334,8 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
           .data('disclosureMenu').$container;
         const $moveForward = $menu.find('[data-move-forward]').closest('li');
         const $moveBackward = $menu.find('[data-move-backward]').closest('li');
+        const $ul = $moveForward.closest('ul');
+        const $hr = $ul.prev('hr');
 
         if (i === 0) {
           $moveForward.addClass('hidden');
@@ -345,6 +347,12 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
           $moveBackward.addClass('hidden');
         } else {
           $moveBackward.removeClass('hidden');
+        }
+
+        if ($ul.children('li:not(.hidden)').length) {
+          $hr.removeClass('hidden');
+        } else {
+          $hr.addClass('hidden');
         }
       }
 
