@@ -350,7 +350,7 @@ class UtilitiesController extends Controller
     {
         /** @var string|UtilityInterface $class */
         /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
-        return $this->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
+        return $this->getView()->renderTemplate('_includes/fallback-icon.svg.twig', [
             'label' => $class::displayName(),
         ]);
     }
