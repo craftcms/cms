@@ -4447,6 +4447,7 @@ ul.tree,
   }
 }
 
+// pane tabs for inline matrix blocks
 .matrixblock {
   .matrixblock-tabs {
     float: right;
@@ -4460,18 +4461,18 @@ ul.tree,
 
       &:first-child {
         border-radius: 0;
-        border-left: 1px solid $hairlineColor;
+        @include border-left(1px solid $hairlineColor);
       }
 
       [role='tablist'] {
         [role='tab'] {
           background-color: #ebf2fa;
-          border-radius: 0;
+          border-radius: 0px;
 
           .tab-label {
             height: 34px;
             padding: 0 var(--s);
-            border-radius: 0;
+            border-radius: 0px;
           }
 
           &.sel {
@@ -4486,22 +4487,22 @@ ul.tree,
             &:first-child {
               &,
               .tab-label {
-                @include border-top-left-radius(0);
+                @include border-top-left-radius(0px);
               }
             }
           }
         }
       }
+
+      .menubtn {
+        @include margin-right(0px);
+
+        &:not(:empty):not(.btn-empty)::after {
+          @include margin-left(0px);
+        }
+      }
     }
   }
-}
-
-.ltr .matrixblock .pane-tabs .menubtn {
-  margin-right: 0;
-}
-
-.rtl .matrixblock .pane-tabs .menubtn {
-  margin-left: 0;
 }
 
 /* detail sidebars */
