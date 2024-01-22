@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where paths passed to `craft\web\CpScreenResponseBehavior::editUrl()` weren’t getting resolved to absolute URLs.
+
 ## 4.6.1 - 2024-01-16
 
 - `craft\log\MonologTarget` instances are now created via `Craft::createObject()`. ([#13341](https://github.com/craftcms/cms/issues/13341))
