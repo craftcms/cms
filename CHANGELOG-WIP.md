@@ -16,4 +16,5 @@
 ### System
 - Reduced the system font file size, and prevented the flash of unstyled type for it. ([#13879](https://github.com/craftcms/cms/pull/13879))
 - Log message timestamps are now set to the system time zone. ([#13341](https://github.com/craftcms/cms/issues/13341))
+- Selectize inputs now use the `auto_position` plugin. ([#14160](https://github.com/craftcms/cms/pull/14160))
 - Fixed a bug where deleting an entry for a site wasn’t propagating to Matrix blocks for that entry/site. ([#13948](https://github.com/craftcms/cms/issues/13948))
