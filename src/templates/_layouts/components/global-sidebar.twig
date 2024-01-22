@@ -34,7 +34,7 @@
                             {%- elseif item.fontIcon is defined -%}
                                 <span data-icon="{{ item.fontIcon }}"></span>
                             {%- else -%}
-                                {% include "_includes/defaulticon.svg.twig" with { label: item.label } %}
+                                {% include "_includes/fallback-icon.svg.twig" with { label: item.label } %}
                             {%- endif -%}
                         </span>
 
