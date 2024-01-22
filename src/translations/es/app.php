@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'Crear un nuevo grupo de categorías',
     'Create a new child {type}' => 'Crear un nuevo hijo {type}',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'Crear un nuevo campo',
     'Create a new filesystem' => 'Crear un nuevo sistema de archivos',
     'Create a new filesystem…' => 'Crear un nuevo sistema de archivos…',
