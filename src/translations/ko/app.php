@@ -422,7 +422,6 @@ return [
     'Create a new category group' => '새 카테고리 그룹 생성',
     'Create a new child {type}' => '새 하위 {type} 생성',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => '새 필드 생성',
     'Create a new filesystem' => '새로운 파일 시스템 생성',
     'Create a new filesystem…' => '새로운 파일 시스템 생성…',
