@@ -37,6 +37,9 @@
   }
 } %}
 
+{% set form = entry.getFieldLayout().createForm(entry, static) %}
+{% set tabs = form.getTabMenu() %}
+
 <div {{ attr(entryAttributes) }}>
   {% if not static %}
     {{ hiddenInput("#{name}[sortOrder][]", entry.uid) }}
@@ -46,13 +49,24 @@
     {% endif %}
     {{ hiddenInput("#{baseInputName}[type]", entryType.handle) }}
     {{ hiddenInput("#{baseInputName}[enabled]", entry.enabled ? '1' : '') }}
-    <div class="titlebar">
-      <div class="blocktype{% if entry.hasErrors() %} error{% endif %}">
-        {{ entryTypeName }}
-        {% if entry.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
-      </div>
-      <div class="preview"></div>
+  {% endif %}
+
+  <div class="titlebar">
+    <div class="blocktype{% if not static and entry.hasErrors() %} error{% endif %}">
+      {{ entryTypeName }}
+      {% if not static and entry.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
     </div>
+    <div class="preview"></div>
+    <div class="matrixblock-tabs">
+      {% namespace baseInputName %}
+        {% if tabs|length > 1 %}
+          {% include '_includes/tabs.twig' with {'tabs': tabs, 'containerAttributes': {'id': 'tabs'}} %}
+        {% endif %}
+      {% endnamespace %}
+    </div>
+  </div>
+
+  {% if not static %}
     <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div>
     <div class="actions">
       <div class="status off" title="{{ 'Disabled'|t('app') }}">
@@ -92,7 +106,7 @@
   {% endif %}
   <div class="fields">
     {% namespace baseInputName %}
-      {{ entry.getFieldLayout().createForm(entry, static).render()|raw }}
+      {{ form.render()|raw }}
     {% endnamespace %}
   </div>
 </div>
