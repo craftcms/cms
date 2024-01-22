@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - '4.7'
   pull_request:
 permissions:
   contents: read
