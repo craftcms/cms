@@ -33,13 +33,9 @@ abstract class Component
 
     public array $attributes = [];
 
-    public function __construct()
-    {
-    }
-
     public function setup(): void
     {
-        $this->id($this->name . mt_rand());
+        $this->id ??= $this->getName() . '-' . mt_rand();
     }
 
     public function name(?string $name): static

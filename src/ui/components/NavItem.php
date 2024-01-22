@@ -25,6 +25,11 @@ class NavItem extends Component
     protected ?string $path = null;
     protected string $type = 'default';
 
+    public function getId(): ?string
+    {
+        return $this->getPath() ?? $this->getId();
+    }
+
     public function badgeCount(?int $count): self
     {
         $this->badgeCount = $count;
