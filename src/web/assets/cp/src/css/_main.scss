@@ -7849,7 +7849,11 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
   background-color: var(--gray-050);
 
   &.static {
-    padding-top: 14px;
+    .titlebar {
+      @include padding-right(0);
+      @include padding-left(14px);
+      margin-bottom: 14px;
+    }
   }
 
   .flex-fields {

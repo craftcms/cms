@@ -70,7 +70,7 @@
           for (let i = 0; i < $entries.length; i++) {
             let matrixblockTabs = $($entries[i]).find('.matrixblock-tabs');
             if (matrixblockTabs.length > 0) {
-              this.initTabs(matrixblockTabs);
+              Craft.cp.initMatrixTabs(matrixblockTabs);
             }
           }
         }
@@ -142,47 +142,6 @@
         Garnish.$doc.ready(this.setNewEntryBtn.bind(this));
 
         this.trigger('afterInit');
-      },
-
-      initTabs: function (container) {
-        const $tabs = $(container).find('div[id$="tabs"].pane-tabs');
-        if (!$tabs.length) {
-          return;
-        }
-
-        // init tab manager
-        let tabManager = new Craft.Tabs($tabs);
-
-        // prevent items in the disclosure menu from changing the URL
-        let disclosureMenu = tabManager.$menuBtn.data('trigger');
-        $(disclosureMenu.$container)
-          .find('li, a')
-          .on('click', function (ev) {
-            ev.preventDefault();
-          });
-
-        tabManager.on('selectTab', (ev) => {
-          const href = ev.$tab.attr('href');
-
-          // Show its content area
-          if (href && href.charAt(0) === '#') {
-            $(href).removeClass('hidden');
-          }
-
-          // Trigger a resize event to update any UI components that are listening for it
-          Garnish.$win.trigger('resize');
-
-          // Fixes Redactor fixed toolbars on previously hidden panes
-          Garnish.$doc.trigger('scroll');
-        });
-
-        tabManager.on('deselectTab', (ev) => {
-          const href = ev.$tab.attr('href');
-          if (href && href.charAt(0) === '#') {
-            // Hide its content area
-            $(ev.$tab.attr('href')).addClass('hidden');
-          }
-        });
       },
 
       setNewEntryBtn: function () {
@@ -333,7 +292,7 @@
         }
 
         if ($entry.hasClass('matrixblock')) {
-          this.initTabs($entry);
+          Craft.cp.initMatrixTabs($entry);
         }
 
         if ($insertBefore) {
