@@ -935,7 +935,7 @@ class Assets
             return $path;
         }
 
-        $svg = file_get_contents(Craft::getAlias('@appicons/file.svg'));
+        $svg = file_get_contents(Craft::getAlias('@app/elements/thumbs/file.svg'));
 
         $extLength = strlen($extension);
         if ($extLength <= 3) {

@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\Identifiable;
 use craft\base\ModelInterface;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
@@ -400,8 +401,13 @@ abstract class Controller extends \yii\web\Controller
     ): YiiResponse {
         $data += array_filter([
             'modelName' => $modelName,
+            'modelClass' => get_class($model),
             ($modelName ?? 'model') => $model->toArray(),
         ]);
+
+        if ($model instanceof Identifiable) {
+            $data['modelId'] = $model->getId();
+        }
 
         return $this->asSuccess(
             $message,

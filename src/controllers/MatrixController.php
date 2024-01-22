@@ -110,9 +110,11 @@ class MatrixController extends Controller
         $value = $owner?->getFieldValue($field->handle);
 
         $view = $this->getView();
+        /** @var Entry[] $entries */
+        $entries = $value?->all() ?? [];
         $html = $view->namespaceInputs(fn() => $view->renderTemplate('_components/fieldtypes/Matrix/block.twig', [
             'name' => $field->handle,
-            'entryTypes' => $field->getEntryTypesForField($value?->all() ?? [], $owner),
+            'entryTypes' => $field->getEntryTypesForField($entries, $owner),
             'entry' => $entry,
         ]), $namespace);
 

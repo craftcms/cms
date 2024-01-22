@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
+use craft\elements\ElementCollection;
 use craft\elements\GlobalSet;
 use craft\helpers\Db;
 use yii\db\Connection;
@@ -20,6 +21,7 @@ use yii\db\Connection;
  * @method GlobalSet[]|array all($db = null)
  * @method GlobalSet|array|null one($db = null)
  * @method GlobalSet|array|null nth(int $n, ?Connection $db = null)
+ * @method ElementCollection<GlobalSet> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path globals.md

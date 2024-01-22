@@ -8,11 +8,15 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Actionable;
+use craft\base\Chippable;
 use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
+use craft\base\Iconic;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
+use craft\enums\MenuItemType;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
@@ -25,8 +29,17 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class EntryType extends Model implements FieldLayoutProviderInterface
+class EntryType extends Model implements FieldLayoutProviderInterface, Chippable, Iconic, Actionable
 {
+    /**
+     * @inheritdoc
+     */
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getEntries()->getEntryTypeById($id);
+    }
+
     /**
      * @var int|null ID
      */
@@ -46,6 +59,12 @@ class EntryType extends Model implements FieldLayoutProviderInterface
      * @var string|null Handle
      */
     public ?string $handle = null;
+
+    /**
+     * @var string|null Icon
+     * @since 5.0.0
+     */
+    public ?string $icon = null;
 
     /**
      * @var bool Has title field
@@ -131,6 +150,68 @@ class EntryType extends Model implements FieldLayoutProviderInterface
                 'elementType' => Entry::class,
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIcon(): ?string
+    {
+        return $this->icon;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getActionMenuItems(): array
+    {
+        $items = [];
+
+        if (
+            $this->id &&
+            Craft::$app->getUser()->getIsAdmin() &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            $editId = sprintf('action-edit-%s', mt_rand());
+            $items[] = [
+                'type' => MenuItemType::Button,
+                'id' => $editId,
+                'icon' => 'edit',
+                'label' => Craft::t('app', 'Edit'),
+            ];
+
+            $view = Craft::$app->getView();
+            $view->registerJsWithVars(fn($id) => <<<JS
+$('#' + $id).on('click', () => {
+  new Craft.CpScreenSlideout('entry-types/edit', {
+    params: {
+      entryTypeId: $this->id,
+    },
+  });
+});
+JS, [
+                $view->namespaceInputId($editId),
+
+            ]);
+        }
+
+        return $items;
     }
 
     /**
@@ -248,6 +329,7 @@ class EntryType extends Model implements FieldLayoutProviderInterface
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
+            'icon' => $this->icon,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat,

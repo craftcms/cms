@@ -47,7 +47,7 @@ class MyDrafts extends Widget
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/draft.svg');
+        return 'scribble';
     }
 
     /**

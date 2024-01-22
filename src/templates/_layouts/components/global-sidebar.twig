@@ -4,9 +4,7 @@
             {% if hasSystemIcon %}
                 <img src="{{ craft.rebrand.icon.url }}" alt="">
             {% else %}
-                {{ svg('@appicons/c-outline.svg', namespace=true)|attr({
-                    aria: {hidden: 'true'},
-                }) }}
+                {{ iconSvg('c-outline') }}
             {% endif %}
         </div>
         <div id="system-name">
@@ -32,11 +30,11 @@
                     <a {{ attr(linkAttributes) }}>
                         <span class="icon icon-mask" aria-hidden="true">
                             {%- if item.icon is defined -%}
-                                {{ svg(item.icon, sanitize=true, namespace=true) }}
+                                {{ iconSvg(item.icon) }}
                             {%- elseif item.fontIcon is defined -%}
                                 <span data-icon="{{ item.fontIcon }}"></span>
                             {%- else -%}
-                                {% include "_includes/defaulticon.svg.twig" with { label: item.label } %}
+                                {% include "_includes/fallback-icon.svg.twig" with { label: item.label } %}
                             {%- endif -%}
                         </span>
 
