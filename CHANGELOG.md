@@ -39,6 +39,7 @@
 - Added the `chip()` and `iconSvg()` global functions for control panel templates.
 - Fixed a bug where paths passed to `craft\web\CpScreenResponseBehavior::editUrl()` weren’t getting resolved to absolute URLs.
 - Fixed an error that occurred when switching entry types, if the entry had any Matrix fields.
+- Fixed a bug where Assets fields set to the “Large Thumbnails” view mode were listing selected assets vertically. ([#14138](https://github.com/craftcms/cms/issues/14138))
 
 ## 5.0.0-alpha.6 - 2024-01-16
 
