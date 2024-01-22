@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'ایجاد یک گروه دسته بندی جدید',
     'Create a new child {type}' => 'ایجاد یک {type} زیرمجموعه جدید',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'ایجاد یک فیلد جدید',
     'Create a new filesystem' => 'ایجاد یک سیستم‌‌فایل جدید',
     'Create a new filesystem…' => 'ایجاد یک سیستم‌‌فایل جدید...',
