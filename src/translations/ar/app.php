@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'إنشاء مجموعة فئة جديدة',
     'Create a new child {type}' => 'أنشئ {type} فرعيًا جديدًا',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'إنشاء حقل جديد',
     'Create a new filesystem' => 'إنشاء نظام ملفات جديد',
     'Create a new filesystem…' => 'إنشاء نظام ملفات جديد…',
