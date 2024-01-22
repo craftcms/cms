@@ -44,6 +44,7 @@
 - Improved the accessibility of the login page, login modal, and elevated session modal.
 - Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
 - Selected elements within relational fields now include “Move up/down” or “Move forward/backward” in their action menus.
+- Improved the accessibility of time zone fields.
 
 ### Administration
 - Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))
