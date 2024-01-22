@@ -98,6 +98,11 @@ interface FieldInterface extends SavableComponentInterface
      * array, whose keys match the keys returned by this method. The field type should also override
      * [[serializeValue()]] to ensure values are being returned as associative arrays using the same keys.
      *
+     * ::: warning
+     * JSON columns do not work with MariaDB, so they should not be used by plugins which will be
+     * shared publicly.
+     * :::
+     *
      * @return string|string[] The column type(s). [[\yii\db\QueryBuilder::getColumnType()]] will be called
      * to convert the give column type to the physical one. For example, `string` will be converted
      * as `varchar(255)` and `string(100)` becomes `varchar(100)`. `not null` will automatically be
@@ -363,6 +368,8 @@ interface FieldInterface extends SavableComponentInterface
      * - If an existing element was retrieved from the database, the value will be whatever is stored in the field’s
      *   `content` table column. (Or if the field doesn’t have a `content` table column per [[hasContentColumn()]],
      *   the value will be `null`.)
+     * - If the field is being cleared out (e.g. via the `resave/entries` command with `--to :empty:`),
+     *   the value will be an empty string (`''`).
      *
      * There are cases where a pre-normalized value could be passed in as well, so be sure to account for that.
      *
@@ -532,6 +539,23 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element that was just deleted
      */
     public function afterElementDelete(ElementInterface $element): void;
+
+    /**
+     * Performs actions before an element is deleted for a site.
+     *
+     * @param ElementInterface $element The element that is about to be deleted
+     * @return bool Whether the element should be deleted for a site
+     * @since 4.7.0
+     */
+    public function beforeElementDeleteForSite(ElementInterface $element): bool;
+
+    /**
+     * Performs actions after the element has been deleted.
+     *
+     * @param ElementInterface $element The element that was just deleted for a site
+     * @since 4.7.0
+     */
+    public function afterElementDeleteForSite(ElementInterface $element): void;
 
     /**
      * Performs actions before an element is restored.

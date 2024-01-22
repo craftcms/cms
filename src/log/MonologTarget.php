@@ -4,6 +4,7 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\App;
+use DateTimeZone;
 use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\LineFormatter;
@@ -81,11 +82,6 @@ class MonologTarget extends PsrTarget
     protected ?ProcessorInterface $processor = null;
 
     /**
-     * @var Logger|null $logger
-     */
-    protected $logger;
-
-    /**
      * @inheritdoc
      */
     public function init(): void
@@ -104,6 +100,7 @@ class MonologTarget extends PsrTarget
      */
     public function getLogger(): Logger
     {
+        /** @var Logger */
         return $this->logger;
     }
 
@@ -123,20 +120,25 @@ class MonologTarget extends PsrTarget
     public function export(): void
     {
         $this->messages = $this->_filterMessagesByPsrLevel($this->messages, $this->level);
+
+        /** @var Logger $logger */
+        $logger = $this->logger;
+        $logger->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
+
         parent::export();
 
         if (!$this->logContext || empty($this->messages)) {
             return;
         }
 
-        $this->logger->pushProcessor(new ContextProcessor(
+        $logger->pushProcessor(new ContextProcessor(
             vars: $this->logVars,
             dumpVars: $this->allowLineBreaks,
         ));
 
         // Log at default level, so it doesn't get filtered
-        $this->logger->log($this->level, 'Request context:');
-        $this->logger->popProcessor();
+        $logger->log($this->level, 'Request context:');
+        $logger->popProcessor();
     }
 
     /**

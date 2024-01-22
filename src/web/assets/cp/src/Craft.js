@@ -7,6 +7,9 @@ import './css/charts.scss';
 // Load Craft first
 import './js/Craft.js';
 
+// UI
+import './js/UI.js';
+
 // Utilities
 import './js/Queue.js';
 
@@ -57,6 +60,7 @@ import './js/ElevatedSessionForm.js';
 import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';
 import './js/FieldLayoutDesigner.js';
+import './js/FormObserver.js';
 import './js/VolumeFolderSelectorModal.js';
 import './js/FieldToggle.js';
 import './js/Grid.js';
@@ -81,7 +85,6 @@ import './js/TableElementIndexView.js';
 import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
 import './js/Tooltip.js';
-import './js/UI.js';
 import './js/Uploader.js';
 import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';

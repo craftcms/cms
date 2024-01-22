@@ -85,7 +85,7 @@ class Globals extends Component
      */
     public function getAllSetIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllSets(), 'id');
+        return array_map(fn(GlobalSet $globalSet) => $globalSet->id, $this->getAllSets());
     }
 
     /**
@@ -104,7 +104,7 @@ class Globals extends Component
      */
     public function getEditableSetIds(): array
     {
-        return ArrayHelper::getColumn($this->getEditableSets(), 'id');
+        return array_map(fn(GlobalSet $globalSet) => $globalSet->id, $this->getEditableSets());
     }
 
     /**

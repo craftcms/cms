@@ -331,6 +331,11 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'propagateAll',
                 'propagating',
                 'ref',
+                'relatedToAssets',
+                'relatedToCategories',
+                'relatedToEntries',
+                'relatedToTags',
+                'relatedToUsers',
                 'resaving',
                 'revisionId',
                 'rgt',
@@ -843,6 +848,22 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'element' => $element,
             ]));
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDeleteForSite(ElementInterface $element): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementDeleteForSite(ElementInterface $element): void
+    {
+        // carry on
     }
 
     /**

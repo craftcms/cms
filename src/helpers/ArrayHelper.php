@@ -237,12 +237,18 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param callable|string $key the column name or anonymous function which must be set to $value
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
+     * @param int|string|null $valueKey The key of the resulting value, or null if it can't be found
      * @return mixed the value, or null if it can't be found
      * @since 3.1.0
      */
-    public static function firstWhere(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
-    {
-        foreach ($array as $element) {
+    public static function firstWhere(
+        iterable $array,
+        callable|string $key,
+        mixed $value = true,
+        bool $strict = false,
+        int|string|null &$valueKey = null,
+    ): mixed {
+        foreach ($array as $valueKey => $element) {
             $elementValue = static::getValue($element, $key);
             /** @noinspection TypeUnsafeComparisonInspection */
             if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
@@ -250,6 +256,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             }
         }
 
+        $valueKey = null;
         return null;
     }
 

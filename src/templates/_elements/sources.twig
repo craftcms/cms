@@ -61,7 +61,13 @@
             {{ (svg(source.iconMask, sanitize=true, namespace=true) ?: "<span data-icon='#{source.iconMask}'></span>")|raw }}
         </span>
     {% endif %}
-    <span class="label">{{ source.label|trim is not same as('') ? source.label : '(blank)'|t('app') }}</span>
+    <span class="label">
+        {% if source.label|trim is not same as('') %}
+            {{ (source.type ?? null) == 'custom' ? source.label|t('site') : source.label }}
+        {% else %}
+            {{ '(blank)'|t('app') }}
+        {% endif %}
+    </span>
     {% if source.badgeCount is defined %}
         <span class="badge" aria-hidden="true">{{ source.badgeCount|number(decimals=0) }}</span>
         {{ tag('span', {
