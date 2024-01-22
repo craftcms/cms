@@ -18,7 +18,6 @@ use craft\base\GqlInlineFragmentInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
-use craft\db\Table;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -45,10 +44,8 @@ use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\i18n\Translation;
 use craft\models\EntryType;
-use craft\models\Site;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
-use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
@@ -1221,6 +1218,27 @@ class Matrix extends Field implements
 
         // Delete any entries that primarily belong to this element
         $this->entryManager()->deleteNestedElements($element, $element->hardDelete);
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDeleteForSite(ElementInterface $element): bool
+    {
+        $elementsService = Craft::$app->getElements();
+
+        /** @var Entry[] $entries */
+        $entries = Entry::find()
+            ->primaryOwnerId($element->id)
+            ->status(null)
+            ->siteId($element->siteId)
+            ->all();
+
+        foreach ($entries as $entry) {
+            $elementsService->deleteElementForSite($entry);
+        }
 
         return true;
     }

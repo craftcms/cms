@@ -5731,6 +5731,32 @@ JS,
     /**
      * @inheritdoc
      */
+    public function beforeDeleteForSite(): bool
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            if (!$field->beforeElementDeleteForSite($this)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDeleteForSite(): void
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementDeleteForSite($this);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeRestore(): bool
     {
         // Tell the fields about it

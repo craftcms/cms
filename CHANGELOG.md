@@ -9,8 +9,13 @@
 - Selected elements within relational fields now include “Move up/down” or “Move forward/backward” in their action menus.
 - Sections’ and Matrix fields’ Entry Types settings now use an entry type select input, with support for reordering selected entry types, and editing entry types via slideouts. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added “Save and continue editing” actions to all core settings pages with full-page forms. ([#14168](https://github.com/craftcms/cms/discussions/14168))
+- Added the `utils/prune-orphaned-entries` command. ([#14154](https://github.com/craftcms/cms/pull/14154))
 - Added `craft\base\Actionable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\Chippable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\ElementInterface::afterDeleteForSite()`.
+- Added `craft\base\ElementInterface::beforeDeleteForSite()`.
+- Added `craft\base\FieldInterface::afterElementDeleteForSite()`.
+- Added `craft\base\FieldInterface::beforeElementDeleteForSite()`.
 - Added `craft\base\Iconic`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\Identifiable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\Statusable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
@@ -43,6 +48,7 @@
 - Fixed a bug where Assets fields set to the “Large Thumbnails” view mode were listing selected assets vertically. ([#14138](https://github.com/craftcms/cms/issues/14138))
 - Fixed an error that occurred when installing Craft with existing project config YAML files.
 - Fixed an error that occurred when duplicating entries via the “Duplicate” bulk element action.
+- Fixed a bug where deleting an entry for a site wasn’t propagating to Matrix blocks for that entry/site. ([#13948](https://github.com/craftcms/cms/issues/13948))
 
 ## 5.0.0-alpha.6 - 2024-01-16
 

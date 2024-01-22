@@ -2401,6 +2401,10 @@ class Elements extends Component
                 }
             }
 
+            foreach ($multiSiteElements as $element) {
+                $element->beforeDeleteForSite();
+            }
+
             // Delete the rows in elements_sites
             Db::delete(Table::ELEMENTS_SITES, [
                 'elementId' => $multiSiteElementIds,
@@ -2419,6 +2423,10 @@ class Elements extends Component
                 updateSearchIndex: false
             );
 
+            foreach ($multiSiteElements as $element) {
+                $element->afterDeleteForSite();
+            }
+
             // Fire 'afterDeleteForSite' events
             if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FOR_SITE)) {
                 foreach ($multiSiteElements as $element) {
@@ -2432,7 +2440,7 @@ class Elements extends Component
         // Fully delete any single-site elements
         if (!empty($singleSiteElements)) {
             foreach ($singleSiteElements as $element) {
-                $this->deleteElement($element);
+                $this->deleteElement($element, true);
             }
         }
     }

@@ -1674,6 +1674,21 @@ interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Sta
     public function afterDelete(): void;
 
     /**
+     * Performs actions before an element is deleted for a site.
+     *
+     * @return bool Whether the element should be deleted
+     * @since 4.7.0
+     */
+    public function beforeDeleteForSite(): bool;
+
+    /**
+     * Performs actions after an element is deleted for a site.
+     *
+     * @since 4.7.0
+     */
+    public function afterDeleteForSite(): void;
+
+    /**
      * Performs actions before an element is restored.
      *
      * @return bool Whether the element should be restored
