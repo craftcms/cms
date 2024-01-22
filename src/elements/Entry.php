@@ -882,19 +882,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
-    public function setAttributes($values, $safeOnly = true): void
-    {
-        // Ignore empty typeId values
-        if (isset($values['typeId']) && $values['typeId'] === '') {
-            unset($values['typeId']);
-        }
-
-        parent::setAttributes($values, $safeOnly);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSupportedSites(): array
     {
         if (isset($this->fieldId)) {
