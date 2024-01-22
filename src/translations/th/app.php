@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'Create a new category group',
     'Create a new child {type}' => 'สร้างรายการรองใหม่',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'Create a new field',
     'Create a new filesystem' => 'สร้างระบบไฟล์ใหม่',
     'Create a new filesystem…' => 'สร้างระบบไฟล์ใหม่...',
