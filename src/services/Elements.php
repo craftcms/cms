@@ -2259,7 +2259,7 @@ class Elements extends Component
         // Fully delete any single-site elements
         if (!empty($singleSiteElements)) {
             foreach ($singleSiteElements as $element) {
-                $this->deleteElement($element);
+                $this->deleteElement($element, true);
             }
         }
     }

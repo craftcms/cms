@@ -68,7 +68,6 @@ class PruneOrphanedMatrixBlocksController extends Controller
             // delete the ones we found
             foreach ($matrixBlocks as $block) {
                 $this->do(sprintf('Deleting block %s in %s', $block->id, $site->getName()), function() use ($block, $elementsService) {
-                    $block->deletedWithOwner = false;
                     $elementsService->deleteElementForSite($block);
                 });
             }

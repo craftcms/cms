@@ -1160,7 +1160,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             ->all();
 
         foreach ($matrixBlocks as $matrixBlock) {
-            $matrixBlock->deletedWithOwner = true;
             $elementsService->deleteElementForSite($matrixBlock);
         }
 
