@@ -513,6 +513,13 @@ class NestedElementManager extends Component
                 $settings['createAttributes'] = $config['createAttributes'];
                 if (count($settings['createAttributes']) === 1 && ArrayHelper::isIndexed($settings['createAttributes'])) {
                     $settings['createAttributes'] = ArrayHelper::firstValue($settings['createAttributes'])['attributes'];
+                } else {
+                    $settings['createAttributes'] = array_map(function(array $attributes) {
+                        if (isset($attributes['icon'])) {
+                            $attributes['icon'] = Cp::iconSvg($attributes['icon']);
+                        }
+                        return $attributes;
+                    }, $settings['createAttributes']);
                 }
             }
 

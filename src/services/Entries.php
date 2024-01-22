@@ -1233,6 +1233,9 @@ SQL)->execute();
         if ($db->columnExists(Table::ENTRYTYPES, 'showSlugField')) {
             $query->addSelect('showSlugField');
         }
+        if ($db->columnExists(Table::ENTRYTYPES, 'icon')) {
+            $query->addSelect('icon');
+        }
 
         return $query;
     }
@@ -1368,6 +1371,7 @@ SQL)->execute();
 
             $entryTypeRecord->name = $data['name'];
             $entryTypeRecord->handle = $data['handle'];
+            $entryTypeRecord->icon = $data['icon'] ?? null;
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;

@@ -527,6 +527,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       if (data.message) {
         Craft.cp.displaySuccess(data.message, data.notificationSettings);
       }
+      if (data.modelClass && data.modelId) {
+        Craft.refreshComponentInstances(data.modelClass, data.modelId);
+      }
       this.trigger('submit', {
         response: response,
         data: (data.modelName && data[data.modelName]) || {},

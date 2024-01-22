@@ -64,13 +64,17 @@ Craft.NestedElementManager = Garnish.Base.extend(
           const $ul = $('<ul/>').appendTo($menu);
           for (let type of this.settings.createAttributes) {
             const $li = $('<li/>').appendTo($ul);
-            const $a = $('<a/>', {
-              href: '#',
+            let buttonHtml = '';
+            if (type.icon) {
+              buttonHtml += `<span class="icon">${type.icon}</span>`;
+            }
+            buttonHtml += `<span class="label">${type.label}</span>`;
+            const $button = $('<button/>', {
               type: 'button',
-              role: 'button',
-              text: type.label,
+              class: 'menu-item',
+              html: buttonHtml,
             }).appendTo($li);
-            this.addListener($a, 'activate', (ev) => {
+            this.addListener($button, 'activate', (ev) => {
               ev.preventDefault();
               this.createElement(type.attributes);
             });

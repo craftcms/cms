@@ -137,7 +137,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         if (Craft::$app->getIsMultiSite() && isset($behavior->site)) {
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
-                'icon' => 'world',
+                'icon' => Cp::earthIcon(),
                 'label' => Craft::t('site', $behavior->site->name),
                 'menu' => [
                     'label' => Craft::t('site', 'Select site'),

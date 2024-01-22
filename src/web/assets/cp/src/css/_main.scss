@@ -50,7 +50,6 @@
   --ui-control-active-bg-color: #{transparentize($inputColor, 0.5)};
   --ui-control-border-radius: var(--large-border-radius);
   --ui-control-height: calc((34rem / 16)); // 1rem == 16px
-  --icon-opacity: 0.8;
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -220,6 +219,8 @@ table.editable textarea {
 /* icons */
 .icon:before,
 .menu ul.padded li a.sel:before,
+.menu ul.padded li .menu-item.sel:before,
+.menu ul.padded li .menu-option.sel:before,
 .menu .flex.padded.sel:before,
 .texticon:before,
 #help:before,
@@ -458,6 +459,10 @@ a {
   body.underline-links &,
   &:hover {
     text-decoration: underline;
+  }
+
+  .icon svg {
+    @include svg-mask(var(--link-color));
   }
 }
 
@@ -1455,7 +1460,7 @@ ul.icons {
   align-items: center;
   justify-content: center;
   border-radius: var(--ui-control-border-radius);
-  padding: 7px 14px;
+  padding: 7px 10px;
   border: none;
   text-align: center;
   white-space: nowrap;
@@ -1537,6 +1542,12 @@ ul.icons {
     text-decoration: none;
   }
 
+  &:empty,
+  &.btn-empty {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
   &[data-icon]:not(:empty):not(.btn-empty):before,
   &.icon:not(:empty):not(.btn-empty):before,
   &.menubtn[data-icon]:empty:before,
@@ -1563,8 +1574,8 @@ ul.icons {
   }
 
   [data-icon] {
-    margin-top: -2px;
-    @include margin-right(4px);
+    margin-top: -3px;
+    @include margin-right(5px);
 
     &.light:before {
       color: var(--gray-300);
@@ -2854,7 +2865,7 @@ table {
     }
 
     .icon {
-      margin-top: -4px;
+      margin: -4px -1px 0;
     }
   }
 
@@ -2921,6 +2932,42 @@ table {
       max-height: 100%;
     }
   }
+}
+
+.cp-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+
+  svg {
+    width: 20px;
+    height: 20px;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    @include svg-mask(var(--ui-control-color));
+  }
+}
+
+.chips,
+.cards {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--xs);
+
+  &:not(.inline-chips) {
+    flex-direction: column;
+  }
+
+  li {
+    max-width: 100%;
+  }
+}
+
+.chips:not(.inline-chips) .chip:not(:first-child),
+.cards .card:not(:first-child) {
+  margin-top: var(--s);
 }
 
 .inline-chips {
@@ -3204,7 +3251,7 @@ table {
     }
 
     .move {
-      margin-top: -2px !important;
+      margin-top: -3px !important;
     }
   }
 
@@ -3591,29 +3638,17 @@ $checkboxPadding: $checkboxSize + 4;
   }
 }
 
+.elementselect .elements:not(:empty),
+.componentselect .components:not(:empty) {
+  & + .flex {
+    margin-top: var(--s);
+  }
+}
+
 /* element select fields */
 .elementselect {
   position: relative;
   min-height: 34px;
-
-  .elements {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--xs);
-
-    &:not(.inline-chips) {
-      flex-direction: column;
-    }
-
-    li {
-      max-width: 100%;
-    }
-  }
-
-  .chip:not(:first-child),
-  .card:not(:first-child) {
-    margin-top: var(--s);
-  }
 
   .flex,
   .btn {
@@ -3622,10 +3657,6 @@ $checkboxPadding: $checkboxSize + 4;
 
   .chip {
     z-index: 1;
-  }
-
-  .flex {
-    padding-top: 7px;
   }
 
   .structure ul {
@@ -3919,8 +3950,8 @@ ul.tree,
   display: inline-block;
   position: relative;
   @include margin-right(10px);
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border: 1px solid transparent;
   border-radius: 100%;
   box-sizing: border-box;
@@ -4821,6 +4852,28 @@ $min2ColWidth: 400px;
     @include padding(var(--s), 12px, var(--s), 0);
     width: 100%;
     background-color: transparent;
+  }
+}
+
+.meta > .field > .input > .custom-select {
+  display: block;
+  margin: calc(var(--s) * -1) 0;
+  width: 100%;
+  border-radius: 0;
+  box-shadow: none;
+  background-color: transparent;
+
+  .menubtn {
+    @include padding-left(0);
+    justify-content: start;
+    width: 100%;
+    background-color: transparent;
+
+    &:after {
+      position: absolute;
+      top: calc(50% - 5px);
+      @include right(0);
+    }
   }
 }
 
@@ -5965,21 +6018,10 @@ $min2ColWidth: 400px;
         a,
         .menu-item,
         .menu-option {
-          @include padding-left(30px);
+          @include padding-left(32px);
 
-          &[data-icon],
-          &.icon,
           &.sel {
             &:before {
-              @include floatleft;
-              @include margin(3px, 0, 0, -20px);
-              width: 14px;
-              font-size: 14px;
-              color: var(--ui-control-color);
-            }
-
-            &.error:before {
-              color: var(--error-color);
             }
           }
 
@@ -5987,7 +6029,13 @@ $min2ColWidth: 400px;
             background: var(--gray-050);
 
             &:not([data-icon]):before {
-              content: '\f00e';
+              @include floatleft;
+              @include margin(4px, 0, 0, -22px);
+              font-size: 14px;
+              width: 14px;
+              content: 'check';
+              color: var(--ui-control-color);
+              margin-top: 3px !important;
             }
           }
         }
@@ -6076,40 +6124,77 @@ $min2ColWidth: 400px;
   }
 }
 
-.menubtn,
-.menu {
-  span.icon {
-    display: inline-block;
-    margin-top: -1px;
-    width: 10px;
-    @include margin-right(10px);
-    text-align: center;
-    font-size: 14px;
-    color: var(--ui-control-color);
+.menu li {
+  & > a,
+  & > button {
+    &[data-icon]:before,
+    [data-icon]:before,
+    span.icon:not([data-icon]) {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      @include margin-left(-1px);
+      @include margin-right(9px);
+    }
+
+    &[data-icon]:before,
+    [data-icon]:before {
+      position: relative;
+      top: -2px;
+      text-align: center;
+      font-size: 14px;
+      color: var(--ui-control-color);
+    }
+
+    span.icon:not([data-icon]) svg {
+      display: block;
+      position: relative;
+      top: 1px;
+      width: 100%;
+      height: 100%;
+      @include svg-mask(var(--ui-control-color));
+    }
+
+    &.error {
+      &[data-icon]:before,
+      [data-icon]:before {
+        color: var(--error-color);
+      }
+
+      span.icon:not([data-icon]) svg {
+        @include svg-mask(var(--error-color));
+      }
+    }
   }
 }
 
-.menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
-.menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
-  @include menu-item-active-styles;
-  --text-color: var(--white);
-  --light-text-color: var(--gray-100);
-  --ui-control-color: var(--gray-050);
-  --ui-control-hover-color: var(--gray-100);
-  --ui-control-active-color: var(--gray-100);
+.menu:not(.menu--disclosure) ul li,
+.menu:not(.menu--disclosure):not(:hover) ul li {
+  a,
+  .menu-item,
+  .menu-option {
+    &:not(.sel):not(.disabled):hover {
+      @include menu-item-active-styles;
+      --text-color: var(--white);
+      --light-text-color: var(--gray-100);
+      --ui-control-color: var(--gray-050);
+      --ui-control-hover-color: var(--gray-100);
+      --ui-control-active-color: var(--gray-100);
 
-  span.icon,
-  &:before,
-  div.code {
-    color: var(--menu-item-active-color);
-  }
+      span.icon,
+      &:before,
+      div.code {
+        color: var(--menu-item-active-color);
+      }
 
-  &.error {
-    color: var(--menu-item-active-color) !important;
-  }
+      &.error {
+        color: var(--menu-item-active-color) !important;
+      }
 
-  span.light {
-    color: var(--white) !important;
+      span.light {
+        color: var(--white) !important;
+      }
+    }
   }
 }
 
@@ -6117,7 +6202,7 @@ $min2ColWidth: 400px;
   hr.padded,
   .h6.padded,
   h6.padded {
-    @include margin-left(16px);
+    @include margin-left(20px);
   }
 }
 
@@ -6617,7 +6702,7 @@ div.checkbox.checked:not(.indeterminate):before,
   .disabled
   .checkbox:before {
   content: 'check';
-  font-size: 15px;
+  font-size: 14px;
 }
 
 input.checkbox:indeterminate + label:before,
@@ -6650,7 +6735,6 @@ body.reduce-focus-visibility {
 
   &:before {
     --checkbox-size: 14px;
-    --icon-opacity: 1;
     @include icon;
     content: 'check';
     line-height: var(--checkbox-size);
@@ -6835,10 +6919,6 @@ td.errors .text,
       @include left(9px);
       color: var(--ui-control-color);
     }
-
-    .text {
-      @include padding-left(26px);
-    }
   }
 
   .texticon-icon {
@@ -6849,6 +6929,10 @@ td.errors .text,
     justify-content: center;
     align-items: center;
     @include left(9px);
+  }
+
+  .text {
+    @include padding-left(calc(26rem / 16));
   }
 
   .clear-btn {
@@ -6898,8 +6982,6 @@ td.errors .text,
     }
 
     .text {
-      @include padding-left(calc(26rem / 16));
-
       &.clearable {
         @include padding-right(calc(30px + var(--touch-target-size)));
       }
@@ -6993,7 +7075,6 @@ td.errors .text,
     height: 15px;
     width: 2px;
     background-color: var(--ui-control-color);
-    opacity: var(--icon-opacity);
   }
 
   &:before {
@@ -7138,13 +7219,15 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
   font-size: 11px;
 }
 
-/* selectize reset */
-.selectize-control .selectize-input.disabled {
+.selectize-control .selectize-input.disabled,
+.custom-select.disabled {
   opacity: 1;
   cursor: not-allowed !important;
+  pointer-events: auto !important;
 
   * {
     cursor: not-allowed !important;
+    pointer-events: auto !important;
   }
 }
 
@@ -7495,6 +7578,93 @@ body {
   &:focus {
     a.active {
       background-color: var(--light-sel-color);
+    }
+  }
+}
+
+/* icon picker */
+.icon-picker {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--xs);
+}
+
+.icon-picker--icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include input-styles;
+  border-radius: var(--ui-control-border-radius);
+  width: var(--ui-control-height);
+  height: var(--ui-control-height);
+  background: var(--gray-050);
+
+  svg {
+    width: calc(20rem / 16);
+    height: calc(20rem / 16);
+    @include svg-mask(var(--ui-control-color));
+  }
+}
+
+.icon-picker-modal {
+  --width: calc(var(--ui-control-height) * 10 + var(--s) * 9 + var(--xl) * 2);
+  width: var(--width) !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 20px) !important;
+
+  .body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--l);
+
+    .icon-picker-modal--list {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+
+      &:not(.loading) {
+        .spinner {
+          display: none;
+        }
+      }
+
+      &.loading {
+        &:after {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          content: '';
+          background-color: rgba(255, 255, 255, 0.75);
+        }
+
+        .spinner {
+          top: calc(50% - 10px);
+          z-index: 1;
+        }
+      }
+
+      ul {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: start;
+        gap: var(--s);
+        max-height: 100%;
+        overflow: auto;
+
+        .icon-picker--icon {
+          --focus-ring: var(--inner-focus-ring);
+
+          &:hover {
+            border-color: var(--link-color);
+            background-color: var(--blue-100);
+          }
+        }
+      }
     }
   }
 }

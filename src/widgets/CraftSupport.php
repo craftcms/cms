@@ -50,7 +50,7 @@ class CraftSupport extends Widget
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/buoey.svg');
+        return 'life-ring';
     }
 
     /**
@@ -139,10 +139,6 @@ JS;
 
         return $view->renderTemplate('_components/widgets/CraftSupport/body.twig', [
             'widget' => $this,
-            'buoeyIcon' => file_get_contents($iconsDir . '/buoey.svg'),
-            'bullhornIcon' => file_get_contents($iconsDir . '/bullhorn.svg'),
-            'seIcon' => file_get_contents($iconsDir . '/craft-stack-exchange.svg'),
-            'ghIcon' => file_get_contents($iconsDir . '/github.svg'),
             'showBackupOption' => $showBackupOption,
             'bundleUrl' => $assetBundle->baseUrl,
         ]);

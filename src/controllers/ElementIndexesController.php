@@ -737,7 +737,7 @@ class ElementIndexesController extends BaseElementsController
             return true;
         };
 
-        $applyCriteria($this->request->getBodyParam('baseCriteria'));
+        $applyCriteria($this->request->getBodyParam('baseCriteria') ?? []);
 
         // Now we move onto things the user could have modified...
         $unfilteredQuery = (clone $query);
@@ -749,7 +749,7 @@ class ElementIndexesController extends BaseElementsController
             $hasFilters = true;
         }
 
-        if ($applyCriteria($this->request->getBodyParam('criteria'))) {
+        if ($applyCriteria($this->request->getBodyParam('criteria') ?? [])) {
             $hasFilters = true;
         }
 
