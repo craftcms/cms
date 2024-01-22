@@ -1658,7 +1658,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               this._countResults().then((total) => {
                 let successMessage;
 
-                if (!this._isViewPaginated) {
+                if (!this.paginated) {
                   successMessage = Craft.t(
                     'app',
                     'Showing {total, number} {total, plural, =1{{item}} other{{items}}}',
