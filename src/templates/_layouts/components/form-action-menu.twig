@@ -5,6 +5,7 @@
             <li>
                 {% set linkAttributes = {
                     tabindex: '0',
+                    role: 'button',
                     class: [
                         'formsubmit',
                         (destructive ?? false) ? 'error',
