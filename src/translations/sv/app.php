@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'Skapa en ny kategorigrupp',
     'Create a new child {type}' => 'Skapa en ny undersida {type}',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'Skapa ett nytt fält',
     'Create a new filesystem' => 'Skapa ett nytt filsystem',
     'Create a new filesystem…' => 'Skapa ett nytt filsystem …',
