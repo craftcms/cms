@@ -422,7 +422,6 @@ return [
     'Create a new category group' => '新しいカテゴリグループを作成する',
     'Create a new child {type}' => '新しい子{type}を作成',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => '新しいフィールドを作る',
     'Create a new filesystem' => '新しいファイルシステムを作成',
     'Create a new filesystem…' => '新しいファイルシステムを作成…',
