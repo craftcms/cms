@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'Voeg een categorie groep toe',
     'Create a new child {type}' => 'Maak een nieuw(e) kind{type}',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'Maak nieuw veld aan',
     'Create a new filesystem' => 'Nieuw bestandssysteem aanmaken',
     'Create a new filesystem…' => 'Nieuw bestandssysteem aanmaken…',
