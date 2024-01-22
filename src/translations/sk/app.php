@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'Vytvoriť novú skupinu kategórií',
     'Create a new child {type}' => 'Vytvoriť nový dcérsky typ {type}',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'Vytvoriť nové pole',
     'Create a new filesystem' => 'Vytvoriť nový systém súborov',
     'Create a new filesystem…' => 'Vytvorenie nového systému súborov…',
