@@ -4,6 +4,7 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\App;
+use DateTimeZone;
 use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\LineFormatter;
@@ -119,14 +120,17 @@ class MonologTarget extends PsrTarget
     public function export(): void
     {
         $this->messages = $this->_filterMessagesByPsrLevel($this->messages, $this->level);
+
+        /** @var Logger $logger */
+        $logger = $this->logger;
+        $logger->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
+
         parent::export();
 
         if (!$this->logContext || empty($this->messages)) {
             return;
         }
 
-        /** @var Logger $logger */
-        $logger = $this->logger;
         $logger->pushProcessor(new ContextProcessor(
             vars: $this->logVars,
             dumpVars: $this->allowLineBreaks,
