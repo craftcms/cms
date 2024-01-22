@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
+use craft\elements\ElementCollection;
 use craft\elements\Tag;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -24,6 +25,7 @@ use yii\db\Connection;
  * @method Tag[]|array all($db = null)
  * @method Tag|array|null one($db = null)
  * @method Tag|array|null nth(int $n, ?Connection $db = null)
+ * @method ElementCollection<Tag> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path tags.md

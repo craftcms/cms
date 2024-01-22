@@ -716,6 +716,7 @@ class Matrix extends Field implements
         $new = 0;
 
         foreach ($value->all() as $entry) {
+            /** @var Entry $entry */
             $entryId = $entry->id ?? 'new' . ++$new;
             $serialized[$entryId] = [
                 'type' => $entry->getType()->handle,
@@ -784,6 +785,7 @@ class Matrix extends Field implements
 
         $view = Craft::$app->getView();
         $id = $this->getInputId();
+        /** @var Entry[] $value */
         $entryTypes = $this->getEntryTypesForField($value, $element);
 
         // Get the entry types data
