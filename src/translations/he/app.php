@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'צור קבוצת קטגוריות חדשה',
     'Create a new child {type}' => 'צור {type} צאצא חדש',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'צור שדה חדש',
     'Create a new filesystem' => 'צור מערכת קבצים חדשה',
     'Create a new filesystem…' => 'צור מערכת קבצים חדשה…',
