@@ -422,7 +422,6 @@ return [
     'Create a new category group' => '新建分类群组',
     'Create a new child {type}' => '创建一个新的子{type}',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => '创建新字段',
     'Create a new filesystem' => '创建新文件系统',
     'Create a new filesystem…' => '创建新文件系统…',
