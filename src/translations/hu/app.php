@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'Hozzon létre egy új kategória csoportot',
     'Create a new child {type}' => 'Új alárendelt {type} elem létrehozása',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'Új mező létrehozása',
     'Create a new filesystem' => 'Új fájlrendszer létrehozása',
     'Create a new filesystem…' => 'Új fájlrendszer létrehozása…',
