@@ -558,7 +558,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
     /**
      * @inheritdoc
      */
-    public function renameFile(string $path, string $newPath): void
+    public function renameFile(string $path, string $newPath, array $config = []): void
     {
         $subpath = $this->getSubpath();
         $this->getFs()->renameFile($subpath . $path, $subpath . $newPath);
@@ -567,7 +567,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
     /**
      * @inheritdoc
      */
-    public function copyFile(string $path, string $newPath): void
+    public function copyFile(string $path, string $newPath, array $config = []): void
     {
         $subpath = $this->getSubpath();
         $this->getFs()->copyFile($subpath . $path, $subpath . $newPath);

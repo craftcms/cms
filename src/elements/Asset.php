@@ -2105,7 +2105,7 @@ JS,[
     protected function thumbSvg(): ?string
     {
         if ($this->isFolder) {
-            return file_get_contents(Craft::getAlias('@appicons/folder.svg'));
+            return file_get_contents(Craft::getAlias('@app/elements/thumbs/folder.svg'));
         }
 
         return Assets::iconSvg($this->getExtension());

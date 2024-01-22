@@ -21,7 +21,6 @@ use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
@@ -226,7 +225,7 @@ class Cp extends Component
             $navItems[] = NavItem::make()
                 ->label('Entries')
                 ->path('entries')
-                ->icon('section');
+                ->icon('newspaper');
         }
 
         if (!empty(Craft::$app->getGlobals()->getEditableSets())) {
@@ -240,21 +239,21 @@ class Cp extends Component
             $navItems[] = NavItem::make()
                 ->label('Categories')
                 ->path('categories')
-                ->icon('tree');
+                ->icon('sitemap');
         }
 
         if (Craft::$app->getVolumes()->getTotalViewableVolumes()) {
             $navItems[] = NavItem::make()
                 ->label('Assets')
                 ->path('assets')
-                ->icon('assets');
+                ->icon('image');
         }
 
         if ($craftPro && Craft::$app->getUser()->checkPermission('editUsers')) {
             $navItems[] = NavItem::make()
                 ->label('Users')
                 ->path('users')
-                ->icon('users');
+                ->icon('user-group');
         }
 
         // Add any Plugin nav items
@@ -294,7 +293,7 @@ class Cp extends Component
                 $navItems[] = NavItem::make()
                     ->label('GraphQL')
                     ->path('graphql')
-                    ->icon('@appicons/graphql.svg')
+                    ->icon('graphql')
                     ->items($subNavItems);
             }
         }
@@ -312,7 +311,7 @@ class Cp extends Component
             $navItems[] = NavItem::make()
                 ->path('utilities')
                 ->label('Utilities')
-                ->icon('tool')
+                ->icon('wrench')
                 ->badgeCount($badgeCount);
         }
 
@@ -321,13 +320,13 @@ class Cp extends Component
                 $navItems[] = NavItem::make()
                     ->path('settings')
                     ->label('Settings')
-                    ->icon('settings');
+                    ->icon('gear');
             }
 
             $navItems[] = NavItem::make()
                 ->path('plugin-store')
                 ->label('Plugin Store')
-                ->icon('plugin');
+                ->icon('plug');
         }
 
         // Allow plugins to modify the nav
@@ -374,74 +373,74 @@ class Cp extends Component
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'iconMask' => '@appicons/sliders.svg',
+            'iconMask' => '@app/icons/light/sliders.svg',
             'label' => Craft::t('app', 'General'),
         ];
         $settings[$label]['sites'] = [
-            'iconMask' => '@appicons/world.svg',
+            'iconMask' => sprintf('@app/icons/light/%s.svg', CpHelper::earthIcon()),
             'label' => Craft::t('app', 'Sites'),
         ];
 
         if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
             $settings[$label]['routes'] = [
-                'iconMask' => '@appicons/routes.svg',
+                'iconMask' => '@app/icons/light/signs-post.svg',
                 'label' => Craft::t('app', 'Routes'),
             ];
         }
 
         $settings[$label]['users'] = [
-            'iconMask' => '@appicons/users.svg',
+            'iconMask' => '@app/icons/light/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
         $settings[$label]['addresses'] = [
-            'iconMask' => '@appicons/location.svg',
+            'iconMask' => '@app/icons/light/map-location.svg',
             'label' => Craft::t('app', 'Addresses'),
         ];
         $settings[$label]['email'] = [
-            'iconMask' => '@appicons/envelope.svg',
+            'iconMask' => '@app/icons/light/envelope.svg',
             'label' => Craft::t('app', 'Email'),
         ];
         $settings[$label]['plugins'] = [
-            'iconMask' => '@appicons/plugin.svg',
+            'iconMask' => '@app/icons/light/plug.svg',
             'label' => Craft::t('app', 'Plugins'),
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['fields'] = [
-            'iconMask' => '@appicons/field.svg',
+            'iconMask' => '@app/icons/light/pen-to-square.svg',
             'label' => Craft::t('app', 'Fields'),
         ];
         $settings[$label]['entry-types'] = [
-            'iconMask' => '@appicons/entry-types.svg',
+            'iconMask' => '@app/icons/light/files.svg',
             'label' => Craft::t('app', 'Entry Types'),
         ];
         $settings[$label]['sections'] = [
-            'iconMask' => '@appicons/newspaper.svg',
+            'iconMask' => '@app/icons/light/newspaper.svg',
             'label' => Craft::t('app', 'Sections'),
         ];
         $settings[$label]['globals'] = [
-            'iconMask' => '@appicons/globe.svg',
+            'iconMask' => '@app/icons/light/globe.svg',
             'label' => Craft::t('app', 'Globals'),
         ];
         $settings[$label]['categories'] = [
-            'iconMask' => '@appicons/tree.svg',
+            'iconMask' => '@app/icons/light/sitemap.svg',
             'label' => Craft::t('app', 'Categories'),
         ];
         $settings[$label]['tags'] = [
-            'iconMask' => '@appicons/tags.svg',
+            'iconMask' => '@app/icons/light/tags.svg',
             'label' => Craft::t('app', 'Tags'),
         ];
 
         $label = Craft::t('app', 'Media');
 
         $settings[$label]['filesystems'] = [
-            'iconMask' => '@appicons/folder-open.svg',
+            'iconMask' => '@app/icons/light/folder-open.svg',
             'label' => Craft::t('app', 'Filesystems'),
         ];
 
         $settings[$label]['assets'] = [
-            'iconMask' => '@appicons/photo.svg',
+            'iconMask' => '@app/icons/light/image.svg',
             'label' => Craft::t('app', 'Assets'),
         ];
 
@@ -800,24 +799,6 @@ class Cp extends Component
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
-
-        return $options;
-    }
-
-    /**
-     * Returns all options for an entry type input.
-     *
-     * @return array
-     * @since 5.0.0
-     */
-    public function getEntryTypeOptions(): array
-    {
-        $options = array_map(fn(EntryType $entryType) => [
-            'label' => Craft::t('site', $entryType->name),
-            'value' => $entryType->id,
-        ], Craft::$app->getEntries()->getAllEntryTypes());
-
-        ArrayHelper::multisort($options, 'label');
 
         return $options;
     }

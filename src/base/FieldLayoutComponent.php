@@ -261,12 +261,6 @@ abstract class FieldLayoutComponent extends Model
                     'instructions' => Craft::t('app', 'Only show when editing {type} that match the following rules:', [
                         'type' => $elementType::pluralLowerDisplayName(),
                     ]),
-                    'warning' => !Craft::$app->getConfig()->getGeneral()->autosaveDrafts
-                        ? sprintf(
-                            '`autosaveDrafts` must be enabled for this condition to take effect automatically when editing %s.',
-                            $elementType::pluralLowerDisplayName(),
-                        )
-                        : null,
                 ]);
             }
         }

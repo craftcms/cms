@@ -4,6 +4,7 @@ namespace craft\ui\components;
 
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use Craft;
 use craft\ui\Component;
 use craft\ui\concerns\HasLabel;
 
@@ -16,15 +17,21 @@ class Icon extends Component
 
     protected array $fontIcons = [
         'assets',
+        'ellipsis',
         'gauge',
+        'gear',
         'globe',
-        'plugin',
+        'graphql',
+        'image',
+        'newspaper',
+        'plug',
         'section',
         'settings',
+        'sitemap',
         'tool',
-        'tree',
+        'user-group',
         'users',
-        'ellipsis',
+        'wrench',
         // TODO
     ];
 
@@ -62,7 +69,7 @@ class Icon extends Component
     protected function getBody(): string
     {
         return match ($this->getType()) {
-            'default' => Cp::renderTemplate('_includes/defaulticon.svg.twig', [
+            'default' => Cp::renderTemplate('_includes/fallback-icon.svg.twig', [
                 'label' => $this->getLabel(),
             ]),
             'font' => Html::tag('span', '', [

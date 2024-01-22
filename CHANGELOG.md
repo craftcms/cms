@@ -2,12 +2,62 @@
 
 ## Unreleased
 
+- Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added the “Icon” field type. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added an SVG icon set based on Font Awesome 6.5.1. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Earth icons are now localized based on the system time zone.
+- Selected elements within relational fields now include “Move up/down” or “Move forward/backward” in their action menus.
+- Sections’ and Matrix fields’ Entry Types settings now use an entry type select input, with support for reordering selected entry types, and editing entry types via slideouts. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\Actionable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\Chippable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\Iconic`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\Identifiable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\Statusable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\Thumbable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::CHIP_SIZE_LARGE`.
+- Added `craft\helpers\Cp::CHIP_SIZE_SMALL`.
+- Added `craft\helpers\Cp::chipHtml()`.
+- Added `craft\helpers\Cp::customSelectFieldHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::customSelectHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::earthIcon()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::entryTypeSelectFieldHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::entryTypeSelectHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::fallbackIconSvg()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::iconPickerFieldHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::iconPickerHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::iconSvg()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::menuItem()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Renamed `craft\base\UtilityInterface::iconPath()` to `icon()`, which can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- `craft\base\WidgetInterface::icon()` can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- `craft\fields\fieldlayoutelements\BaseUiElement::selectorIcon()` can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- `craft\helpers\Html::svg()` now has a `$throwException` argument.
+- `craft\web\Controller::asModelSuccess()` now includes a `modelClass` key in the response data (and `modelId` if the model implements `craft\base\Identifiable`). 
+- Deprecated `craft\helpers\Component::iconSvg()`. `craft\helpers\Cp::iconSvg()` and `fallbackIconSvg()` should be used instead. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Deprecated `craft\helpers\Cp::ELEMENT_SIZE_LARGE`. `CHIP_SIZE_LARGE` should be used instead.
+- Deprecated `craft\helpers\Cp::ELEMENT_SIZE_SMALL`. `CHIP_SIZE_SMALL` should be used instead.
+- Removed `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
+- Added the `chip()` and `iconSvg()` global functions for control panel templates.
+- Fixed a bug where paths passed to `craft\web\CpScreenResponseBehavior::editUrl()` weren’t getting resolved to absolute URLs.
+- Fixed an error that occurred when switching entry types, if the entry had any Matrix fields.
+
+## 5.0.0-alpha.6 - 2024-01-16
+
+- Admin tables now have sticky footers. ([#14149](https://github.com/craftcms/cms/pull/14149))
+- Money field condition rules now use money inputs. ([#14148](https://github.com/craftcms/cms/pull/14148))
 - Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
+- Reduced the system font file size, and prevented the flash of unstyled type for it. ([#13879](https://github.com/craftcms/cms/pull/13879))
+- Log message timestamps are now set to the system time zone. ([#13341](https://github.com/craftcms/cms/issues/13341))
+- Added `craft\fields\Money::currencyLabel()`.
+- Added `craft\fields\Money::subunits()`.
+- Added `craft\fields\conditions\MoneyFieldConditionRule`.
+- `craft\base\BaseFsInterface::renameFile()` and `copyFile()` now have a `$config` argument. ([#14147](https://github.com/craftcms/cms/pull/14147))
 - Fixed a bug where `craft\helpers\Db::prepareValueForDb()` wasn’t converting objects to arrays for JSON columns.
-- Fixed a bug where Checkboxes, Multi-select, Dropdown, and Radio Buttons fields weren’t displaying `0` option labels within element indexes. ([#14127](https://github.com/craftcms/cms/issues/14127))
+- Fixed a bug where Checkboxes, Multi-select, Dropdown, and Radio Buttons fields weren’t displaying `0` options within element indexes or condition rules. ([#14127](https://github.com/craftcms/cms/issues/14127), [#14143](https://github.com/craftcms/cms/pull/14143))
 - Fixed a bug where `craft\db\Migration::renameTable()` was renaming the table for the primary database connection, rather than the migration’s connection. ([#14131](https://github.com/craftcms/cms/issues/14131))
 - Fixed a bug where `Craft.FormObserver` wasn’t working reliably for non-`<form>` containers.
 - Fixed a bug where Selectize inputs were triggering autosaves, even when the value didn’t change.
+- Fixed a bug where custom source labels weren’t getting translated. ([#14137](https://github.com/craftcms/cms/issues/14137))
+- Fixed a bug where Dropdown columns within Table fields were loosing their options when the field was edited. ([#14134](https://github.com/craftcms/cms/issues/14134))
 - Fixed a bug where asset edit screens didn’t include the “Open in Image Editor” action item. ([#14125](https://github.com/craftcms/cms/pull/14125))
 - Updated Monolog to v3.
 - Updated Axios to 1.6.5.
