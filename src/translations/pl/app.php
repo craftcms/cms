@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'Utwórz nową kategorię grupy',
     'Create a new child {type}' => 'Utwórz nowy {type} potomny',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'Utwórz nowe pole',
     'Create a new filesystem' => 'Utwórz nowy system plików',
     'Create a new filesystem…' => 'Utwórz nowy system plików…',
