@@ -43,6 +43,7 @@
 - Deprecated `craft\helpers\Cp::ELEMENT_SIZE_SMALL`. `CHIP_SIZE_SMALL` should be used instead.
 - Removed `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
 - Added the `chip()` and `iconSvg()` global functions for control panel templates.
+- Selectize inputs now use the `auto_position` plugin. ([#14160](https://github.com/craftcms/cms/pull/14160))
 - Fixed a bug where paths passed to `craft\web\CpScreenResponseBehavior::editUrl()` weren’t getting resolved to absolute URLs.
 - Fixed an error that occurred when switching entry types, if the entry had any Matrix fields.
 - Fixed a bug where Assets fields set to the “Large Thumbnails” view mode were listing selected assets vertically. ([#14138](https://github.com/craftcms/cms/issues/14138))
