@@ -422,7 +422,6 @@ return [
     'Create a new category group' => 'Створити нову групу категорій',
     'Create a new child {type}' => 'Створити новий дочірній елемент об\'єкта «{type}»',
     'Create a new entry type' => 'Create a new entry type',
-    'Create a new entry type…' => 'Create a new entry type…',
     'Create a new field' => 'Створити нове поле',
     'Create a new filesystem' => 'Створення нової файлової системи',
     'Create a new filesystem…' => 'Створити нову файлову систему…',
