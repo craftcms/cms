@@ -461,8 +461,11 @@ a {
     text-decoration: underline;
   }
 
-  .icon svg {
-    @include svg-mask(var(--link-color));
+  .icon,
+  .cp-icon {
+    svg {
+      @include svg-mask(var(--link-color));
+    }
   }
 }
 
@@ -1374,7 +1377,7 @@ ul.icons {
 }
 
 .inline-flex {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   align-content: stretch;
   gap: var(--s);
@@ -2938,15 +2941,21 @@ table {
   display: flex;
   align-items: center;
   justify-content: center;
+  --thumb-size: var(--thumb-size, calc(20rem / 16));
   width: var(--thumb-size);
   height: var(--thumb-size);
+  max-width: var(--thumb-size);
 
   svg {
-    width: 20px;
-    height: 20px;
-    max-width: 20px !important;
-    max-height: 20px !important;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    max-width: var(--thumb-size) !important;
+    max-height: var(--thumb-size) !important;
     @include svg-mask(var(--ui-control-color));
+  }
+
+  &.small svg {
+    --thumb-size: calc(14rem / 16);
   }
 }
 

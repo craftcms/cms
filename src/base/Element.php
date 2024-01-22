@@ -5183,7 +5183,7 @@ JS, [
                         'aria-label' => Craft::t('app', 'View'),
                     ]) .
                         Html::tag('span', Cp::iconSvg('world'), [
-                            'class' => 'icon',
+                            'class' => ['cp-icon', 'small', 'inline-flex'],
                         ]) .
                         Html::endTag('a');
                 }
