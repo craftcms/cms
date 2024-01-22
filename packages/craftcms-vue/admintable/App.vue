@@ -1060,9 +1060,14 @@
   }
 
   .vue-admin-table-footer {
+    background-color: #fff;
     border-top: 1px solid #f3f7fc;
+    bottom: 0;
+    margin-bottom: -14px;
     margin-top: 14px;
+    padding-bottom: 14px;
     padding-top: 14px;
+    position: sticky;
   }
 
   .detail-cursor-pointer {
