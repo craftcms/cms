@@ -11,6 +11,15 @@
     { label: "User Groups"|t('app'), url: url('settings/users') }
 ] %}
 
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/users/groups/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
 
 {% if group is not defined and groupId is defined %}
     {% set group = craft.app.userGroups.getGroupById(groupId) %}

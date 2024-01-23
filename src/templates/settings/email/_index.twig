@@ -2,12 +2,21 @@
 
 {% extends '_layouts/cp.twig' %}
 
+{% set title = 'Email Settings'|t('app') %}
+{% set fullPageForm = true %}
+
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-{% set fullPageForm = true %}
-{% set title = "Email Settings"|t('app') %}
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/email'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
 
 {% import '_includes/forms.twig' as forms %}
 
