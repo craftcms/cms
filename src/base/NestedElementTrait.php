@@ -94,7 +94,7 @@ trait NestedElementTrait
      */
     public function setPrimaryOwner(?ElementInterface $owner): void
     {
-        $this->_primaryOwner = $owner;
+        $this->_primaryOwner = $owner ?? false;
         $this->primaryOwnerId = $owner->id ?? null;
     }
 

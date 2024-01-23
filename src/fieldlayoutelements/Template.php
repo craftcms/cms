@@ -40,7 +40,7 @@ class Template extends BaseUiElement
      */
     protected function selectorIcon(): ?string
     {
-        return '@appicons/template.svg';
+        return 'file-code';
     }
 
     /**

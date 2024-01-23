@@ -21,7 +21,6 @@ use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
@@ -216,7 +215,7 @@ class Cp extends Component
             [
                 'label' => Craft::t('app', 'Dashboard'),
                 'url' => 'dashboard',
-                'fontIcon' => 'gauge',
+                'icon' => 'gauge',
             ],
         ];
 
@@ -224,7 +223,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Entries'),
                 'url' => 'entries',
-                'fontIcon' => 'section',
+                'icon' => 'newspaper',
             ];
         }
 
@@ -232,7 +231,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Globals'),
                 'url' => 'globals',
-                'fontIcon' => 'globe',
+                'icon' => 'globe',
             ];
         }
 
@@ -240,7 +239,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Categories'),
                 'url' => 'categories',
-                'fontIcon' => 'tree',
+                'icon' => 'sitemap',
             ];
         }
 
@@ -248,7 +247,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Assets'),
                 'url' => 'assets',
-                'fontIcon' => 'assets',
+                'icon' => 'image',
             ];
         }
 
@@ -256,7 +255,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
-                'fontIcon' => 'users',
+                'icon' => 'user-group',
             ];
         }
 
@@ -298,7 +297,7 @@ class Cp extends Component
                 $navItems[] = [
                     'label' => 'GraphQL',
                     'url' => 'graphql',
-                    'icon' => '@appicons/graphql.svg',
+                    'icon' => 'graphql',
                     'subnav' => $subNavItems,
                 ];
             }
@@ -317,7 +316,7 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'utilities',
                 'label' => Craft::t('app', 'Utilities'),
-                'fontIcon' => 'tool',
+                'icon' => 'wrench',
                 'badgeCount' => $badgeCount,
             ];
         }
@@ -327,14 +326,14 @@ class Cp extends Component
                 $navItems[] = [
                     'url' => 'settings',
                     'label' => Craft::t('app', 'Settings'),
-                    'fontIcon' => 'settings',
+                    'icon' => 'gear',
                 ];
             }
 
             $navItems[] = [
                 'url' => 'plugin-store',
                 'label' => Craft::t('app', 'Plugin Store'),
-                'fontIcon' => 'plugin',
+                'icon' => 'plug',
             ];
         }
 
@@ -396,74 +395,74 @@ class Cp extends Component
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'iconMask' => '@appicons/sliders.svg',
+            'iconMask' => '@app/icons/light/sliders.svg',
             'label' => Craft::t('app', 'General'),
         ];
         $settings[$label]['sites'] = [
-            'iconMask' => '@appicons/world.svg',
+            'iconMask' => sprintf('@app/icons/light/%s.svg', CpHelper::earthIcon()),
             'label' => Craft::t('app', 'Sites'),
         ];
 
         if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
             $settings[$label]['routes'] = [
-                'iconMask' => '@appicons/routes.svg',
+                'iconMask' => '@app/icons/light/signs-post.svg',
                 'label' => Craft::t('app', 'Routes'),
             ];
         }
 
         $settings[$label]['users'] = [
-            'iconMask' => '@appicons/users.svg',
+            'iconMask' => '@app/icons/light/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
         $settings[$label]['addresses'] = [
-            'iconMask' => '@appicons/location.svg',
+            'iconMask' => '@app/icons/light/map-location.svg',
             'label' => Craft::t('app', 'Addresses'),
         ];
         $settings[$label]['email'] = [
-            'iconMask' => '@appicons/envelope.svg',
+            'iconMask' => '@app/icons/light/envelope.svg',
             'label' => Craft::t('app', 'Email'),
         ];
         $settings[$label]['plugins'] = [
-            'iconMask' => '@appicons/plugin.svg',
+            'iconMask' => '@app/icons/light/plug.svg',
             'label' => Craft::t('app', 'Plugins'),
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['fields'] = [
-            'iconMask' => '@appicons/field.svg',
+            'iconMask' => '@app/icons/light/pen-to-square.svg',
             'label' => Craft::t('app', 'Fields'),
         ];
         $settings[$label]['entry-types'] = [
-            'iconMask' => '@appicons/entry-types.svg',
+            'iconMask' => '@app/icons/light/files.svg',
             'label' => Craft::t('app', 'Entry Types'),
         ];
         $settings[$label]['sections'] = [
-            'iconMask' => '@appicons/newspaper.svg',
+            'iconMask' => '@app/icons/light/newspaper.svg',
             'label' => Craft::t('app', 'Sections'),
         ];
         $settings[$label]['globals'] = [
-            'iconMask' => '@appicons/globe.svg',
+            'iconMask' => '@app/icons/light/globe.svg',
             'label' => Craft::t('app', 'Globals'),
         ];
         $settings[$label]['categories'] = [
-            'iconMask' => '@appicons/tree.svg',
+            'iconMask' => '@app/icons/light/sitemap.svg',
             'label' => Craft::t('app', 'Categories'),
         ];
         $settings[$label]['tags'] = [
-            'iconMask' => '@appicons/tags.svg',
+            'iconMask' => '@app/icons/light/tags.svg',
             'label' => Craft::t('app', 'Tags'),
         ];
 
         $label = Craft::t('app', 'Media');
 
         $settings[$label]['filesystems'] = [
-            'iconMask' => '@appicons/folder-open.svg',
+            'iconMask' => '@app/icons/light/folder-open.svg',
             'label' => Craft::t('app', 'Filesystems'),
         ];
 
         $settings[$label]['assets'] = [
-            'iconMask' => '@appicons/photo.svg',
+            'iconMask' => '@app/icons/light/image.svg',
             'label' => Craft::t('app', 'Assets'),
         ];
 
@@ -822,24 +821,6 @@ class Cp extends Component
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
-
-        return $options;
-    }
-
-    /**
-     * Returns all options for an entry type input.
-     *
-     * @return array
-     * @since 5.0.0
-     */
-    public function getEntryTypeOptions(): array
-    {
-        $options = array_map(fn(EntryType $entryType) => [
-            'label' => Craft::t('site', $entryType->name),
-            'value' => $entryType->id,
-        ], Craft::$app->getEntries()->getAllEntryTypes());
-
-        ArrayHelper::multisort($options, 'label');
 
         return $options;
     }

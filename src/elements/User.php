@@ -1056,7 +1056,7 @@ class User extends Element implements IdentityInterface
     {
         if (!isset($this->_addresses)) {
             if (!$this->id) {
-                /** @var ElementCollection */
+                /** @var ElementCollection<Address> */
                 return ElementCollection::make();
             }
 

@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\enums\PropagationMethod;
-use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\web\assets\editsection\EditSectionAsset;
@@ -104,24 +103,8 @@ class SectionsController extends Controller
             $section->type = Section::TYPE_CHANNEL;
         }
 
-        $entryTypeOptions = array_map(
-            fn(EntryType $entryType) => [
-                'label' => Craft::t('site', $entryType->name),
-                'value' => $entryType->id,
-            ],
-            $sectionsService->getAllEntryTypes()
-        );
-        usort($entryTypeOptions, fn(array $a, array $b) => $a['label'] <=> $b['label']);
-        $singleEntryTypeOptions = array_merge($entryTypeOptions);
-
-        if ($section->type !== Section::TYPE_SINGLE || empty($section->getEntryTypes())) {
-            array_unshift($singleEntryTypeOptions, ['label' => '', 'value' => '']);
-        }
-
         $variables['section'] = $section;
         $variables['typeOptions'] = $typeOptions;
-        $variables['entryTypeOptions'] = $entryTypeOptions;
-        $variables['singleEntryTypeOptions'] = $singleEntryTypeOptions;
 
         $this->getView()->registerAssetBundle(EditSectionAsset::class);
 

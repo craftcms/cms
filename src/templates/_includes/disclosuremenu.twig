@@ -1,6 +1,8 @@
 {% set id = id ?? "menu-#{random()}" %}
 {% set withButton = withButton ?? false %}
 
+{% set hasSelected = items|map(i => i.items ?? [i])|flatten(1)|contains('selected') %}
+
 {% macro itemType(item) %}
   {%- if item.type ?? false %}
     {{- item.type }}
@@ -20,7 +22,7 @@
     class: {
       hidden: item.hidden ?? false,
     }|filter|keys,
-  } %}
+  }|merge(item.liAttributes ?? {}) %}
     {% set selected = item.selected ?? false %}
     {% tag (type == 'button' ? 'button' : 'a') with {
       id: id,
@@ -32,7 +34,6 @@
       }|filter|keys,
       href: type == 'button' ? null : url(item.url),
       data: {
-        icon: item.icon ?? null,
         destructive: item.destructive ?? null,
         action: item.action ?? null,
         params: item.params ?? null,
@@ -42,20 +43,25 @@
         form: (item.action ?? false) ? 'false' : null,
       }|filter,
     }|merge(item.attributes ?? {}, recursive=true) %}
-      {% if item.status ?? false -%}
-        {{ statusIndicator(item.status) }}
-      {%- endif -%}
-      <span class="menu-item-label">{{ item.label ?? item.html|raw }}</span>
-      {% if item.description is defined %}
-        <div class="menu-item-description smalltext light">{{ item.description }}</div>
-      {% endif %}
-      {% if selected %}
-        <span class="visually-hidden">, selected</span>
-      {% endif %}
+      {%- apply spaceless %}
+        {% if item.icon ?? false %}
+          <span class="icon">{{ iconSvg(item.icon) }}</span>
+        {% endif %}
+        {% if item.status ?? false -%}
+          {{ statusIndicator(item.status) }}
+        {%- endif -%}
+        <span class="menu-item-label">{{ item.label ?? item.html|raw }}</span>
+        {% if item.description is defined %}
+          <div class="menu-item-description smalltext light">{{ item.description }}</div>
+        {% endif %}
+        {% if selected %}
+          <span class="visually-hidden">, selected</span>
+        {% endif %}
+      {% endapply -%}
     {% endtag %}
   {% endtag %}
   {% js %}
-    $('#{{ id|namespaceInputId }}').on('click', () => {
+    $('#{{ id|namespaceInputId }}').on('activate', () => {
       $('#{{ menuId|namespaceInputId }}').data('disclosureMenu').hide();
     });
   {% endjs %}
@@ -115,7 +121,9 @@
               {% endtag %}
             {% endif %}
             {% tag 'ul' with {
-              class: ['padded'],
+              class: {
+                padded: hasSelected,
+              }|filter|keys,
             }|merge(item.listAttributes ?? {}, recursive=true) %}
               {% for groupItem in item.items %}
                 {{ _self.item(groupItem, id) }}
@@ -125,7 +133,11 @@
         {% endif %}
       {% else %}
         {% if not ulStarted %}
-          {{ '<ul class="padded">'|raw }}
+          {% if hasSelected %}
+            {{ '<ul class="padded">'|raw }}
+          {% else %}
+            {{ '<ul>'|raw }}
+          {% endif %}
           {% set ulStarted = true %}
         {% endif %}
         {{ _self.item(item, id) }}

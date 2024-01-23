@@ -119,6 +119,11 @@ class VolumesController extends Controller
             ->action('volumes/save-volume')
             ->redirectUrl('settings/assets')
             ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
+            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => 'settings/assets/volumes/{id}',
+                'shortcut' => true,
+                'retainScroll' => true,
+            ])
             ->editUrl($volume->id ? "settings/assets/volumes/$volume->id" : null)
             ->contentTemplate('settings/assets/volumes/_edit.twig', [
                 'volumeId' => $volumeId,
