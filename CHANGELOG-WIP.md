@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 4.7 (WIP)
 
+> [!NOTE]  
+> Assets fields with “All” selected for the available sources will [no longer](https://github.com/craftcms/cms/issues/11405#issuecomment-1905998661) include the temp asset volume, if there is one.
+
 ### Content Management
 - Admin tables now have sticky footers. ([#14149](https://github.com/craftcms/cms/pull/14149))
 
