@@ -1074,7 +1074,7 @@ return [
     'Oops!' => '저런!',
     'Open PRs' => 'PR 열기',
     'Open in Image Editor' => 'Open in Image Editor',
-    'Open the full edit page in a new tab' => '새로운 탭에서 전체 편집 페이지 열기',
+    'Open in a new tab' => 'Open in a new tab',
     'Opens in a new window' => '새 창에서 열립니다.',
     'Operator' => '연산자',
     'Optgroup?' => '그룹 선택?',
