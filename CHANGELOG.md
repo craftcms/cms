@@ -2,7 +2,7 @@
 
 ## 5.0.0-alpha.7 - 2024-01-23
 
-- Inline-editable Matrix blocks now support multiple tabs. ([8500](https://github.com/craftcms/cms/discussions/8500), [#14139](https://github.com/craftcms/cms/issues/14139))
+- Inline-editable Matrix blocks now support multiple tabs. ([#8500](https://github.com/craftcms/cms/discussions/8500), [#14139](https://github.com/craftcms/cms/issues/14139))
 - Inline-editable Matrix blocks now include “Open in a new tab” action items.
 - Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added the “Icon” field type. ([#14169](https://github.com/craftcms/cms/pull/14169))
