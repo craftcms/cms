@@ -4468,20 +4468,13 @@ ul.tree,
       float: right;
       max-width: 100%;
 
-      &:first-child {
-        border-radius: 0;
-        @include border-left(1px solid $hairlineColor);
-      }
-
       [role='tablist'] {
         [role='tab'] {
           background-color: #ebf2fa;
-          border-radius: 0px;
 
           .tab-label {
-            height: 34px;
+            height: 30px;
             padding: 0 var(--s);
-            border-radius: 0px;
           }
 
           &.sel {
@@ -4490,21 +4483,9 @@ ul.tree,
         }
       }
 
-      &:first-child {
-        [role='tablist'] {
-          [role='tab'] {
-            &:first-child {
-              &,
-              .tab-label {
-                @include border-top-left-radius(0px);
-              }
-            }
-          }
-        }
-      }
-
       .menubtn {
         @include margin-right(0px);
+        height: 20px;
 
         &:not(:empty):not(.btn-empty)::after {
           @include margin-left(0px);
