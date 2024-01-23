@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-alpha.7 - 2024-01-23
 
 - Inline-editable Matrix blocks now support multiple tabs. ([8500](https://github.com/craftcms/cms/discussions/8500), [#14139](https://github.com/craftcms/cms/issues/14139))
 - Inline-editable Matrix blocks now include “Open in a new tab” action items.
