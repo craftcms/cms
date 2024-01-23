@@ -11,6 +11,7 @@
 - Added “Save and continue editing” actions to all core settings pages with full-page forms. ([#14168](https://github.com/craftcms/cms/discussions/14168))
 - Improved the accessibility of time zone fields.
 - Improved the accessibility of form alternative action menus.
+- Improved the accessibility of element indexes. ([#12286](https://github.com/craftcms/cms/pull/12286))
 - Added the `utils/prune-orphaned-entries` command. ([#14154](https://github.com/craftcms/cms/pull/14154))
 - Added `craft\base\Actionable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\Chippable`. ([#14169](https://github.com/craftcms/cms/pull/14169))

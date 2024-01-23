@@ -42,7 +42,7 @@
 - Elements within relational fields are no longer focusable at the container level.
 - Relational fields now use the proper list semantics.
 - Improved the accessibility of the login page, login modal, and elevated session modal.
-- Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
+- Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120), [#12286](https://github.com/craftcms/cms/pull/12286))
 - Selected elements within relational fields now include “Move up/down” or “Move forward/backward” in their action menus.
 - Improved the accessibility of time zone fields.
 - Improved the accessibility of form alternative action menus.
