@@ -1074,7 +1074,7 @@ return [
     'Oops!' => 'אופס!',
     'Open PRs' => 'PRs פתוחים',
     'Open in Image Editor' => 'Open in Image Editor',
-    'Open the full edit page in a new tab' => 'פתח את מלוא דף העריכה בכרטיסייה חדשה',
+    'Open in a new tab' => 'Open in a new tab',
     'Opens in a new window' => 'נפתח בחלון חדש',
     'Operator' => 'מפעיל',
     'Optgroup?' => 'Optgroup?',
