@@ -438,7 +438,7 @@ class Addresses extends Field implements
                 $address = $oldAddressesById[$addressId];
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                if ($element->getIsDerivative() && $address->primaryOwnerId === $element->getCanonicalId()) {
+                if ($element->getIsDerivative() && $address->getPrimaryOwnerId() === $element->getCanonicalId()) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
                     $address = Craft::$app->getDrafts()->createDraft($address, Craft::$app->getUser()->getId(), null, null, [
                         'canonicalId' => $address->id,
@@ -454,7 +454,8 @@ class Addresses extends Field implements
             } else {
                 $address = new Address();
                 $address->fieldId = $this->id;
-                $address->primaryOwnerId = $address->ownerId = $element->id;
+                $address->setPrimaryOwner($element);
+                $address->setOwner($element);
                 $address->siteId = $element->siteId;
             }
 

@@ -77,7 +77,10 @@ use yii\db\Expression;
  */
 class Entry extends Element implements NestedElementInterface, ExpirableElementInterface
 {
-    use NestedElementTrait;
+    use NestedElementTrait {
+        attributes as traitAttributes;
+        extraFields as traitExtraFields;
+    }
 
     public const STATUS_LIVE = 'live';
     public const STATUS_PENDING = 'pending';
@@ -790,7 +793,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function attributes(): array
     {
-        $names = array_flip(parent::attributes());
+        $names = array_flip($this->traitAttributes());
         unset($names['deletedWithEntryType']);
         unset($names['saveOwnership']);
         $names['authorId'] = true;
@@ -804,7 +807,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function extraFields(): array
     {
-        $names = parent::extraFields();
+        $names = $this->traitExtraFields();
         $names[] = 'author';
         $names[] = 'authors';
         $names[] = 'section';
@@ -1568,8 +1571,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'class' => self::class,
             'sectionId' => $this->sectionId,
             'fieldId' => $this->fieldId,
-            'primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId,
-            'ownerId' => $this->primaryOwnerId ?? $this->ownerId,
+            'primaryOwnerId' => $this->getPrimaryOwnerId(),
+            'ownerId' => $this->getPrimaryOwnerId(),
             'sortOrder' => null,
             'typeId' => $this->typeId,
             'siteId' => $this->siteId,
@@ -2266,7 +2269,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
             $record->sectionId = $this->sectionId;
             $record->fieldId = $this->fieldId;
-            $record->primaryOwnerId = $this->primaryOwnerId ?? $this->ownerId;
+            $record->primaryOwnerId = $this->getPrimaryOwnerId();
             $record->typeId = $this->getTypeId();
             $record->postDate = Db::prepareDateForDb($this->postDate);
             $record->expiryDate = Db::prepareDateForDb($this->expiryDate);

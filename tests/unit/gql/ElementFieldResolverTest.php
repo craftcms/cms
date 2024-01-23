@@ -223,6 +223,7 @@ class ElementFieldResolverTest extends TestCase
                     // Assume a content field named 'firstSubfield'
                     return match ($property) {
                         'firstSubfield' => 'ok',
+                        'ownerId' => 80,
                         'typeId' => 99,
                         default => $this->$property,
                     };

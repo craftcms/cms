@@ -12,6 +12,7 @@
 - Improved the accessibility of time zone fields.
 - Improved the accessibility of form alternative action menus.
 - Improved the accessibility of element indexes. ([#12286](https://github.com/craftcms/cms/pull/12286))
+- Database backups no longer include data from the `phpsessions` table, if it exists. ([#13589](https://github.com/craftcms/cms/pull/13589))
 - Added the `utils/prune-orphaned-entries` command. ([#14154](https://github.com/craftcms/cms/pull/14154))
 - Added `craft\base\Actionable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\Chippable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
@@ -21,6 +22,12 @@
 - Added `craft\base\FieldInterface::beforeElementDeleteForSite()`.
 - Added `craft\base\Iconic`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\Identifiable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\NestedElementInterface::setOwnerId()`.
+- Added `craft\base\NestedElementInterface::setPrimaryOwnerId()`.
+- Added `craft\base\NestedElementTrait::attributes()`.
+- Added `craft\base\NestedElementTrait::extraFields()`.
+- Added `craft\base\NestedElementTrait::setOwnerId()`.
+- Added `craft\base\NestedElementTrait::setPrimaryOwnerId()`.
 - Added `craft\base\Statusable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\Thumbable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\helpers\Cp::CHIP_SIZE_LARGE`.
@@ -37,10 +44,12 @@
 - Added `craft\helpers\Cp::iconSvg()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\helpers\Cp::menuItem()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Renamed `craft\base\UtilityInterface::iconPath()` to `icon()`, which can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- `craft\base\NestedElementTrait::$ownerId` and `$primaryOwnerId` are now private (but are still available via magic getters and setters).
 - `craft\base\WidgetInterface::icon()` can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- `craft\elements\Address::toArray()` and `craft\elements\Entry::toArray()` now support passing `primaryOwner` and `owner` to the `$expand` argument.
 - `craft\fields\fieldlayoutelements\BaseUiElement::selectorIcon()` can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - `craft\helpers\Html::svg()` now has a `$throwException` argument.
-- `craft\web\Controller::asModelSuccess()` now includes a `modelClass` key in the response data (and `modelId` if the model implements `craft\base\Identifiable`). 
+- `craft\web\Controller::asModelSuccess()` now includes a `modelClass` key in the response data (and `modelId` if the model implements `craft\base\Identifiable`).
 - Deprecated `craft\helpers\Component::iconSvg()`. `craft\helpers\Cp::iconSvg()` and `fallbackIconSvg()` should be used instead. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Deprecated `craft\helpers\Cp::ELEMENT_SIZE_LARGE`. `CHIP_SIZE_LARGE` should be used instead.
 - Deprecated `craft\helpers\Cp::ELEMENT_SIZE_SMALL`. `CHIP_SIZE_SMALL` should be used instead.
@@ -53,6 +62,7 @@
 - Fixed an error that occurred when installing Craft with existing project config YAML files.
 - Fixed an error that occurred when duplicating entries via the “Duplicate” bulk element action.
 - Fixed a bug where deleting an entry for a site wasn’t propagating to Matrix blocks for that entry/site. ([#13948](https://github.com/craftcms/cms/issues/13948))
+- Fixed a bug where `craft\base\NestedElementTrait::$ownerId` was `null` for elements which were queried for their primary owner.
 
 ## 5.0.0-alpha.6 - 2024-01-16
 
