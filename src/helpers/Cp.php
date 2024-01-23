@@ -2628,6 +2628,8 @@ JS;
             if (!isset($item['type'])) {
                 if (isset($item['url'])) {
                     $item['type'] = MenuItemType::Link;
+                } elseif ($item['hr'] ?? false) {
+                    $item['type'] = MenuItemType::HR;
                 } elseif (isset($item['heading']) || isset($item['items'])) {
                     $item['type'] = MenuItemType::Group;
                 } else {

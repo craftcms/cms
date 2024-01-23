@@ -8,6 +8,8 @@
     {{- item.type }}
   {%- elseif item.url ?? false %}
     {{- 'link' }}
+  {%- elseif item.hr ?? false %}
+    {{- 'hr' }}
   {%- elseif item.heading ?? item.items ?? false %}
     {{- 'group' }}
   {%- else %}
