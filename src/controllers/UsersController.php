@@ -2153,7 +2153,7 @@ JS);
                 throw new BadRequestHttpException("Invalid address ID: $addressId");
             }
 
-            if ($address->ownerId !== $userId) {
+            if ($address->getOwnerId() !== $userId) {
                 throw new BadRequestHttpException("Address $addressId is not owned by user $userId");
             }
         } else {

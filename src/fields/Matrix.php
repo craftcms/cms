@@ -1377,7 +1377,7 @@ class Matrix extends Field implements
                 $forceSave = !empty($entryData);
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                if ($forceSave && $element->getIsDerivative() && $entry->primaryOwnerId === $element->getCanonicalId()) {
+                if ($forceSave && $element->getIsDerivative() && $entry->getPrimaryOwnerId() === $element->getCanonicalId()) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
                     $entry = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [
                         'canonicalId' => $entry->id,
@@ -1398,7 +1398,8 @@ class Matrix extends Field implements
                 $entry = new Entry();
                 $entry->fieldId = $this->id;
                 $entry->typeId = $entryTypes[$entryData['type']]->id;
-                $entry->primaryOwnerId = $entry->ownerId = $element->id;
+                $entry->setPrimaryOwner($element);
+                $entry->setOwner($element);
                 $entry->siteId = $element->siteId;
 
                 // Use the provided UUID, so the block can persist across future autosaves
