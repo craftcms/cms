@@ -277,8 +277,26 @@ class Assets extends BaseRelationField
     public function getSourceOptions(): array
     {
         $sourceOptions = [];
+        /** @var Volume|null $tempVolume */
+        [$tempVolume] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
+        if ($tempVolume) {
+            $tempVolumeKey = 'volume:' . $tempVolume->uid;
+        } else {
+            $tempVolumeKey = null;
+        }
 
         foreach (Asset::sources('settings') as $volume) {
+            if ($tempVolumeKey !== null && $volume['key'] === $tempVolumeKey) {
+                // only allow it if already selected
+                if (
+                    (!is_array($this->sources) || !in_array($tempVolumeKey, $this->sources)) &&
+                    $this->defaultUploadLocationSource !== $tempVolumeKey &&
+                    $this->restrictedLocationSource !== $tempVolumeKey
+                ) {
+                    continue;
+                }
+            }
+
             if (!isset($volume['heading'])) {
                 $sourceOptions[] = [
                     'label' => $volume['label'],
