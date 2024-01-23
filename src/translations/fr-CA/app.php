@@ -1074,7 +1074,7 @@ return [
     'Oops!' => 'Oups!',
     'Open PRs' => 'PR ouverts',
     'Open in Image Editor' => 'Open in Image Editor',
-    'Open the full edit page in a new tab' => 'Ouvrir la page d\'édition complète dans un nouvel onglet',
+    'Open in a new tab' => 'Open in a new tab',
     'Opens in a new window' => 'S\'ouvre dans une nouvelle fenêtre',
     'Operator' => 'Opérateur',
     'Optgroup?' => 'Intégrer un groupe?',
