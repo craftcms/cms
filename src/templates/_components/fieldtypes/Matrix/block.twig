@@ -37,8 +37,10 @@
   }
 } %}
 
-{% set form = entry.getFieldLayout().createForm(entry, static) %}
-{% set tabs = form.getTabMenu() %}
+{% namespace baseInputName %}
+  {% set form = entry.getFieldLayout().createForm(entry, static) %}
+  {% set tabs = form.getTabMenu() %}
+{% endnamespace %}
 
 <div {{ attr(entryAttributes) }}>
   {% if not static %}
