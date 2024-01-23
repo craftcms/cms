@@ -2579,9 +2579,9 @@ JS;
      *
      * The item config can contain a `type` key set to a [[MenuItemType]] case. By default, it will be set to:
      *
-     * - [[MenuItemType::Button]] if `action` is set
+     * - [[MenuItemType::Link]] if `url` is set
      * - [[MenuItemType::Group]] if `heading` or `items` are set
-     * - [[MenuItemType::Link]] in all other cases
+     * - [[MenuItemType::Button]] in all other cases
      *
      * Link and button item configs can contain the following keys:
      *
@@ -2626,12 +2626,12 @@ JS;
     {
         return array_map(function(array $item) {
             if (!isset($item['type'])) {
-                if (isset($item['action'])) {
-                    $item['type'] = MenuItemType::Button;
+                if (isset($item['url'])) {
+                    $item['type'] = MenuItemType::Link;
                 } elseif (isset($item['heading']) || isset($item['items'])) {
                     $item['type'] = MenuItemType::Group;
                 } else {
-                    $item['type'] = MenuItemType::Link;
+                    $item['type'] = MenuItemType::Button;
                 }
             }
 

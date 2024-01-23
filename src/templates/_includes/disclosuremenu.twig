@@ -6,12 +6,12 @@
 {% macro itemType(item) %}
   {%- if item.type ?? false %}
     {{- item.type }}
-  {%- elseif item.action ?? false %}
-    {{- 'button' }}
+  {%- elseif item.url ?? false %}
+    {{- 'link' }}
   {%- elseif item.heading ?? item.items ?? false %}
     {{- 'group' }}
   {%- else %}
-    {{- 'link' }}
+    {{- 'button' }}
   {%- endif %}
 {%- endmacro %}
 
