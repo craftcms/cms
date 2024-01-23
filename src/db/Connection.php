@@ -143,6 +143,10 @@ class Connection extends \yii\db\Connection
     public function getSupportsMb4(): bool
     {
         if (!isset($this->_supportsMb4)) {
+            if (!Craft::$app->getIsInstalled()) {
+                return false;
+            }
+
             // if elements_sites supports mb4, pretty good chance everything else does too
             $this->_supportsMb4 = $this->getSchema()->supportsMb4(Table::ELEMENTS_SITES);
         }

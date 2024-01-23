@@ -549,6 +549,7 @@ JS, [
 
         foreach ($value->all() as $i => $target) {
             if (!self::_validateRelatedElement($element, $target)) {
+                /** @phpstan-ignore-next-line */
                 $element->addModelErrors($target, "$this->handle[$i]");
                 $errorCount++;
             }
@@ -763,7 +764,7 @@ JS, [
 
         /** @var ElementQuery|array $value */
         $variables = $this->inputTemplateVariables($value, $element);
-        $variables['inline'] = $inline;
+        $variables['inline'] = $inline || $variables['viewMode'] === 'large';
 
         if ($inline) {
             $variables['viewMode'] = 'list';
