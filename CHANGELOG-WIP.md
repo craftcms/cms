@@ -5,6 +5,7 @@
 
 ### Administration
 - Added “Save and continue editing” actions to all core settings pages with full-page forms. ([#14168](https://github.com/craftcms/cms/discussions/14168))
+- It’s no longer possible to select the temp asset volume within Assets fields. ([#11405](https://github.com/craftcms/cms/issues/11405), [#14141](https://github.com/craftcms/cms/pull/14141))
 - Added the `utils/prune-orphaned-matrix-blocks` command. ([#14154](https://github.com/craftcms/cms/pull/14154))
 
 ### Extensibility
