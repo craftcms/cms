@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Inline-editable Matrix blocks now support multiple tabs. ([8500](https://github.com/craftcms/cms/discussions/8500), [#14139](https://github.com/craftcms/cms/issues/14139))
+- Inline-editable Matrix blocks now include “Open in a new tab” action items.
 - Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added the “Icon” field type. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added an SVG icon set based on Font Awesome 6.5.1. ([#14169](https://github.com/craftcms/cms/pull/14169))
@@ -12,7 +14,10 @@
 - Improved the accessibility of time zone fields.
 - Improved the accessibility of form alternative action menus.
 - Improved the accessibility of element indexes. ([#12286](https://github.com/craftcms/cms/pull/12286))
+- Improved the accessibility of inline-editable Matrix blocks.
 - Database backups no longer include data from the `phpsessions` table, if it exists. ([#13589](https://github.com/craftcms/cms/pull/13589))
+- Disclosure menu items now default to the `button` type. `link` is only assumed if a `url` key is set.
+- Disclosure menus now support defining horizontal rules via `hr: true` (in addition to `type: 'hr'`).
 - Added the `utils/prune-orphaned-entries` command. ([#14154](https://github.com/craftcms/cms/pull/14154))
 - Added `craft\base\Actionable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\Chippable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
