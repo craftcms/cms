@@ -1074,7 +1074,7 @@ return [
     'Oops!' => 'عذراً!',
     'Open PRs' => 'فتح طلبات PR',
     'Open in Image Editor' => 'Open in Image Editor',
-    'Open the full edit page in a new tab' => 'افتح صفحة التحرير الكاملة في علامة تبويب جديدة',
+    'Open in a new tab' => 'Open in a new tab',
     'Opens in a new window' => 'يفتح في نافذة جديدة',
     'Operator' => 'المشغل',
     'Optgroup?' => 'Optgroup؟',
