@@ -87,7 +87,8 @@ class NestedElementsController extends Controller
                 ->pairs();
         } else {
             $oldSortOrders = $this->nestedElements
-                ->keyBy(fn(NestedElementInterface $element) => $element->id)
+                ->keyBy(fn(ElementInterface $element) => $element->id)
+                /** @phpstan-ignore-next-line */
                 ->map(fn(NestedElementInterface $element) => $element->getSortOrder())
                 ->all();
         }

@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Asset;
+use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -30,6 +31,7 @@ use yii\db\Schema;
  * @method Asset[]|array all($db = null)
  * @method Asset|array|null one($db = null)
  * @method Asset|array|null nth(int $n, ?Connection $db = null)
+ * @method ElementCollection<Asset> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path assets.md

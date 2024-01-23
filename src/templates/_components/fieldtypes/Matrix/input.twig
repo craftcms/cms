@@ -3,7 +3,7 @@
 {{ hiddenInput(name, '') }}
 
 <div class="matrix matrix-field" id="{{ id }}">
-    <span aria-live="assertive" class="visually-hidden" data-status-message></span>
+    <span role="status" class="visually-hidden" data-status-message></span>
     <div class="blocks" role="list">
         {% for entry in entries %}
             {% include '_components/fieldtypes/Matrix/block.twig' %}

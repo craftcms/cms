@@ -4141,7 +4141,7 @@ JS, [
             if ($dist === null) {
                 return $ancestors;
             }
-            return $ancestors->filter(fn(self $element) => $element->level >= $this->level - $dist);
+            return $ancestors->filter(fn(ElementInterface $element) => $element->level >= $this->level - $dist);
         }
 
         return static::find()
@@ -4161,7 +4161,7 @@ JS, [
             if ($dist === null) {
                 return $descendants;
             }
-            return $descendants->filter(fn(self $element) => $element->level <= $this->level + $dist);
+            return $descendants->filter(fn(ElementInterface $element) => $element->level <= $this->level + $dist);
         }
 
         return static::find()
@@ -5183,7 +5183,7 @@ JS, [
                         'aria-label' => Craft::t('app', 'View'),
                     ]) .
                         Html::tag('span', Cp::iconSvg('world'), [
-                            'class' => 'icon',
+                            'class' => ['cp-icon', 'small', 'inline-flex'],
                         ]) .
                         Html::endTag('a');
                 }
@@ -5725,6 +5725,32 @@ JS,
         // Trigger an 'afterDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
             $this->trigger(self::EVENT_AFTER_DELETE);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDeleteForSite(): bool
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            if (!$field->beforeElementDeleteForSite($this)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDeleteForSite(): void
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementDeleteForSite($this);
         }
     }
 

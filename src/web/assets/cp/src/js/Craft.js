@@ -2928,7 +2928,7 @@ $.extend($.fn, {
 
   formsubmit: function () {
     // Secondary form submit buttons
-    return this.on('click', function (ev) {
+    return this.on('activate', function (ev) {
       const $btn = $(ev.currentTarget);
       const params = $btn.data('params') || {};
       if ($btn.data('param')) {
