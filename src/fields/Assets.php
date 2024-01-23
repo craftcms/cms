@@ -715,8 +715,14 @@ class Assets extends BaseRelationField
             $sources = array_merge($this->sources);
         } else {
             $sources = [];
+            [$tempVolume] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
+            $tempVolumeKey = $tempVolume ? "volume:$tempVolume->uid" : null;
+
             foreach (Craft::$app->getElementSources()->getSources(Asset::class) as $source) {
-                if ($source['type'] !== ElementSources::TYPE_HEADING) {
+                if (
+                    $source['type'] !== ElementSources::TYPE_HEADING &&
+                    $source['key'] !== $tempVolumeKey
+                ) {
                     $sources[] = $source['key'];
                 }
             }
