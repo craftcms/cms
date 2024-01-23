@@ -270,7 +270,7 @@ JS;
             'Notes',
             'Notice',
             'OK',
-            'Open the full edit page in a new tab',
+            'Open in a new tab',
             'Options',
             'Password',
             'Past year',

@@ -2472,7 +2472,6 @@ $.extend(Craft, {
         'aria-controls': menuId,
         'aria-describedby': labelId,
         'data-disclosure-trigger': 'true',
-        'data-icon': 'ellipsis',
       }).insertAfter($label);
       $actionMenu = $('<div/>', {
         id: menuId,
