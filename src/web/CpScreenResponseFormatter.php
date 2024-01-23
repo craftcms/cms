@@ -179,9 +179,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                     'buttonAttributes' => [
                         'id' => 'action-btn',
                         'class' => ['action-btn'],
-                        'removeClass' => 'menubtn',
                         'title' => Craft::t('app', 'Actions'),
-                        'data' => ['icon' => 'ellipsis'],
                     ],
                 ]),
                 'submitButtonLabel' => $behavior->submitButtonLabel,

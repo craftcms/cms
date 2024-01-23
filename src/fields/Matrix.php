@@ -1017,6 +1017,16 @@ class Matrix extends Field implements
 
         $id = StringHelper::randomString();
 
+        $js = '';
+
+        foreach ($entries as $entry) {
+            $js .= <<<JS
+Craft.cp.initMatrixTabs($('div.matrixblock.static[data-uid="$entry->uid"]'));
+JS;
+        }
+
+        Craft::$app->getView()->registerJs("(() => {\n$js\n})();");
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
             'id' => $id,
             'name' => $id,

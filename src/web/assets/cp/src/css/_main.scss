@@ -230,6 +230,7 @@ table.editable textarea {
 .required:after,
 .preview-btn:before,
 .view-btn:before,
+.action-btn:before,
 [data-icon]:before,
 [data-icon-after]:after {
   @include icon;
@@ -328,6 +329,10 @@ body.rtl [data-icon-after='structure']:after {
   body.rtl & {
     content: 'shareleft';
   }
+}
+
+.action-btn:before {
+  content: 'ellipsis';
 }
 
 /* headings */
@@ -1553,10 +1558,10 @@ ul.icons {
 
   &[data-icon]:not(:empty):not(.btn-empty):before,
   &.icon:not(:empty):not(.btn-empty):before,
-  &.menubtn[data-icon]:empty:before,
-  &.menubtn[data-icon].btn-empty:before,
-  &.menubtn.icon:empty:before,
-  &.menubtn.icon.btn-empty:before {
+  &.menubtn:not(.action-btn)[data-icon]:empty:before,
+  &.menubtn:not(.action-btn)[data-icon].btn-empty:before,
+  &.menubtn:not(.action-btn).icon:empty:before,
+  &.menubtn:not(.action-btn).icon.btn-empty:before {
     @include margin-right(5px);
   }
 
@@ -1609,8 +1614,8 @@ ul.icons {
 
 .btn[data-icon-after]:not(:empty):not(.btn-empty):after,
 .menu-toggle:not(:empty):not(.btn-empty):after,
-.menubtn:not(:empty):not(.btn-empty):after,
-.menubtn.icon:after {
+.menubtn:not(.action-btn):not(:empty):not(.btn-empty):after,
+.menubtn:not(.action-btn).icon:after {
   @include margin-left(6px);
 }
 
@@ -1758,7 +1763,7 @@ ul.icons {
 
 /* menu buttons */
 .menu-toggle,
-.menubtn {
+.menubtn:not(.action-btn) {
   display: inline-flex;
   align-items: center;
   user-select: none;
@@ -3162,7 +3167,7 @@ table {
 .context-menu-container {
   @include padding-right(0);
 
-  .menubtn {
+  .menubtn:not(.action-btn) {
     @include margin(0, -1px, 0, 0);
     @include padding-right(calc(var(--s) + 1px) !important);
     @include border-left(1px solid var(--medium-hairline-color));
@@ -3185,8 +3190,10 @@ table {
 }
 
 // fix for context menus that are only children
-.context-menu-container .menubtn:only-child,
-.context-menu-container .visually-hidden:first-child + .menubtn:last-child {
+.context-menu-container .menubtn:not(.action-btn):only-child,
+.context-menu-container
+  .visually-hidden:first-child
+  + .menubtn:not(.action-btn):last-child {
   margin: 0 calc(var(--s) * -1);
   border-left: none !important;
   border-radius: calc(var(--touch-target-size) / 2) !important;
@@ -4432,7 +4439,7 @@ ul.tree,
     }
   }
 
-  &:first-child {
+  &#tabs:first-child {
     [role='tablist'] {
       [role='tab'] {
         &:first-child {
@@ -4872,7 +4879,7 @@ $min2ColWidth: 400px;
   box-shadow: none;
   background-color: transparent;
 
-  .menubtn {
+  .menubtn:not(.action-btn) {
     @include padding-left(0);
     justify-content: start;
     width: 100%;
@@ -7801,7 +7808,23 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
   background-color: var(--gray-050);
 
   &.static {
-    padding-top: 14px;
+    .titlebar {
+      @include padding-right(0);
+      @include padding-left(14px);
+      margin-bottom: 14px;
+    }
+  }
+
+  & > .titlebar > .matrixblock-tabs .pane-tabs .menubtn:not(.action-btn),
+  & > .actions .action-btn {
+    padding: 0;
+    width: var(--touch-target-size);
+    height: var(--touch-target-size);
+    color: var(--ui-control-color);
+
+    &:not(:hover):not(:active) {
+      background-color: transparent;
+    }
   }
 
   .flex-fields {
@@ -7809,8 +7832,12 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
   }
 
   & > .titlebar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--s);
     margin: 0 -14px;
-    width: calc(100% + 28px);
     box-sizing: border-box;
     border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
     @include padding(5px, 70px, 5px, 35px);
@@ -7824,30 +7851,90 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
     position: relative;
     background-color: darken($grey050, 2%);
 
-    &:after {
-      display: block;
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 14px;
-      width: calc(100% - 28px);
-      height: 1px;
-      background-color: var(--hairline-color);
-    }
-
     & > .blocktype {
       display: inline;
       color: var(--medium-text-color);
     }
 
     & > .preview {
-      @include margin-left(7px);
-      display: inline;
+      flex-grow: 1;
+      min-width: 0;
       opacity: 0;
       transition: opacity linear 100ms;
+      overflow: hidden;
+
+      &:empty {
+        display: none;
+      }
+
+      body.ltr & {
+        mask-image: linear-gradient(
+          to left,
+          rgba(0, 0, 0, 0),
+          rgba(0, 0, 0, 1) 12px
+        );
+      }
+      body.rtl & {
+        mask-image: linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0),
+          rgba(0, 0, 0, 1) 12px
+        );
+      }
 
       span {
         opacity: 0.5;
+      }
+    }
+
+    & > .matrixblock-tabs {
+      flex: 1;
+      min-width: 0;
+      margin: -5px 0;
+
+      .pane-tabs {
+        margin: 0;
+        @include padding-right(3px);
+
+        [role='tablist'] {
+          padding: 0 12px;
+
+          &.scrollable {
+            mask-image: linear-gradient(
+              to right,
+              rgba(0, 0, 0, 0),
+              rgba(0, 0, 0) 12px,
+              rgba(0, 0, 0) calc(100% - 12px),
+              rgba(0, 0, 0, 0) 100%
+            );
+          }
+
+          [role='tab'] {
+            background-color: #ebf2fa;
+
+            .tab-label {
+              height: 30px;
+              padding: 0 var(--m);
+            }
+
+            &:not(.sel):hover {
+              background-color: transparentize($grey300, 0.85);
+            }
+
+            &.sel {
+              background-color: var(--gray-050);
+            }
+          }
+        }
+
+        .menubtn:not(.action-btn) {
+          margin-left: 0;
+          margin-right: 0;
+
+          &:not(:empty):not(.btn-empty)::after {
+            @include margin-left(0px);
+          }
+        }
       }
     }
   }
@@ -7887,7 +7974,7 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
     display: flex;
     align-items: center;
     position: absolute;
-    top: 5px;
+    top: 3px;
     @include right(14px);
     cursor: default;
 
@@ -7895,22 +7982,8 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
       @include margin(0, 0, 0, 5px);
     }
 
-    .settings {
-      padding: 0 8px;
-      height: 20px;
-      color: var(--ui-control-color);
-
-      &:before {
-        @include margin-right(0 !important);
-      }
-
-      &:not(:hover):not(:active) {
-        background-color: transparent;
-      }
-    }
-
-    .move {
-      margin-top: -4px !important;
+    .action-btn:before {
+      @include margin-right(0 !important);
     }
 
     & > .status {
@@ -7921,7 +7994,7 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
 
     a:not([data-action]) {
       padding: 0;
-      height: 20px;
+      height: var(--touch-target-size);
       text-align: center;
       color: var(--dark-hairline-color);
       transform: color linear 100ms;
