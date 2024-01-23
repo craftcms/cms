@@ -239,7 +239,7 @@ class Assets extends BaseRelationField
         ];
 
         $rules[] = [
-            ['source', 'sources', 'defaultUploadLocationSource', 'restrictedLocationSource'], 'validateNotTempVolume',
+            ['sources', 'defaultUploadLocationSource', 'restrictedLocationSource'], 'validateNotTempVolume',
         ];
 
         $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
