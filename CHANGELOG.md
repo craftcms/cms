@@ -12,6 +12,7 @@
 - Improved the accessibility of time zone fields.
 - Improved the accessibility of form alternative action menus.
 - Improved the accessibility of element indexes. ([#12286](https://github.com/craftcms/cms/pull/12286))
+- Database backups no longer include data from the `phpsessions` table, if it exists. ([#13589](https://github.com/craftcms/cms/pull/13589))
 - Added the `utils/prune-orphaned-entries` command. ([#14154](https://github.com/craftcms/cms/pull/14154))
 - Added `craft\base\Actionable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\Chippable`. ([#14169](https://github.com/craftcms/cms/pull/14169))

@@ -245,10 +245,11 @@ class Connection extends \yii\db\Connection
     {
         return [
             Table::ASSETINDEXDATA,
+            Table::CACHE,
             Table::IMAGETRANSFORMINDEX,
             Table::RESOURCEPATHS,
+            Table::PHPSESSIONS,
             Table::SESSIONS,
-            '{{%cache}}',
         ];
     }
 
