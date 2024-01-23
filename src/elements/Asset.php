@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\Fs;
 use craft\base\FsInterface;
@@ -20,6 +21,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\CopyUrl;
+use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
 use craft\elements\actions\EditImage;
 use craft\elements\actions\MoveAssets;
@@ -300,7 +302,7 @@ class Asset extends Element
     {
         if ($handle === 'uploader') {
             // Get the source element IDs
-            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+            $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
             $map = (new Query())
                 ->select(['id as source', 'uploaderId as target'])
@@ -504,6 +506,11 @@ class Asset extends Element
                 'type' => Restore::class,
                 'restorableElementsOnly' => true,
             ];
+
+            // Delete
+            if ($userSession->checkPermission("deletePeerAssets:$volume->uid")) {
+                $actions[] = DeleteAssets::class;
+            }
         }
 
         return $actions;
@@ -1493,7 +1500,7 @@ $('#replace-btn').on('click', () => {
             fileuploadstart: () => {
                 $('#thumb-container').addClass('loading');
             },
-            fileuploaddone: (event, data) => {
+            fileuploaddone: (event, data = null) => {
                 const result = event instanceof CustomEvent ? event.detail : data.result;
                 
                 $('#new-filename').val(result.filename);
@@ -1524,12 +1531,14 @@ $('#replace-btn').on('click', () => {
 
                 }
             },
-            fileuploadfail: (event, data) => {
+            fileuploadfail: (event, data = null) => {
                 const response = event instanceof Event
                     ? event.detail
                     : data?.jqXHR?.responseJSON;
                 
                 let {message, filename} = response || {};
+                
+                filename = filename || data?.files?.[0].name;
                 
                 if (!message) {
                     message = filename
@@ -1539,7 +1548,7 @@ $('#replace-btn').on('click', () => {
                 
               Craft.cp.displayError(message);
             },
-            fileuploadalways: (event, data) => {
+            fileuploadalways: (event, data = null) => {
                 $('#thumb-container').removeClass('loading');
             },
         }
@@ -1675,6 +1684,10 @@ JS;
             return [];
         }
 
+        if (!$this->allowTransforms()) {
+            return [];
+        }
+
         $urls = [];
 
         if (
@@ -1708,6 +1721,7 @@ JS;
                 'position',
                 'quality',
                 'width',
+                'fill',
             ]) : [];
 
             if ($unit === 'w') {
@@ -1857,7 +1871,9 @@ JS;
      */
     public function setTransform(mixed $transform): Asset
     {
-        $this->_transform = ImageTransforms::normalizeTransform($transform);
+        if ($this->allowTransforms()) {
+            $this->_transform = ImageTransforms::normalizeTransform($transform);
+        }
 
         return $this;
     }
@@ -1917,8 +1933,14 @@ JS;
         $volume = $this->getVolume();
         $transform = $transform ?? $this->_transform;
 
-        if ($transform &&
-            !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+        if (
+            $transform && (
+                // if it's a site request - check the mime type and general settings and decide whether to nullify the transform
+                // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
+                // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
+                (Craft::$app->getRequest()->getIsSiteRequest() && !$this->allowTransforms()) ||
+                !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+            )
         ) {
             $transform = null;
         }
@@ -2852,11 +2874,30 @@ JS;
             $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
 
             if (
+                isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 !($isCpRequest && !$sanitizeCpImageUploads)
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
+            }
+
+            // if we're creating or replacing and image, get the width or height via getimagesize
+            // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
+            $fallbackWidth = null;
+            $fallbackHeight = null;
+            if (
+                isset($this->tempFilePath) &&
+                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
+            ) {
+                $imageSize = getimagesize($this->tempFilePath);
+                if (isset($imageSize[0])) {
+                    $fallbackWidth = (int)$imageSize[0];
+                }
+                if (isset($imageSize[1])) {
+                    $fallbackHeight = (int)$imageSize[1];
+                }
             }
 
             // Relocate the file?
@@ -2883,8 +2924,8 @@ JS;
             $record->kind = $this->kind;
             $record->alt = $this->alt;
             $record->size = (int)$this->size ?: null;
-            $record->width = (int)$this->_width ?: null;
-            $record->height = (int)$this->_height ?: null;
+            $record->width = (int)$this->_width ?: $fallbackWidth;
+            $record->height = (int)$this->_height ?: $fallbackHeight;
             $record->dateModified = Db::prepareDateForDb($this->dateModified);
 
             if ($this->getHasFocalPoint()) {
@@ -3273,5 +3314,21 @@ JS;
         }
 
         return FileHelper::normalizePath($path) . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Returns whether transforming given asset is allowed
+     * based on its mime type and general settings.
+     *
+     * @return bool
+     * @throws ImageTransformException
+     */
+    private function allowTransforms(): bool
+    {
+        return match ($this->getMimeType()) {
+            'image/gif' => Craft::$app->getConfig()->getGeneral()->transformGifs,
+            'image/svg+xml' => Craft::$app->getConfig()->getGeneral()->transformSvgs,
+            default => true,
+        };
     }
 }

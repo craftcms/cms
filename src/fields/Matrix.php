@@ -575,7 +575,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'type' => $block->getType()->handle,
                 'enabled' => $block->enabled,
                 'collapsed' => $block->collapsed,
-                'fields' => fn() => $block->getSerializedFieldValues(),
+                'fields' => $block->getSerializedFieldValues(),
             ];
         }
 
@@ -1140,6 +1140,27 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 $matrixBlock->deletedWithOwner = true;
                 $elementsService->deleteElement($matrixBlock, $element->hardDelete);
             }
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDeleteForSite(ElementInterface $element): bool
+    {
+        $elementsService = Craft::$app->getElements();
+
+        /** @var MatrixBlock[] $matrixBlocks */
+        $matrixBlocks = MatrixBlock::find()
+            ->primaryOwnerId($element->id)
+            ->status(null)
+            ->siteId($element->siteId)
+            ->all();
+
+        foreach ($matrixBlocks as $matrixBlock) {
+            $elementsService->deleteElementForSite($matrixBlock);
         }
 
         return true;

@@ -177,6 +177,12 @@ class Raster extends Image
         try {
             $this->_image = $this->_instance->open($path);
         } catch (Throwable $e) {
+            // Imagick can throw all sorts of errors via the open() method
+            // we should log them to better know what's going on
+            Craft::warning($e->getMessage(), $e->getFile());
+            if (($instanceException = $e->getPrevious()) !== null) {
+                Craft::warning($instanceException->getMessage(), $instanceException->getFile() . ':' . $instanceException->getLine());
+            }
             throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', [
                 'name' => basename($path),
             ]), 0, $e);
@@ -798,8 +804,10 @@ class Raster extends Image
                 return ['jpeg_quality' => $quality, 'flatten' => true];
 
             case 'gif':
-            case 'webp':
                 return ['animated' => $this->_isAnimated];
+
+            case 'webp':
+                return ['animated' => $this->_isAnimated, 'webp_quality' => $quality];
 
             case 'png':
                 // Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression

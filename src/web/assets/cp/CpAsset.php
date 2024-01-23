@@ -136,6 +136,7 @@ JS;
             'Breadcrumbs',
             'Buy {name}',
             'Cancel',
+            'Choose a page',
             'Choose a user',
             'Choose which sites this source should be visible for.',
             'Choose which table columns should be visible for this source by default.',
@@ -151,6 +152,7 @@ JS;
             'Copy the reference tag',
             'Copy to clipboard',
             'Couldn’t delete “{name}”.',
+            'Couldn’t reorder items.',
             'Couldn’t save new order.',
             'Create',
             'Customize sources',
@@ -210,6 +212,7 @@ JS;
             'Incorrect password.',
             'Information',
             'Instructions',
+            'Items reordered.',
             'Keep both',
             'Keep me signed in',
             'Keep them',
@@ -434,6 +437,7 @@ JS;
             'Pro' => Craft::Pro,
             'registeredAssetBundles' => [], // force encode as JS object
             'registeredJsFiles' => [], // force encode as JS object
+            'resourceBaseUrl' => Craft::$app->getAssetManager()->baseUrl,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'scriptName' => basename($request->getScriptFile()),
             'Solo' => Craft::Solo,

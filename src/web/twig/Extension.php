@@ -495,10 +495,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function sortFilter(TwigEnvironment $env, iterable $array, string|callable|null $arrow = null): array
     {
-        if (is_string($arrow) && strtolower($arrow) === 'system') {
-            throw new RuntimeError('The sort filter doesn\'t support sorting by system().');
-        }
-
+        $this->_checkFilterSupport($arrow);
         return twig_sort_filter($env, $array, $arrow);
     }
 
@@ -515,10 +512,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function reduceFilter(TwigEnvironment $env, mixed $array, mixed $arrow, mixed $initial = null): mixed
     {
-        if (is_string($arrow) && strtolower($arrow) === 'system') {
-            throw new RuntimeError('The reduce filter doesn\'t support reducing by system().');
-        }
-
+        $this->_checkFilterSupport($arrow);
         return twig_array_reduce($env, $array, $arrow, $initial);
     }
 
@@ -534,10 +528,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function mapFilter(TwigEnvironment $env, mixed $array, mixed $arrow = null): array
     {
-        if (is_string($arrow) && strtolower($arrow) === 'system') {
-            throw new RuntimeError('The map filter doesn\'t support mapping by system().');
-        }
-
+        $this->_checkFilterSupport($arrow);
         return twig_array_map($env, $array, $arrow);
     }
 
@@ -895,20 +886,25 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param mixed $str
      * @param mixed $search
      * @param mixed $replace
+     * @param bool|null $regex
      * @return mixed
      */
-    public function replaceFilter(mixed $str, mixed $search, mixed $replace = null): mixed
+    public function replaceFilter(mixed $str, mixed $search, mixed $replace = null, ?bool $regex = null): mixed
     {
         if ($search instanceof Traversable) {
             $search = iterator_to_array($search);
         }
 
-        $isRegex = fn(string $s) => (bool)preg_match('/^\/[^\/]+\/[imsxADSUXJun]*$/', $s);
-
         // Are they using the standard Twig syntax?
         if (is_array($search) && $replace === null) {
             // If there aren’t any regex patterns, we can safely use strtr()
-            if (!ArrayHelper::contains(array_keys($search), $isRegex)) {
+            if (
+                $regex === false ||
+                (
+                    $regex === null &&
+                    !ArrayHelper::contains(array_keys($search), fn(string $str) => $this->isRegex($str))
+                )
+            ) {
                 return strtr($str, $search);
             }
         } else {
@@ -917,7 +913,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         foreach ($search as $s => $r) {
             // Is this a regular expression?
-            if ($isRegex($s)) {
+            if ($regex ?? $this->isRegex($s)) {
                 $str = preg_replace($s, $r, $str);
             } else {
                 // Otherwise use str_replace
@@ -926,6 +922,20 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return $str;
+    }
+
+    private function isRegex(string $str): bool
+    {
+        if (!preg_match('/^\/([^\r\n]+)\/([imsxADSUXJun]*)$/', $str, $match)) {
+            return false;
+        }
+
+        // make sure there's no unescaped slashes within it
+        if (preg_match('/(?<!\\\)\//', $match[1])) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -1109,9 +1119,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function filterFilter(TwigEnvironment $env, iterable $arr, ?callable $arrow = null): array
     {
-        if (is_string($arrow) && strtolower($arrow) === 'system') {
-            throw new RuntimeError('The filter filter doesn\'t support filtering by system().');
-        }
+        $this->_checkFilterSupport($arrow);
 
         /** @var array|Traversable $arr */
         if ($arrow === null) {
@@ -1244,10 +1252,25 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * 'gfm-comment' (GFM with newlines converted to `<br>`s),
      * or 'extra' (Markdown Extra). Default is 'original'.
      * @param bool $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
+     * @param bool $encode Whether special characters should be pre-encoded, before parsing the text as Markdown.
+     * Note that the `flavor` cannot be specified if this option is used.
      * @return string
      */
-    public function markdownFilter(mixed $markdown, ?string $flavor = null, bool $inlineOnly = false): string
-    {
+    public function markdownFilter(
+        mixed $markdown,
+        ?string $flavor = null,
+        bool $inlineOnly = false,
+        bool $encode = false,
+    ): string {
+        if ($encode) {
+            if ($flavor !== null && !in_array($flavor, ['original', 'pre-encoded'])) {
+                throw new InvalidArgumentException('The Markdown flavor cannot be specified when passing `encode=true`.');
+            }
+
+            $markdown = Html::encode($markdown);
+            $flavor = 'pre-encoded';
+        }
+
         if ($inlineOnly) {
             return Markdown::processParagraph((string)$markdown, $flavor);
         }
@@ -1654,5 +1677,20 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'tomorrow' => DateTimeHelper::tomorrow(),
             'yesterday' => DateTimeHelper::yesterday(),
         ];
+    }
+
+    /**
+     * @param mixed $arrow
+     * @throws RuntimeError
+     */
+    private function _checkFilterSupport(mixed $arrow): void
+    {
+        if (is_string($arrow) && in_array(ltrim(strtolower($arrow), '\\'), [
+            'system',
+            'passthru',
+            'exec',
+        ])) {
+            throw new RuntimeError('Not supported in this filter.');
+        }
     }
 }

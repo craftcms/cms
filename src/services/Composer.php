@@ -11,10 +11,10 @@ use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Craft;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use Symfony\Component\Process\Exception\ProcessFailedException;
-use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\Component;
@@ -187,7 +187,7 @@ class Composer extends Component
         copy(Craft::getAlias('@lib/composer.phar'), $pharPath);
 
         $command = array_merge([
-            (new PhpExecutableFinder())->find() ?: 'php',
+            App::phpExecutable() ?? 'php',
             $pharPath,
         ], $command, [
             '--working-dir',
@@ -197,7 +197,12 @@ class Composer extends Component
             '--no-interaction',
         ]);
 
-        $process = new Process($command);
+        $homePath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
+        FileHelper::createDirectory($homePath);
+
+        $process = new Process($command, null, [
+            'COMPOSER_HOME' => $homePath,
+        ]);
         $process->setTimeout(null);
 
         try {
@@ -317,10 +322,36 @@ class Composer extends Component
         }
 
         if ($config['config']['sort-packages'] ?? false) {
-            ksort($config['require']);
+            $this->sortPackages($config['require']);
         }
 
         $this->writeJson($jsonPath, $config);
+    }
+
+    public function sortPackages(&$packages): void
+    {
+        // Adapted from JsonManipulator::sortPackages()
+        uksort($packages, fn($a, $b) => strnatcmp($this->prefixPackage($a), $this->prefixPackage($b)));
+    }
+
+    private function prefixPackage(string $package): string
+    {
+        if (preg_match('/^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer(?:-(?:plugin|runtime)-api)?)$/iD', $package)) {
+            $lower = strtolower($package);
+            if (str_starts_with($lower, 'php')) {
+                $group = '0';
+            } elseif (str_starts_with($lower, 'hhvm')) {
+                $group = '1';
+            } elseif (str_starts_with($lower, 'ext')) {
+                $group = '2';
+            } elseif (str_starts_with($lower, 'lib')) {
+                $group = '3';
+            } elseif (preg_match('/^\D/', $lower)) {
+                $group = '4';
+            }
+        }
+
+        return sprintf('%s-%s', $group ?? '5', $package);
     }
 
     /**

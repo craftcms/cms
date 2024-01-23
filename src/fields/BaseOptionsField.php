@@ -323,6 +323,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = Json::decodeIfJson($value);
         } elseif ($value === '' && $this->multi) {
             $value = [];
+        } elseif ($value === '__BLANK__') {
+            $value = '';
         } elseif ($value === null && $this->isFresh($element)) {
             $value = $this->defaultValue();
         }
@@ -343,19 +345,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $optionLabels = [];
         foreach ($this->options() as $option) {
             if (!isset($option['optgroup'])) {
-                // special case for blank options, when $value is null
-                if ($value === null && $option['value'] === '') {
-                    if (!$selectedBlankOption) {
-                        $selectedValues[] = '';
-                        $selectedBlankOption = true;
-                        $selected = true;
-                    } else {
-                        $selected = false;
-                    }
-                } else {
-                    $selected = in_array($option['value'], $selectedValues, true);
-                }
-
+                $selected = $this->isOptionSelected($option, $value, $selectedValues, $selectedBlankOption);
                 $options[] = new OptionData($option['label'], $option['value'], $selected, true);
                 $optionValues[] = (string)$option['value'];
                 $optionLabels[] = (string)$option['label'];
@@ -386,6 +376,20 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $value->setOptions($options);
 
         return $value;
+    }
+
+    /**
+     * Check if given option should be marked as selected.
+     *
+     * @param array $option
+     * @param mixed $value
+     * @param array $selectedValues
+     * @param bool $selectedBlankOption
+     * @return bool
+     */
+    protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
+    {
+        return in_array($option['value'], $selectedValues, true);
     }
 
     /**
@@ -492,12 +496,11 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var MultiOptionsFieldData|SingleOptionFieldData $value */
-        if ($value instanceof SingleOptionFieldData) {
-            return $value->value === null || $value->value === '';
+        if ($value instanceof MultiOptionsFieldData) {
+            return count($value) === 0;
         }
 
-        return count($value) === 0;
+        return $value->value === null || $value->value === '';
     }
 
     /**
@@ -511,7 +514,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
             foreach ($value as $option) {
                 /** @var OptionData $option */
-                if ($option->value) {
+                if (!$this->isValueEmpty($option, $element)) {
                     $labels[] = Craft::t('site', $option->label);
                 }
             }
@@ -520,7 +523,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         /** @var SingleOptionFieldData $value */
-        return $value->value ? Craft::t('site', (string)$value->label) : '';
+        return !$this->isValueEmpty($value, $element) ? Craft::t('site', (string)$value->label) : '';
     }
 
     /**

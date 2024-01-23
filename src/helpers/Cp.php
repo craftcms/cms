@@ -254,7 +254,11 @@ class Cp
                             'class' => 'errors',
                         ]) .
                         // can't use Html::a() because it's encoding &amp;'s, which is causing issues
-                        Html::tag('p', sprintf('<a class="go" href="%s">%s</a>', $cartUrl, Craft::t('app', 'Resolve now'))),
+                        Html::beginTag('p', [
+                            'class' => ['flex', 'flex-nowrap', 'resolvable-alert-buttons'],
+                        ]) .
+                        sprintf('<a class="go" href="%s">%s</a>', $cartUrl, Craft::t('app', 'Resolve now')) .
+                        Html::endTag('p'),
                     'showIcon' => false,
                 ];
             }
@@ -632,7 +636,7 @@ class Cp
                 $otherHtml .= static::elementHtml($other, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
             }
             $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
-                'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),
+                'title' => implode(', ', array_map(fn(ElementInterface $element) => $element->id, $elements)),
                 'class' => 'btn small',
                 'role' => 'button',
                 'onclick' => sprintf(
@@ -721,7 +725,7 @@ class Cp
             $errors ? 'has-errors' : null,
         ]), Html::explodeClass($config['fieldClass'] ?? []));
 
-        if (isset($config['attribute']) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
+        if (($config['showAttribute'] ?? false) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
             $showAttribute = $currentUser->admin && $currentUser->getPreference('showFieldHandles');
         } else {
             $showAttribute = false;
@@ -775,7 +779,6 @@ class Cp
                     'data' => [
                         'attribute' => $attribute,
                     ],
-                    'tabindex' => -1,
                 ],
                 $config['fieldAttributes'] ?? []
             )) .
@@ -1411,6 +1414,7 @@ JS, [
         $address->setScenario(Element::SCENARIO_LIVE);
         $activeValidators = $address->getActiveValidators();
         $address->setScenario($scenario);
+        $belongsToCurrentUser = $address->getBelongsToCurrentUser();
 
         foreach ($activeValidators as $validator) {
             if ($validator instanceof RequiredValidator) {
@@ -1435,9 +1439,9 @@ JS, [
                 'id' => 'addressLine1',
                 'name' => 'addressLine1',
                 'value' => $address->addressLine1,
+                'autocomplete' => $belongsToCurrentUser ? 'address-line1' : 'off',
                 'required' => isset($requiredFields['addressLine1']),
                 'errors' => $address->getErrors('addressLine1'),
-                'autocomplete' => 'address-line1',
             ]) .
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine2'),
@@ -1445,13 +1449,14 @@ JS, [
                 'id' => 'addressLine2',
                 'name' => 'addressLine2',
                 'value' => $address->addressLine2,
+                'autocomplete' => $belongsToCurrentUser ? 'address-line2' : 'off',
                 'required' => isset($requiredFields['addressLine2']),
                 'errors' => $address->getErrors('addressLine2'),
-                'autocomplete' => 'address-line2',
             ]) .
             self::_subdivisionField(
                 $address,
                 'administrativeArea',
+                $belongsToCurrentUser ? 'address-level1' : 'off',
                 isset($visibleFields['administrativeArea']),
                 isset($requiredFields['administrativeArea']),
                 [$address->countryCode],
@@ -1460,6 +1465,7 @@ JS, [
             self::_subdivisionField(
                 $address,
                 'locality',
+                $belongsToCurrentUser ? 'address-level2' : 'off',
                 isset($visibleFields['locality']),
                 isset($requiredFields['locality']),
                 [$address->countryCode, $address->administrativeArea],
@@ -1468,6 +1474,7 @@ JS, [
             self::_subdivisionField(
                 $address,
                 'dependentLocality',
+                $belongsToCurrentUser ? 'address-level3' : 'off',
                 isset($visibleFields['dependentLocality']),
                 isset($requiredFields['dependentLocality']),
                 [$address->countryCode, $address->administrativeArea, $address->locality],
@@ -1483,9 +1490,9 @@ JS, [
                 'id' => 'postalCode',
                 'name' => 'postalCode',
                 'value' => $address->postalCode,
+                'autocomplete' => $belongsToCurrentUser ? 'postal-code' : 'off',
                 'required' => isset($requiredFields['postalCode']),
                 'errors' => $address->getErrors('postalCode'),
-                'autocomplete' => 'postal-code',
             ]) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([
@@ -1505,6 +1512,7 @@ JS, [
     private static function _subdivisionField(
         Address $address,
         string $name,
+        string $autocomplete,
         bool $visible,
         bool $required,
         ?array $parents,
@@ -1531,6 +1539,7 @@ JS, [
                         'value' => $value,
                         'options' => $options,
                         'errors' => $errors,
+                        'autocomplete' => $autocomplete,
                     ]) .
                     Html::tag('div', '', [
                         'id' => "$name-spinner",
@@ -1557,6 +1566,7 @@ JS, [
                 'options' => $options,
                 'required' => $required,
                 'errors' => $address->getErrors($name),
+                'autocomplete' => $autocomplete,
             ]);
         }
 
@@ -1565,6 +1575,7 @@ JS, [
             'fieldClass' => !$visible ? 'hidden' : null,
             'status' => $address->getAttributeStatus($name),
             'label' => $address->getAttributeLabel($name),
+            'autocomplete' => $autocomplete,
             'id' => $name,
             'name' => $name,
             'value' => $value,

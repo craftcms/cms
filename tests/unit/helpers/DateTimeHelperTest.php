@@ -13,6 +13,7 @@ use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use DateInterval;
 use DateTime;
+use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use UnitTester;
@@ -72,6 +73,168 @@ class DateTimeHelperTest extends TestCase
         self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
         DateTimeHelper::resume();
         self::assertNotEquals($timestamp, DateTimeHelper::currentTimeStamp());
+    }
+
+    /**
+     *
+     */
+    public function testToday(): void
+    {
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $utc));
+        self::assertEquals(new DateTime('2024-04-06 00:00:00', $utc), DateTimeHelper::today($utc));
+        DateTimeHelper::resume();
+    }
+
+    /**
+     *
+     */
+    public function testTomorrow(): void
+    {
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $utc));
+        self::assertEquals(new DateTime('2024-04-07 00:00:00', $utc), DateTimeHelper::tomorrow($utc));
+        DateTimeHelper::resume();
+    }
+
+    /**
+     *
+     */
+    public function testYesterday(): void
+    {
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $utc));
+        self::assertEquals(new DateTime('2024-04-05 00:00:00', $utc), DateTimeHelper::yesterday($utc));
+        DateTimeHelper::resume();
+    }
+
+    /**
+     *
+     */
+    public function testThisWeek(): void
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        self::assertEquals(1, $generalConfig->defaultWeekStartDay);
+        self::assertEquals(1, DateTimeHelper::firstWeekDay());
+
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-10 10:43:12', $utc));
+        self::assertEquals(new DateTime('2024-04-08 00:00:00', $utc), DateTimeHelper::thisWeek($utc));
+
+        $generalConfig->defaultWeekStartDay = 0;
+        self::assertEquals(0, DateTimeHelper::firstWeekDay());
+        self::assertEquals(new DateTime('2024-04-07 00:00:00', $utc), DateTimeHelper::thisWeek($utc));
+        $generalConfig->defaultWeekStartDay = 1;
+
+        DateTimeHelper::resume();
+    }
+
+    /**
+     *
+     */
+    public function testNextWeek(): void
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        self::assertEquals(1, $generalConfig->defaultWeekStartDay);
+        self::assertEquals(1, DateTimeHelper::firstWeekDay());
+
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-10 10:43:12', $utc));
+        self::assertEquals(new DateTime('2024-04-15 00:00:00', $utc), DateTimeHelper::nextWeek($utc));
+
+        $generalConfig->defaultWeekStartDay = 0;
+        self::assertEquals(0, DateTimeHelper::firstWeekDay());
+        self::assertEquals(new DateTime('2024-04-14 00:00:00', $utc), DateTimeHelper::nextWeek($utc));
+        $generalConfig->defaultWeekStartDay = 1;
+
+        DateTimeHelper::resume();
+    }
+
+    /**
+     *
+     */
+    public function testLastWeek(): void
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        self::assertEquals(1, $generalConfig->defaultWeekStartDay);
+        self::assertEquals(1, DateTimeHelper::firstWeekDay());
+
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-10 10:43:12', $utc));
+        self::assertEquals(new DateTime('2024-04-01 00:00:00', $utc), DateTimeHelper::lastWeek($utc));
+
+        $generalConfig->defaultWeekStartDay = 0;
+        self::assertEquals(0, DateTimeHelper::firstWeekDay());
+        self::assertEquals(new DateTime('2024-03-31 00:00:00', $utc), DateTimeHelper::lastWeek($utc));
+        $generalConfig->defaultWeekStartDay = 1;
+
+        DateTimeHelper::resume();
+    }
+
+    /**
+     *
+     */
+    public function testThisMonth(): void
+    {
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $utc));
+        self::assertEquals(new DateTime('2024-04-01 00:00:00', $utc), DateTimeHelper::thisMonth($utc));
+        DateTimeHelper::resume();
+    }
+
+    /**
+     *
+     */
+    public function testNextMonth(): void
+    {
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $utc));
+        self::assertEquals(new DateTime('2024-05-01 00:00:00', $utc), DateTimeHelper::nextMonth($utc));
+        DateTimeHelper::resume();
+    }
+
+    /**
+     *
+     */
+    public function testLastMonth(): void
+    {
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $utc));
+        self::assertEquals(new DateTime('2024-03-01 00:00:00', $utc), DateTimeHelper::lastMonth($utc));
+        DateTimeHelper::resume();
+    }
+
+    /**
+     *
+     */
+    public function testThisYear(): void
+    {
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $utc));
+        self::assertEquals(new DateTime('2024-01-01 00:00:00', $utc), DateTimeHelper::thisYear($utc));
+        DateTimeHelper::resume();
+    }
+
+    /**
+     *
+     */
+    public function testLastYear(): void
+    {
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $utc));
+        self::assertEquals(new DateTime('2023-01-01 00:00:00', $utc), DateTimeHelper::lastYear($utc));
+        DateTimeHelper::resume();
+    }
+
+    /**
+     *
+     */
+    public function testNextYear(): void
+    {
+        $utc = new DateTimeZone('UTC');
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $utc));
+        self::assertEquals(new DateTime('2025-01-01 00:00:00', $utc), DateTimeHelper::nextYear($utc));
+        DateTimeHelper::resume();
     }
 
     /**
@@ -136,6 +299,10 @@ class DateTimeHelperTest extends TestCase
     {
         if (is_callable($expected)) {
             $expected = $expected();
+        }
+
+        if (is_callable($value)) {
+            $value = $value();
         }
 
         if ($expected === false) {
@@ -440,9 +607,7 @@ class DateTimeHelperTest extends TestCase
         return [
             'timestamp' => [new DateTime('@1625575906'), 1625575906],
             'now' => [
-                function() {
-                    return new DateTime();
-                },
+                fn() => new DateTime(),
                 'now',
             ],
             'no-params' => [false, ['date' => '', 'time' => '']],
@@ -452,16 +617,20 @@ class DateTimeHelperTest extends TestCase
             'empty-string' => [false, ''],
             'empty-array' => [false, []],
             'year' => [
-                function() {
-                    return new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
-                },
+                fn() => new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC')),
                 '2021',
             ],
             'datetime-with-timezone' => [
-                function() {
-                    return new DateTime('2021-09-01T12:00', new DateTimeZone('Europe/Berlin'));
-                },
+                fn() => new DateTime('2021-09-01T12:00', new DateTimeZone('Europe/Berlin')),
                 ['datetime' => '2021-09-01T12:00', 'timezone' => 'Europe/Berlin'],
+            ],
+            'datetime-immutable' => [
+                fn() => new DateTime('@1625575906'),
+                fn() => new DateTimeImmutable('@1625575906'),
+            ],
+            'other-locale' => [
+                new DateTime('2023-09-26 00:00:00', new DateTimeZone('UTC')),
+                ['date' => '26/9/2023', 'locale' => 'en-GB'],
             ],
         ];
     }

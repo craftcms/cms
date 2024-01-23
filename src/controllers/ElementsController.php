@@ -108,7 +108,7 @@ class ElementsController extends Controller
         $this->_draftId = $this->_param('draftId');
         $this->_revisionId = $this->_param('revisionId');
         $this->_siteId = $this->_param('siteId');
-        $this->_enabled = $this->_param('enabled') ?? true;
+        $this->_enabled = $this->_param('enabled', true);
         $this->_enabledForSite = $this->_param('enabledForSite');
         $this->_slug = $this->_param('slug');
         $this->_fresh = (bool)$this->_param('fresh');
@@ -135,11 +135,16 @@ class ElementsController extends Controller
 
     /**
      * @param string $name
+     * @param mixed $default
      * @return mixed
      */
-    private function _param(string $name): mixed
+    private function _param(string $name, mixed $default = null): mixed
     {
-        return ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
+        $value = ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
+        if ($value === null && $default !== null && $this->request->getIsPost()) {
+            return $default;
+        }
+        return $value;
     }
 
     /**
@@ -371,6 +376,12 @@ class ElementsController extends Controller
         }
 
         $security = Craft::$app->getSecurity();
+        $notice = null;
+        if ($element->isProvisionalDraft) {
+            $notice = fn() => $this->_draftNotice();
+        } elseif ($element->getIsRevision()) {
+            $notice = fn() => $this->_revisionNotice($element::lowerDisplayName());
+        }
 
         $response = $this->asCpScreen()
             ->editUrl($element->getCpEditUrl())
@@ -380,7 +391,10 @@ class ElementsController extends Controller
                 $element,
                 $isMultiSiteElement,
                 $isUnpublishedDraft,
-                $propSiteIds
+                $canCreateDrafts,
+                $propSiteIds,
+                $elementsService,
+                $user,
             ))
             ->additionalButtons(fn() => $this->_additionalButtons(
                 $element,
@@ -395,7 +409,7 @@ class ElementsController extends Controller
                 $isUnpublishedDraft,
                 $isDraft
             ))
-            ->notice($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
+            ->notice($notice)
             ->errorSummary(fn() => $this->_errorSummary($element))
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
@@ -411,6 +425,7 @@ class ElementsController extends Controller
                         'canCreateDrafts' => $canCreateDrafts,
                         'canEditMultipleSites' => $canEditMultipleSites,
                         'canSaveCanonical' => $canSaveCanonical,
+                        'elementId' => $element->id,
                         'canonicalId' => $canonical->id,
                         'draftId' => $element->draftId,
                         'draftName' => $isDraft ? $element->draftName : null,
@@ -667,18 +682,69 @@ class ElementsController extends Controller
         ElementInterface $element,
         bool $isMultiSiteElement,
         bool $isUnpublishedDraft,
+        bool $canCreateDrafts,
         array $propSiteIds,
+        Elements $elementsService,
+        User $user,
     ): ?string {
-        $showDrafts = !$isUnpublishedDraft;
+        if ($isUnpublishedDraft || !$element->id) {
+            $drafts = [];
+            $showDrafts = false;
+            $revisions = [];
+            $revisionsPageUrl = null;
+            $hasMoreRevisions = false;
+        } else {
+            $drafts = $element::find()
+                ->draftOf($element)
+                ->siteId($element->siteId)
+                ->status(null)
+                ->orderBy(['dateUpdated' => SORT_DESC])
+                ->with(['draftCreator'])
+                ->collect()
+                ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
+                ->all();
+            $showDrafts = !empty($drafts) || $canCreateDrafts;
+
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            if ($element->hasRevisions() && (!$generalConfig->maxRevisions || $generalConfig->maxRevisions > 1)) {
+                $revisionQuery = $element::find()
+                    ->revisionOf($element)
+                    ->siteId($element->siteId)
+                    ->status(null)
+                    ->offset(1)
+                    ->limit($generalConfig->maxRevisions ? min($generalConfig->maxRevisions - 1, 10) : 10)
+                    ->orderBy(['dateCreated' => SORT_DESC])
+                    ->with(['revisionCreator']);
+                $revisions = $revisionQuery->all();
+                $revisionsPageUrl = $element->getCpRevisionsUrl();
+                if ($revisionsPageUrl) {
+                    $hasMoreRevisions = (
+                        count($revisions) === $revisionQuery->limit &&
+                        $revisionQuery->limit < ($generalConfig->maxRevisions - 1) &&
+                        ($revisionQuery->count() - 1) > $revisionQuery->limit
+                    );
+                } else {
+                    $hasMoreRevisions = false;
+                }
+            } else {
+                $revisions = [];
+                $revisionsPageUrl = null;
+                $hasMoreRevisions = false;
+            }
+        }
 
         if (
             $isMultiSiteElement ||
             $showDrafts ||
-            ($element->hasRevisions() && $element::find()->revisionOf($element)->status(null)->exists())
+            !empty($revisions)
         ) {
             return Craft::$app->getView()->renderTemplate('_includes/revisionmenu.twig', [
                 'element' => $element,
+                'drafts' => $drafts,
                 'showDrafts' => $showDrafts,
+                'revisions' => $revisions,
+                'revisionsPageUrl' => $revisionsPageUrl,
+                'hasMoreRevisions' => $hasMoreRevisions,
                 'supportedSiteIds' => $propSiteIds,
                 'showSiteLabel' => $isMultiSiteElement,
             ], View::TEMPLATE_MODE_CP);
@@ -995,6 +1061,27 @@ JS, [
             Html::endTag('div');
     }
 
+    private function _revisionNotice($elementType): string
+    {
+        return
+            Html::beginTag('div', [
+                'class' => 'revision-notice',
+            ]) .
+            Html::tag('div', '', [
+                'class' => ['revision-icon'],
+                'aria' => ['hidden' => 'true'],
+                'data' => ['icon' => 'lightbulb'],
+            ]) .
+            Html::tag('p', Craft::t(
+                'app',
+                'You’re viewing a revision. None of the {type}’s fields are editable.',
+                [
+                    'type' => $elementType,
+                ]
+            )) .
+            Html::endTag('div');
+    }
+
     /**
      * Saves an element.
      *
@@ -1016,10 +1103,16 @@ JS, [
         }
 
         $this->element = $element;
-
-        $this->_applyParamsToElement($element);
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
+
+        // Check save permissions before and after applying POST params to the element
+        // in case the request was tampered with.
+        if (!$elementsService->canSave($element, $user)) {
+            throw new ForbiddenHttpException('User not authorized to save this element.');
+        }
+
+        $this->_applyParamsToElement($element);
 
         if (!$elementsService->canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
@@ -1085,7 +1178,7 @@ JS, [
 
         return $this->_asSuccess(Craft::t('app', '{type} saved.', [
             'type' => $element::displayName(),
-        ]), $element, addAnother: true);
+        ]), $element, supportsAddAnother: true);
     }
 
     /**
@@ -1120,12 +1213,10 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
-        $clonedElement = clone $element;
-        $clonedElement->draftId = null;
-        $clonedElement->isProvisionalDraft = false;
-
         try {
-            $newElement = $elementsService->duplicateElement($clonedElement);
+            $newElement = $elementsService->duplicateElement($element, [
+                'isProvisionalDraft' => false,
+            ]);
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),
@@ -1218,6 +1309,15 @@ JS, [
 
         $elementsService->deleteElementForSite($element);
 
+        if ($element->isProvisionalDraft) {
+            // see if the canonical element exists for this site
+            $canonical = $element->getCanonical();
+            if ($canonical->id !== $element->id) {
+                $element = $canonical;
+                $elementsService->deleteElementForSite($element);
+            }
+        }
+
         return $this->_asSuccess(Craft::t('app', '{type} deleted for site.', [
             'type' => $element->getIsDraft() && !$element->isProvisionalDraft ? Craft::t('app', 'Draft') : $element::displayName(),
         ]), $element);
@@ -1305,6 +1405,7 @@ JS, [
 
             $data = [
                 'canonicalId' => $element->getCanonicalId(),
+                'elementId' => $element->id,
                 'draftId' => $element->draftId,
                 'timestamp' => Craft::$app->getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
                 'creator' => $creator?->getName(),
@@ -1316,63 +1417,12 @@ JS, [
 
             if ($this->request->getIsCpRequest()) {
                 [$docTitle, $title] = $this->_editElementTitles($element);
-
-                $view = Craft::$app->getView();
-
-                $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
-                $fieldLayout = $element->getFieldLayout();
-                $form = $fieldLayout->createForm($element, false, [
-                    'namespace' => $namespace,
-                    'registerDeltas' => false,
-                    'visibleElements' => $this->_visibleLayoutElements,
-                ]);
-                $missingElements = [];
-                foreach ($form->tabs as $tab) {
-                    if (!$tab->getUid()) {
-                        continue;
-                    }
-
-                    $elementInfo = [];
-
-                    foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml]) {
-                        /** @var FieldLayoutComponent $layoutElement */
-                        /** @var bool $isConditional */
-                        /** @var string|bool $elementHtml */
-                        if ($isConditional) {
-                            $elementInfo[] = [
-                                'uid' => $layoutElement->uid,
-                                'html' => $elementHtml,
-                            ];
-                        }
-                    }
-
-                    $missingElements[] = [
-                        'uid' => $tab->getUid(),
-                        'id' => $tab->getId(),
-                        'elements' => $elementInfo,
-                    ];
-                }
-
-                $tabs = $form->getTabMenu();
-                if (count($tabs) > 1) {
-                    $selectedTab = isset($tabs[$this->_selectedTab]) ? $this->_selectedTab : null;
-                    $tabHtml = $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
-                        'tabs' => $tabs,
-                        'selectedTab' => $selectedTab,
-                    ], View::TEMPLATE_MODE_CP), $namespace);
-                } else {
-                    $tabHtml = null;
-                }
-
+                $data += $this->_fieldLayoutData($element);
                 $data += [
                     'docTitle' => $docTitle,
                     'title' => $title,
-                    'tabs' => $tabHtml,
                     'previewTargets' => $element->getPreviewTargets(),
-                    'missingElements' => $missingElements,
-                    'initialDeltaValues' => $view->getInitialDeltaValues(),
-                    'headHtml' => $view->getHeadHtml(),
-                    'bodyHtml' => $view->getBodyHtml(),
+                    'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
                     'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
                     'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
                 ];
@@ -1383,7 +1433,7 @@ JS, [
 
             return $this->_asSuccess(Craft::t('app', '{type} saved.', [
                 'type' => Craft::t('app', 'Draft'),
-            ]), $element, $data);
+            ]), $element, $data, true);
         });
     }
 
@@ -1485,7 +1535,7 @@ JS, [
             $message = Craft::t('app', 'Draft applied.');
         }
 
-        return $this->_asSuccess($message, $canonical, addAnother: true);
+        return $this->_asSuccess($message, $canonical, supportsAddAnother: true);
     }
 
     private function _asAppyDraftFailure(ElementInterface $element): ?Response
@@ -1592,6 +1642,109 @@ JS, [
         return $this->_asSuccess(Craft::t('app', '{type} reverted to past revision.', [
             'type' => $element::displayName(),
         ]), $canonical);
+    }
+
+    /**
+     * Returns an element’s missing field layout components.
+     *
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws ServerErrorHttpException
+     * @since 4.6.0
+     */
+    public function actionUpdateFieldLayout(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireCpRequest();
+
+        /** @var Element|DraftBehavior|null $element */
+        $element = $this->_element();
+
+        if (!$element || $element->getIsRevision()) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        $elementsService = Craft::$app->getElements();
+        $user = static::currentUser();
+
+        if (!$elementsService->canView($element, $user)) {
+            throw new ForbiddenHttpException('User not authorized to view this element.');
+        }
+
+        $this->element = $element;
+        $this->_applyParamsToElement($element);
+
+        // Make sure nothing just changed that would prevent the user from saving
+        if (!$elementsService->canView($element, $user)) {
+            throw new ForbiddenHttpException('User not authorized to view this element.');
+        }
+
+        $data = $this->_fieldLayoutData($this->element);
+
+        $data += [
+            'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
+        ];
+
+        return $this->_asSuccess(Craft::t('app', '{type} saved.', [
+            'type' => Craft::t('app', 'Draft'),
+        ]), $element, $data, true);
+    }
+
+    private function _fieldLayoutData(ElementInterface $element): array
+    {
+        $view = Craft::$app->getView();
+        $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
+        $fieldLayout = $element->getFieldLayout();
+        $form = $fieldLayout->createForm($element, false, [
+            'namespace' => $namespace,
+            'registerDeltas' => false,
+            'visibleElements' => $this->_visibleLayoutElements,
+        ]);
+        $missingElements = [];
+        foreach ($form->tabs as $tab) {
+            if (!$tab->getUid()) {
+                continue;
+            }
+
+            $elementInfo = [];
+
+            foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml]) {
+                /** @var FieldLayoutComponent $layoutElement */
+                /** @var bool $isConditional */
+                /** @var string|bool $elementHtml */
+                if ($isConditional) {
+                    $elementInfo[] = [
+                        'uid' => $layoutElement->uid,
+                        'html' => $elementHtml,
+                    ];
+                }
+            }
+
+            $missingElements[] = [
+                'uid' => $tab->getUid(),
+                'id' => $tab->getId(),
+                'elements' => $elementInfo,
+            ];
+        }
+
+        $tabs = $form->getTabMenu();
+        if (count($tabs) > 1) {
+            $selectedTab = isset($tabs[$this->_selectedTab]) ? $this->_selectedTab : null;
+            $tabHtml = $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
+                'tabs' => $tabs,
+                'selectedTab' => $selectedTab,
+            ], View::TEMPLATE_MODE_CP), $namespace);
+        } else {
+            $tabHtml = null;
+        }
+
+        return [
+            'tabs' => $tabHtml,
+            'missingElements' => $missingElements,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ];
     }
 
     /**
@@ -1801,7 +1954,7 @@ JS, [
             return null;
         }
 
-        if (!$element->canView(static::currentUser())) {
+        if (!$elementsService->canView($element, static::currentUser())) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
@@ -1848,7 +2001,7 @@ JS, [
             }
 
             $element->setEnabledForSite($this->_enabledForSite);
-        } else {
+        } elseif (isset($this->_enabled)) {
             $element->enabled = $this->_enabled;
         }
 
@@ -1931,8 +2084,12 @@ JS, [
      * @throws Throwable
      * @throws ServerErrorHttpException
      */
-    private function _asSuccess(string $message, ElementInterface $element, array $data = [], bool $addAnother = false): Response
-    {
+    private function _asSuccess(
+        string $message,
+        ElementInterface $element,
+        array $data = [],
+        bool $supportsAddAnother = false,
+    ): Response {
         /** @var Element $element */
         // Don't call asModelSuccess() here so we can avoid including custom fields in the element data
         $data += [
@@ -1943,7 +2100,7 @@ JS, [
             'details' => !$element->dateDeleted ? Cp::elementHtml($element) : null,
         ]);
 
-        if ($addAnother && $this->_addAnother) {
+        if ($supportsAddAnother && $this->_addAnother) {
             $user = static::currentUser();
             $newElement = $element->createAnother();
 

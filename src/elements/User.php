@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\NameTrait;
 use craft\db\Query;
 use craft\db\Table;
@@ -480,7 +481,7 @@ class User extends Element implements IdentityInterface
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         if ($handle == 'addresses') {
             $map = (new Query())
@@ -896,6 +897,22 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setAttributes($values, $safeOnly = true): void
+    {
+        if ($safeOnly) {
+            unset($values['email'], $values['unverifiedEmail']);
+        }
+
+        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            $this->fullName = null;
+        }
+
+        parent::setAttributes($values, $safeOnly);
+    }
+
+    /**
      * Returns whether the user account can be logged into.
      *
      * @return bool
@@ -974,7 +991,7 @@ class User extends Element implements IdentityInterface
 
             /** @var Address[] $addresses */
             $addresses = Address::find()
-                ->ownerId($this->id)
+                ->owner($this)
                 ->orderBy(['id' => SORT_ASC])
                 ->all();
             $this->_addresses = $addresses;
@@ -1140,10 +1157,10 @@ class User extends Element implements IdentityInterface
         }
 
         if (is_numeric($group)) {
-            return in_array($group, ArrayHelper::getColumn($this->getGroups(), 'id'), false);
+            return ArrayHelper::contains($this->getGroups(), fn(UserGroup $g) => $g->id == $group);
         }
 
-        return in_array($group, ArrayHelper::getColumn($this->getGroups(), 'handle'), true);
+        return ArrayHelper::contains($this->getGroups(), fn(UserGroup $g) => $g->handle === $group);
     }
 
     /**
@@ -1306,16 +1323,9 @@ class User extends Element implements IdentityInterface
 <svg version="1.1" baseProfile="full" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="$gradientId" x1="0" y1="1" x2="1"  y2="0">
-        <stop class="stop1" offset="0%" />
-        <stop class="stop2" offset="100%" />
+        <stop offset="0%" style="stop-color:var(--$color1)" />
+        <stop offset="100%" style="stop-color:var(--$color2)" />
       </linearGradient>
-    </defs>
-    <style>
-      <![CDATA[
-        .stop1 { stop-color: var(--$color1); }
-        .stop2 { stop-color: var(--$color2); }
-      ]]>
-    </style>
     </defs>
     <circle cx="50" cy="50" r="50" fill="url(#$gradientId)"/>
     <text x="50" y="69" font-size="46" font-family="sans-serif" text-anchor="middle" fill="var(--white)" fill-opacity="0.4">$initials</text>
@@ -1682,6 +1692,7 @@ XML;
                 'user' => $this,
                 'isNewUser' => !$this->id,
                 'static' => $static,
+                'meta' => true,
             ]),
             parent::metaFieldsHtml($static),
         ]);
@@ -1920,6 +1931,10 @@ XML;
         }
 
         $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
+
+        if (!$requestUserAgent) {
+            return false;
+        }
 
         if (!hash_equals($userAgent, md5($requestUserAgent))) {
             Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);

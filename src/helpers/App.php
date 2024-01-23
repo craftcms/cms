@@ -34,12 +34,15 @@ use craft\web\View;
 use HTMLPurifier_Encoder;
 use ReflectionClass;
 use ReflectionProperty;
+use Symfony\Component\Process\PhpExecutableFinder;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
+use yii\mutex\MysqlMutex;
+use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
 
 /**
@@ -605,6 +608,35 @@ class App
     }
 
     /**
+     * Returns the path to a PHP executable which should be used by sub processes.
+     *
+     * @return string|null The PHP executable path, or `null` if it can’t be determined.
+     * @since 4.5.6
+     */
+    public static function phpExecutable(): ?string
+    {
+        // If PHP_BINARY was set to $_SERVER, update the environment variable to match
+        if (isset($_SERVER['PHP_BINARY']) && $_SERVER['PHP_BINARY'] !== getenv('PHP_BINARY')) {
+            putenv(sprintf('PHP_BINARY=%s', $_SERVER['PHP_BINARY']));
+        }
+
+        if (
+            getenv('PHP_BINARY') === false &&
+            PHP_BINARY &&
+            PHP_SAPI === 'cgi-fcgi' &&
+            str_ends_with(PHP_BINARY, 'php-cgi')
+        ) {
+            // See if a `php` file exists alongside `php-cgi`, and if so, use that
+            $file = dirname(PHP_BINARY) . DIRECTORY_SEPARATOR . 'php';
+            if (@is_executable($file) && !@is_dir($file)) {
+                return $file;
+            }
+        }
+
+        return (new PhpExecutableFinder())->find() ?: null;
+    }
+
+    /**
      * Tests whether ini_set() works.
      *
      * @return bool
@@ -924,6 +956,32 @@ class App
     }
 
     /**
+     * Returns a database-based mutex driver config.
+     *
+     * @return array
+     * @since 4.6.0
+     */
+    public static function dbMutexConfig(): array
+    {
+        // Use a dedicated connection, to avoid erratic behavior when locks are used during transactions
+        // https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions
+        $dbConfig = static::dbConfig();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            return [
+                'class' => MysqlMutex::class,
+                'db' => $dbConfig,
+                'keyPrefix' => Craft::$app->id,
+            ];
+        }
+
+        return [
+            'class' => PgsqlMutex::class,
+            'db' => $dbConfig,
+        ];
+    }
+
+    /**
      * Returns a file-based mutex driver config.
      *
      * ::: tip
@@ -934,6 +992,7 @@ class App
      *
      * @return array
      * @since 3.0.18
+     * @deprecated in 4.6.0
      */
     public static function mutexConfig(): array
     {

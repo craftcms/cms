@@ -18,6 +18,7 @@
             :error="action.error"
             :ajax="action.ajax"
             v-on:reload="reload"
+            v-on:click="handleActionClick"
           >
           </admin-table-action-button>
         </div>
@@ -81,11 +82,16 @@
             :per-page="perPage"
             :no-data-template="noDataTemplate"
             :query-params="queryParams"
+            :row-class="rowClass"
             pagination-path="pagination"
             @vuetable:loaded="init"
             @vuetable:loading="loading"
             @vuetable:pagination-data="onPaginationData"
             @vuetable:load-success="onLoadSuccess"
+            @vuetable:cell-clicked="handleCellClicked"
+            @vuetable:cell-dblclicked="handleCellDoubleClicked"
+            @vuetable:row-clicked="handleRowClicked"
+            @vuetable:row-dblclicked="handleRowDoubleClicked"
           >
             <template slot="checkbox" slot-scope="props">
               <admin-table-checkbox
@@ -124,9 +130,15 @@
             <template slot="menu" slot-scope="props">
               <template v-if="props.rowData.menu.showItems">
                 <a :href="props.rowData.menu.url"
-                  >{{ props.rowData.menu.label }} ({{
-                    props.rowData.menu.items.length
-                  }})</a
+                  >{{ props.rowData.menu.label
+                  }}<template
+                    v-if="
+                      props.rowData.menu.showCount ||
+                      props.rowData.menu.showCount === undefined
+                    "
+                  >
+                    ({{ props.rowData.menu.items.length }})</template
+                  ></a
                 >
                 <a class="menubtn" :title="props.rowData.menu.label"></a>
                 <div class="menu">
@@ -197,12 +209,49 @@
             </template>
           </vuetable>
         </div>
-        <admin-table-pagination
-          ref="pagination"
-          :itemLabels="itemLabels"
-          @vuetable-pagination:change-page="onChangePage"
-        ></admin-table-pagination>
+        <div class="flex flex-justify vue-admin-table-footer" v-if="showFooter">
+          <admin-table-pagination
+            ref="pagination"
+            :itemLabels="itemLabels"
+            @vuetable-pagination:change-page="onChangePage"
+          ></admin-table-pagination>
+          <div
+            v-if="checkboxes && itemActions.length"
+            :class="{hidden: !checks.length}"
+          >
+            <admin-table-action-button
+              label=""
+              class="vue-admin-table-footer-actions"
+              :icon="'settings'"
+              :actions="itemActions"
+              :allow-multiple="true"
+              menu-btn-class="secondary"
+              :ids="checks"
+              :enabled="checks.length ? true : false"
+              v-on:reload="reload"
+              v-on:click="handleActionClick"
+            >
+            </admin-table-action-button>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <div class="hidden" v-if="moveToPageAction && lastPage !== 1">
+      <admin-table-move-to-page-hud
+        ref="move-to-page-hud"
+        trigger=".vue-admin-table-footer-actions"
+        :action="moveToPageAction"
+        :current-page="currentPage"
+        :per-page="perPage"
+        :pages="lastPage"
+        :move-to-page-action="moveToPageAction"
+        :reorder-success-message="reorderSuccessMessage"
+        :ids="checks"
+        v-on:reload="reload"
+        v-on:submit="loading()"
+        v-on:error="loading(false)"
+      ></admin-table-move-to-page-hud>
     </div>
   </div>
 </template>
@@ -216,11 +265,13 @@
   import AdminTableDetailRow from './components/AdminTableDetailRow';
   import AdminTableButton from './components/AdminTableButton';
   import AdminTableCopyTextButton from './components/AdminTableCopyTextButton';
+  import AdminTableMoveToPageHud from './components/AdminTableMoveToPageHud.vue';
   import Sortable from 'sortablejs';
   import {debounce, map} from 'lodash';
 
   export default {
     components: {
+      AdminTableMoveToPageHud,
       AdminTableCopyTextButton,
       AdminTableActionButton,
       AdminTableCheckbox,
@@ -235,6 +286,12 @@
         type: String,
       },
       actions: {
+        type: Array,
+        default: () => {
+          return [];
+        },
+      },
+      footerActions: {
         type: Array,
         default: () => {
           return [];
@@ -271,6 +328,10 @@
         default: () => {
           return [];
         },
+      },
+      allowMultipleDeletions: {
+        type: Boolean,
+        default: false,
       },
       deleteAction: {
         type: String,
@@ -323,6 +384,12 @@
       reorderAction: {
         type: String,
       },
+      moveToPageAction: {
+        type: String,
+      },
+      paginatedReorderAction: {
+        type: String,
+      },
       reorderSuccessMessage: {
         type: String,
         default: Craft.t('app', 'Items reordered.'),
@@ -359,6 +426,18 @@
       onData: {
         default: function () {},
       },
+      onCellClicked: {
+        default: function () {},
+      },
+      onCellDoubleClicked: {
+        default: function () {},
+      },
+      onRowClicked: {
+        default: function () {},
+      },
+      onRowDoubleClicked: {
+        default: function () {},
+      },
       onPagination: {
         default: function () {},
       },
@@ -374,6 +453,7 @@
       return {
         checks: [],
         currentPage: 1,
+        lastPage: 1,
         detailRow: AdminTableDetailRow,
         dragging: false,
         isEmpty: false,
@@ -454,7 +534,37 @@
         this.dragging = false;
       },
 
+      rowClass(data, index) {
+        if (!data) {
+          return '';
+        }
+
+        if (!this.checks.length) {
+          return '';
+        }
+
+        if (this.checks.indexOf(data.id) >= 0) {
+          return 'sel';
+        }
+
+        return '';
+      },
+
+      handleActionClick(param, value, action, ajax) {
+        if (param === 'moveToPage' && value === true) {
+          this.$refs['move-to-page-hud'].show();
+        } else if (ajax) {
+          this.loading();
+        }
+      },
+
       handleReorder(ev) {
+        // Paginated reordering must be used when supplying table data from an endpoint
+        const isPaginatedReorder = this.tableDataEndpoint ? true : false;
+        const reorderAction = isPaginatedReorder
+          ? this.paginatedReorderAction
+          : this.reorderAction;
+
         let elements = [
           ...ev.target.querySelectorAll('.vue-table-move-handle'),
         ];
@@ -472,7 +582,7 @@
                 : 0) + 1,
           };
 
-          Craft.sendActionRequest('POST', this.reorderAction, {data}).then(
+          Craft.sendActionRequest('POST', reorderAction, {data}).then(
             (response) => {
               Craft.cp.displayNotice(
                 Craft.escapeHtml(this.reorderSuccessMessage)
@@ -540,7 +650,11 @@
 
       reload() {
         if (this.$refs.vuetable) {
-          this.$refs.vuetable.gotoPage(1);
+          const reloadToPage =
+            this.$refs.vuetable.currentPage > 1
+              ? this.$refs.vuetable.currentPage
+              : 1;
+          this.$refs.vuetable.gotoPage(reloadToPage);
         }
 
         this.isLoading = true;
@@ -581,8 +695,37 @@
         }
       },
 
+      handleCellClicked(data, field, event) {
+        this.$emit('onCellClicked', data, field, event);
+        if (this.onCellClicked instanceof Function) {
+          this.onCellClicked(data, field, event);
+        }
+      },
+
+      handleCellDoubleClicked(data, field, event) {
+        this.$emit('onCellDoubleClicked', data, field, event);
+        if (this.onCellDoubleClicked instanceof Function) {
+          this.onCellDoubleClicked(data, field, event);
+        }
+      },
+
+      handleRowClicked(data, event) {
+        this.$emit('onRowClicked', data, event);
+        if (this.onRowClicked instanceof Function) {
+          this.onRowClicked(data, event);
+        }
+      },
+
+      handleRowDoubleClicked(data, event) {
+        this.$emit('onRowDoubleClicked', data, event);
+        if (this.onRowDoubleClicked instanceof Function) {
+          this.onRowDoubleClicked(data, event);
+        }
+      },
+
       onPaginationData(paginationData) {
         this.currentPage = paginationData.current_page;
+        this.lastPage = paginationData.last_page;
         this.$refs.pagination.setPaginationData(paginationData);
         this.deselectAll();
         if (this.onPagination instanceof Function) {
@@ -610,7 +753,9 @@
         };
 
         if (this.onQueryParams instanceof Function) {
-          params = this.onQueryParams(params);
+          let callbackParams = this.onQueryParams(params);
+          // if `callbackParams` is not undefined, use them instead of `params`
+          params = callbackParams || params;
         }
 
         return params;
@@ -651,12 +796,52 @@
         );
       },
 
+      itemActions() {
+        let itemActions = [];
+
+        if (this.paginatedReorderAction && this.moveToPageAction) {
+          itemActions.push({
+            label: Craft.t('app', 'Move to'),
+            action: this.moveToPageAction,
+            allowMultiple: false,
+            ajax: true,
+            handleClick: false,
+            param: 'moveToPage',
+            value: true,
+            class: {'footer-actions': true},
+          });
+        }
+
+        itemActions = [...itemActions, ...this.footerActions];
+
+        if (this.deleteAction) {
+          itemActions.push({
+            label: Craft.t('app', 'Delete'),
+            action: this.deleteAction,
+            error: true,
+            ajax: true,
+            allowMultiple: this.allowMultipleDeletions,
+            separator: itemActions.length ? true : false,
+          });
+        }
+
+        return itemActions;
+      },
+
       canReorder() {
+        if (
+          this.$refs.vuetable == undefined ||
+          this.$refs.vuetable.tableData == undefined
+        ) {
+          return false;
+        }
+
         return (
           this.$refs.vuetable.tableData.length > 1 &&
-          this.reorderAction &&
           this.$el.querySelector(this.tableBodySelector) &&
-          !this.$refs.vuetable.tablePagination
+          ((this.reorderAction && !this.$refs.vuetable.tablePagination) ||
+            (this.paginatedReorderAction &&
+              this.$refs.vuetable.tablePagination))
         );
       },
 
@@ -715,7 +900,10 @@
 
         let customColumns = map(this.columns, (item) => {
           // Do not allow sorting for if you can manually reorder items
-          if (this.reorderAction && item.hasOwnProperty('sortField')) {
+          if (
+            (this.reorderAction || this.paginatedReorderAction) &&
+            item.hasOwnProperty('sortField')
+          ) {
             delete item.sortField;
           }
 
@@ -727,7 +915,7 @@
 
         columns = [...columns, ...customColumns];
 
-        if (this.reorderAction) {
+        if (this.reorderAction || this.paginatedReorderAction) {
           columns.push({
             name: '__slot:reorder',
             title: '',
@@ -751,6 +939,12 @@
 
       showToolbar() {
         return this.actions.length || (this.search && !this.tableData.length);
+      },
+
+      showFooter() {
+        return (
+          (this.checkboxes && this.itemActions.length) || this.tableDataEndpoint
+        );
       },
 
       tableCss() {
@@ -863,6 +1057,17 @@
 
   .vue-admin-table-buttons .flex:not(.flex-nowrap) > * {
     margin-bottom: 0;
+  }
+
+  .vue-admin-table-footer {
+    background-color: #fff;
+    border-top: 1px solid #f3f7fc;
+    bottom: 0;
+    margin-bottom: -14px;
+    margin-top: 14px;
+    padding-bottom: 14px;
+    padding-top: 14px;
+    position: sticky;
   }
 
   .detail-cursor-pointer {

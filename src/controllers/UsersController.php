@@ -1123,7 +1123,7 @@ class UsersController extends Controller
                 'value' => $locale->id,
                 'data' => [
                     'data' => [
-                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '',
                         'hintLang' => $locale->id,
                     ],
                 ],
@@ -1389,7 +1389,7 @@ JS,
         // Is the site set to use email addresses as usernames?
         if ($generalConfig->useEmailAsUsername) {
             $user->username = $user->email;
-        } else {
+        } elseif ($isNewUser || $currentUser->admin || $isCurrentUser) {
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 
@@ -1423,12 +1423,9 @@ JS,
         // set the default group on the user, so that any content
         // based on user group condition can be validated and saved against them
         if ($isPublicRegistration) {
-            $defaultGroupUid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
-            if ($defaultGroupUid) {
-                $group = Craft::$app->userGroups->getGroupByUid($defaultGroupUid);
-                if ($group) {
-                    $user->setGroups([$group]);
-                }
+            $groups = Craft::$app->getUsers()->getDefaultUserGroups($user);
+            if (!empty($groups)) {
+                $user->setGroups($groups);
             }
         }
 
@@ -1448,6 +1445,8 @@ JS,
         // Don't validate required custom fields if it's public registration
         if (!$isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
             $user->setScenario(Element::SCENARIO_LIVE);
+        } elseif ($isPublicRegistration) {
+            $user->setScenario(User::SCENARIO_REGISTRATION);
         }
 
         // Manually validate the user so we can pass $clearErrors=false
@@ -1483,30 +1482,29 @@ JS,
             Craft::$app->getUsers()->activateUser($user);
         }
 
-        // Save their preferences too
-        $preferences = [
-            'language' => $this->request->getBodyParam('preferredLanguage', $user->getPreference('language')),
-            'locale' => $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null,
-            'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
-            'alwaysShowFocusRings' => (bool)$this->request->getBodyParam('alwaysShowFocusRings', $user->getPreference('alwaysShowFocusRings')),
-            'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
-            'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
-            'notificationDuration' => $this->request->getBodyParam('notificationDuration', $user->getPreference('notificationDuration')),
-        ];
-
-        if ($user->admin) {
-            $preferences = array_merge($preferences, [
-                'showFieldHandles' => (bool)$this->request->getBodyParam('showFieldHandles', $user->getPreference('showFieldHandles')),
-                'enableDebugToolbarForSite' => (bool)$this->request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
-                'enableDebugToolbarForCp' => (bool)$this->request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
-                'showExceptionView' => (bool)$this->request->getBodyParam('showExceptionView', $user->getPreference('showExceptionView')),
-                'profileTemplates' => (bool)$this->request->getBodyParam('profileTemplates', $user->getPreference('profileTemplates')),
-            ]);
-        }
-
-        Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
-
         if ($isCurrentUser) {
+            // Save their preferences too
+            $preferences = [
+                'language' => $this->request->getBodyParam('preferredLanguage', $user->getPreference('language')),
+                'locale' => $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null,
+                'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
+                'alwaysShowFocusRings' => (bool)$this->request->getBodyParam('alwaysShowFocusRings', $user->getPreference('alwaysShowFocusRings')),
+                'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
+                'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
+                'notificationDuration' => $this->request->getBodyParam('notificationDuration', $user->getPreference('notificationDuration')),
+            ];
+
+            if ($user->admin) {
+                $preferences = array_merge($preferences, [
+                    'showFieldHandles' => (bool)$this->request->getBodyParam('showFieldHandles', $user->getPreference('showFieldHandles')),
+                    'enableDebugToolbarForSite' => (bool)$this->request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
+                    'enableDebugToolbarForCp' => (bool)$this->request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
+                    'showExceptionView' => (bool)$this->request->getBodyParam('showExceptionView', $user->getPreference('showExceptionView')),
+                    'profileTemplates' => (bool)$this->request->getBodyParam('profileTemplates', $user->getPreference('profileTemplates')),
+                ]);
+            }
+
+            Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
             Craft::$app->updateTargetLanguage();
         }
 
@@ -2436,7 +2434,7 @@ JS,
         $allGroups = ArrayHelper::index(Craft::$app->getUserGroups()->getAllGroups(), 'id');
 
         // See if there are any new groups in here
-        $oldGroupIds = ArrayHelper::getColumn($user->getGroups(), 'id');
+        $oldGroupIds = array_map(fn(UserGroup $group) => $group->id, $user->getGroups());
         $hasNewGroups = false;
         $newGroups = [];
 

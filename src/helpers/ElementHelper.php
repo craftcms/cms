@@ -153,7 +153,7 @@ class ElementHelper
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $maxSlugIncrement = Craft::$app->getConfig()->getGeneral()->maxSlugIncrement;
-        $originalSlug = $element->slug;
+        $originalSlug = $element->slug ?? '';
         $originalSlugLen = mb_strlen($originalSlug);
 
         for ($i = 1; $i <= $maxSlugIncrement; $i++) {
@@ -284,7 +284,7 @@ class ElementHelper
      *
      * @param ElementInterface $element The element to return supported site info for
      * @param bool $withUnpropagatedSites Whether to include sites the element is currently not being propagated to
-     * @return array
+     * @return array[]
      * @throws Exception if any of the element’s supported sites are invalid
      */
     public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
@@ -374,7 +374,8 @@ class ElementHelper
             $element->siteSettingsId &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
-            !$element->mergingCanonicalChanges
+            !$element->mergingCanonicalChanges &&
+            !$element->resaving
         );
     }
 
@@ -794,5 +795,22 @@ class ElementHelper
         }
 
         return Html::encode(StringHelper::stripHtml($value));
+    }
+
+    /**
+     * Returns the searchable attributes for a given element, ensuring that `slug` and `title` are included.
+     *
+     * @param ElementInterface $element
+     * @return string[]
+     * @since 4.6.0
+     */
+    public static function searchableAttributes(ElementInterface $element): array
+    {
+        $searchableAttributes = array_flip($element::searchableAttributes());
+        $searchableAttributes['slug'] = true;
+        if ($element::hasTitles()) {
+            $searchableAttributes['title'] = true;
+        }
+        return array_keys($searchableAttributes);
     }
 }

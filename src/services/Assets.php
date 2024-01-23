@@ -707,8 +707,8 @@ class Assets extends Component
      * @param int $maxWidth
      * @param int $maxHeight
      * @return string
-     * @since 4.0.0
      * @throws NotSupportedException if the asset’s volume doesn’t have a filesystem with public URLs
+     * @since 4.0.0
      */
     public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
     {
@@ -853,7 +853,7 @@ class Assets extends Component
     }
 
     /**
-     * Ensures a folder entry exists in the DB for the full path and return its ID. Depending on the use, it's possible to also ensure a physical folder exists.
+     * Ensures a folder entry exists in the DB for the full path. Depending on the use, it’s also possible to ensure a physical folder exists.
      *
      * @param string $fullPath The path to ensure the folder exists at.
      * @param Volume $volume

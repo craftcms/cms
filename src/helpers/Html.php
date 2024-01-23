@@ -589,8 +589,8 @@ class Html extends \yii\helpers\Html
      * @param string $content
      * @return array[] An array containing the HTML content, and the condition (if there is one).
      * @phpstan-return array{string,string|null}
-     * @since 4.0.0
      * @see wrapIntoCondition()
+     * @since 4.0.0
      */
     public static function unwrapCondition(string $content): array
     {
@@ -712,9 +712,9 @@ class Html extends \yii\helpers\Html
      * @param string $html The HTML code
      * @param string $namespace The namespace
      * @return string The HTML with namespaced input names
-     * @since 3.5.0
      * @see namespaceHtml()
      * @see namespaceAttributes()
+     * @since 3.5.0
      */
     public static function namespaceInputs(string $html, string $namespace): string
     {
@@ -756,9 +756,9 @@ class Html extends \yii\helpers\Html
      * @param string $namespace The namespace
      * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and class name CSS selectors)
      * @return string The HTML with namespaced attributes
-     * @since 3.5.0
      * @see namespaceHtml()
      * @see namespaceInputs()
+     * @since 3.5.0
      */
     public static function namespaceAttributes(string $html, string $namespace, bool $withClasses = false): string
     {
@@ -852,16 +852,34 @@ class Html extends \yii\helpers\Html
     {
         $markers = [];
         $offset = 0;
+        $r = '';
 
-        while (preg_match('/<textarea\b[^>]*>/i', $html, $openMatch, PREG_OFFSET_CAPTURE, $offset)) {
-            $innerOffset = $openMatch[0][1] + strlen($openMatch[0][0]);
-            if (!preg_match('/<\/textarea>/', $html, $closeMatch, PREG_OFFSET_CAPTURE, $innerOffset)) {
+        while (($pos = stripos($html, '<textarea', $offset)) !== false) {
+            $gtPos = strpos($html, '>', $pos + 9);
+            if ($gtPos === false) {
                 break;
             }
-            $marker = sprintf('{marker:%s}', StringHelper::randomString());
-            $markers[$marker] = substr($html, $innerOffset, $closeMatch[0][1] - $innerOffset);
-            $html = substr($html, 0, $innerOffset) . $marker . substr($html, $closeMatch[0][1]);
-            $offset = $innerOffset + strlen($marker) + strlen($closeMatch[0][0]);
+            $innerHtmlPos = $gtPos + 1;
+            $closePos = stripos($html, '</textarea>', $innerHtmlPos);
+            if ($closePos === false) {
+                break;
+            }
+            $outerPos = $closePos + 11;
+            $innerHtml = $closePos !== $innerHtmlPos ? substr($html, $innerHtmlPos, $closePos - $innerHtmlPos) : null;
+
+            if ($innerHtml !== null && str_contains($innerHtml, '<')) {
+                $marker = sprintf('{marker:%s}', mt_rand());
+                $r .= substr($html, $offset, $innerHtmlPos - $offset) . $marker . substr($html, $closePos, 11);
+                $markers[$marker] = $innerHtml;
+            } else {
+                $r .= substr($html, $offset, $outerPos - $offset);
+            }
+
+            $offset = $outerPos;
+        }
+
+        if ($offset !== 0) {
+            $html = $r . substr($html, $offset);
         }
 
         return $markers;
@@ -876,7 +894,22 @@ class Html extends \yii\helpers\Html
      */
     private static function _restoreTextareas(string $html, array $markers): string
     {
-        return str_replace(array_keys($markers), array_values($markers), $html);
+        if (empty($markers)) {
+            return $html;
+        }
+
+        $r = '';
+        $offset = 0;
+
+        foreach ($markers as $marker => $textarea) {
+            $pos = strpos($html, $marker, $offset);
+            if ($pos !== false) {
+                $r .= substr($html, $offset, $pos - $offset) . $textarea;
+                $offset = $pos + strlen($marker);
+            }
+        }
+
+        return $r . substr($html, $offset);
     }
 
     /**

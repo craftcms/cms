@@ -73,7 +73,6 @@ use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
-use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
 use Traversable;
@@ -277,26 +276,26 @@ abstract class Element extends Component implements ElementInterface
      *
      * ```php
      * use craft\base\Element;
+     * use craft\base\ElementInterface;
      * use craft\db\Query;
      * use craft\elements\Entry;
      * use craft\events\DefineEagerLoadingMapEvent;
-     * use craft\helpers\ArrayHelper;
      * use yii\base\Event;
      *
      * // Add support for `with(['bookClub'])` to entries
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_DEFINE_EAGER_LOADING_MAP,
-     *     function(DefineEagerLoadingMapEvent $e) {
-     *         if ($e->handle === 'bookClub') {
-     *             $bookEntryIds = ArrayHelper::getColumn($e->elements, 'id');
-     *             $e->elementType = \my\plugin\BookClub::class,
-     *             $e->map = (new Query)
+     *     function(DefineEagerLoadingMapEvent $event) {
+     *         if ($event->handle === 'bookClub') {
+     *             $bookEntryIds = array_map(fn(ElementInterface $element) => $element->id, $event->elements);
+     *             $event->elementType = \my\plugin\BookClub::class,
+     *             $event->map = (new Query)
      *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
      *                 ->from('{{%bookclub_books}}')
      *                 ->where(['bookId' => $bookEntryIds])
      *                 ->all();
-     *             $e->handled = true;
+     *             $event->handled = true;
      *         }
      *     }
      * );
@@ -574,8 +573,8 @@ abstract class Element extends Component implements ElementInterface
      *
      * Note that [[EVENT_DEFINE_URL]] will still be called regardless of what happens with this event.
      *
-     * @since 4.4.6
      * @see getUrl()
+     * @since 4.4.6
      */
     public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
 
@@ -609,8 +608,8 @@ abstract class Element extends Component implements ElementInterface
      * To prevent the element from getting a URL, ensure `$event->url` is set to `null`,
      * and set `$event->handled` to `true`.
      *
-     * @since 4.3.0
      * @see getUrl()
+     * @since 4.3.0
      */
     public const EVENT_DEFINE_URL = 'defineUrl';
 
@@ -1424,7 +1423,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapDescendants(array $sourceElements, bool $children): ?array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         // Get the structure data for these elements
         $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
@@ -1510,7 +1509,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapAncestors(array $sourceElements, bool $parents): ?array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         // Get the structure data for these elements
         $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
@@ -1623,6 +1622,9 @@ abstract class Element extends Component implements ElementInterface
             'map' => $map,
             'criteria' => [
                 'siteId' => $otherSiteIds,
+                'drafts' => null,
+                'provisionalDrafts' => null,
+                'revisions' => null,
             ],
         ];
     }
@@ -1636,7 +1638,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapCurrentRevisions(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1666,7 +1668,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapDrafts(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1694,7 +1696,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapRevisions(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1722,7 +1724,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapDraftCreators(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1750,7 +1752,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapRevisionCreators(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -2261,41 +2263,45 @@ abstract class Element extends Component implements ElementInterface
      */
     public function attributes(): array
     {
-        $names = parent::attributes();
+        $names = array_flip(parent::attributes());
 
         if ($this->structureId) {
-            $names[] = 'parentId';
+            $names['parentId'] = true;
         } else {
-            ArrayHelper::removeValue($names, 'structureId');
-            ArrayHelper::removeValue($names, 'root');
-            ArrayHelper::removeValue($names, 'lft');
-            ArrayHelper::removeValue($names, 'rgt');
-            ArrayHelper::removeValue($names, 'level');
+            unset(
+                $names['structureId'],
+                $names['root'],
+                $names['lft'],
+                $names['rgt'],
+                $names['level'],
+            );
         }
 
-        ArrayHelper::removeValue($names, 'searchScore');
-        ArrayHelper::removeValue($names, 'awaitingFieldValues');
-        ArrayHelper::removeValue($names, 'firstSave');
-        ArrayHelper::removeValue($names, 'propagating');
-        ArrayHelper::removeValue($names, 'propagateAll');
-        ArrayHelper::removeValue($names, 'newSiteIds');
-        ArrayHelper::removeValue($names, 'resaving');
-        ArrayHelper::removeValue($names, 'duplicateOf');
-        ArrayHelper::removeValue($names, 'mergingCanonicalChanges');
-        ArrayHelper::removeValue($names, 'updatingFromDerivative');
-        ArrayHelper::removeValue($names, 'previewing');
-        ArrayHelper::removeValue($names, 'hardDelete');
+        unset(
+            $names['searchScore'],
+            $names['awaitingFieldValues'],
+            $names['firstSave'],
+            $names['propagating'],
+            $names['propagateAll'],
+            $names['newSiteIds'],
+            $names['resaving'],
+            $names['duplicateOf'],
+            $names['mergingCanonicalChanges'],
+            $names['updatingFromDerivative'],
+            $names['previewing'],
+            $names['hardDelete'],
+        );
 
-        $names[] = 'canonicalId';
-        $names[] = 'isDraft';
-        $names[] = 'isRevision';
-        $names[] = 'isUnpublishedDraft';
-        $names[] = 'ref';
-        $names[] = 'status';
-        $names[] = 'structureId';
-        $names[] = 'url';
+        $names['canonicalId'] = true;
+        $names['isDraft'] = true;
+        $names['isRevision'] = true;
+        $names['isUnpublishedDraft'] = true;
+        $names['ref'] = true;
+        $names['status'] = true;
+        $names['structureId'] = true;
+        $names['url'] = true;
 
-        return $names;
+        return array_keys($names);
     }
 
     /**
@@ -2505,6 +2511,18 @@ abstract class Element extends Component implements ElementInterface
                     }
                 }
             }
+        }
+
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $allErrors = $this->getErrors();
+            $this->clearErrors();
+            foreach ($allErrors as $attribute => &$errors) {
+                $label = $this->getAttributeLabel($attribute);
+                foreach ($errors as &$error) {
+                    $error = str_replace($label, "*$label*", $error);
+                }
+            }
+            $this->addErrors($allErrors);
         }
 
         parent::afterValidate();
@@ -3476,11 +3494,11 @@ abstract class Element extends Component implements ElementInterface
             ->id($this->id ?: false)
             ->structureId($this->structureId)
             ->siteId(['not', $this->siteId])
-            ->drafts($this->getIsDraft())
+            ->drafts(null)
             // the provisionalDraft state could have just changed (e.g. `elements/save-draft`)
             // so don't filter based on one or the other
             ->provisionalDrafts(null)
-            ->revisions($this->getIsRevision());
+            ->revisions(null);
     }
 
     /**
@@ -4305,7 +4323,7 @@ abstract class Element extends Component implements ElementInterface
     public function getDirtyFields(): array
     {
         if ($this->_allDirty()) {
-            return ArrayHelper::getColumn($this->fieldLayoutFields(), 'handle');
+            return array_map(fn(FieldInterface $field) => $field->handle, $this->fieldLayoutFields());
         }
 
         return array_keys($this->_dirtyFields);
@@ -4907,6 +4925,7 @@ JS,
         }
 
         return Cp::textFieldHtml([
+            'status' => $this->getAttributeStatus('slug'),
             'label' => Craft::t('app', 'Slug'),
             'siteId' => $this->siteId,
             'translatable' => $this->getIsSlugTranslatable(),
@@ -4922,9 +4941,9 @@ JS,
     }
 
     /**
-     * Whether status field should be shown for this element.
-     * If set to `false`, status can't be updated via editing entry, action or resave command.
-     * `true` for all elements by default for backwards compatibility.
+     * Returns whether the Status field should be shown for this element.
+     *
+     *  If set to `false`, the element’s status can't be updated via edit forms, the Set Status action, or `resave/*` commands.
      *
      * @return bool
      * @since 4.5.0
@@ -5203,6 +5222,32 @@ JS,
         // Trigger an 'afterDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
             $this->trigger(self::EVENT_AFTER_DELETE);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDeleteForSite(): bool
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            if (!$field->beforeElementDeleteForSite($this)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDeleteForSite(): void
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementDeleteForSite($this);
         }
     }
 

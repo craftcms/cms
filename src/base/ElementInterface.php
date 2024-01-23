@@ -505,14 +505,14 @@ interface ElementInterface extends ComponentInterface
      *   query result data, and the first source element that the result was eager-loaded for
      *
      * ```php
+     * use craft\base\ElementInterface;
      * use craft\db\Query;
-     * use craft\helpers\ArrayHelper;
      *
      * public static function eagerLoadingMap(array $sourceElements, string $handle)
      * {
      *     switch ($handle) {
      *         case 'author':
-     *             $bookIds = ArrayHelper::getColumn($sourceElements, 'id');
+     *             $bookIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
      *             $map = (new Query)
      *                 ->select(['source' => 'id', 'target' => 'authorId'])
      *                 ->from('{{%books}}')
@@ -523,7 +523,7 @@ interface ElementInterface extends ComponentInterface
      *                 'map' => $map,
      *             ];
      *         case 'bookClubs':
-     *             $bookIds = ArrayHelper::getColumn($sourceElements, 'id');
+     *             $bookIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
      *             $map = (new Query)
      *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
      *                 ->from('{{%bookclub_books}}')
@@ -1714,6 +1714,21 @@ interface ElementInterface extends ComponentInterface
      *
      */
     public function afterDelete(): void;
+
+    /**
+     * Performs actions before an element is deleted for a site.
+     *
+     * @return bool Whether the element should be deleted
+     * @since 4.7.0
+     */
+    public function beforeDeleteForSite(): bool;
+
+    /**
+     * Performs actions after an element is deleted for a site.
+     *
+     * @since 4.7.0
+     */
+    public function afterDeleteForSite(): void;
 
     /**
      * Performs actions before an element is restored.

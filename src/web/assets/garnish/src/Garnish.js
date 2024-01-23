@@ -155,9 +155,10 @@ Garnish = $.extend(Garnish, {
    *
    * @param {object} val
    * @return {boolean}
+   * @deprecated
    */
   isArray: function (val) {
-    return val instanceof Array;
+    return Array.isArray(val);
   },
 
   /**
@@ -719,7 +720,7 @@ Garnish = $.extend(Garnish, {
 
     // Flatten any array values whose input name doesn't end in "[]"
     //  - e.g. a multi-select
-    else if (Garnish.isArray(val) && $input.attr('name').slice(-2) !== '[]') {
+    else if (Array.isArray(val) && $input.attr('name').slice(-2) !== '[]') {
       if (val.length) {
         return val[val.length - 1];
       } else {
@@ -785,7 +786,7 @@ Garnish = $.extend(Garnish, {
         }
       }
 
-      if (!Garnish.isArray(inputVal)) {
+      if (!Array.isArray(inputVal)) {
         inputVal = [inputVal];
       }
 
@@ -813,6 +814,16 @@ Garnish = $.extend(Garnish, {
 
       $targetInputs.eq(i).val($sourceInputs.eq(i).val());
     }
+  },
+
+  /**
+   * Returns whether a mouse event is for the primary mouse button.
+   *
+   * @param ev The mouse event
+   * @return {boolean}
+   */
+  isPrimaryClick: function (ev) {
+    return ev.which === this.PRIMARY_CLICK && !ev.ctrlKey && !ev.metaKey;
   },
 
   /**

@@ -11,7 +11,6 @@ use Craft;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
 use craft\gql\types\generators\AddressType;
-use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -65,7 +64,7 @@ class Address extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'fullName' => [
                 'name' => 'fullName',
                 'type' => Type::string(),
@@ -142,26 +141,5 @@ class Address extends Element
                 'description' => 'Longitude',
             ],
         ]), self::getName());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected static function getConditionalFields(): array
-    {
-        $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
-
-        if (Gql::isSchemaAwareOf('volumes.' . $volumeUid)) {
-            return [
-                'photo' => [
-                    'name' => 'photo',
-                    'type' => Asset::getType(),
-                    'description' => 'The user’s photo.',
-                    'complexity' => Gql::eagerLoadComplexity(),
-                ],
-            ];
-        }
-
-        return [];
     }
 }

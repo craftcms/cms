@@ -14,6 +14,7 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
 use DateTime;
+use DateTimeInterface;
 use DateTimeZone;
 use Money\Money;
 use PDO;
@@ -142,10 +143,10 @@ class Db
         }
 
         // If this isn’t a JSON column and the value is an object or array, JSON-encode it
-        if (
-            !in_array($columnType, [Schema::TYPE_JSON, YiiPgqslSchema::TYPE_JSONB]) &&
-            (is_object($value) || is_array($value))
-        ) {
+        if (is_object($value) || is_array($value)) {
+            if (in_array($columnType, [Schema::TYPE_JSON, YiiPgqslSchema::TYPE_JSONB])) {
+                return ArrayHelper::toArray($value);
+            }
             return Json::encode($value);
         }
 
@@ -696,7 +697,7 @@ class Db
      * [[\yii\db\QueryInterface::where()]]-compatible condition.
      *
      * @param string $column The database column that the param is targeting.
-     * @param string|array|DateTime $value The param value
+     * @param string|array|DateTimeInterface $value The param value
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @return string|array
@@ -1583,7 +1584,7 @@ class Db
             return [];
         }
 
-        if ($value instanceof DateTime) {
+        if ($value instanceof DateTimeInterface) {
             return [$value];
         }
 

@@ -967,16 +967,15 @@ class Entry extends Element implements ExpirableElementInterface
         }
 
         // Make sure the section is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
-        $sectionSiteSettings = $this->getSection()->getSiteSettings();
+        $sectionSiteSettings = $this->getSection()->getSiteSettings()[$this->siteId] ?? null;
 
-        if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
+        if (!$sectionSiteSettings?->hasUrls) {
             return null;
         }
 
         return [
             'templates/render', [
-                'template' => (string)$sectionSiteSettings[$siteId]->template,
+                'template' => (string)$sectionSiteSettings->template,
                 'variables' => [
                     'entry' => $this,
                 ],
@@ -1649,6 +1648,7 @@ EOD;
                 }
 
                 return Cp::selectFieldHtml([
+                    'status' => $this->getAttributeStatus('typeId'),
                     'label' => Craft::t('app', 'Entry Type'),
                     'id' => 'entryType',
                     'name' => 'typeId',
@@ -1708,6 +1708,7 @@ EOD;
                 $fields[] = (function() use ($static, $section) {
                     $author = $this->getAuthor();
                     return Cp::elementSelectFieldHtml([
+                        'status' => $this->getAttributeStatus('authorId'),
                         'label' => Craft::t('app', 'Author'),
                         'id' => 'authorId',
                         'name' => 'authorId',
@@ -1732,6 +1733,7 @@ EOD;
 
             // Post Date
             $fields[] = Cp::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('postDate'),
                 'label' => Craft::t('app', 'Post Date'),
                 'id' => 'postDate',
                 'name' => 'postDate',
@@ -1742,6 +1744,7 @@ EOD;
 
             // Expiry Date
             $fields[] = Cp::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('expiryDate'),
                 'label' => Craft::t('app', 'Expiry Date'),
                 'id' => 'expiryDate',
                 'name' => 'expiryDate',

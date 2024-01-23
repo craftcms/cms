@@ -180,7 +180,7 @@ class Assets
         }
 
         $revParams = self::revParams($asset, $dateUpdated);
-        return sprintf('?%s', http_build_query($revParams));
+        return sprintf('?%s', UrlHelper::buildQuery($revParams));
     }
 
     /**

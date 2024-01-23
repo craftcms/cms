@@ -16,6 +16,7 @@ use craft\debug\DumpPanel;
 use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
+use craft\errors\ExitException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -30,7 +31,7 @@ use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\ExitException;
+use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
@@ -481,25 +482,9 @@ class Application extends \yii\web\Application
         $resourceUri = substr($requestPath, strlen($resourceBaseUri));
         $slash = strpos($resourceUri, '/');
         $hash = substr($resourceUri, 0, $slash);
+        $sourcePath = $this->resourceSourcePathByHash($hash);
 
-        $sourcePath = Craft::$app->getCache()->getOrSet(
-            Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash),
-            function() use ($hash) {
-                try {
-                    return (new Query())
-                        ->select(['path'])
-                        ->from(Table::RESOURCEPATHS)
-                        ->where(['hash' => $hash])
-                        ->scalar();
-                } catch (DbException) {
-                    // Craft isn't installed yet
-                }
-
-                return false;
-            }
-        );
-
-        if (empty($sourcePath)) {
+        if (!$sourcePath) {
             return;
         }
 
@@ -530,6 +515,20 @@ class Application extends \yii\web\Application
         $this->end();
     }
 
+    private function resourceSourcePathByHash(string $hash): string|false
+    {
+        try {
+            return (new Query())
+                ->select(['path'])
+                ->from(Table::RESOURCEPATHS)
+                ->where(['hash' => $hash])
+                ->scalar();
+        } catch (DbException) {
+            // Craft isn't installed yet. See if it's cached as a fallback.
+            return Craft::$app->getCache()->get(Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash));
+        }
+    }
+
     /**
      * Processes install requests.
      *
@@ -537,7 +536,7 @@ class Application extends \yii\web\Application
      * @return null|Response
      * @throws NotFoundHttpException
      * @throws ServiceUnavailableHttpException
-     * @throws ExitException
+     * @throws YiiExitException
      */
     private function _processInstallRequest(Request $request): ?Response
     {
@@ -710,7 +709,7 @@ class Application extends \yii\web\Application
             $this->state === self::STATE_SENDING_RESPONSE &&
             $this->getResponse()->format === TemplateResponseFormatter::FORMAT
         ) {
-            throw new ExitException();
+            throw new ExitException(output: ob_get_contents() ?: null);
         }
 
         parent::end($status, $response);

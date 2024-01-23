@@ -425,10 +425,28 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     padding: 10px 24px;
     box-shadow: inset 0 -1px 0 0 var(--red-100);
 
-    a.btn,
+    .resolvable-alert-buttons {
+      margin-top: var(--m);
+    }
+
+    .btn,
     a.go {
       display: inline-flex;
       align-items: center;
+      border: 1px solid transparentize($errorColor, 0.5);
+      border-radius: var(--medium-border-radius);
+      padding: 4px 5px;
+      margin: 0 2px;
+      color: var(--error-color);
+      height: calc(30rem / 16);
+
+      .flex & {
+        margin: 0;
+      }
+
+      &:hover {
+        border-color: var(--error-color);
+      }
     }
 
     a:not(.btn) {
@@ -438,21 +456,17 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       &.go {
         text-decoration: none;
         white-space: nowrap;
-        border: 1px solid transparentize($errorColor, 0.5);
-        border-radius: var(--medium-border-radius);
-        padding: 4px 5px;
-        margin: 0 2px;
 
         &:after {
           color: var(--error-color);
           font-size: 15px;
           margin-top: 1px;
         }
-
-        &:hover {
-          border-color: var(--error-color);
-        }
       }
+    }
+
+    .btn {
+      background-color: transparent;
     }
   }
 }
@@ -962,15 +976,12 @@ li.breadcrumb-toggle-wrapper {
 
 #sidebar {
   box-sizing: border-box;
-  padding: 0 31px;
+  padding: 0 31px var(--m);
   width: $sidebarWidth;
   background-color: transparent;
 
   &.fixed {
     position: fixed;
-    overflow-y: auto;
-    padding-top: var(--m);
-    padding-bottom: var(--m);
   }
 
   nav {
@@ -1097,12 +1108,10 @@ li.breadcrumb-toggle-wrapper {
 
   &.fixed {
     position: fixed;
-    overflow-y: auto;
-    padding-top: var(--m);
   }
 
   .details {
-    margin-bottom: 11.5em;
+    padding-bottom: calc(var(--xl) + 11.5em);
 
     .meta {
       border-radius: var(--large-border-radius);

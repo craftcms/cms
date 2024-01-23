@@ -19,6 +19,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
+use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
 use craft\events\FieldGroupEvent;
 use craft\events\FieldLayoutEvent;
@@ -28,6 +29,7 @@ use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\Checkboxes;
 use craft\fields\Color;
+use craft\fields\Country;
 use craft\fields\Date;
 use craft\fields\Dropdown;
 use craft\fields\Email;
@@ -61,7 +63,6 @@ use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
 use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
-use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -103,6 +104,13 @@ class Fields extends Component
      * ```
      */
     public const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
+
+    /**
+     * @event DefineCompatibleFieldTypesEvent The event that is triggered when defining the compatible field types for a field.
+     * @see getCompatibleFieldTypes()
+     * @since 4.5.7
+     */
+    public const EVENT_DEFINE_COMPATIBLE_FIELD_TYPES = 'defineCompatibleFieldTypes';
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group is saved.
@@ -194,19 +202,10 @@ class Fields extends Component
     private ?MemoizableArray $_fields = null;
 
     /**
-     * @var FieldLayout[]|null[]
+     * @var MemoizableArray<FieldLayout>|null
+     * @see _layouts()
      */
-    private array $_layoutsById = [];
-
-    /**
-     * @var FieldLayout[]
-     */
-    private array $_layoutsByType = [];
-
-    /**
-     * @var FieldLayout[][]
-     */
-    private array $_allLayoutsByType = [];
+    private ?MemoizableArray $_layouts = null;
 
     /**
      * @var array
@@ -236,11 +235,7 @@ class Fields extends Component
     private function _groups(): MemoizableArray
     {
         if (!isset($this->_groups)) {
-            $groups = [];
-            foreach ($this->_createGroupQuery()->all() as $result) {
-                $groups[] = new FieldGroup($result);
-            }
-            $this->_groups = new MemoizableArray($groups);
+            $this->_groups = new MemoizableArray($this->_createGroupQuery()->all(), fn(array $result) => new FieldGroup($result));
         }
 
         return $this->_groups;
@@ -464,6 +459,7 @@ class Fields extends Component
             CategoriesField::class,
             Checkboxes::class,
             Color::class,
+            Country::class,
             Date::class,
             Dropdown::class,
             Email::class,
@@ -518,55 +514,62 @@ class Fields extends Component
      */
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
     {
-        if (!$field::hasContentColumn()) {
-            return $includeCurrent ? [get_class($field)] : [];
-        }
-
-        // If the field has any validation errors and has an ID, swap it with the saved field
-        if (!$field->getIsNew() && $field->hasErrors()) {
-            $field = $this->getFieldById($field->id);
-        }
-
-        $fieldColumnType = $field->getContentColumnType();
-
-        if (is_array($fieldColumnType)) {
-            return $includeCurrent ? [get_class($field)] : [];
-        }
-
         $types = [];
 
-        foreach ($this->getAllFieldTypes() as $class) {
-            /** @var string|FieldInterface $class */
-            /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
-            if ($class === get_class($field)) {
-                if ($includeCurrent) {
-                    $types[] = $class;
+        if ($field::hasContentColumn()) {
+            // If the field has any validation errors and has an ID, swap it with the saved field
+            if (!$field->getIsNew() && $field->hasErrors()) {
+                $field = $this->getFieldById($field->id);
+            }
+
+            $fieldColumnType = $field->getContentColumnType();
+
+            if (is_array($fieldColumnType)) {
+                return $includeCurrent ? [get_class($field)] : [];
+            }
+
+            foreach ($this->getAllFieldTypes() as $class) {
+                /** @var string|FieldInterface $class */
+                /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
+                if ($class === get_class($field)) {
+                    if ($includeCurrent) {
+                        $types[] = $class;
+                    }
+                    continue;
                 }
-                continue;
+
+                if (!$class::hasContentColumn()) {
+                    continue;
+                }
+
+                /** @var FieldInterface $tempField */
+                $tempField = new $class();
+                $tempFieldColumnType = $tempField->getContentColumnType();
+
+                if (is_array($tempFieldColumnType)) {
+                    continue;
+                }
+
+                if (!Db::areColumnTypesCompatible($fieldColumnType, $tempFieldColumnType)) {
+                    continue;
+                }
+
+                $types[] = $class;
             }
-
-            if (!$class::hasContentColumn()) {
-                continue;
-            }
-
-            /** @var FieldInterface $tempField */
-            $tempField = new $class();
-            $tempFieldColumnType = $tempField->getContentColumnType();
-
-            if (is_array($tempFieldColumnType)) {
-                continue;
-            }
-
-            if (!Db::areColumnTypesCompatible($fieldColumnType, $tempFieldColumnType)) {
-                continue;
-            }
-
-            $types[] = $class;
         }
 
         // Make sure the current field class is in there if it's supposed to be
         if ($includeCurrent && !in_array(get_class($field), $types, true)) {
             $types[] = get_class($field);
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
+            $event = new DefineCompatibleFieldTypesEvent([
+                'field' => $field,
+                'compatibleTypes' => $types,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $event);
+            return $event->compatibleTypes;
         }
 
         return $types;
@@ -605,7 +608,7 @@ class Fields extends Component
     }
 
     /**
-     * Returns a memoizable array of all fields.
+     * Returns a memoizable array of fields.
      *
      * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
@@ -614,20 +617,17 @@ class Fields extends Component
      */
     private function _fields(mixed $context = null): MemoizableArray
     {
+        $context ??= Craft::$app->getContent()->fieldContext;
+
         if (!isset($this->_fields)) {
-            $fields = [];
-            foreach ($this->_createFieldQuery()->all() as $result) {
-                $fields[] = $this->createField($result);
-            }
-            $this->_fields = new MemoizableArray($fields);
+            $this->_fields = new MemoizableArray(
+                $this->_createFieldQuery()->all(),
+                fn(array $config) => $this->createField($config),
+            );
         }
 
         if ($context === false) {
             return $this->_fields;
-        }
-
-        if ($context === null) {
-            $context = Craft::$app->getContent()->fieldContext;
         }
 
         if (is_array($context)) {
@@ -1082,6 +1082,40 @@ class Fields extends Component
     // -------------------------------------------------------------------------
 
     /**
+     * Returns a memoizable array of all field layouts.
+     *
+     * @return MemoizableArray<FieldLayout>
+     */
+    private function _layouts(): MemoizableArray
+    {
+        if (!isset($this->_layouts)) {
+            if (Craft::$app->getIsInstalled()) {
+                $layoutConfigs = $this->_createLayoutQuery()->all();
+                $layoutTabConfigs = ArrayHelper::index($this->_createLayoutTabQuery()->all(), null, ['layoutId']);
+            } else {
+                $layoutConfigs = [];
+                $layoutTabConfigs = [];
+            }
+
+            $isMysql = Craft::$app->getDb()->getIsMysql();
+
+            $this->_layouts = new MemoizableArray($layoutConfigs, function($config) use (&$layoutTabConfigs, $isMysql) {
+                $layout = new FieldLayout($config);
+                /** @phpstan-ignore-next-line  */
+                $tabConfigs = ArrayHelper::remove($layoutTabConfigs, $layout->id) ?? [];
+                $tabs = array_map(
+                    fn(array $row) => $this->_createLayoutTabFromRow(['layout' => $layout] + $row, $isMysql),
+                    $tabConfigs
+                );
+                $layout->setTabs($tabs);
+                return $layout;
+            });
+        }
+
+        return $this->_layouts;
+    }
+
+    /**
      * Returns a field layout by its ID.
      *
      * @param int $layoutId The field layout’s ID
@@ -1089,15 +1123,7 @@ class Fields extends Component
      */
     public function getLayoutById(int $layoutId): ?FieldLayout
     {
-        if (array_key_exists($layoutId, $this->_layoutsById)) {
-            return $this->_layoutsById[$layoutId];
-        }
-
-        $result = $this->_createLayoutQuery()
-            ->andWhere(['id' => $layoutId])
-            ->one();
-
-        return $this->_layoutsById[$layoutId] = $result ? new FieldLayout($result) : null;
+        return $this->_layouts()->firstWhere('id', $layoutId);
     }
 
     /**
@@ -1109,33 +1135,7 @@ class Fields extends Component
      */
     public function getLayoutsByIds(array $layoutIds): array
     {
-        $response = [];
-
-        // Don't re-fetch any layouts we've already memoized
-        foreach ($layoutIds as $key => $id) {
-            if (array_key_exists($id, $this->_layoutsById)) {
-                if ($this->_layoutsById[$id] !== null) {
-                    $response[$id] = $this->_layoutsById[$id];
-                }
-                unset($layoutIds[$key]);
-            }
-        }
-
-        if (!empty($layoutIds)) {
-            $result = $this->_createLayoutQuery()
-                ->andWhere(['id' => $layoutIds])
-                ->all();
-
-            $layouts = [];
-
-            foreach ($result as $row) {
-                $this->_layoutsById[$row['id']] = $response[$row['id']] = $layouts[$row['id']] = new FieldLayout($row);
-            }
-
-            $this->_loadTabs($layouts);
-        }
-
-        return $response;
+        return $this->_layouts()->whereIn('id', $layoutIds)->all();
     }
 
     /**
@@ -1147,27 +1147,8 @@ class Fields extends Component
      */
     public function getLayoutByType(string $type): FieldLayout
     {
-        if (!isset($this->_layoutsByType[$type])) {
-            if (Craft::$app->getIsInstalled()) {
-                $result = $this->_createLayoutQuery()
-                    ->andWhere(['type' => $type])
-                    ->one();
-            }
-
-            if (isset($result)) {
-                if (!isset($this->_layoutsById[$result['id']])) {
-                    $this->_layoutsById[$result['id']] = new FieldLayout($result);
-                }
-
-                $this->_layoutsByType[$type] = $this->_layoutsById[$result['id']];
-            } else {
-                $this->_layoutsByType[$type] = new FieldLayout([
-                    'type' => $type,
-                ]);
-            }
-        }
-
-        return $this->_layoutsByType[$type];
+        return $this->_layouts()->firstWhere('type', $type)
+            ?? new FieldLayout(['type' => $type]);
     }
 
     /**
@@ -1180,19 +1161,7 @@ class Fields extends Component
      */
     public function getLayoutsByType(string $type): array
     {
-        if (!isset($this->_allLayoutsByType[$type])) {
-            $results = $this->_createLayoutQuery()
-                ->andWhere(['type' => $type])
-                ->all();
-
-            $this->_allLayoutsByType[$type] = [];
-
-            foreach ($results as $result) {
-                $this->_allLayoutsByType[$type][] = new FieldLayout($result);
-            }
-        }
-
-        return $this->_allLayoutsByType[$type];
+        return $this->_layouts()->where('type', $type)->all();
     }
 
     /**
@@ -1200,6 +1169,7 @@ class Fields extends Component
      *
      * @param int|int[] $layoutId The field layout’s ID(s)
      * @return FieldLayoutTab[] The field layout’s tabs
+     * @deprecated in 4.6.0
      */
     public function getLayoutTabsById(int|array $layoutId): array
     {
@@ -1237,25 +1207,6 @@ class Fields extends Component
         }
 
         return new FieldLayoutTab($row);
-    }
-
-    /**
-     * Fetches the layout tabs for the given layouts.
-     *
-     * @param FieldLayout[] $layouts Field layouts indexed by their IDs
-     */
-    private function _loadTabs(array $layouts): void
-    {
-        if (empty($layouts)) {
-            return;
-        }
-
-        $tabs = Collection::make($this->getLayoutTabsById(array_keys($layouts)));
-
-        Collection::make($layouts)
-            ->each(function(FieldLayout $layout) use ($tabs) {
-                $layout->setTabs($tabs->where('layoutId', $layout->id)->all());
-            });
     }
 
     /**
@@ -1469,10 +1420,8 @@ class Fields extends Component
             ]));
         }
 
-        $this->_layoutsByType[$layout->type] = $this->_layoutsById[$layout->id] = $layout;
-
         // Clear caches
-        unset($this->_allLayoutsByType[$layout->type]);
+        $this->_layouts = null;
 
         return true;
     }
@@ -1526,9 +1475,7 @@ class Fields extends Component
         }
 
         // Clear caches
-        unset($this->_layoutsById[$layout->id]);
-        unset($this->_layoutsByType[$layout->type]);
-        unset($this->_allLayoutsByType[$layout->type]);
+        $this->_layouts = null;
 
         return true;
     }
@@ -1547,9 +1494,7 @@ class Fields extends Component
             ->execute();
 
         // Clear caches
-        $this->_layoutsById = [];
-        $this->_layoutsByType = [];
-        $this->_allLayoutsByType = [];
+        $this->_layouts = null;
 
         return (bool)$affectedRows;
     }
@@ -1568,9 +1513,7 @@ class Fields extends Component
             ->execute();
 
         // Clear caches
-        $this->_layoutsById = [];
-        $this->_layoutsByType = [];
-        $this->_allLayoutsByType = [];
+        $this->_layouts = null;
 
         return (bool)$affectedRows;
     }
@@ -1870,15 +1813,36 @@ class Fields extends Component
 
         // Find a unique backup table name
         $shortTableName = Db::rawTableShortName($table);
+        $schema = $db->getSchema();
+        $prefix = "{$shortTableName}_$column";
         $timestamp = time();
         $n = 1;
         do {
             $suffix = $n === 1 ? '' : "_$n";
-            $bakTable = "{{%{$shortTableName}_{$column}_bak_$timestamp$suffix}}";
+            $bakTable = "{{%{$prefix}_bak_$timestamp$suffix}}";
+
+            // make sure it's not too long
+            $length = strlen($schema->getRawTableName($bakTable));
+            if ($length > $schema->maxObjectNameLength) {
+                $overage = $length - $schema->maxObjectNameLength;
+                $prefixParts = explode('_', $prefix);
+                $removed = 0;
+                for ($i = 0; true; $i++) {
+                    $partIndex = $i % count($prefixParts);
+                    if (strlen($prefixParts[$partIndex]) > 1) {
+                        $prefixParts[$partIndex] = substr($prefixParts[$partIndex], 0, -1);
+                        $removed++;
+                        if ($removed === $overage) {
+                            break;
+                        }
+                    }
+                }
+                $shortenedPrefix = implode('_', $prefixParts);
+                $bakTable = "{{%{$shortenedPrefix}_bak_$timestamp$suffix}}";
+            }
             $n++;
         } while ($db->tableExists($bakTable));
 
-        $schema = $db->getSchema();
         $columnSchema = $schema->getTableSchema($table)->getColumn($column);
 
         $db->createCommand()

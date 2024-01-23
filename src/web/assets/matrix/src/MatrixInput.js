@@ -694,12 +694,12 @@
             value = Craft.getText(this._inputPreviewText($input));
           }
 
-          if (value instanceof Array) {
+          if (Array.isArray(value)) {
             value = value.join(', ');
           }
 
           if (value) {
-            value = Craft.trim(Craft.escapeHtml(value));
+            value = Craft.escapeHtml(value).trim();
 
             if (value) {
               if (inputPreviewText) {
