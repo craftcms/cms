@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-alpha.8 - 2024-01-23
 
 - Fixed a PHP error that occurred when the Debug Toolbar was enabled. ([#14183](https://github.com/craftcms/cms/issues/14183))
 
