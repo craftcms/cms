@@ -9,6 +9,7 @@
 - Selected elements within relational fields now include “Move up/down” or “Move forward/backward” in their action menus.
 - Sections’ and Matrix fields’ Entry Types settings now use an entry type select input, with support for reordering selected entry types, and editing entry types via slideouts. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added “Save and continue editing” actions to all core settings pages with full-page forms. ([#14168](https://github.com/craftcms/cms/discussions/14168))
+- Improved the accessibility of time zone fields.
 - Improved the accessibility of form alternative action menus.
 - Added the `utils/prune-orphaned-entries` command. ([#14154](https://github.com/craftcms/cms/pull/14154))
 - Added `craft\base\Actionable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
