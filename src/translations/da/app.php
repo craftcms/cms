@@ -1074,7 +1074,7 @@ return [
     'Oops!' => 'Ups!',
     'Open PRs' => 'Åbn PRs',
     'Open in Image Editor' => 'Open in Image Editor',
-    'Open the full edit page in a new tab' => 'Åbn den fulde redigeringsside på en ny fane',
+    'Open in a new tab' => 'Open in a new tab',
     'Opens in a new window' => 'Åbner i et nyt vindue',
     'Operator' => 'Operator',
     'Optgroup?' => 'Optgroup?',

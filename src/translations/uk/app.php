@@ -1074,7 +1074,7 @@ return [
     'Oops!' => 'Лишенько!',
     'Open PRs' => 'Відкриті pull-запити',
     'Open in Image Editor' => 'Open in Image Editor',
-    'Open the full edit page in a new tab' => 'Відкривати сторінку редагування цілком у новій вкладці',
+    'Open in a new tab' => 'Open in a new tab',
     'Opens in a new window' => 'Відкривається в новому вікні',
     'Operator' => 'Оператор',
     'Optgroup?' => 'Optgroup?',

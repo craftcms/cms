@@ -1074,7 +1074,7 @@ return [
     'Oops!' => 'ای وای!',
     'Open PRs' => 'PR‌های باز',
     'Open in Image Editor' => 'Open in Image Editor',
-    'Open the full edit page in a new tab' => 'باز کردن صفحه ویرایش تمام صفحه در یک زبانه جدید',
+    'Open in a new tab' => 'Open in a new tab',
     'Opens in a new window' => 'در یک پنجره جدید باز می‌شود',
     'Operator' => 'عملگر',
     'Optgroup?' => 'گروه بندی گزینه ها؟',

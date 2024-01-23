@@ -1074,7 +1074,7 @@ return [
     'Oops!' => 'おっと！',
     'Open PRs' => 'PR を開く',
     'Open in Image Editor' => 'Open in Image Editor',
-    'Open the full edit page in a new tab' => '新しいタブでフル編集ページを開く',
+    'Open in a new tab' => 'Open in a new tab',
     'Opens in a new window' => '新しいウィンドウで開きます',
     'Operator' => '演算子',
     'Optgroup?' => 'Optgroup?',

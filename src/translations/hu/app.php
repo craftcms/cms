@@ -1074,7 +1074,7 @@ return [
     'Oops!' => 'Hoppá!',
     'Open PRs' => 'Nyitott PR-ek',
     'Open in Image Editor' => 'Open in Image Editor',
-    'Open the full edit page in a new tab' => 'A teljes szerkesztett oldal megnyitása új lapon',
+    'Open in a new tab' => 'Open in a new tab',
     'Opens in a new window' => 'Új ablakban nyílik meg',
     'Operator' => 'Kezelő',
     'Optgroup?' => 'Optgroup?',

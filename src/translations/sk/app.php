@@ -1074,7 +1074,7 @@ return [
     'Oops!' => 'No nazdar!',
     'Open PRs' => 'Otvoriť PR',
     'Open in Image Editor' => 'Open in Image Editor',
-    'Open the full edit page in a new tab' => 'Otvoriť celú stránku úprav v novej karte',
+    'Open in a new tab' => 'Open in a new tab',
     'Opens in a new window' => 'Otvorí sa v novom okne',
     'Operator' => 'Operátor',
     'Optgroup?' => 'Optgroup?',
