@@ -1074,7 +1074,7 @@ return [
     'Oops!' => 'Ay!',
     'Open PRs' => 'Açık Talepler',
     'Open in Image Editor' => 'Open in Image Editor',
-    'Open the full edit page in a new tab' => 'Tam düzenleme sayfasını yeni bir sekmede açın',
+    'Open in a new tab' => 'Open in a new tab',
     'Opens in a new window' => 'Yeni bir pencerede açılır',
     'Operator' => 'Operatör',
     'Optgroup?' => 'Optgroup?',
