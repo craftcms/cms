@@ -34,7 +34,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // Set the sort header
     this.initTableHeaders();
 
-    // Create the table Sorter
+    // Create the table sorter
     if (
       (this.settings.sortable ||
         (this.elementIndex.isAdministrative &&
