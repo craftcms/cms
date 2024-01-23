@@ -1082,15 +1082,23 @@ class Html extends \yii\helpers\Html
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default, the SVG will only be namespaced if an asset or markup is passed in.
+     * @param bool $throwException Whether to throw an exception on error
      * @return string
      * @since 4.3.0
      */
-    public static function svg(Asset|string $svg, ?bool $sanitize = null, ?bool $namespace = null): string
-    {
+    public static function svg(
+        Asset|string $svg,
+        ?bool $sanitize = null,
+        ?bool $namespace = null,
+        bool $throwException = false,
+    ): string {
         if ($svg instanceof Asset) {
             try {
                 $svg = $svg->getContents();
             } catch (Throwable $e) {
+                if ($throwException) {
+                    throw $e;
+                }
                 Craft::error("Could not get the contents of {$svg->getPath()}: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
@@ -1100,11 +1108,17 @@ class Html extends \yii\helpers\Html
             try {
                 $svg = Craft::getAlias($svg);
             } catch (InvalidArgumentException $e) {
+                if ($throwException) {
+                    throw $e;
+                }
                 Craft::error("Could not get the contents of $svg: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
             }
             if (!is_file($svg) || !FileHelper::isSvg($svg)) {
+                if ($throwException) {
+                    throw new InvalidArgumentException("Invalid SVG path: $svg");
+                }
                 Craft::warning("Could not get the contents of $svg: The file doesn't exist", __METHOD__);
                 return '';
             }

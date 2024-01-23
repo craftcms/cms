@@ -33,6 +33,7 @@ use craft\fields\Date;
 use craft\fields\Dropdown;
 use craft\fields\Email;
 use craft\fields\Entries as EntriesField;
+use craft\fields\Icon;
 use craft\fields\Lightswitch;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
@@ -204,6 +205,7 @@ class Fields extends Component
             Dropdown::class,
             Email::class,
             EntriesField::class,
+            Icon::class,
             Lightswitch::class,
             MatrixField::class,
             Money::class,

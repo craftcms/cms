@@ -151,7 +151,7 @@
                     <div class="flex-grow"></div>
                     <button type="button" id="announcements-btn" class="btn hidden" title="{{ 'What’s New'|t('app') }}">
                         <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
-                        {{ svg('@app/icons/gift.svg') }}
+                        {{ iconSvg('gift') }}
                     </button>
 
                     {# New account dropdown #}
@@ -359,7 +359,7 @@
                 <button type="submit" class="btn submit">{{ submitButtonLabel ?? 'Save'|t('app') }}</button>
             {% endblock %}
             {% if formActions ?? false %}
-                <button type="button" class="btn submit menubtn" aria-label="{{ 'More actions'|t('app') }}"></button>
+                <button type="button" class="btn submit menubtn" aria-label="{{ 'More actions'|t('app') }}" aria-controls="form-action-menu" data-disclosure-trigger></button>
                 {% include '_layouts/components/form-action-menu' %}
             {% endif %}
         </div>

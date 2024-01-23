@@ -18,7 +18,6 @@ use craft\base\GqlInlineFragmentInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
-use craft\db\Table;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -45,10 +44,8 @@ use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\i18n\Translation;
 use craft\models\EntryType;
-use craft\models\Site;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
-use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
@@ -450,7 +447,7 @@ class Matrix extends Field implements
     {
         $entriesService = Craft::$app->getEntries();
 
-        $this->_entryTypes = array_filter(array_map(function(EntryType|string|int $entryType) use ($entriesService) {
+        $this->_entryTypes = array_values(array_filter(array_map(function(EntryType|string|int $entryType) use ($entriesService) {
             if (is_numeric($entryType)) {
                 $entryType = $entriesService->getEntryTypeById($entryType);
             } elseif (is_string($entryType)) {
@@ -460,7 +457,7 @@ class Matrix extends Field implements
                 throw new InvalidArgumentException('Invalid entry type');
             }
             return $entryType;
-        }, $entryTypes));
+        }, $entryTypes)));
     }
 
     /**
@@ -716,6 +713,7 @@ class Matrix extends Field implements
         $new = 0;
 
         foreach ($value->all() as $entry) {
+            /** @var Entry $entry */
             $entryId = $entry->id ?? 'new' . ++$new;
             $serialized[$entryId] = [
                 'type' => $entry->getType()->handle,
@@ -784,6 +782,7 @@ class Matrix extends Field implements
 
         $view = Craft::$app->getView();
         $id = $this->getInputId();
+        /** @var Entry[] $value */
         $entryTypes = $this->getEntryTypesForField($value, $element);
 
         // Get the entry types data
@@ -862,6 +861,7 @@ class Matrix extends Field implements
                 'sortable' => true,
                 'canCreate' => true,
                 'createAttributes' => array_map(fn(EntryType $entryType) => [
+                    'icon' => $entryType->icon,
                     'label' => Craft::t('site', $entryType->name),
                     'attributes' => [
                         'fieldId' => $this->id,
@@ -929,12 +929,15 @@ class Matrix extends Field implements
         $value = $element->getFieldValue($this->handle);
 
         if ($value instanceof EntryQuery) {
+            /** @var Entry[] $entries */
             $entries = $value->getCachedResult() ?? (clone $value)->status(null)->limit(null)->all();
 
             $allEntriesValidate = true;
             $scenario = $element->getScenario();
 
             foreach ($entries as $i => $entry) {
+                $entry->setOwner($element);
+
                 /** @var Entry $entry */
                 if (
                     $scenario === Element::SCENARIO_ESSENTIALS ||
@@ -1215,6 +1218,27 @@ class Matrix extends Field implements
 
         // Delete any entries that primarily belong to this element
         $this->entryManager()->deleteNestedElements($element, $element->hardDelete);
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDeleteForSite(ElementInterface $element): bool
+    {
+        $elementsService = Craft::$app->getElements();
+
+        /** @var Entry[] $entries */
+        $entries = Entry::find()
+            ->primaryOwnerId($element->id)
+            ->status(null)
+            ->siteId($element->siteId)
+            ->all();
+
+        foreach ($entries as $entry) {
+            $elementsService->deleteElementForSite($entry);
+        }
 
         return true;
     }

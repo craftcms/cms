@@ -42,7 +42,19 @@
             <div class="menu">
                 <ul>
                     {% for entryType in entryTypes %}
-                        <li><a data-type="{{ entryType.handle }}">{{ entryType.name|t('site') }}</a></li>
+                        <li>
+                            {% tag 'button' with {
+                                class: 'menu-item',
+                                data: {
+                                    type: entryType.handle,
+                                },
+                            } %}
+                                {% if entryType.icon %}
+                                    <span class="icon">{{ iconSvg(entryType.icon) }}</span>
+                                {% endif %}
+                                <span class="label">{{ entryType.name|t('site') }}</span>
+                            {% endtag %}
+                        </li>
                     {% endfor %}
                 </ul>
             </div>

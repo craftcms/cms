@@ -16,6 +16,7 @@ use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\models\FieldLayout;
 use yii\base\Component;
 
@@ -183,6 +184,10 @@ class ElementSources extends Component
                 $attributes[$key] = ['label' => $info];
             } elseif (!isset($info['label'])) {
                 $attributes[$key]['label'] = '';
+            }
+
+            if (isset($attributes[$key]['icon']) && in_array($attributes[$key]['icon'], ['world', 'earth'])) {
+                $attributes[$key]['icon'] = Cp::earthIcon();
             }
         }
 

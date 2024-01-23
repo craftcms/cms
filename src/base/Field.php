@@ -953,6 +953,22 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function beforeElementDeleteForSite(ElementInterface $element): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementDeleteForSite(ElementInterface $element): void
+    {
+        // carry on
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeElementRestore(ElementInterface $element): bool
     {
         // Trigger a 'beforeElementRestore' event

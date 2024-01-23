@@ -554,6 +554,7 @@ class Addresses extends Field implements
         $new = 0;
 
         foreach ($value->all() as $address) {
+            /** @var Address $address */
             $addressId = $address->id ?? 'new' . ++$new;
             $serialized[$addressId] = [
                 'countryCode' => $address->countryCode,

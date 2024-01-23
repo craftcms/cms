@@ -2398,6 +2398,144 @@ $.extend(Craft, {
     );
   },
 
+  refreshComponentInstances(type, id) {
+    const $chips = $(
+      `div.chip[data-type="${$.escapeSelector(
+        type
+      )}"][data-id="${id}"][data-settings]`
+    );
+    if (!$chips.length) {
+      return;
+    }
+    const instances = [];
+    for (let i = 0; i < $chips.length; i++) {
+      instances.push($chips.eq(i).data('settings'));
+    }
+    const data = {
+      components: [{type, id, instances}],
+    };
+    Craft.sendActionRequest('POST', 'app/render-components', {data}).then(
+      ({data}) => {
+        for (let i = 0; i < data.components[type][id].length; i++) {
+          const $chip = $chips.eq(i);
+          const $replacement = $(data.components[type][id][i]);
+          for (let attribute of $replacement[0].attributes) {
+            if (attribute.name === 'class') {
+              $chip.addClass(attribute.value);
+            } else {
+              $chip.attr(attribute.name, attribute.value);
+            }
+          }
+          const $actions = $chip.find('.chip-actions').detach();
+          const $inputs = $chip.find('input,button').detach();
+          $chip.html($replacement.html());
+          if ($actions.length) {
+            $chip.find('.chip-actions').replaceWith($actions);
+          }
+          if ($inputs.length) {
+            $inputs.appendTo($chip);
+          }
+        }
+      }
+    );
+  },
+
+  /**
+   * Adds actions to a chip or card.
+   *
+   * @param {jQuery|HTMLElement} chip
+   * @param {Array} actions
+   */
+  addActionsToChip(chip, actions) {
+    const $actions = $(chip).find('.chip-actions,.card-actions');
+    let $actionMenuBtn = $actions.find('.action-btn');
+    let $actionMenu;
+
+    if ($actionMenuBtn.length) {
+      $actionMenu = $actionMenuBtn
+        .disclosureMenu()
+        .data('disclosureMenu').$container;
+      $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
+    } else {
+      // the chip/card doesn't have an action menu yet, so add one
+      const menuId = `actions-${Math.floor(Math.random() * 1000000)}`;
+      const labelId = `${menuId}-label`;
+      const $label = $('<label/>', {
+        id: labelId,
+        class: 'visually-hidden',
+        text: Craft.t('app', 'Actions'),
+      }).appendTo($actions);
+      $actionMenuBtn = $('<button/>', {
+        class: 'btn action-btn',
+        type: 'button',
+        title: Craft.t('app', 'Actions'),
+        'aria-controls': menuId,
+        'aria-describedby': labelId,
+        'data-disclosure-trigger': 'true',
+        'data-icon': 'ellipsis',
+      }).insertAfter($label);
+      $actionMenu = $('<div/>', {
+        id: menuId,
+        class: 'menu menu--disclosure',
+      }).insertAfter($actionMenuBtn);
+      $actionMenuBtn.disclosureMenu();
+    }
+
+    const safeActions = actions.filter((a) => !a.destructive);
+    const destructiveActions = actions.filter((a) => a.destructive);
+    let $items = $();
+
+    if (safeActions.length) {
+      const $ul = $('<ul/>').appendTo($actionMenu);
+      for (let action of safeActions) {
+        const $li = $('<li/>').appendTo($ul);
+        const $a = $('<a/>', {
+          role: action.url ? null : 'button',
+          'data-icon': action.icon,
+          'aria-label': action.label,
+          text: action.label,
+          href: action.url,
+        })
+          .appendTo($li)
+          .data('actionCallback', action.callback);
+        if (action.attributes) {
+          $a.attr(action.attributes);
+        }
+        $items = $items.add($a);
+      }
+    }
+    if (safeActions.length && destructiveActions.length) {
+      $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
+    }
+    if (destructiveActions.length) {
+      const $ul = $('<ul/>').appendTo($actionMenu);
+      for (let action of destructiveActions) {
+        const $li = $('<li/>').appendTo($ul);
+        const $a = $('<a/>', {
+          class: 'error',
+          type: 'button',
+          role: 'button',
+          'data-icon': action.icon,
+          'aria-label': action.label,
+          text: action.label,
+        })
+          .appendTo($li)
+          .data('actionCallback', action.callback);
+        if (action.attributes) {
+          $a.attr(action.attributes);
+        }
+        $items = $items.add($a);
+      }
+    }
+
+    $items.on('activate', (ev) => {
+      $actionMenuBtn.data('disclosureMenu').hide();
+      $(ev.currentTarget).data('actionCallback')();
+    });
+
+    Craft.initUiElements($actionMenu);
+  },
+
   /**
    * Submits a form.
    * @param {Object} $form
@@ -2790,7 +2928,7 @@ $.extend($.fn, {
 
   formsubmit: function () {
     // Secondary form submit buttons
-    return this.on('click', function (ev) {
+    return this.on('activate', function (ev) {
       const $btn = $(ev.currentTarget);
       const params = $btn.data('params') || {};
       if ($btn.data('param')) {

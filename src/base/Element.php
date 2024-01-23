@@ -158,6 +158,8 @@ abstract class Element extends Component implements ElementInterface
     public const STATUS_ENABLED = 'enabled';
     public const STATUS_DISABLED = 'disabled';
     public const STATUS_ARCHIVED = 'archived';
+    /** @since 5.0.0 */
+    public const STATUS_DRAFT = 'draft';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
@@ -889,6 +891,21 @@ abstract class Element extends Component implements ElementInterface
     public static function findAll(mixed $criteria = null): array
     {
         return static::findByCondition($criteria, false);
+    }
+
+    /**
+     * @interitdoc
+     */
+    public static function get(int|string $id): ?static
+    {
+        return static::find()
+            ->id($id)
+            ->fixedOrder()
+            ->drafts(null)
+            ->provisionalDrafts(null)
+            ->revisions(null)
+            ->status(null)
+            ->one();
     }
 
     /**
@@ -3499,7 +3516,6 @@ abstract class Element extends Component implements ElementInterface
                 ]),
             ];
 
-
             $view = Craft::$app->getView();
             $view->registerJsWithVars(fn($id, $elementType, $settings) => <<<JS
 $('#' + $id).on('click', () => {
@@ -3870,6 +3886,10 @@ JS, [
      */
     public function getStatus(): ?string
     {
+        if ($this->getIsDraft()) {
+            return self::STATUS_DRAFT;
+        }
+
         if ($this->archived) {
             return self::STATUS_ARCHIVED;
         }
@@ -4121,7 +4141,7 @@ JS, [
             if ($dist === null) {
                 return $ancestors;
             }
-            return $ancestors->filter(fn(self $element) => $element->level >= $this->level - $dist);
+            return $ancestors->filter(fn(ElementInterface $element) => $element->level >= $this->level - $dist);
         }
 
         return static::find()
@@ -4141,7 +4161,7 @@ JS, [
             if ($dist === null) {
                 return $descendants;
             }
-            return $descendants->filter(fn(self $element) => $element->level <= $this->level + $dist);
+            return $descendants->filter(fn(ElementInterface $element) => $element->level <= $this->level + $dist);
         }
 
         return static::find()
@@ -5155,13 +5175,17 @@ JS, [
                 $url = $this->getUrl();
 
                 if ($url !== null) {
-                    return Html::a('', $url, [
+                    return Html::beginTag('a', [
+                        'href' => $url,
                         'rel' => 'noopener',
                         'target' => '_blank',
-                        'data-icon' => 'world',
                         'title' => Craft::t('app', 'Visit webpage'),
                         'aria-label' => Craft::t('app', 'View'),
-                    ]);
+                    ]) .
+                        Html::tag('span', Cp::iconSvg('world'), [
+                            'class' => ['cp-icon', 'small', 'inline-flex'],
+                        ]) .
+                        Html::endTag('a');
                 }
 
                 return '';
@@ -5701,6 +5725,32 @@ JS,
         // Trigger an 'afterDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
             $this->trigger(self::EVENT_AFTER_DELETE);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDeleteForSite(): bool
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            if (!$field->beforeElementDeleteForSite($this)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDeleteForSite(): void
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementDeleteForSite($this);
         }
     }
 
