@@ -38,7 +38,7 @@ class Heading extends BaseUiElement
      */
     protected function selectorIcon(): ?string
     {
-        return '@appicons/hash.svg';
+        return 'hashtag';
     }
 
     /**

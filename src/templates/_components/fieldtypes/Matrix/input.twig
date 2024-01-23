@@ -3,7 +3,7 @@
 {{ hiddenInput(name, '') }}
 
 <div class="matrix matrix-field" id="{{ id }}">
-    <span aria-live="assertive" class="visually-hidden" data-status-message></span>
+    <span role="status" class="visually-hidden" data-status-message></span>
     <div class="blocks" role="list">
         {% for entry in entries %}
             {% include '_components/fieldtypes/Matrix/block.twig' %}
@@ -42,7 +42,19 @@
             <div class="menu">
                 <ul>
                     {% for entryType in entryTypes %}
-                        <li><a data-type="{{ entryType.handle }}">{{ entryType.name|t('site') }}</a></li>
+                        <li>
+                            {% tag 'button' with {
+                                class: 'menu-item',
+                                data: {
+                                    type: entryType.handle,
+                                },
+                            } %}
+                                {% if entryType.icon %}
+                                    <span class="icon">{{ iconSvg(entryType.icon) }}</span>
+                                {% endif %}
+                                <span class="label">{{ entryType.name|t('site') }}</span>
+                            {% endtag %}
+                        </li>
                     {% endfor %}
                 </ul>
             </div>

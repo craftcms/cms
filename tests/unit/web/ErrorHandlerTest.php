@@ -125,14 +125,14 @@ class ErrorHandlerTest extends TestCase
     {
         $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
         $vendorPath = Craft::getAlias('@vendor');
-        $craftPath = Craft::getAlias('@craft');
+        $srcPath = Craft::getAlias('@app');
 
         return [
             [true, $path . '/created_path'],
             [true, $vendorPath . '/twig/twig/LICENSE'],
             [true, $vendorPath . '/twig/twig/composer.json'],
 
-            [false, $craftPath . '/web/twig'],
+            [false, $srcPath . '/web/twig'],
             [false, __DIR__],
         ];
     }

@@ -58,8 +58,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.$editLink = $('<a/>', {
         target: '_blank',
         class: 'btn header-btn hidden',
-        title: Craft.t('app', 'Open the full edit page in a new tab'),
-        'aria-label': Craft.t('app', 'Open the full edit page in a new tab'),
+        title: Craft.t('app', 'Open in a new tab'),
+        'aria-label': Craft.t('app', 'Open in a new tab'),
         'data-icon': 'external',
       }).appendTo(this.$toolbar);
       this.$sidebarBtn = $('<button/>', {
@@ -319,7 +319,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
             'aria-controls': menuId,
             'aria-describedby': labelId,
             'data-disclosure-trigger': 'true',
-            'data-icon': 'ellipsis',
           }).insertBefore(this.$editLink);
           $(data.actionMenu).insertBefore(this.$editLink);
           $trigger.disclosureMenu();
@@ -526,6 +525,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       const data = response.data || {};
       if (data.message) {
         Craft.cp.displaySuccess(data.message, data.notificationSettings);
+      }
+      if (data.modelClass && data.modelId) {
+        Craft.refreshComponentInstances(data.modelClass, data.modelId);
       }
       this.trigger('submit', {
         response: response,

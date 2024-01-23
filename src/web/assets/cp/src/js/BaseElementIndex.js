@@ -42,6 +42,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $toolbar: null,
     toolbarOffset: null,
 
+    $srStatusContainer: null,
     $searchContainer: null,
     $search: null,
     $filterBtn: null,
@@ -71,6 +72,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $updateSpinner: null,
     $viewModeBtnContainer: null,
     viewModeBtns: null,
+    _viewParams: null,
+    _previousViewParams: null,
     _viewMode: null,
     view: null,
     _autoSelectElements: null,
@@ -237,6 +240,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$sourceActionsContainer = this.$sidebar.find(
         `#${this.namespaceId('source-actions')}`
       );
+      this.$sourceActionsContainer = this.$sidebar.find('#source-actions');
+      this.$srStatusContainer = this.$container.find('[data-status-message]');
 
       this.$elements = this.$container.find('.elements:first');
       this.$updateSpinner = this.$elements.find('.spinner');
@@ -610,6 +615,30 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     getSourceContainer: function () {
       return this.$sidebar.find('nav > ul');
+    },
+
+    getSourceLabel: function () {
+      return this.$source.data('label');
+    },
+
+    getItemLabel: function () {
+      return Craft.elementTypeNames[this.elementType]
+        ? Craft.elementTypeNames[this.elementType][2]
+        : this.settings.elementTypeName.toLowerCase();
+    },
+
+    getItemsLabel: function () {
+      return Craft.elementTypeNames[this.elementType]
+        ? Craft.elementTypeNames[this.elementType][3]
+        : this.settings.elementTypePluralName.toLowerCase();
+    },
+
+    getFirstItemNumber: function (total) {
+      return Math.min(this.settings.batchSize * (this.page - 1) + 1, total);
+    },
+
+    getLastItemNumber: function (first, total) {
+      return Math.min(first + (this.settings.batchSize - 1), total);
     },
 
     get $sources() {
@@ -1596,10 +1625,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this._resetCount();
         }
 
-        var params = this.getViewParams();
+        this._previousViewParams = this._viewParams;
+        this._viewParams = this.getViewParams();
 
         Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
-          data: params,
+          data: this._viewParams,
           cancelToken: this._createCancelToken(),
         })
           .then((response) => {
@@ -1619,11 +1649,44 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               this.$main.scrollTop(0);
             }
 
-            this._updateView(params, response.data);
+            this._updateView(this._viewParams, response.data);
 
-            if (pageChanged) {
-              const $elementContainer = this.view.getElementContainer();
-              Garnish.firstFocusableElement($elementContainer).trigger('focus');
+            if (this.criteriaHasChanged() && !this.sourceHasChanged()) {
+              const itemLabel = this.getItemLabel();
+              const itemsLabel = this.getItemsLabel();
+
+              this._countResults().then((total) => {
+                let successMessage;
+
+                if (!this.paginated) {
+                  successMessage = Craft.t(
+                    'app',
+                    'Showing {total, number} {total, plural, =1{{item}} other{{items}}}',
+                    {
+                      total: total,
+                      item: itemLabel,
+                      items: itemsLabel,
+                    }
+                  );
+                } else {
+                  const first = this.getFirstItemNumber(total);
+                  successMessage = Craft.t(
+                    'app',
+                    'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+                    {
+                      first: first,
+                      last: this.getLastItemNumber(first, total),
+                      total: total,
+                      item: itemLabel,
+                      items: itemsLabel,
+                    }
+                  );
+                }
+
+                this.updateLiveRegion(successMessage);
+              });
+            } else {
+              this.updateLiveRegion(this.getSortMessage());
             }
 
             resolve();
@@ -1638,6 +1701,38 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       });
     },
 
+    criteriaHasChanged: function () {
+      if (!this._previousViewParams) {
+        return false;
+      }
+
+      return !Craft.compare(
+        this._viewParams.criteria,
+        this._previousViewParams.criteria
+      );
+    },
+
+    sourceHasChanged: function () {
+      if (!this._previousViewParams) {
+        return false;
+      }
+
+      return this._viewParams.source !== this._previousViewParams.source;
+    },
+
+    sortHasChanged: function () {
+      if (!this._previousViewParams) {
+        return false;
+      }
+
+      return (
+        this._viewParams.viewState.order !==
+          this._previousViewParams.viewState.order ||
+        this._viewParams.viewState.sort !==
+          this._previousViewParams.viewState.sort
+      );
+    },
+
     updateElementsIfSearchTextChanged: function () {
       if (
         this.searchText !==
@@ -1648,6 +1743,39 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
         this.updateElements();
       }
+    },
+
+    getSortMessage: function () {
+      const attribute = this.getSelectedSortAttribute();
+      const direction =
+        this.getSelectedSortDirection() === 'asc'
+          ? Craft.t('app', 'Ascending')
+          : Craft.t('app', 'Descending');
+      const sortLabel = this.getSortLabel(attribute);
+
+      if (!attribute && !direction && !sortLabel) return;
+
+      return Craft.t('app', '{name} sorted by {attribute}, {direction}', {
+        name: this.getSourceLabel(),
+        attribute: sortLabel,
+        direction: direction,
+      });
+    },
+
+    updateLiveRegion: function (message) {
+      if (!message) return;
+
+      this.$srStatusContainer.empty().text(message);
+
+      // Clear message after interval
+      setTimeout(() => {
+        const currentMessage = this.$srStatusContainer.text();
+
+        // Check that this is the same message and hasn't been updated since
+        if (message !== currentMessage) return;
+
+        this.$srStatusContainer.empty();
+      }, 5000);
     },
 
     showActionTriggers: function () {
@@ -2590,6 +2718,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           positionTop + '%'
         );
       }
+      this.updateLiveRegion(Craft.t('app', 'Loading'));
     },
 
     setIndexAvailable: function () {
@@ -3015,13 +3144,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._countResults()
           .then((total) => {
             this.$countSpinner.addClass('hidden');
-
-            let itemLabel = Craft.elementTypeNames[this.elementType]
-              ? Craft.elementTypeNames[this.elementType][2]
-              : this.settings.elementTypeName.toLowerCase();
-            let itemsLabel = Craft.elementTypeNames[this.elementType]
-              ? Craft.elementTypeNames[this.elementType][3]
-              : this.settings.elementTypePluralName.toLowerCase();
+            const itemLabel = this.getItemLabel();
+            const itemsLabel = this.getItemsLabel();
 
             if (!this.paginated) {
               let countLabel = Craft.t(
@@ -3035,11 +3159,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               );
               this.$countContainer.text(countLabel);
             } else {
-              let first = Math.min(
-                this.settings.batchSize * (this.page - 1) + 1,
-                total
-              );
-              let last = Math.min(first + (this.settings.batchSize - 1), total);
+              const first = this.getFirstItemNumber(total);
+              const last = this.getLastItemNumber(first, total);
               let countLabel = Craft.t(
                 'app',
                 '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
@@ -3095,7 +3216,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page - 1);
-                  this.updateElements(true, true);
+                  this.updateElements(true);
                 });
               }
 
@@ -3104,7 +3225,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page + 1);
-                  this.updateElements(true, true);
+                  this.updateElements(true);
                 });
               }
             }

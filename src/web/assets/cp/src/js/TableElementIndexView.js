@@ -31,15 +31,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // Set table caption
     this.$tableCaption = this.$table.find('caption');
 
-    this.$statusMessage = this.$table.parent().find('[data-status-message]');
-
     // Set the sort header
     this.initTableHeaders();
-
-    // Add callback for after elements are updated
-    this.elementIndex.on('updateElements', () => {
-      this._updateScreenReaderStatus();
-    });
 
     // Create the table sorter
     if (
@@ -623,39 +616,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     // No need for two spinners
     this.elementIndex.setIndexAvailable();
-  },
-
-  _updateScreenReaderStatus: function () {
-    let attr, dir;
-    if (this.elementIndex.viewMode === 'structure') {
-      attr = 'structure';
-      dir = 'asc';
-    } else {
-      [attr, dir] = this.elementIndex.getSortAttributeAndDirection();
-    }
-
-    const attrLabel = this.elementIndex.getSortLabel(attr);
-    if (!attrLabel) {
-      return;
-    }
-
-    const dirLabel =
-      dir === 'asc'
-        ? Craft.t('app', 'Ascending')
-        : Craft.t('app', 'Descending');
-
-    const message = Craft.t(
-      'app',
-      'Table {name} sorted by {attribute}, {direction}',
-      {
-        name: this.$table.attr('data-name'),
-        attribute: attrLabel,
-        direction: dirLabel,
-      }
-    );
-
-    this.$statusMessage.empty();
-    this.$statusMessage.text(message);
   },
 
   _updateTableAttributes: function ($element, tableAttributes) {

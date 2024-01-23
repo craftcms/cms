@@ -28,6 +28,9 @@ export default Base.extend(
     _menuWidth: null,
     _menuHeight: null,
 
+    searchStr: '',
+    clearSearchStrTimeout: null,
+
     /**
      * Constructor
      */
@@ -117,7 +120,16 @@ export default Base.extend(
       });
     },
 
-    focusElement: function (direction) {
+    focusElement: function (component) {
+      if (component instanceof HTMLElement || component instanceof jQuery) {
+        let $component = $(component);
+        if (!$component.is(':focusable')) {
+          $component = $component.find(':focusable');
+        }
+        $component.focus();
+        return;
+      }
+
       const currentFocus = $(':focus');
 
       const focusable = this.$container.find(':focusable');
@@ -125,7 +137,7 @@ export default Base.extend(
       const currentIndex = focusable.index(currentFocus);
       let newIndex;
 
-      if (direction === 'prev') {
+      if (component === 'prev') {
         newIndex = currentIndex - 1;
       } else {
         newIndex = currentIndex + 1;
@@ -152,36 +164,71 @@ export default Base.extend(
       this.hide();
     },
 
-    handleKeypress: function (event) {
-      const keyCode = event.keyCode;
+    handleKeypress: function (ev) {
+      if (Garnish.isCtrlKeyPressed(ev)) {
+        return;
+      }
+
+      const keyCode = ev.keyCode;
 
       switch (keyCode) {
         case Garnish.RIGHT_KEY:
         case Garnish.DOWN_KEY:
-          event.preventDefault();
+          ev.preventDefault();
           this.focusElement('next');
-          break;
+          return;
         case Garnish.LEFT_KEY:
         case Garnish.UP_KEY:
-          event.preventDefault();
+          ev.preventDefault();
           this.focusElement('prev');
-          break;
+          return;
         case Garnish.TAB_KEY:
           const $focusableElements = this.$container.find(':focusable');
-          const index = $focusableElements.index(event.target);
+          const index = $focusableElements.index(ev.target);
 
-          if (index === 0 && event.shiftKey) {
-            event.preventDefault();
+          if (index === 0 && ev.shiftKey) {
+            ev.preventDefault();
             this.$trigger.focus();
           } else if (
             index === $focusableElements.length - 1 &&
-            !event.shiftKey &&
+            !ev.shiftKey &&
             this.$nextFocusableElement
           ) {
-            event.preventDefault();
+            ev.preventDefault();
             this.$nextFocusableElement.focus();
           }
-          break;
+          return;
+      }
+
+      if (
+        ev.key &&
+        (ev.key.match(/^[^ ]$/) || (this.searchStr.length && ev.key === ' '))
+      ) {
+        // show the menu and set visual focus to the first matching option
+        let $option;
+
+        // see if there's a matching option
+        this.searchStr += ev.key.toLowerCase();
+        const $options = this.$container.find('li');
+        for (let i = 0; i < $options.length; i++) {
+          const $o = $options.eq(i);
+          if ($o.text().toLowerCase().trimStart().startsWith(this.searchStr)) {
+            $option = $o;
+            break;
+          }
+        }
+
+        if ($option && $option.length) {
+          this.focusElement($option);
+        }
+
+        // update the timeout
+        if (this.clearSearchStrTimeout) {
+          clearTimeout(this.clearSearchStrTimeout);
+        }
+        this.clearSearchStrTimeout = setTimeout(() => {
+          this.clearSearchStr();
+        }, 1000);
       }
     },
 
@@ -255,6 +302,7 @@ export default Base.extend(
       }
 
       this.trigger('show');
+      this.clearSearchStr();
       Garnish.uiLayerManager.addLayer(this.$container);
       Garnish.uiLayerManager.registerShortcut(
         Garnish.ESC_KEY,
@@ -283,6 +331,7 @@ export default Base.extend(
       }
 
       this.trigger('hide');
+      this.clearSearchStr();
       Garnish.uiLayerManager.removeLayer();
     },
 
@@ -391,8 +440,16 @@ export default Base.extend(
       delete this._menuHeight;
     },
 
-    isPadded: function () {
-      return this.$container.children('.padded').length;
+    clearSearchStr: function () {
+      this.searchStr = '';
+      if (this.clearSearchStrTimeout) {
+        clearTimeout(this.clearSearchStrTimeout);
+        this.clearSearchStrTimeout = null;
+      }
+    },
+
+    isPadded: function (tag = 'ul') {
+      return this.$container.children(`${tag}.padded`).length;
     },
 
     createItem: function (item) {
@@ -483,7 +540,7 @@ export default Base.extend(
         el.append(description);
       }
 
-      this.addListener(el, 'click', () => {
+      this.addListener(el, 'activate', () => {
         this.hide();
       });
 
@@ -503,7 +560,7 @@ export default Base.extend(
 
     addHr: function (before) {
       const hr = document.createElement('hr');
-      if (this.isPadded()) {
+      if (this.isPadded('hr')) {
         hr.className = 'padded';
       }
 

@@ -77,7 +77,10 @@ use yii\db\Expression;
  */
 class Entry extends Element implements NestedElementInterface, ExpirableElementInterface
 {
-    use NestedElementTrait;
+    use NestedElementTrait {
+        attributes as traitAttributes;
+        extraFields as traitExtraFields;
+    }
 
     public const STATUS_LIVE = 'live';
     public const STATUS_PENDING = 'pending';
@@ -790,7 +793,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function attributes(): array
     {
-        $names = array_flip(parent::attributes());
+        $names = array_flip($this->traitAttributes());
         unset($names['deletedWithEntryType']);
         unset($names['saveOwnership']);
         $names['authorId'] = true;
@@ -804,7 +807,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function extraFields(): array
     {
-        $names = parent::extraFields();
+        $names = $this->traitExtraFields();
         $names[] = 'author';
         $names[] = 'authors';
         $names[] = 'section';
@@ -1568,8 +1571,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'class' => self::class,
             'sectionId' => $this->sectionId,
             'fieldId' => $this->fieldId,
-            'primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId,
-            'ownerId' => $this->primaryOwnerId ?? $this->ownerId,
+            'primaryOwnerId' => $this->getPrimaryOwnerId(),
+            'ownerId' => $this->getPrimaryOwnerId(),
             'sortOrder' => null,
             'typeId' => $this->typeId,
             'siteId' => $this->siteId,
@@ -1898,44 +1901,23 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if ($section?->type !== Section::TYPE_SINGLE) {
             // Type
-            $fields[] = (function() use ($static, $view) {
+            $fields[] = (function() use ($static) {
                 $entryTypes = $this->getAvailableEntryTypes();
                 if (count($entryTypes) <= 1) {
                     return null;
                 }
 
-                $entryTypeOptions = [];
-                $fieldLayoutIds = [];
-
-                foreach ($entryTypes as $entryType) {
-                    $entryTypeOptions[] = [
-                        'label' => Craft::t('site', $entryType->name),
-                        'value' => $entryType->id,
-                    ];
-                    $fieldLayoutIds["type-$entryType->id"] = $entryType->fieldLayoutId;
-                }
-
-                if (!$static) {
-                    $typeInputId = $view->namespaceInputId('entryType');
-                    $js = <<<EOD
-(() => {
-    const \$typeInput = $('#$typeInputId');
-    const editor = \$typeInput.closest('form').data('elementEditor');
-    if (editor) {
-        editor.checkForm();
-    }
-})();
-EOD;
-                    $view->registerJs($js);
-                }
-
-                return Cp::selectFieldHtml([
+                return Cp::customSelectFieldHtml([
                     'status' => $this->getAttributeStatus('typeId'),
                     'label' => Craft::t('app', 'Entry Type'),
                     'id' => 'entryType',
                     'name' => 'typeId',
-                    'value' => $this->getTypeId(),
-                    'options' => $entryTypeOptions,
+                    'value' => $this->getType()->id,
+                    'options' => array_map(fn(EntryType $et) => [
+                        'icon' => $et->icon,
+                        'label' => Craft::t('site', $et->name),
+                        'value' => $et->id,
+                    ], $entryTypes),
                     'disabled' => $static,
                     'attribute' => 'typeId',
                     'errors' => $this->getErrors('typeId'),
@@ -2287,7 +2269,7 @@ EOD;
 
             $record->sectionId = $this->sectionId;
             $record->fieldId = $this->fieldId;
-            $record->primaryOwnerId = $this->primaryOwnerId ?? $this->ownerId;
+            $record->primaryOwnerId = $this->getPrimaryOwnerId();
             $record->typeId = $this->getTypeId();
             $record->postDate = Db::prepareDateForDb($this->postDate);
             $record->expiryDate = Db::prepareDateForDb($this->expiryDate);

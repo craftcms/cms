@@ -9,6 +9,7 @@ files:
     excluded_target_languages:
       - cy
       - el
+      - hr
       - id
       - ky
 commit_message: '[ci skip]'

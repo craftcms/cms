@@ -549,6 +549,7 @@ JS, [
 
         foreach ($value->all() as $i => $target) {
             if (!self::_validateRelatedElement($element, $target)) {
+                /** @phpstan-ignore-next-line */
                 $element->addModelErrors($target, "$this->handle[$i]");
                 $errorCount++;
             }
@@ -763,7 +764,7 @@ JS, [
 
         /** @var ElementQuery|array $value */
         $variables = $this->inputTemplateVariables($value, $element);
-        $variables['inline'] = $inline;
+        $variables['inline'] = $inline || $variables['viewMode'] === 'large';
 
         if ($inline) {
             $variables['viewMode'] = 'list';
@@ -809,15 +810,15 @@ JS, [
             return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
         }
 
-        $size = Cp::ELEMENT_SIZE_SMALL;
+        $size = Cp::CHIP_SIZE_SMALL;
         $viewMode = $this->viewMode();
         if ($viewMode == 'large') {
-            $size = Cp::ELEMENT_SIZE_LARGE;
+            $size = Cp::CHIP_SIZE_LARGE;
         }
 
         $id = $this->getInputId();
         $html = "<div id='$id' class='elementselect noteditable'>" .
-            "<div class='elements" . ($size === Cp::ELEMENT_SIZE_LARGE ? ' inline-chips' : '') . "'>";
+            "<div class='elements" . ($size === Cp::CHIP_SIZE_LARGE ? ' inline-chips' : '') . "'>";
 
         foreach ($value as $relatedElement) {
             $html .= Cp::elementChipHtml($relatedElement, [
