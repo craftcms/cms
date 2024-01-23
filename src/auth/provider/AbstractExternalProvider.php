@@ -246,23 +246,26 @@ abstract class AbstractExternalProvider extends AbstractProvider
      * @param User $user
      * @throws \Throwable
      */
-    private function enableUser(User $user)
+    private function enableUser(User $user): void
     {
-        if (!$user->getId()) {
+        if ($user->getId()) {
             Craft::$app->getUsers()->activateUser($user);
-            $user->enabled = true;
-            $user->archived = false;
 
-            $user->active = true;
-            $user->pending = false;
-            $user->locked = false;
-            $user->suspended = false;
-            $user->verificationCode = null;
-            $user->verificationCodeIssuedDate = null;
-            $user->invalidLoginCount = null;
-            $user->lastInvalidLoginDate = null;
-            $user->lockoutDate = null;
+            return;
         }
+
+        $user->enabled = true;
+        $user->archived = false;
+
+        $user->active = true;
+        $user->pending = false;
+        $user->locked = false;
+        $user->suspended = false;
+        $user->verificationCode = null;
+        $user->verificationCodeIssuedDate = null;
+        $user->invalidLoginCount = null;
+        $user->lastInvalidLoginDate = null;
+        $user->lockoutDate = null;
     }
 
     /**
