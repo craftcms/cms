@@ -2,9 +2,8 @@
 An example provider
 
 ```php
-
 'components' => [
-    'auth' => [
+    'authSso' => [
         'providers' => [
             'test' => [
                 'type' => \craft\auth\oidc\Google::class,

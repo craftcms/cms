@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## 5.0.0-alpha.8 - 2024-01-23
+
+- Fixed a PHP error that occurred when the Debug Toolbar was enabled. ([#14183](https://github.com/craftcms/cms/issues/14183))
+
 ## 5.0.0-alpha.7 - 2024-01-23
 
 - Inline-editable Matrix blocks now support multiple tabs. ([#8500](https://github.com/craftcms/cms/discussions/8500), [#14139](https://github.com/craftcms/cms/issues/14139))
