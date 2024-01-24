@@ -466,7 +466,6 @@ a {
     text-decoration: underline;
   }
 
-  .icon,
   .cp-icon {
     svg {
       @include svg-mask(var(--link-color));
