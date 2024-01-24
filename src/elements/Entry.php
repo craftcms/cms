@@ -2291,7 +2291,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
             // ownerId will be null when creating a revision
             if (isset($this->fieldId, $this->ownerId) && $this->saveOwnership) {
-                if (($isNew && $this->getIsCanonical()) || !isset($this->sortOrder)) {
+                if (!isset($this->sortOrder)) {
                     $max = (new Query())
                         ->from(['eo' => Table::ELEMENTS_OWNERS])
                         ->innerJoin(['e' => Table::ENTRIES], '[[e.id]] = [[eo.elementId]]')

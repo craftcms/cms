@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Craft now requires MySQL 8.0.17+, MariaDB 10.4.6+, or PostgreSQL 13+.
+- Fixed a bug where newly-created nested Matrix entries were losing their sort order when the owner element’s draft was applied. 
 
 ## 5.0.0-alpha.8 - 2024-01-23
 
