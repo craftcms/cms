@@ -82,9 +82,11 @@ class HelpController extends BaseHelpController
      */
     public function actionIndex($command = null): int
     {
-        // @craft alias needs to be set for console help command,
-        // because the controllers path is, in this case, deducted from the controller's namespace
-        Craft::setAlias('@craft', Craft::getAlias('@app'));
+        if ($command === null) {
+            // @craft alias needs to be set for console help command,
+            // because the controllers path is, in this case, deducted from the controller's namespace
+            Craft::setAlias('@craft', Craft::getAlias('@app'));
+        }
 
         // If they don't want JSON, let the parent do its thing
         if (!$this->asJson) {
