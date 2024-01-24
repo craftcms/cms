@@ -9,6 +9,10 @@ namespace craft\helpers;
 
 use Craft;
 use craft\errors\SiteNotFoundException;
+use League\Uri\BaseUri;
+use League\Uri\Components\Query;
+use League\Uri\Http;
+use League\Uri\Uri;
 use yii\base\Exception;
 
 /**
@@ -27,7 +31,7 @@ class UrlHelper
      */
     public static function isAbsoluteUrl(string $url): bool
     {
-        return (str_starts_with($url, 'http://') || str_starts_with($url, 'https://'));
+        return BaseUri::from($url)->isAbsolute();
     }
 
     /**
@@ -38,7 +42,7 @@ class UrlHelper
      */
     public static function isProtocolRelativeUrl(string $url): bool
     {
-        return (str_starts_with($url, '//'));
+        return BaseUri::from($url)->isNetworkPath();
     }
 
     /**
@@ -49,7 +53,7 @@ class UrlHelper
      */
     public static function isRootRelativeUrl(string $url): bool
     {
-        return (str_starts_with($url, '/') && !static::isProtocolRelativeUrl($url));
+        return BaseUri::from($url)->isAbsolutePath();
     }
 
     /**
@@ -134,20 +138,9 @@ class UrlHelper
      */
     public static function removeParam(string $url, string $param): string
     {
-        // Extract any params/fragment from the base URL
-        [$url, $params, $fragment] = self::_extractParams($url);
-
-        // Remove the param
-        unset($params[$param]);
-
-        // Rebuild
-        if (($query = static::buildQuery($params)) !== '') {
-            $url .= '?' . $query;
-        }
-        if ($fragment !== null) {
-            $url .= '#' . $fragment;
-        }
-        return $url;
+        return Uri::new($url)->withQuery(
+            Query::fromUri($url)->withoutParameters($param)
+        )->toString();
     }
 
     /**
@@ -182,16 +175,13 @@ class UrlHelper
             return $url;
         }
 
-        if (static::isProtocolRelativeUrl($url)) {
-            return $scheme . ':' . $url;
-        }
+        $uri = Uri::new($url);
 
         if (static::isRootRelativeUrl($url)) {
-            // Prepend the current request’s scheme and hostname
-            $url = static::siteHost() . $url;
+            $uri = $uri->withHost(static::host());
         }
 
-        return preg_replace('/^https?:/', $scheme . ':', $url);
+        return $uri->withScheme($scheme)->toString();
     }
 
     /**
@@ -216,16 +206,12 @@ class UrlHelper
      */
     public static function rootRelativeUrl(string $url): string
     {
-        $url = static::urlWithScheme($url, 'http');
-        if (strlen($url) > 7 && ($slash = strpos($url, '/', 7)) !== false) {
-            return substr($url, $slash);
-        }
-        // Is this a host without a URI?
-        if (str_contains($url, '//')) {
-            return '/';
-        }
-        // Must just be a URI, then
-        return '/' . $url;
+        return Uri::new($url)
+            ->withScheme(null)
+            ->withHost(null)
+            ->withPort(null)
+            ->withUserInfo(null)
+            ->toString();
     }
 
     /**
