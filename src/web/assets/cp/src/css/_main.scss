@@ -61,6 +61,7 @@
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
+  --thumb-size: 20px;
   --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
   --lh: 1.42em;
 }
@@ -2847,6 +2848,11 @@ table {
     & > .thumb {
       margin: calc(var(--xs) * -1 + 2px) calc(var(--s) * -1 + 2px);
       @include margin-right(2px);
+
+      &.cp-icon {
+        @include margin-left(-2px);
+        --thumb-size: 20px;
+      }
     }
   }
 
@@ -2945,7 +2951,6 @@ table {
   display: flex;
   align-items: center;
   justify-content: center;
-  --thumb-size: var(--thumb-size, calc(20rem / 16));
   width: var(--thumb-size);
   height: var(--thumb-size);
   max-width: var(--thumb-size);
