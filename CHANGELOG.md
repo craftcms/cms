@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Craft now requires MySQL 8.0.17+, MariaDB 10.4.6+, or PostgreSQL 13+.
+
 ## 5.0.0-alpha.8 - 2024-01-23
 
 - Fixed a PHP error that occurred when the Debug Toolbar was enabled. ([#14183](https://github.com/craftcms/cms/issues/14183))

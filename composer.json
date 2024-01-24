@@ -38,7 +38,7 @@
     "commerceguys/addressing": "^1.2",
     "composer/semver": "^3.3.2",
     "craftcms/plugin-installer": "~1.6.0",
-    "craftcms/server-check": "~5.0.0",
+    "craftcms/server-check": "~5.0.1",
     "creocoder/yii2-nested-sets": "~0.9.0",
     "elvanto/litemoji": "~4.3.0",
     "enshrined/svg-sanitize": "~0.16.0",

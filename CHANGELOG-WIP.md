@@ -543,7 +543,8 @@
 - `Craft.appendBodyHtml()` and `appendHeadHtml()` are now promise-based, and load JavaScript resources over Ajax.
 
 ### System
-- Craft now requires PHP 8.2 or later.
+- Craft now requires PHP 8.2+.
+- Craft now requires MySQL 8.0.17+, MariaDB 10.4.6+, or PostgreSQL 13+.
 - Craft now requires the Symfony Filesystem component directly.
 - Craft now requires `bacon/bacon-qr-code`.
 - Craft now requires `composer/semver` directly.
