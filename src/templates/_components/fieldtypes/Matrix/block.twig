@@ -9,6 +9,9 @@
     not entry.enabled ? 'disabled-entry',
     static ? 'static',
   ]|filter,
+  style: {
+    'background-color': entryType.color ? "var(--#{entryType.color}-050)" : null,
+  },
   data: {
     uid: entry.uid,
     type: entryType.handle,
@@ -142,7 +145,12 @@
     {{ hiddenInput("#{baseInputName}[enabled]", entry.enabled ? '1' : '') }}
   {% endif %}
 
-  <div class="titlebar">
+  {% tag 'div' with {
+    class: 'titlebar',
+    style: {
+      'background-color': entryType.color ? "var(--#{entryType.color}-100)" : null,
+    },
+  } %}
     <div class="blocktype{% if not static and entry.hasErrors() %} error{% endif %}">
       {{ entryTypeName }}
       {% if not static and entry.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
@@ -155,7 +163,7 @@
         {% endif %}
       {% endnamespace %}
     </div>
-  </div>
+  {% endtag %}
 
   {% if not static %}
     <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div>

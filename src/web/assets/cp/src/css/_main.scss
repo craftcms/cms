@@ -4001,22 +4001,18 @@ ul.tree,
   }
 }
 
-.status:not(.on):not(.live):not(.active):not(.enabled):not(.all):not(
-    .pending
-  ):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(
-    .red
-  ):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(
-    .light
-  ):not(.grey):not(.black) {
-  border-color: var(--ui-control-color);
-}
-
-.green,
-.status.on,
-.status.live,
-.status.active,
-.status.enabled {
-  background-color: var(--enabled-color);
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.all) {
+  &:not(.pending):not(.off):not(.suspended):not(.expired):not(.light) {
+    &:not(.gray):not(.red):not(.orange):not(.amber):not(.yellow):not(.lime) {
+      &:not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky):not(.blue) {
+        &:not(.indigo):not(.violet):not(.purple):not(.fuchsia):not(.pink) {
+          &:not(.rose):not(.grey):not(.black) {
+            border-color: var(--ui-control-color);
+          }
+        }
+      }
+    }
+  }
 }
 
 .status.all {
@@ -4024,44 +4020,76 @@ ul.tree,
   background-origin: border-box;
 }
 
-.orange,
-.status.pending {
-  background-color: var(--pending-color);
+.status.on,
+.status.live,
+.status.active,
+.status.enabled {
+  background-color: var(--enabled-color);
 }
 
+.gray,
+.grey {
+  background-color: var(--gray-300);
+}
 .red,
 .status.off,
 .status.suspended,
 .status.expired {
   background-color: var(--disabled-color);
 }
-
+.orange,
+.status.pending {
+  background-color: var(--pending-color);
+}
+.amber {
+  background-color: var(--amber-500);
+}
 .yellow {
   background-color: var(--yellow-300);
 }
-
-.pink {
-  background-color: var(--pink-400);
+.lime {
+  background-color: var(--lime-500);
 }
-
-.purple {
-  background-color: #9b59b6;
+.green {
+  background-color: var(--green-500);
 }
-
+.emerald {
+  background-color: var(--emerald-500);
+}
+.teal,
+.turquoise {
+  background-color: var(--teal-500);
+}
+.cyan {
+  background-color: var(--cyan-500);
+}
+.sky {
+  background-color: var(--sky-500);
+}
 .blue {
   background-color: var(--blue-600);
 }
-
-.turquoise {
-  background-color: var(--teal-300);
+.indigo {
+  background-color: var(--indigo-500);
+}
+.violet {
+  background-color: var(--violet-500);
+}
+.purple {
+  background-color: var(--purple-500);
+}
+.fuchsia {
+  background-color: var(--fuchsia-500);
+}
+.pink {
+  background-color: var(--pink-500);
+}
+.rose {
+  background-color: var(--rose-500);
 }
 
 .status.light {
   background-color: var(--gray-100);
-}
-
-.grey {
-  background-color: var(--gray-300);
 }
 
 .black {

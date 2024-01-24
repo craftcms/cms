@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
+use craft\base\Colorable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
@@ -459,11 +460,15 @@ class Cp
         $config['showThumb'] = $config['showThumb'] && ($component instanceof Thumbable || $component instanceof Iconic);
 
         $label = $component->getUiLabel();
+        $color = $component instanceof Colorable ? $component->getColor() : null;
 
         $attributes = ArrayHelper::merge([
             'id' => $config['id'],
             'class' => ['chip', $config['size']],
             'title' => $label,
+            'style' => [
+                'background-color' => $color ? sprintf('var(--%s-050)', $color->value) : null,
+            ],
             'data' => array_filter([
                 'type' => get_class($component),
                 'id' => $component->getId(),
@@ -653,10 +658,15 @@ class Cp
             'showActionMenu' => false,
         ];
 
+        $color = $element instanceof Colorable ? $element->getColor() : null;
+
         $attributes = ArrayHelper::merge(
             self::baseElementAttributes($element, $config),
             [
                 'class' => ['card'],
+                'style' => [
+                    'background-color' => $color ? sprintf('var(--%s-050)', $color->value) : null,
+                ],
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'selectable' => $config['selectable'],
@@ -1526,6 +1536,19 @@ JS, [
         $config['id'] = $config['id'] ?? 'color' . mt_rand();
         $config['fieldset'] = true;
         return static::fieldHtml('template:_includes/forms/color.twig', $config);
+    }
+
+    /**
+     * Renders a color select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function colorSelectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'colorselect' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/colorSelect.twig', $config);
     }
 
     /**

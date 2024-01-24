@@ -163,6 +163,8 @@ class EntryTypesController extends Controller
         $entryType->name = $this->request->getBodyParam('name', $entryType->name);
         $entryType->handle = $this->request->getBodyParam('handle', $entryType->handle);
         $entryType->icon = $this->request->getBodyParam('icon', $entryType->icon);
+        $color = $this->request->getBodyParam('color', $entryType->color);
+        $entryType->color = $color !== '__blank__' ? $color : null;
         $entryType->hasTitleField = (bool)$this->request->getBodyParam('hasTitleField', $entryType->hasTitleField);
         $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
         $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
