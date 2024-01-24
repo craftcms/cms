@@ -1,4 +1,7 @@
-<li {{ attr(attributes) }}>
+<div {{ attributes.class(
+    type).merge({
+    'data-component': handle
+}) }}>
     {% if type == 'heading' %}
         <span>{{ label }}</span>
     {% else %}
@@ -29,8 +32,10 @@
     {% if selected and items | length %}
         <ul class="subnav">
             {% for item in items %}
-                {{ item | raw }}
+                <li>
+                    {{ item | raw }}
+                </li>
             {% endfor %}
         </ul>
     {% endif %}
-</li>
+</div>

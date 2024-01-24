@@ -7,16 +7,17 @@ use craft\helpers\UrlHelper;
 use craft\ui\Component;
 use craft\ui\concerns\HasId;
 use craft\ui\concerns\HasLabel;
+use Filament\Support\Concerns\HasIcon;
 use Illuminate\Support\Collection;
 
 class NavItem extends Component
 {
     use HasLabel;
     use HasId;
+    use HasIcon;
 
     protected string $view = '_ui/nav-item.twig';
 
-    protected string|Icon|null $icon = null;
     protected ?int $badgeCount = null;
     protected array $items = [];
     protected bool $external = false;
@@ -147,15 +148,6 @@ class NavItem extends Component
 
     public function getType(): string
     {
-        return $this->type;
-    }
-
-    public function getAttributes(): array
-    {
-        return array_merge_recursive(parent::getAttributes(), [
-            'class' => array_filter([
-                $this->getType() === 'heading' ? 'heading' : null,
-            ]),
-        ]);
+        return $this->type !== 'default' ? $this->type : '';
     }
 }

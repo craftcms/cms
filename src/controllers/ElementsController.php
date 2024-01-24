@@ -25,10 +25,12 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
+use craft\ui\components\Button;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use craft\web\UrlManager;
@@ -865,14 +867,23 @@ class ElementsController extends Controller
         // Create a draft
         if ($isCurrent && !$isUnpublishedDraft && $canCreateDrafts) {
             if ($canSave) {
-                $components[] = Html::button(Craft::t('app', 'Create a draft'), [
-                    'class' => ['btn', 'formsubmit'],
-                    'data' => [
-                        'action' => 'elements/save-draft',
-                        'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
-                        'params' => ['dropProvisional' => 1],
-                    ],
-                ]);
+                $components[] = Button::make()
+                    ->label('Create a draft')
+                    ->extraAttributes([
+                        'class' => 'formsubmit',
+                        'data-action' => 'elements/save-draft',
+                        'data-redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                        'data-params' => htmlspecialchars(Json::encode(['dropProvisional' => 1])),
+                    ])
+                    ->render();
+            // $components[] = Html::button(Craft::t('app', 'Create a draft'), [
+                //     'class' => ['btn', 'formsubmit'],
+                //     'data' => [
+                //         'action' => 'elements/save-draft',
+                //         'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                //         'params' => ['dropProvisional' => 1],
+                //     ],
+                // ]);
             } else {
                 $components[] = Html::beginForm() .
                     Html::actionInput('elements/save-draft') .

@@ -1,7 +1,13 @@
-<nav {{ attr(attributes) }}>
+<nav {{ attributes.merge({
+    id: id,
+    'aria-label': label,
+    'data-component': handle
+}) }}>
     <ul>
         {% for item in items %}
-            {{ item | raw }}
+            <li>
+                {{ item | raw }}
+            </li>
         {% endfor %}
     </ul>
 </nav>

@@ -32,8 +32,11 @@ class Nav extends Component
         return Collection::make($this->items)
             ->map(function(array|NavItem $config) {
                 if (is_array($config)) {
-                    $item = NavItem::make()
-                        ->withProps($config);
+                    $item = NavItem::make();
+
+                    foreach ($config as $key => $value) {
+                        $item->$key($value);
+                    }
                 } else {
                     $item = $config;
                 }
@@ -55,13 +58,5 @@ class Nav extends Component
     public function getSelectedItem(): ?string
     {
         return $this->selectedItem;
-    }
-
-    public function getAttributes(): array
-    {
-        return [
-            'id' => $this->getId(),
-            'aria-label' => $this->getLabel(),
-        ];
     }
 }

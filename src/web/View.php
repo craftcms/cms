@@ -19,8 +19,6 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
-use craft\ui\components\Icon;
-use craft\ui\components\Nav;
 use craft\web\twig\ComponentExtension;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
@@ -29,6 +27,7 @@ use craft\web\twig\FeExtension;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
+use Illuminate\View\ComponentAttributeBag;
 use LogicException;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
@@ -400,8 +399,7 @@ class View extends \yii\web\View
         $core->setTimezone(Craft::$app->getTimeZone());
 
         $escaper = $twig->getExtension(EscaperExtension::class);
-        $escaper->addSafeClass(Nav::class, ['html']);
-        $escaper->addSafeClass(Icon::class, ['html']);
+        $escaper->addSafeClass(ComponentAttributeBag::class, ['html']);
 
         // Fire a afterCreateTwig event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_TWIG)) {

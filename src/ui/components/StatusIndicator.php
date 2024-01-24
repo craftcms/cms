@@ -57,6 +57,7 @@ class StatusIndicator extends Component
                     Craft::t('app', 'Status:'),
                     Craft::t('app', 'Draft')
                 ) : null,
+                'data-component' => $this->getHandle(),
             ];
         }
 
@@ -70,6 +71,7 @@ class StatusIndicator extends Component
                     Craft::t('app', 'Status:'),
                     Craft::t('app', 'Trashed')
                 ) : null,
+                'data-component' => $this->getHandle(),
             ];
         }
 
@@ -85,6 +87,7 @@ class StatusIndicator extends Component
                 Craft::t('app', 'Status:'),
                 $this->getLabel()
             ) : null,
+            'data-component' => $this->getHandle(),
         ];
     }
 
