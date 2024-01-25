@@ -75,7 +75,13 @@
         class="tableview"
         :class="{loading: isLoading, hidden: this.isEmpty}"
       >
-        <div :class="{'vue-admin-tablepane': true, tablepane: fullPane}">
+        <div
+          :class="{
+            'vue-admin-tablepane': true,
+            tablepane: fullPane,
+            'mt-0': showToolbar && fullPane,
+          }"
+        >
           <vuetable
             ref="vuetable"
             :append-params="appendParams"
@@ -1105,7 +1111,7 @@
   }
 
   .vue-admin-table .toolbar {
-    margin-bottom: 32px;
+    margin-bottom: var(--padding);
   }
 
   .vue-admin-table.vue-admin-table-padded .toolbar {
