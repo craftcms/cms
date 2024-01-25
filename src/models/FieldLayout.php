@@ -809,10 +809,24 @@ class FieldLayout extends Model
                         }, $namespace);
 
                         if ($html) {
+                            $errorKey = null;
+                            // if error key prefix was set on the FieldLayoutForm - use it
+                            if ($form->errorKeyPrefix) {
+                                $tagAttributes = Html::parseTagAttributes($html);
+                                // if we already have an error-key for this field, prefix it
+                                if (isset($tagAttributes['data']['error-key'])) {
+                                    $errorKey = $form->errorKeyPrefix . '.' . $tagAttributes['data']['error-key'];
+                                } else {
+                                    // otherwise let's construct it
+                                    /** @phpstan-ignore-next-line */
+                                    $errorKey = $form->errorKeyPrefix . '.' . ($layoutElement->name ?? $layoutElement->attribute());
+                                }
+                            }
+
                             $html = Html::modifyTagAttributes($html, [
                                 'data' => [
                                     'layout-element' => $isConditional ? $layoutElement->uid : true,
-                                ],
+                                ] + ($errorKey ? ['error-key' => $errorKey] : []),
                             ]);
 
                             $layoutElements[] = [$layoutElement, $isConditional, $html];

@@ -30,6 +30,12 @@ class FieldLayoutForm extends Model
     public ?string $tabIdPrefix = null;
 
     /**
+     * @var string|null The prefix that should be used for the data-error-key attribute
+     * @since 5.0.0
+     */
+    public ?string $errorKeyPrefix = null;
+
+    /**
      * Returns the tab menu config.
      *
      * @return array

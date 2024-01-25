@@ -955,7 +955,7 @@ class Matrix extends Field implements
                 }
 
                 if (!$entry->validate($attributes)) {
-                    $element->addModelErrors($entry, "$this->handle[$i]");
+                    $element->addModelErrors($entry, "$this->handle[$entry->uid]");
                     $allEntriesValidate = false;
                 }
             }

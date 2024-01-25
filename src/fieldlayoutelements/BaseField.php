@@ -341,6 +341,9 @@ abstract class BaseField extends FieldLayoutElement
             'translatable' => $this->translatable($element, $static),
             'translationDescription' => $this->translationDescription($element, $static),
             'errors' => !$static ? $this->errors($element) : [],
+            'data' => [
+                'error-key' => $this->name ?? $this->attribute(),
+            ],
         ]);
     }
 
