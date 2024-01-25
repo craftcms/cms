@@ -22,6 +22,7 @@
 - Fixed a bug where newly-created nested Matrix entries were losing their sort order when the owner element’s draft was applied.
 - Fixed a bug where plugin icons were blue. ([#14186](https://github.com/craftcms/cms/issues/14186))
 - Fixed an error that occurred when running the `help` command. ([#14189](https://github.com/craftcms/cms/issues/14189))
+- Fixed an error that occurred when attempting to delete a draft user after navigating away from the “Profile” page. ([#14199](https://github.com/craftcms/cms/issues/14199))
 
 ## 5.0.0-alpha.8 - 2024-01-23
 

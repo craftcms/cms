@@ -1993,6 +1993,18 @@ JS, [
                         ->unique()
                         ->status(null)
                         ->one();
+
+                    if (!$element) {
+                        // maybe an unpublished draft?
+                        $element = $elementType::find()
+                            ->id($elementId)
+                            ->siteId($siteId)
+                            ->preferSites($preferSites)
+                            ->unique()
+                            ->draftOf(false)
+                            ->status(null)
+                            ->one();
+                    }
                 }
             } else {
                 $element = $elementType::find()
