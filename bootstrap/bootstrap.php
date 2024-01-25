@@ -199,6 +199,7 @@ require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 Craft::setAlias('@craftcms', $cmsPath);
 Craft::setAlias('@root', $rootPath);
 Craft::setAlias('@lib', $libPath);
+Craft::setAlias('@craft', $srcPath); // same as @app, but needed for the `help` command
 Craft::setAlias('@appicons', $solidIconsPath);
 Craft::setAlias('@dotenv', $dotenvPath);
 Craft::setAlias('@config', $configPath);
