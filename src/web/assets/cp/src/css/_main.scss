@@ -7978,7 +7978,7 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: center;
-    gap: var(--s);
+    gap: var(--m);
     margin: 0 calc(var(--m) * -1);
     box-sizing: border-box;
     border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
