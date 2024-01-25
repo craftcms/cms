@@ -166,13 +166,18 @@
       {% endtag %}
     {% endif %}
     <div class="preview"></div>
-    <div class="matrixblock-tabs">
+    {% tag 'div' with {
+      class: ['matrixblock-tabs'],
+      style: {
+        '--custom-sel-tab-shadow-color': entryType.color.cssVar(200) ?? null,
+      }|filter,
+    } %}
       {% namespace baseInputName %}
         {% if tabs|length > 1 %}
           {% include '_includes/tabs.twig' with {'tabs': tabs, 'containerAttributes': {'id': 'tabs'}} %}
         {% endif %}
       {% endnamespace %}
-    </div>
+    {% endtag %}
   {% endtag %}
 
   {% if not static %}

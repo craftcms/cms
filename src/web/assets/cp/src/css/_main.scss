@@ -4589,7 +4589,7 @@ ul.tree,
         box-shadow:
           inset 0 2px 0 var(--custom-text-color, var(--highlight-color)),
           0 0 0 1px $hairlineColor,
-          0 2px 12px transparentize($grey200, 0.5);
+          0 2px 12px var(--custom-sel-tab-shadow-color, var(--gray-200));
         color: var(--tab-label-color);
         background-color: var(--white) !important;
       }
