@@ -1542,7 +1542,8 @@ ul.icons {
     }
 
     &:active,
-    &.active {
+    &.active,
+    &[aria-expanded='true'] {
       --ui-control-bg-color: var(--ui-control-active-bg-color);
     }
   }
@@ -1954,7 +1955,8 @@ ul.icons {
       }
 
       &:active,
-      &.active {
+      &.active,
+      &[aria-expanded='true'] {
         background-color: darken($primaryColor, 10%) !important;
       }
     }
@@ -1971,7 +1973,8 @@ ul.icons {
     }
 
     &:active,
-    &.active {
+    &.active,
+    &[aria-expanded='true'] {
       background-color: var(--red-100) !important;
     }
   }
@@ -1998,8 +2001,13 @@ ul.icons {
   .btn.submit:not(.disabled):not(.inactive):not(.loading):active,
 .secondary-buttons
   .btn.submit:not(.disabled):not(.inactive):not(.loading).active,
+.secondary-buttons
+  .btn.submit:not(.disabled):not(.inactive):not(.loading)[aria-expanded='true'],
 .btn.secondary:not(.disabled):not(.inactive):not(.loading):active,
-.btn.secondary:not(.disabled):not(.inactive):not(.loading).active {
+.btn.secondary:not(.disabled):not(.inactive):not(.loading).active,
+.btn.secondary:not(.disabled):not(.inactive):not(
+    .loading
+  )[aria-expanded='true'] {
   background-color: darken($secondaryColor, 10%) !important;
 }
 
@@ -2034,7 +2042,8 @@ div.btn.submit input {
 
   &:not(.disabled) {
     &:active,
-    &.active {
+    &.active,
+    &[aria-expanded='true'] {
       background-color: transparentize($grey200, 0.75);
     }
   }
@@ -3300,7 +3309,8 @@ table {
       }
 
       &:hover,
-      &:active {
+      &:active,
+      &[aria-expanded='true'] {
         backdrop-filter: brightness(90%);
       }
     }
@@ -4692,7 +4702,8 @@ ul.tree,
           background-color: darken($yellow300, 10%);
         }
 
-        &:active {
+        &:active,
+        &[aria-expanded='true'] {
           background-color: darken($yellow300, 15%);
         }
       }
@@ -7139,7 +7150,8 @@ td.errors .text,
       }
 
       &:active,
-      &.active {
+      &.active,
+      &[aria-expanded='true'] {
         background-color: var(--gray-350);
 
         &:before {
@@ -7948,8 +7960,6 @@ body.setup-2fa {
   }
 }
 
-$titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
-
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
@@ -7974,9 +7984,13 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
     color: var(--custom-text-color, var(--ui-control-color));
     background-color: transparent;
 
-    &:hover,
-    &:active {
+    &:hover {
       backdrop-filter: brightness(90%);
+    }
+
+    &:active,
+    &[aria-expanded='true'] {
+      backdrop-filter: brightness(85%);
     }
   }
 
@@ -7992,7 +8006,8 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
     gap: var(--m);
     margin: 0 calc(var(--m) * -1);
     box-sizing: border-box;
-    border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
+    border-radius: calc(var(--large-border-radius) - 2px)
+      calc(var(--large-border-radius) - 2px) 0 0;
     @include padding(5px, calc(var(--m) + 70px), 5px, var(--m));
     color: var(--custom-text-color, var(--light-text-color));
     overflow: hidden;
@@ -8075,6 +8090,19 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
           &:not(:empty):not(.btn-empty)::after {
             @include margin-left(0px);
           }
+        }
+      }
+    }
+
+    & > .preview:first-child:empty + .matrixblock-tabs {
+      @include margin-left(calc((var(--m) + 12px) * -1));
+
+      [role='tab']:first-child {
+        &,
+        .tab-label {
+          @include border-top-left-radius(
+            calc(var(--large-border-radius) - 2px)
+          );
         }
       }
     }

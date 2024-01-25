@@ -480,7 +480,7 @@ li.crumb {
     padding: 0 var(--s);
     height: var(--touch-target-size);
 
-    &:not(:hover):not(:active) {
+    &:not(:hover):not(:active):not([aria-expanded='true']) {
       background-color: transparent;
     }
   }
