@@ -51,18 +51,18 @@
 
   // alert/notice colors
   --error-color: #d81e23;
-  --warning-color: var(--yellow-800);
+  --warning-color: var(--amber-700);
   --success-color: var(--teal-700);
-  --notice-color: var(--blue-800);
+  --notice-color: var(--sky-700);
 
   // status colors
   --enabled-color: var(--teal-550);
-  --pending-color: var(--yellow-700);
+  --pending-color: var(--orange-400);
   --disabled-color: var(--red-600);
 
   // misc colors
-  --indicator-border-color: var(--yellow-700);
-  --indicator-icon-color: var(--yellow-700);
+  --indicator-border-color: var(--amber-600);
+  --indicator-icon-color: var(--amber-700);
 
   // UI element styles
   --small-border-radius: 3px;

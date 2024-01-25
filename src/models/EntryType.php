@@ -74,10 +74,10 @@ class EntryType extends Model implements
     public ?string $icon = null;
 
     /**
-     * @var string|null Color
+     * @var Color|null Color
      * @since 5.0.0
      */
-    public ?string $color = null;
+    public ?Color $color = null;
 
     /**
      * @var bool Has title field
@@ -194,7 +194,7 @@ class EntryType extends Model implements
      */
     public function getColor(): ?Color
     {
-        return $this->color ? Color::from($this->color) : null;
+        return $this->color;
     }
 
     /**
@@ -351,7 +351,7 @@ JS, [
             'name' => $this->name,
             'handle' => $this->handle,
             'icon' => $this->icon,
-            'color' => $this->color,
+            'color' => $this->color?->value,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat,

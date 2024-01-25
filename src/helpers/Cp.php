@@ -19,6 +19,7 @@ use craft\base\Statusable;
 use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
+use craft\enums\Color;
 use craft\enums\LicenseKeyStatus;
 use craft\enums\MenuItemType;
 use craft\errors\InvalidHtmlTagException;
@@ -466,9 +467,11 @@ class Cp
             'id' => $config['id'],
             'class' => ['chip', $config['size']],
             'title' => $label,
-            'style' => [
-                'background-color' => $color ? sprintf('var(--%s-050)', $color->value) : null,
-            ],
+            'style' => array_filter([
+                '--custom-bg-color' => $color?->cssVar(50),
+                '--custom-text-color' => $color?->cssVar(900),
+                '--custom-sel-bg-color' => $color?->cssVar(900),
+            ]),
             'data' => array_filter([
                 'type' => get_class($component),
                 'id' => $component->getId(),
@@ -495,7 +498,7 @@ class Cp
                 $icon = $component->getIcon();
                 if ($icon) {
                     $html .= Html::tag('div', static::iconSvg($icon), [
-                        'class' => ['thumb', 'cp-icon'],
+                        'class' => array_filter(['thumb', 'cp-icon', $color?->value]),
                     ]);
                 }
             }
@@ -664,9 +667,11 @@ class Cp
             self::baseElementAttributes($element, $config),
             [
                 'class' => ['card'],
-                'style' => [
-                    'background-color' => $color ? sprintf('var(--%s-050)', $color->value) : null,
-                ],
+                'style' => array_filter([
+                    '--custom-bg-color' => $color?->cssVar(50),
+                    '--custom-text-color' => $color?->cssVar(900),
+                    '--custom-sel-bg-color' => $color?->cssVar(900),
+                ]),
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'selectable' => $config['selectable'],
@@ -746,11 +751,16 @@ class Cp
             ]);
         }
 
+        $color = $attributes['color'] ?? null;
+        if ($color instanceof Color) {
+            $color = $color->value;
+        }
+
         return Html::tag('span', '', [
             'class' => array_filter([
                 'status',
                 $status,
-                $attributes['color'] ?? null,
+                $color,
             ]),
             'role' => 'img',
             'aria' => [

@@ -20,8 +20,7 @@
       $form: null,
       $entriesContainer: null,
       $addEntryBtnContainer: null,
-      $addEntryBtnGroup: null,
-      $addEntryBtnGroupBtns: null,
+      $addEntryBtn: null,
       $addEntryMenuBtn: null,
       $statusMessage: null,
 
@@ -46,15 +45,12 @@
         this.$form = this.$container.closest('form');
         this.$entriesContainer = this.$container.children('.blocks');
         this.$addEntryBtnContainer = this.$container.children('.buttons');
-        this.$addEntryBtnGroup =
-          this.$addEntryBtnContainer.children('.btngroup');
-        this.$addEntryBtnGroupBtns = this.$addEntryBtnGroup.children('.btn');
+        this.$addEntryBtn =
+          this.$addEntryBtnContainer.children('.btn:not(.menubtn)');
         this.$addEntryMenuBtn = this.$addEntryBtnContainer.children('.menubtn');
         this.$statusMessage = this.$container.find('[data-status-message]');
 
         this.$container.data('matrix', this);
-
-        this.setNewEntryBtn();
 
         this.entryTypesByHandle = {};
 
@@ -104,7 +100,7 @@
           {
             multi: true,
             vertical: true,
-            handle: '> .checkbox, > .titlebar',
+            handle: '> .actions > .checkbox, > .titlebar',
             filter: ':not(.tab-label)',
             checkboxMode: true,
           }
@@ -119,71 +115,32 @@
           }
         }
 
-        this.addListener(this.$addEntryBtnGroupBtns, 'click', function (ev) {
-          const $button = $(ev.currentTarget).addClass('loading');
-          this.addEntry($button.data('type')).then(() => {
-            $button.removeClass('loading');
-          });
+        this.addListener(this.$addEntryBtn, 'activate', async function () {
+          this.$addEntryBtn.addClass('loading');
+          try {
+            await this.addEntry(this.$addEntryBtn.data('type'));
+          } finally {
+            this.$addEntryBtn.removeClass('loading');
+          }
         });
 
         if (this.$addEntryMenuBtn.length) {
-          this.$addEntryMenuBtn.menubtn();
-          this.$addEntryMenuBtn.data('menubtn').on('optionSelect', (ev) => {
-            this.$addEntryMenuBtn.addClass('loading');
-            this.addEntry($(ev.option).data('type')).then(() => {
-              this.$addEntryMenuBtn.removeClass('loading');
+          this.$addEntryMenuBtn
+            .disclosureMenu()
+            .data('disclosureMenu')
+            .$container.find('button')
+            .on('activate', async (ev) => {
+              this.$addEntryMenuBtn.addClass('loading');
+              try {
+                await this.addEntry($(ev.currentTarget).data('type'));
+              } finally {
+                this.$addEntryMenuBtn.removeClass('loading');
+              }
             });
-          });
         }
 
         this.updateAddEntryBtn();
-
-        this.addListener(this.$container, 'resize', 'setNewEntryBtn');
-        Garnish.$doc.ready(this.setNewEntryBtn.bind(this));
-
         this.trigger('afterInit');
-      },
-
-      setNewEntryBtn: function () {
-        // Do we know what the button group width is yet?
-        if (!this.addEntryBtnGroupWidth) {
-          this.addEntryBtnGroupWidth = this.$addEntryBtnGroup.width();
-
-          if (!this.addEntryBtnGroupWidth) {
-            return;
-          }
-        }
-
-        // Only check if the container width has resized
-        if (
-          this.addEntryBtnContainerWidth !==
-          (this.addEntryBtnContainerWidth = this.$addEntryBtnContainer.width())
-        ) {
-          if (this.addEntryBtnGroupWidth > this.addEntryBtnContainerWidth) {
-            if (!this.showingAddEntryMenu) {
-              this.$addEntryBtnGroup.addClass('hidden');
-              this.$addEntryMenuBtn.removeClass('hidden');
-              this.showingAddEntryMenu = true;
-            }
-          } else {
-            if (this.showingAddEntryMenu) {
-              this.$addEntryMenuBtn.addClass('hidden');
-              this.$addEntryBtnGroup.removeClass('hidden');
-              this.showingAddEntryMenu = false;
-
-              // Because Safari is awesome
-              if (navigator.userAgent.indexOf('Safari') !== -1) {
-                Garnish.requestAnimationFrame(() => {
-                  this.$addEntryBtnGroup.css('opacity', 0.99);
-
-                  Garnish.requestAnimationFrame(() => {
-                    this.$addEntryBtnGroup.css('opacity', '');
-                  });
-                });
-              }
-            }
-          }
-        }
       },
 
       canAddMoreEntries: function () {
@@ -195,12 +152,8 @@
 
       updateAddEntryBtn: function () {
         if (this.canAddMoreEntries()) {
-          this.$addEntryBtnGroup.removeClass('disabled');
+          this.$addEntryBtn.removeClass('disabled').removeAttr('aria-disabled');
           this.$addEntryMenuBtn.removeClass('disabled');
-
-          this.$addEntryBtnGroupBtns.each(function () {
-            $(this).removeAttr('aria-disabled');
-          });
 
           for (let i = 0; i < this.entrySelect.$items.length; i++) {
             const entry = this.entrySelect.$items.eq(i).data('entry');
@@ -216,12 +169,8 @@
             }
           }
         } else {
-          this.$addEntryBtnGroup.addClass('disabled');
+          this.$addEntryBtn.addClass('disabled').attr('aria-disabled', 'true');
           this.$addEntryMenuBtn.addClass('disabled');
-
-          this.$addEntryBtnGroupBtns.each(function () {
-            $(this).attr('aria-disabled', 'true');
-          });
 
           for (let i = 0; i < this.entrySelect.$items.length; i++) {
             const entry = this.entrySelect.$items.eq(i).data('entry');
@@ -612,11 +561,11 @@
 
       if (animate && !Garnish.prefersReducedMotion()) {
         this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-        this.$container.velocity({height: 32}, 'fast');
+        this.$container.velocity({height: 34}, 'fast');
       } else {
         this.$previewContainer.show();
         this.$fieldsContainer.hide();
-        this.$container.css({height: 32});
+        this.$container.css({height: 34});
       }
 
       this.$tabsContainer.hide();

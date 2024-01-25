@@ -1,4 +1,9 @@
 {% set id = id ?? "fs#{random()}" %}
+{% set value = value ?? null %}
+
+{% if value is instance of ('craft\\enums\\Color') %}
+  {% set value = value.value %}
+{% endif %}
 
 {% include '_includes/forms/selectize' with {
   options: [

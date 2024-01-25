@@ -7,6 +7,8 @@
 
 namespace craft\enums;
 
+use yii\base\InvalidArgumentException;
+
 /**
  * Color defines all possible colors for colorable components.
  *
@@ -32,4 +34,26 @@ enum Color: string
     case Fuchsia = 'fuchsia';
     case Pink = 'pink';
     case Rose = 'rose';
+    case White = 'white';
+    case Gray = 'gray';
+    case Black = 'black';
+
+    /**
+     * Returns the color’s CSS `var()` property for a given shade (50, 100, 200, ... 900).
+     *
+     * @param int $shade
+     * @return string
+     */
+    public function cssVar(int $shade): string
+    {
+        // make sure it's a valid shade
+        if (!in_array($shade, [50, ...range(100, 900, 100)])) {
+            throw new InvalidArgumentException("Invalid color shade: $shade");
+        }
+
+        return match ($this) {
+            self::White, self::Gray, self::Black => sprintf('var(--%s)', $this->value),
+            default => sprintf('var(--%s-%s)', $this->value, str_pad((string)$shade, 3, '0', STR_PAD_LEFT)),
+        };
+    }
 }
