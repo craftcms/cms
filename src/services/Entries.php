@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\MemoizableArray;
 use craft\db\Query;
@@ -21,12 +22,14 @@ use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
 use craft\events\SectionEvent;
+use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
@@ -1626,6 +1629,125 @@ SQL)->execute();
     public function refreshEntryTypes(): void
     {
         $this->_entryTypes = null;
+    }
+
+    /**
+     * Returns data for vue AdminTable (pagination and tableData).
+     *
+     * @param int $page
+     * @param int $limit
+     * @param string|null $searchTerm
+     * @return array
+     */
+    public function getTableData(int $page, int $limit, ?string $searchTerm = null): array
+    {
+        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+
+        $offset = ($page - 1) * $limit;
+        $query = $this->_createEntryTypeQuery();
+
+        if ($searchTerm !== null && $searchTerm !== '') {
+            $searchParams = $this->_getSearchParams($searchTerm);
+            if (!empty($searchParams)) {
+                $query->where(['or', ...$searchParams]);
+            }
+        }
+
+        $total = $query->count();
+
+        $query->limit($limit);
+        $query->offset($offset);
+
+        $results = $query->all();
+
+        $entryTypes = array_values(array_filter(
+            array_map(fn(array $result) => $this->_entryTypes()->firstWhere('id', $result['id']), $results)
+        ));
+
+        usort($entryTypes,
+            fn(EntryType $a, EntryType $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name)
+        );
+
+        $entryTypeUsages = $this->getEntryTypeUsages();
+
+        $tableData = [];
+        foreach ($entryTypes as $entryType) {
+            $tableData[] = [
+                'id' => $entryType->id,
+                'title' => Craft::t('site', $entryType->name),
+                'url' => $entryType->getCpEditUrl(),
+                'name' => Craft::t('site', $entryType->name), //|e,
+                'handle' => $entryType->handle,
+                'usages' => $entryTypeUsages[$entryType->id],
+            ];
+        }
+
+        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+
+        return [$pagination, $tableData];
+    }
+
+    /**
+     * Returns an array of sections and fields where entry type is used.
+     *
+     * @return array
+     */
+    protected function getEntryTypeUsages(): array
+    {
+        $entryTypeUsages = [];
+
+        // Sections
+        foreach ($this->getAllSections() as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $entryTypeUsages[$entryType->id][] = [
+                    'section',
+                    Craft::t('site', $section->name),
+                    $section->getCpEditUrl(),
+                ];
+            }
+        }
+
+        // Fields
+        foreach (Craft::$app->getFields()->getAllFields() as $field) {
+            if ($field instanceof ElementContainerFieldInterface) {
+                foreach ($field->getFieldLayoutProviders() as $provider) {
+                    if ($provider instanceof EntryType) {
+                        $entryTypeUsages[$provider->id][] = [
+                            'field',
+                            Craft::t('site', $field->name),
+                            UrlHelper::cpUrl("settings/fields/edit/$field->id"),
+                        ];
+                    }
+                }
+            }
+        }
+
+        // sort by name
+        foreach ($entryTypeUsages as &$usages) {
+            usort($usages, fn($a, $b) => $a[1] <=> $b[1]);
+        }
+
+        return $entryTypeUsages;
+    }
+
+    /**
+     * Returns the sql expression to be used in the 'where' param for the query.
+     *
+     * @param string $term
+     * @return array
+     */
+    private function _getSearchParams(string $term): array
+    {
+        $searchParams = ['name', 'handle'];
+        $searchQueries = [];
+
+        if ($term !== '') {
+            foreach ($searchParams as $param) {
+                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+            }
+        }
+
+        return $searchQueries;
     }
 
     /**

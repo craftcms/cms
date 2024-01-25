@@ -23,10 +23,8 @@
           </admin-table-action-button>
         </div>
 
-        <div
-          v-if="search && !tableData.length"
-          class="flex-grow texticon search icon clearable"
-        >
+        <div v-if="search" class="flex-grow texticon search icon clearable">
+          <span class="texticon-icon search icon" aria-hidden="true"></span>
           <input
             class="text fullwidth"
             type="text"
@@ -35,7 +33,14 @@
             v-model="searchTerm"
             @input="handleSearch"
           />
-          <div class="clear hidden" :title="searchClearTitle"></div>
+          <button
+            v-if="searchTerm.length"
+            class="clear-btn"
+            :title="searchClearTitle"
+            role="button"
+            :aria-label="searchClearTitle"
+            @click="resetSearch"
+          ></button>
         </div>
 
         <div class="vue-admin-table-buttons" v-if="buttons && buttons.length">
@@ -62,18 +67,25 @@
 
     <div :class="{'content-pane': fullPage}">
       <div v-if="this.isEmpty" class="zilch">
-        <p>{{ emptyMessage }}</p>
+        <p v-if="this.searchTerm.length">{{ noSearchResults }}</p>
+        <p v-else>{{ emptyMessage }}</p>
       </div>
 
       <div
         class="tableview"
         :class="{loading: isLoading, hidden: this.isEmpty}"
       >
-        <div :class="{'vue-admin-tablepane': true, tablepane: fullPane}">
+        <div
+          :class="{
+            'vue-admin-tablepane': true,
+            tablepane: fullPane,
+            'mt-0': showToolbar && fullPane,
+          }"
+        >
           <vuetable
             ref="vuetable"
             :append-params="appendParams"
-            :api-mode="apiUrl ? true : false"
+            :api-mode="isApiMode"
             :api-url="apiUrl"
             :css="tableCss"
             :data="tableData"
@@ -282,20 +294,16 @@
     },
 
     props: {
-      container: {
-        type: String,
-      },
+      // NOTE: all the properties here, should also be listed in the src/web/assets/admintable/src/main.js file, under defaults
       actions: {
         type: Array,
         default: () => {
           return [];
         },
       },
-      footerActions: {
-        type: Array,
-        default: () => {
-          return [];
-        },
+      allowMultipleDeletions: {
+        type: Boolean,
+        default: false,
       },
       allowMultipleSelections: {
         type: Boolean,
@@ -329,9 +337,8 @@
           return [];
         },
       },
-      allowMultipleDeletions: {
-        type: Boolean,
-        default: false,
+      container: {
+        type: String,
       },
       deleteAction: {
         type: String,
@@ -353,6 +360,12 @@
         type: String,
         default: Craft.t('app', 'No data available.'),
       },
+      footerActions: {
+        type: Array,
+        default: () => {
+          return [];
+        },
+      },
       fullPage: {
         type: Boolean,
         default: false,
@@ -373,9 +386,19 @@
       minItems: {
         type: Number,
       },
+      moveToPageAction: {
+        type: String,
+      },
+      noSearchResults: {
+        type: String,
+        default: Craft.t('app', 'No results.'),
+      },
       padded: {
         type: Boolean,
         default: false,
+      },
+      paginatedReorderAction: {
+        type: String,
       },
       perPage: {
         type: Number,
@@ -384,23 +407,27 @@
       reorderAction: {
         type: String,
       },
-      moveToPageAction: {
+      reorderFailMessage: {
         type: String,
-      },
-      paginatedReorderAction: {
-        type: String,
+        default: Craft.t('app', 'Couldn’t reorder items.'),
       },
       reorderSuccessMessage: {
         type: String,
         default: Craft.t('app', 'Items reordered.'),
       },
-      reorderFailMessage: {
-        type: String,
-        default: Craft.t('app', 'Couldn’t reorder items.'),
-      },
       search: {
         type: Boolean,
         default: false,
+      },
+      searchClear: {
+        type: String,
+        default: Craft.t('app', 'Clear'),
+      },
+      searchParams: {
+        type: Array,
+        default: () => {
+          return [];
+        },
       },
       searchPlaceholder: {
         type: String,
@@ -417,19 +444,25 @@
       },
 
       // Events
+      onCellClicked: {
+        default: function () {},
+      },
+      onCellDoubleClicked: {
+        default: function () {},
+      },
+      onData: {
+        default: function () {},
+      },
       onLoaded: {
         default: function () {},
       },
       onLoading: {
         default: function () {},
       },
-      onData: {
+      onPagination: {
         default: function () {},
       },
-      onCellClicked: {
-        default: function () {},
-      },
-      onCellDoubleClicked: {
+      onQueryParams: {
         default: function () {},
       },
       onRowClicked: {
@@ -438,13 +471,7 @@
       onRowDoubleClicked: {
         default: function () {},
       },
-      onPagination: {
-        default: function () {},
-      },
       onSelect: {
-        default: function () {},
-      },
-      onQueryParams: {
         default: function () {},
       },
     },
@@ -456,10 +483,11 @@
         lastPage: 1,
         detailRow: AdminTableDetailRow,
         dragging: false,
+        initTableData: [],
         isEmpty: false,
         isLoading: true,
         searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
-        searchTerm: null,
+        searchTerm: '',
         selectAll: null,
         sortable: null,
         tableBodySelector: '.vuetable-body',
@@ -504,6 +532,10 @@
           !this.tableDataEndpoint
         ) {
           this.$emit('data', this.tableData);
+
+          this.$nextTick(() => {
+            this.initTableData = this.$refs.vuetable.tableData;
+          });
         }
 
         this.isLoading = false;
@@ -616,8 +648,51 @@
       },
 
       handleSearch: debounce(function () {
-        this.reload();
-      }, 350),
+        // in data mode - match and show/hide via JS
+        if (!this.isApiMode && this.tableData.length) {
+          let tableData = this.initTableData;
+          let searchTerm = this.searchTerm.toLowerCase();
+
+          if (searchTerm !== '') {
+            tableData = tableData.filter((row) => {
+              let includes = false;
+
+              this.searchParams.some((param) => {
+                Object.entries(row).some(([key, value]) => {
+                  // Force string values
+                  value = String(value);
+
+                  if (
+                    key === param &&
+                    value.toLowerCase().includes(searchTerm)
+                  ) {
+                    return (includes = true);
+                  }
+                });
+
+                // Break if we have a match
+                return includes;
+              });
+
+              return includes;
+            });
+          }
+
+          this.isEmpty = tableData.length == 0;
+          this.$refs.vuetable.tableData = tableData;
+        } else {
+          // in API mode - send to the endpoint to handle
+          if (this.$refs.vuetable.currentPage !== 1) {
+            this.$refs.vuetable.changePage(1);
+          }
+          this.reload();
+        }
+      }, 500),
+
+      resetSearch: function () {
+        this.searchTerm = '';
+        this.handleSearch();
+      },
 
       handleSelectAll() {
         var tableData = this.$refs.vuetable.tableData;
@@ -770,6 +845,10 @@
         }
 
         return '';
+      },
+
+      isApiMode() {
+        return this.apiUrl ? true : false;
       },
 
       apiUrl() {
@@ -933,12 +1012,16 @@
         return columns;
       },
 
+      searchClearTitle() {
+        return Craft.escapeHtml(this.searchClear);
+      },
+
       searchPlaceholderText() {
         return Craft.escapeHtml(this.searchPlaceholder);
       },
 
       showToolbar() {
-        return this.actions.length || (this.search && !this.tableData.length);
+        return this.actions.length || this.search;
       },
 
       showFooter() {
@@ -1028,7 +1111,7 @@
   }
 
   .vue-admin-table .toolbar {
-    margin-bottom: 32px;
+    margin-bottom: var(--padding);
   }
 
   .vue-admin-table.vue-admin-table-padded .toolbar {
