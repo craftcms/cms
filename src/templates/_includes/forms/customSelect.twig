@@ -9,10 +9,20 @@
 {% set disabled = disabled ?? false %}
 {% set selectedOption = value ? options|firstWhere(o => o.value == value) : null %}
 
+{% macro color(color) %}
+  {{- color is instance of ('craft\\enums\\Color') ? color.value : color -}}
+{% endmacro %}
+
 {% set buttonLabelHtml %}
   <div class="flex flex-nowrap">
     {% if selectedOption.icon ?? false %}
-      <div class="cp-icon">{{ iconSvg(selectedOption.icon) }}</div>
+      {{ tag('div', {
+        class: [
+          'cp-icon',
+          _self.color(selectedOption.color ?? null),
+        ]|filter,
+        html: iconSvg(selectedOption.icon),
+      }) }}
     {% endif %}
     <div class="label">{{ selectedOption ? selectedOption.label : defaultButtonLabel ?? 'Choose'|t('app') }}</div>
   </div>
@@ -48,9 +58,15 @@
               data: {
                 value: option.value,
               },
-            } %}
+            }|merge(option.attributes ?? {}, recursive=true) %}
               {% if option.icon ?? false %}
-                <span class="icon">{{ iconSvg(option.icon) }}</span>
+                {{ tag('span', {
+                  class: [
+                    'icon',
+                    _self.color(option.color),
+                  ]|filter,
+                  html: iconSvg(option.icon),
+                }) }}
               {% endif %}
               <span class="label">{{ option.label }}</span>
             {% endtag %}
@@ -83,7 +99,7 @@
           const $label = $option.find('.label');
           let labelHtml = '';
           if ($icon.length) {
-            labelHtml += `<div class="cp-icon">${$icon.html()}</div>`;
+            labelHtml += $icon.clone().removeClass('icon').addClass('cp-icon').prop('outerHTML');
           }
           labelHtml += `<div class="label">${$label.html()}</div>`;
           $buttonFlex.html(labelHtml);

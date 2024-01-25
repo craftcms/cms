@@ -16,6 +16,7 @@ use craft\behaviors\DraftBehavior;
 use craft\db\Table;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\BulkElementsEvent;
 use craft\helpers\ArrayHelper;
@@ -518,6 +519,9 @@ class NestedElementManager extends Component
                         $settings['createAttributes'] = array_map(function(array $attributes) {
                             if (isset($attributes['icon'])) {
                                 $attributes['icon'] = Cp::iconSvg($attributes['icon']);
+                            }
+                            if (isset($attributes['color']) && $attributes['color'] instanceof Color) {
+                                $attributes['color'] = $attributes['color']->value;
                             }
                             return $attributes;
                         }, $settings['createAttributes']);

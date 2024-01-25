@@ -1,4 +1,5 @@
 {% set entryType = entry.getType() %}
+{% set singleType = singleType ?? entryTypes|length == 1 %}
 {% set entryTypeName = entryType.name|t('site') %}
 {% set baseInputName = "#{name}[entries][uid:#{entry.uid}]" %}
 {% set static = static ?? false %}
@@ -9,6 +10,9 @@
     not entry.enabled ? 'disabled-entry',
     static ? 'static',
   ]|filter,
+  style: {
+    'border-color': entryType.color.cssVar(100) ?? null,
+  }|filter,
   data: {
     uid: entry.uid,
     type: entryType.handle,
@@ -23,40 +27,29 @@
 {% set actionBtnLabel = "#{entryTypeName} #{'Actions'|t('app')}" %}
 {% set actionMenuId = "matrixblock-action-menu--#{entry.uid}" %}
 
-{% set actionBtnAttributes = {
-  class: ['action-btn', 'btn'],
-  type: 'button',
-  role: 'button',
-  title: 'Actions'|t('app'),
-  aria: {
-    controls: actionMenuId,
-    label: actionBtnLabel,
-  },
-  data: {
-    'disclosure-trigger': true,
-  }
-} %}
-
 {% set actionMenuItems = [
   {
+    icon: 'down-left-and-up-right-to-center',
     label: 'Collapse'|t('app'),
     attributes: {
-      data: {icon: 'down-left-and-up-right-to-center', action: 'collapse'},
+      data: {action: 'collapse'},
     },
   },
   {
+    icon: 'up-right-and-down-left-from-center',
     label: 'Expand'|t('app'),
     attributes: {
-      data: {icon: 'up-right-and-down-left-from-center', action: 'expand'},
+      data: {action: 'expand'},
     },
     liAttributes: {
       class: ['hidden'],
     },
   },
   {
+    icon: 'circle-dashed',
     label: 'Disable'|t('app'),
     attributes: {
-      data: {icon: 'circle-dashed', action: 'disable'},
+      data: {action: 'disable'},
     },
     liAttributes: {
       class: {
@@ -65,9 +58,10 @@
     },
   },
   {
+    icon: 'circle',
     label: 'Enable'|t('app'),
     attributes: {
-      data: {icon: 'circle', action: 'enable'},
+      data: {action: 'enable'},
     },
     liAttributes: {
       class: {
@@ -76,9 +70,10 @@
     },
   },
   {
+    icon: 'arrow-up',
     label: 'Move up'|t('app'),
     attributes: {
-      data: {icon: 'arrow-up', action: 'moveUp'},
+      data: {action: 'moveUp'},
     },
   },
   {
@@ -93,12 +88,10 @@
   {% set actionMenuItems = actionMenuItems|merge([
     {hr: true},
     {
+      icon: 'external',
       label: 'Open in a new tab'|t('app'),
       url: entry.getCpEditUrl(),
-      attributes: {
-        target: '_blank',
-        data: {icon: 'external'},
-      },
+      attributes: {target: '_blank'},
     },
   ]) %}
 {% endif %}
@@ -107,10 +100,11 @@
   {% set actionMenuItems = actionMenuItems|merge([
     {hr: true},
     {
+      icon: 'trash',
       label: 'Delete'|t('app'),
       destructive: true,
       attributes: {
-        data: {icon: 'xmark', action: 'delete'},
+        data: {action: 'delete'},
       },
     },
     {hr: true},
@@ -118,9 +112,11 @@
 
   {% for entryType in entryTypes %}
     {% set actionMenuItems = actionMenuItems|push({
+      icon: entryType.icon ?? 'plus',
+      color: entryType.color,
       label: 'Add {type} above'|t('app', {type: entryType.name|t('site')}),
       attributes: {
-        data: {icon: 'plus', action: 'add', type: entryType.handle},
+        data: {action: 'add', type: entryType.handle},
       },
     }) %}
   {% endfor %}
@@ -142,11 +138,33 @@
     {{ hiddenInput("#{baseInputName}[enabled]", entry.enabled ? '1' : '') }}
   {% endif %}
 
-  <div class="titlebar">
-    <div class="blocktype{% if not static and entry.hasErrors() %} error{% endif %}">
-      {{ entryTypeName }}
-      {% if not static and entry.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
-    </div>
+  {% tag 'div' with {
+    class: 'titlebar',
+    style: {
+      'background-color': entryType.color.cssVar(50) ?? null,
+      '--custom-text-color': entryType.color.cssVar(900) ?? null,
+    }|filter,
+  } %}
+    {% if not singleType %}
+      {% tag 'div' with {
+        class: {
+          blocktype: true,
+          flex: true,
+          'flex-nowrap': true,
+          'flex-gap-xs': true,
+          error: not static and entry.hasErrors(),
+        }|filter|keys,
+      } %}
+        {% if entryType.icon %}
+          {{ tag('div', {
+            class: ['cp-icon', 'small', entryType.color.value ?? null]|filter,
+            html: iconSvg(entryType.icon),
+          }) }}
+        {% endif %}
+        <div>{{ entryTypeName }}</div>
+        {% if not static and entry.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
+      {% endtag %}
+    {% endif %}
     <div class="preview"></div>
     <div class="matrixblock-tabs">
       {% namespace baseInputName %}
@@ -155,10 +173,9 @@
         {% endif %}
       {% endnamespace %}
     </div>
-  </div>
+  {% endtag %}
 
   {% if not static %}
-    <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div>
     <div class="actions">
       <div class="status off" title="{{ 'Disabled'|t('app') }}">
         {{ tag('span', {
@@ -167,6 +184,7 @@
         }) }}
       </div>
 
+      <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div>
       <div>
         {{ disclosureMenu(actionMenuItems, {
           hiddenLabel: 'Actions'|t('app'),

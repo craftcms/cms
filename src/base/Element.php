@@ -31,6 +31,7 @@ use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
+use craft\enums\Color;
 use craft\enums\MenuItemType;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
@@ -5579,7 +5580,11 @@ JS,
                 } else {
                     $status = $this->getStatus();
                     $statusDef = static::statuses()[$status] ?? null;
-                    $icon = Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
+                    $color = $statusDef['color'] ?? $status;
+                    if ($color instanceof Color) {
+                        $color = $color->value;
+                    }
+                    $icon = Html::tag('span', '', ['class' => ['status', $color]]);
                     $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
                 }
                 return $icon . Html::tag('span', $label);

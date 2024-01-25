@@ -58,6 +58,11 @@
 {% endmacro %}
 
 
+{% macro colorSelect(config) %}
+    {% include "_includes/forms/colorSelect" with config only %}
+{% endmacro %}
+
+
 {% macro textarea(config) %}
     {% include "_includes/forms/textarea" with config only %}
 {% endmacro %}
@@ -217,6 +222,12 @@
         id: config.id ?? "color#{random()}"
     }) %}
     {{ _self.field(config, 'template:_includes/forms/color') }}
+{% endmacro %}
+
+
+{% macro colorSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "colorselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/colorSelect') }}
 {% endmacro %}
 
 

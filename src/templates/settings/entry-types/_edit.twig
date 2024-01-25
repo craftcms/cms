@@ -35,6 +35,14 @@
     errors: entryType.getErrors('icon'),
 }) }}
 
+{{ forms.colorSelectField({
+    label: 'Color'|t('app'),
+    id: 'color',
+    name: 'color',
+    value: entryType.color,
+    errors: entryType.getErrors('color'),
+}) }}
+
 <hr>
 
 {{ forms.lightswitchField({

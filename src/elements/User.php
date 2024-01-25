@@ -23,6 +23,7 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\enums\Color;
 use craft\enums\MenuItemType;
 use craft\enums\PropagationMethod;
 use craft\events\AuthenticateUserEvent;
@@ -243,19 +244,18 @@ class User extends Element implements IdentityInterface
         return [
             self::STATUS_ACTIVE => [
                 'label' => Craft::t('app', 'Active'),
-                'color' => 'green',
             ],
             self::STATUS_PENDING => [
                 'label' => Craft::t('app', 'Pending'),
-                'color' => 'orange',
+                'color' => Color::Orange,
             ],
             self::STATUS_SUSPENDED => [
                 'label' => Craft::t('app', 'Suspended'),
-                'color' => 'red',
+                'color' => Color::Red,
             ],
             self::STATUS_LOCKED => [
                 'label' => Craft::t('app', 'Locked'),
-                'color' => 'red',
+                'color' => Color::Red,
             ],
             self::STATUS_INACTIVE => [
                 'label' => Craft::t('app', 'Inactive'),

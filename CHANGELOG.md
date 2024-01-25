@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Inline-editable Matrix blocks have been redesigned to be visually lighter. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Matrix fields set to the inline-editable blocks view mode no longer show inline entry-creation buttons unless there’s a single entry type. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Improved the accessibility of Matrix fields with the “inline-editable blocks” view mode. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Added the “Color” entry type setting. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Entry chips, cards, and blocks are now tinted according to their entry type’s color. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Disclosure menu items and custom select options can now have a `color` key.
+- Added the `customSelect()` global function for control panel templates.
+- Added the `colorSelect` and `colorSelectField` form macros.
+- Added `craft\base\Colorable`. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Added `craft\enums\Color`. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Added `craft\helpers\Cp::colorSelectFieldHtml()`.
+- Added `craft\models\EntryType::$color`.
+- Colors defined by elements’ `statuses()` methods can now be a `craft\enums\Color` instance.
 - Craft now requires MySQL 8.0.17+, MariaDB 10.4.6+, or PostgreSQL 13+.
 - Fixed a bug where newly-created nested Matrix entries were losing their sort order when the owner element’s draft was applied.
 - Fixed a bug where plugin icons were blue. ([#14186](https://github.com/craftcms/cms/issues/14186))

@@ -10,12 +10,14 @@ namespace craft\models;
 use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
+use craft\base\Colorable;
 use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Iconic;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
+use craft\enums\Color;
 use craft\enums\MenuItemType;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
@@ -29,7 +31,12 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class EntryType extends Model implements FieldLayoutProviderInterface, Chippable, Iconic, Actionable
+class EntryType extends Model implements
+    FieldLayoutProviderInterface,
+    Chippable,
+    Iconic,
+    Colorable,
+    Actionable
 {
     /**
      * @inheritdoc
@@ -65,6 +72,12 @@ class EntryType extends Model implements FieldLayoutProviderInterface, Chippable
      * @since 5.0.0
      */
     public ?string $icon = null;
+
+    /**
+     * @var Color|null Color
+     * @since 5.0.0
+     */
+    public ?Color $color = null;
 
     /**
      * @var bool Has title field
@@ -174,6 +187,14 @@ class EntryType extends Model implements FieldLayoutProviderInterface, Chippable
     public function getIcon(): ?string
     {
         return $this->icon;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getColor(): ?Color
+    {
+        return $this->color;
     }
 
     /**
@@ -330,6 +351,7 @@ JS, [
             'name' => $this->name,
             'handle' => $this->handle,
             'icon' => $this->icon,
+            'color' => $this->color?->value,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat,
