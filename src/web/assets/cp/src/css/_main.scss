@@ -4557,7 +4557,6 @@ ul.tree,
         position: relative;
         padding: 0 var(--padding);
         white-space: nowrap;
-        color: var(--custom-text-color, var(--tab-label-color));
         height: 50px;
       }
 
@@ -4573,8 +4572,12 @@ ul.tree,
         }
       }
 
-      &:not(.sel):hover {
-        backdrop-filter: brightness(95%);
+      &:not(.sel) {
+        color: var(--custom-text-color, var(--tab-label-color));
+
+        &:hover {
+          backdrop-filter: brightness(95%);
+        }
       }
 
       &.sel {
@@ -4587,6 +4590,7 @@ ul.tree,
           inset 0 2px 0 var(--custom-text-color, var(--highlight-color)),
           0 0 0 1px $hairlineColor,
           0 2px 12px transparentize($grey200, 0.5);
+        color: var(--tab-label-color);
         background-color: var(--white) !important;
       }
 
