@@ -57,6 +57,7 @@
       type: 'button',
       label: component.getUiLabel(),
       icon: component is instance of('craft\\base\\Iconic') ? component.getIcon() : null,
+      color: component is instance of('craft\\base\\Colorable') ? component.getColor() : null,
       attributes: {
         data: {
           type: className(component),

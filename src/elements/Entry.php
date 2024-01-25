@@ -8,6 +8,7 @@
 namespace craft\elements;
 
 use Craft;
+use craft\base\Colorable;
 use craft\base\Element;
 use craft\base\ExpirableElementInterface;
 use craft\base\Field;
@@ -34,6 +35,7 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
+use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\DefineEntryTypesEvent;
 use craft\events\ElementCriteriaEvent;
@@ -75,7 +77,7 @@ use yii\db\Expression;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Entry extends Element implements NestedElementInterface, ExpirableElementInterface
+class Entry extends Element implements NestedElementInterface, ExpirableElementInterface, Colorable
 {
     use NestedElementTrait {
         attributes as traitAttributes;
@@ -880,6 +882,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected function shouldValidateTitle(): bool
     {
         return $this->getType()->hasTitleField;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getColor(): ?Color
+    {
+        return $this->getType()->getColor();
     }
 
     /**
@@ -1915,6 +1925,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     'value' => $this->getType()->id,
                     'options' => array_map(fn(EntryType $et) => [
                         'icon' => $et->icon,
+                        'color' => $et->color,
                         'label' => Craft::t('site', $et->name),
                         'value' => $et->id,
                     ], $entryTypes),

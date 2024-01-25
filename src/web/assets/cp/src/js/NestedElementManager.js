@@ -66,7 +66,11 @@ Craft.NestedElementManager = Garnish.Base.extend(
             const $li = $('<li/>').appendTo($ul);
             let buttonHtml = '';
             if (type.icon) {
-              buttonHtml += `<span class="icon">${type.icon}</span>`;
+              const $icon = $(`<span class="icon">${type.icon}</span>`);
+              if (type.color) {
+                $icon.addClass(type.color);
+              }
+              buttonHtml += $icon.prop('outerHTML');
             }
             buttonHtml += `<span class="label">${type.label}</span>`;
             const $button = $('<button/>', {
@@ -76,6 +80,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
             }).appendTo($li);
             this.addListener($button, 'activate', (ev) => {
               ev.preventDefault();
+              this.$createBtn.data('disclosureMenu').hide();
               this.createElement(type.attributes);
             });
           }

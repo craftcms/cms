@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
+use craft\base\Colorable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
@@ -18,6 +19,7 @@ use craft\base\Statusable;
 use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
+use craft\enums\Color;
 use craft\enums\LicenseKeyStatus;
 use craft\enums\MenuItemType;
 use craft\errors\InvalidHtmlTagException;
@@ -459,11 +461,17 @@ class Cp
         $config['showThumb'] = $config['showThumb'] && ($component instanceof Thumbable || $component instanceof Iconic);
 
         $label = $component->getUiLabel();
+        $color = $component instanceof Colorable ? $component->getColor() : null;
 
         $attributes = ArrayHelper::merge([
             'id' => $config['id'],
             'class' => ['chip', $config['size']],
             'title' => $label,
+            'style' => array_filter([
+                '--custom-bg-color' => $color?->cssVar(50),
+                '--custom-text-color' => $color?->cssVar(900),
+                '--custom-sel-bg-color' => $color?->cssVar(900),
+            ]),
             'data' => array_filter([
                 'type' => get_class($component),
                 'id' => $component->getId(),
@@ -490,7 +498,7 @@ class Cp
                 $icon = $component->getIcon();
                 if ($icon) {
                     $html .= Html::tag('div', static::iconSvg($icon), [
-                        'class' => ['thumb', 'cp-icon'],
+                        'class' => array_filter(['thumb', 'cp-icon', $color?->value]),
                     ]);
                 }
             }
@@ -653,10 +661,17 @@ class Cp
             'showActionMenu' => false,
         ];
 
+        $color = $element instanceof Colorable ? $element->getColor() : null;
+
         $attributes = ArrayHelper::merge(
             self::baseElementAttributes($element, $config),
             [
                 'class' => ['card'],
+                'style' => array_filter([
+                    '--custom-bg-color' => $color?->cssVar(50),
+                    '--custom-text-color' => $color?->cssVar(900),
+                    '--custom-sel-bg-color' => $color?->cssVar(900),
+                ]),
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'selectable' => $config['selectable'],
@@ -736,11 +751,16 @@ class Cp
             ]);
         }
 
+        $color = $attributes['color'] ?? null;
+        if ($color instanceof Color) {
+            $color = $color->value;
+        }
+
         return Html::tag('span', '', [
             'class' => array_filter([
                 'status',
                 $status,
-                $attributes['color'] ?? null,
+                $color,
             ]),
             'role' => 'img',
             'aria' => [
@@ -1526,6 +1546,19 @@ JS, [
         $config['id'] = $config['id'] ?? 'color' . mt_rand();
         $config['fieldset'] = true;
         return static::fieldHtml('template:_includes/forms/color.twig', $config);
+    }
+
+    /**
+     * Renders a color select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function colorSelectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'colorselect' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/colorSelect.twig', $config);
     }
 
     /**
