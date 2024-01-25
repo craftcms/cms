@@ -3714,14 +3714,21 @@ $checkboxPadding: $checkboxSize + 4;
     z-index: 1;
   }
 
-  .structure ul {
-    @include margin-left(12px);
+  .structure {
+    .chip {
+      display: inline-flex;
+      margin-top: var(--xs);
+    }
 
-    li {
-      background-position: 0 2px !important;
+    & > li {
+      @include padding-left(0);
+    }
 
-      .chip {
-        margin: 0;
+    ul {
+      @include margin-left(12px);
+
+      li {
+        background-position: 0 2px !important;
       }
     }
   }
