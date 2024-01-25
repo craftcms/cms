@@ -58,6 +58,11 @@
 {% endmacro %}
 
 
+{% macro colorSelect(config) %}
+    {% include "_includes/forms/colorSelect" with config only %}
+{% endmacro %}
+
+
 {% macro textarea(config) %}
     {% include "_includes/forms/textarea" with config only %}
 {% endmacro %}
@@ -123,6 +128,16 @@
 {% endmacro %}
 
 
+{% macro componentSelect(config) %}
+    {% include "_includes/forms/componentSelect" with config only %}
+{% endmacro %}
+
+
+{% macro entryTypeSelect(config) %}
+    {% include "_includes/forms/entryTypeSelect" with config only %}
+{% endmacro %}
+
+
 {% macro autosuggest(config) %}
     {% include "_includes/forms/autosuggest" with config only %}
 {% endmacro %}
@@ -133,8 +148,8 @@
 {% endmacro %}
 
 
-{% macro entryType(config) %}
-    {% include "_includes/forms/entryType" with config only %}
+{% macro iconPicker(config) %}
+    {% include '_includes/forms/iconPicker' with config only %}
 {% endmacro %}
 
 
@@ -207,6 +222,12 @@
         id: config.id ?? "color#{random()}"
     }) %}
     {{ _self.field(config, 'template:_includes/forms/color') }}
+{% endmacro %}
+
+
+{% macro colorSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "colorselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/colorSelect') }}
 {% endmacro %}
 
 
@@ -318,6 +339,18 @@
 {% endmacro %}
 
 
+{% macro componentSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "componentselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/componentSelect') }}
+{% endmacro %}
+
+
+{% macro entryTypeSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "entrytypeselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/entryTypeSelect') }}
+{% endmacro %}
+
+
 {% macro autosuggestField(config) %}
     {% set config = config|merge({
         id: config.id ?? "autosuggest#{random()}",
@@ -360,9 +393,9 @@
 {% endmacro %}
 
 
-{% macro entryTypeField(config) %}
-    {% set config = config|merge({id: config.id ?? "entrytype#{random()}"}) %}
-    {{ _self.field(config, 'template:_includes/forms/entryType') }}
+{% macro iconPickerField(config) %}
+    {% set config = config|merge({id: config.id ?? "iconpicker#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/iconPicker') }}
 {% endmacro %}
 
 

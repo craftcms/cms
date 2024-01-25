@@ -12,7 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\fields\conditions\NumberFieldConditionRule;
+use craft\fields\conditions\MoneyFieldConditionRule;
 use craft\gql\types\Money as MoneyType;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -144,7 +144,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings.twig', [
             'field' => $this,
             'currencies' => $this->_isoCurrencies,
-            'subUnits' => $this->_isoCurrencies->subunitFor(new Currency($this->currency)),
+            'subUnits' => $this->subunits(),
         ]);
     }
 
@@ -257,30 +257,23 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
         $decimals = null;
 
         if ($value instanceof MoneyLibrary) {
-            $decimals = $this->_isoCurrencies->subunitFor($value->getCurrency());
+            $decimals = $this->subunits($value->getCurrency());
             $value = MoneyHelper::toNumber($value);
         }
 
-        if ($decimals === null) {
-            $decimals = $this->_isoCurrencies->subunitFor(new Currency($this->currency));
-        }
+        $decimals = $decimals ?? $this->subunits();
 
         $defaultValue = null;
         if (isset($this->defaultValue)) {
             $defaultValue = MoneyHelper::toNumber(new MoneyLibrary($this->defaultValue, new Currency($this->currency)));
         }
 
-        $currencyLabel = Craft::t('app', '({currencyCode}) {currencySymbol}', [
-            'currencyCode' => $this->currency,
-            'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
-        ]);
-
         return Cp::moneyInputHtml([
             'id' => $this->getInputId(),
             'name' => $this->handle,
             'size' => $this->size,
             'currency' => $this->currency,
-            'currencyLabel' => $currencyLabel,
+            'currencyLabel' => $this->currencyLabel(),
             'showCurrency' => $this->showCurrency,
             'decimals' => $decimals,
             'defaultValue' => $defaultValue,
@@ -288,6 +281,29 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
             'field' => $this,
             'value' => $value,
         ]);
+    }
+
+    /**
+     * @return string
+     * @since 5.0.0
+     */
+    public function currencyLabel(): string
+    {
+        return Craft::t('app', '({currencyCode}) {currencySymbol}', [
+            'currencyCode' => $this->currency,
+            'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
+        ]);
+    }
+
+    /**
+     * @param Currency|null $currency
+     * @return int
+     * @since 5.0.0
+     */
+    public function subunits(?Currency $currency = null): int
+    {
+        $currency = $currency ?? new Currency($this->currency);
+        return $this->_isoCurrencies->subunitFor($currency);
     }
 
     /**
@@ -305,7 +321,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
      */
     public function getElementConditionRuleType(): array|string|null
     {
-        return NumberFieldConditionRule::class;
+        return MoneyFieldConditionRule::class;
     }
 
     /**

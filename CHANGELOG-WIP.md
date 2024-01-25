@@ -10,8 +10,14 @@
 - Asset edit pages now include quick links to other volumes’ index sources.
 - Assets’ Alternative Text fields are now translatable. ([#11576](https://github.com/craftcms/cms/issues/11576))
 - Entries can now have multiple authors. ([#12380](https://github.com/craftcms/cms/pull/12380))
+- Entry chips, cards, and blocks are now tinted according to their entry type’s color. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - The “Save as a new entry” action is now available to all users with the “Create entries” permission, and will create a new unpublished draft rather than a fully-saved entry. ([#9577](https://github.com/craftcms/cms/issues/9577), [#10244](https://github.com/craftcms/cms/discussions/10244))
 - Entry conditions can now have a “Matrix field” rule. ([#13794](https://github.com/craftcms/cms/discussions/13794))
+- Money field condition rules now use money inputs. ([#14148](https://github.com/craftcms/cms/pull/14148))
+- Inline-editable Matrix blocks now support multiple tabs. ([#8500](https://github.com/craftcms/cms/discussions/8500), [#14139](https://github.com/craftcms/cms/issues/14139))
+- Inline-editable Matrix blocks have been redesigned to be visually lighter. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Inline-editable Matrix blocks now include “Open in a new tab” action items.
+- Matrix fields set to the inline-editable blocks view mode no longer show inline entry-creation buttons unless there’s a single entry type. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Selected elements within relational fields now include a context menu with “View in a new tab”, “Edit”, and “Remove” options.
 - Selected elements within relational fields now include a dedicated drag handle.
 - Selected assets within Assets fields no longer open the file preview modal when their thumbnail is clicked on. The “Preview file” quick action, or the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut, can be used instead.
@@ -20,6 +26,7 @@
 - Table views are no longer available for element indexes on mobile.
 - Address conditions now have “Address Line 1”, “Address Line 2”, “Administrative Area”, “Country”, “Dependent Locality”, “First Name”, “Full Name”, “Last Name”, “Locality”, “Organization Tax ID”, “Organization”, “Postal Code”, and “Sorting Code” rules.
 - Added live conditional field support to user edit pages. ([#14115](https://github.com/craftcms/cms/pull/14115))
+- Earth icons are now localized based on the system time zone.
 
 ### User Management
 - Added two-step verification support, with built-in “Authenticator App” (TOTP) and “Recovery Codes” methods. Additional methods can be provided by plugins.
@@ -40,9 +47,16 @@
 - Elements within relational fields are no longer focusable at the container level.
 - Relational fields now use the proper list semantics.
 - Improved the accessibility of the login page, login modal, and elevated session modal.
-- Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
+- Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120), [#12286](https://github.com/craftcms/cms/pull/12286))
+- Selected elements within relational fields now include “Move up/down” or “Move forward/backward” in their action menus.
+- Improved the accessibility of time zone fields.
+- Improved the accessibility of form alternative action menus.
+- Improved the accessibility of Matrix fields with the “inline-editable blocks” view mode. ([#14187](https://github.com/craftcms/cms/pull/14187))
 
 ### Administration
+- Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added the “Color” entry type setting. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Added the “Icon” field type. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Field layouts can now designate an Assets field as the source for elements’ thumbnails. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
 - Field layouts can now choose to include previewable fields’ content in element cards. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#6024](https://github.com/craftcms/cms/pull/6024))
 - Field layouts can now override custom fields’ handles.
@@ -62,6 +76,7 @@
 - Added the `tempAssetUploadFs` config setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
 - Removed the concept of field groups.
 - Removed the “Temp Uploads Location” asset setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
+- Added the `utils/prune-orphaned-entries` command. ([#14154](https://github.com/craftcms/cms/pull/14154))
 - `entrify/*` commands now ask if an entry type already exists for the section.
 - The `resave/entries` command now accepts a `--field` option.
 - The `up`, `migrate/up`, and `migrate/all` commands no longer overwrite pending project config YAML changes, if new project config changes were made by migrations.
@@ -91,7 +106,8 @@
 - All core element query param methods now return `static` instead of `self`. ([#11868](https://github.com/craftcms/cms/pull/11868))
 - Migrations that modify the project config no longer need to worry about whether the same changes were already applied to the incoming project config YAML files.
 - Selectize menus no longer apply special styling to options with the value `new`. The `_includes/forms/selectize.twig` control panel template should be used instead (or `craft\helpers\Cp::selectizeHtml()`/`selectizeFieldHtml()`), which will append an styled “Add” option when `addOptionFn` and `addOptionLabel` settings are passed. ([#11946](https://github.com/craftcms/cms/issues/11946))
-- Added the `disclosureMenu()`, `elementCard()`, `elementChip()`, `elementIndex()`, and `siteMenuItems()` global functions for control panel templates.
+- Added the `chip()`, `customSelect()`, `disclosureMenu()`, `elementCard()`, `elementChip()`, `elementIndex()`, `iconSvg()`, and `siteMenuItems()` global functions for control panel templates.
+- Added the `colorSelect` and `colorSelectField` form macros.
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - Element action triggers’ `validateSelection()` and `activate()` methods are now passed an `elementIndex` argument, with a reference to the trigger’s corresponding element index.
@@ -101,7 +117,10 @@
 - Added `craft\auth\methods\RecoveryCodes`.
 - Added `craft\auth\methods\TOTP`.
 - Added `craft\auth\passkeys\CredentialRepository`.
+- Added `craft\base\Actionable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\ApplicationTrait::getAuth()`.
+- Added `craft\base\Chippable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\Colorable`. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Added `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`.
 - Added `craft\base\Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML`.
 - Added `craft\base\Element::crumbs()`.
@@ -132,10 +151,14 @@
 - Added `craft\base\FieldLayoutElement::isMultiInstance()`.
 - Added `craft\base\FieldLayoutProviderInterface::getHandle()`.
 - Added `craft\base\FieldTrait::$layoutElement`.
+- Added `craft\base\Iconic`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\Identifiable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\InlineEditableFieldInterface`.
 - Added `craft\base\NestedElementInterface`, which should be implemented by element types which could be nested by other elements.
 - Added `craft\base\NestedElementTrait`.
+- Added `craft\base\Statusable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\ThumbableFieldInterface`.
+- Added `craft\base\Thumbable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\conditions\ConditionInterface::createConditionRule()`.
 - Added `craft\behaviors\EventBehavior`.
 - Added `craft\controllers\EntryTypesController`.
@@ -184,6 +207,7 @@
 - Added `craft\elements\db\ElementQueryInterface::wasCountEagerLoaded()`.
 - Added `craft\elements\db\ElementQueryInterface::wasEagerLoaded()`.
 - Added `craft\enums\AttributeStatus`.
+- Added `craft\enums\Color`. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Added `craft\enums\ElementIndexViewMode`.
 - Added `craft\enums\PropagationMethod`.
 - Added `craft\enums\TimePeriod`.
@@ -211,17 +235,37 @@
 - Added `craft\fields\Matrix::getSupportedSitesForElement()`.
 - Added `craft\fields\Matrix::setEntryTypes()`.
 - Added `craft\fields\Matrix::supportedSiteIds()`.
+- Added `craft\fields\Money::currencyLabel()`.
+- Added `craft\fields\Money::currencyLabel()`.
+- Added `craft\fields\Money::subunits()`.
+- Added `craft\fields\Money::subunits()`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait::fieldInstances()`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait::setLayoutElementUid()`.
+- Added `craft\fields\conditions\MoneyFieldConditionRule`.
+- Added `craft\fields\conditions\MoneyFieldConditionRule`.
 - Added `craft\helpers\App::isWindows()`.
 - Added `craft\helpers\App::silence()`.
 - Added `craft\helpers\ArrayHelper::lastValue()`.
+- Added `craft\helpers\Cp::CHIP_SIZE_LARGE`.
+- Added `craft\helpers\Cp::CHIP_SIZE_SMALL`.
 - Added `craft\helpers\Cp::checkboxGroupFieldHtml()`.
 - Added `craft\helpers\Cp::checkboxGroupHtml()`.
+- Added `craft\helpers\Cp::chipHtml()`.
+- Added `craft\helpers\Cp::colorSelectFieldHtml()`.
+- Added `craft\helpers\Cp::customSelectFieldHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::customSelectHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\helpers\Cp::disclosureMenu()`.
+- Added `craft\helpers\Cp::earthIcon()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\helpers\Cp::elementCardHtml()`.
 - Added `craft\helpers\Cp::elementChipHtml()`.
 - Added `craft\helpers\Cp::elementIndexHtml()`.
+- Added `craft\helpers\Cp::entryTypeSelectFieldHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::entryTypeSelectHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::fallbackIconSvg()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::iconPickerFieldHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::iconPickerHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::iconSvg()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::menuItem()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\helpers\Cp::moneyFieldHtml()`.
 - Added `craft\helpers\Cp::moneyInputHtml()`.
 - Added `craft\helpers\Cp::normalizeMenuItems()`.
@@ -239,6 +283,7 @@
 - Added `craft\i18n\Locale::$aliasOf`.
 - Added `craft\i18n\Locale::setDisplayName()`.
 - Added `craft\migrations\BaseContentRefactorMigration`.
+- Added `craft\models\EntryType::$color`.
 - Added `craft\models\FieldLayout::getCardBodyFields()`.
 - Added `craft\models\FieldLayout::getElementByUid()`.
 - Added `craft\models\FieldLayout::getFieldById()`.
@@ -305,6 +350,7 @@
 - Renamed `craft\base\ElementInterface::getTableAttributeHtml()` to `getAttributeHtml()`.
 - Renamed `craft\base\FieldInterface::valueType()` to `phpType()`.
 - Renamed `craft\base\PreviewableFieldInterface::getTableAttributeHtml()` to `getPreviewHtml()`.
+- Renamed `craft\base\UtilityInterface::iconPath()` to `icon()`, which can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Renamed `craft\base\conditions\BaseCondition::EVENT_REGISTER_CONDITION_RULE_TYPES` to `EVENT_REGISTER_CONDITION_RULES`.
 - Renamed `craft\base\conditions\BaseCondition::conditionRuleTypes()` to `selectableConditionRules()`.
 - Renamed `craft\events\BatchElementActionEvent` to `MultiElementActionEvent`.
@@ -323,6 +369,7 @@
 - Renamed `craft\web\CpScreenResponseBehavior::$notice()` and `notice()` to `$noticeHtml` and `noticeHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$pageSidebar()` and `pageSidebar()` to `$pageSidebarHtml` and `pageSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- `craft\base\BaseFsInterface::renameFile()` and `copyFile()` now have a `$config` argument. ([#14147](https://github.com/craftcms/cms/pull/14147))
 - `craft\base\ConfigurableComponent::getSettings()` now converts backed enum cases to their values.
 - `craft\base\Element::getCpEditUrl()` now returns a URL to `edit/<ID>` if `cpEditUrl()` returns `null`.
 - `craft\base\ElementInterface::findSource()` no longer needs to specify a default value for the `context` argument.
@@ -336,6 +383,7 @@
 - `craft\base\ElementInterface::setRevisionNotes()` no longer needs to specify a default value for the `notes` argument.
 - `craft\base\Field::inputHtml()` now has an `$inline` argument.
 - `craft\base\FieldInterface::getIsTranslatable()`, `getTranslationDescription()`, `getInputHtml()`, `normalizeValue()`, `normalizeValueFromRequest()`, and `serializeValue()` no longer need to specify a default value for the `$element` argument.
+- `craft\base\WidgetInterface::icon()` can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\elemens\db\ElementQueryInterface::collect()` now has an `ElementCollection` return type, rather than `Collection`.
 - `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
@@ -344,11 +392,13 @@
 - `craft\events\AuthenticateUserEvent::$password` can now be null, if the user is being authenticated with a passkey.
 - `craft\fields\BaseOptionsField::$multi` and `$optgroups` properties are now static.
 - `craft\fields\Matrix::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
+- `craft\fields\fieldlayoutelements\BaseUiElement::selectorIcon()` can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - `craft\gql\mutations\Entry::createSaveMutations()` now accepts a `$section` argument.
 - `craft\helpers\Cp::fieldHtml()` now supports a `labelExtra` config value.
 - `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
 - `craft\helpers\Html::id()` and `Craft.formatInputId()` now retain colons and periods, and ensure the string begins with a letter.
 - `craft\helpers\Html::normalizeTagAttributes()` now supports a `removeClass` key.
+- `craft\helpers\Html::svg()` now has a `$throwException` argument.
 - `craft\helpers\Html::tag()` and `beginTag()` now ensure that the passed-in attributes are normalized.
 - `craft\helpers\StringHelper::toString()` now supports backed enums.
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
@@ -369,11 +419,16 @@
 - `craft\services\Users::unshunMessageForUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
 - `craft\services\Users::unsuspendUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
 - `craft\services\Users::verifyEmailForUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
-- Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
-- Deprecated the `cp.elements.element` control panel template hook.
+- `craft\web\Controller::asModelSuccess()` now includes a `modelClass` key in the response data (and `modelId` if the model implements `craft\base\Identifiable`).
+- Colors defined by elements’ `statuses()` methods can now be a `craft\enums\Color` instance.
 - Deprecated `craft\events\DefineElementInnerHtmlEvent`.
 - Deprecated `craft\events\SearchEvent::$siteId`.
+- Deprecated `craft\helpers\Component::iconSvg()`. `craft\helpers\Cp::iconSvg()` and `fallbackIconSvg()` should be used instead. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Deprecated `craft\helpers\Cp::ELEMENT_SIZE_LARGE`. `CHIP_SIZE_LARGE` should be used instead.
+- Deprecated `craft\helpers\Cp::ELEMENT_SIZE_SMALL`. `CHIP_SIZE_SMALL` should be used instead.
 - Deprecated `craft\helpers\Cp::elementHtml()`. `elementChipHtml()` or `elementCardHtml()` should be used instead.
+- Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
+- Deprecated the `cp.elements.element` control panel template hook.
 - Removed the `_includes/revisionmenu.twig` control panel template.
 - Removed `craft\base\ApplicationTrait::getMatrix()`.
 - Removed `craft\base\Element::$contentId`.
@@ -484,6 +539,7 @@
 - Removed `craft\web\CpScreenResponseBehavior::contextMenuHtml()`. `contextMenuItems()` should be used instead.
 - Removed `craft\web\CpScreenResponseBehavior::contextMenuTemplate()`. `contextMenuItems()` should be used instead.
 - Removed `craft\web\User::startElevatedSession()`. `login()` should be used instead.
+- Removed `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
 - Added `Craft.BaseElementSelectInput::defineElementActions()`.
 - Added `Craft.CP::setSiteCrumbMenuItemStatus()`.
 - Added `Craft.CP::showSiteCrumbMenuItem()`.
@@ -497,13 +553,15 @@
 - `Craft.appendBodyHtml()` and `appendHeadHtml()` are now promise-based, and load JavaScript resources over Ajax.
 
 ### System
-- Craft now requires PHP 8.2 or later.
+- Craft now requires PHP 8.2+.
+- Craft now requires MySQL 8.0.17+, MariaDB 10.4.6+, or PostgreSQL 13+.
 - Craft now requires the Symfony Filesystem component directly.
 - Craft now requires `bacon/bacon-qr-code`.
 - Craft now requires `composer/semver` directly.
 - Craft now requires `pragmarx/google2fa`.
 - Craft now requires `pragmarx/recovery`.
 - Craft now requires `web-auth/webauthn-lib`.
+- Updated `illuminate/collections` to v10.
 - Craft no longer requires `composer/composer`.
 - New database tables now default to the `utf8mb4` charset, and the `utf8mb4_0900_ai_ci` or `utf8mb4_unicode_ci` collation, on MySQL. Existing installs should run `db/convert-charset` after upgrading, to ensure all tables have consistent charsets and collations. ([#11823](https://github.com/craftcms/cms/discussions/11823))
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))
@@ -512,6 +570,7 @@
 - Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
 - Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
+- Added an SVG icon set based on Font Awesome 6.5.1. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Updated Monolog to v3.
 - Updated Axios to 1.6.5.
 - Updated D3 to 7.8.5.

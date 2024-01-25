@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\Entry;
+use craft\enums\Color;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
@@ -66,6 +67,7 @@ class EntryTypesController extends Controller
         }
 
         return $this->asCpScreen()
+            ->editUrl($entryType->id ? "settings/entry-types/$entryType->id" : null)
             ->title($title)
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('app', 'Entry Types'), 'settings/entry-types')
@@ -109,6 +111,9 @@ class EntryTypesController extends Controller
         // Set the simple stuff
         $entryType->name = $this->request->getBodyParam('name', $entryType->name);
         $entryType->handle = $this->request->getBodyParam('handle', $entryType->handle);
+        $entryType->icon = $this->request->getBodyParam('icon', $entryType->icon);
+        $color = $this->request->getBodyParam('color', $entryType->color?->value);
+        $entryType->color = $color && $color !== '__blank__' ? Color::from($color) : null;
         $entryType->hasTitleField = (bool)$this->request->getBodyParam('hasTitleField', $entryType->hasTitleField);
         $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
         $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);

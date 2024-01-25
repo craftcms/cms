@@ -30,6 +30,7 @@
                     {% for status, info in elementInstance.statuses() %}
                         {% set label = info.label ?? info %}
                         {% set color = info.color ?? '' %}
+                        {% set color = color is instance of ('craft\\enums\\Color') ? color.value : color %}
                         <li><a data-status="{{ status }}"><span class="status {{ status }} {{ color }}"></span>{{ label }}</a></li>
                     {% endfor %}
                 {% endif %}

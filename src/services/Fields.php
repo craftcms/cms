@@ -13,7 +13,6 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\MemoizableArray;
-use craft\base\MissingComponentInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\db\Query;
 use craft\db\Table;
@@ -34,6 +33,7 @@ use craft\fields\Date;
 use craft\fields\Dropdown;
 use craft\fields\Email;
 use craft\fields\Entries as EntriesField;
+use craft\fields\Icon;
 use craft\fields\Lightswitch;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
@@ -207,6 +207,7 @@ class Fields extends Component
             Dropdown::class,
             Email::class,
             EntriesField::class,
+            Icon::class,
             Lightswitch::class,
             MatrixField::class,
             Money::class,
@@ -1304,7 +1305,6 @@ class Fields extends Component
         $tableData = [];
         foreach ($result as $item) {
             $field = $this->createField($item);
-            $fieldIsMissing = $field instanceof MissingComponentInterface;
 
             $tableData[] = [
                 'id' => $field->id,
@@ -1314,8 +1314,8 @@ class Fields extends Component
                 'url' => UrlHelper::url('settings/fields/edit/' . $field->id),
                 'handle' => $field->handle,
                 'type' => [
-                    'isMissing' => $fieldIsMissing,
-                    'label' => $fieldIsMissing ? $field->expectedType : $field->displayName(),
+                    'isMissing' => $field instanceof MissingField,
+                    'label' => $field instanceof MissingField ? $field->expectedType : $field->displayName(),
                 ],
             ];
         }

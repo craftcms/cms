@@ -2,11 +2,116 @@
 
 ## Unreleased
 
+- Inline-editable Matrix blocks have been redesigned to be visually lighter. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Matrix fields set to the inline-editable blocks view mode no longer show inline entry-creation buttons unless there’s a single entry type. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Improved the accessibility of Matrix fields with the “inline-editable blocks” view mode. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Added the “Color” entry type setting. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Entry chips, cards, and blocks are now tinted according to their entry type’s color. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Disclosure menu items and custom select options can now have a `color` key.
+- Added the `customSelect()` global function for control panel templates.
+- Added the `colorSelect` and `colorSelectField` form macros.
+- Added `craft\base\Colorable`. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Added `craft\enums\Color`. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Added `craft\helpers\Cp::colorSelectFieldHtml()`.
+- Added `craft\models\EntryType::$color`.
+- Colors defined by elements’ `statuses()` methods can now be a `craft\enums\Color` instance.
+- Craft now requires MySQL 8.0.17+, MariaDB 10.4.6+, or PostgreSQL 13+.
+- Updated `illuminate/collections` to v10.
+- Fixed a bug where newly-created nested Matrix entries were losing their sort order when the owner element’s draft was applied.
+- Fixed a bug where plugin icons were blue. ([#14186](https://github.com/craftcms/cms/issues/14186))
+- Fixed an error that occurred when running the `help` command. ([#14189](https://github.com/craftcms/cms/issues/14189))
+
+## 5.0.0-alpha.8 - 2024-01-23
+
+- Fixed a PHP error that occurred when the Debug Toolbar was enabled. ([#14183](https://github.com/craftcms/cms/issues/14183))
+
+## 5.0.0-alpha.7 - 2024-01-23
+
+- Inline-editable Matrix blocks now support multiple tabs. ([#8500](https://github.com/craftcms/cms/discussions/8500), [#14139](https://github.com/craftcms/cms/issues/14139))
+- Inline-editable Matrix blocks now include “Open in a new tab” action items.
+- Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added the “Icon” field type. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added an SVG icon set based on Font Awesome 6.5.1. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Earth icons are now localized based on the system time zone.
+- Selected elements within relational fields now include “Move up/down” or “Move forward/backward” in their action menus.
+- Sections’ and Matrix fields’ Entry Types settings now use an entry type select input, with support for reordering selected entry types, and editing entry types via slideouts. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added “Save and continue editing” actions to all core settings pages with full-page forms. ([#14168](https://github.com/craftcms/cms/discussions/14168))
+- Improved the accessibility of time zone fields.
+- Improved the accessibility of form alternative action menus.
+- Improved the accessibility of element indexes. ([#12286](https://github.com/craftcms/cms/pull/12286))
+- Improved the accessibility of inline-editable Matrix blocks.
+- Database backups no longer include data from the `phpsessions` table, if it exists. ([#13589](https://github.com/craftcms/cms/pull/13589))
+- Disclosure menu items now default to the `button` type. `link` is only assumed if a `url` key is set.
+- Disclosure menus now support defining horizontal rules via `hr: true` (in addition to `type: 'hr'`).
+- Added the `utils/prune-orphaned-entries` command. ([#14154](https://github.com/craftcms/cms/pull/14154))
+- Added `craft\base\Actionable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\Chippable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\ElementInterface::afterDeleteForSite()`.
+- Added `craft\base\ElementInterface::beforeDeleteForSite()`.
+- Added `craft\base\FieldInterface::afterElementDeleteForSite()`.
+- Added `craft\base\FieldInterface::beforeElementDeleteForSite()`.
+- Added `craft\base\Iconic`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\Identifiable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\NestedElementInterface::setOwnerId()`.
+- Added `craft\base\NestedElementInterface::setPrimaryOwnerId()`.
+- Added `craft\base\NestedElementTrait::attributes()`.
+- Added `craft\base\NestedElementTrait::extraFields()`.
+- Added `craft\base\NestedElementTrait::setOwnerId()`.
+- Added `craft\base\NestedElementTrait::setPrimaryOwnerId()`.
+- Added `craft\base\Statusable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\Thumbable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::CHIP_SIZE_LARGE`.
+- Added `craft\helpers\Cp::CHIP_SIZE_SMALL`.
+- Added `craft\helpers\Cp::chipHtml()`.
+- Added `craft\helpers\Cp::customSelectFieldHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::customSelectHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::earthIcon()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::entryTypeSelectFieldHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::entryTypeSelectHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::fallbackIconSvg()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::iconPickerFieldHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::iconPickerHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::iconSvg()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::menuItem()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Renamed `craft\base\UtilityInterface::iconPath()` to `icon()`, which can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- `craft\base\NestedElementTrait::$ownerId` and `$primaryOwnerId` are now private (but are still available via magic getters and setters).
+- `craft\base\WidgetInterface::icon()` can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- `craft\elements\Address::toArray()` and `craft\elements\Entry::toArray()` now support passing `primaryOwner` and `owner` to the `$expand` argument.
+- `craft\fields\fieldlayoutelements\BaseUiElement::selectorIcon()` can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- `craft\helpers\Html::svg()` now has a `$throwException` argument.
+- `craft\web\Controller::asModelSuccess()` now includes a `modelClass` key in the response data (and `modelId` if the model implements `craft\base\Identifiable`).
+- Deprecated `craft\helpers\Component::iconSvg()`. `craft\helpers\Cp::iconSvg()` and `fallbackIconSvg()` should be used instead. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Deprecated `craft\helpers\Cp::ELEMENT_SIZE_LARGE`. `CHIP_SIZE_LARGE` should be used instead.
+- Deprecated `craft\helpers\Cp::ELEMENT_SIZE_SMALL`. `CHIP_SIZE_SMALL` should be used instead.
+- Removed `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
+- Added the `chip()` and `iconSvg()` global functions for control panel templates.
+- Selectize inputs now use the `auto_position` plugin. ([#14160](https://github.com/craftcms/cms/pull/14160))
+- Fixed a bug where paths passed to `craft\web\CpScreenResponseBehavior::editUrl()` weren’t getting resolved to absolute URLs.
+- Fixed an error that occurred when switching entry types, if the entry had any Matrix fields.
+- Fixed a bug where Assets fields set to the “Large Thumbnails” view mode were listing selected assets vertically. ([#14138](https://github.com/craftcms/cms/issues/14138))
+- Fixed an error that occurred when installing Craft with existing project config YAML files.
+- Fixed an error that occurred when duplicating entries via the “Duplicate” bulk element action.
+- Fixed a bug where deleting an entry for a site wasn’t propagating to Matrix blocks for that entry/site. ([#13948](https://github.com/craftcms/cms/issues/13948))
+- Fixed a bug where `craft\base\NestedElementTrait::$ownerId` was `null` for elements which were queried for their primary owner.
+
+## 5.0.0-alpha.6 - 2024-01-16
+
+- Admin tables now have sticky footers. ([#14149](https://github.com/craftcms/cms/pull/14149))
+- Money field condition rules now use money inputs. ([#14148](https://github.com/craftcms/cms/pull/14148))
 - Improved the accessibility of element indexes. ([#14120](https://github.com/craftcms/cms/pull/14120))
+- Reduced the system font file size, and prevented the flash of unstyled type for it. ([#13879](https://github.com/craftcms/cms/pull/13879))
+- Log message timestamps are now set to the system time zone. ([#13341](https://github.com/craftcms/cms/issues/13341))
+- Added `craft\fields\Money::currencyLabel()`.
+- Added `craft\fields\Money::subunits()`.
+- Added `craft\fields\conditions\MoneyFieldConditionRule`.
+- `craft\base\BaseFsInterface::renameFile()` and `copyFile()` now have a `$config` argument. ([#14147](https://github.com/craftcms/cms/pull/14147))
 - Fixed a bug where `craft\helpers\Db::prepareValueForDb()` wasn’t converting objects to arrays for JSON columns.
-- Fixed a bug where Checkboxes, Multi-select, Dropdown, and Radio Buttons fields weren’t displaying `0` option labels within element indexes. ([#14127](https://github.com/craftcms/cms/issues/14127))
+- Fixed a bug where Checkboxes, Multi-select, Dropdown, and Radio Buttons fields weren’t displaying `0` options within element indexes or condition rules. ([#14127](https://github.com/craftcms/cms/issues/14127), [#14143](https://github.com/craftcms/cms/pull/14143))
 - Fixed a bug where `craft\db\Migration::renameTable()` was renaming the table for the primary database connection, rather than the migration’s connection. ([#14131](https://github.com/craftcms/cms/issues/14131))
 - Fixed a bug where `Craft.FormObserver` wasn’t working reliably for non-`<form>` containers.
+- Fixed a bug where Selectize inputs were triggering autosaves, even when the value didn’t change.
+- Fixed a bug where custom source labels weren’t getting translated. ([#14137](https://github.com/craftcms/cms/issues/14137))
+- Fixed a bug where Dropdown columns within Table fields were loosing their options when the field was edited. ([#14134](https://github.com/craftcms/cms/issues/14134))
 - Fixed a bug where asset edit screens didn’t include the “Open in Image Editor” action item. ([#14125](https://github.com/craftcms/cms/pull/14125))
 - Updated Monolog to v3.
 - Updated Axios to 1.6.5.

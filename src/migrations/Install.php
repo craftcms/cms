@@ -406,6 +406,8 @@ class Install extends Migration
             'fieldLayoutId' => $this->integer(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
+            'icon' => $this->string(),
+            'color' => $this->string(),
             'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->text(),

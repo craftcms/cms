@@ -41,6 +41,19 @@ class Craft extends Yii
 
     /**
      * @inheritdoc
+     */
+    public static function getAlias($alias, $throwException = true)
+    {
+        // @app/icons/file.svg => @appicons/file.svg
+        if (preg_match('/^@app\/icons\/([\w\-]+\.svg)$/', $alias, $match)) {
+            $alias = "@appicons/$match[1]";
+        }
+
+        return parent::getAlias($alias, $throwException);
+    }
+
+    /**
+     * @inheritdoc
      * @template T
      * @param string|array|callable $type
      * @phpstan-param class-string<T>|array{class:class-string<T>}|callable():T $type

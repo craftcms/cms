@@ -14,6 +14,7 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Address;
+use craft\elements\ElementCollection;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use yii\base\InvalidArgumentException;
@@ -26,6 +27,7 @@ use yii\db\Connection;
  * @method Address[]|array all($db = null)
  * @method Address|array|null one($db = null)
  * @method Address|array|null nth(int $n, ?Connection $db = null)
+ * @method ElementCollection<Address> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  * @doc-path addresses.md

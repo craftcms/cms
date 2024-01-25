@@ -16,6 +16,7 @@ use craft\behaviors\DraftBehavior;
 use craft\db\Table;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\BulkElementsEvent;
 use craft\helpers\ArrayHelper;
@@ -511,8 +512,20 @@ class NestedElementManager extends Component
 
             if (!empty($config['createAttributes'])) {
                 $settings['createAttributes'] = $config['createAttributes'];
-                if (count($settings['createAttributes']) === 1 && ArrayHelper::isIndexed($settings['createAttributes'])) {
-                    $settings['createAttributes'] = ArrayHelper::firstValue($settings['createAttributes'])['attributes'];
+                if (ArrayHelper::isIndexed($settings['createAttributes'])) {
+                    if (count($settings['createAttributes']) === 1) {
+                        $settings['createAttributes'] = ArrayHelper::firstValue($settings['createAttributes'])['attributes'];
+                    } else {
+                        $settings['createAttributes'] = array_map(function(array $attributes) {
+                            if (isset($attributes['icon'])) {
+                                $attributes['icon'] = Cp::iconSvg($attributes['icon']);
+                            }
+                            if (isset($attributes['color']) && $attributes['color'] instanceof Color) {
+                                $attributes['color'] = $attributes['color']->value;
+                            }
+                            return $attributes;
+                        }, $settings['createAttributes']);
+                    }
                 }
             }
 

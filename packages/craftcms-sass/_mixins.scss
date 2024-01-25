@@ -130,8 +130,8 @@ $linkColor: #1f5fea;
 
 // menu colors
 $menuOptionColor: $textColor;
-$menuOptionActiveColor: $white;
-$menuOptionActiveBackgroundColor: $grey500;
+$menuOptionActiveColor: $textColor;
+$menuOptionActiveBackgroundColor: $grey050;
 
 // hairline colors
 $hairlineColor: transparentize($grey800, 0.9);
@@ -261,8 +261,6 @@ $radioSize: 16px;
   vertical-align: middle;
   word-wrap: normal !important;
   user-select: none;
-
-  opacity: var(--icon-opacity);
 }
 
 @mixin angle($dir: down, $color: currentColor, $width: 2px) {
@@ -711,6 +709,7 @@ $radioSize: 16px;
   @include right(9px);
   user-select: none;
   pointer-events: none;
+  color: var(--ui-control-color);
 }
 
 @mixin select-input-styles {

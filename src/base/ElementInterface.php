@@ -28,10 +28,11 @@ use yii\web\Response;
  * @mixin ElementTrait
  * @mixin CustomFieldBehavior
  * @mixin Component
+ * @phpstan-require-extends Element
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface ElementInterface extends ComponentInterface
+interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Statusable, Actionable
 {
     /**
      * Returns the lowercase version of [[displayName()]].
@@ -249,25 +250,6 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public static function createCondition(): ElementConditionInterface;
-
-    /**
-     * Returns all of the possible statuses that elements of this type may have.
-     *
-     * This method will be called when populating the Status menu on element indexes, for element types whose
-     * [[hasStatuses()]] method returns `true`. It will also be called when [[\craft\elements\db\ElementQuery]] is querying for
-     * elements, to ensure that its “status” parameter is set to a valid status.
-     * It should return an array whose keys are the status values, and values are the human-facing status labels, or an array
-     * with the following keys:
-     * - **`label`** – The human-facing status label.
-     * - **`color`** – The status color. Possible values include `green`, `orange`, `red`, `yellow`, `pink`, `purple`, `blue`,
-     *   `turquoise`, `light`, `grey`, `black`, and `white`.
-     * You can customize the database query condition that should be applied for your custom statuses from
-     * [[\craft\elements\db\ElementQuery::statusCondition()]].
-     *
-     * @return array
-     * @see hasStatuses()
-     */
-    public static function statuses(): array;
 
     /**
      * Returns the source definitions that elements of this type may belong to.
@@ -577,15 +559,6 @@ interface ElementInterface extends ComponentInterface
     public static function gqlScopesByContext(mixed $context): array;
 
     /**
-     * Returns the element’s ID.
-     *
-     * @return int|null
-     * @internal This method is required by [[\yii\web\IdentityInterface]], but might as well
-     * go here rather than only in [[\craft\elements\User]].
-     */
-    public function getId(): ?int;
-
-    /**
      * Returns whether this is a draft.
      *
      * @return bool
@@ -779,14 +752,6 @@ interface ElementInterface extends ComponentInterface
     public function getCrumbs(): array;
 
     /**
-     * Returns what the element should be called within the control panel.
-     *
-     * @return string
-     * @since 3.2.0
-     */
-    public function getUiLabel(): string;
-
-    /**
      * Defines what the element should be called within the control panel.
      *
      * @param string|null $label
@@ -974,16 +939,6 @@ interface ElementInterface extends ComponentInterface
     public function getAdditionalButtons(): string;
 
     /**
-     * Returns action menu items for the element’s edit screens.
-     *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
-     *
-     * @return array
-     * @since 5.0.0
-     */
-    public function getActionMenuItems(): array;
-
-    /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
      *
      * Each target should be represented by a sub-array with the following keys:
@@ -1001,15 +956,6 @@ interface ElementInterface extends ComponentInterface
      * @since 3.2.0
      */
     public function getPreviewTargets(): array;
-
-    /**
-     * Returns the HTML for the element’s thumbnail, if it has one.
-     *
-     * @param int $size The width and height the thumbnail should have.
-     * @return string|null
-     * @since 4.5.0
-     */
-    public function getThumbHtml(int $size): ?string;
 
     /**
      * Returns whether the element is enabled for the current site.
@@ -1032,13 +978,6 @@ interface ElementInterface extends ComponentInterface
      * @since 3.4.0
      */
     public function setEnabledForSite(array|bool $enabledForSite): void;
-
-    /**
-     * Returns the element’s status.
-     *
-     * @return string|null
-     */
-    public function getStatus(): ?string;
 
     /**
      * Returns the same element in other locales.
@@ -1733,6 +1672,21 @@ interface ElementInterface extends ComponentInterface
      *
      */
     public function afterDelete(): void;
+
+    /**
+     * Performs actions before an element is deleted for a site.
+     *
+     * @return bool Whether the element should be deleted
+     * @since 4.7.0
+     */
+    public function beforeDeleteForSite(): bool;
+
+    /**
+     * Performs actions after an element is deleted for a site.
+     *
+     * @since 4.7.0
+     */
+    public function afterDeleteForSite(): void;
 
     /**
      * Performs actions before an element is restored.

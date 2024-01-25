@@ -12,6 +12,8 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\QueryParam;
 use craft\db\Table;
+use craft\elements\Address;
+use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\Db;
@@ -26,6 +28,7 @@ use yii\db\Expression;
  * @method User[]|array all($db = null)
  * @method User|array|null one($db = null)
  * @method User|array|null nth(int $n, ?Connection $db = null)
+ * @method ElementCollection<User> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path users.md
@@ -720,10 +723,10 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results to users who are teh author of the given entry.
+     * Narrows the query results to users who are the author of the given entry.
      *
      * @param Entry|null $value
-     * @retun static self reference
+     * @return static self reference
      * @uses $authorOf
      * @since 5.0.0
      */

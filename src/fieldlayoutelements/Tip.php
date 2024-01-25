@@ -58,7 +58,7 @@ class Tip extends BaseUiElement
      */
     protected function selectorIcon(): ?string
     {
-        return '@appicons/' . ($this->_isTip() ? 'tip' : 'alert') . '.svg';
+        return $this->_isTip() ? 'lightbulb' : 'triangle-exclamation';
     }
 
     /**

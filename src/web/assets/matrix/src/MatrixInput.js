@@ -20,8 +20,7 @@
       $form: null,
       $entriesContainer: null,
       $addEntryBtnContainer: null,
-      $addEntryBtnGroup: null,
-      $addEntryBtnGroupBtns: null,
+      $addEntryBtn: null,
       $addEntryMenuBtn: null,
       $statusMessage: null,
 
@@ -36,7 +35,7 @@
         this.inputNamePrefix = inputNamePrefix;
         this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
 
-        // see if settings was actually set to the maxEntriesvalue
+        // see if settings was actually set to the maxEntries value
         if (typeof settings === 'number') {
           settings = {maxEntries: settings};
         }
@@ -46,15 +45,12 @@
         this.$form = this.$container.closest('form');
         this.$entriesContainer = this.$container.children('.blocks');
         this.$addEntryBtnContainer = this.$container.children('.buttons');
-        this.$addEntryBtnGroup =
-          this.$addEntryBtnContainer.children('.btngroup');
-        this.$addEntryBtnGroupBtns = this.$addEntryBtnGroup.children('.btn');
+        this.$addEntryBtn =
+          this.$addEntryBtnContainer.children('.btn:not(.menubtn)');
         this.$addEntryMenuBtn = this.$addEntryBtnContainer.children('.menubtn');
         this.$statusMessage = this.$container.find('[data-status-message]');
 
         this.$container.data('matrix', this);
-
-        this.setNewEntryBtn();
 
         this.entryTypesByHandle = {};
 
@@ -65,6 +61,15 @@
 
         const $entries = this.$entriesContainer.children();
         const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
+
+        if ($entries.length > 0 && $($entries[0]).hasClass('matrixblock')) {
+          for (let i = 0; i < $entries.length; i++) {
+            let matrixblockTabs = $($entries[i]).find('.matrixblock-tabs');
+            if (matrixblockTabs.length > 0) {
+              Craft.cp.initMatrixTabs(matrixblockTabs);
+            }
+          }
+        }
 
         this.entrySort = new Garnish.DragSort($entries, {
           handle: '> .actions > .move',
@@ -95,7 +100,8 @@
           {
             multi: true,
             vertical: true,
-            handle: '> .checkbox, > .titlebar',
+            handle: '> .actions > .checkbox, > .titlebar',
+            filter: ':not(.tab-label)',
             checkboxMode: true,
           }
         );
@@ -109,71 +115,32 @@
           }
         }
 
-        this.addListener(this.$addEntryBtnGroupBtns, 'click', function (ev) {
-          const $button = $(ev.currentTarget).addClass('loading');
-          this.addEntry($button.data('type')).then(() => {
-            $button.removeClass('loading');
-          });
+        this.addListener(this.$addEntryBtn, 'activate', async function () {
+          this.$addEntryBtn.addClass('loading');
+          try {
+            await this.addEntry(this.$addEntryBtn.data('type'));
+          } finally {
+            this.$addEntryBtn.removeClass('loading');
+          }
         });
 
         if (this.$addEntryMenuBtn.length) {
-          this.$addEntryMenuBtn.menubtn();
-          this.$addEntryMenuBtn.data('menubtn').on('optionSelect', (ev) => {
-            this.$addEntryMenuBtn.addClass('loading');
-            this.addEntry($(ev.option).data('type')).then(() => {
-              this.$addEntryMenuBtn.removeClass('loading');
+          this.$addEntryMenuBtn
+            .disclosureMenu()
+            .data('disclosureMenu')
+            .$container.find('button')
+            .on('activate', async (ev) => {
+              this.$addEntryMenuBtn.addClass('loading');
+              try {
+                await this.addEntry($(ev.currentTarget).data('type'));
+              } finally {
+                this.$addEntryMenuBtn.removeClass('loading');
+              }
             });
-          });
         }
 
         this.updateAddEntryBtn();
-
-        this.addListener(this.$container, 'resize', 'setNewEntryBtn');
-        Garnish.$doc.ready(this.setNewEntryBtn.bind(this));
-
         this.trigger('afterInit');
-      },
-
-      setNewEntryBtn: function () {
-        // Do we know what the button group width is yet?
-        if (!this.addEntryBtnGroupWidth) {
-          this.addEntryBtnGroupWidth = this.$addEntryBtnGroup.width();
-
-          if (!this.addEntryBtnGroupWidth) {
-            return;
-          }
-        }
-
-        // Only check if the container width has resized
-        if (
-          this.addEntryBtnContainerWidth !==
-          (this.addEntryBtnContainerWidth = this.$addEntryBtnContainer.width())
-        ) {
-          if (this.addEntryBtnGroupWidth > this.addEntryBtnContainerWidth) {
-            if (!this.showingAddEntryMenu) {
-              this.$addEntryBtnGroup.addClass('hidden');
-              this.$addEntryMenuBtn.removeClass('hidden');
-              this.showingAddEntryMenu = true;
-            }
-          } else {
-            if (this.showingAddEntryMenu) {
-              this.$addEntryMenuBtn.addClass('hidden');
-              this.$addEntryBtnGroup.removeClass('hidden');
-              this.showingAddEntryMenu = false;
-
-              // Because Safari is awesome
-              if (navigator.userAgent.indexOf('Safari') !== -1) {
-                Garnish.requestAnimationFrame(() => {
-                  this.$addEntryBtnGroup.css('opacity', 0.99);
-
-                  Garnish.requestAnimationFrame(() => {
-                    this.$addEntryBtnGroup.css('opacity', '');
-                  });
-                });
-              }
-            }
-          }
-        }
       },
 
       canAddMoreEntries: function () {
@@ -185,44 +152,36 @@
 
       updateAddEntryBtn: function () {
         if (this.canAddMoreEntries()) {
-          this.$addEntryBtnGroup.removeClass('disabled');
+          this.$addEntryBtn.removeClass('disabled').removeAttr('aria-disabled');
           this.$addEntryMenuBtn.removeClass('disabled');
-
-          this.$addEntryBtnGroupBtns.each(function () {
-            $(this).removeAttr('aria-disabled');
-          });
 
           for (let i = 0; i < this.entrySelect.$items.length; i++) {
             const entry = this.entrySelect.$items.eq(i).data('entry');
 
             if (entry) {
               entry.$actionMenu
-                .find('a[data-action=add]')
+                .find('button[data-action=add]')
                 .parent()
                 .removeClass('disabled');
               entry.$actionMenu
-                .find('a[data-action=add]')
+                .find('button[data-action=add]')
                 .removeAttr('aria-disabled');
             }
           }
         } else {
-          this.$addEntryBtnGroup.addClass('disabled');
+          this.$addEntryBtn.addClass('disabled').attr('aria-disabled', 'true');
           this.$addEntryMenuBtn.addClass('disabled');
-
-          this.$addEntryBtnGroupBtns.each(function () {
-            $(this).attr('aria-disabled', 'true');
-          });
 
           for (let i = 0; i < this.entrySelect.$items.length; i++) {
             const entry = this.entrySelect.$items.eq(i).data('entry');
 
             if (entry) {
               entry.$actionMenu
-                .find('a[data-action=add]')
+                .find('button[data-action=add]')
                 .parent()
                 .addClass('disabled');
               entry.$actionMenu
-                .find('a[data-action=add]')
+                .find('button[data-action=add]')
                 .attr('aria-disabled', 'true');
             }
           }
@@ -279,6 +238,10 @@
         const elementEditor = this.$form.data('elementEditor');
         if (elementEditor) {
           elementEditor.pause();
+        }
+
+        if ($entry.hasClass('matrixblock')) {
+          Craft.cp.initMatrixTabs($entry);
         }
 
         if ($insertBefore) {
@@ -433,6 +396,7 @@
     matrix: null,
     $container: null,
     $titlebar: null,
+    $tabsContainer: null,
     $fieldsContainer: null,
     $previewContainer: null,
     $actionMenu: null,
@@ -449,6 +413,7 @@
       this.matrix = matrix;
       this.$container = $container;
       this.$titlebar = $container.children('.titlebar');
+      this.$tabsContainer = this.$titlebar.children('.matrixblock-tabs');
       this.$previewContainer = this.$titlebar.children('.preview');
       this.$fieldsContainer = $container.children('.fields');
 
@@ -459,9 +424,7 @@
         !this.id ||
         (typeof this.id === 'string' && this.id.substring(0, 3) === 'new');
 
-      const $actionMenuBtn = this.$container.find(
-        '> .actions [data-disclosure-trigger]'
-      );
+      const $actionMenuBtn = this.$container.find('> .actions .action-btn');
       const actionDisclosure =
         $actionMenuBtn.data('trigger') ||
         new Garnish.DisclosureMenu($actionMenuBtn);
@@ -473,23 +436,23 @@
         this.$container.addClass('active');
         if (this.$container.prev('.matrixblock').length) {
           this.$actionMenu
-            .find('a[data-action=moveUp]:first')
+            .find('button[data-action=moveUp]:first')
             .parent()
             .removeClass('hidden');
         } else {
           this.$actionMenu
-            .find('a[data-action=moveUp]:first')
+            .find('button[data-action=moveUp]:first')
             .parent()
             .addClass('hidden');
         }
         if (this.$container.next('.matrixblock').length) {
           this.$actionMenu
-            .find('a[data-action=moveDown]:first')
+            .find('button[data-action=moveDown]:first')
             .parent()
             .removeClass('hidden');
         } else {
           this.$actionMenu
-            .find('a[data-action=moveDown]:first')
+            .find('button[data-action=moveDown]:first')
             .parent()
             .addClass('hidden');
         }
@@ -499,17 +462,12 @@
         this.$container.removeClass('active');
       });
 
-      this.$actionMenuOptions = this.$actionMenu.find('a[data-action]');
+      this.$actionMenuOptions = this.$actionMenu.find('button[data-action]');
 
       this.addListener(
         this.$actionMenuOptions,
-        'click',
+        'activate',
         this.handleActionClick
-      );
-      this.addListener(
-        this.$actionMenuOptions,
-        'keydown',
-        this.handleActionKeydown
       );
 
       // Was this entry already collapsed?
@@ -598,24 +556,27 @@
       this.$previewContainer.html(previewHtml);
 
       this.$fieldsContainer.velocity('stop');
+      this.$tabsContainer.velocity('stop');
       this.$container.velocity('stop');
 
       if (animate && !Garnish.prefersReducedMotion()) {
         this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-        this.$container.velocity({height: 32}, 'fast');
+        this.$container.velocity({height: 34}, 'fast');
       } else {
         this.$previewContainer.show();
         this.$fieldsContainer.hide();
-        this.$container.css({height: 32});
+        this.$container.css({height: 34});
       }
+
+      this.$tabsContainer.hide();
 
       setTimeout(() => {
         this.$actionMenu
-          .find('a[data-action=collapse]:first')
+          .find('button[data-action=collapse]:first')
           .parent()
           .addClass('hidden');
         this.$actionMenu
-          .find('a[data-action=expand]:first')
+          .find('button[data-action=expand]:first')
           .parent()
           .removeClass('hidden');
       }, 200);
@@ -691,16 +652,17 @@
           this.$previewContainer.html('');
           this.$container.height('auto');
           this.$container.trigger('scroll');
+          this.$tabsContainer.show();
         }
       );
 
       setTimeout(() => {
         this.$actionMenu
-          .find('a[data-action=collapse]:first')
+          .find('button[data-action=collapse]:first')
           .parent()
           .removeClass('hidden');
         this.$actionMenu
-          .find('a[data-action=expand]:first')
+          .find('button[data-action=expand]:first')
           .parent()
           .addClass('hidden');
       }, 200);
@@ -731,11 +693,11 @@
 
       setTimeout(() => {
         this.$actionMenu
-          .find('a[data-action=disable]:first')
+          .find('button[data-action=disable]:first')
           .parent()
           .addClass('hidden');
         this.$actionMenu
-          .find('a[data-action=enable]:first')
+          .find('button[data-action=enable]:first')
           .parent()
           .removeClass('hidden');
       }, 200);
@@ -749,11 +711,11 @@
 
       setTimeout(() => {
         this.$actionMenu
-          .find('a[data-action=disable]:first')
+          .find('button[data-action=disable]:first')
           .parent()
           .removeClass('hidden');
         this.$actionMenu
-          .find('a[data-action=enable]:first')
+          .find('button[data-action=enable]:first')
           .parent()
           .addClass('hidden');
       }, 200);
@@ -788,15 +750,6 @@
     },
 
     handleActionClick: function (event) {
-      event.preventDefault();
-      this.onActionSelect(event.target);
-    },
-
-    handleActionKeydown: function (event) {
-      const keyCode = event.keyCode;
-
-      if (keyCode !== Garnish.SPACE_KEY) return;
-
       event.preventDefault();
       this.onActionSelect(event.target);
     },

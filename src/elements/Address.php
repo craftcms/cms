@@ -574,7 +574,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         $this->prepareNamesForSave();
 
         $record->fieldId = $this->fieldId;
-        $record->primaryOwnerId = $this->primaryOwnerId ?? $this->ownerId;
+        $record->primaryOwnerId = $this->getPrimaryOwnerId();
         $record->countryCode = $this->countryCode;
         $record->administrativeArea = $this->administrativeArea;
         $record->locality = $this->locality;
