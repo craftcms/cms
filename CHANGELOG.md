@@ -16,6 +16,7 @@
 - Added `craft\models\EntryType::$color`.
 - Colors defined by elements’ `statuses()` methods can now be a `craft\enums\Color` instance.
 - Craft now requires MySQL 8.0.17+, MariaDB 10.4.6+, or PostgreSQL 13+.
+- Updated `illuminate/collections` to v10.
 - Fixed a bug where newly-created nested Matrix entries were losing their sort order when the owner element’s draft was applied.
 - Fixed a bug where plugin icons were blue. ([#14186](https://github.com/craftcms/cms/issues/14186))
 
