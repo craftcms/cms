@@ -7,6 +7,7 @@
 
 namespace craft\models;
 
+use Craft;
 use craft\base\FieldLayoutComponent;
 use craft\base\Model;
 use craft\helpers\Html;
@@ -37,9 +38,10 @@ class FieldLayoutForm extends Model
     public function getTabMenu(): array
     {
         $menu = [];
+        $view = Craft::$app->getView();
         foreach ($this->tabs as $tab) {
             $containerId = $this->_tabId($tab->getId());
-            $menu[$containerId] = [
+            $menu[$view->namespaceInputId($containerId)] = [
                 'tabId' => $tab->getTabId(),
                 'label' => $tab->getName(),
                 'url' => "#$containerId",
@@ -59,6 +61,7 @@ class FieldLayoutForm extends Model
     {
         $html = [];
         $hasMultipleTabs = count($this->tabs) > 1;
+        $view = Craft::$app->getView();
         foreach ($this->tabs as $i => $tab) {
             $show = $showFirst && $i === 0;
             $id = $this->_tabId($tab->getId());
@@ -74,7 +77,7 @@ class FieldLayoutForm extends Model
                 ],
                 'role' => $hasMultipleTabs ? 'tabpanel' : false,
                 'aria' => [
-                    'labelledBy' => $hasMultipleTabs ? $tab->getTabId() : false,
+                    'labelledBy' => $hasMultipleTabs ? $view->namespaceInputId($tab->getTabId()) : false,
                 ],
             ]);
         }
