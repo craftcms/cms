@@ -3246,16 +3246,26 @@ table {
   }
 
   .label {
+    --link-margin: 3px;
     display: flex;
     align-items: center;
     gap: var(--xs);
     overflow: hidden;
+
+    body.ltr & {
+      margin-left: calc(var(--link-margin) * -1);
+    }
+
+    body.rtl & {
+      margin-right: calc(var(--link-margin) * -1);
+    }
 
     .label-link {
       flex: 1 1 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin: var(--link-margin); // ensures focus outline isn't hidden
     }
 
     .segment:after {
