@@ -8077,7 +8077,7 @@ body.setup-2fa {
             background-color: transparent;
 
             .tab-label {
-              height: 30px;
+              height: calc(var(--lh) + 10px);
               padding: 0 var(--m);
             }
           }
