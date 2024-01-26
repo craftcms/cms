@@ -1022,7 +1022,7 @@ class Matrix extends Field implements
 
         foreach ($entries as $entry) {
             $js .= <<<JS
-Craft.cp.initMatrixTabs($('div.matrixblock.static[data-uid="$entry->uid"]'));
+Craft.cp.initMatrixTabs($('.matrixblock[data-uid="$entry->uid"] > .titlebar .matrixblock-tabs'));
 JS;
         }
 

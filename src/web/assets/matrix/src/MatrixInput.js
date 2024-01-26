@@ -59,16 +59,12 @@
           this.entryTypesByHandle[entryType.handle] = entryType;
         }
 
-        const $entries = this.$entriesContainer.children();
+        const $entries = this.$entriesContainer.children('.matrixblock');
         const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
 
-        if ($entries.length > 0 && $($entries[0]).hasClass('matrixblock')) {
-          for (let i = 0; i < $entries.length; i++) {
-            let matrixblockTabs = $($entries[i]).find('.matrixblock-tabs');
-            if (matrixblockTabs.length > 0) {
-              Craft.cp.initMatrixTabs(matrixblockTabs);
-            }
-          }
+        const $tabContainers = $entries.find('> .titlebar .matrixblock-tabs');
+        for (let i = 0; i < $tabContainers.length; i++) {
+          Craft.cp.initMatrixTabs($tabContainers.eq(i));
         }
 
         this.entrySort = new Garnish.DragSort($entries, {
@@ -240,8 +236,9 @@
           elementEditor.pause();
         }
 
-        if ($entry.hasClass('matrixblock')) {
-          Craft.cp.initMatrixTabs($entry);
+        const $tabContainer = $entry.find('> .titlebar .matrixblock-tabs');
+        if ($tabContainer.length) {
+          Craft.cp.initMatrixTabs($tabContainer);
         }
 
         if ($insertBefore) {

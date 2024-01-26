@@ -25,6 +25,7 @@
 - Fixed an error that occurred when attempting to delete a draft user after navigating away from the “Profile” page. ([#14199](https://github.com/craftcms/cms/issues/14199))
 - Fixed an error that occurred when saving a section with no Max Authors value.
 - Fixed the appearance of Entries and Categories fields when “Maintain Hierarchy” was enabled. ([#14201](https://github.com/craftcms/cms/issues/14201))
+- Fixed Matrix tab switching for nested Matrix blocks.
 
 ## 5.0.0-alpha.8 - 2024-01-23
 
