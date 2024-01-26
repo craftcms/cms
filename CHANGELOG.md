@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where empty Dropdown fields were getting treated as dirty when unchanged.
+
 ## 4.7.0 - 2024-01-23
 
 > [!NOTE]  

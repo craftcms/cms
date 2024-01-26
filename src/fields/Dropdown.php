@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\SortableFieldInterface;
+use craft\fields\data\MultiOptionsFieldData;
+use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\Cp;
 
@@ -107,19 +109,20 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             }
         }
 
-        $encValue = $this->encodeValue($value);
-        if ($encValue === null || $encValue === '') {
-            $encValue = '__BLANK__';
-        }
-
         return Cp::selectizeHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'value' => $encValue,
+            'value' => $this->encodeValue($value),
             'options' => $options,
             'disabled' => $static,
         ]);
+    }
+
+    protected function encodeValue(MultiOptionsFieldData|OptionData|string|null $value): string|array|null
+    {
+        $encValue = parent::encodeValue($value);
+        return $encValue === null || $encValue === '' ? '__BLANK__' : $encValue;
     }
 
     /**
