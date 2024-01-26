@@ -3179,11 +3179,9 @@ table {
 
   & > li {
     border-radius: var(--large-border-radius);
-    height: 100%;
 
     & > .card {
       margin: 0 !important;
-      height: 100%;
     }
   }
 }
