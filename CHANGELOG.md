@@ -27,7 +27,8 @@
 - Fixed the appearance of Entries and Categories fields when “Maintain Hierarchy” was enabled. ([#14201](https://github.com/craftcms/cms/issues/14201))
 - Fixed Matrix tab switching for nested Matrix blocks.
 - Fixed a bug where fields’ Name, Handle, and Instructions placeholder values within field layouts were getting set to the current overridden values.
-- Fixed a bug where nested Matrix entries could get deleted when editing multiple of them within the same parent Matrix entry.  
+- Fixed a bug where nested Matrix entries could get deleted when editing multiple of them within the same parent Matrix entry.
+- Fixed a bug where empty Dropdown fields were getting treated as dirty when unchanged.
 
 ## 5.0.0-alpha.8 - 2024-01-23
 
