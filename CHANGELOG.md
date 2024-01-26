@@ -26,6 +26,7 @@
 - Fixed an error that occurred when saving a section with no Max Authors value.
 - Fixed the appearance of Entries and Categories fields when “Maintain Hierarchy” was enabled. ([#14201](https://github.com/craftcms/cms/issues/14201))
 - Fixed Matrix tab switching for nested Matrix blocks.
+- Fixed a bug where fields’ Name, Handle, and Instructions placeholder values within field layouts were getting set to the current overridden values.
 
 ## 5.0.0-alpha.8 - 2024-01-23
 
