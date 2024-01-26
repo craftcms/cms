@@ -1311,8 +1311,8 @@ JS;
             $oldEntriesById = [];
         }
 
-        // If we're saving a draft, get the canonical entry UUIDs in case the data was posted with them
-        if ($uids && $element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
+        if ($uids) {
+            // Get the canonical entry UUIDs in case the data was posted with them
             $derivatives = Collection::make($oldEntriesById)
                 ->filter(fn(Entry $entry) => $entry->getIsDerivative())
                 ->keyBy(fn(Entry $entry) => $entry->getCanonicalId());
