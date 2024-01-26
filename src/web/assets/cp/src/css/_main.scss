@@ -6662,15 +6662,18 @@ fieldset {
     @include left(0);
     width: 2px;
     height: 100%;
+    border-radius: 1px;
     content: '';
     cursor: help;
 
     &.modified {
       background-color: var(--blue-600);
+      box-shadow: 0 0 5px hsl(221, 83%, 53%, 15%);
     }
 
     &.outdated {
       background-color: var(--pending-color);
+      box-shadow: 0 0 5px hsl(27, 96%, 61%, 15%);
     }
   }
 
@@ -8177,6 +8180,10 @@ body.setup-2fa {
   & > .fields > .flex-fields > .field {
     &:before {
       display: none;
+    }
+
+    & > .status-badge {
+      @include left(-2px);
     }
   }
 
