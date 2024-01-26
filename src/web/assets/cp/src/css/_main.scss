@@ -3021,11 +3021,6 @@ table {
   }
 }
 
-.chips:not(.inline-chips) .chip:not(:first-child),
-.cards .card:not(:first-child) {
-  margin-top: var(--s);
-}
-
 .inline-chips {
   display: flex;
   flex-direction: row;
@@ -3735,10 +3730,10 @@ $checkboxPadding: $checkboxSize + 4;
     }
 
     ul {
-      @include margin-left(12px);
+      @include margin-left(14px);
 
       li {
-        background-position: 0 2px !important;
+        background-position: 0 6px !important;
       }
     }
   }
