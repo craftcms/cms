@@ -188,28 +188,8 @@ class ElementsController extends Controller
      */
     public function actionCreate(): Response
     {
-        if (!$this->_elementType) {
-            throw new BadRequestHttpException('Request missing required body param.');
-        }
-
-        $this->_validateElementType($this->_elementType);
-
-        /** @var ElementInterface $element */
-        $element = $this->element = Craft::createObject($this->_elementType);
-        if ($this->_siteId) {
-            $element->siteId = $this->_siteId;
-        }
-        $element->setAttributes($this->_attributes);
-
+        $element = $this->_createElement();
         $user = static::currentUser();
-
-        if (!Craft::$app->getElements()->canSave($element, $user)) {
-            throw new ForbiddenHttpException('User not authorized to create this element.');
-        }
-
-        if (!$element->slug) {
-            $element->slug = ElementHelper::tempSlug();
-        }
 
         // Save it
         $element->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -1747,9 +1727,13 @@ JS, [
         $this->requirePostRequest();
         $this->requireCpRequest();
 
-        /** @var Element|DraftBehavior|null $element */
-        $element = $this->_element();
+        if ($this->_elementId || $this->_elementUid) {
+            $element = $this->_element();
+        } else {
+            $element = $this->_createElement();
+        }
 
+        /** @var Element|DraftBehavior|null $element */
         if (!$element || $element->getIsRevision()) {
             throw new BadRequestHttpException('No element was identified by the request.');
         }
@@ -2029,6 +2013,38 @@ JS, [
 
         if (!$strictSite && $element->siteId !== $site->id) {
             return $this->redirect($element->getCpEditUrl());
+        }
+
+        return $element;
+    }
+
+    /**
+     * Creates a new element.
+     *
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     */
+    private function _createElement(): ElementInterface
+    {
+        if (!$this->_elementType) {
+            throw new BadRequestHttpException('Request missing required body param.');
+        }
+
+        $this->_validateElementType($this->_elementType);
+
+        /** @var ElementInterface $element */
+        $element = $this->element = Craft::createObject($this->_elementType);
+        if ($this->_siteId) {
+            $element->siteId = $this->_siteId;
+        }
+        $element->setAttributes($this->_attributes);
+
+        if (!Craft::$app->getElements()->canSave($element)) {
+            throw new ForbiddenHttpException('User not authorized to create this element.');
+        }
+
+        if (!$element->slug) {
+            $element->slug = ElementHelper::tempSlug();
         }
 
         return $element;
