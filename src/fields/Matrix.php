@@ -521,7 +521,12 @@ class Matrix extends Field implements
      */
     public function canViewElement(NestedElementInterface $element, User $user): ?bool
     {
-        return Craft::$app->getElements()->canView($element->getOwner(), $user);
+        $owner = $element->getOwner();
+        if (!$owner) {
+            return true;
+        }
+
+        return Craft::$app->getElements()->canView($owner, $user);
     }
 
     /**
@@ -529,7 +534,12 @@ class Matrix extends Field implements
      */
     public function canSaveElement(NestedElementInterface $element, User $user): ?bool
     {
-        if (!Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+        $owner = $element->getOwner();
+        if (!$owner) {
+            return true;
+        }
+
+        if (!Craft::$app->getElements()->canSave($owner, $user)) {
             return false;
         }
 
@@ -547,6 +557,10 @@ class Matrix extends Field implements
     public function canDuplicateElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
+        if (!$owner) {
+            return true;
+        }
+
         if (!Craft::$app->getElements()->canSave($owner, $user)) {
             return false;
         }
@@ -561,6 +575,10 @@ class Matrix extends Field implements
     public function canDeleteElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
+        if (!$owner) {
+            return true;
+        }
+
         if (!Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
             return false;
         }
@@ -575,6 +593,10 @@ class Matrix extends Field implements
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
+        if (!$owner) {
+            return true;
+        }
+
         if (!Craft::$app->getElements()->canSave($owner, $user)) {
             return false;
         }
@@ -1016,19 +1038,21 @@ class Matrix extends Field implements
             return '<p class="light">' . Craft::t('app', 'No entries.') . '</p>';
         }
 
-        $id = StringHelper::randomString();
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(MatrixAsset::class);
 
+        $id = StringHelper::randomString();
         $js = '';
 
         foreach ($entries as $entry) {
             $js .= <<<JS
-Craft.cp.initMatrixTabs($('.matrixblock[data-uid="$entry->uid"] > .titlebar .matrixblock-tabs'));
+Craft.MatrixInput.initTabs($('.matrixblock[data-uid="$entry->uid"] > .titlebar .matrixblock-tabs'));
 JS;
         }
 
-        Craft::$app->getView()->registerJs("(() => {\n$js\n})();");
+        $view->registerJs("(() => {\n$js\n})();");
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
+        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
             'id' => $id,
             'name' => $id,
             'entryTypes' => $this->getEntryTypes(),

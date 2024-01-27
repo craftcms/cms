@@ -25,7 +25,7 @@
 - Improved checkbox-style deselection behavior for control panel items, to account for double-clicks.
 - Table views are no longer available for element indexes on mobile.
 - Address conditions now have “Address Line 1”, “Address Line 2”, “Administrative Area”, “Country”, “Dependent Locality”, “First Name”, “Full Name”, “Last Name”, “Locality”, “Organization Tax ID”, “Organization”, “Postal Code”, and “Sorting Code” rules.
-- Added live conditional field support to user edit pages. ([#14115](https://github.com/craftcms/cms/pull/14115))
+- Added live conditional field support to user edit pages and inline-editable Matrix blocks. ([#14115](https://github.com/craftcms/cms/pull/14115), [#14223](https://github.com/craftcms/cms/pull/14223))
 - Earth icons are now localized based on the system time zone.
 
 ### User Management
