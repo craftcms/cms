@@ -6869,7 +6869,8 @@ div.checkbox.indeterminate:before,
 
 input.checkbox:checked:not(:indeterminate) + label:before,
 div.checkbox.checked:not(.indeterminate):before,
-.sel div.checkbox:not(.indeterminate):before,
+.sel:not(.matrixblock) div.checkbox:not(.indeterminate):before,
+.sel.matrixblock > .actions div.checkbox:not(.indeterminate):before,
 .elementselectormodal
   .body
   .content

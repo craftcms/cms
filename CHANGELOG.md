@@ -32,6 +32,7 @@
 - Fixed a bug where nested Matrix entries could get deleted when editing multiple of them within the same parent Matrix entry.
 - Fixed a bug where empty Dropdown fields were getting treated as dirty when unchanged.
 - Fixed a bug where Matrix fields in element index or cards view weren’t working properly when nested within an inline-editable Matrix block.
+- Fixed a bug where all checkboxes would appear checked within selected Matrix blocks. 
 
 ## 5.0.0-alpha.8 - 2024-01-23
 
