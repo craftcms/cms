@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where empty Dropdown fields were getting treated as dirty when unchanged.
+- Fixed a bug where Recent Entries widgets were getting mangled when new entries were created via Quick Post widgets.
 
 ## 4.7.0 - 2024-01-23
 
