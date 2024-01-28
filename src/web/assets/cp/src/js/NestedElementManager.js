@@ -399,7 +399,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
           .data('disclosureMenu');
         const $actionMenu = disclosureMenu.$container;
         $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
-        const $ul = $('<ul/>', {class: 'padded'}).appendTo($actionMenu);
+        const $ul = $('<ul/>').appendTo($actionMenu);
         const $li = $('<li/>').appendTo($ul);
         const $a = $('<a/>', {
           class: 'error',
