@@ -112,6 +112,7 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       saveParams: {},
       onSaveElement: null,
       validators: [],
+      expandData: [],
     },
   }
 );

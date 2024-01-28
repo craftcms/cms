@@ -1159,7 +1159,6 @@ return [
     'Position' => 'Position',
     'Post Date' => 'Post Date',
     'Post Town' => 'Post Town',
-    'Post a new {section} entry' => 'Post a new {section} entry',
     'Post on GitHub' => 'Post on GitHub',
     'Postal Code' => 'Postal Code',
     'Powered by Craft CMS' => 'Powered by Craft CMS',
@@ -2114,4 +2113,6 @@ return [
     '“{handle}” is a reserved word.' => '“{handle}” is a reserved word.',
     '“{handle}” isn’t a valid handle.' => '“{handle}” isn’t a valid handle.',
     '“{name}” deleted.' => '“{name}” deleted.',
+    'You’re not permitted to edit any of this section’s sites.' => 'You’re not permitted to edit any of this section’s sites.',
+    'Create a new {section} entry' => 'Create a new {section} entry',
 ];
