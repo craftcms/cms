@@ -118,9 +118,8 @@
     'border-color': entryType.color.cssVar(100) ?? null,
   }|filter,
   data: {
+    id: entry.id,
     uid: entry.uid,
-    'owner-id': entry.ownerId,
-    'field-id': entry.fieldId,
     type: entryType.handle,
     'type-name': entryTypeName,
     collapsed: entry.collapsed,

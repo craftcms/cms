@@ -508,6 +508,7 @@ class NestedElementManager extends Component
                 'createButtonLabel' => $config['createButtonLabel'],
                 'ownerIdParam' => $this->ownerIdParam,
                 'fieldHandle' => $this->field?->handle,
+                'baseInputName' => $view->getNamespace(),
             ];
 
             if (!empty($config['createAttributes'])) {
@@ -543,7 +544,7 @@ JS, [
             ]);
 
             return $html;
-        }, Html::id($attribute));
+        }, Html::id($this->field->handle ?? $attribute));
     }
 
     /**

@@ -39,6 +39,7 @@ use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Gql;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -522,11 +523,7 @@ class Matrix extends Field implements
     public function canViewElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-        if (!$owner) {
-            return true;
-        }
-
-        return Craft::$app->getElements()->canView($owner, $user);
+        return $owner && Craft::$app->getElements()->canView($owner, $user);
     }
 
     /**
@@ -535,11 +532,8 @@ class Matrix extends Field implements
     public function canSaveElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-        if (!$owner) {
-            return true;
-        }
 
-        if (!Craft::$app->getElements()->canSave($owner, $user)) {
+        if (!$owner || !Craft::$app->getElements()->canSave($owner, $user)) {
             return false;
         }
 
@@ -557,11 +551,8 @@ class Matrix extends Field implements
     public function canDuplicateElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-        if (!$owner) {
-            return true;
-        }
 
-        if (!Craft::$app->getElements()->canSave($owner, $user)) {
+        if (!$owner || !Craft::$app->getElements()->canSave($owner, $user)) {
             return false;
         }
 
@@ -575,11 +566,8 @@ class Matrix extends Field implements
     public function canDeleteElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-        if (!$owner) {
-            return true;
-        }
 
-        if (!Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+        if (!$owner || !Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
             return false;
         }
 
@@ -593,11 +581,8 @@ class Matrix extends Field implements
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-        if (!$owner) {
-            return true;
-        }
 
-        if (!Craft::$app->getElements()->canSave($owner, $user)) {
+        if (!$owner || !Craft::$app->getElements()->canSave($owner, $user)) {
             return false;
         }
 
@@ -794,6 +779,14 @@ class Matrix extends Field implements
 
     private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element): string
     {
+        if (!$element?->id) {
+            $message = Craft::t('app', '{nestedType} can only be created after the {ownerType} has been saved.', [
+                'nestedType' => Entry::pluralDisplayName(),
+                'ownerType' => $element ? $element::lowerDisplayName() : Craft::t('app', 'element'),
+            ]);
+            return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
+        }
+
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
         }
@@ -816,7 +809,7 @@ class Matrix extends Field implements
         $createDefaultEntries = (
             $this->minEntries != 0 &&
             count($entryTypeInfo) === 1 &&
-            (!$element || !$element->hasErrors($this->handle))
+            !$element->hasErrors($this->handle)
         );
         $staticEntries = (
             $createDefaultEntries &&
@@ -830,9 +823,10 @@ class Matrix extends Field implements
             'fieldId' => $this->id,
             'maxEntries' => $this->maxEntries,
             'namespace' => $view->getNamespace(),
-            'ownerElementType' => $element ? $element::class : null,
-            'ownerId' => $element?->id,
-            'siteId' => $element?->siteId,
+            'baseInputName' => $view->namespaceInputName($this->handle),
+            'ownerElementType' => $element::class,
+            'ownerId' => $element->id,
+            'siteId' => $element->siteId,
             'staticEntries' => $staticEntries,
         ];
 

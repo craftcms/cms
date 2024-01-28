@@ -29,14 +29,12 @@ import $ from 'jquery';
       entrySort: null,
       entrySelect: null,
 
-      addingEntry: false,
-
       /**
-       * @returns {Craft.ElementEditor|undefined}
+       * @type {Craft.ElementEditor|null}
        */
-      get elementEditor() {
-        return this.$form.data('elementEditor');
-      },
+      elementEditor: null,
+
+      addingEntry: false,
 
       init: function (id, entryTypes, inputNamePrefix, settings) {
         this.id = id;
@@ -140,7 +138,22 @@ import $ from 'jquery';
         }
 
         this.updateAddEntryBtn();
-        this.trigger('afterInit');
+
+        setTimeout(() => {
+          this.elementEditor = this.$container
+            .closest('form')
+            .data('elementEditor');
+
+          if (this.elementEditor) {
+            this.elementEditor.on('update', () => {
+              this.settings.ownerId = this.elementEditor.getDraftElementId(
+                this.settings.ownerId
+              );
+            });
+          }
+
+          this.trigger('afterInit');
+        }, 100);
       },
 
       canAddMoreEntries: function () {
@@ -204,7 +217,7 @@ import $ from 'jquery';
         }, 250);
       },
 
-      addEntry: async function (type, $insertBefore, autofocus) {
+      async addEntry(type, $insertBefore, autofocus) {
         if (this.addingEntry) {
           // only one new entry at a time
           return;
@@ -217,9 +230,18 @@ import $ from 'jquery';
 
         this.addingEntry = true;
 
+        if (this.elementEditor) {
+          // First ensure we're working with drafts for all elements leading up
+          // to this field’s element
+          await this.elementEditor.setFormValue(
+            this.settings.baseInputName,
+            '*'
+          );
+        }
+
         const {data} = await Craft.sendActionRequest(
           'POST',
-          'matrix/render-block',
+          'matrix/create-entry',
           {
             data: {
               fieldId: this.settings.fieldId,
@@ -254,11 +276,11 @@ import $ from 'jquery';
             'margin-bottom': 10,
           },
           'fast',
-          () => {
+          async () => {
             $entry.css('margin-bottom', '');
             Craft.initUiElements($entry.children('.fields'));
-            Craft.appendHeadHtml(data.headHtml);
-            Craft.appendBodyHtml(data.bodyHtml);
+            await Craft.appendHeadHtml(data.headHtml);
+            await Craft.appendBodyHtml(data.bodyHtml);
             new Entry(this, $entry);
             this.entrySort.addItems($entry);
             this.entrySelect.addItems($entry);
@@ -331,6 +353,7 @@ import $ from 'jquery';
         fieldId: null,
         maxEntries: null,
         namespace: null,
+        baseInputName: null,
         ownerElementType: null,
         ownerId: null,
         siteId: null,
@@ -428,7 +451,7 @@ import $ from 'jquery';
 
   const Entry = Garnish.Base.extend({
     /**
-     * @var {Craft.MatrixInput}
+     * @type {Craft.MatrixInput}
      */
     matrix: null,
     $container: null,
@@ -916,14 +939,6 @@ import $ from 'jquery';
         const elementEditor = this.matrix.elementEditor;
         const baseInputName = this.$container.data('base-input-name');
 
-        // data = data.replace(new RegExp(
-        //   '(^|&)' +
-        //   Craft.escapeRegex(encodeURIComponent(baseInputName + '[')) +
-        //   '(\\w+)' +
-        //   Craft.escapeRegex(encodeURIComponent(']')),
-        //   'g'
-        // ), '$1$2');
-
         // Ignore if we're already submitting the main form
         if (elementEditor?.submittingForm) {
           reject('Form already being submitted.');
@@ -935,36 +950,26 @@ import $ from 'jquery';
           this.cancelToken.cancel();
         }
 
-        this.cancelToken = axios.CancelToken.source();
-
+        const param = (n) => Craft.namespaceInputName(n, baseInputName);
         const extraData = {
-          [Craft.namespaceInputName('visibleLayoutElements', baseInputName)]:
-            this.visibleLayoutElements,
-          [Craft.namespaceInputName('elementType', baseInputName)]:
-            'craft\\elements\\Entry',
-          [Craft.namespaceInputName('fieldId', baseInputName)]:
-            this.$container.data('field-id'),
-          [Craft.namespaceInputName('sortOrder', baseInputName)]:
-            this.$container.index() + 1,
-          [Craft.namespaceInputName('typeId', baseInputName)]:
-            this.$container.data('type-id'),
+          [param('visibleLayoutElements')]: this.visibleLayoutElements,
+          [param('elementType')]: 'craft\\elements\\Entry',
+          [param('ownerId')]: this.matrix.settings.ownerId,
+          [param('fieldId')]: this.matrix.settings.fieldId,
+          [param('sortOrder')]: this.$container.index() + 1,
+          [param('typeId')]: this.$container.data('type-id'),
         };
-
-        const ownerId = this.$container.data('owner-id');
-        if (ownerId) {
-          extraData[Craft.namespaceInputName('ownerId', baseInputName)] =
-            ownerId;
-        }
 
         const selectedTabId = this.$fieldsContainer
           .children('[data-layout-tab]:not(.hidden)')
           .data('id');
         if (selectedTabId) {
-          extraData[Craft.namespaceInputName('selectedTab', baseInputName)] =
-            selectedTabId;
+          extraData[param('selectedTab')] = selectedTabId;
         }
 
         data += `&${$.param(extraData)}`;
+
+        this.cancelToken = axios.CancelToken.source();
 
         Craft.sendActionRequest('POST', 'elements/update-field-layout', {
           cancelToken: this.cancelToken.token,
