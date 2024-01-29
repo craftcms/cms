@@ -1676,7 +1676,7 @@ SQL)->execute();
                 'id' => $entryType->id,
                 'title' => Craft::t('site', $entryType->name),
                 'url' => $entryType->getCpEditUrl(),
-                'name' => Craft::t('site', $entryType->name), //|e,
+                'name' => Craft::t('site', $entryType->name),
                 'handle' => $entryType->handle,
                 'usages' => $entryTypeUsages[$entryType->id] ?? null,
             ];
