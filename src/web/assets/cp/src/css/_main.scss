@@ -3351,6 +3351,10 @@ table {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+
+      &:focus {
+        box-shadow: var(--inner-focus-ring);
+      }
     }
 
     .segment:after {
