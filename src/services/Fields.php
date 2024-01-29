@@ -1047,6 +1047,13 @@ class Fields extends Component
         // Refresh CustomFieldBehavior in case any custom field handles were just added/removed
         $this->updateFieldVersion();
 
+        // Tell the current CustomFieldBehavior class about the fields, since they might have custom handles
+        foreach ($layout->getCustomFieldElements() as $layoutElement) {
+            if (isset($layoutElement->handle)) {
+                CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;
+            }
+        }
+
         return true;
     }
 
