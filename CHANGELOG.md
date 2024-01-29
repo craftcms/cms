@@ -38,6 +38,8 @@
 - Fixed a bug where Recent Entries widgets were getting mangled when new entries were created via Quick Post widgets.
 - Fixed a bug where linked chip labels weren’t getting focus rings.
 - Fixed an error that could occur when field handles were overridden. ([#14166](https://github.com/craftcms/cms/issues/14166), [#14221](https://github.com/craftcms/cms/issues/14221))
+- Fixed an error that occurred when adding a Dropdown field condition rule, if the field contained any optgroups. ([#14224](https://github.com/craftcms/cms/issues/14224))
+- Fixed a bug where Dropdown field condition rules weren’t displaying `0` options. ([#14232](https://github.com/craftcms/cms/pull/14232))
 
 ## 5.0.0-alpha.8 - 2024-01-23
 
