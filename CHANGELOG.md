@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.7.1 - 2024-01-29
 
 - Unpublished drafts no longer show “Created at” or “Updated at” metadata values. ([#14204](https://github.com/craftcms/cms/issues/14204))
 - Fixed a bug where empty Dropdown fields were getting treated as dirty when unchanged.
