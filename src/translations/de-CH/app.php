@@ -976,6 +976,7 @@ return [
     'New Issues' => 'Neue Themen',
     'New Password' => 'Neues Passwort',
     'New Tab' => 'Neuer Tab',
+    'New block' => 'New block',
     'New category group' => 'Neue Kategorie-Gruppe',
     'New category in the {group} category group' => 'Neue Kategorie in der Kategoriengruppe {group}',
     'New category' => 'Neue Kategorie',
