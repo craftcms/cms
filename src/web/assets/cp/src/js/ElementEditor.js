@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 /** global: Craft */
 /** global: Garnish */
 
@@ -40,6 +42,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     queue: null,
     submittingForm: false,
 
+    draftElementIds: null,
     failed: false,
     httpStatus: null,
     httpError: null,
@@ -95,6 +98,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.queue = this._createQueue();
       this.previewTokenQueue = this._createQueue();
 
+      this.draftElementIds = {};
       this.enableAutosave = Craft.autosaveDrafts;
       this.previewLinks = [];
 
@@ -1042,14 +1046,27 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
     },
 
-    markFieldAsDirty: async function (fieldHandle) {
+    async setFormValue(name, value) {
       if (this.settings.revisionId) {
-        throw 'Unable to mark fields as dirty on a revision.';
+        throw 'Unable to set form values on a revision.';
       }
 
-      await this.saveDraft({
-        dirtyFields: [fieldHandle],
-      });
+      // See if the value is already set
+      const params = this.$container.serialize().split('&');
+      if (
+        params.includes(
+          `${encodeURIComponent(name)}=${encodeURIComponent(value)}`
+        )
+      ) {
+        return;
+      }
+
+      $('<input/>', {
+        type: 'hidden',
+        name,
+        value,
+      }).prependTo(this.$container);
+      await this.saveDraft();
     },
 
     serializeForm: function (removeActionParams) {
@@ -1195,45 +1212,54 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
 
         // Prep the data to be saved, keeping track of the first input name for each delta group
-        let modifiedFieldNames = [];
-        let preparedData = this.prepareData(
+        const [modifiedDeltaNames] = Craft.findModifiedDeltaNames(
+          this.$container.data('initialSerializedValue'),
           data,
-          !this.settings.isUnpublishedDraft
-            ? (deltaName, params) => {
-                if (params.length) {
-                  modifiedFieldNames.push(
-                    decodeURIComponent(params[0].split('=')[0])
-                  );
-                }
-              }
-            : null
+          this.$container.data('delta-names'),
+          this.$container.data('initial-delta-values'),
+          this.$container.data('modified-delta-names'),
+          true
         );
 
-        if (!params) {
-          params = {};
+        const params = this.prepareData(data, null, true);
+
+        let $modifiedFields = $();
+        for (const name of modifiedDeltaNames) {
+          const $field = ($modifiedFields = $modifiedFields.add(
+            this.$container.find(
+              `.field[data-base-input-name="${$.escapeSelector(name)}"]`
+            )
+          ));
+          $modifiedFields = $modifiedFields
+            .add($field)
+            .add($field.parentsUntil(this.$container, '.field'));
         }
 
-        params[this.namespaceInputName('visibleLayoutElements')] =
-          this.settings.visibleLayoutElements;
+        params.push(
+          $.param({
+            [this.namespaceInputName('visibleLayoutElements')]:
+              this.settings.visibleLayoutElements,
+          })
+        );
 
         // Are we saving a provisional draft?
         if (this.settings.isProvisionalDraft || !this.settings.draftId) {
-          params[this.namespaceInputName('provisional')] = 1;
+          params.push(`${this.namespaceInputName('provisional')}=1`);
         }
 
         const selectedTabId = this.$contentContainer
           .children('[data-layout-tab]:not(.hidden)')
           .data('id');
         if (selectedTabId) {
-          params[this.namespaceInputName('selectedTab')] = selectedTabId;
+          params.push(
+            `${this.namespaceInputName('selectedTab')}=${selectedTabId}`
+          );
         }
-
-        preparedData += `&${$.param(params)}`;
 
         Craft.sendActionRequest('POST', 'elements/save-draft', {
           cancelToken: this.cancelToken.token,
           headers: this._saveHeaders,
-          data: preparedData,
+          data: params.join('&'),
         })
           .then((response) => {
             this._afterSaveDraft();
@@ -1324,6 +1350,13 @@ Craft.ElementEditor = Garnish.Base.extend(
               this.checkMetaValues();
             }
 
+            if ($.isPlainObject(response.data.draftElementIds)) {
+              this.draftElementIds = {
+                ...this.draftElementIds,
+                ...response.data.draftElementIds,
+              };
+            }
+
             // Add missing field modified indicators
             const selector = response.data.modifiedAttributes
               .map((attr) => {
@@ -1331,33 +1364,19 @@ Craft.ElementEditor = Garnish.Base.extend(
                 return [`[name="${attr}"]`, `[name^="${attr}["]`];
               })
               .flat()
-              .concat(modifiedFieldNames.map((name) => `[name="${name}"]`))
               .join(',');
 
-            let $fields = this.$contentContainer
-              .find(selector)
-              .parents()
-              .filter('.flex-fields > .field:not(:has(> .status-badge))')
+            $modifiedFields = $modifiedFields
               .add(
-                this.$sidebar
-                  .find(selector)
-                  .closest('.field:not(:has(> .status-badge))')
-              );
-
-            if (params.dirtyFields) {
-              $fields = $fields.add(
                 this.$contentContainer
-                  .children('[data-layout-tab]')
-                  .children(
-                    params.dirtyFields
-                      .map((handle) => `[data-attribute="${handle}"]`)
-                      .join(',')
-                  )
-              );
-            }
+                  .find(selector)
+                  .parentsUntil(this.$container, '.flex-fields > .field')
+              )
+              .add(this.$sidebar.find(selector).closest('.field'))
+              .not(':has(> .status-badge)');
 
-            for (let i = 0; i < $fields.length; i++) {
-              $fields.eq(i).prepend(
+            for (let i = 0; i < $modifiedFields.length; i++) {
+              $modifiedFields.eq(i).prepend(
                 $('<div/>', {
                   class: 'status-badge modified',
                   title: Craft.t('app', 'This field has been modified.'),
@@ -1505,40 +1524,40 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {string} data
-     * @param {findDeltaDataCallback} [deltaCallback] Callback function that should be passed to `Craft.findDeltaData()`
-     * @returns {string}
+     * @param {findDeltaDataCallback|null} [deltaCallback] Callback function that should be passed to `Craft.findDeltaData()`
+     * @param {boolean} [asArray]
+     * @returns {string|Array}
      */
-    prepareData: function (data, deltaCallback) {
+    prepareData: function (data, deltaCallback = () => {}, asArray = false) {
       // Filter out anything that hasn't changed since the last time the form was submitted
-      data = Craft.findDeltaData(
+      const params = Craft.findDeltaData(
         this.$container.data('initialSerializedValue'),
         data,
         this.$container.data('delta-names'),
         deltaCallback,
         this.$container.data('initial-delta-values'),
-        this.$container.data('modified-delta-names')
+        this.$container.data('modified-delta-names'),
+        true
       );
-
-      const params = {};
 
       // Add the draft info
       if (this.settings.draftId) {
-        params[this.namespaceInputName('draftId')] = this.settings.draftId;
+        params.push(
+          `${this.namespaceInputName('draftId')}=${this.settings.draftId}`
+        );
 
         if (this.settings.isProvisionalDraft) {
-          params[this.namespaceInputName('provisional')] = 1;
+          params.push(`${this.namespaceInputName('provisional')}=1`);
         }
       }
 
       if (this.settings.draftName !== null) {
-        params[this.namespaceInputName('draftName')] = this.settings.draftName;
+        params.push(
+          `${this.namespaceInputName('draftName')}=${this.settings.draftName}`
+        );
       }
 
-      if (!$.isEmptyObject(params)) {
-        data += `&${$.param(params)}`;
-      }
-
-      return data;
+      return asArray ? params : params.join('&');
     },
 
     get _saveHeaders() {
@@ -1551,6 +1570,10 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       return headers;
+    },
+
+    getDraftElementId(elementId) {
+      return this.draftElementIds[elementId] || elementId;
     },
 
     updatePreviewTargets: function (previewTargets) {

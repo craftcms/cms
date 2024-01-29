@@ -15,7 +15,7 @@
     <div class="buttons">
       {% if singleType %}
         {{ forms.button({
-          label: 'Add an entry'|t('app'),
+          label: createButtonLabel,
           class: ['dashed', 'add', 'icon'],
           spinner: true,
           attributes: {
@@ -40,7 +40,7 @@
             },
           },
         }), {
-          buttonLabel: 'Add an entry'|t('app'),
+          buttonLabel: createButtonLabel,
           buttonSpinner: true,
           buttonAttributes: {
             class: ['dashed', 'add', 'icon'],

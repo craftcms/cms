@@ -838,7 +838,7 @@ class Request extends \yii\web\Request
             // Was a namespace passed?
             $namespace = $this->getHeaders()->get('X-Craft-Namespace');
             if ($namespace) {
-                $params = $params[$namespace] ?? [];
+                $params = ArrayHelper::getValue($params, $namespace, []);
             }
 
             $this->setBodyParams($this->_utf8AllTheThings($params));

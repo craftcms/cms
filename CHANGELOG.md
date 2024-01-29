@@ -2,11 +2,16 @@
 
 ## Unreleased
 
+- Added live conditional field support to inline-editable Matrix blocks. ([#14223](https://github.com/craftcms/cms/pull/14223))
 - Inline-editable Matrix blocks have been redesigned to be visually lighter. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Matrix fields set to the inline-editable blocks view mode no longer show inline entry-creation buttons unless there’s a single entry type. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Matrix fields now require the owner element to be saved before they can be edited, even when the inline-editable blocks view mode is selected.
+- Improved the wording of Matrix fields’ create button labels. ([#14210](https://github.com/craftcms/cms/discussions/14210))
 - Improved the accessibility of Matrix fields with the “inline-editable blocks” view mode. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Added the “Color” entry type setting. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Entry chips, cards, and blocks are now tinted according to their entry type’s color. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Quick Post widgets now create entries via slideouts. ([#14228](https://github.com/craftcms/cms/pull/14228))
+- Card views are now always single-column. ([#14202](https://github.com/craftcms/cms/discussions/14202))
 - The Fields and Entry Types index pages now have a search bar. ([#13961](https://github.com/craftcms/cms/discussions/13961), [#14126](https://github.com/craftcms/cms/pull/14126))
 - Disclosure menu items and custom select options can now have a `color` key.
 - Added the `customSelect()` global function for control panel templates.
@@ -27,6 +32,15 @@
 - Fixed the appearance of Entries and Categories fields when “Maintain Hierarchy” was enabled. ([#14201](https://github.com/craftcms/cms/issues/14201))
 - Fixed Matrix tab switching for nested Matrix blocks.
 - Fixed a bug where fields’ Name, Handle, and Instructions placeholder values within field layouts were getting set to the current overridden values.
+- Fixed a bug where nested Matrix entries could get deleted when editing multiple of them within the same parent Matrix entry.
+- Fixed a bug where empty Dropdown fields were getting treated as dirty when unchanged.
+- Fixed a bug where Matrix fields in element index or cards view weren’t working properly when nested within an inline-editable Matrix block.
+- Fixed a bug where all checkboxes would appear checked within selected Matrix blocks. 
+- Fixed a bug where Recent Entries widgets were getting mangled when new entries were created via Quick Post widgets.
+- Fixed a bug where linked chip labels weren’t getting focus rings.
+- Fixed an error that could occur when field handles were overridden. ([#14166](https://github.com/craftcms/cms/issues/14166), [#14221](https://github.com/craftcms/cms/issues/14221))
+- Fixed an error that occurred when adding a Dropdown field condition rule, if the field contained any optgroups. ([#14224](https://github.com/craftcms/cms/issues/14224))
+- Fixed a bug where Dropdown field condition rules weren’t displaying `0` options. ([#14232](https://github.com/craftcms/cms/pull/14232))
 
 ## 5.0.0-alpha.8 - 2024-01-23
 
