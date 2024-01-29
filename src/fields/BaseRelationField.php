@@ -818,7 +818,7 @@ JS, [
 
         $id = $this->getInputId();
         $html = "<div id='$id' class='elementselect noteditable'>" .
-            "<div class='elements" . ($size === Cp::CHIP_SIZE_LARGE ? ' inline-chips' : '') . "'>";
+            "<div class='elements chips" . ($size === Cp::CHIP_SIZE_LARGE ? ' inline-chips' : '') . "'>";
 
         foreach ($value as $relatedElement) {
             $html .= Cp::elementChipHtml($relatedElement, [

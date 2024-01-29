@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\behaviors\DraftBehavior;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
@@ -54,15 +53,17 @@ class NestedElementsController extends Controller
         $this->owner = $owner;
 
         // Make sure they're authorized to manage it
-        $authorizedOwnerId = $owner->id;
-        if ($owner->isProvisionalDraft) {
-            /** @var ElementInterface|DraftBehavior $owner */
-            if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
-                $authorizedOwnerId = $owner->getCanonicalId();
-            }
-        }
+        $session = Craft::$app->getSession();
         $attribute = $this->request->getRequiredBodyParam('attribute');
-        $this->requireAuthorization(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
+        if (
+            !$session->checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->id, $attribute)) &&
+            (
+                $owner->id === $owner->getCanonicalId() ||
+                !$session->checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->getCanonicalId(), $attribute))
+            )
+        ) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action');
+        }
 
         // Set the nested elements for the action
         $this->nestedElements = $this->owner->$attribute;

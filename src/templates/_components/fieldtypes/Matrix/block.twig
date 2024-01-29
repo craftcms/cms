@@ -4,25 +4,6 @@
 {% set baseInputName = "#{name}[entries][uid:#{entry.uid}]" %}
 {% set static = static ?? false %}
 {% set staticEntries = staticEntries ?? false %}
-{% set entryAttributes = {
-  class: [
-    'matrixblock',
-    not entry.enabled ? 'disabled-entry',
-    static ? 'static',
-  ]|filter,
-  style: {
-    'border-color': entryType.color.cssVar(100) ?? null,
-  }|filter,
-  data: {
-    uid: entry.uid,
-    type: entryType.handle,
-    'type-name': entryTypeName,
-    collapsed: entry.collapsed,
-    'type-id': entry.typeId,
-    'field-layout-id': entry.getFieldLayout().id
-  },
-  role: 'listitem',
-} %}
 
 {% set actionBtnLabel = "#{entryTypeName} #{'Actions'|t('app')}" %}
 {% set actionMenuId = "matrixblock-action-menu--#{entry.uid}" %}
@@ -127,7 +108,28 @@
   {% set tabs = form.getTabMenu() %}
 {% endnamespace %}
 
-<div {{ attr(entryAttributes) }}>
+{% tag 'div' with {
+  class: [
+    'matrixblock',
+    not entry.enabled ? 'disabled-entry',
+    static ? 'static',
+  ]|filter,
+  style: {
+    'border-color': entryType.color.cssVar(100) ?? null,
+  }|filter,
+  data: {
+    id: entry.id,
+    uid: entry.uid,
+    type: entryType.handle,
+    'type-name': entryTypeName,
+    collapsed: entry.collapsed,
+    'type-id': entry.typeId,
+    'field-layout-id': entry.getFieldLayout().id,
+    'visible-layout-elements': form.getVisibleElements(),
+    'base-input-name': baseInputName|namespaceInputName,
+  },
+  role: 'listitem',
+} %}
   {% if not static %}
     {{ hiddenInput("#{name}[sortOrder][]", entry.uid) }}
     {# only register a delta name for this entry if it’s not new #}
@@ -166,14 +168,19 @@
       {% endtag %}
     {% endif %}
     <div class="preview"></div>
-    <div class="matrixblock-tabs">
-      {% namespace baseInputName %}
-        {% if tabs|length > 1 %}
-          {% include '_includes/tabs.twig' with {'tabs': tabs, 'containerAttributes': {'id': 'tabs'}} %}
-        {% endif %}
-      {% endnamespace %}
-    </div>
-  {% endtag %}
+    {% tag 'div' with {
+      class: ['matrixblock-tabs'],
+      style: {
+        '--custom-sel-tab-shadow-color': entryType.color.cssVar(200) ?? null,
+      }|filter,
+    } %}
+      {% if tabs|length > 1 %}
+        {% namespace baseInputName %}
+          {% include '_includes/tabs.twig' %}
+        {% endnamespace %}
+      {% endif %}
+    {% endtag %}
+  {% endtag %}{# /.titlebar #}
 
   {% if not static %}
     <div class="actions">
@@ -205,4 +212,4 @@
       {{ form.render()|raw }}
     {% endnamespace %}
   </div>
-</div>
+{% endtag %}{# /.matrixblock #}
