@@ -5886,9 +5886,18 @@ JS,
      */
     protected function fieldByHandle(string $handle): ?FieldInterface
     {
+        $fieldWithNewlyChangedHandle = false;
+
         // ignore if it's not a custom field handle
         if (!isset(CustomFieldBehavior::$fieldHandles[$handle])) {
-            return null;
+            // now that we can rename field handles, we need to check the layout too
+            $fieldLayout = $this->getFieldLayout();
+            $field = $fieldLayout?->getFieldByHandle($handle);
+            if ($field === null) {
+                return null;
+            }
+
+            $fieldWithNewlyChangedHandle = true;
         }
 
         if (array_key_exists($handle, $this->_fieldsByHandle)) {
@@ -5898,8 +5907,8 @@ JS,
         $fieldsService = Craft::$app->getFields();
         $originalFieldContext = $fieldsService->fieldContext;
         $fieldsService->fieldContext = $this->getFieldContext();
-        $fieldLayout = $this->getFieldLayout();
-        $this->_fieldsByHandle[$handle] = $fieldLayout?->getFieldByHandle($handle);
+        $fieldLayout = $fieldLayout ?? $this->getFieldLayout();
+        $this->_fieldsByHandle[$handle] = $field ?? $fieldLayout?->getFieldByHandle($handle);
 
         // nullify values for custom fields that are not part of this layout
         // https://github.com/craftcms/cms/issues/12539
@@ -5908,6 +5917,14 @@ JS,
             if (isset($behavior->$handle)) {
                 $behavior->$handle = null;
             }
+        }
+
+        // if we've detected that a field is part of the layout,
+        // but it's not yet loaded into the behaviour - we need to add it
+        // see https://github.com/craftcms/cms/issues/14221 and https://github.com/craftcms/cms/issues/14166
+        if ($fieldLayout && $fieldWithNewlyChangedHandle) {
+            // Tell the current CustomFieldBehavior class about the field
+            CustomFieldBehavior::$fieldHandles[$handle] = true;
         }
 
         $fieldsService->fieldContext = $originalFieldContext;
