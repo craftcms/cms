@@ -480,7 +480,7 @@ li.crumb {
     padding: 0 var(--s);
     height: var(--touch-target-size);
 
-    &:not(:hover):not(:active) {
+    &:not(:hover):not(:active):not([aria-expanded='true']) {
       background-color: transparent;
     }
   }
@@ -1448,11 +1448,6 @@ li.breadcrumb-toggle-wrapper {
     & + li {
       @include margin-left(-7px);
     }
-  }
-
-  .card-grid {
-    display: flex !important;
-    flex-direction: column;
   }
 }
 

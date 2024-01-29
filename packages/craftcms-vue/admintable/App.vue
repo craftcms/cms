@@ -402,7 +402,7 @@
       },
       perPage: {
         type: Number,
-        default: 40,
+        default: 100,
       },
       reorderAction: {
         type: String,

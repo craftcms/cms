@@ -3,7 +3,6 @@
   /** global: Garnish */
   Craft.QuickPostWidget = Garnish.Base.extend({
     params: null,
-    initFields: null,
     formHtml: null,
     $widget: null,
     $form: null,
@@ -11,9 +10,8 @@
     $errorList: null,
     loading: false,
 
-    init: function (widgetId, params, initFields, formHtml) {
+    init: function (widgetId, params, formHtml) {
       this.params = params;
-      this.initFields = initFields;
       this.formHtml = formHtml;
       this.$widget = $('#widget' + widgetId);
 
@@ -23,8 +21,6 @@
     initForm: function ($form) {
       this.$form = $form;
       this.$saveBtn = this.$form.find('button[type=submit]');
-
-      this.initFields();
 
       const $menuBtn = this.$form.find('> .buttons > .btngroup > .menubtn'),
         $saveAndContinueEditingBtn = $menuBtn
