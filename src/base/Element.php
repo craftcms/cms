@@ -2372,6 +2372,7 @@ abstract class Element extends Component implements ElementInterface
         );
 
         $names['canonicalId'] = true;
+        $names['cpEditUrl'] = true;
         $names['isDraft'] = true;
         $names['isRevision'] = true;
         $names['isUnpublishedDraft'] = true;
