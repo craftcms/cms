@@ -360,6 +360,13 @@ class Cp extends Component
                     $item['subnav'] = false;
                 }
                 $foundSelectedItem = true;
+
+                // Modify aria-current value for exact page vs. subpages
+                if ($item['url'] == $path) {
+                    $item['current'] = 'page';
+                } else {
+                    $item['current'] = 'true';
+                }
             } else {
                 $item['sel'] = false;
                 $item['subnav'] = false;

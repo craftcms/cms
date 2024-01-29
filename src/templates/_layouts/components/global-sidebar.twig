@@ -23,7 +23,7 @@
                     href: url(item.url),
                     class: item.sel ? 'sel',
                     aria: {
-                        current: item.sel and not item.subnav ? 'page' : false,
+                        current: item.sel and not item.subnav ? item.current : false,
                     },
                 } %}
                 <li {{ attr(itemAttributes) }}>
