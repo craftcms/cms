@@ -1686,9 +1686,7 @@ JS, [
             'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
         ];
 
-        return $this->_asSuccess(Craft::t('app', '{type} saved.', [
-            'type' => Craft::t('app', 'Draft'),
-        ]), $element, $data, true);
+        return $this->_asSuccess('Field layout updated.', $element, $data, true);
     }
 
     private function _fieldLayoutData(ElementInterface $element): array

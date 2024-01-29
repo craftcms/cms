@@ -16,7 +16,7 @@ use craft\helpers\Console;
 use yii\console\ExitCode;
 
 /**
- * Prunes orphaned matrix blocks for each site.
+ * Prunes orphaned Matrix blocks for each site.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.7.0
@@ -24,7 +24,7 @@ use yii\console\ExitCode;
 class PruneOrphanedMatrixBlocksController extends Controller
 {
     /**
-     * Prunes orphaned matrix blocks for each site.
+     * Prunes orphaned Matrix blocks for each site.
      *
      * @return int
      */
@@ -40,9 +40,9 @@ class PruneOrphanedMatrixBlocksController extends Controller
         // get all sites
         $sites = Craft::$app->getSites()->getAllSites();
 
-        // for each site get all matrix blocks with owner that doesn't exist for this site
+        // for each site get all Matrix blocks with owner that doesn't exist for this site
         foreach ($sites as $site) {
-            $this->stdout(sprintf('Finding orphaned matrix blocks for site "%s" ... ', $site->getName()));
+            $this->stdout(sprintf('Finding orphaned Matrix blocks for site "%s" ... ', $site->getName()));
 
             $esSubQuery = (new Query())
                 ->from(['es' => Table::ELEMENTS_SITES])

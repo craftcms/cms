@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 4
 
+## 4.7.1 - 2024-01-29
+
+- Unpublished drafts no longer show “Created at” or “Updated at” metadata values. ([#14204](https://github.com/craftcms/cms/issues/14204))
+- Fixed a bug where empty Dropdown fields were getting treated as dirty when unchanged.
+- Fixed a bug where Recent Entries widgets were getting mangled when new entries were created via Quick Post widgets.
+- Fixed an error that occurred when adding a Dropdown field condition rule, if the field contained any optgroups. ([#14224](https://github.com/craftcms/cms/issues/14224))
+- Fixed a bug where Dropdown field condition rules weren’t displaying `0` options. ([#14232](https://github.com/craftcms/cms/pull/14232))
+
 ## 4.7.0 - 2024-01-23
 
 > [!NOTE]  
