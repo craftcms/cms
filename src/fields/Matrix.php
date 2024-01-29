@@ -854,17 +854,17 @@ class Matrix extends Field implements
 
         $view->registerJs("(() => {\n$js\n})();");
 
-        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig',
-            [
-                'id' => $id,
-                'field' => $this,
-                'name' => $this->handle,
-                'entryTypes' => $entryTypes,
-                'entries' => $value,
-                'static' => false,
-                'staticEntries' => $staticEntries,
-                'labelId' => $this->getLabelId(),
-            ]);
+        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
+            'id' => $id,
+            'field' => $this,
+            'name' => $this->handle,
+            'entryTypes' => $entryTypes,
+            'entries' => $value,
+            'static' => false,
+            'staticEntries' => $staticEntries,
+            'createButtonLabel' => $this->createButtonLabel() ?? Craft::t('app', 'New block'),
+            'labelId' => $this->getLabelId(),
+        ]);
     }
 
     private function nestedElementManagerHtml(?ElementInterface $owner, bool $static = false): string
@@ -885,6 +885,7 @@ class Matrix extends Field implements
                         'typeId' => $entryType->id,
                     ],
                 ], $entryTypes),
+                'createButtonLabel' => $this->createButtonLabel(),
                 'minElements' => $this->minEntries,
                 'maxElements' => $this->maxEntries,
             ];
@@ -915,6 +916,19 @@ class Matrix extends Field implements
         }
 
         return $this->entryManager()->getIndexHtml($owner, $config);
+    }
+
+    private function createButtonLabel(): ?string
+    {
+        $entryTypes = $this->getEntryTypes();
+        if (count($entryTypes) === 1) {
+            $entryType = reset($entryTypes);
+            return Craft::t('app', 'New {type}', [
+                'type' => mb_strtolower(Craft::t('site', $entryType->name)),
+            ]);
+        }
+
+        return null;
     }
 
     /**

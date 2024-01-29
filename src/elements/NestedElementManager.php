@@ -465,13 +465,17 @@ class NestedElementManager extends Component
         $config += [
             'sortable' => false,
             'canCreate' => false,
-            'createButtonLabel' => Craft::t('app', 'New {type}', [
-                'type' => $elementType::lowerDisplayName(),
-            ]),
+            'createButtonLabel' => null,
             'createAttributes' => null,
             'minElements' => null,
             'maxElements' => null,
         ];
+
+        if ($config['createButtonLabel'] === null) {
+            $config['createButtonLabel'] = Craft::t('app', 'New {type}', [
+                'type' => $elementType::lowerDisplayName(),
+            ]);
+        }
 
         $authorizedOwnerId = $owner->id;
         if ($owner->isProvisionalDraft) {
