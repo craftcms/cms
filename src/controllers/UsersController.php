@@ -1083,29 +1083,11 @@ class UsersController extends Controller
             $userLanguage = Craft::$app->language;
         }
 
-        // Formatting Locale
-        $allLocales = $i18n->getAllLocales();
-        ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
-
-        $localeOptions = [
-            ['label' => Craft::t('app', 'Same as language'), 'value' => ''],
-        ];
-        array_push($localeOptions, ...array_map(fn(Locale $locale) => [
-            'label' => $locale->getDisplayName(Craft::$app->language),
-            'value' => $locale->id,
-            'data' => [
-                'data' => [
-                    'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
-                    'hintLang' => $locale->id,
-                ],
-            ],
-        ], $allLocales));
-
         $userLocale = $user->getPreferredLocale();
 
         if (
             !$userLocale ||
-            !ArrayHelper::contains($allLocales, fn(Locale $locale) => $locale->id === $userLocale)
+            !ArrayHelper::contains($i18n->getAllLocales(), fn(Locale $locale) => $locale->id === $userLocale)
         ) {
             $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
         }
@@ -1113,7 +1095,6 @@ class UsersController extends Controller
         $response->action('users/save-preferences');
         $response->contentTemplate('users/_preferences', compact(
             'languageOptions',
-            'localeOptions',
             'userLanguage',
             'userLocale',
         ));

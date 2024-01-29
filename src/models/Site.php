@@ -47,11 +47,6 @@ class Site extends Model
     public ?string $handle = null;
 
     /**
-     * @var string|null Name
-     */
-    public ?string $language = null;
-
-    /**
      * @var bool Primary site?
      */
     public bool $primary = false;
@@ -101,6 +96,13 @@ class Site extends Model
      * @see setEnabled()
      */
     private bool|string $_enabled = true;
+
+    /**
+     * @var string|null Language
+     * @see getLanguage()
+     * @see setLanguage()
+     */
+    private ?string $_language = null;
 
     /**
      * Returns the site’s name.
@@ -180,6 +182,29 @@ class Site extends Model
     public function setEnabled(bool|string $name): void
     {
         $this->_enabled = $name;
+    }
+
+    /**
+     * Returns the site’s language.
+     *
+     * @param bool $parse Whether to parse the language for an environment variable
+     * @return string
+     * @since 5.0.0
+     */
+    public function getLanguage(bool $parse = true): string
+    {
+        return ($parse ? App::parseEnv($this->_language) : $this->_language) ?? '';
+    }
+
+    /**
+     * Sets the site’s language.
+     *
+     * @param string $language
+     * @since 5.0.0
+     */
+    public function setLanguage(string $language): void
+    {
+        $this->_language = $language;
     }
 
     /**
@@ -299,7 +324,7 @@ class Site extends Model
             'siteGroup' => $this->getGroup()->uid,
             'name' => $this->_name,
             'handle' => $this->handle,
-            'language' => $this->language,
+            'language' => $this->getLanguage(false),
             'hasUrls' => $this->hasUrls,
             'baseUrl' => $this->_baseUrl ?: null,
             'sortOrder' => $this->sortOrder,

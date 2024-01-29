@@ -21,6 +21,7 @@ use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
@@ -752,6 +753,48 @@ class Cp extends Component
         return $this->_envOptions($options);
     }
 
+
+
+    /**
+     * Returns environment variable options for a language menu.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getLanguageEnvOptions(): array
+    {
+        $options = [];
+        $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAllLocales());
+
+        foreach (array_keys($_SERVER) as $var) {
+            if (!is_string($var)) {
+                continue;
+            }
+            $value = App::env($var);
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+//            $booleanValue = is_bool($value) ? $value : filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+            $languageValue = null;
+            if (in_array($value, $allLanguages, true)) {
+                $languageValue = $value;
+            }
+
+            if ($languageValue !== null) {
+                $options[] = [
+                    'label' => "$$var",
+                    'value' => "$$var",
+                    'data' => [
+                        'hint' => $languageValue,
+                    ],
+                ];
+            }
+        }
+
+        return $this->_envOptions($options);
+    }
+
     /**
      * @param array $options
      * @return array
@@ -821,6 +864,54 @@ class Cp extends Component
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
+
+        return $options;
+    }
+
+    /**
+     * Returns all known language options for a language input.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getLanguageOptions(bool $showLocaleIds = true, bool $showLocalizedNames = false, bool $sort = false): array
+    {
+        $options = [];
+
+        $languageId = Craft::$app->getLocale()->getLanguageID();
+        $allLocales = Craft::$app->getI18n()->getAllLocales();
+
+        if ($sort) {
+            ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
+        }
+
+        foreach ($allLocales as $locale) {
+            $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '';
+            $option = [
+                'label' => $locale->getDisplayName(Craft::$app->language),
+                'value' => $locale->id,
+                'data' => [
+                    'data' => [
+                        'keywords' => $name,
+                    ],
+                ],
+            ];
+            $data = [];
+
+            if ($showLocaleIds) {
+                $data = [
+                    'hint' => $locale->id,
+                ];
+            } else if ($showLocalizedNames) {
+                $data = [
+                    'hint' => $name,
+                    'hintLang' => $locale->id,
+                ];
+            }
+
+            $option['data']['data'] = $option['data']['data'] + $data;
+            $options[] = $option;
+        }
 
         return $options;
     }

@@ -266,22 +266,6 @@ class SitesController extends Controller
             ],
         ];
 
-        $languageOptions = [];
-        $languageId = Craft::$app->getLocale()->getLanguageID();
-
-        foreach (Craft::$app->getI18n()->getAllLocales() as $locale) {
-            $languageOptions[] = [
-                'label' => $locale->getDisplayName(Craft::$app->language),
-                'value' => $locale->id,
-                'data' => [
-                    'data' => [
-                        'hint' => $locale->id,
-                        'keywords' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
-                    ],
-                ],
-            ];
-        }
-
         return $this->renderTemplate('settings/sites/_edit.twig', [
             'brandNewSite' => $brandNewSite,
             'title' => $title,
@@ -289,7 +273,6 @@ class SitesController extends Controller
             'site' => $siteModel,
             'groupId' => $groupId,
             'groupOptions' => $groupOptions,
-            'languageOptions' => $languageOptions,
         ]);
     }
 

@@ -12,13 +12,14 @@
     value: userLanguage,
   }) }}
 
-  {{ forms.selectizeField({
+  {{ forms.languageMenuField({
     id: 'preferredLocale',
     name: 'preferredLocale',
     label: 'Formatting Locale'|t('app'),
     instructions: 'The locale that should be used for date and number formatting.'|t('app'),
-    options: localeOptions,
+    options: [{'label' : 'Same as language'|t('app'), 'value' : ''}]|merge(craft.cp.getLanguageOptions(false, true, true)),
     value: userLocale,
+    includeEnvVars: true,
   }) }}
 
   {{ forms.selectField({
