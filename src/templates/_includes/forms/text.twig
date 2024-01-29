@@ -1,5 +1,8 @@
+{{ craft.app.deprecator.log('_includes/forms/fld/text', 'is deprecated') }}
+
 {%- set type = type ?? 'text' %}
 {%- set autocomplete = autocomplete ?? false %}
+
 
 {%- set class = (class ?? [])|explodeClass|merge([
     'text',
@@ -33,6 +36,7 @@
         labelledby: (inputAttributes.aria.label ?? false) ? false : (labelledBy ?? false),
         describedby: describedBy ?? false,
     },
+    'data-deprecated': 'true'
 }|merge(inputAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}

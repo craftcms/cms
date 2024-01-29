@@ -14,6 +14,8 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\StringHelper;
+use craft\ui\components\Input;
+use craft\ui\components\Textarea;
 
 /**
  * PlainText represents a Plain Text field.
@@ -177,13 +179,27 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input.twig', [
-            'name' => $this->handle,
-            'value' => $value,
-            'field' => $this,
-            'placeholder' => $this->placeholder !== null ? Craft::t('site', StringHelper::unescapeShortcodes($this->placeholder)) : null,
-            'orientation' => $this->getOrientation($element),
-        ]);
+        $component = $this->multiline ? Textarea::make()
+            ->extraAttributes([
+                'rows' => $this->initialRows,
+                'cols' => 50
+            ])
+            : Input::make();
+
+        return $component
+            ->id($this->getInputId())
+            ->name($this->handle)
+            ->value($value)
+            ->code($this->code)
+            ->uiMode($this->uiMode)
+            ->extraAttributes([
+                'aria-describedby' => $this->describedBy,
+                'required' => $this->required,
+                'maxlength' => $this->charLimit,
+                'placeholder' => $this->placeholder !== null ? Craft::t('site', StringHelper::unescapeShortcodes($this->placeholder)) : null,
+                'orientation' => $this->getOrientation($element),
+            ])
+            ->render();
     }
 
     /**

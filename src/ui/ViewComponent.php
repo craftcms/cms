@@ -7,7 +7,6 @@ use craft\helpers\Cp;
 use Exception;
 use Filament\Support\Components\Component as FilamentComponent;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\View\ComponentAttributeBag;
 use ReflectionClass;
 use ReflectionMethod;
 

@@ -15,6 +15,7 @@ use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\ui\components\Field;
 
 /**
  * BaseField is the base class for native and custom fields that can be included in field layouts.

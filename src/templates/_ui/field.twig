@@ -1,0 +1,79 @@
+{% apply spaceless %}
+    <div {{ attributes
+        .merge({
+            id: id ~ '-field',
+            'data-component': handle,
+            'data-attribute': attribute,
+        })
+        .class([
+            'field',
+            (errors|length ? 'has-errors' : ''),
+        ]) -}}>
+        <div class="heading">
+            {{ label | raw }}
+            {{ requiredIndicator | raw }}
+            {{ translationIndicator | raw }}
+
+            {% if showAttribute %}
+                <div class="flex-grow"></div>
+                {% include '_includes/forms/copytextbtn.twig' with {
+                    id: "$id-attribute",
+                    class: ['code', 'small', 'light'],
+                    value: attribute,
+                } only %}
+            {% endif %}
+        </div>
+
+        {{ instructionsPosition == 'before' ? instructions | raw : '' }}
+        <div class="input {{ orientation | default('ltr') }}">
+            {{ input | raw }}
+        </div>
+        {{ instructionsPosition == 'after' ? instructions | raw : '' }}
+        {{ tip | raw }}
+        {{ warning | raw }}
+        {{ errorList | raw }}
+    </div>
+{% endapply %}
+
+{#
+<div
+  id="fields-newField-field"
+  class="field width-100"
+  data-attribute="newField"
+  data-type="craft\fields\PlainText"
+  data-layout-element="79d108f5-a105-461e-bfd1-430f346642a3"
+>
+  <div class="heading"><label id="fields-newField-label" for="fields-newField">New Field<span
+    class="t9n-indicator"
+    title="This field is translated for each language."
+    data-icon="language"
+    aria-label="This field is translated for each language."
+    role="img"
+  ></span></label>
+    <div class="flex-grow"></div>
+    <div class="copytextbtn-wrapper">
+      <input type="text" class="visually-hidden" value="newField" readonly="" size="8" tabindex="-1" aria-hidden="true">
+      <div
+        id="fields-newField-attribute"
+        class="code small light copytextbtn"
+        title="Copy to clipboard"
+        role="button"
+        tabindex="0"
+      ><span class="copytextbtn__value">newField</span>
+        <span class="visually-hidden">Copy to clipboard</span>
+        <span class="copytextbtn__icon" data-icon="clipboard" aria-hidden="true"></span>
+      </div>
+    </div>
+
+  </div>
+  <div class="input ltr"><input
+    type="text"
+    id="fields-newField"
+    class="nicetext text fullwidth"
+    name="fields[newField]"
+    value="New Entry new field"
+    orientation="ltr"
+    data-component="input"
+  ></div>
+</div>
+#}

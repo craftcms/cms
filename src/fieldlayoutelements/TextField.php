@@ -9,6 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\ui\components\Input;
 
 /**
  * TextField represents a text field that can be included in field layouts.

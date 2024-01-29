@@ -32,7 +32,10 @@ use craft\models\FieldLayoutTab;
 use craft\models\Site;
 use craft\services\Elements;
 use craft\services\ElementSources;
+use craft\ui\components\Field;
+use craft\ui\components\Input;
 use craft\ui\components\StatusIndicator;
+use craft\ui\components\Textarea;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use Illuminate\Support\Collection;
@@ -1260,7 +1263,6 @@ JS, [
 
         $required = (bool)($config['required'] ?? false);
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
-        $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
         $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
 
         $fieldClass = array_merge(array_filter([
@@ -1269,134 +1271,110 @@ JS, [
             $errors ? 'has-errors' : null,
         ]), Html::explodeClass($config['fieldClass'] ?? []));
 
-        if (($config['showAttribute'] ?? false) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
-            $showAttribute = $currentUser->admin && $currentUser->getPreference('showFieldHandles');
-        } else {
-            $showAttribute = false;
-        }
+        // Craft::dump($config['fieldAttributes'] ?? null);
+        return Field::make()
+            ->label($label)
+            ->siteId($config['siteId'] ?? null)
+            ->translatable($config['translatable'] ?? null)
+            ->attribute($attribute)
+            ->showAttribute($config['showAttribute'] ?? false)
+            ->orientation($config['orientation'] ?? null)
+            ->required($required)
+            ->siteId($siteId)
+            ->warning($warning)
+            ->tip($tip)
+            ->instructions($instructions)
+            ->instructionsPosition($instructionsPosition)
+            ->input(fn() => $input)
+            ->name($config['name'] ?? null)
+            ->id($id)
+            ->errors($errors)
+            ->labelExtra($config['labelExtra'] ?? null)
+            // ->extraAttributes(array_merge($config['fieldAttributes'] ?? [], [
+            //     'class' => implode(' ', $fieldClass)
+            // ]))
+            ->render();
 
-        $showLabelExtra = $showAttribute || isset($config['labelExtra']);
-
-        $instructionsHtml = $instructions
-            ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process(Html::encodeInvalidTags($instructions), 'gfm-comment')), [
-                'id' => $instructionsId,
-                'class' => ['instructions'],
-            ])
-            : '';
-
-        if ($label) {
-            $labelHtml = $label . (
-                    ($required
-                        ? Html::tag('span', Craft::t('app', 'Required'), [
-                            'class' => ['visually-hidden'],
-                        ]) .
-                        Html::tag('span', '', [
-                            'class' => ['required'],
-                            'aria' => [
-                                'hidden' => 'true',
-                            ],
-                        ])
-                        : '') .
-                    ($translatable
-                        ? Html::tag('span', '', [
-                            'class' => ['t9n-indicator'],
-                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            'data' => [
-                                'icon' => 'language',
-                            ],
-                            'aria' => [
-                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            ],
-                            'role' => 'img',
-                        ])
-                        : '')
-                );
-        } else {
-            $labelHtml = '';
-        }
-
-        $containerTag = $fieldset ? 'fieldset' : 'div';
-
-        return
-            Html::beginTag($containerTag, ArrayHelper::merge(
-                [
-                    'class' => $fieldClass,
-                    'id' => $fieldId,
-                    'data' => [
-                        'attribute' => $attribute,
-                    ],
-                ],
-                $config['fieldAttributes'] ?? []
-            )) .
-            (($label && $fieldset)
-                ? Html::tag('legend', $labelHtml, [
-                    'class' => ['visually-hidden'],
-                    'data' => [
-                        'label' => $label,
-                    ],
-                ])
-                : '') .
-            ($status
-                ? Html::beginTag('div', [
-                    'id' => $statusId,
-                    'class' => ['status-badge', StringHelper::toString($status[0])],
-                    'title' => $status[1],
-                ]) .
-                Html::tag('span', $status[1], [
-                    'class' => 'visually-hidden',
-                ]) .
-                Html::endTag('div')
-                : '') .
-            (($label || $showLabelExtra)
-                ? (
-                    Html::beginTag('div', ['class' => 'heading']) .
-                    ($config['headingPrefix'] ?? '') .
-                    ($label
-                        ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, ArrayHelper::merge([
-                            'id' => $labelId,
-                            'class' => $config['labelClass'] ?? null,
-                            'for' => !$fieldset ? $id : null,
-                            'aria' => [
-                                'hidden' => $fieldset ? 'true' : null,
-                            ],
-                        ], $config['labelAttributes'] ?? []))
-                        : '') .
-                    ($showLabelExtra
-                        ? Html::tag('div', '', [
-                            'class' => ['flex-grow'],
-                        ]) .
-                        ($showAttribute ? static::renderTemplate('_includes/forms/copytextbtn.twig', [
-                            'id' => "$id-attribute",
-                            'class' => ['code', 'small', 'light'],
-                            'value' => $config['attribute'],
-                        ]) : '') .
-                        ($config['labelExtra'] ?? '')
-                        : '') .
-                    ($config['headingSuffix'] ?? '') .
-                    Html::endTag('div')
-                )
-                : '') .
-            ($instructionsPosition === 'before' ? $instructionsHtml : '') .
-            Html::tag('div', $input, ArrayHelper::merge(
-                [
-                    'class' => array_filter([
-                        'input',
-                        $orientation,
-                        $errors ? 'errors' : null,
-                    ]),
-                ],
-                $config['inputContainerAttributes'] ?? []
-            )) .
-            ($instructionsPosition === 'after' ? $instructionsHtml : '') .
-            self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip:'), $tip) .
-            self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning:'), $warning) .
-            ($errors
-                ? static::renderTemplate('_includes/forms/errorList.twig', [
-                    'id' => $errorsId,
-                    'errors' => $errors,
-                ])
-                : '') .
-            Html::endTag($containerTag);
+        // return
+        //     Html::beginTag($containerTag, ArrayHelper::merge(
+        //         [
+        //             'class' => $fieldClass,
+        //             'id' => $fieldId,
+        //             'data' => [
+        //                 'attribute' => $attribute,
+        //             ],
+        //         ],
+        //         $config['fieldAttributes'] ?? []
+        //     )) .
+        //     (($label && $fieldset)
+        //         ? Html::tag('legend', $labelHtml, [
+        //             'class' => ['visually-hidden'],
+        //             'data' => [
+        //                 'label' => $label,
+        //             ],
+        //         ])
+        //         : '') .
+        //     ($status
+        //         ? Html::beginTag('div', [
+        //             'id' => $statusId,
+        //             'class' => ['status-badge', StringHelper::toString($status[0])],
+        //             'title' => $status[1],
+        //         ]) .
+        //         Html::tag('span', $status[1], [
+        //             'class' => 'visually-hidden',
+        //         ]) .
+        //         Html::endTag('div')
+        //         : '') .
+        //     (($label || $showLabelExtra)
+        //         ? (
+        //             Html::beginTag('div', ['class' => 'heading']) .
+        //             ($config['headingPrefix'] ?? '') .
+        //             ($label
+        //                 ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, ArrayHelper::merge([
+        //                     'id' => $labelId,
+        //                     'class' => $config['labelClass'] ?? null,
+        //                     'for' => !$fieldset ? $id : null,
+        //                     'aria' => [
+        //                         'hidden' => $fieldset ? 'true' : null,
+        //                     ],
+        //                 ], $config['labelAttributes'] ?? []))
+        //                 : '') .
+        //             ($showLabelExtra
+        //                 ? Html::tag('div', '', [
+        //                     'class' => ['flex-grow'],
+        //                 ]) .
+        //                 ($showAttribute ? static::renderTemplate('_includes/forms/copytextbtn.twig', [
+        //                     'id' => "$id-attribute",
+        //                     'class' => ['code', 'small', 'light'],
+        //                     'value' => $config['attribute'],
+        //                 ]) : '') .
+        //                 ($config['labelExtra'] ?? '')
+        //                 : '') .
+        //             ($config['headingSuffix'] ?? '') .
+        //             Html::endTag('div')
+        //         )
+        //         : '') .
+        //     ($instructionsPosition === 'before' ? $instructionsHtml : '') .
+        //     Html::tag('div', $input, ArrayHelper::merge(
+        //         [
+        //             'class' => array_filter([
+        //                 'input',
+        //                 $orientation,
+        //                 $errors ? 'errors' : null,
+        //             ]),
+        //         ],
+        //         $config['inputContainerAttributes'] ?? []
+        //     )) .
+        //     ($instructionsPosition === 'after' ? $instructionsHtml : '') .
+        //     self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip:'), $tip) .
+        //     self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning:'), $warning) .
+        //     ($errors
+        //         ? static::renderTemplate('_includes/forms/errorList.twig', [
+        //             'id' => $errorsId,
+        //             'errors' => $errors,
+        //         ])
+        //         : '') .
+        //     Html::endTag($containerTag);
     }
 
     /**
@@ -1739,7 +1717,24 @@ JS, [
      */
     public static function textFieldHtml(array $config): string
     {
-        $config['id'] = $config['id'] ?? 'text' . mt_rand();
+        // Craft::dd($config);
+        return Field::make()
+            ->input(
+                Input::make()
+                    ->extraAttributes([
+                        'autocomplete' => $config['autocomplete'] ?? null,
+                        'autocapitalize' => $config['autocapitalize'] ?? null
+                    ])
+            )
+            ->translatable($config['translatable'] ?? false)
+            ->value($config['value'] ?? null)
+            ->id($config['id'] ?? 'text' . mt_rand())
+            ->label($config['label'] ?? null)
+            ->disabled($config['disabled'] ?? false)
+            ->required($config['required'] ?? false)
+            ->errors($config['errors'] ?? null)
+            ->extraAttributes(['data-type' => $config['type'] ?? null])
+            ->render();
         return static::fieldHtml('template:_includes/forms/text.twig', $config);
     }
 
@@ -2587,7 +2582,7 @@ JS;
      *  - `liAttributes` – Any HTML attributes that should be set on the item’s `<li>` tag
      *
      * @param array $config
-     * @param string $menuId,
+     * @param string $menuId ,
      * @return string
      * @since 5.0.0
      */

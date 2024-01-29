@@ -71,6 +71,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\ui\components\Textarea;
 use craft\validators\DateTimeValidator;
 use craft\validators\ElementUriValidator;
 use craft\validators\SiteIdValidator;
@@ -5527,11 +5528,9 @@ JS,
             'name' => 'notes',
             'value' => $this->getIsDraft() ? $this->draftNotes : $this->revisionNotes,
             'rows' => 1,
-            'inputAttributes' => [
-                'aria' => [
-                    'label' => Craft::t('app', 'Notes about your changes'),
-                ],
-            ],
+            'input' => fn() => Textarea::make()->extraAttributes([
+                'aria-label' => Craft::t('app', 'Notes about your changes')
+            ])->render()
         ]);
     }
 

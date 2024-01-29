@@ -4,8 +4,8 @@ namespace craft\ui\components;
 
 use craft\helpers\Html;
 use craft\ui\Component;
+use craft\ui\concerns\HasExtraAttributes;
 use craft\ui\concerns\HasLabel;
-use Filament\Support\Concerns\HasExtraAttributes;
 use Filament\Support\Concerns\HasIcon;
 use Illuminate\View\ComponentAttributeBag;
 
