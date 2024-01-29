@@ -5149,6 +5149,12 @@ $min2ColWidth: 400px;
       @include right(0);
     }
   }
+
+  .label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .body {
