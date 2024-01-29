@@ -42,6 +42,7 @@
 - Fixed an error that occurred when adding a Dropdown field condition rule, if the field contained any optgroups. ([#14224](https://github.com/craftcms/cms/issues/14224))
 - Fixed a bug where Dropdown field condition rules weren’t displaying `0` options. ([#14232](https://github.com/craftcms/cms/pull/14232))
 - Fixed a bug where layout components provided by disabled plugins weren’t getting omitted. ([#14219](https://github.com/craftcms/cms/pull/14219))
+- Fixed an error that occurred when viewing the Entry Types index page, if any entry types had no usages. ([#14207](https://github.com/craftcms/cms/pull/14207))
 
 ## 5.0.0-alpha.8 - 2024-01-23
 
