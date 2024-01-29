@@ -6458,10 +6458,6 @@ $min2ColWidth: 400px;
   &.error {
     color: var(--menu-item-active-color) !important;
   }
-
-  span.light {
-    color: var(--white) !important;
-  }
 }
 .menu {
   hr.padded,
@@ -8031,10 +8027,6 @@ body.setup-2fa {
     &.autosuggest__results-item--highlighted {
       @include menu-item-active-styles;
       cursor: pointer;
-
-      .light {
-        color: $grey100 !important;
-      }
     }
   }
 }
