@@ -12,7 +12,6 @@ use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\View;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -175,22 +174,6 @@ class Mailer extends \yii\symfonymailer\Mailer
             $message->setBcc([]);
         }
 
-        try {
-            return parent::send($message);
-        } catch (TransportExceptionInterface $e) {
-            $eMessage = $e->getMessage();
-
-            // Remove the stack trace to get rid of any sensitive info.
-            $eMessage = substr($eMessage, 0, strpos($eMessage, 'Stack trace:') - 1);
-            Craft::warning('Error sending email: ' . $eMessage);
-
-            // Save the exception on the message, for plugins to make use of
-            if ($message instanceof Message) {
-                $message->error = $e;
-            }
-
-            $this->afterSend($message, false);
-            return false;
-        }
+        return parent::send($message);
     }
 }
