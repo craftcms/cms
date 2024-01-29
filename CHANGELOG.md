@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-alpha.9 - 2024-01-29
 
 - Added live conditional field support to inline-editable Matrix blocks. ([#14223](https://github.com/craftcms/cms/pull/14223))
 - Inline-editable Matrix blocks have been redesigned to be visually lighter. ([#14187](https://github.com/craftcms/cms/pull/14187))
