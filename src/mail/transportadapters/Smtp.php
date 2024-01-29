@@ -34,9 +34,9 @@ class Smtp extends BaseTransportAdapter
     public ?string $host = null;
 
     /**
-     * @var string|null The port that should be used
+     * @var int|string|null The port that should be used
      */
-    public ?string $port = null;
+    public int|string|null $port = null;
 
     /**
      * @var bool|string|null Whether to use authentication
@@ -149,7 +149,7 @@ class Smtp extends BaseTransportAdapter
         $config = [
             'scheme' => 'smtp',
             'host' => App::parseEnv($this->host),
-            'port' => App::parseEnv($this->port) ?: 0,
+            'port' => (int) App::parseEnv($this->port) ?: 0,
         ];
 
         if (App::parseBooleanEnv($this->useAuthentication) ?? false) {
