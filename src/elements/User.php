@@ -2025,7 +2025,8 @@ JS, [
      */
     public function getPreferredLocale(): ?string
     {
-        return $this->_validateLocale($this->getPreference('locale'), true);
+        $locale = $this->getPreference('locale');
+        return $this->_validateLocale(App::parseEnv($locale), true) ? $locale : null;
     }
 
     /**
@@ -2111,7 +2112,7 @@ JS, [
 
             case 'preferredLocale':
                 $locale = $this->getPreferredLocale();
-                return $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
+                return $locale ? Craft::$app->getI18n()->getLocaleById(App::parseEnv($locale))->getDisplayName(Craft::$app->language) : '';
         }
 
         return parent::attributeHtml($attribute);

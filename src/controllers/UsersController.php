@@ -23,6 +23,7 @@ use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
@@ -1087,7 +1088,7 @@ class UsersController extends Controller
 
         if (
             !$userLocale ||
-            !ArrayHelper::contains($i18n->getAllLocales(), fn(Locale $locale) => $locale->id === $userLocale)
+            !ArrayHelper::contains($i18n->getAllLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLocale))
         ) {
             $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
         }
