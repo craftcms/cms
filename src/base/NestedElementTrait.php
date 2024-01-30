@@ -189,7 +189,9 @@ trait NestedElementTrait
             return null;
         }
 
-        $field = $this->getOwner()->getFieldLayout()->getFieldById($this->fieldId);
+        $field = $this->getOwner()?->getFieldLayout()->getFieldById($this->fieldId)
+            ?? Craft::$app->getFields()->getFieldById($this->fieldId);
+
         if (!$field instanceof ElementContainerFieldInterface) {
             throw new InvalidConfigException("Invalid field ID: $this->fieldId");
         }

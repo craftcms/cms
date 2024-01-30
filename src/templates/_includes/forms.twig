@@ -168,6 +168,11 @@
 {% endmacro %}
 
 
+{% macro languageMenu(config) %}
+    {% include "_includes/forms/languageMenu" with config only %}
+{% endmacro %}
+
+
 {% macro fieldLayoutDesigner(config) %}
     {% include "_includes/forms/fieldLayoutDesigner" with config only %}
 {% endmacro %}
@@ -431,6 +436,19 @@
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/booleanMenu') }}
+{% endmacro %}
+
+
+{% macro languageMenuField(config) %}
+    {% set config = config|merge({id: config.id ?? "languagemenu#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable with a valid language ID ({examples}).'|t('app', {
+                examples: '`en`/`en-GB`',
+            }),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/languageMenu') }}
 {% endmacro %}
 
 
