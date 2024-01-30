@@ -128,7 +128,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       // Was .elements just created?
       if (!this.$elements.length) {
         this.$elements = $('<ul/>', {
-          class: 'elements cards',
+          class: 'elements card-grid',
         }).prependTo(this.$container);
         this.$container.children('.zilch').addClass('hidden');
       }

@@ -958,6 +958,7 @@ class UsersController extends Controller
 
         $response->contentHtml(function() use ($user) {
             $config = [
+                'showInGrid' => true,
                 'canCreate' => true,
             ];
 
