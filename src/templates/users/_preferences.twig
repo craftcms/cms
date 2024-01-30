@@ -61,6 +61,18 @@
     ],
   }) }}
 
+  {{ forms.checkboxGroupField({
+    label: 'Navigation Settings'|t('app'),
+    options: [
+      {
+        label: 'Autofocus search inputs'|t('app'),
+        name: 'autofocusSearch',
+        id: 'autofocusSearch',
+        checked: currentUser.getPreference('autofocusSearch') ?? a11yDefaults['autofocusSearch'] ?? false,
+      },
+    ],
+  }) }}
+
   {{ forms.selectField({
     label: 'Notification Duration'|t('app'),
     instructions: 'How long notifications should be shown before they disappear automatically.'|t('app'),

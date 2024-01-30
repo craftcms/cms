@@ -423,7 +423,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Autofocus the Search box, unless this is an embedded index
       if (
         this.settings.context !== 'embedded-index' &&
-        !Garnish.isMobileBrowser(true)
+        !Garnish.isMobileBrowser(true) &&
+        Craft.autofocusSearch === true
       ) {
         this.$search.trigger('focus');
       }
