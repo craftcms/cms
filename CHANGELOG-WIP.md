@@ -66,6 +66,7 @@
 - Entry types are now managed independently of sections.
 - Entry types are no longer required to have a Title Format, if the Title field isn’t shown.
 - Entry types now have a “Show the Slug field” setting. ([#13799](https://github.com/craftcms/cms/discussions/13799))
+- Sites’ Language settings can now be set to environment variables. ([#14235](https://github.com/craftcms/cms/pull/14235), [#14135](https://github.com/craftcms/cms/discussions/14135))
 - Added the “Addresses” field type. ([#11438](https://github.com/craftcms/cms/discussions/11438))
 - Matrix fields now manage nested entries, rather than Matrix blocks. During the upgrade, existing Matrix block types will be converted to entry types; their nested fields will be made global; and Matrix blocks will be converted to entries.
 - Matrix fields now have “Entry URI Format” and “Template” settings for each site.
@@ -110,7 +111,7 @@
 - Migrations that modify the project config no longer need to worry about whether the same changes were already applied to the incoming project config YAML files.
 - Selectize menus no longer apply special styling to options with the value `new`. The `_includes/forms/selectize.twig` control panel template should be used instead (or `craft\helpers\Cp::selectizeHtml()`/`selectizeFieldHtml()`), which will append an styled “Add” option when `addOptionFn` and `addOptionLabel` settings are passed. ([#11946](https://github.com/craftcms/cms/issues/11946))
 - Added the `chip()`, `customSelect()`, `disclosureMenu()`, `elementCard()`, `elementChip()`, `elementIndex()`, `iconSvg()`, and `siteMenuItems()` global functions for control panel templates.
-- Added the `colorSelect` and `colorSelectField` form macros.
+- Added the `colorSelect`, `colorSelectField`, `languageMenu`, and `languageMenuField` form macros.
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - Element action triggers’ `validateSelection()` and `activate()` methods are now passed an `elementIndex` argument, with a reference to the trigger’s corresponding element index.
@@ -293,6 +294,8 @@
 - Added `craft\models\FieldLayout::getThumbField()`.
 - Added `craft\models\FsListing::getAdjustedUri()`.
 - Added `craft\models\Section::getCpEditUrl()`.
+- Added `craft\models\Site::getLanguage()`.
+- Added `craft\models\Site::setLanguage()`.
 - Added `craft\models\Volume::$altTranslationKeyFormat`.
 - Added `craft\models\Volume::$altTranslationMethod`.
 - Added `craft\models\Volume::getSubpath()`.

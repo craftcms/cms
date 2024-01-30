@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Sites’ Language settings can now be set to environment variables. ([#14235](https://github.com/craftcms/cms/pull/14235), [#14135](https://github.com/craftcms/cms/discussions/14135))
+- Added the `languageMenu` and `languageMenuField` form macros.
+- Added `craft\models\Site::getLanguage()`.
+- Added `craft\models\Site::setLanguage()`.
 - Updated `yiisoft/yii2-symfonymailer` to v4
 - Removed `\craft\mail\transportadapters\Smtp::$encryptionMethod`
 - Removed `\craft\mail\transportadapters\Smtp::$timeout`
