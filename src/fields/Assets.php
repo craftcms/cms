@@ -239,7 +239,14 @@ class Assets extends BaseRelationField
         ];
 
         $rules[] = [
-            ['sources', 'defaultUploadLocationSource', 'restrictedLocationSource'], 'validateNotTempVolume',
+            [
+                'sources',
+                'defaultUploadLocationSource',
+                'restrictedLocationSource',
+                'defaultUploadLocationSubpath',
+                'restrictedLocationSubpath',
+            ],
+            'validateNotTempVolume',
         ];
 
         $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
@@ -255,18 +262,32 @@ class Assets extends BaseRelationField
      */
     public function validateNotTempVolume(string $attribute): void
     {
-        [$tempVolume] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
+        [$tempVolume, $tempSubpath] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
         if ($tempVolume !== null) {
             $tempVolumeKey = "volume:$tempVolume->uid";
             $inputSources = $this->getInputSources();
 
-            if (
-                (in_array($attribute, ['source', 'sources']) && in_array($tempVolumeKey, $inputSources)) ||
-                ($attribute == 'defaultUploadLocationSource' && $this->defaultUploadLocationSource === $tempVolumeKey) ||
-                ($attribute == 'restrictedLocationSource' && $this->restrictedLocationSource === $tempVolumeKey)
-            ) {
-                // intentionally not translating this since it's short-lived (>= 4.7, < 5.0) and dev-facing only.
-                $this->addError($attribute, "Volume “{$tempVolume->name}” is used to store temporary asset uploads, so it cannot be used in an Assets field.");
+            if (empty($tempSubpath)) {
+                if (
+                    (in_array($attribute, ['source', 'sources']) && in_array($tempVolumeKey, $inputSources)) ||
+                    ($attribute == 'defaultUploadLocationSource' && $this->defaultUploadLocationSource === $tempVolumeKey) ||
+                    ($attribute == 'restrictedLocationSource' && $this->restrictedLocationSource === $tempVolumeKey)
+                ) {
+                    // intentionally not translating this since it's short-lived (>= 4.7, < 5.0) and dev-facing only.
+                    $this->addError($attribute, "Volume “{$tempVolume->name}” is used to store temporary asset uploads, so it cannot be used in an Assets field.");
+                }
+            } else {
+                if (
+                    ($attribute == 'defaultUploadLocationSource' &&
+                    $this->defaultUploadLocationSource === $tempVolumeKey &&
+                    $this->defaultUploadLocationSubpath == $tempSubpath) ||
+                    ($attribute == 'restrictedLocationSource' &&
+                    $this->restrictedLocationSource === $tempVolumeKey &&
+                    $this->restrictedLocationSubpath == $tempSubpath)
+                ) {
+                    // intentionally not translating this since it's short-lived (>= 4.7, < 5.0) and dev-facing only.
+                    $this->addError($attribute, "The combination of volume “{$tempVolume->name}” and “{$tempSubpath}“ subpath is used to store temporary asset uploads, so it cannot be used in an Assets field.");
+                }
             }
         }
     }
@@ -278,7 +299,7 @@ class Assets extends BaseRelationField
     {
         $sourceOptions = [];
         /** @var Volume|null $tempVolume */
-        [$tempVolume] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
+        [$tempVolume, $tempSubpath] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
         if ($tempVolume) {
             $tempVolumeKey = 'volume:' . $tempVolume->uid;
         } else {
@@ -286,7 +307,7 @@ class Assets extends BaseRelationField
         }
 
         foreach (Asset::sources('settings') as $volume) {
-            if ($tempVolumeKey !== null && $volume['key'] === $tempVolumeKey) {
+            if ($tempVolumeKey !== null && $volume['key'] === $tempVolumeKey && empty($tempSubpath)) {
                 // only allow it if already selected
                 if (
                     (!is_array($this->sources) || !in_array($tempVolumeKey, $this->sources)) &&
@@ -715,13 +736,13 @@ class Assets extends BaseRelationField
             $sources = array_merge($this->sources);
         } else {
             $sources = [];
-            [$tempVolume] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
+            [$tempVolume, $tempSubpath] = Craft::$app->getAssets()->getTempVolumeAndSubpath();
             $tempVolumeKey = $tempVolume ? "volume:$tempVolume->uid" : null;
 
             foreach (Craft::$app->getElementSources()->getSources(Asset::class) as $source) {
                 if (
                     $source['type'] !== ElementSources::TYPE_HEADING &&
-                    $source['key'] !== $tempVolumeKey
+                    ($source['key'] !== $tempVolumeKey || !empty($tempSubpath))
                 ) {
                     $sources[] = $source['key'];
                 }
