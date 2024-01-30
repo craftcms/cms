@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
 use craft\i18n\Locale;
 use craft\records\Site as SiteRecord;
@@ -206,23 +205,6 @@ class Site extends Model
     public function setLanguage(string $language): void
     {
         $this->_language = $language;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function defineBehaviors(): array
-    {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'name' => fn() => $this->getName(false),
-                    'baseUrl' => fn() => $this->getBaseUrl(false),
-                    'enabled' => fn() => $this->getEnabled(false),
-                ],
-            ],
-        ];
     }
 
     /**
