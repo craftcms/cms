@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => 'Puoi lasciare questo campo in bianco se vuoi un separatore senza etichetta.',
     'This can be set to an environment variable matching one of the option values.' => 'Questo parametro può essere impostato a una variabile di ambiente che corrisponde a uno dei valori dell\'opzione.',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'Questo parametro può essere impostato a una variabile di ambiente con un valore booleano ({examples}).',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'Questo parametro può essere impostato a una variabile di ambiente con un valore di un [fuso orario supportato]({url}).',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'Questa opzione può essere impostata con una variabile di ambiente o un modello Twig che fornisce un ID.',
     'This can be set to an environment variable, or begin with an alias.' => 'Può essere impostato su una variabile di ambiente, oppure iniziare con un alias.',
