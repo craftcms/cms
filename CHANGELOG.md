@@ -10,6 +10,7 @@
 - Removed `\craft\mail\transportadapters\Smtp::$encryptionMethod`.
 - Removed `\craft\mail\transportadapters\Smtp::$timeout`.
 - Updated `yiisoft/yii2-symfonymailer` to v4.
+- Fixed a bug where it wasn’t possible to set the “Formatting Locale” user preference back to “Same as language” once another value had been selected.
 
 ## 5.0.0-alpha.9 - 2024-01-29
 

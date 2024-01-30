@@ -18,7 +18,7 @@
     name: 'preferredLocale',
     label: 'Formatting Locale'|t('app'),
     instructions: 'The locale that should be used for date and number formatting.'|t('app'),
-    options: [{'label' : 'Same as language'|t('app'), 'value' : ''}]|merge(craft.cp.getLanguageOptions(false, true)),
+    options: [{'label' : 'Same as language'|t('app'), 'value' : '__blank__'}]|merge(craft.cp.getLanguageOptions(false, true)),
     value: userLocale,
   }) }}
 

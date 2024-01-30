@@ -82,8 +82,11 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
         $hasBlankOption = false;
         foreach ($options as &$option) {
             if (isset($option['value']) && $option['value'] === '') {
-                $option['value'] = '__BLANK__';
+                $option['value'] = '__blank__';
                 $hasBlankOption = true;
+            }
+            if (isset($option['label']) && $option['label'] === '') {
+                $option['label'] = ' ';
             }
         }
 
@@ -100,7 +103,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
 
                 // Add a blank option to the beginning if one doesn't already exist
                 if (!$hasBlankOption) {
-                    array_unshift($options, ['label' => '', 'value' => '__BLANK__']);
+                    array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
                 }
             }
         }
@@ -118,7 +121,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
     protected function encodeValue(MultiOptionsFieldData|OptionData|string|null $value): string|array|null
     {
         $encValue = parent::encodeValue($value);
-        return $encValue === null || $encValue === '' ? '__BLANK__' : $encValue;
+        return $encValue === null || $encValue === '' ? '__blank__' : $encValue;
     }
 
     /**

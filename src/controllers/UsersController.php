@@ -1101,9 +1101,13 @@ class UsersController extends Controller
         $this->requireCpRequest();
 
         $user = static::currentUser();
+        $preferredLocale = $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null;
+        if ($preferredLocale === '__blank__') {
+            $preferredLocale = null;
+        }
         $preferences = [
             'language' => $this->request->getBodyParam('preferredLanguage', $user->getPreference('language')),
-            'locale' => $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null,
+            'locale' => $preferredLocale,
             'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
             'alwaysShowFocusRings' => (bool)$this->request->getBodyParam('alwaysShowFocusRings', $user->getPreference('alwaysShowFocusRings')),
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
