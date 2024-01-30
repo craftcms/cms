@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
 use craft\i18n\Locale;
 use craft\records\Site as SiteRecord;
@@ -26,6 +25,7 @@ use yii\base\InvalidConfigException;
  * @property bool|string $enabled Enabled
  * @property string|null $baseUrl The site’s base URL
  * @property string $name The site’s name
+ * @property string $language The site’s language
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -45,11 +45,6 @@ class Site extends Model
      * @var string|null Handle
      */
     public ?string $handle = null;
-
-    /**
-     * @var string|null Name
-     */
-    public ?string $language = null;
 
     /**
      * @var bool Primary site?
@@ -101,6 +96,13 @@ class Site extends Model
      * @see setEnabled()
      */
     private bool|string $_enabled = true;
+
+    /**
+     * @var string|null Language
+     * @see getLanguage()
+     * @see setLanguage()
+     */
+    private ?string $_language = null;
 
     /**
      * Returns the site’s name.
@@ -183,20 +185,26 @@ class Site extends Model
     }
 
     /**
-     * @inheritdoc
+     * Returns the site’s language.
+     *
+     * @param bool $parse Whether to parse the language for an environment variable
+     * @return string
+     * @since 5.0.0
      */
-    protected function defineBehaviors(): array
+    public function getLanguage(bool $parse = true): string
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'name' => fn() => $this->getName(false),
-                    'baseUrl' => fn() => $this->getBaseUrl(false),
-                    'enabled' => fn() => $this->getEnabled(false),
-                ],
-            ],
-        ];
+        return ($parse ? App::parseEnv($this->_language) : $this->_language) ?? '';
+    }
+
+    /**
+     * Sets the site’s language.
+     *
+     * @param string $language
+     * @since 5.0.0
+     */
+    public function setLanguage(string $language): void
+    {
+        $this->_language = $language;
     }
 
     /**
@@ -299,7 +307,7 @@ class Site extends Model
             'siteGroup' => $this->getGroup()->uid,
             'name' => $this->_name,
             'handle' => $this->handle,
-            'language' => $this->language,
+            'language' => $this->getLanguage(false),
             'hasUrls' => $this->hasUrls,
             'baseUrl' => $this->_baseUrl ?: null,
             'sortOrder' => $this->sortOrder,
