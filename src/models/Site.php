@@ -26,6 +26,7 @@ use yii\base\InvalidConfigException;
  * @property bool|string $enabled Enabled
  * @property string|null $baseUrl The site’s base URL
  * @property string $name The site’s name
+ * @property string $language The site’s language
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

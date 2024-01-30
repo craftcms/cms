@@ -1212,7 +1212,7 @@ class App
                 // If they have a preferred locale, use it
                 $usersService = Craft::$app->getUsers();
                 if (($locale = $usersService->getUserPreference($id, 'locale')) !== null) {
-                    return $i18n->getLocaleById(App::parseEnv($locale));
+                    return $i18n->getLocaleById($locale);
                 }
 
                 // Otherwise see if they have a preferred language

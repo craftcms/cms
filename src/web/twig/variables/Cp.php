@@ -758,13 +758,18 @@ class Cp extends Component
     /**
      * Returns environment variable options for a language menu.
      *
+     * @param bool $appOnly Whether to limit the env options to those that match available app locales
      * @return array
      * @since 5.0.0
      */
-    public function getLanguageEnvOptions(): array
+    public function getLanguageEnvOptions(bool $appOnly = false): array
     {
         $options = [];
-        $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAllLocales());
+        if ($appOnly) {
+            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAppLocales());
+        } else {
+            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAllLocales());
+        }
 
         foreach (array_keys($_SERVER) as $var) {
             if (!is_string($var)) {
@@ -775,7 +780,6 @@ class Cp extends Component
                 continue;
             }
 
-//            $booleanValue = is_bool($value) ? $value : filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
             $languageValue = null;
             if (in_array($value, $allLanguages, true)) {
                 $languageValue = $value;
@@ -871,15 +875,28 @@ class Cp extends Component
     /**
      * Returns all known language options for a language input.
      *
+     * @param bool $showLocaleIds Whether to show the hint as locale id; e.g. en, en-GB
+     * @param bool $showLocalizedNames Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
+     * @param bool $sort Whether to sort the locales by their display name
+     * @param bool $appLocales Whether to limit the returned locales to just app locales (cp translation options) or show them all
      * @return array
      * @since 5.0.0
      */
-    public function getLanguageOptions(bool $showLocaleIds = true, bool $showLocalizedNames = false, bool $sort = false): array
-    {
+    public function getLanguageOptions(
+        bool $showLocaleIds = true,
+        bool $showLocalizedNames = false,
+        bool $sort = false,
+        bool $appLocales = false,
+    ): array {
         $options = [];
 
         $languageId = Craft::$app->getLocale()->getLanguageID();
-        $allLocales = Craft::$app->getI18n()->getAllLocales();
+
+        if ($appLocales) {
+            $allLocales = Craft::$app->getI18n()->getAppLocales();
+        } else {
+            $allLocales = Craft::$app->getI18n()->getAllLocales();
+        }
 
         if ($sort) {
             ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
@@ -902,7 +919,7 @@ class Cp extends Component
                 $data = [
                     'hint' => $locale->id,
                 ];
-            } else if ($showLocalizedNames) {
+            } elseif ($showLocalizedNames) {
                 $data = [
                     'hint' => $name,
                     'hintLang' => $locale->id,

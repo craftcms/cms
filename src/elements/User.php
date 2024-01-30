@@ -2010,9 +2010,11 @@ JS, [
      *
      * @return string|null The preferred language
      */
-    public function getPreferredLanguage(): ?string
+    public function getPreferredLanguage(bool $parse = true): ?string
     {
-        return $this->_validateLocale($this->getPreference('language'), false);
+        $language = $this->getPreference('language');
+        $parsedLanguage = App::parseEnv($language);
+        return $this->_validateLocale($parsedLanguage, false) ? ($parse ? $parsedLanguage : $language) : null;
     }
 
     /**
@@ -2023,10 +2025,11 @@ JS, [
      * @return string|null The preferred locale
      * @since 3.5.0
      */
-    public function getPreferredLocale(): ?string
+    public function getPreferredLocale(bool $parse = true): ?string
     {
         $locale = $this->getPreference('locale');
-        return $this->_validateLocale(App::parseEnv($locale), true) ? $locale : null;
+        $parsedLocale = App::parseEnv($locale);
+        return $this->_validateLocale($parsedLocale, true) ? ($parse ? $parsedLocale : $locale) : null;
     }
 
     /**
@@ -2112,7 +2115,7 @@ JS, [
 
             case 'preferredLocale':
                 $locale = $this->getPreferredLocale();
-                return $locale ? Craft::$app->getI18n()->getLocaleById(App::parseEnv($locale))->getDisplayName(Craft::$app->language) : '';
+                return $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
         }
 
         return parent::attributeHtml($attribute);

@@ -1060,31 +1060,19 @@ class UsersController extends Controller
         $response = $this->asEditScreen($user, self::SCREEN_PREFERENCES);
 
         $i18n = Craft::$app->getI18n();
-        $appLocales = $i18n->getAppLocales();
-        ArrayHelper::multisort($appLocales, fn(Locale $locale) => $locale->getDisplayName());
-        $languageId = Craft::$app->getLocale()->getLanguageID();
 
-        $languageOptions = array_map(fn(Locale $locale) => [
-            'label' => $locale->getDisplayName(Craft::$app->language),
-            'value' => $locale->id,
-            'data' => [
-                'data' => [
-                    'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '',
-                    'hintLang' => $locale->id,
-                ],
-            ],
-        ], $appLocales);
-
-        $userLanguage = $user->getPreferredLanguage();
+        // user language
+        $userLanguage = $user->getPreferredLanguage(false);
 
         if (
             !$userLanguage ||
-            !ArrayHelper::contains($appLocales, fn(Locale $locale) => $locale->id === $userLanguage)
+            !ArrayHelper::contains($i18n->getAppLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLanguage))
         ) {
             $userLanguage = Craft::$app->language;
         }
 
-        $userLocale = $user->getPreferredLocale();
+        // user locale
+        $userLocale = $user->getPreferredLocale(false);
 
         if (
             !$userLocale ||
@@ -1095,7 +1083,6 @@ class UsersController extends Controller
 
         $response->action('users/save-preferences');
         $response->contentTemplate('users/_preferences', compact(
-            'languageOptions',
             'userLanguage',
             'userLocale',
         ));
