@@ -877,15 +877,13 @@ class Cp extends Component
      *
      * @param bool $showLocaleIds Whether to show the hint as locale id; e.g. en, en-GB
      * @param bool $showLocalizedNames Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
-     * @param bool $sort Whether to sort the locales by their display name
      * @param bool $appLocales Whether to limit the returned locales to just app locales (cp translation options) or show them all
      * @return array
      * @since 5.0.0
      */
     public function getLanguageOptions(
-        bool $showLocaleIds = true,
+        bool $showLocaleIds = false,
         bool $showLocalizedNames = false,
-        bool $sort = false,
         bool $appLocales = false,
     ): array {
         $options = [];
@@ -898,9 +896,7 @@ class Cp extends Component
             $allLocales = Craft::$app->getI18n()->getAllLocales();
         }
 
-        if ($sort) {
-            ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
-        }
+        ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
 
         foreach ($allLocales as $locale) {
             $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '';
@@ -913,20 +909,19 @@ class Cp extends Component
                     ],
                 ],
             ];
-            $data = [];
 
+            $hints = [];
             if ($showLocaleIds) {
-                $data = [
-                    'hint' => $locale->id,
-                ];
-            } elseif ($showLocalizedNames) {
-                $data = [
-                    'hint' => $name,
-                    'hintLang' => $locale->id,
-                ];
+                $hints[] = $locale->id;
+            }
+            if ($showLocalizedNames) {
+                $hints[] = $name;
+                $option['data']['data']['hintLang'] = $locale->id;
+            }
+            if (!empty($hints)) {
+                $option['data']['data']['hint'] = implode(', ', $hints);
             }
 
-            $option['data']['data'] = $option['data']['data'] + $data;
             $options[] = $option;
         }
 

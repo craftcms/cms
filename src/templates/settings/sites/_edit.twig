@@ -63,7 +63,7 @@
             id: 'language',
             name: 'language',
             value: site.getLanguage(false),
-            options: craft.cp.getLanguageOptions(),
+            options: craft.cp.getLanguageOptions(true),
             errors: site.getErrors('language'),
             includeEnvVars: true,
         }) }}

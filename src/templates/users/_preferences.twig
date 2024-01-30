@@ -8,7 +8,7 @@
     name: 'preferredLanguage',
     label: 'Language'|t('app'),
     instructions: 'The language that the control panel should use.'|t('app'),
-    options: craft.cp.getLanguageOptions(false, true, true, true),
+    options: craft.cp.getLanguageOptions(false, true, true),
     value: userLanguage,
     appOnly: true,
   }) }}
@@ -18,7 +18,7 @@
     name: 'preferredLocale',
     label: 'Formatting Locale'|t('app'),
     instructions: 'The locale that should be used for date and number formatting.'|t('app'),
-    options: [{'label' : 'Same as language'|t('app'), 'value' : ''}]|merge(craft.cp.getLanguageOptions(false, true, true)),
+    options: [{'label' : 'Same as language'|t('app'), 'value' : ''}]|merge(craft.cp.getLanguageOptions(false, true)),
     value: userLocale,
   }) }}
 
