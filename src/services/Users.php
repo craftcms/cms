@@ -410,7 +410,7 @@ class Users extends Component
     {
         $preferences = $this->getUserPreferences($userId);
 
-        if ($preferences[$key] && $parse) {
+        if (isset($preferences[$key]) && $parse) {
             return App::parseEnv($preferences[$key]);
         }
 
