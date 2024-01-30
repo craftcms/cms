@@ -54,18 +54,6 @@ class Smtp extends BaseTransportAdapter
     public ?string $password = null;
 
     /**
-     * @var string|null The encryption method that should be used, if any (ssl or tls)
-     * @deprecated in 4.3.7. All SMTP requests will use TLS whenever port 465 is used, or the port isn’t specified and OpenSSL is installed.
-     */
-    public ?string $encryptionMethod = null;
-
-    /**
-     * @var string|int The timeout duration (in seconds)
-     * @deprecated in 4.3.7.
-     */
-    public string|int $timeout = 10;
-
-    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -92,7 +80,6 @@ class Smtp extends BaseTransportAdapter
                     'useAuthentication',
                     'username',
                     'password',
-                    'encryptionMethod',
                 ],
             ],
         ];
