@@ -2010,11 +2010,9 @@ JS, [
      *
      * @return string|null The preferred language
      */
-    public function getPreferredLanguage(bool $parse = true): ?string
+    public function getPreferredLanguage(): ?string
     {
-        $language = $this->getPreference('language');
-        $parsedLanguage = App::parseEnv($language);
-        return $this->_validateLocale($parsedLanguage, false) ? ($parse ? $parsedLanguage : $language) : null;
+        return $this->_validateLocale($this->getPreference('language'), false);
     }
 
     /**
@@ -2025,11 +2023,9 @@ JS, [
      * @return string|null The preferred locale
      * @since 3.5.0
      */
-    public function getPreferredLocale(bool $parse = true): ?string
+    public function getPreferredLocale(): ?string
     {
-        $locale = $this->getPreference('locale');
-        $parsedLocale = App::parseEnv($locale);
-        return $this->_validateLocale($parsedLocale, true) ? ($parse ? $parsedLocale : $locale) : null;
+        return $this->_validateLocale($this->getPreference('locale'), true);
     }
 
     /**

@@ -1062,7 +1062,7 @@ class UsersController extends Controller
         $i18n = Craft::$app->getI18n();
 
         // user language
-        $userLanguage = $user->getPreferredLanguage(false);
+        $userLanguage = $user->getPreferredLanguage();
 
         if (
             !$userLanguage ||
@@ -1072,7 +1072,7 @@ class UsersController extends Controller
         }
 
         // user locale
-        $userLocale = $user->getPreferredLocale(false);
+        $userLocale = $user->getPreferredLocale();
 
         if (
             !$userLocale ||
