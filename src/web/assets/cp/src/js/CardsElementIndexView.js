@@ -48,6 +48,6 @@ Craft.CardsElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   getElementContainer: function () {
-    return this.$container.find('> .cards');
+    return this.$container.find('> .card-grid');
   },
 });

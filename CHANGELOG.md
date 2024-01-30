@@ -1,5 +1,22 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Sites’ Language settings can now be set to environment variables. ([#14235](https://github.com/craftcms/cms/pull/14235), [#14135](https://github.com/craftcms/cms/discussions/14135))
+- Card views are once again multi-column on wider viewports. ([#14202](https://github.com/craftcms/cms/discussions/14202))
+- Added the “Show cards in a grid” Matrix field setting. ([#14202](https://github.com/craftcms/cms/discussions/14202))
+- Added the `languageMenu` and `languageMenuField` form macros.
+- Added `craft\models\FieldLayout::getFieldByUid()`.
+- Added `craft\models\Site::getLanguage()`.
+- Added `craft\models\Site::setLanguage()`.
+- Removed `\craft\mail\transportadapters\Gmail::$timeout`.
+- Removed `\craft\mail\transportadapters\Smtp::$encryptionMethod`.
+- Removed `\craft\mail\transportadapters\Smtp::$timeout`.
+- Updated `yiisoft/yii2-symfonymailer` to v4.
+- Fixed a bug where it wasn’t possible to set the “Formatting Locale” user preference back to “Same as language” once another value had been selected.
+- Fixed a bug where element index tables weren’t displaying custom field values for fields with overridden handles. ([#14245](https://github.com/craftcms/cms/issues/14245))
+- Fixed a bug where chips within element cards were getting action menus appended when cards were refreshed after the element was saved.
+
 ## 5.0.0-alpha.9 - 2024-01-29
 
 - Added live conditional field support to inline-editable Matrix blocks. ([#14223](https://github.com/craftcms/cms/pull/14223))
@@ -36,7 +53,7 @@
 - Fixed a bug where nested Matrix entries could get deleted when editing multiple of them within the same parent Matrix entry.
 - Fixed a bug where empty Dropdown fields were getting treated as dirty when unchanged.
 - Fixed a bug where Matrix fields in element index or cards view weren’t working properly when nested within an inline-editable Matrix block.
-- Fixed a bug where all checkboxes would appear checked within selected Matrix blocks. 
+- Fixed a bug where all checkboxes would appear checked within selected Matrix blocks.
 - Fixed a bug where Recent Entries widgets were getting mangled when new entries were created via Quick Post widgets.
 - Fixed a bug where linked chip labels weren’t getting focus rings.
 - Fixed an error that could occur when field handles were overridden. ([#14166](https://github.com/craftcms/cms/issues/14166), [#14221](https://github.com/craftcms/cms/issues/14221))

@@ -2422,12 +2422,18 @@ $.extend(Craft, {
             }
           }
           const $actions = $element
-            .find('.chip-actions,.card-actions')
+            .find(
+              '> .chip-content .chip-actions,> .card-actions-container .card-actions'
+            )
             .detach();
           const $inputs = $element.find('input,button').detach();
           $element.html($replacement.html());
           if ($actions.length) {
-            $element.find('.chip-actions,.card-actions').replaceWith($actions);
+            $element
+              .find(
+                '> .chip-content .chip-actions,> .card-actions-container .card-actions'
+              )
+              .replaceWith($actions);
           }
           if ($inputs.length) {
             $inputs.appendTo($element);

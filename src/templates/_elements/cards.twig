@@ -1,8 +1,13 @@
 {% set elements = elements ?? [] %}
 {% set disabled = disabled ?? null %}
-{% set viewMode = viewMode ?? null %}
+{% set showInGrid = showInGrid ?? false %}
 
-<ul class="elements cards">
+{% tag 'ul' with {
+  class: [
+    'elements',
+    showInGrid ? 'card-grid' : 'cards',
+  ],
+} %}
   {%- apply spaceless  %}
     {% for element in elements %}
       <li>
@@ -20,4 +25,4 @@
       </li>
     {% endfor %}
   {% endapply -%}
-</ul>
+{% endtag %}

@@ -628,7 +628,9 @@ class Addresses extends Field implements
 
     private function inputHtmlInternal(?ElementInterface $owner, bool $static = false): string
     {
-        $config = [];
+        $config = [
+            'showInGrid' => true,
+        ];
 
         if (!$static) {
             $config += [

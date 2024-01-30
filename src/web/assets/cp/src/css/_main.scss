@@ -3275,6 +3275,21 @@ table {
   }
 }
 
+.card-grid {
+  display: grid !important;
+  gap: var(--s) !important;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+
+  & > li {
+    border-radius: var(--large-border-radius);
+
+    & > .card {
+      margin: 0 !important;
+      height: 100%;
+    }
+  }
+}
+
 .context-label,
 .context-menu-container {
   display: inline-flex;
