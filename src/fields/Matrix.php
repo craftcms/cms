@@ -204,6 +204,12 @@ class Matrix extends Field implements
     public string $viewMode = self::VIEW_MODE_CARDS;
 
     /**
+     * @var bool Whether cards should be shown in a multi-column grid
+     * @since 5.0.0
+     */
+    public bool $showCardsInGrid = false;
+
+    /**
      * @var bool Include table view in element indexes
      * @since 5.0.0
      */
@@ -870,7 +876,9 @@ class Matrix extends Field implements
     private function nestedElementManagerHtml(?ElementInterface $owner, bool $static = false): string
     {
         $entryTypes = $this->getEntryTypes();
-        $config = [];
+        $config = [
+            'showInGrid' => $this->showCardsInGrid,
+        ];
 
         if (!$static) {
             $config += [

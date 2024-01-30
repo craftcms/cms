@@ -5285,24 +5285,22 @@ JS, [
                 // Is this a custom field?
                 if (preg_match('/^field:(.+)/', $attribute, $matches)) {
                     $fieldUid = $matches[1];
-                    $field = Craft::$app->getFields()->getFieldByUid($fieldUid);
+                    $field = $this->getFieldLayout()?->getFieldByUid($fieldUid);
 
-                    if ($field) {
-                        if ($field instanceof PreviewableFieldInterface) {
-                            // Was this field value eager-loaded?
-                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
-                                $value = $this->getEagerLoadedElements($field->handle);
-                            } else {
-                                // The field might not actually belong to this element
-                                try {
-                                    $value = $this->getFieldValue($field->handle);
-                                } catch (InvalidFieldException) {
-                                    return '';
-                                }
+                    if ($field instanceof PreviewableFieldInterface) {
+                        // Was this field value eager-loaded?
+                        if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                            $value = $this->getEagerLoadedElements($field->handle);
+                        } else {
+                            // The field might not actually belong to this element
+                            try {
+                                $value = $this->getFieldValue($field->handle);
+                            } catch (InvalidFieldException) {
+                                return '';
                             }
-
-                            return $field->getPreviewHtml($value, $this);
                         }
+
+                        return $field->getPreviewHtml($value, $this);
                     }
 
                     return '';

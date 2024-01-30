@@ -316,6 +316,10 @@ class NestedElementManager extends Component
      */
     public function getCardsHtml(?ElementInterface $owner, array $config = []): string
     {
+        $config += [
+            'showInGrid' => false,
+        ];
+
         return $this->createView(
             $owner,
             $config,
@@ -350,7 +354,10 @@ class NestedElementManager extends Component
                         $elements,
                     ), [
                         'encode' => false,
-                        'class' => ['elements', 'cards'],
+                        'class' => [
+                            'elements',
+                            $config['showInGrid'] ? 'card-grid' : 'cards',
+                        ],
                     ]);
                 }
 
