@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => '라벨이 없는 구분자를 원하지 않는 한 비워둘 수 없습니다.',
     'This can be set to an environment variable matching one of the option values.' => '이는 옵션 값 중 하나와 일치하는 환경 변수로 설정할 수 있습니다.',
     'This can be set to an environment variable with a boolean value ({examples}).' => '이것은 부울 값({examples})을 사용하여 환경 변수로 설정할 수 있습니다.',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => '이것은 [supported time zone]({url}) 값을 사용하여 환경 변수로 설정할 수 있습니다.',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => '이는 환경 변수 또는 ID를 출력하는 Twig 템플릿으로 설정할 수 있습니다.',
     'This can be set to an environment variable, or begin with an alias.' => '환경 변수에 설정하거나 별칭으로 시작할 수 있습니다.',
