@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => 'Toto může být ponecháno prázdné, pokud chcete neznačený separátor.',
     'This can be set to an environment variable matching one of the option values.' => 'Toto lze nastavit na proměnnou prostředí, která odpovídá jedné z možností hodnot.',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'Lze nastavit na proměnnou prostředí s logickou hodnotou ({examples}).',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'Lze nastavit do proměnné prostředí s hodnotou [podporovaného časového pásma]({url}).',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'Lze nastavit jako proměnnou prostředí nebo šablonu Twig, která vypíše ID.',
     'This can be set to an environment variable, or begin with an alias.' => 'Toto lze nastavit na proměnnou prostředí, nebo začít s aliasem.',

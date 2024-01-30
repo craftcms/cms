@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => 'Можна лишити порожнім, якщо вам потрібний лише роздільник без мітки.',
     'This can be set to an environment variable matching one of the option values.' => 'Тут можна встановити змінну середовища, яка відповідає одному зі значень параметра.',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'Тут можна встановити змінну середовища з логічним значенням ({examples}).',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'Тут можна встановити змінну середовища зі значенням [підтримуваного часового поясу]({url}).',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'Це значення можна задати для змінної середовища або шаблону Twig, який виводить ідентифікатор.',
     'This can be set to an environment variable, or begin with an alias.' => 'Тут можна встановити змінну середовища або почати з псевдоніма.',

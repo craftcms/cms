@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => 'Ak chcete neoznačený oddeľovač, toto môžete nechať prázdne.',
     'This can be set to an environment variable matching one of the option values.' => 'Túto hodnotu možno nastaviť na premennú prostredia, ktorá zodpovedá jednej z hodnôt možností.',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'Možno ju nastaviť na premennú prostredia s logickou hodnotou ({examples}).',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'Túto hodnotu možno nastaviť na premennú prostredia s hodnotou [supported time zone]({url}).',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'Túto hodnotu možno nastaviť na premennú prostredia alebo na šablónu Twig, ktorá udáva ID.',
     'This can be set to an environment variable, or begin with an alias.' => 'Toto môžete nastaviť ako premennú prostredia alebo môže začínať aliasom.',

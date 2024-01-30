@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => 'Его нельзя оставить пустым, если вам нужен только непомеченный разделитель.',
     'This can be set to an environment variable matching one of the option values.' => 'Можно установить переменную среды, соответствующую одному из значений параметра.',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'Здесь можно указать переменную среды с логическим значением ({examples}).',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'Здесь можно указать переменную среды со значением [поддерживаемого часового пояса]({url}).',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'Это значение можно задать для переменной окружения или шаблона Twig, который выводит идентификатор.',
     'This can be set to an environment variable, or begin with an alias.' => 'Здесь можно установить переменную окружения или начать с псевдонима.',

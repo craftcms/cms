@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => 'セパレータをラベル無しとする場合、ここは空白のままで構いません。',
     'This can be set to an environment variable matching one of the option values.' => 'これはオプション値のいずれかに一致する環境変数に設定できます。',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'これはブーリアン値 ({examples}) を使用して環境変数に設定できます。',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'これは [supported time zone]({url}) の値を使用して環境変数に設定できます。',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'これは環境変数を設定するか、またはIDを出力するTwigテンプレートを使用できます。',
     'This can be set to an environment variable, or begin with an alias.' => 'これは環境変数に設定することも、エイリアスから始めることもできます。',
