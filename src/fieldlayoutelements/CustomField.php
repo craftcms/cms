@@ -227,10 +227,13 @@ class CustomField extends BaseField
      */
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
-        $attributes = parent::containerAttributes($element, $static);
-        $attributes['id'] = "{$this->_field->handle}-field";
-        $attributes['data']['type'] = get_class($this->_field);
-        return $attributes;
+        return ArrayHelper::merge(parent::containerAttributes($element, $static), [
+            'id' => "{$this->_field->handle}-field",
+            'data' => [
+                'type' => get_class($this->_field),
+                'base-input-name' => Craft::$app->getView()->namespaceInputName($this->_field->handle),
+            ],
+        ]);
     }
 
     /**

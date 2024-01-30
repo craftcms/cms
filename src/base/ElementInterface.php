@@ -336,8 +336,8 @@ interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Sta
     public static function modifyCustomSource(array $config): array;
 
     /**
-     * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-actions.html) for a
-     * given source.
+     * Returns the available [bulk element actions](https://craftcms.com/docs/4.x/extend/element-actions.html)
+     * for a given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name
      * set to a `type` key, or by an instantiated element action object.
@@ -348,7 +348,7 @@ interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Sta
      * :::
      *
      * @param string $source The selected source’s key.
-     * @return array The available element actions.
+     * @return array The available bulk element actions.
      * @phpstan-return array<ElementActionInterface|class-string<ElementActionInterface>|array{type:class-string<ElementActionInterface>}>
      */
     public static function actions(string $source): array;

@@ -316,6 +316,10 @@ class NestedElementManager extends Component
      */
     public function getCardsHtml(?ElementInterface $owner, array $config = []): string
     {
+        $config += [
+            'showInGrid' => false,
+        ];
+
         return $this->createView(
             $owner,
             $config,
@@ -350,7 +354,10 @@ class NestedElementManager extends Component
                         $elements,
                     ), [
                         'encode' => false,
-                        'class' => ['elements', 'card-grid'],
+                        'class' => [
+                            'elements',
+                            $config['showInGrid'] ? 'card-grid' : 'cards',
+                        ],
                     ]);
                 }
 
@@ -465,13 +472,17 @@ class NestedElementManager extends Component
         $config += [
             'sortable' => false,
             'canCreate' => false,
-            'createButtonLabel' => Craft::t('app', 'New {type}', [
-                'type' => $elementType::lowerDisplayName(),
-            ]),
+            'createButtonLabel' => null,
             'createAttributes' => null,
             'minElements' => null,
             'maxElements' => null,
         ];
+
+        if ($config['createButtonLabel'] === null) {
+            $config['createButtonLabel'] = Craft::t('app', 'New {type}', [
+                'type' => $elementType::lowerDisplayName(),
+            ]);
+        }
 
         $authorizedOwnerId = $owner->id;
         if ($owner->isProvisionalDraft) {
@@ -508,6 +519,7 @@ class NestedElementManager extends Component
                 'createButtonLabel' => $config['createButtonLabel'],
                 'ownerIdParam' => $this->ownerIdParam,
                 'fieldHandle' => $this->field?->handle,
+                'baseInputName' => $view->getNamespace(),
             ];
 
             if (!empty($config['createAttributes'])) {
@@ -543,7 +555,7 @@ JS, [
             ]);
 
             return $html;
-        }, Html::id($attribute));
+        }, Html::id($this->field->handle ?? $attribute));
     }
 
     /**
