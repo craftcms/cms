@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\helpers\App;
+use craft\helpers\Console;
 use craft\helpers\Json;
 use ReflectionFunctionAbstract;
 use Throwable;
@@ -17,7 +18,6 @@ use yii\console\Controller;
 use yii\console\controllers\HelpController as BaseHelpController;
 use yii\console\Exception;
 use yii\console\ExitCode;
-use yii\helpers\Console;
 use yii\helpers\Inflector;
 
 /**
