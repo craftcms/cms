@@ -27,7 +27,7 @@
         name: 'name',
         value: globalSet.name,
         errors: globalSet.getErrors('name'),
-        autofocus: true,
+        autofocus: currentUser.getAutofocusPreferred(),
         required: true,
     }) }}
 

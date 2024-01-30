@@ -10,7 +10,7 @@
     name: 'name',
     value: entryType.name,
     errors: entryType.getErrors('name'),
-    autofocus: true,
+    autofocus: currentUser.getAutofocusPreferred(),
     required: true
 }) }}
 

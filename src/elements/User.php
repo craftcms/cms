@@ -2028,6 +2028,11 @@ JS, [
         return $this->_validateLocale($this->getPreference('locale'), true);
     }
 
+    public function getAutofocusPreferred(): bool
+    {
+        return !$this->getPreference('disableAutofocus');
+    }
+
     /**
      * Validates and returns a locale ID.
      *

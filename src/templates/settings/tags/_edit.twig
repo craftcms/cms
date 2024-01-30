@@ -27,7 +27,7 @@
         name: 'name',
         value: tagGroup.name,
         errors: tagGroup.getErrors('name'),
-        autofocus: true,
+        autofocus: currentUser.getAutofocusPreferred(),
         required: true,
     }) }}
 

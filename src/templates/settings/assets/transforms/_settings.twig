@@ -33,7 +33,7 @@
             name: 'name',
             value: transform.name,
             errors: transform.getErrors('name'),
-            autofocus: true,
+            autofocus: currentUser.getAutofocusPreferred(),
             required: true,
         }) }}
 

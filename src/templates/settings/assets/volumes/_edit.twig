@@ -10,7 +10,7 @@
     name: 'name',
     value: volume.name,
     errors: volume.getErrors('name'),
-    autofocus: true,
+    autofocus: currentUser.getAutofocusPreferred(),
     required: true,
 }) }}
 
