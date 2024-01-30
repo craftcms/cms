@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-alpha.9 - 2024-01-29
 
 - Added live conditional field support to inline-editable Matrix blocks. ([#14223](https://github.com/craftcms/cms/pull/14223))
 - Inline-editable Matrix blocks have been redesigned to be visually lighter. ([#14187](https://github.com/craftcms/cms/pull/14187))
@@ -10,7 +10,9 @@
 - Improved the accessibility of Matrix fields with the “inline-editable blocks” view mode. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Added the “Color” entry type setting. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Entry chips, cards, and blocks are now tinted according to their entry type’s color. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Unpublished drafts no longer show “Created at” or “Updated at” metadata values. ([#14204](https://github.com/craftcms/cms/issues/14204))
 - Quick Post widgets now create entries via slideouts. ([#14228](https://github.com/craftcms/cms/pull/14228))
+- Card views are now always single-column. ([#14202](https://github.com/craftcms/cms/discussions/14202))
 - The Fields and Entry Types index pages now have a search bar. ([#13961](https://github.com/craftcms/cms/discussions/13961), [#14126](https://github.com/craftcms/cms/pull/14126))
 - Disclosure menu items and custom select options can now have a `color` key.
 - Added the `customSelect()` global function for control panel templates.
@@ -37,6 +39,12 @@
 - Fixed a bug where all checkboxes would appear checked within selected Matrix blocks. 
 - Fixed a bug where Recent Entries widgets were getting mangled when new entries were created via Quick Post widgets.
 - Fixed a bug where linked chip labels weren’t getting focus rings.
+- Fixed an error that could occur when field handles were overridden. ([#14166](https://github.com/craftcms/cms/issues/14166), [#14221](https://github.com/craftcms/cms/issues/14221))
+- Fixed an error that occurred when adding a Dropdown field condition rule, if the field contained any optgroups. ([#14224](https://github.com/craftcms/cms/issues/14224))
+- Fixed a bug where Dropdown field condition rules weren’t displaying `0` options. ([#14232](https://github.com/craftcms/cms/pull/14232))
+- Fixed a bug where layout components provided by disabled plugins weren’t getting omitted. ([#14219](https://github.com/craftcms/cms/pull/14219))
+- Fixed an error that occurred when viewing the Entry Types index page, if any entry types had no usages. ([#14207](https://github.com/craftcms/cms/pull/14207))
+- Fixed a bug where custom select labels were overflowing within meta panes. ([#14203](https://github.com/craftcms/cms/issues/14203))
 
 ## 5.0.0-alpha.8 - 2024-01-23
 

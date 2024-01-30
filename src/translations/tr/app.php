@@ -976,6 +976,7 @@ return [
     'New Issues' => 'Yeni Konular',
     'New Password' => 'Yeni Şifre',
     'New Tab' => 'Yeni Sekme',
+    'New block' => 'New block',
     'New category group' => 'Yeni Kategori Grubu',
     'New category in the {group} category group' => '{group} kategori grubundaki yeni kategori',
     'New category' => 'Yeni Kategori',

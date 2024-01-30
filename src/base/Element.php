@@ -185,7 +185,7 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
 
     /**
-     * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
+     * @event RegisterElementActionsEvent The event that is triggered when registering the available bulk actions for the element type.
      */
     public const EVENT_REGISTER_ACTIONS = 'registerActions';
 
@@ -1078,10 +1078,10 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Defines the available element actions for a given source.
+     * Defines the available bulk element actions for a given source.
      *
      * @param string $source The selected source’s key, if any.
-     * @return array The available element actions.
+     * @return array The available bulk element actions.
      * @see actions()
      */
     protected static function defineActions(string $source): array
@@ -5591,10 +5591,10 @@ JS,
                 return $icon . Html::tag('span', $label);
             },
         ], $event->metadata, [
-            Craft::t('app', 'Created at') => $this->dateCreated
+            Craft::t('app', 'Created at') => $this->dateCreated && !$this->getIsUnpublishedDraft()
                 ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
                 : false,
-            Craft::t('app', 'Updated at') => $this->dateUpdated
+            Craft::t('app', 'Updated at') => $this->dateUpdated && !$this->getIsUnpublishedDraft()
                 ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT)
                 : false,
             Craft::t('app', 'Notes') => function() {

@@ -350,7 +350,7 @@ class NestedElementManager extends Component
                         $elements,
                     ), [
                         'encode' => false,
-                        'class' => ['elements', 'card-grid'],
+                        'class' => ['elements', 'cards'],
                     ]);
                 }
 

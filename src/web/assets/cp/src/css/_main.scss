@@ -3101,8 +3101,6 @@ table {
 .chips,
 .cards {
   display: flex;
-  align-items: flex-start;
-  gap: var(--xs);
   --custom-bg-color: initial;
   --custom-text-color: initial;
   --custom-sel-bg-color: initial;
@@ -3114,6 +3112,15 @@ table {
   li {
     max-width: 100%;
   }
+}
+
+.cards {
+  gap: var(--s);
+}
+
+.chips {
+  align-items: flex-start;
+  gap: var(--xs);
 }
 
 .inline-chips {
@@ -3139,6 +3146,7 @@ table {
   border-radius: var(--large-border-radius);
   cursor: default;
   user-select: none;
+  width: 100%;
 
   &:after {
     border-radius: var(--large-border-radius);
@@ -3264,22 +3272,6 @@ table {
     display: flex;
     align-items: flex-start !important;
     position: relative;
-  }
-}
-
-.card-grid {
-  display: grid !important;
-  gap: var(--s) !important;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-
-  & > li {
-    border-radius: var(--large-border-radius);
-    height: 100%;
-
-    & > .card {
-      margin: 0 !important;
-      height: 100%;
-    }
   }
 }
 
@@ -5157,6 +5149,12 @@ $min2ColWidth: 400px;
       @include right(0);
     }
   }
+
+  .label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .body {
@@ -6465,10 +6463,6 @@ $min2ColWidth: 400px;
 
   &.error {
     color: var(--menu-item-active-color) !important;
-  }
-
-  span.light {
-    color: var(--white) !important;
   }
 }
 .menu {
@@ -8039,10 +8033,6 @@ body.setup-2fa {
     &.autosuggest__results-item--highlighted {
       @include menu-item-active-styles;
       cursor: pointer;
-
-      .light {
-        color: $grey100 !important;
-      }
     }
   }
 }
