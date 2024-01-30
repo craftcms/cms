@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => 'اگر فقط یک جدا کننده بدون برچسب می خواهید می تواند خالی گذاشته شود.',
     'This can be set to an environment variable matching one of the option values.' => 'می‌تواند به یک متغیر محیطی مطابق یکی از مقادیر گزینه ها تنظیم گردد.',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'می‌تواند به یک متغیر محیطی با یک مقدار بولین ({examples}) تنظیم شود.',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'می‌تواند به یک متغیر محیطی با مقدار یک [منطقه زمانی پشتیبانی‌ شده]({url}) تنظیم گردد.',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'این را می توان روی یک متغیر محیطی یا یک الگوی Twig که یک ID را خروجی می کند تنظیم کرد.',
     'This can be set to an environment variable, or begin with an alias.' => 'می تواند به یک متغیر محیطی تنظیم گردد یا با یک نام مستعار شروع گردد.',

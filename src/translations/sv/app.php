@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => 'Detta kan lämnas tomt om du vill ha en omärkt avskiljare.',
     'This can be set to an environment variable matching one of the option values.' => 'Detta kan ställas in som en miljövariabel som matchar ett av inställningsvärdena.',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'Det här kan ställas in som en miljövariabel med booleskt värde ({examples}).',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'Det här kan ställas in som en miljövariabel med ett värde på en [tidszon som stöds]({url}).',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'Det här kan ställas som en miljövariabel eller en Twig-mall som matar ut ett ID.',
     'This can be set to an environment variable, or begin with an alias.' => 'Detta kan ställas in som en miljövariabel eller börja med ett alias.',

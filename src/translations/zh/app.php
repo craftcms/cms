@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => '如果你只想要一个未标记的分隔符，那么此处可以留空。',
     'This can be set to an environment variable matching one of the option values.' => '这可以设置为与其中一个选项值匹配的环境变量。',
     'This can be set to an environment variable with a boolean value ({examples}).' => '这可以设置为一个包含布尔值（{examples}）的环境变量。',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => '这可以设置为一个包含[支持的时区]({url})的环境变量。',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => '此项不可设为环境变量或输出 ID 的 Twig 模板。',
     'This can be set to an environment variable, or begin with an alias.' => '输入框可以设置为环境变量，或以别名开头。',

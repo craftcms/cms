@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => 'Ezt üresen lehet hagyni, ha címke nélküli elválasztót akarsz.',
     'This can be set to an environment variable matching one of the option values.' => 'Ez környezeti változóra állítható be, amely megfelel valamelyik választható értéknek.',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'Ez környezeti változóban állítható be logikai típusú értékkel ({examples}).',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'Ez környezeti változóban állítható be [supported time zone]({url}) értékkel.',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'Ez környezeti változóban, vagy egy ID-t kiadó Twig-sablonból állítható be.',
     'This can be set to an environment variable, or begin with an alias.' => 'Ez környezeti változóban állítható be, vagy kezdje alias-szal.',
