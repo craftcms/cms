@@ -753,8 +753,6 @@ class Cp extends Component
         return $this->_envOptions($options);
     }
 
-
-
     /**
      * Returns environment variable options for a language menu.
      *
