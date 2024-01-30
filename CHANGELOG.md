@@ -3,6 +3,7 @@
 ## Unreleased
 
 - It’s now possible to select the temp asset volume within Assets fields, if the temp upload location includes a subpath. ([#14246](https://github.com/craftcms/cms/pull/14246))
+- Fixed a bug where it wasn’t possible to set the “Formatting Locale” user preference back to “Same as language” once another value had been selected.
 
 ## 4.7.1 - 2024-01-29
 
