@@ -62,13 +62,13 @@
   }) }}
 
   {{ forms.checkboxGroupField({
-    label: 'Navigation Settings'|t('app'),
+    label: 'General Settings'|t('app'),
     options: [
       {
-        label: 'Autofocus search inputs'|t('app'),
-        name: 'autofocusSearch',
-        id: 'autofocusSearch',
-        checked: currentUser.getPreference('autofocusSearch') ?? a11yDefaults['autofocusSearch'] ?? false,
+        label: 'Disable autofocus'|t('app'),
+        name: 'disableAutofocus',
+        id: 'disableAutofocus',
+        checked: currentUser.getPreference('disableAutofocus') ?? a11yDefaults['disableAutofocus'] ?? false,
       },
     ],
   }) }}

@@ -539,6 +539,7 @@ return [
     'Directories cannot be deleted while moving assets.' => 'Directories cannot be deleted while moving assets.',
     'Disable focal point' => 'Disable focal point',
     'Disable' => 'Disable',
+    'Disable autofocus' => 'Disable autofocus',
     'Disabled' => 'Disabled',
     'Discard changes' => 'Discard changes',
     'Discard' => 'Discard',
