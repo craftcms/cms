@@ -436,6 +436,9 @@
 - Deprecated the `_elements/element.twig` control panel template. `elementChip()` or `elementCard()` should be used instead.
 - Deprecated the `cp.elements.element` control panel template hook.
 - Removed the `_includes/revisionmenu.twig` control panel template.
+- Removed `\craft\mail\transportadapters\Gmail::$timeout`.
+- Removed `\craft\mail\transportadapters\Smtp::$encryptionMethod`.
+- Removed `\craft\mail\transportadapters\Smtp::$timeout`.
 - Removed `craft\base\ApplicationTrait::getMatrix()`.
 - Removed `craft\base\Element::$contentId`.
 - Removed `craft\base\Element::ATTR_STATUS_MODIFIED`. `craft\enums\AttributeStatus::Modified` should be used instead.
@@ -569,6 +572,7 @@
 - Craft now requires `pragmarx/recovery`.
 - Craft now requires `web-auth/webauthn-lib`.
 - Updated `illuminate/collections` to v10.
+- Updated `yiisoft/yii2-symfonymailer` to v4.
 - Craft no longer requires `composer/composer`.
 - New database tables now default to the `utf8mb4` charset, and the `utf8mb4_0900_ai_ci` or `utf8mb4_unicode_ci` collation, on MySQL. Existing installs should run `db/convert-charset` after upgrading, to ensure all tables have consistent charsets and collations. ([#11823](https://github.com/craftcms/cms/discussions/11823))
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))

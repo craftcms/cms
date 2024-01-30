@@ -6,10 +6,10 @@
 - Added the `languageMenu` and `languageMenuField` form macros.
 - Added `craft\models\Site::getLanguage()`.
 - Added `craft\models\Site::setLanguage()`.
-- Updated `yiisoft/yii2-symfonymailer` to v4
-- Removed `\craft\mail\transportadapters\Smtp::$encryptionMethod`
-- Removed `\craft\mail\transportadapters\Smtp::$timeout`
-- Removed `\craft\mail\transportadapters\Gmail::$timeout`
+- Removed `\craft\mail\transportadapters\Gmail::$timeout`.
+- Removed `\craft\mail\transportadapters\Smtp::$encryptionMethod`.
+- Removed `\craft\mail\transportadapters\Smtp::$timeout`.
+- Updated `yiisoft/yii2-symfonymailer` to v4.
 
 ## 5.0.0-alpha.9 - 2024-01-29
 
