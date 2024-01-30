@@ -492,6 +492,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
           this.initElement($element);
           await Craft.appendHeadHtml(data.headHtml);
           await Craft.appendBodyHtml(data.bodyHtml);
+          Craft.cp.elementThumbLoader.load($element);
           this.updateCreateBtn();
         })
         .catch(({response}) => {
