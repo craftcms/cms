@@ -23,7 +23,6 @@ use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
 use craft\events\UserPhotoEvent;
-use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -403,17 +402,11 @@ class Users extends Component
      * @param int $userId The user’s ID
      * @param string $key The preference’s key
      * @param mixed $default The default value, if the preference hasn’t been set
-     * @param bool $parse Whether to parse the value we got
      * @return mixed The user’s preference
      */
-    public function getUserPreference(int $userId, string $key, mixed $default = null, bool $parse = true): mixed
+    public function getUserPreference(int $userId, string $key, mixed $default = null): mixed
     {
         $preferences = $this->getUserPreferences($userId);
-
-        if (isset($preferences[$key]) && $parse) {
-            return App::parseEnv($preferences[$key]);
-        }
-
         return $preferences[$key] ?? $default;
     }
 
