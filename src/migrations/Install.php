@@ -606,7 +606,7 @@ class Install extends Migration
             'enabled' => $this->string()->notNull()->defaultValue('true'),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
-            'language' => $this->string(12)->notNull(),
+            'language' => $this->string()->notNull(),
             'hasUrls' => $this->boolean()->defaultValue(false)->notNull(),
             'baseUrl' => $this->string(),
             'sortOrder' => $this->smallInteger()->unsigned(),

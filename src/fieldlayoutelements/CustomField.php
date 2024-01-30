@@ -33,10 +33,10 @@ class CustomField extends BaseField
      */
     public ?string $handle = null;
 
-    /**
-     * @var FieldInterface|null The custom field this layout field is based on.
-     */
     private ?FieldInterface $_field = null;
+    private ?string $_originalName = null;
+    private ?string $_originalHandle = null;
+    private ?string $_originalInstructions = null;
 
     /**
      * @inheritdoc
@@ -151,6 +151,9 @@ class CustomField extends BaseField
     {
         $this->_field = clone $field;
         $this->_field->layoutElement = $this;
+        $this->_originalName = $this->_field->name;
+        $this->_originalHandle = $this->_field->handle;
+        $this->_originalInstructions = $this->_field->instructions;
 
         // Set the instance overrides
         $this->_field->name = $this->label ?? $this->_field->name;
@@ -213,7 +216,7 @@ class CustomField extends BaseField
         return Craft::$app->getView()->renderTemplate('_includes/forms/fld/custom-field-settings.twig', [
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),
-            'defaultHandle' => $this->_field->handle,
+            'defaultHandle' => $this->_originalHandle,
             'defaultInstructions' => $this->defaultInstructions(),
             'labelHidden' => !$this->showLabel(),
         ]);
@@ -224,10 +227,13 @@ class CustomField extends BaseField
      */
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
-        $attributes = parent::containerAttributes($element, $static);
-        $attributes['id'] = "{$this->_field->handle}-field";
-        $attributes['data']['type'] = get_class($this->_field);
-        return $attributes;
+        return ArrayHelper::merge(parent::containerAttributes($element, $static), [
+            'id' => "{$this->_field->handle}-field",
+            'data' => [
+                'type' => get_class($this->_field),
+                'base-input-name' => Craft::$app->getView()->namespaceInputName($this->_field->handle),
+            ],
+        ]);
     }
 
     /**
@@ -235,8 +241,8 @@ class CustomField extends BaseField
      */
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        if ($this->_field->name !== '' && $this->_field->name !== null && $this->_field->name !== '__blank__') {
-            return Craft::t('site', $this->_field->name);
+        if ($this->_originalName !== '' && $this->_originalName !== null && $this->_originalName !== '__blank__') {
+            return Craft::t('site', $this->_originalName);
         }
         return null;
     }
@@ -284,7 +290,7 @@ class CustomField extends BaseField
      */
     protected function defaultInstructions(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->_field->instructions ? Craft::t('site', $this->_field->instructions) : null;
+        return $this->_originalInstructions ? Craft::t('site', $this->_originalInstructions) : null;
     }
 
     /**

@@ -719,6 +719,24 @@ class FieldLayout extends Model
     }
 
     /**
+     * Returns a custom field by its UUID.
+     *
+     * @param string $uid The field UUID.
+     * @return FieldInterface|null
+     * @since 5.0.0
+     */
+    public function getFieldByUid(string $uid): ?FieldInterface
+    {
+        foreach ($this->getCustomFields() as $field) {
+            if ($field->uid === $uid) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns a custom field by its handle.
      *
      * @param string $handle The field handle.
