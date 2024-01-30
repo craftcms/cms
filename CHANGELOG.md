@@ -19,6 +19,7 @@
 - Fixed a bug where element index tables weren’t displaying custom field values for fields with overridden handles. ([#14245](https://github.com/craftcms/cms/issues/14245))
 - Fixed a bug where chips within element cards were getting action menus appended when cards were refreshed after the element was saved.
 - Fixed a bug where element thumbnails weren’t getting loaded within newly-added cards in Matrix and Addresses fields.
+- Fixed a bug where inline Matrix block tabs weren’t scaling up for text-only zoom levels. ([#14213](https://github.com/craftcms/cms/pull/14213)) 
 
 ## 5.0.0-alpha.9 - 2024-01-29
 
