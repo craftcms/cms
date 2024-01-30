@@ -274,7 +274,7 @@ class Assets extends BaseRelationField
                     ($attribute == 'restrictedLocationSource' && $this->restrictedLocationSource === $tempVolumeKey)
                 ) {
                     // intentionally not translating this since it's short-lived (>= 4.7, < 5.0) and dev-facing only.
-                    $this->addError($attribute, "Volume “{$tempVolume->name}” is used to store temporary asset uploads, so it cannot be used in an Assets field.");
+                    $this->addError($attribute, "Temporary asset uploads are being stored in $tempVolume->name, so the same volume cannot be used by an Assets field.");
                 }
             } else {
                 if (
@@ -286,7 +286,7 @@ class Assets extends BaseRelationField
                     $this->restrictedLocationSubpath == $tempSubpath)
                 ) {
                     // intentionally not translating this since it's short-lived (>= 4.7, < 5.0) and dev-facing only.
-                    $this->addError($attribute, "The combination of volume “{$tempVolume->name}” and “{$tempSubpath}“ subpath is used to store temporary asset uploads, so it cannot be used in an Assets field.");
+                    $this->addError($attribute, "Temporary asset uploads are being stored in $tempVolume->name/$tempSubpath, so the same location cannot be used by an Assets field.");
                 }
             }
         }
