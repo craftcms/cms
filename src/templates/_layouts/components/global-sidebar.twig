@@ -21,11 +21,8 @@
                 } %}
                 {% set linkAttributes = {
                     href: url(item.url),
-                    class: item.sel ? 'sel',
-                    aria: {
-                        current: item.sel and not item.subnav ? item.current : false,
-                    },
-                } %}
+                    class: item.sel ? ['sel'] : [],
+                }|merge(item.linkAttributes ?? {}, recursive=true) %}
                 <li {{ attr(itemAttributes) }}>
                     <a {{ attr(linkAttributes) }}>
                         <span class="icon icon-mask" aria-hidden="true">
