@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Sites’ Language settings can now be set to environment variables. ([#14235](https://github.com/craftcms/cms/pull/14235), [#14135](https://github.com/craftcms/cms/discussions/14135))
+- Added the `languageMenu` and `languageMenuField` form macros.
+- Added `craft\models\Site::getLanguage()`.
+- Added `craft\models\Site::setLanguage()`.
+
 ## 5.0.0-alpha.9 - 2024-01-29
 
 - Added live conditional field support to inline-editable Matrix blocks. ([#14223](https://github.com/craftcms/cms/pull/14223))
