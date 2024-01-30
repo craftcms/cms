@@ -55,6 +55,7 @@
 - Improved the accessibility of Matrix fields with the “inline-editable blocks” view mode. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Improved the accessibility of the global nav. ([#14240](https://github.com/craftcms/cms/pull/14240))Improved the accessibility of the global nav. ([#14240](https://github.com/craftcms/cms/pull/14240))
 - Improved the accessibility of layout tabs. ([#14215](https://github.com/craftcms/cms/pull/14215))
+- Improved the accessibility of overflow tab menus. ([#14214](https://github.com/craftcms/cms/pull/14214))
 
 ### Administration
 - Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))

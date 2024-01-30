@@ -7,6 +7,7 @@
 - Added the “Show cards in a grid” Matrix field setting. ([#14202](https://github.com/craftcms/cms/discussions/14202))
 - Improved the accessibility of the global nav. ([#14240](https://github.com/craftcms/cms/pull/14240))
 - Improved the accessibility of layout tabs. ([#14215](https://github.com/craftcms/cms/pull/14215))
+- Improved the accessibility of overflow tab menus. ([#14214](https://github.com/craftcms/cms/pull/14214))
 - Added the `languageMenu` and `languageMenuField` form macros.
 - Added `craft\models\FieldLayout::getFieldByUid()`.
 - Added `craft\models\Site::getLanguage()`.
