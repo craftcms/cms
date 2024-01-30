@@ -4,6 +4,7 @@
 
 - Sites’ Language settings can now be set to environment variables. ([#14235](https://github.com/craftcms/cms/pull/14235), [#14135](https://github.com/craftcms/cms/discussions/14135))
 - Added the `languageMenu` and `languageMenuField` form macros.
+- Added `craft\models\FieldLayout::getFieldByUid()`.
 - Added `craft\models\Site::getLanguage()`.
 - Added `craft\models\Site::setLanguage()`.
 - Removed `\craft\mail\transportadapters\Gmail::$timeout`.
@@ -11,6 +12,7 @@
 - Removed `\craft\mail\transportadapters\Smtp::$timeout`.
 - Updated `yiisoft/yii2-symfonymailer` to v4.
 - Fixed a bug where it wasn’t possible to set the “Formatting Locale” user preference back to “Same as language” once another value had been selected.
+- Fixed a bug where element index tables weren’t displaying custom field values for fields with overridden handles. ([#14245](https://github.com/craftcms/cms/issues/14245)) 
 
 ## 5.0.0-alpha.9 - 2024-01-29
 

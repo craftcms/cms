@@ -291,6 +291,7 @@
 - Added `craft\models\FieldLayout::getCardBodyFields()`.
 - Added `craft\models\FieldLayout::getElementByUid()`.
 - Added `craft\models\FieldLayout::getFieldById()`.
+- Added `craft\models\FieldLayout::getFieldByUid()`.
 - Added `craft\models\FieldLayout::getThumbField()`.
 - Added `craft\models\FsListing::getAdjustedUri()`.
 - Added `craft\models\Section::getCpEditUrl()`.
