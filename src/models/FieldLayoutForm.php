@@ -38,10 +38,9 @@ class FieldLayoutForm extends Model
     public function getTabMenu(): array
     {
         $menu = [];
-        $view = Craft::$app->getView();
         foreach ($this->tabs as $tab) {
             $containerId = $this->_tabId($tab->getId());
-            $menu[$view->namespaceInputId($containerId)] = [
+            $menu[$containerId] = [
                 'tabId' => $tab->getTabId(),
                 'label' => $tab->getName(),
                 'url' => "#$containerId",
