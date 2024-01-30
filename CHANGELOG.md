@@ -17,6 +17,7 @@
 - Fixed a bug where it wasn’t possible to set the “Formatting Locale” user preference back to “Same as language” once another value had been selected.
 - Fixed a bug where element index tables weren’t displaying custom field values for fields with overridden handles. ([#14245](https://github.com/craftcms/cms/issues/14245))
 - Fixed a bug where chips within element cards were getting action menus appended when cards were refreshed after the element was saved.
+- Fixed a bug where element thumbnails weren’t getting loaded within newly-added cards in Matrix and Addresses fields.
 
 ## 5.0.0-alpha.9 - 2024-01-29
 
