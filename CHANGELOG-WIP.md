@@ -53,6 +53,7 @@
 - Improved the accessibility of time zone fields.
 - Improved the accessibility of form alternative action menus.
 - Improved the accessibility of Matrix fields with the “inline-editable blocks” view mode. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Improved the accessibility of the global nav. ([#14240](https://github.com/craftcms/cms/pull/14240))Improved the accessibility of the global nav. ([#14240](https://github.com/craftcms/cms/pull/14240))
 
 ### Administration
 - Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))

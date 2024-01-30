@@ -5,6 +5,7 @@
 - Sites’ Language settings can now be set to environment variables. ([#14235](https://github.com/craftcms/cms/pull/14235), [#14135](https://github.com/craftcms/cms/discussions/14135))
 - Card views are once again multi-column on wider viewports. ([#14202](https://github.com/craftcms/cms/discussions/14202))
 - Added the “Show cards in a grid” Matrix field setting. ([#14202](https://github.com/craftcms/cms/discussions/14202))
+- Improved the accessibility of the global nav. ([#14240](https://github.com/craftcms/cms/pull/14240))
 - Added the `languageMenu` and `languageMenuField` form macros.
 - Added `craft\models\FieldLayout::getFieldByUid()`.
 - Added `craft\models\Site::getLanguage()`.
