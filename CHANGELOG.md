@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Updated `yiisoft/yii2-symfonymailer` to v4
+- Removed `\craft\mail\transportadapters\Smtp::$encryptionMethod`
+- Removed `\craft\mail\transportadapters\Smtp::$timeout`
+- Removed `\craft\mail\transportadapters\Gmail::$timeout`
+
 ## 5.0.0-alpha.9 - 2024-01-29
 
 - Added live conditional field support to inline-editable Matrix blocks. ([#14223](https://github.com/craftcms/cms/pull/14223))
