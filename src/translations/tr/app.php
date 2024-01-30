@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => 'Eğer sadece etiketsiz bir ayırıcı istiyorsanız bu boş bırakılabilir.',
     'This can be set to an environment variable matching one of the option values.' => 'Bu, seçenek değerlerinden biriyle eşleşen bir ortam değişkenine ayarlanabilir.',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'Bu, boole değeri ({examples}) olan bir ortam değişkeni olarak ayarlanabilir.',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'Bu, [desteklenen saat dilimi]({url}) değerine sahip bir ortam değişkeni olarak ayarlanabilir.',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'Bu, bir ortam değişkenine veya kimlik oluşturan bir Twig şablonuna ayarlanabilir.',
     'This can be set to an environment variable, or begin with an alias.' => 'Bu bir ortam değişkeni için ayarlanabilir veya bir takma adla başlayabilir.',
