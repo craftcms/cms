@@ -1606,6 +1606,7 @@ return [
     'This can be left blank if you just want an unlabeled separator.' => 'يمكن ترك هذا الحقل فارغاً إذا كنت تريد عدم تسمية الفاصل',
     'This can be set to an environment variable matching one of the option values.' => 'يمكن تعيين هذا على متغير بيئة يطابق إحدى قيم الخيار.',
     'This can be set to an environment variable with a boolean value ({examples}).' => 'يمكن ضبط هذا على متغير بيئة ذي قيمة منطقية ({examples}).',
+    'This can be set to an environment variable with a valid language ID ({examples}).' => 'This can be set to an environment variable with a valid language ID ({examples}).',
     'This can be set to an environment variable with a value of a [supported time zone]({url}).' => 'يمكن ضبط هذا على متغير بيئة ذي قيمة [المنطقة الزمنية المدعومة]({url}).',
     'This can be set to an environment variable, or a Twig template that outputs an ID.' => 'يمكن تعيين هذا إلى متغير بيئة، أو قالب Twig يُنشئ معرِّفًا.',
     'This can be set to an environment variable, or begin with an alias.' => 'يمكن تعيين هذا إلى أي من متغيرات البيئة، أو البدء باسم مستعار.',
