@@ -537,6 +537,7 @@ return [
     'Device type' => 'Тип пристрою',
     'Dimensions' => 'Розміри',
     'Directories cannot be deleted while moving assets.' => 'Під час переміщення ресурсів каталоги видаляти не можна.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'Вимкнути точку фокуса',
     'Disable' => 'Вимкнути',
     'Disabled' => 'Вимкнуто',
