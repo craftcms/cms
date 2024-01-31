@@ -2029,6 +2029,17 @@ JS, [
     }
 
     /**
+     * Returns whether the user prefers to have form fields autofocused on page load.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function getAutofocusPreferred(): bool
+    {
+        return !$this->getPreference('disableAutofocus');
+    }
+
+    /**
      * Validates and returns a locale ID.
      *
      * @param string|null $locale

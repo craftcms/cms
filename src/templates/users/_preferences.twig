@@ -61,6 +61,18 @@
     ],
   }) }}
 
+  {{ forms.checkboxGroupField({
+    label: 'General Settings'|t('app'),
+    options: [
+      {
+        label: 'Disable autofocus'|t('app'),
+        name: 'disableAutofocus',
+        id: 'disableAutofocus',
+        checked: currentUser.getPreference('disableAutofocus') ?? a11yDefaults['disableAutofocus'] ?? false,
+      },
+    ],
+  }) }}
+
   {{ forms.selectField({
     label: 'Notification Duration'|t('app'),
     instructions: 'How long notifications should be shown before they disappear automatically.'|t('app'),

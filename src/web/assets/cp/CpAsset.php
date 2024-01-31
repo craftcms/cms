@@ -504,6 +504,7 @@ JS;
             'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
             'dataAttributes' => Html::$dataAttributes,
             'defaultIndexCriteria' => [],
+            'disableAutofocus' => (bool)($currentUser->getPreference('disableAutofocus') ?? false),
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'elementTypeNames' => $elementTypeNames,
