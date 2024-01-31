@@ -174,7 +174,14 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
   </div>
   <div class="fld-tabcontent"></div>
 </div>
-`).appendTo(this.$tabContainer);
+`);
+      // keep it before the resize object
+      const $lastTab = this.$tabContainer.children('.fld-tab:last');
+      if ($lastTab.length) {
+        $tab.insertAfter($lastTab);
+      } else {
+        $tab.prependTo(this.$tabContainer);
+      }
 
       this.tabGrid.addItems($tab);
       this.tabDrag.addItems($tab);
@@ -359,7 +366,10 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
             $('<li/>').append(
               $('<a/>', {
                 'data-action': 'moveLeft',
-                text: Craft.t('app', 'Move to the left'),
+                text:
+                  Craft.orientation === 'ltr'
+                    ? Craft.t('app', 'Move to the left')
+                    : Craft.t('app', 'Move to the right'),
               })
             )
           )
@@ -367,36 +377,49 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
             $('<li/>').append(
               $('<a/>', {
                 'data-action': 'moveRight',
-                text: Craft.t('app', 'Move to the right'),
+                text:
+                  Craft.orientation === 'ltr'
+                    ? Craft.t('app', 'Move to the right')
+                    : Craft.t('app', 'Move to the left'),
               })
             )
           )
       );
 
-    let menuBtn = new Garnish.MenuBtn($editBtn, {
+    const menuBtn = new Garnish.MenuBtn($editBtn, {
       onOptionSelect: this.onTabOptionSelect.bind(this),
     });
+    const menu = menuBtn.menu;
+    const $menu = menu.$container;
 
-    menuBtn.menu.on('show', () => {
+    menu.on('show', () => {
       if (this.$container.prev('.fld-tab').length) {
-        menuBtn.menu.$container
-          .find('[data-action=moveLeft]')
-          .removeClass('disabled');
+        $menu.find('[data-action=moveLeft]').parent().removeClass('hidden');
       } else {
-        menuBtn.menu.$container
-          .find('[data-action=moveLeft]')
-          .addClass('disabled');
+        $menu.find('[data-action=moveLeft]').parent().addClass('hidden');
       }
 
       if (this.$container.next('.fld-tab').length) {
-        menuBtn.menu.$container
-          .find('[data-action=moveRight]')
-          .removeClass('disabled');
+        $menu.find('[data-action=moveRight]').parent().removeClass('hidden');
       } else {
-        menuBtn.menu.$container
-          .find('[data-action=moveRight]')
-          .addClass('disabled');
+        $menu.find('[data-action=moveRight]').parent().addClass('hidden');
       }
+
+      if (!this.$container.siblings('.fld-tab').length) {
+        $menu
+          .find('[data-action=moveLeft]')
+          .closest('ul')
+          .prev('hr')
+          .addClass('hidden');
+      } else {
+        $menu
+          .find('[data-action=moveLeft]')
+          .closest('ul')
+          .prev('hr')
+          .removeClass('hidden');
+      }
+
+      menu.setPositionRelativeToAnchor();
     });
   },
 

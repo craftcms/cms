@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- `craft\helpers\App::parseEnv()` now returns `null` when a missing environment variable name is passed to it. ([#14253](https://github.com/craftcms/cms/pull/14253)) 
+- `craft\helpers\App::parseEnv()` now returns `null` when a missing environment variable name is passed to it. ([#14253](https://github.com/craftcms/cms/pull/14253))
+- Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers weren’t always getting enabled when they should, if a new tab was added.
+- Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers were labelled incorrectly for right-to-left languages.
 
 ## 5.0.0-alpha.10 - 2024-01-30
 
