@@ -537,6 +537,7 @@ return [
     'Device type' => 'Apparaattype',
     'Dimensions' => 'Afmetingen',
     'Directories cannot be deleted while moving assets.' => 'Mappen kunnen niet worden verwijderd tijdens het verplaatsen van bestanden.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'Focuspunt uitschakelen',
     'Disable' => 'Uitschakelen',
     'Disabled' => 'Uitgeschakeld',
