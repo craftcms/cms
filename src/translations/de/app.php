@@ -537,6 +537,7 @@ return [
     'Device type' => 'Gerätetyp',
     'Dimensions' => 'Dimensionen',
     'Directories cannot be deleted while moving assets.' => 'Verzeichnisse können nicht gelöscht werden, während Dateien bewegt werden.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'Blickpunkt deaktivieren',
     'Disable' => 'Deaktivieren',
     'Disabled' => 'Deaktiviert',
