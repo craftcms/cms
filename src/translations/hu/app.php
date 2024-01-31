@@ -537,6 +537,7 @@ return [
     'Device type' => 'Eszköz típusa',
     'Dimensions' => 'Méretek',
     'Directories cannot be deleted while moving assets.' => 'A könyvtárak a tartalmak törlése során nem törölhetők.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'Fókuszpont kikapcsolása',
     'Disable' => 'Kikapcsol',
     'Disabled' => 'Kikapcsolva',
