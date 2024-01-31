@@ -50,7 +50,7 @@
         name: 'name',
         value: (group is defined ? group.name : null),
         errors: (group is defined ? group.getErrors('name') : null),
-        autofocus: currentUser.getAutofocusPreferred(),
+        autofocus: true,
         required: true,
     }) }}
 

@@ -58,7 +58,7 @@
         name: 'fromEmail',
         suggestEnvVars: true,
         value: settings.fromEmail,
-        autofocus: currentUser.getAutofocusPreferred(),
+        autofocus: true,
         required: true,
         errors: (freshSettings ? null : settings.getErrors('fromEmail'))
     }) }}
