@@ -27,7 +27,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface FieldInterface extends SavableComponentInterface
+interface FieldInterface extends SavableComponentInterface, Chippable
 {
     /**
      * Returns whether the field can be included multiple times within a field layout.

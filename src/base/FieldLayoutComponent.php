@@ -67,6 +67,12 @@ abstract class FieldLayoutComponent extends Model
     public ?string $uid = null;
 
     /**
+     * @var string|null The element type the field layout is for
+     * @since 5.0.0
+     */
+    public ?string $elementType;
+
+    /**
      * @var FieldLayout The field layout tab this element belongs to
      * @see getLayout()
      * @see setLayout()
@@ -208,9 +214,21 @@ abstract class FieldLayoutComponent extends Model
     public function fields(): array
     {
         $fields = parent::fields();
+        unset($fields['elementType']);
         $fields['userCondition'] = fn() => $this->getUserCondition()?->getConfig();
         $fields['elementCondition'] = fn() => $this->getElementCondition()?->getConfig();
         return $fields;
+    }
+
+    /**
+     * Returns whether the layout element has settings.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function hasSettings()
+    {
+        return $this->conditional();
     }
 
     /**
@@ -245,7 +263,7 @@ abstract class FieldLayoutComponent extends Model
 
             // Do we know the element type?
             /** @var ElementInterface|string|null $elementType */
-            $elementType = $this->getLayout()->type;
+            $elementType = $this->elementType ?? $this->getLayout()->type;
 
             if ($elementType && is_subclass_of($elementType, ElementInterface::class)) {
                 $elementCondition = $this->getElementCondition() ?? self::defaultElementCondition($elementType);

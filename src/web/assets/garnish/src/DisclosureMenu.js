@@ -468,10 +468,10 @@ export default Base.extend(
       let type;
       if (item.type) {
         type = item.type;
-      } else if (item.action) {
-        type = 'button';
-      } else {
+      } else if (item.url) {
         type = 'link';
+      } else {
+        type = 'button';
       }
 
       const li = document.createElement('li');
@@ -497,6 +497,9 @@ export default Base.extend(
       }
       if (item.icon) {
         el.setAttribute('data-icon', item.icon);
+        if (item.iconColor) {
+          el.classList.add(item.iconColor);
+        }
       }
       if (item.action) {
         el.setAttribute('data-action', item.action);
@@ -541,6 +544,9 @@ export default Base.extend(
       }
 
       this.addListener(el, 'activate', () => {
+        if (item.onActivate) {
+          item.onActivate();
+        }
         this.hide();
       });
 
@@ -579,7 +585,7 @@ export default Base.extend(
         .get(0);
     },
 
-    addGroup: function (heading, addHrs, before) {
+    addGroup: function (heading = null, addHrs = true, before = null) {
       const padded = this.isPadded();
 
       if (heading) {

@@ -177,12 +177,10 @@ abstract class BaseField extends FieldLayoutElement
 
         $label = $this->selectorLabel();
 
-        $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', '', [
-            'class' => ['fld-indicator'],
+        $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', Cp::iconSvg($indicator['icon']), [
+            'class' => array_filter(array_merge(['cp-icon', 'puny'], [$indicator['iconColor'] ?? null])),
             'title' => $indicator['label'],
             'aria' => ['label' => $indicator['label']],
-            'data' => ['icon' => $indicator['icon']],
-            'role' => 'img',
         ]), $this->selectorIndicators()));
 
         if ($label !== null) {
@@ -190,7 +188,7 @@ abstract class BaseField extends FieldLayoutElement
             $innerHtml .= Html::tag('div',
                 Html::tag('h4', $label, [
                     'title' => $label,
-                ]) . $indicatorHtml, [
+                ]), [
                     'class' => 'fld-element-label',
                 ]);
         }
@@ -205,6 +203,12 @@ abstract class BaseField extends FieldLayoutElement
             ]) .
             ($label === null ? $indicatorHtml : '') .
             Html::endTag('div'); // .fld-attribute
+
+        if ($indicatorHtml) {
+            $innerHtml .= Html::tag('div', $indicatorHtml, [
+                'class' => ['flex', 'flex-nowrap', 'gap-xs'],
+            ]);
+        }
 
         return Html::tag('div', $innerHtml, [
             'class' => ['field-name'],
@@ -249,31 +253,35 @@ abstract class BaseField extends FieldLayoutElement
     {
         $indicators = [];
 
-        if ($this->required) {
+        if ($this->requirable() && $this->required) {
             $indicators[] = [
                 'label' => Craft::t('app', 'This field is required'),
                 'icon' => 'asterisk',
+                'iconColor' => 'rose',
             ];
         }
 
         if ($this->hasConditions()) {
             $indicators[] = [
                 'label' => Craft::t('app', 'This field is conditional'),
-                'icon' => 'condition',
+                'icon' => 'diamond',
+                'iconColor' => 'orange',
             ];
         }
 
         if ($this->thumbable() && $this->providesThumbs) {
             $indicators[] = [
                 'label' => Craft::t('app', 'This field provides thumbnails for elements'),
-                'icon' => 'asset',
+                'icon' => 'image',
+                'iconColor' => 'violet',
             ];
         }
 
         if ($this->previewable() && $this->includeInCards) {
             $indicators[] = [
                 'label' => Craft::t('app', 'This field is included in element cards'),
-                'icon' => 'check',
+                'icon' => 'eye',
+                'iconColor' => 'blue',
             ];
         }
 
@@ -284,6 +292,14 @@ abstract class BaseField extends FieldLayoutElement
      * @inheritdoc
      */
     public function hasCustomWidth(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasSettings()
     {
         return true;
     }

@@ -3096,6 +3096,10 @@ table {
   &.small {
     --thumb-size: calc(14rem / 16);
   }
+
+  &.puny {
+    --thumb-size: calc(12rem / 16);
+  }
 }
 
 .chips,
@@ -4276,7 +4280,9 @@ ul.tree,
 }
 
 .icon,
-.cp-icon {
+.cp-icon,
+[data-icon],
+[data-icon-after] {
   &.red {
     --icon-color: var(--disabled-color);
   }
@@ -4336,6 +4342,32 @@ ul.tree,
   }
   &.gray {
     --icon-color: var(--gray-300);
+  }
+}
+
+.red,
+.orange,
+.amber,
+.yellow,
+.lime,
+.green,
+.emerald,
+.teal,
+.cyan,
+.sky,
+.blue,
+.indigo,
+.violet,
+.purple,
+.fuchsia,
+.pink,
+.rose,
+.white,
+.black,
+.gray {
+  &[data-icon]:before,
+  &[data-icon-after]:after {
+    color: var(--icon-color) !important;
   }
 }
 
