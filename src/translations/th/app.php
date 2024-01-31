@@ -537,6 +537,7 @@ return [
     'Device type' => 'Device type',
     'Dimensions' => 'Dimensions',
     'Directories cannot be deleted while moving assets.' => 'ไม่สามารถลบไดเรกทอรี ขณะย้ายแอสเซทได้',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'ปิดจุดโฟกัส',
     'Disable' => 'Disable',
     'Disabled' => 'Disabled',
