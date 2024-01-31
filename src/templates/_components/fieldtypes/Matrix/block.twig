@@ -104,7 +104,7 @@
 {% endif %}
 
 {% namespace baseInputName %}
-  {% set form = entry.getFieldLayout().createForm(entry, static) %}
+  {% set form = entry.getFieldLayout().createForm(entry, static, {'errorKeyPrefix' : "#{name}[#{entry.uid}]"}) %}
   {% set tabs = form.getTabMenu() %}
 {% endnamespace %}
 

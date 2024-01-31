@@ -1256,6 +1256,8 @@ JS, [
         $fieldId = $config['fieldId'] ?? "$id-field";
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
 
+        $data = $config['data'] ?? [];
+
         if ($label === '__blank__') {
             $label = null;
         }
@@ -1360,7 +1362,7 @@ JS, [
                     'id' => $fieldId,
                     'data' => [
                         'attribute' => $attribute,
-                    ],
+                    ] + $data,
                 ],
                 $config['fieldAttributes'] ?? []
             )) .
@@ -2021,6 +2023,9 @@ JS, [
                 'autocomplete' => $belongsToCurrentUser ? 'address-line1' : 'off',
                 'required' => isset($requiredFields['addressLine1']),
                 'errors' => $address->getErrors('addressLine1'),
+                'data' => [
+                    'error-key' => 'addressLine1',
+                ],
             ]) .
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine2'),
@@ -2031,6 +2036,9 @@ JS, [
                 'autocomplete' => $belongsToCurrentUser ? 'address-line2' : 'off',
                 'required' => isset($requiredFields['addressLine2']),
                 'errors' => $address->getErrors('addressLine2'),
+                'data' => [
+                    'error-key' => 'addressLine2',
+                ],
             ]) .
             self::_subdivisionField(
                 $address,
@@ -2072,6 +2080,9 @@ JS, [
                 'autocomplete' => $belongsToCurrentUser ? 'postal-code' : 'off',
                 'required' => isset($requiredFields['postalCode']),
                 'errors' => $address->getErrors('postalCode'),
+                'data' => [
+                    'error-key' => 'postalCode',
+                ],
             ]) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([
@@ -2085,6 +2096,9 @@ JS, [
                 'value' => $address->sortingCode,
                 'required' => isset($requiredFields['sortingCode']),
                 'errors' => $address->getErrors('sortingCode'),
+                'data' => [
+                    'error-key' => 'sortingCode',
+                ],
             ]);
     }
 
@@ -2132,6 +2146,9 @@ JS, [
                     'id' => $name,
                     'required' => $required,
                     'errors' => $errors,
+                    'data' => [
+                        'error-key' => $name,
+                    ],
                 ]);
             }
 
@@ -2146,6 +2163,9 @@ JS, [
                 'required' => $required,
                 'errors' => $address->getErrors($name),
                 'autocomplete' => $autocomplete,
+                'data' => [
+                    'error-key' => $name,
+                ],
             ]);
         }
 
@@ -2160,6 +2180,9 @@ JS, [
             'value' => $value,
             'required' => $required,
             'errors' => $address->getErrors($name),
+            'data' => [
+                'error-key' => $name,
+            ],
         ]);
     }
 
