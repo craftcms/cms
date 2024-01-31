@@ -23,6 +23,14 @@ class HorizontalRule extends FieldLayoutElement
     /**
      * @inheritdoc
      */
+    public function isMultiInstance(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function conditional(): bool
     {
         return false;
