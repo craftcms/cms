@@ -537,6 +537,7 @@ return [
     'Device type' => 'Typ zařízení',
     'Dimensions' => 'Rozměry',
     'Directories cannot be deleted while moving assets.' => 'Při přesouvání aktiv nelze odstranit adresáře.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'Zakázat ohniskový bod',
     'Disable' => 'Vypnout',
     'Disabled' => 'Vypnuto',
