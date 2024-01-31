@@ -5,6 +5,8 @@
 - It’s now possible to select the temp asset volume within Assets fields, if the temp upload location includes a subpath. ([#14246](https://github.com/craftcms/cms/pull/14246))
 - Fixed a bug where it wasn’t possible to set the “Formatting Locale” user preference back to “Same as language” once another value had been selected.
 - Fixed a bug where layout components provided by disabled plugins weren’t getting omitted. ([#14236](https://github.com/craftcms/cms/pull/14236))
+- Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers weren’t always getting enabled when they should, if a new tab was added.
+- Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers were labelled incorrectly for right-to-left languages.
 
 ## 4.7.1 - 2024-01-29
 
