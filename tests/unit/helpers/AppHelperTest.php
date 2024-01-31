@@ -94,7 +94,7 @@ class AppHelperTest extends TestCase
         self::assertNull(App::parseEnv(null));
         self::assertSame(CRAFT_TESTS_PATH, App::parseEnv('$CRAFT_TESTS_PATH'));
         self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
-        self::assertSame('$TEST_MISSING', App::parseEnv('$TEST_MISSING'));
+        self::assertSame(null, App::parseEnv('$TEST_MISSING'));
         self::assertSame(Craft::getAlias('@vendor/foo'), App::parseEnv('@vendor/foo'));
     }
 

@@ -177,6 +177,9 @@ class App
      * If the string references an environment variable with a value of `true`
      * or `false`, a boolean value will be returned.
      *
+     * If the string references an environment variable that’s not defined,
+     * `null` will be returned.
+     *
      * ---
      *
      * ```php
@@ -199,8 +202,8 @@ class App
             $env = static::env($matches[1]);
 
             if ($env === null) {
-                // starts with $ but not an environment variable/constant, so just give up, it's hopeless!
-                return $value;
+                // No env var or constant is defined here by that name
+                return null;
             }
 
             $value = $env;
