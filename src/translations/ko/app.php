@@ -537,6 +537,7 @@ return [
     'Device type' => '장치 유형',
     'Dimensions' => '크기',
     'Directories cannot be deleted while moving assets.' => '에셋 이동 중에는 디렉터리를 삭제할 수 없습니다.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => '초점 비활성화',
     'Disable' => '비활성화',
     'Disabled' => '비활성화됨',
