@@ -537,6 +537,7 @@ return [
     'Device type' => 'Typ av enhet',
     'Dimensions' => 'Dimensioner',
     'Directories cannot be deleted while moving assets.' => 'Kataloger kan inte tas bort medan tillgångar flyttas.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'Inaktivera fokuspunkt',
     'Disable' => 'Avaktivera',
     'Disabled' => 'Avaktiverad',

@@ -537,6 +537,7 @@ return [
     'Device type' => 'Cihaz türü',
     'Dimensions' => 'Boyutlar',
     'Directories cannot be deleted while moving assets.' => 'Dosyalar taşınırken dizinler silinemez.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'Odak noktasını devre dışı bırak',
     'Disable' => 'Etkisizleştir',
     'Disabled' => 'Devre Dışı',

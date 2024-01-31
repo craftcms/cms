@@ -537,6 +537,7 @@ return [
     'Device type' => 'Tipo di dispositivo',
     'Dimensions' => 'Dimensioni',
     'Directories cannot be deleted while moving assets.' => 'Impossibile eliminare directory durante lo spostamento di risorse.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'Disabilita punto focale',
     'Disable' => 'Disabilita',
     'Disabled' => 'Disabilitato',

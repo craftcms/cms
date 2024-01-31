@@ -537,6 +537,7 @@ return [
     'Device type' => 'Enhetstype',
     'Dimensions' => 'Dimensjoner',
     'Directories cannot be deleted while moving assets.' => 'Mapper kan ikke slettes mens du flytter filer.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'Deaktiver fokuspunkt',
     'Disable' => 'Deaktiver',
     'Disabled' => 'Deaktivert',

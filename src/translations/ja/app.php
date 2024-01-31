@@ -537,6 +537,7 @@ return [
     'Device type' => 'デバイスの種類',
     'Dimensions' => 'サイズ',
     'Directories cannot be deleted while moving assets.' => 'アセットの移動中はディレクトリを削除できません。',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => '焦点を無効にする',
     'Disable' => '無効',
     'Disabled' => '無効',

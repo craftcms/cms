@@ -537,6 +537,7 @@ return [
     'Device type' => '设备类型',
     'Dimensions' => '维数',
     'Directories cannot be deleted while moving assets.' => '移动资产时不能删除目录。',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => '禁用焦点',
     'Disable' => '禁用',
     'Disabled' => '已禁用',
