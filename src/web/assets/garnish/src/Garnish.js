@@ -963,7 +963,10 @@ $.extend($.event.special, {
       $elem.on({
         'mousedown.garnish-activate': function (e) {
           // Prevent buttons from getting focus on click
-          if (e.currentTarget.nodeName === 'BUTTON') {
+          if (
+            e.currentTarget.nodeName === 'BUTTON' ||
+            e.currentTarget.role === 'button'
+          ) {
             e.preventDefault();
           }
         },
@@ -981,7 +984,10 @@ $.extend($.event.special, {
             return;
           }
 
-          if (e.currentTarget.nodeName === 'BUTTON') {
+          if (
+            e.currentTarget.nodeName === 'BUTTON' ||
+            e.currentTarget.role === 'button'
+          ) {
             e.preventDefault();
           }
 
