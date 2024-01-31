@@ -6,6 +6,8 @@
 - Card views are once again multi-column on wider viewports. ([#14202](https://github.com/craftcms/cms/discussions/14202))
 - Added the “Show cards in a grid” Matrix field setting. ([#14202](https://github.com/craftcms/cms/discussions/14202))
 - Improved the accessibility of the global nav. ([#14240](https://github.com/craftcms/cms/pull/14240))
+- Improved the accessibility of layout tabs. ([#14215](https://github.com/craftcms/cms/pull/14215))
+- Improved the accessibility of overflow tab menus. ([#14214](https://github.com/craftcms/cms/pull/14214))
 - Added the `languageMenu` and `languageMenuField` form macros.
 - Added `craft\models\FieldLayout::getFieldByUid()`.
 - Added `craft\models\Site::getLanguage()`.
@@ -17,6 +19,10 @@
 - Fixed a bug where it wasn’t possible to set the “Formatting Locale” user preference back to “Same as language” once another value had been selected.
 - Fixed a bug where element index tables weren’t displaying custom field values for fields with overridden handles. ([#14245](https://github.com/craftcms/cms/issues/14245))
 - Fixed a bug where chips within element cards were getting action menus appended when cards were refreshed after the element was saved.
+- Fixed a bug where element thumbnails weren’t getting loaded within newly-added cards in Matrix and Addresses fields.
+- Fixed a bug where inline Matrix block tabs weren’t scaling up for text-only zoom levels. ([#14213](https://github.com/craftcms/cms/pull/14213))
+- Fixed a bug where required custom fields within inline-editable Matrix blocks weren’t getting validated.
+- Fixed a bug where validation summaries weren’t always linking to the offending field. ([#14212](https://github.com/craftcms/cms/pull/14212)) 
 
 ## 5.0.0-alpha.9 - 2024-01-29
 

@@ -562,10 +562,33 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.clearErrors();
 
       Object.entries(errors).forEach(([name, fieldErrors]) => {
-        const $field = this.$container.find(`[data-attribute="${name}"]`);
+        const $field = this.$container.find(`[data-error-key="${name}"]`);
         if ($field) {
           Craft.ui.addErrorsToField($field, fieldErrors);
           this.fieldsWithErrors.push($field);
+
+          // mark the tab as having errors
+          let fieldTabAnchors = Craft.ui.findTabAnchorForField(
+            $field,
+            this.$container
+          );
+
+          if (fieldTabAnchors.length > 0) {
+            for (let i = 0; i < fieldTabAnchors.length; i++) {
+              let $fieldTabAnchor = $(fieldTabAnchors[i]);
+
+              if ($fieldTabAnchor.hasClass('error') == false) {
+                $fieldTabAnchor.addClass('error');
+                $fieldTabAnchor
+                  .find('.tab-label')
+                  .append(
+                    '<span data-icon="alert">' +
+                      '<span class="visually-hidden">This tab contains errors</span>\n' +
+                      '</span>'
+                  );
+              }
+            }
+          }
         }
       });
     },
