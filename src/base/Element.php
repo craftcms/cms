@@ -5283,18 +5283,21 @@ JS, [
 
             default:
                 // Is this a custom field?
-                if (preg_match('/^field:(.+)/', $attribute, $matches)) {
-                    $fieldUid = $matches[1];
-                    $field = $this->getFieldLayout()?->getFieldByUid($fieldUid);
+                if (preg_match('/^field:([\w\d-]+)(\|handle:(.*))?/', $attribute, $matches)) {
+                    $field = $this->getFieldLayout()?->getFieldByUid($matches[1]);
+                    $fieldHandle = $field?->handle;
+                    if (isset($matches[3]) && $fieldHandle !== $matches[3]) {
+                        $fieldHandle = $matches[3];
+                    }
 
                     if ($field instanceof PreviewableFieldInterface) {
                         // Was this field value eager-loaded?
-                        if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
-                            $value = $this->getEagerLoadedElements($field->handle);
+                        if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($fieldHandle)) {
+                            $value = $this->getEagerLoadedElements($fieldHandle);
                         } else {
                             // The field might not actually belong to this element
                             try {
-                                $value = $this->getFieldValue($field->handle);
+                                $value = $this->getFieldValue($fieldHandle);
                             } catch (InvalidFieldException) {
                                 return '';
                             }

@@ -391,11 +391,27 @@ class ElementSources extends Component
         $attributes = [];
 
         foreach ($groupedFieldElements as $fieldElements) {
-            $field = $fieldElements[0]->getField();
-            $labels = array_unique(array_map(fn(CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
-            $attributes["field:$field->uid"] = [
-                'label' => count($labels) === 1 ? $labels[0] : Craft::t('site', $field->name),
-            ];
+            foreach ($fieldElements as $fieldElement) {
+                $field = $fieldElement->getField();
+                $label = $fieldElement->label() ?? Craft::t('site', $field->name);
+
+                // if we haven't added a field with this UID to the list of attributes, go ahead
+                if (!isset($attributes["field:$field->uid"])) {
+                    $attributes["field:$field->uid"] = [
+                        'label' => $label,
+                        'handle' => $field->handle,
+                    ];
+                } else {
+                    // otherwise, check if the handle is different handle from the one we already processed
+                    // and if so, add it in with the new handle
+                    if ($attributes["field:$field->uid"]['handle'] !== $field->handle) {
+                        $attributes["field:$field->uid|handle:$field->handle"] = [
+                            'label' => $label,
+                            'handle' => $field->handle,
+                        ];
+                    }
+                }
+            }
         }
 
         return $attributes;
