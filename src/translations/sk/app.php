@@ -537,6 +537,7 @@ return [
     'Device type' => 'Typ zariadenia',
     'Dimensions' => 'Rozmery',
     'Directories cannot be deleted while moving assets.' => 'Adresáre nie je možné odstrániť počas presunu prostriedkov.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'Zakázať ohniskový bod',
     'Disable' => 'Zakázať',
     'Disabled' => 'Zakázané',
