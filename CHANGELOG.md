@@ -22,6 +22,7 @@
 - Fixed a bug where element thumbnails weren’t getting loaded within newly-added cards in Matrix and Addresses fields.
 - Fixed a bug where inline Matrix block tabs weren’t scaling up for text-only zoom levels. ([#14213](https://github.com/craftcms/cms/pull/14213))
 - Fixed a bug where required custom fields within inline-editable Matrix blocks weren’t getting validated.
+- Fixed a bug where validation summaries weren’t always linking to the offending field. ([#14212](https://github.com/craftcms/cms/pull/14212)) 
 
 ## 5.0.0-alpha.9 - 2024-01-29
 
