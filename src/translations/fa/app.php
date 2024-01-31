@@ -537,6 +537,7 @@ return [
     'Device type' => 'نوع دستگاه',
     'Dimensions' => 'ابعاد',
     'Directories cannot be deleted while moving assets.' => 'در هنگام جا‌به‌جایی فایل‌های پروژه، دایرکتوری‌ها نمی‌توانند حذف شوند.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'غیر‌فعال‌کردن نقاط کانونی',
     'Disable' => 'غیرفعال کردن',
     'Disabled' => 'غیرفعال',
