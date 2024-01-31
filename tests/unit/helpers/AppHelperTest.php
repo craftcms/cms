@@ -445,6 +445,7 @@ class AppHelperTest extends TestCase
             [true, 1],
             [false, 0],
             [null, 2],
+            [null, '$TEST_MISSING'],
         ];
     }
 
