@@ -537,6 +537,7 @@ return [
     'Device type' => 'نوع الجهاز',
     'Dimensions' => 'الأبعاد',
     'Directories cannot be deleted while moving assets.' => 'لا يمكن حذف الدلائل أثناء نقل الأصول.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'تعطيل النقطة المحورية',
     'Disable' => 'تعطيل',
     'Disabled' => 'معطل',
