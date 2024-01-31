@@ -42,6 +42,7 @@
 - User sessions are now treated as elevated immediately after login, per the `elevatedSessionDuration` config setting.
 
 ### Accessibility
+- Added the “Disable autofocus” user accessibility preference. ([#12921](https://github.com/craftcms/cms/discussions/12921))
 - Improved source item navigation for screen readers. ([#12054](https://github.com/craftcms/cms/pull/12054))
 - Content tab menus are now implemented as disclosure menus. ([#12963](https://github.com/craftcms/cms/pull/12963))
 - Element selection modals now show checkboxes for selectable elements.
