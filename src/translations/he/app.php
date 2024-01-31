@@ -537,6 +537,7 @@ return [
     'Device type' => 'סוג התקן',
     'Dimensions' => 'מימדים',
     'Directories cannot be deleted while moving assets.' => 'לא ניתן למחוק ספריות בעת העברת נכסים.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'נטרל את נקודת המוקד',
     'Disable' => 'השבת',
     'Disabled' => 'מושבת',
