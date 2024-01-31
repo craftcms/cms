@@ -537,6 +537,7 @@ return [
     'Device type' => 'Typ urządzenia',
     'Dimensions' => 'Wymiary',
     'Directories cannot be deleted while moving assets.' => 'Nie można usuwać katalogów podczas przenoszenia zasobów.',
+    'Disable autofocus' => 'Disable autofocus',
     'Disable focal point' => 'Wyłącz punkt ogniskowania',
     'Disable' => 'Wyłącz',
     'Disabled' => 'Wyłączone',
