@@ -656,6 +656,9 @@ li.crumb {
   .chip {
     padding: 0;
     background-color: transparent;
+    --custom-bg-color: initial !important;
+    --custom-text-color: initial !important;
+    --custom-sel-bg-color: initial !important;
 
     .label-link {
       max-width: 15em;
