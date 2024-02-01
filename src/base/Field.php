@@ -147,6 +147,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'i-cursor';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function isMultiInstance(): bool
     {
         return static::dbType() !== null;

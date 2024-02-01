@@ -16,7 +16,7 @@
         this.$toggle = $(toggle);
         this.$container = $(container);
         this.namespace = namespace;
-        this.currentType = this.$toggle.val();
+        this.currentType = this.$toggle.data('value');
         this.typeSettings = {};
         this.setSettings(settings, Craft.FieldSettingsToggle.defaults);
         this.addListener(this.$toggle, 'change', 'handleToggleChange');
@@ -37,7 +37,7 @@
           .children()
           .detach();
 
-        this.currentType = this.$toggle.val();
+        this.currentType = this.$toggle.data('value');
 
         if (typeof this.typeSettings[this.currentType] !== 'undefined') {
           this.typeSettings[this.currentType].appendTo(this.$container);

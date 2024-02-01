@@ -46,6 +46,14 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'calendar';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function phpType(): string
     {
         return sprintf('\\%s|null', DateTime::class);

@@ -122,10 +122,19 @@ class FieldsController extends Controller
                 )
             ) {
                 $compatible = $isCurrent || in_array($class, $compatibleFieldTypes, true);
-                $fieldTypeOptions[] = [
+                $option = [
+                    'icon' => $class::icon(),
                     'value' => $class,
-                    'label' => $class::displayName() . ($compatible ? '' : ' ⚠️'),
                 ];
+                if ($compatible) {
+                    $option['label'] = $class::displayName();
+                } else {
+                    $option['labelHtml'] = Html::beginTag('div', ['class' => 'inline-flex']) .
+                        Html::tag('span', Html::encode($class::displayName())) .
+                        Html::tag('span', Cp::iconSvg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]) .
+                        Html::endTag('div');
+                }
+                $fieldTypeOptions[] = $option;
             }
         }
 
@@ -170,11 +179,9 @@ class FieldsController extends Controller
             ->contentTemplate('settings/fields/_edit.twig', compact(
                 'fieldId',
                 'field',
-                'allFieldTypes',
                 'fieldTypeOptions',
                 'missingFieldPlaceholder',
                 'supportedTranslationMethods',
-                'compatibleFieldTypes',
             ))
             ->prepareScreen(function() {
                 $view = Craft::$app->getView();

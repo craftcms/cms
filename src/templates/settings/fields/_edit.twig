@@ -47,7 +47,7 @@
   checked: field.searchable
 }) }}
 
-{{ forms.selectField({
+{{ forms.customSelectField({
   label: "Field Type"|t('app'),
   instructions: "What type of field is this?"|t('app'),
   warning: (fieldId is not empty and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
@@ -143,7 +143,7 @@
     const $translationSettings = $("#{{ 'translation-settings'|namespaceInputId|e('js') }}");
 
     $fieldTypeInput.on('change', (ev) => {
-      Craft.updateTranslationMethodSettings($fieldTypeInput.val(), $translationSettings);
+      Craft.updateTranslationMethodSettings($fieldTypeInput.data('value'), $translationSettings);
     });
   })();
 {% endjs %}

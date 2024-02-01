@@ -176,6 +176,7 @@ abstract class BaseField extends FieldLayoutElement
         $innerHtml = '';
 
         $label = $this->selectorLabel();
+        $icon = $this->selectorIcon();
 
         $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', Cp::iconSvg($indicator['icon']), [
             'class' => array_filter(array_merge(['cp-icon', 'puny'], [$indicator['iconColor'] ?? null])),
@@ -210,9 +211,17 @@ abstract class BaseField extends FieldLayoutElement
             ]);
         }
 
-        return Html::tag('div', $innerHtml, [
+        $html = Html::tag('div', $innerHtml, [
             'class' => ['field-name'],
         ]);
+
+        if ($icon) {
+            $html = Html::tag('div', Cp::iconSvg($icon), [
+                'class' => ['cp-icon', 'medium'],
+            ]) . $html;
+        }
+
+        return $html;
     }
 
     /**
@@ -242,6 +251,22 @@ abstract class BaseField extends FieldLayoutElement
     protected function selectorLabel(): ?string
     {
         return $this->showLabel() ? $this->label() : null;
+    }
+
+    /**
+     * Returns the selector’s SVG icon.
+     *
+     * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
+     * the path to an SVG file, or raw SVG markup.
+     *
+     * System icons can be found in `src/icons/solid/.`
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    protected function selectorIcon(): ?string
+    {
+        return null;
     }
 
     /**
