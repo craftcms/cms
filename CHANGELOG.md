@@ -7,8 +7,11 @@
 - Improved the performance of control panel screens that include field layout designers.
 - The Entry Types index page now shows entry type icons.
 - The Fields and Entry Types index pages now autofocus the search bar. ([#14238](https://github.com/craftcms/cms/discussions/14238))
+- Field types now have icons. ([#14267](https://github.com/craftcms/cms/pull/14267))
 - Added the `customSelect` and `customSelectField` form macros.
+- Added `craft\base\FieldInterface::icon()`.
 - Added `craft\base\FieldLayoutComponent::hasSettings()`.
+- Added `craft\fieldlayoutelements\BaseField::selectorIcon()`.
 - Added `craft\helpers\Cp::layoutElementSelectorHtml()`.
 - `craft\helpers\App::parseEnv()` now returns `null` when a missing environment variable name is passed to it. ([#14253](https://github.com/craftcms/cms/pull/14253))
 - Success notifications triggered by `craft\web\Controller::asModelSuccess()` now include chips, for models that implement `Chippable`.

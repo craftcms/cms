@@ -31,6 +31,14 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'circle-dot';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function useFieldset(): bool
     {
         return true;

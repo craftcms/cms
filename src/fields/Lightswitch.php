@@ -39,6 +39,14 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'toggle-on';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function isRequirable(): bool
     {
         return false;

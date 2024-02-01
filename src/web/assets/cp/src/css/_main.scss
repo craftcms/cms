@@ -3093,6 +3093,10 @@ table {
     @include svg-mask(var(--icon-color, var(--ui-control-color)));
   }
 
+  &.medium {
+    --thumb-size: calc(16rem / 16);
+  }
+
   &.small {
     --thumb-size: calc(14rem / 16);
   }
@@ -4158,11 +4162,11 @@ ul.tree,
 }
 
 .status:not(.on):not(.live):not(.active):not(.enabled):not(.all) {
-  &:not(.pending):not(.off):not(.suspended):not(.expired):not(.light) {
-    &:not(.gray):not(.red):not(.orange):not(.amber):not(.yellow):not(.lime) {
-      &:not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky):not(.blue) {
-        &:not(.indigo):not(.violet):not(.purple):not(.fuchsia):not(.pink) {
-          &:not(.rose):not(.grey):not(.black) {
+  &:not(.pending):not(.warning):not(.off):not(.suspended):not(.expired) {
+    &:not(.light):not(.gray):not(.red):not(.orange):not(.amber):not(.yellow) {
+      &:not(.lime):not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky) {
+        &:not(.blue):not(.indigo):not(.violet):not(.purple):not(.fuchsia) {
+          &:not(.pink):not(.rose):not(.grey):not(.black) {
             border-color: var(--ui-control-color);
           }
         }
@@ -4187,6 +4191,9 @@ ul.tree,
 .status.suspended,
 .status.expired {
   background-color: var(--disabled-color);
+}
+.status.warning {
+  background-color: var(--warning-color);
 }
 .status.orange,
 .bg-orange,
@@ -4282,6 +4289,9 @@ ul.tree,
 .cp-icon,
 [data-icon],
 [data-icon-after] {
+  &.warning {
+    --icon-color: var(--warning-color);
+  }
   &.red {
     --icon-color: var(--disabled-color);
   }
@@ -4344,6 +4354,7 @@ ul.tree,
   }
 }
 
+.warning,
 .red,
 .orange,
 .amber,

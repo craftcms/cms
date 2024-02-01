@@ -248,10 +248,7 @@ class CustomField extends BaseField
     }
 
     /**
-     * Returns whether the label should be shown in form inputs.
-     *
-     * @return bool
-     * @since 3.5.6
+     * @inheritdoc
      */
     protected function showLabel(): bool
     {
@@ -261,6 +258,14 @@ class CustomField extends BaseField
         }
 
         return $this->_field->name !== '__blank__';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function selectorIcon(): ?string
+    {
+        return $this->_field::icon();
     }
 
     /**

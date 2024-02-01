@@ -50,6 +50,7 @@ use craft\fields\Users as UsersField;
 use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -1325,6 +1326,7 @@ class Fields extends Component
                 'type' => [
                     'isMissing' => $field instanceof MissingField,
                     'label' => $field instanceof MissingField ? $field->expectedType : $field->displayName(),
+                    'icon' => Cp::iconSvg($field::icon()),
                 ],
             ];
         }

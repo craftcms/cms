@@ -79,6 +79,7 @@
 - Added support for inline field creation and editing within field layout designers. ([#14260](https://github.com/craftcms/cms/pull/14260))
 - Layout elements within field layout designers now have action menus. ([#14260](https://github.com/craftcms/cms/pull/14260))
 - The Fields and Entry Types index pages now have a search bar. ([#13961](https://github.com/craftcms/cms/discussions/13961), [#14126](https://github.com/craftcms/cms/pull/14126))
+- Field types now have icons. ([#14267](https://github.com/craftcms/cms/pull/14267))
 - The address field layout is now accessed via **Settings** → **Addresses**.
 - Volumes now have a “Subpath” setting, and can reuse filesystems so long as the subpaths don’t overlap. ([#11044](https://github.com/craftcms/cms/discussions/11044))
 - Volumes now have an “Alternative Text Translation Method” setting. ([#11576](https://github.com/craftcms/cms/issues/11576))
@@ -156,6 +157,7 @@
 - Added `craft\base\Field::valueSql()`.
 - Added `craft\base\FieldInterface::dbType()`, which defines the type(s) of values the field will store in the `elements_sites.content` column (if any).
 - Added `craft\base\FieldInterface::getValueSql()`.
+- Added `craft\base\FieldInterface::icon()`.
 - Added `craft\base\FieldInterface::isMultiInstance()`.
 - Added `craft\base\FieldInterface::queryCondition()`, which accepts an element query param value and returns the corresponding query condition.
 - Added `craft\base\FieldLayoutComponent::hasSettings()`.
@@ -231,6 +233,7 @@
 - Added `craft\fieldlayoutelements\BaseField::$providesThumbs`.
 - Added `craft\fieldlayoutelements\BaseField::previewHtml()`.
 - Added `craft\fieldlayoutelements\BaseField::previewable()`.
+- Added `craft\fieldlayoutelements\BaseField::selectorIcon()`.
 - Added `craft\fieldlayoutelements\BaseField::thumbHtml()`.
 - Added `craft\fieldlayoutelements\BaseField::thumbable()`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.

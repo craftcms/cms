@@ -60,12 +60,16 @@
         {
             name: 'type',
             title: Craft.t('app', 'Type'),
-            callback: function(value) {
+            callback: (value) => {
+                let label = '<div class="flex flex-nowrap gap-s">' +
+                    `<div class="cp-icon small">${value.icon}</div>`;
                 if (value.isMissing) {
-                    return '<span class="error">' + value.label + '</span>'
+                    label += `<span class="error">${value.label}</span>`;
+                } else {
+                    label += `<span>${value.label}</span>`;
                 }
-
-                return value.label
+                label += '</div>';
+                return label;
             }
         },
     ];

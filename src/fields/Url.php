@@ -55,6 +55,14 @@ class Url extends Field implements InlineEditableFieldInterface
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'link';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function phpType(): string
     {
         return 'string|null';

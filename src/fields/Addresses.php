@@ -65,6 +65,14 @@ class Addresses extends Field implements
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'map-location';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
