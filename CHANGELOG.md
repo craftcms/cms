@@ -6,6 +6,8 @@
 - Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers weren’t always getting enabled when they should, if a new tab was added.
 - Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers were labelled incorrectly for right-to-left languages.
 - Fixed a bug where Horizontal Rule and Line Break UI elements weren’t being treated as multi-instance within field layout designers.
+- Fixed a JavaScript error that occurred when attempting to delete an entry type.
+- Fixed a bug where component selects weren’t selecting newly-created components if none existed to begin with.
 
 ## 5.0.0-alpha.10 - 2024-01-30
 

@@ -162,6 +162,17 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       );
     },
 
+    updateAddComponentBtn() {
+      if (
+        this.canAddMoreComponents() &&
+        this.getOptions().parent(':not(.hidden)').length
+      ) {
+        this.enableAddComponentBtn();
+      } else {
+        this.disableAddComponentBtn();
+      }
+    },
+
     enableAddComponentBtn: function () {
       if (this.$addBtn.length) {
         this.$addBtn.removeClass('hidden');
@@ -359,11 +370,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         disclosureMenu.setContainerPosition();
       }
 
-      if (this.canAddMoreComponents()) {
-        this.enableAddComponentBtn();
-      } else {
-        this.disableAddComponentBtn();
-      }
+      this.updateAddComponentBtn();
 
       if (this._initialized) {
         this.trigger('change');

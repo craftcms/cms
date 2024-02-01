@@ -73,7 +73,8 @@
       buttonLabel: 'Choose'|t('app'),
       buttonAttributes: {
         class: ['dashed', 'add-btn'],
-      }
+      },
+      omitIfEmpty: false,
     }) }}
 
     {% if createAction %}
@@ -81,7 +82,6 @@
         class: ['add', 'icon', 'dashed', 'create-btn'],
         label: 'Create'|t('app'),
         icon: 'plus',
-
       }) }}
     {% endif %}
   </div>

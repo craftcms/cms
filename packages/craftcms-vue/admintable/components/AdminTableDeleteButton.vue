@@ -36,14 +36,15 @@
     computed: {
       success() {
         var successMessage =
-          this.successMessage !== undefined
+          this.successMessage !== undefined && this.successMessage !== null
             ? Craft.t('site', this.successMessage, {name: this.name})
             : Craft.t('app', '“{name}” deleted.', {name: this.name});
         return Craft.escapeHtml(successMessage);
       },
       confirm() {
         var confirmationMessage =
-          this.confirmationMessage !== undefined
+          this.confirmationMessage !== undefined &&
+          this.confirmationMessage !== null
             ? Craft.t('site', this.confirmationMessage, {name: this.name})
             : Craft.t('app', 'Are you sure you want to delete “{name}”?', {
                 name: this.name,
@@ -52,7 +53,7 @@
       },
       failed() {
         var failMessage =
-          this.failMessage !== undefined
+          this.failMessage !== undefined && this.failMessage !== null
             ? Craft.t('site', this.failMessage, {name: this.name})
             : Craft.t('app', 'Couldn’t delete “{name}”.', {name: this.name});
         return Craft.escapeHtml(failMessage);
