@@ -2,7 +2,13 @@
 
 ## Unreleased
 
+- Added support for inline field creation and editing within field layout designers. ([#14260](https://github.com/craftcms/cms/pull/14260))
+- Layout elements within field layout designers now have action menus. ([#14260](https://github.com/craftcms/cms/pull/14260))
+- Improved the performance of control panel screens that include field layout designers.
+- Added `craft\base\FieldLayoutComponent::hasSettings()`.
+- Added `craft\helpers\Cp::layoutElementSelectorHtml()`.
 - `craft\helpers\App::parseEnv()` now returns `null` when a missing environment variable name is passed to it. ([#14253](https://github.com/craftcms/cms/pull/14253))
+- Success notifications triggered by `craft\web\Controller::asModelSuccess()` now include chips, for models that implement `Chippable`.
 - Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers weren’t always getting enabled when they should, if a new tab was added.
 - Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers were labelled incorrectly for right-to-left languages.
 - Fixed a bug where Horizontal Rule and Line Break UI elements weren’t being treated as multi-instance within field layout designers.
