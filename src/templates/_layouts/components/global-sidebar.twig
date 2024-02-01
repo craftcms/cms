@@ -21,7 +21,10 @@
                 } %}
                 {% set linkAttributes = {
                     href: url(item.url),
-                    class: item.sel ? ['sel'] : [],
+                    class: [
+                        'nav-list-item',
+                        item.sel ? 'sel',
+                    ]
                 }|merge(item.linkAttributes ?? {}, recursive=true) %}
                 <li {{ attr(itemAttributes) }}>
                     <a {{ attr(linkAttributes) }}>

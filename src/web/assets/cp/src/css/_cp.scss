@@ -111,23 +111,16 @@ $sidebarLinkSecondaryColor: var(--gray-200);
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  @include light-on-dark-text;
-  @include light-focus-ring;
-  background-color: var(--gray-800);
+  background-color: transparent;
+  border-right: 1px solid var(--hairline-color);
+  width: $sidebarWidth;
 
   a {
-    color: $sidebarLinkStaticColor;
     text-decoration: none;
   }
 
   & > a,
   *:not(.has-subnav) > a {
-    &[href] {
-      &:not(.sel):hover {
-        background-color: darken($grey800, 5%);
-      }
-    }
-
     &:not([href]) {
       cursor: default;
       background-color: transparent;
@@ -156,7 +149,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex: 0 0 calc(44rem / 16);
   flex-direction: row;
   align-items: center;
-  background-color: $systemInfoBgColor;
+  color: currentColor;
 
   &:after {
     display: none;
@@ -164,7 +157,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   &:focus,
   &:hover {
-    background-color: $systemInfoHoverBgColor !important;
+    text-decoration: none;
+    background-color: var(--gray-200);
   }
 }
 
@@ -262,8 +256,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #nav {
   flex: 1;
-  margin: 22px 0 0;
-  padding-bottom: var(--xl);
+  margin: var(--s) 0 0;
+  padding: 0 0 var(--xl) 0;
   overflow: visible;
 
   body.has-debug-toolbar & {
@@ -272,9 +266,11 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   li {
     &:not(.has-subnav) > a.sel {
-      color: var(--gray-800);
-      background-color: var(--gray-100) !important;
       opacity: 1;
+      border-left: 5px solid var(--gray-400);
+      background-color: transparent;
+      color: currentColor;
+      border-radius: 0;
 
       .icon {
         opacity: 1;
@@ -282,9 +278,15 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
 
     a {
+      border-radius: 0;
       position: relative;
+      border-left: 5px solid transparent;
       padding-left: var(--m);
       padding-right: var(--m);
+
+      &[href]:hover {
+        background-color: var(--gray-050);
+      }
 
       &:focus {
         z-index: 1;
@@ -323,10 +325,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       li a {
         @include padding(3px, var(--m), 3px, 42px, !important);
         font-size: 12px;
-
-        &:not(.active) {
-          color: $sidebarLinkSecondaryColor;
-        }
       }
     }
   }
@@ -489,8 +487,7 @@ li.crumb {
 #global-header {
   width: 100%;
   margin-bottom: var(--m);
-  @include pane;
-  background: var(--gray-050);
+  border-bottom: 1px solid var(--hairline-color);
 
   .flex {
     height: calc(44rem / 16);
@@ -983,7 +980,6 @@ li.breadcrumb-toggle-wrapper {
   padding: var(--s) var(--padding);
   position: relative;
   z-index: 2;
-  width: calc(100vw - #{$sidebarWidth});
   box-sizing: border-box;
   background-color: transparentize($grey300, 1);
   box-shadow: 0 1px 0 transparentize($grey800, 1);
@@ -1097,7 +1093,6 @@ li.breadcrumb-toggle-wrapper {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  width: calc(100vw - #{$sidebarWidth});
   padding: 0 var(--padding) 48px;
   box-sizing: border-box;
 
@@ -1569,13 +1564,12 @@ li.breadcrumb-toggle-wrapper {
       &:not(.has-subnav) > a {
         &:not(.sel):hover {
           text-decoration: none;
-          background-color: var(--gray-100);
         }
 
         &.sel,
         &.active-drop-target {
           cursor: default;
-          background-color: var(--gray-500) !important;
+          background-color: var(--gray-500);
 
           &,
           & + .toggle {

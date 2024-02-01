@@ -832,6 +832,7 @@ Craft.CP = Garnish.Base.extend(
         this.$headerContainer[0].getBoundingClientRect().top < 0
       ) {
         const headerHeight = this.$headerContainer.height();
+        const headerWidth = this.$header.width();
         if (!this.fixedHeader) {
           // Hard-set the minimum content container height
           this.$contentContainer.css(
@@ -841,6 +842,7 @@ Craft.CP = Garnish.Base.extend(
 
           // Hard-set the header container height
           this.$headerContainer.height(headerHeight);
+          this.$header.width(headerWidth);
           Garnish.$bod.addClass('fixed-header');
 
           this.fixedHeader = true;
@@ -850,6 +852,7 @@ Craft.CP = Garnish.Base.extend(
         this._setFixedTopPos(this.$details, headerHeight);
       } else if (this.fixedHeader) {
         this.$headerContainer.height('auto');
+        this.$header.width('auto');
         Garnish.$bod.removeClass('fixed-header');
         this.$contentContainer.css('min-height', '');
         this.$sidebar.removeClass('fixed').css('top', '');
