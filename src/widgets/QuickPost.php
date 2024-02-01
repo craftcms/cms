@@ -14,7 +14,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\models\EntryType;
 use craft\models\Section;
-use craft\web\assets\quickpost\QuickPostAsset;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.
@@ -145,9 +144,6 @@ class QuickPost extends Widget
      */
     public function getBodyHtml(): ?string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(QuickPostAsset::class);
-
         $section = $this->section();
         if (!$section) {
             return Html::tag('p', Craft::t('app', 'No section has been selected yet.'));
@@ -163,12 +159,9 @@ class QuickPost extends Widget
             return Html::tag('p', Craft::t('app', 'You’re not permitted to edit any of this section’s sites.'));
         }
 
-        $content = Craft::t('app', 'Create {type}', [
-            'type' => Entry::lowerDisplayName(),
-        ]);
-
         $buttonId = sprintf('quickpost%s', mt_rand());
 
+        $view = Craft::$app->getView();
         $view->registerJsWithVars(fn($buttonId, $params, $elementType) => <<<JS
 (() => {
   const button = $('#' + $buttonId);
