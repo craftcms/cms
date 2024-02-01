@@ -115,24 +115,31 @@
                 v-on:removeCheck="removeCheck"
               ></admin-table-checkbox>
             </template>
-            <template slot="title" slot-scope="props">
+            <div
+              slot="title"
+              slot-scope="props"
+              class="flex flex-nowrap gap-xs"
+            >
               <span
-                v-if="props.rowData.status !== undefined"
+                v-if="props.rowData.icon"
+                :class="['cp-icon', props.rowData.iconColor]"
+                v-html="props.rowData.icon"
+              ></span>
+              <span
+                v-if="props.rowData.status"
                 class="status"
                 :class="{enabled: props.rowData.status}"
               ></span>
               <a
-                :class="{'cell-bold': props.rowData.status === undefined}"
+                :class="{'cell-bold': !props.rowData.status}"
                 v-if="props.rowData.url"
                 :href="props.rowData.url"
                 >{{ props.rowData.title }}</a
               >
-              <span
-                :class="{'cell-bold': props.rowData.status === undefined}"
-                v-else
-                >{{ props.rowData.title }}</span
-              >
-            </template>
+              <span :class="{'cell-bold': !props.rowData.status}" v-else>{{
+                props.rowData.title
+              }}</span>
+            </div>
 
             <template slot="handle" slot-scope="props">
               <admin-table-copy-text-button
@@ -147,7 +154,7 @@
                   }}<template
                     v-if="
                       props.rowData.menu.showCount ||
-                      props.rowData.menu.showCount === undefined
+                      typeof props.rowData.menu.showCount === 'undefined'
                     "
                   >
                     ({{ props.rowData.menu.items.length }})</template
@@ -185,8 +192,7 @@
                 @click="handleDetailRow(props.rowData.id)"
                 v-if="
                   props.rowData.detail.content &&
-                  (!props.rowData.detail.handle ||
-                    props.rowData.detail.handle == undefined) &&
+                  !props.rowData.detail.handle &&
                   (Object.keys(props.rowData.detail.content).length ||
                     props.rowData.detail.content.length)
                 "
@@ -215,7 +221,7 @@
                 v-on:finishloading="loading(false)"
                 v-on:reload="remove(props.rowIndex, props.rowData.id)"
                 v-if="
-                  props.rowData._showDelete == undefined ||
+                  typeof props.rowData._showDelete === 'undefined' ||
                   props.rowData._showDelete == true
                 "
               ></admin-table-delete-button>
@@ -911,8 +917,8 @@
 
       canReorder() {
         if (
-          this.$refs.vuetable == undefined ||
-          this.$refs.vuetable.tableData == undefined
+          typeof this.$refs.vuetable === 'undefined' ||
+          typeof this.$refs.vuetable.tableData === 'undefined'
         ) {
           return false;
         }
@@ -1153,6 +1159,13 @@
     padding-bottom: 14px;
     padding-top: 14px;
     position: sticky;
+  }
+
+  .vue-admin-tablepane + .vue-admin-table-footer {
+    margin-left: calc(var(--pane-padding, calc(var(--padding) - 2px)) * -1);
+    margin-right: calc(var(--pane-padding, calc(var(--padding) - 2px)) * -1);
+    padding-left: calc(var(--pane-padding, calc(var(--padding) - 2px)));
+    padding-right: calc(var(--pane-padding, calc(var(--padding) - 2px)));
   }
 
   .detail-cursor-pointer {

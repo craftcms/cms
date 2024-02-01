@@ -148,6 +148,14 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * @inheritdoc
      */
+    public function hasSettings()
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([

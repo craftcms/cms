@@ -162,6 +162,17 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       );
     },
 
+    updateAddComponentBtn() {
+      if (
+        this.canAddMoreComponents() &&
+        this.getOptions().parent(':not(.hidden)').length
+      ) {
+        this.enableAddComponentBtn();
+      } else {
+        this.disableAddComponentBtn();
+      }
+    },
+
     enableAddComponentBtn: function () {
       if (this.$addBtn.length) {
         this.$addBtn.removeClass('hidden');
@@ -329,9 +340,10 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         const $actionMenuBtn = $component
           .find('.chip-actions,.card-actions')
           .find('.action-btn');
-        const $menu = $actionMenuBtn
+        const disclosureMenu = $actionMenuBtn
           .disclosureMenu()
-          .data('disclosureMenu').$container;
+          .data('disclosureMenu');
+        const $menu = disclosureMenu.$container;
         const $moveForward = $menu.find('[data-move-forward]').closest('li');
         const $moveBackward = $menu.find('[data-move-backward]').closest('li');
         const $ul = $moveForward.closest('ul');
@@ -354,13 +366,11 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         } else {
           $hr.addClass('hidden');
         }
+
+        disclosureMenu.setContainerPosition();
       }
 
-      if (this.canAddMoreComponents()) {
-        this.enableAddComponentBtn();
-      } else {
-        this.disableAddComponentBtn();
-      }
+      this.updateAddComponentBtn();
 
       if (this._initialized) {
         this.trigger('change');

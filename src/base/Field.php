@@ -138,6 +138,15 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getFields()->getFieldById($id);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function isMultiInstance(): bool
     {
         return static::dbType() !== null;
@@ -427,6 +436,22 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
     }
 
     /**
