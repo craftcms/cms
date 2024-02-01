@@ -59,6 +59,7 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -5283,21 +5284,23 @@ JS, [
 
             default:
                 // Is this a custom field?
-                if (preg_match('/^field:([\w\d-]+)(\|handle:(.*))?/', $attribute, $matches)) {
-                    $field = $this->getFieldLayout()?->getFieldByUid($matches[1]);
-                    $fieldHandle = $field?->handle;
-                    if (isset($matches[3]) && $fieldHandle !== $matches[3]) {
-                        $fieldHandle = $matches[3];
+                if (preg_match('/^(field|fieldInstance):(.+)/', $attribute, $matches)) {
+                    $uid = $matches[2];
+                    if ($matches[1] === 'field') {
+                        $field = $this->getFieldLayout()?->getFieldByUid($uid);
+                    } else {
+                        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
+                        $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
                     }
 
                     if ($field instanceof PreviewableFieldInterface) {
                         // Was this field value eager-loaded?
-                        if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($fieldHandle)) {
-                            $value = $this->getEagerLoadedElements($fieldHandle);
+                        if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                            $value = $this->getEagerLoadedElements($field->handle);
                         } else {
                             // The field might not actually belong to this element
                             try {
-                                $value = $this->getFieldValue($fieldHandle);
+                                $value = $this->getFieldValue($field->handle);
                             } catch (InvalidFieldException) {
                                 return '';
                             }

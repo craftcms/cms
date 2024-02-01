@@ -362,6 +362,7 @@ class ElementSources extends Component
     public function getTableAttributesForFieldLayouts(array $fieldLayouts): array
     {
         $user = Craft::$app->getUser()->getIdentity();
+        $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */
         $groupedFieldElements = [];
 
@@ -382,36 +383,27 @@ class ElementSources extends Component
                         $field instanceof PreviewableFieldInterface &&
                         (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
-                        $groupedFieldElements[$field->id][] = $layoutElement;
+                        if ($layoutElement->handle === null) {
+                            // The handle wasn't overridden, so combine it with any other instances (from other layouts)
+                            // where the handle also wasn't overridden
+                            $groupedFieldElements[$field->id][] = $layoutElement;
+                        } else {
+                            // The handle was overridden, so it gets its own table attribute
+                            $attributes["fieldInstance:$layoutElement->uid"] = [
+                                'label' => Craft::t('site', $field->name),
+                            ];
+                        }
                     }
                 }
             }
         }
 
-        $attributes = [];
-
         foreach ($groupedFieldElements as $fieldElements) {
-            foreach ($fieldElements as $fieldElement) {
-                $field = $fieldElement->getField();
-                $label = $fieldElement->label() ?? Craft::t('site', $field->name);
-
-                // if we haven't added a field with this UID to the list of attributes, go ahead
-                if (!isset($attributes["field:$field->uid"])) {
-                    $attributes["field:$field->uid"] = [
-                        'label' => $label,
-                        'handle' => $field->handle,
-                    ];
-                } else {
-                    // otherwise, check if the handle is different handle from the one we already processed
-                    // and if so, add it in with the new handle
-                    if ($attributes["field:$field->uid"]['handle'] !== $field->handle) {
-                        $attributes["field:$field->uid|handle:$field->handle"] = [
-                            'label' => $label,
-                            'handle' => $field->handle,
-                        ];
-                    }
-                }
-            }
+            $field = $fieldElements[0]->getField();
+            $labels = array_unique(array_map(fn(CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
+            $attributes["field:$field->uid"] = [
+                'label' => count($labels) === 1 ? $labels[0] : Craft::t('site', $field->name),
+            ];
         }
 
         return $attributes;
