@@ -14,17 +14,17 @@
 {% endmacro %}
 
 {% set buttonLabelHtml %}
-  <div class="flex flex-nowrap">
+  <div class="inline-flex">
     {% if selectedOption.icon ?? false %}
       {{ tag('div', {
         class: [
           'cp-icon',
-          _self.color(selectedOption.color ?? null),
+          _self.color(selectedOption.iconColor ?? null),
         ]|filter,
         html: iconSvg(selectedOption.icon),
       }) }}
     {% endif %}
-    <div class="label">{{ selectedOption ? selectedOption.label : defaultButtonLabel ?? 'Choose'|t('app') }}</div>
+    <div class="label">{{ selectedOption ? (selectedOption.label ?? selectedOption.labelHtml|raw) : defaultButtonLabel ?? 'Choose'|t('app') }}</div>
   </div>
 {% endset %}
 
@@ -34,6 +34,7 @@
     disabled: disabled,
   }|filter|keys,
   id: id,
+  data: {value},
 }|merge(attributes ?? {}, recursive=true) %}
   {{ forms.button({
     id: buttonId,
@@ -63,12 +64,12 @@
                 {{ tag('span', {
                   class: [
                     'icon',
-                    _self.color(option.color),
+                    _self.color(option.iconColor ?? null),
                   ]|filter,
                   html: iconSvg(option.icon),
                 }) }}
               {% endif %}
-              <span class="label">{{ option.label }}</span>
+              <span class="label">{{ option.label ?? option.labelHtml|raw }}</span>
             {% endtag %}
           </li>
         {% endfor %}
@@ -86,8 +87,9 @@
 {% if not disabled %}
   {% js %}
     (() => {
+      const $container = $('#{{ id|namespaceInputId }}');
       const $button = $('#{{ buttonId|namespaceInputId }}');
-      const $buttonFlex = $button.find('.flex');
+      const $buttonFlex = $button.find('.inline-flex:first');
       const $input = $('#{{ inputId|namespaceInputId }}');
       const menubtn = $button
         .menubtn()
@@ -106,6 +108,8 @@
           $input.val($option.data('value'));
           menubtn.menu.$options.removeClass('sel');
           $option.addClass('sel');
+          $container.data('value', $option.data('value'));
+          $container.trigger('change');
         });
     })();
   {% endjs %}
