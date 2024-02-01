@@ -32,6 +32,7 @@
             :placeholder="searchPlaceholderText"
             v-model="searchTerm"
             @input="handleSearch"
+            :autofocus="autofocusPreferred"
           />
           <button
             v-if="searchTerm.length"
@@ -484,6 +485,7 @@
 
     data() {
       return {
+        autofocusPreferred: Craft.autofocusPreferred ?? false,
         checks: [],
         currentPage: 1,
         lastPage: 1,

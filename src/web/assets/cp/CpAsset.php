@@ -504,6 +504,7 @@ JS;
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
             'apiParams' => Craft::$app->apiParams,
             'appId' => Craft::$app->id,
+            'autofocusPreferred' => $currentUser->getAutofocusPreferred(),
             'autosaveDrafts' => $generalConfig->autosaveDrafts,
             'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
             'dataAttributes' => Html::$dataAttributes,
