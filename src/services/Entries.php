@@ -1632,14 +1632,16 @@ SQL)->execute();
     }
 
     /**
-     * Returns data for vue AdminTable (pagination and tableData).
+     * Returns data for the Entry Types index page in the control panel.
      *
      * @param int $page
      * @param int $limit
      * @param string|null $searchTerm
      * @return array
+     * @since 5.0.0
+     * @internal
      */
-    public function getTableData(int $page, int $limit, ?string $searchTerm = null): array
+    public function getTableData(int $page, int $limit, ?string $searchTerm): array
     {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
 

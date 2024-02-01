@@ -389,9 +389,9 @@ JS, [
 
         $fieldsService = Craft::$app->getFields();
 
-        $page = $this->request->getParam('page', 1);
-        $limit = $this->request->getParam('per_page', 100);
-        $searchTerm = $this->request->getParam('search', null);
+        $page = (int)$this->request->getParam('page', 1);
+        $limit = (int)$this->request->getParam('per_page', 100);
+        $searchTerm = $this->request->getParam('search');
 
         [$pagination, $tableData] = $fieldsService->getTableData($page, $limit, $searchTerm);
 
