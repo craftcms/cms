@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-alpha.11 - 2024-02-01
 
 - Added support for inline field creation and editing within field layout designers. ([#14260](https://github.com/craftcms/cms/pull/14260))
 - Layout elements within field layout designers now have action menus. ([#14260](https://github.com/craftcms/cms/pull/14260))
