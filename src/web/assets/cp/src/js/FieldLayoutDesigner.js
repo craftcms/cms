@@ -467,6 +467,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
       {
         label: Craft.t('app', 'Remove'),
         icon: 'xmark',
+        destructive: true,
         onActivate: () => {
           this.destroy();
         },
