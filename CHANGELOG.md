@@ -14,6 +14,7 @@
 - Fixed a bug where Horizontal Rule and Line Break UI elements weren’t being treated as multi-instance within field layout designers.
 - Fixed a JavaScript error that occurred when attempting to delete an entry type. ([#14262](https://github.com/craftcms/cms/issues/14262))
 - Fixed a bug where component selects weren’t selecting newly-created components if none existed to begin with.
+- Fixed a bug where the `brush`, `download`, `section`, and `upload` control panel icons weren’t consistent with how they appeared in the icon picker. 
 
 ## 5.0.0-alpha.10 - 2024-01-30
 
