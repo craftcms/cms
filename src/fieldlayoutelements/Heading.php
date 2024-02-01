@@ -44,6 +44,14 @@ class Heading extends BaseUiElement
     /**
      * @inheritdoc
      */
+    public function hasSettings()
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([

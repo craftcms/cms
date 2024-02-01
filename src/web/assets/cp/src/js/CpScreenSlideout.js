@@ -489,7 +489,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
     handleSubmit: function (ev) {
       ev.preventDefault();
-      this.submit();
+      // give other submit handlers a chance to modify things
+      setTimeout(() => {
+        this.submit();
+      }, 1);
     },
 
     submit: function () {

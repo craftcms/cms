@@ -473,16 +473,15 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
-#global-header,
-li.crumb {
-  .menubtn,
-  .action-btn {
-    padding: 0 var(--s);
-    height: var(--touch-target-size);
+#global-header .btn.menubtn,
+li.crumb .btn.menubtn,
+.btn.action-btn {
+  padding: 0;
+  width: var(--touch-target-size);
+  height: var(--touch-target-size);
 
-    &:not(:hover):not(:active):not([aria-expanded='true']) {
-      background-color: transparent;
-    }
+  &:not(:hover):not(:active):not([aria-expanded='true']) {
+    background-color: transparent;
   }
 }
 
