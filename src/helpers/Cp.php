@@ -2583,6 +2583,7 @@ JS;
             'autoLabel' => false,
             'buttonAttributes' => [],
             'hiddenLabel' => null,
+            'omitIfEmpty' => true,
         ];
 
         // Item normalization & cleanup
@@ -2608,7 +2609,7 @@ JS;
         ));
 
         // If we're left without any items, just return an empty string
-        if ($items->isEmpty()) {
+        if ($config['omitIfEmpty'] && $items->isEmpty()) {
             return '';
         }
 
