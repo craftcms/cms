@@ -326,6 +326,8 @@ table.editable textarea {
 }
 
 .badge-icon {
+  position: relative;
+  top: -1px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
