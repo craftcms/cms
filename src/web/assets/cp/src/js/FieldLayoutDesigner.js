@@ -269,7 +269,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       slideout.on('submit', async ({response}) => {
         // add the library selector
         const $selector = $(response.data.selectorHtml);
-        this.$fieldGroups.last().append($selector);
+        this.$fieldGroups.last().append($selector).removeClass('hidden');
         this.refreshLibraryFields();
         this.elementDrag.addItems($selector);
 
