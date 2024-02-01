@@ -35,27 +35,23 @@
 
     computed: {
       success() {
-        var successMessage =
-          this.successMessage !== undefined && this.successMessage !== null
-            ? Craft.t('site', this.successMessage, {name: this.name})
-            : Craft.t('app', '“{name}” deleted.', {name: this.name});
+        var successMessage = this.successMessage
+          ? Craft.t('site', this.successMessage, {name: this.name})
+          : Craft.t('app', '“{name}” deleted.', {name: this.name});
         return Craft.escapeHtml(successMessage);
       },
       confirm() {
-        var confirmationMessage =
-          this.confirmationMessage !== undefined &&
-          this.confirmationMessage !== null
-            ? Craft.t('site', this.confirmationMessage, {name: this.name})
-            : Craft.t('app', 'Are you sure you want to delete “{name}”?', {
-                name: this.name,
-              });
+        var confirmationMessage = this.confirmationMessage
+          ? Craft.t('site', this.confirmationMessage, {name: this.name})
+          : Craft.t('app', 'Are you sure you want to delete “{name}”?', {
+              name: this.name,
+            });
         return Craft.escapeHtml(confirmationMessage);
       },
       failed() {
-        var failMessage =
-          this.failMessage !== undefined && this.failMessage !== null
-            ? Craft.t('site', this.failMessage, {name: this.name})
-            : Craft.t('app', 'Couldn’t delete “{name}”.', {name: this.name});
+        var failMessage = this.failMessage
+          ? Craft.t('site', this.failMessage, {name: this.name})
+          : Craft.t('app', 'Couldn’t delete “{name}”.', {name: this.name});
         return Craft.escapeHtml(failMessage);
       },
     },
