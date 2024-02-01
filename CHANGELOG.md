@@ -6,6 +6,7 @@
 - Layout elements within field layout designers now have action menus. ([#14260](https://github.com/craftcms/cms/pull/14260))
 - Improved the performance of control panel screens that include field layout designers.
 - The Entry Types index page now shows entry type icons.
+- The Fields and Entry Types index pages now autofocus the search bar. ([#14238](https://github.com/craftcms/cms/discussions/14238))
 - Added `craft\base\FieldLayoutComponent::hasSettings()`.
 - Added `craft\helpers\Cp::layoutElementSelectorHtml()`.
 - `craft\helpers\App::parseEnv()` now returns `null` when a missing environment variable name is passed to it. ([#14253](https://github.com/craftcms/cms/pull/14253))
