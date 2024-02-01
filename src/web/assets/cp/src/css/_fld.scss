@@ -62,6 +62,8 @@ $gridColor: hsl(212, 50%, 95%);
     }
 
     .fld-field-library {
+      margin: -3px;
+      padding: 3px;
       flex: 1;
       min-height: 0;
       overflow: auto;
