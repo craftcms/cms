@@ -1150,6 +1150,13 @@
     position: sticky;
   }
 
+  .vue-admin-tablepane + .vue-admin-table-footer {
+    margin-left: calc(var(--pane-padding, calc(var(--padding) - 2px)) * -1);
+    margin-right: calc(var(--pane-padding, calc(var(--padding) - 2px)) * -1);
+    padding-left: calc(var(--pane-padding, calc(var(--padding) - 2px)));
+    padding-right: calc(var(--pane-padding, calc(var(--padding) - 2px)));
+  }
+
   .detail-cursor-pointer {
     cursor: pointer;
   }
