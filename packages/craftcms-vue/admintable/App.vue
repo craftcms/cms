@@ -115,14 +115,10 @@
                 v-on:removeCheck="removeCheck"
               ></admin-table-checkbox>
             </template>
-            <div
-              slot="title"
-              slot-scope="props"
-              class="flex flex-nowrap gap-xs"
-            >
+            <div slot="title" slot-scope="props" class="flex flex-nowrap gap-s">
               <span
                 v-if="props.rowData.icon"
-                :class="['cp-icon', props.rowData.iconColor]"
+                :class="['cp-icon', 'small', props.rowData.iconColor]"
                 v-html="props.rowData.icon"
               ></span>
               <span
