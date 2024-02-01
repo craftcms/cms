@@ -24,6 +24,7 @@ use craft\events\EntryTypeEvent;
 use craft\events\SectionEvent;
 use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -1662,6 +1663,7 @@ SQL)->execute();
 
         $results = $query->all();
 
+        /** @var EntryType[] $entryTypes */
         $entryTypes = array_values(array_filter(
             array_map(fn(array $result) => $this->_entryTypes()->firstWhere('id', $result['id']), $results)
         ));
@@ -1677,6 +1679,8 @@ SQL)->execute();
             $tableData[] = [
                 'id' => $entryType->id,
                 'title' => Craft::t('site', $entryType->name),
+                'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
+                'iconColor' => $entryType->color?->value,
                 'url' => $entryType->getCpEditUrl(),
                 'name' => Craft::t('site', $entryType->name),
                 'handle' => $entryType->handle,

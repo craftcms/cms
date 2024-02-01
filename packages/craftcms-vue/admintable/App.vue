@@ -114,7 +114,16 @@
                 v-on:removeCheck="removeCheck"
               ></admin-table-checkbox>
             </template>
-            <template slot="title" slot-scope="props">
+            <div
+              slot="title"
+              slot-scope="props"
+              class="flex flex-nowrap gap-xs"
+            >
+              <span
+                v-if="props.rowData.icon"
+                :class="['cp-icon', props.rowData.iconColor]"
+                v-html="props.rowData.icon"
+              ></span>
               <span
                 v-if="props.rowData.status"
                 class="status"
@@ -129,7 +138,7 @@
               <span :class="{'cell-bold': !props.rowData.status}" v-else>{{
                 props.rowData.title
               }}</span>
-            </template>
+            </div>
 
             <template slot="handle" slot-scope="props">
               <admin-table-copy-text-button
