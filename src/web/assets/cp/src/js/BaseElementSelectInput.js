@@ -490,9 +490,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         const $actionMenuBtn = $element
           .find('.chip-actions,.card-actions')
           .find('.action-btn');
-        const $menu = $actionMenuBtn
+        const disclosureMenu = $actionMenuBtn
           .disclosureMenu()
-          .data('disclosureMenu').$container;
+          .data('disclosureMenu');
+        const $menu = disclosureMenu.$container;
         const $moveForward = $menu.find('[data-move-forward]').closest('li');
         const $moveBackward = $menu.find('[data-move-backward]').closest('li');
         const $ul = $moveForward.closest('ul');
@@ -515,6 +516,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         } else {
           $hr.addClass('hidden');
         }
+
+        disclosureMenu.setContainerPosition();
       }
     },
 

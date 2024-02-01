@@ -76,7 +76,10 @@
 - Matrix fields now have “Entry URI Format” and “Template” settings for each site.
 - Matrix fields now have a “View Mode” setting, giving admins the choice to display nested entries as cards, inline-editable blocks, or an embedded element index.
 - Matrix fields now require the owner element to be saved before they can be edited.
+- Added support for inline field creation and editing within field layout designers. ([#14260](https://github.com/craftcms/cms/pull/14260))
+- Layout elements within field layout designers now have action menus. ([#14260](https://github.com/craftcms/cms/pull/14260))
 - The Fields and Entry Types index pages now have a search bar. ([#13961](https://github.com/craftcms/cms/discussions/13961), [#14126](https://github.com/craftcms/cms/pull/14126))
+- Field types now have icons. ([#14267](https://github.com/craftcms/cms/pull/14267))
 - The address field layout is now accessed via **Settings** → **Addresses**.
 - Volumes now have a “Subpath” setting, and can reuse filesystems so long as the subpaths don’t overlap. ([#11044](https://github.com/craftcms/cms/discussions/11044))
 - Volumes now have an “Alternative Text Translation Method” setting. ([#11576](https://github.com/craftcms/cms/issues/11576))
@@ -115,7 +118,7 @@
 - Migrations that modify the project config no longer need to worry about whether the same changes were already applied to the incoming project config YAML files.
 - Selectize menus no longer apply special styling to options with the value `new`. The `_includes/forms/selectize.twig` control panel template should be used instead (or `craft\helpers\Cp::selectizeHtml()`/`selectizeFieldHtml()`), which will append an styled “Add” option when `addOptionFn` and `addOptionLabel` settings are passed. ([#11946](https://github.com/craftcms/cms/issues/11946))
 - Added the `chip()`, `customSelect()`, `disclosureMenu()`, `elementCard()`, `elementChip()`, `elementIndex()`, `iconSvg()`, and `siteMenuItems()` global functions for control panel templates.
-- Added the `colorSelect`, `colorSelectField`, `languageMenu`, and `languageMenuField` form macros.
+- Added the `colorSelect`, `colorSelectField`, `customSelect`, `customSelectField`, `languageMenu`, and `languageMenuField` form macros.
 - The `assets/move-asset` and `assets/move-folder` actions no longer include `success` keys in responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - The `assets/upload` controller action now includes `errors` object in failure responses. ([#12159](https://github.com/craftcms/cms/pull/12159))
 - Element action triggers’ `validateSelection()` and `activate()` methods are now passed an `elementIndex` argument, with a reference to the trigger’s corresponding element index.
@@ -154,8 +157,10 @@
 - Added `craft\base\Field::valueSql()`.
 - Added `craft\base\FieldInterface::dbType()`, which defines the type(s) of values the field will store in the `elements_sites.content` column (if any).
 - Added `craft\base\FieldInterface::getValueSql()`.
+- Added `craft\base\FieldInterface::icon()`.
 - Added `craft\base\FieldInterface::isMultiInstance()`.
 - Added `craft\base\FieldInterface::queryCondition()`, which accepts an element query param value and returns the corresponding query condition.
+- Added `craft\base\FieldLayoutComponent::hasSettings()`.
 - Added `craft\base\FieldLayoutElement::isMultiInstance()`.
 - Added `craft\base\FieldLayoutProviderInterface::getHandle()`.
 - Added `craft\base\FieldTrait::$layoutElement`.
@@ -228,6 +233,7 @@
 - Added `craft\fieldlayoutelements\BaseField::$providesThumbs`.
 - Added `craft\fieldlayoutelements\BaseField::previewHtml()`.
 - Added `craft\fieldlayoutelements\BaseField::previewable()`.
+- Added `craft\fieldlayoutelements\BaseField::selectorIcon()`.
 - Added `craft\fieldlayoutelements\BaseField::thumbHtml()`.
 - Added `craft\fieldlayoutelements\BaseField::thumbable()`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.
@@ -273,6 +279,7 @@
 - Added `craft\helpers\Cp::iconPickerFieldHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\helpers\Cp::iconPickerHtml()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\helpers\Cp::iconSvg()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\helpers\Cp::layoutElementSelectorHtml()`.
 - Added `craft\helpers\Cp::menuItem()`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\helpers\Cp::moneyFieldHtml()`.
 - Added `craft\helpers\Cp::moneyInputHtml()`.
@@ -582,7 +589,8 @@
 - Craft no longer requires `composer/composer`.
 - New database tables now default to the `utf8mb4` charset, and the `utf8mb4_0900_ai_ci` or `utf8mb4_unicode_ci` collation, on MySQL. Existing installs should run `db/convert-charset` after upgrading, to ensure all tables have consistent charsets and collations. ([#11823](https://github.com/craftcms/cms/discussions/11823))
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))
-- Improved the initial page load performance for element edit pages that contain Matrix fields.
+- Improved the initial page load performance for element edit screens that contain Matrix fields.
+- Improved the performance of control panel screens that include field layout designers.
 - Improved the performance of autosaves for elements with newly-created Matrix entries.
 - Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
 - Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))

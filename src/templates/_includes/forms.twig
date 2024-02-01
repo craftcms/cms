@@ -73,6 +73,11 @@
 {% endmacro %}
 
 
+{% macro customSelect(config) %}
+    {% include "_includes/forms/customSelect" with config only %}
+{% endmacro %}
+
+
 {% macro selectize(config) %}
     {% include "_includes/forms/selectize" with config only %}
 {% endmacro %}
@@ -254,6 +259,12 @@
 {% macro selectField(config) %}
     {% set config = config|merge({id: config.id ?? "select#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/select') }}
+{% endmacro %}
+
+
+{% macro customSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "customselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/customSelect') }}
 {% endmacro %}
 
 

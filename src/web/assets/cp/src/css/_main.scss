@@ -326,6 +326,8 @@ table.editable textarea {
 }
 
 .badge-icon {
+  position: relative;
+  top: -1px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -921,8 +923,8 @@ input.checkbox + label.smalltext {
 .required:after {
   content: 'asterisk';
   @include margin(-2px, 0, 0, 5px);
-  font-size: 7px;
-  color: var(--error-color);
+  font-size: 12px;
+  color: var(--rose-500);
 }
 
 .scrollpane {
@@ -2952,7 +2954,7 @@ table {
 /* chips */
 .chip {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   cursor: default;
   user-select: none;
@@ -3093,8 +3095,16 @@ table {
     @include svg-mask(var(--icon-color, var(--ui-control-color)));
   }
 
+  &.medium {
+    --thumb-size: calc(16rem / 16);
+  }
+
   &.small {
     --thumb-size: calc(14rem / 16);
+  }
+
+  &.puny {
+    --thumb-size: calc(12rem / 16);
   }
 }
 
@@ -3827,7 +3837,6 @@ $checkboxPadding: $checkboxSize + 4;
 
   .structure {
     .chip {
-      display: inline-flex;
       margin-top: var(--xs);
     }
 
@@ -4155,11 +4164,11 @@ ul.tree,
 }
 
 .status:not(.on):not(.live):not(.active):not(.enabled):not(.all) {
-  &:not(.pending):not(.off):not(.suspended):not(.expired):not(.light) {
-    &:not(.gray):not(.red):not(.orange):not(.amber):not(.yellow):not(.lime) {
-      &:not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky):not(.blue) {
-        &:not(.indigo):not(.violet):not(.purple):not(.fuchsia):not(.pink) {
-          &:not(.rose):not(.grey):not(.black) {
+  &:not(.pending):not(.warning):not(.off):not(.suspended):not(.expired) {
+    &:not(.light):not(.gray):not(.red):not(.orange):not(.amber):not(.yellow) {
+      &:not(.lime):not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky) {
+        &:not(.blue):not(.indigo):not(.violet):not(.purple):not(.fuchsia) {
+          &:not(.pink):not(.rose):not(.grey):not(.black) {
             border-color: var(--ui-control-color);
           }
         }
@@ -4184,6 +4193,9 @@ ul.tree,
 .status.suspended,
 .status.expired {
   background-color: var(--disabled-color);
+}
+.status.warning {
+  background-color: var(--warning-color);
 }
 .status.orange,
 .bg-orange,
@@ -4276,7 +4288,12 @@ ul.tree,
 }
 
 .icon,
-.cp-icon {
+.cp-icon,
+[data-icon],
+[data-icon-after] {
+  &.warning {
+    --icon-color: var(--warning-color);
+  }
   &.red {
     --icon-color: var(--disabled-color);
   }
@@ -4336,6 +4353,33 @@ ul.tree,
   }
   &.gray {
     --icon-color: var(--gray-300);
+  }
+}
+
+.warning,
+.red,
+.orange,
+.amber,
+.yellow,
+.lime,
+.green,
+.emerald,
+.teal,
+.cyan,
+.sky,
+.blue,
+.indigo,
+.violet,
+.purple,
+.fuchsia,
+.pink,
+.rose,
+.white,
+.black,
+.gray {
+  &[data-icon]:before,
+  &[data-icon-after]:after {
+    color: var(--icon-color) !important;
   }
 }
 

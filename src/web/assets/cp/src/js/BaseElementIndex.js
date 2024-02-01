@@ -2481,7 +2481,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       viewModes.push({
         mode: 'cards',
         title: Craft.t('app', 'Display as cards'),
-        icon: 'cards',
+        icon: 'element-cards',
       });
 
       if (this.settings.allowedViewModes) {

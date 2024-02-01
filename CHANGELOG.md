@@ -2,9 +2,25 @@
 
 ## Unreleased
 
+- Added support for inline field creation and editing within field layout designers. ([#14260](https://github.com/craftcms/cms/pull/14260))
+- Layout elements within field layout designers now have action menus. ([#14260](https://github.com/craftcms/cms/pull/14260))
+- Improved the performance of control panel screens that include field layout designers.
+- The Entry Types index page now shows entry type icons.
+- The Fields and Entry Types index pages now autofocus the search bar. ([#14238](https://github.com/craftcms/cms/discussions/14238))
+- Field types now have icons. ([#14267](https://github.com/craftcms/cms/pull/14267))
+- Added the `customSelect` and `customSelectField` form macros.
+- Added `craft\base\FieldInterface::icon()`.
+- Added `craft\base\FieldLayoutComponent::hasSettings()`.
+- Added `craft\fieldlayoutelements\BaseField::selectorIcon()`.
+- Added `craft\helpers\Cp::layoutElementSelectorHtml()`.
 - `craft\helpers\App::parseEnv()` now returns `null` when a missing environment variable name is passed to it. ([#14253](https://github.com/craftcms/cms/pull/14253))
+- Success notifications triggered by `craft\web\Controller::asModelSuccess()` now include chips, for models that implement `Chippable`.
 - Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers weren’t always getting enabled when they should, if a new tab was added.
 - Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers were labelled incorrectly for right-to-left languages.
+- Fixed a bug where Horizontal Rule and Line Break UI elements weren’t being treated as multi-instance within field layout designers.
+- Fixed a JavaScript error that occurred when attempting to delete an entry type. ([#14262](https://github.com/craftcms/cms/issues/14262))
+- Fixed a bug where component selects weren’t selecting newly-created components if none existed to begin with.
+- Fixed a bug where the `brush`, `download`, `section`, and `upload` control panel icons weren’t consistent with how they appeared in the icon picker. 
 
 ## 5.0.0-alpha.10 - 2024-01-30
 
