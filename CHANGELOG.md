@@ -5,6 +5,7 @@
 - Added support for inline field creation and editing within field layout designers. ([#14260](https://github.com/craftcms/cms/pull/14260))
 - Layout elements within field layout designers now have action menus. ([#14260](https://github.com/craftcms/cms/pull/14260))
 - Improved the performance of control panel screens that include field layout designers.
+- It’s now possible to include table columns for multiple instances of the same field within element indexes. ([#14256](https://github.com/craftcms/cms/pull/14256))
 - The Entry Types index page now shows entry type icons.
 - The Fields and Entry Types index pages now autofocus the search bar. ([#14238](https://github.com/craftcms/cms/discussions/14238))
 - Field types now have icons. ([#14267](https://github.com/craftcms/cms/pull/14267))
