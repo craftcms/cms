@@ -1187,9 +1187,11 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     this.$container = $newContainer;
     this.initUi();
 
-    this.tab.designer.refreshSelectedFields();
-    this.tab.designer.elementDrag.removeItems($oldContainer);
-    this.tab.designer.elementDrag.addItems($newContainer);
+    const designer = this.tab.designer;
+    designer.refreshSelectedFields();
+    designer.elementDrag.removeItems($oldContainer);
+    designer.elementDrag.addItems($newContainer);
+    designer.tabGrid.refreshCols(true);
 
     if (this.slideout) {
       this.slideout.close();
