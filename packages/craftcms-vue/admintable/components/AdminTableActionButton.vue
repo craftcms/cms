@@ -41,7 +41,7 @@
               :class="{
                 ...(act.class ? act.class : {}),
                 ...{
-                  error: act.error !== undefined && act.error,
+                  error: act.error,
                   disabled:
                     act.allowMultiple !== undefined &&
                     !act.allowMultiple &&
@@ -53,7 +53,7 @@
               :data-ajax="act.ajax"
               @click.prevent="
                 !(
-                  act.allowMultiple !== undefined &&
+                  typeof act.allowMultiple !== 'undefined' &&
                   !act.allowMultiple &&
                   hasMultipleSelected
                 )
@@ -136,7 +136,7 @@
         this.$emit('click', param, value, action, ajax);
 
         // Is the action button the one to deal with the click?
-        if (handleClick !== undefined && !handleClick) {
+        if (typeof handleClick !== 'undefined' && !handleClick) {
           return;
         }
 
