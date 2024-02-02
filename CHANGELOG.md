@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Made several subtle styling improvements, particularly for text-only zoom.
+- Increased the hit area for range select options.
+
 ## 5.0.0-alpha.11 - 2024-02-01
 
 - Added support for inline field creation and editing within field layout designers. ([#14260](https://github.com/craftcms/cms/pull/14260))

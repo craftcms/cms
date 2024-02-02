@@ -57,6 +57,7 @@
 - Improved the accessibility of the global nav. ([#14240](https://github.com/craftcms/cms/pull/14240))Improved the accessibility of the global nav. ([#14240](https://github.com/craftcms/cms/pull/14240))
 - Improved the accessibility of layout tabs. ([#14215](https://github.com/craftcms/cms/pull/14215))
 - Improved the accessibility of overflow tab menus. ([#14214](https://github.com/craftcms/cms/pull/14214))
+- Increased the hit area for range select options.
 
 ### Administration
 - Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))
