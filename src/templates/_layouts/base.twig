@@ -12,7 +12,7 @@
     requestedSite ? "site--#{requestedSite.handle}",
 ])|filter -%}
 
-{% set sidebarState = craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~ ':sidebar') %}
+{% set sidebarState = craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~ ':sidebar') ?? 'expanded' %}
 {% set bodyAttributes = {
     class: bodyClass,
     dir: orientation,
