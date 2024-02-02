@@ -169,23 +169,29 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         this.canAddMoreComponents() &&
         this.getOptions().parent(':not(.hidden)').length
       ) {
-        this.enableAddComponentBtn();
+        this.enableAddComponentBtns();
       } else {
-        this.disableAddComponentBtn();
+        this.disableAddComponentBtns();
       }
     },
 
-    enableAddComponentBtn: function () {
+    enableAddComponentBtns: function () {
       if (this.$addBtn.length) {
         this.$addBtn.removeClass('hidden');
+      }
+      if (this.$createBtn.length) {
+        this.$createBtn.removeClass('hidden');
       }
 
       this.updateButtonContainer();
     },
 
-    disableAddComponentBtn: function () {
+    disableAddComponentBtns: function () {
       if (this.$addBtn.length) {
         this.$addBtn.addClass('hidden');
+      }
+      if (this.$createBtn.length) {
+        this.$createBtn.addClass('hidden');
       }
 
       this.updateButtonContainer();
@@ -488,12 +494,19 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         }
       );
 
-      const $component = $(data.components[type][id][0]);
-      $('<li/>').append($component).appendTo(this.$list);
-      this.addComponents($component);
+      const canAdd = this.canAddMoreComponents();
+
+      if (canAdd) {
+        const $component = $(data.components[type][id][0]);
+        $('<li/>').append($component).appendTo(this.$list);
+        this.addComponents($component);
+      }
 
       if (addToMenu && disclosureMenu) {
-        const $menuItem = $(data.menuItems[type][id]).addClass('hidden');
+        const $menuItem = $(data.menuItems[type][id]);
+        if (canAdd) {
+          $menuItem.addClass('hidden');
+        }
         disclosureMenu.addItem($menuItem);
         this.addListener($menuItem.find('button'), 'activate', () => {
           this.addComponent(type, id);

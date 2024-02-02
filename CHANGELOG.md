@@ -11,6 +11,7 @@
 - Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag.
 - Fixed an error that occurred if a component select was used for components with non-numeric IDs.
 - Fixed a bug where entry type, field, filesystem, and volume validation errors weren’t getting reported within slideouts.
+- Fixed a bug where it was possible to create new components from component selects whose limit had already been reached.
 
 ## 5.0.0-alpha.11 - 2024-02-01
 
