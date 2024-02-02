@@ -15,7 +15,8 @@
                     options: sourceOptions,
                     values: field.sources,
                     showAllOption: true,
-                    errors: field.getErrors('sources')
+                    errors: field.getErrors('sources'),
+                    data: {'error-key': 'sources'},
                 }) }}
             {% else %}
                 {{ forms.selectField({
@@ -25,7 +26,8 @@
                     name: 'source',
                     options: sourceOptions,
                     value: field.source,
-                    errors: field.getErrors('source')
+                    errors: field.getErrors('source'),
+                    data: {'error-key': 'source'},
                 }) }}
             {% endif %}
         {% else %}
@@ -61,6 +63,7 @@
                 value: field.minRelations,
                 size: 2,
                 errors: field.getErrors('minRelations'),
+                data: {'error-key': 'minRelations'},
             }) }}
 
             {{ forms.textField({
@@ -73,6 +76,7 @@
                 value: field.maxRelations,
                 size: 2,
                 errors: field.getErrors('maxRelations'),
+                data: {'error-key': 'maxRelations'},
             }) }}
         {% endif %}
 
@@ -83,7 +87,8 @@
             name: 'branchLimit',
             value: field.branchLimit,
             size: 2,
-            errors: field.getErrors('branchLimit')
+            errors: field.getErrors('branchLimit'),
+            data: {'error-key': 'branchLimit'},
         }) }}
     {% endblock %}
 

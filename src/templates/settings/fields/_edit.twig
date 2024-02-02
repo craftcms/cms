@@ -11,9 +11,10 @@
   id: 'name',
   name: 'name',
   value: field.name,
-  errors: field.getErrors('name'),
   required: true,
-  autofocus: true
+  autofocus: true,
+  errors: field.getErrors('name'),
+  data: {'error-key': 'name'},
 }) }}
 
 {{ forms.textField({
@@ -26,8 +27,9 @@
   autocapitalize: false,
   maxlength: 64,
   value: field.handle,
-  errors: field.getErrors('handle'),
   required: true,
+  errors: field.getErrors('handle'),
+  data: {'error-key': 'handle'},
 }) }}
 
 {{ forms.textareaField({
@@ -93,7 +95,8 @@
             class: 'code',
             name: 'translationKeyFormat',
             value: field.translationKeyFormat,
-            errors: field.getErrors('translationKeyFormat')
+            errors: field.getErrors('translationKeyFormat'),
+            data: {'error-key': 'translationKeyFormat'},
           }) }}
         {% endtag %}
       {% endif %}

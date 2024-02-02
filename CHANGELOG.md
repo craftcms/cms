@@ -10,6 +10,7 @@
 - Fixed a bug where newly-created inline Matrix entries could have validation errors.
 - Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag.
 - Fixed an error that occurred if a component select was used for components with non-numeric IDs.
+- Fixed a bug where entry type, field, filesystem, and volume validation errors weren’t getting reported within slideouts.
 
 ## 5.0.0-alpha.11 - 2024-02-01
 

@@ -137,7 +137,7 @@
         toggle: 'restrict-allowed-types'
     }) }}
 
-    <fieldset id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %}>
+    <fieldset id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %} data-error-key="allowedKinds">
         {% for option in field.getFileKindOptions() %}
             {{ forms.checkboxField({
                 label: option.label,
@@ -178,6 +178,7 @@
         ],
         value: field.previewMode,
         errors: field.getErrors('previewMode'),
+        data: {'error-key': 'previewMode'},
     }) }}
 
     {{ block('advancedSettings') }}

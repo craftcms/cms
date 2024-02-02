@@ -8,6 +8,7 @@
     values: field.getEntryTypes(),
     create: true,
     errors: field.getErrors('entryTypes'),
+    data: {'error-key': 'entryTypes'},
 }) }}
 
 {% if craft.app.getIsMultiSite() %}
@@ -120,7 +121,8 @@
     allowAdd: false,
     allowDelete: false,
     allowReorder: false,
-    errors: siteErrors|unique
+    errors: siteErrors|unique,
+    data: {'error-key': 'siteSettings'},
 }) }}
 
 {{ forms.textField({
@@ -135,6 +137,7 @@
     value: field.minEntries,
     size: 3,
     errors: field.getErrors('minEntries'),
+    data: {'error-key': 'minEntries'},
 }) }}
 
 {{ forms.textField({
@@ -148,7 +151,8 @@
     name: 'maxEntries',
     value: field.maxEntries,
     size: 3,
-    errors: field.getErrors('maxEntries')
+    errors: field.getErrors('maxEntries'),
+    data: {'error-key': 'maxEntries'},
 }) }}
 
 <hr>
