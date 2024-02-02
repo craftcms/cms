@@ -236,33 +236,33 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       // add the action triggers
       for (let i = 0; i < $components.length; i++) {
         const $component = $components.eq(i);
+
         const actions = this.defineComponentActions($component);
-        if (actions.length) {
-          Craft.addActionsToChip($component, actions);
+        Craft.addActionsToChip($component, actions);
 
-          const disclosureMenu = $component
-            .find('> .chip-content > .chip-actions .action-btn')
-            .data('disclosureMenu');
-          const moveForwardBtn = disclosureMenu.$container.find(
-            '[data-move-forward]'
-          )[0];
-          const moveBackwardBtn = disclosureMenu.$container.find(
-            '[data-move-backward]'
-          )[0];
+        const disclosureMenu = $component
+          .find('> .chip-content > .chip-actions .action-btn')
+          .disclosureMenu()
+          .data('disclosureMenu');
+        const moveForwardBtn = disclosureMenu.$container.find(
+          '[data-move-forward]'
+        )[0];
+        const moveBackwardBtn = disclosureMenu.$container.find(
+          '[data-move-backward]'
+        )[0];
 
-          disclosureMenu.on('show', () => {
-            const $li = $component.parent();
-            const $prev = $li.prev();
-            const $next = $li.next();
+        disclosureMenu.on('show', () => {
+          const $li = $component.parent();
+          const $prev = $li.prev();
+          const $next = $li.next();
 
-            if (moveForwardBtn) {
-              disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
-            }
-            if (moveBackwardBtn) {
-              disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
-            }
-          });
-        }
+          if (moveForwardBtn) {
+            disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
+          }
+          if (moveBackwardBtn) {
+            disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
+          }
+        });
 
         if (this.settings.sortable) {
           $('<button/>', {
@@ -273,6 +273,10 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
             'aria-describedby': $component.find('.label').attr('id'),
           }).appendTo($component.find('.chip-actions'));
         }
+
+        this.addListener($component, 'dblclick,taphold', () => {
+          disclosureMenu.$container.find('[data-edit-action]').click();
+        });
 
         this.hideOption($component.data('id'));
       }

@@ -889,6 +889,13 @@ class Cp
                     return '';
                 }
 
+                foreach ($actionMenuItems as &$item) {
+                    if (str_starts_with($item['id'] ?? '', 'action-edit-')) {
+                        $item['attributes']['data']['edit-action'] = true;
+                        break;
+                    }
+                }
+
                 return static::disclosureMenu($actionMenuItems, [
                     'hiddenLabel' => Craft::t('app', 'Actions'),
                     'buttonAttributes' => [

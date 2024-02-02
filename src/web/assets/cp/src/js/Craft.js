@@ -2493,6 +2493,10 @@ $.extend(Craft, {
    * @param {Array} actions
    */
   addActionsToChip(chip, actions) {
+    if (!actions?.length) {
+      return;
+    }
+
     const $actions = $(chip).find(
       '> .chip-content > .chip-actions, > .card-actions-container > .card-actions'
     );
