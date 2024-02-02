@@ -15,7 +15,11 @@
 {% set bodyAttributes = {
     class: bodyClass,
     dir: orientation,
+    data: {
+        sidebar: 'expanded',
+    }
 }|merge(bodyAttributes ?? {}, recursive=true) -%}
+
 
 {% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}
 {% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true) -%}
