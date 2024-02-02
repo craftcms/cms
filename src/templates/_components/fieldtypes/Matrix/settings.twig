@@ -228,33 +228,35 @@
 {% endtag %}
 
 {% js %}
-  const $defaultColumnsContainer = $('#{{ 'default-table-columns-input'|namespaceInputId }}');
+  (() => {
+    const $defaultColumnsContainer = $('#{{ 'default-table-columns-input'|namespaceInputId }}');
 
-  Craft.ui.createCheckboxSelect({
-    name: {{ 'defaultTableColumns'|namespaceInputName|json_encode|raw }},
-    options: {{ defaultTableColumnOptions|json_encode|raw }},
-    values: {{ field.defaultTableColumns|json_encode|raw }},
-    sortable: true,
-  }).appendTo($defaultColumnsContainer);
+    Craft.ui.createCheckboxSelect({
+      name: {{ 'defaultTableColumns'|namespaceInputName|json_encode|raw }},
+      options: {{ defaultTableColumnOptions|json_encode|raw }},
+      values: {{ field.defaultTableColumns|json_encode|raw }},
+      sortable: true,
+    }).appendTo($defaultColumnsContainer);
 
-  const componentSelect = $('#{{ 'entry-types'|namespaceInputId }}').data('componentSelect');
+    const componentSelect = $('#{{ 'entry-types'|namespaceInputId }}').data('componentSelect');
 
-  componentSelect.on('change', () => {
-    const values = $defaultColumnsContainer.find('input:checked').toArray().map(input => input.value);
-    Craft.sendActionRequest('POST', 'matrix/default-table-column-options', {
-      data: {
-        entryTypeIds: componentSelect.getSelectedComponentIds(),
-      },
-    }).then(({data}) => {
-      $defaultColumnsContainer.empty().append(
-        Craft.ui.createCheckboxSelect({
-          name: {{ 'defaultTableColumns'|namespaceInputName|json_encode|raw }},
-          options: data.options,
-          values: values,
-          sortable: true,
-        })
-      );
+    componentSelect.on('change', () => {
+      const values = $defaultColumnsContainer.find('input:checked').toArray().map(input => input.value);
+      Craft.sendActionRequest('POST', 'matrix/default-table-column-options', {
+        data: {
+          entryTypeIds: componentSelect.getSelectedComponentIds(),
+        },
+      }).then(({data}) => {
+        $defaultColumnsContainer.empty().append(
+          Craft.ui.createCheckboxSelect({
+            name: {{ 'defaultTableColumns'|namespaceInputName|json_encode|raw }},
+            options: data.options,
+            values: values,
+            sortable: true,
+          })
+        );
 
+      });
     });
-  });
+  })();
 {% endjs %}
