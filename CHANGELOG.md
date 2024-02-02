@@ -4,6 +4,7 @@
 
 - Made several subtle styling improvements, particularly for text-only zoom.
 - Increased the hit area for range select options.
+- Fixed a bug where newly-created inline Matrix entries could have validation errors.
 
 ## 5.0.0-alpha.11 - 2024-02-01
 
