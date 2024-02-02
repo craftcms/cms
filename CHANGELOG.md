@@ -5,6 +5,7 @@
 - Added the “Show cards in a grid” setting to relational fields that support card view. ([#14202](https://github.com/craftcms/cms/discussions/14202))
 - Made several subtle styling improvements, particularly for text-only zoom.
 - Increased the hit area for range select options.
+- The `queue/run` command now supports a `--job-id` option.
 - Fixed a bug where newly-created inline Matrix entries could have validation errors.
 - Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag.
 - Fixed an error that occurred if a component select was used for components with non-numeric IDs.
