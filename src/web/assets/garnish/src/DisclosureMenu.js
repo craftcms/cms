@@ -212,7 +212,13 @@ export default Base.extend(
         const $options = this.$container.find('li');
         for (let i = 0; i < $options.length; i++) {
           const $o = $options.eq(i);
-          if ($o.text().toLowerCase().trimStart().startsWith(this.searchStr)) {
+          if (typeof $o.data('searchText') === 'undefined') {
+            // clone without nested SVGs
+            const $clone = $o.clone();
+            $clone.find('svg').remove();
+            $o.data('searchText', $clone.text().toLowerCase().trimStart());
+          }
+          if ($o.data('searchText').startsWith(this.searchStr)) {
             $option = $o;
             break;
           }
