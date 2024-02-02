@@ -17,10 +17,12 @@ class CraftGlobalSidebar extends HTMLElement {
 
   expand() {
     document.body.setAttribute('data-sidebar', 'expanded');
+    Craft.setCookie('sidebar', 'expanded');
   }
 
   collapse() {
     document.body.setAttribute('data-sidebar', 'collapsed');
+    Craft.setCookie('sidebar', 'collapsed');
   }
 }
 

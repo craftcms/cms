@@ -16,7 +16,7 @@
     class: bodyClass,
     dir: orientation,
     data: {
-        sidebar: 'expanded',
+        sidebar: craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~ ':sidebar')
     }
 }|merge(bodyAttributes ?? {}, recursive=true) -%}
 

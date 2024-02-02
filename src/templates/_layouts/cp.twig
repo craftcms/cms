@@ -196,120 +196,122 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                 </div>
             </div>
 
-            <div id="main-container">
+            <div class="container">
+                <div id="main-container">
 
-                <main {{ attr(mainAttributes) }}>
-
-                    {% if fullPageForm -%}
-                    <form {% block mainFormAttributes %}{{ attr(mainFormAttributes) }}{% endblock %}>
-                        {{- csrfInput() }}
-                        {%- endif %}
-
-                        {% if showHeader %}
-                            <div id="header-container">
-                                <header id="header">
-                                    {% block header %}
-                                        <div id="page-title" class="flex{% if toolbar %} has-toolbar{% endif %}">
-                                            {% block pageTitle %}
-                                                {% if title is defined and title|length %}
-                                                    <h1 class="screen-title" title="{{ title }}">{{ title }}</h1>
-                                                {% endif %}
-                                            {% endblock %}
-                                        </div>
-                                        {% if toolbar %}
-                                            <div id="toolbar" class="flex">
-                                                {{ toolbar|raw }}
-                                            </div>
-                                        {% endif %}
-                                        {% if actionButton or additionalButtons %}
-                                            <div id="action-buttons" class="flex">
-                                                {{ additionalButtons|raw }}
-                                                {{ actionButton|raw }}
-                                            </div>
-                                        {% endif %}
-                                    {% endblock %}
-                                </header><!-- #header -->
-                            </div>
-                        {% endif %}
-
-                        <div id="main-content" class="{{ mainContentClasses|join(' ') }}">
-                            {# sidebar #}
-                            {% if sidebar %}
-                                <div id="sidebar-toggle-container">
-                                    <button
-                                        type="button"
-                                        id="sidebar-toggle"
-                                        class="btn menubtn"
-                                        aria-controls="sidebar-container"
-                                        aria-expanded="false"
-                                    >
-                                        {{ 'Show sidebar'|t('app') }}
-                                    </button>
-                                </div>
-                                <div id="sidebar-container">
-                                    <div id="sidebar" class="sidebar">
-                                        {{ sidebar|raw }}
-                                    </div>
-                                </div>
-                            {% endif %}
-
-                            {# content-container #}
-                            <div id="content-container">
-                                {% if sidebar %}
-                                    <h2 id="content-heading"></h2>
-                                {% endif %}
-                                {% block main %}
-                                    {% if errorSummary is not empty %}
-                                        {{ errorSummary is defined ? errorSummary|raw }}
-                                    {% endif %}
-                                    <div id="content" class="content-pane">
-                                        {% if contentNotice or tabs %}
-                                            <header id="content-header" class="pane-header">
-                                                {{ contentNotice ? tag('div', {
-                                                    id: 'content-notice',
-                                                    html: contentNotice,
-                                                    role: 'status',
-                                                }) }}
-                                                {% if tabs %}
-                                                    {% include "_includes/tabs" with {
-                                                        containerAttributes: {
-                                                            id: 'tabs',
-                                                        },
-                                                    } %}
-                                                {% endif %}
-                                            </header>
-                                        {% endif %}
-
-                                        {% block content %}
-                                            {{ content is defined ? content|raw }}
-                                        {% endblock %}
-
-                                        {# footer #}
-                                        {% if footer %}
-                                            <div id="footer" class="flex flex-justify">
-                                                {{ footer|raw }}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                {% endblock %}
-                            </div><!-- #content-container -->
-
-                            {% if details is not empty %}
-                                <div id="details-container">
-                                    <div id="details">
-                                        <div class="details">
-                                            {{ details|raw }}
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        </div><!-- #main-content -->
+                    <main {{ attr(mainAttributes) }}>
 
                         {% if fullPageForm -%}
-                    </form><!-- #main-form -->
-                    {%- endif %}
-                </main><!-- #main -->
-            </div><!-- #main-container -->
+                        <form {% block mainFormAttributes %}{{ attr(mainFormAttributes) }}{% endblock %}>
+                            {{- csrfInput() }}
+                            {%- endif %}
+
+                            {% if showHeader %}
+                                <div id="header-container">
+                                    <header id="header">
+                                        {% block header %}
+                                            <div id="page-title" class="flex{% if toolbar %} has-toolbar{% endif %}">
+                                                {% block pageTitle %}
+                                                    {% if title is defined and title|length %}
+                                                        <h1 class="screen-title" title="{{ title }}">{{ title }}</h1>
+                                                    {% endif %}
+                                                {% endblock %}
+                                            </div>
+                                            {% if toolbar %}
+                                                <div id="toolbar" class="flex">
+                                                    {{ toolbar|raw }}
+                                                </div>
+                                            {% endif %}
+                                            {% if actionButton or additionalButtons %}
+                                                <div id="action-buttons" class="flex">
+                                                    {{ additionalButtons|raw }}
+                                                    {{ actionButton|raw }}
+                                                </div>
+                                            {% endif %}
+                                        {% endblock %}
+                                    </header><!-- #header -->
+                                </div>
+                            {% endif %}
+
+                                <div id="main-content" class="{{ mainContentClasses|join(' ') }}">
+                                    {# sidebar #}
+                                    {% if sidebar %}
+                                        <div id="sidebar-toggle-container">
+                                            <button
+                                                type="button"
+                                                id="sidebar-toggle"
+                                                class="btn menubtn"
+                                                aria-controls="sidebar-container"
+                                                aria-expanded="false"
+                                            >
+                                                {{ 'Show sidebar'|t('app') }}
+                                            </button>
+                                        </div>
+                                        <div id="sidebar-container">
+                                            <div id="sidebar" class="sidebar">
+                                                {{ sidebar|raw }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                    {# content-container #}
+                                    <div id="content-container">
+                                        {% if sidebar %}
+                                            <h2 id="content-heading"></h2>
+                                        {% endif %}
+                                        {% block main %}
+                                            {% if errorSummary is not empty %}
+                                                {{ errorSummary is defined ? errorSummary|raw }}
+                                            {% endif %}
+                                            <div id="content" class="content-pane">
+                                                {% if contentNotice or tabs %}
+                                                    <header id="content-header" class="pane-header">
+                                                        {{ contentNotice ? tag('div', {
+                                                            id: 'content-notice',
+                                                            html: contentNotice,
+                                                            role: 'status',
+                                                        }) }}
+                                                        {% if tabs %}
+                                                            {% include "_includes/tabs" with {
+                                                                containerAttributes: {
+                                                                    id: 'tabs',
+                                                                },
+                                                            } %}
+                                                        {% endif %}
+                                                    </header>
+                                                {% endif %}
+
+                                                {% block content %}
+                                                    {{ content is defined ? content|raw }}
+                                                {% endblock %}
+
+                                                {# footer #}
+                                                {% if footer %}
+                                                    <div id="footer" class="flex flex-justify">
+                                                        {{ footer|raw }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% endblock %}
+                                    </div><!-- #content-container -->
+
+                                    {% if details is not empty %}
+                                        <div id="details-container">
+                                            <div id="details">
+                                                <div class="details">
+                                                    {{ details|raw }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div><!-- #main-content -->
+
+                            {% if fullPageForm -%}
+                        </form><!-- #main-form -->
+                        {%- endif %}
+                    </main><!-- #main -->
+                </div><!-- #main-container -->
+            </div><!-- .container -->
 
             <footer id="global-footer">
                 {% if trialInfo %}
