@@ -103,7 +103,7 @@
 
         <div class="global-sidebar__footer">
             <div class="sidebar-actions">
-                <button type="button" class="sidebar-action" id="sidebar-trigger">
+                <button type="button" class="sidebar-action" id="sidebar-trigger" aria-controls="global-sidebar" aria-expanded="{{ sidebarState == 'expanded' ? 'true' : 'false' }}">
                     <span class="sidebar-action__prefix">
                         <span class="nav-icon" aria-hidden="true" id="sidebar-toggle-icon">
                             {{ iconSvg('angle-right') }}

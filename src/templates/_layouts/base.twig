@@ -12,11 +12,12 @@
     requestedSite ? "site--#{requestedSite.handle}",
 ])|filter -%}
 
+{% set sidebarState = craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~ ':sidebar') %}
 {% set bodyAttributes = {
     class: bodyClass,
     dir: orientation,
     data: {
-        sidebar: craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~ ':sidebar')
+        sidebar: sidebarState
     }
 }|merge(bodyAttributes ?? {}, recursive=true) -%}
 
