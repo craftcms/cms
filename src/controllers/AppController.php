@@ -717,8 +717,8 @@ class AppController extends Controller
             $componentType = $componentInfo['type'];
             $id = $componentInfo['id'];
 
-            if (!$id || (!is_numeric($id) && !(is_array($id) && ArrayHelper::isNumeric($id)))) {
-                throw new BadRequestHttpException('Invalid component ID');
+            if (!$id) {
+                throw new BadRequestHttpException('Missing component ID');
             }
 
             $component = $componentType::get($id);
