@@ -3887,7 +3887,7 @@ JS, [
      */
     public function getStatus(): ?string
     {
-        if ($this->getIsDraft()) {
+        if ($this->getIsDraft() && !$this->isProvisionalDraft) {
             return self::STATUS_DRAFT;
         }
 
@@ -5574,7 +5574,7 @@ JS,
                 if (!static::hasStatuses()) {
                     return false;
                 }
-                if ($this->getIsUnpublishedDraft()) {
+                if ($this->getIsDraft() && !$this->isProvisionalDraft) {
                     $icon = Html::tag('span', '', [
                         'data' => ['icon' => 'draft'],
                         'aria' => ['hidden' => 'true'],
