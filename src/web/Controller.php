@@ -8,10 +8,12 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\Chippable;
 use craft\base\Identifiable;
 use craft\base\ModelInterface;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
+use craft\helpers\Cp;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -409,10 +411,16 @@ abstract class Controller extends \yii\web\Controller
             $data['modelId'] = $model->getId();
         }
 
+        $notificationSettings = [];
+        if ($model instanceof Chippable) {
+            $notificationSettings['details'] = Cp::chipHtml($model);
+        }
+
         return $this->asSuccess(
             $message,
             $data,
             $redirect ?? $this->getPostedRedirectUrl($model),
+            $notificationSettings,
         );
     }
 

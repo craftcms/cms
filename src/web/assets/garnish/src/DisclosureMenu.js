@@ -212,7 +212,13 @@ export default Base.extend(
         const $options = this.$container.find('li');
         for (let i = 0; i < $options.length; i++) {
           const $o = $options.eq(i);
-          if ($o.text().toLowerCase().trimStart().startsWith(this.searchStr)) {
+          if (typeof $o.data('searchText') === 'undefined') {
+            // clone without nested SVGs
+            const $clone = $o.clone();
+            $clone.find('svg').remove();
+            $o.data('searchText', $clone.text().toLowerCase().trimStart());
+          }
+          if ($o.data('searchText').startsWith(this.searchStr)) {
             $option = $o;
             break;
           }
@@ -468,18 +474,15 @@ export default Base.extend(
       let type;
       if (item.type) {
         type = item.type;
-      } else if (item.action) {
-        type = 'button';
-      } else {
+      } else if (item.url) {
         type = 'link';
+      } else {
+        type = 'button';
       }
 
       const li = document.createElement('li');
-      if (item.hidden) {
-        li.classList.add('hidden');
-      }
-
       const el = document.createElement(type === 'button' ? 'button' : 'a');
+
       el.id = item.id || `menu-item-${Math.floor(Math.random() * 1000000)}`;
       el.className = 'menu-item';
       if (item.selected) {
@@ -497,6 +500,9 @@ export default Base.extend(
       }
       if (item.icon) {
         el.setAttribute('data-icon', item.icon);
+        if (item.iconColor) {
+          el.classList.add(item.iconColor);
+        }
       }
       if (item.action) {
         el.setAttribute('data-action', item.action);
@@ -515,6 +521,11 @@ export default Base.extend(
       }
       if (item.redirect) {
         el.setAttribute('data-redirect', item.redirect);
+      }
+      if (item.attributes) {
+        for (let name in item.attributes) {
+          el.setAttribute(name, item.attributes[name]);
+        }
       }
       li.append(el);
 
@@ -541,6 +552,11 @@ export default Base.extend(
       }
 
       this.addListener(el, 'activate', () => {
+        if (item.onActivate) {
+          item.onActivate();
+        } else if (item.callback) {
+          item.callback();
+        }
         this.hide();
       });
 
@@ -548,14 +564,25 @@ export default Base.extend(
     },
 
     addItem: function (item, ul) {
-      item = this.createItem(item);
+      const li = this.createItem(item);
 
       if (!ul) {
         ul = this.$container.children('ul').last().get(0) || this.addGroup();
       }
 
-      ul.append(item);
-      return item.querySelector('a, button');
+      ul.append(li);
+      const el = li.querySelector('a, button');
+
+      // show or hide it (show, in case the UL is already hidden)
+      this.toggleItem(el, !item.hidden);
+
+      return el;
+    },
+
+    addItems: function (items, ul) {
+      for (const item of items) {
+        this.addItem(item, ul);
+      }
     },
 
     addHr: function (before) {
@@ -579,7 +606,7 @@ export default Base.extend(
         .get(0);
     },
 
-    addGroup: function (heading, addHrs, before) {
+    addGroup: function (heading = null, addHrs = true, before = null) {
       const padded = this.isPadded();
 
       if (heading) {
@@ -620,6 +647,64 @@ export default Base.extend(
       }
 
       return ul;
+    },
+
+    toggleItem(el, show) {
+      if (typeof show === 'undefined') {
+        show = el.parentNode.classList.contains('hidden');
+      }
+
+      if (show) {
+        this.showItem(el);
+      } else {
+        this.hideItem(el);
+      }
+    },
+
+    showItem(el) {
+      const li = el.parentNode;
+      li.classList.remove('hidden');
+      const ul = li.parentNode;
+      if (ul.classList.contains('hidden')) {
+        ul.classList.remove('hidden');
+        if (
+          ul.previousElementSibling &&
+          ul.previousElementSibling.nodeName === 'HR'
+        ) {
+          ul.previousElementSibling.classList.remove('hidden');
+        }
+        if (ul.nextElementSibling && ul.nextElementSibling.nodeName === 'HR') {
+          ul.nextElementSibling.classList.remove('hidden');
+        }
+      }
+
+      if (this.isExpanded()) {
+        this.setContainerPosition();
+      }
+    },
+
+    hideItem(el) {
+      const li = el.parentNode;
+      li.classList.add('hidden');
+      const ul = li.parentNode;
+      if (ul.querySelectorAll(':scope > li:not(.hidden)').length === 0) {
+        ul.classList.add('hidden');
+        if (
+          ul.previousElementSibling &&
+          ul.previousElementSibling.nodeName === 'HR'
+        ) {
+          ul.previousElementSibling.classList.add('hidden');
+        } else if (
+          ul.nextElementSibling &&
+          ul.nextElementSibling.nodeName === 'HR'
+        ) {
+          ul.nextElementSibling.classList.add('hidden');
+        }
+      }
+
+      if (this.isExpanded()) {
+        this.setContainerPosition();
+      }
     },
 
     /**

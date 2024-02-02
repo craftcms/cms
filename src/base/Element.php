@@ -32,7 +32,6 @@ use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
 use craft\enums\Color;
-use craft\enums\MenuItemType;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAttributeHtmlEvent;
@@ -59,6 +58,7 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -3510,7 +3510,6 @@ abstract class Element extends Component implements ElementInterface
         if (Craft::$app->getElements()->canView($this)) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
-                'type' => MenuItemType::Button,
                 'id' => $editId,
                 'icon' => 'edit',
                 'label' => Craft::t('app', 'Edit {type}', [
@@ -3771,7 +3770,7 @@ JS, [
                     $this->hasRoundedThumb() ? 'rounded' : null,
                 ]),
                 'data' => [
-                    'sizes' => sprintf('%spx', $size),
+                    'sizes' => sprintf('calc(%srem/16)', $size),
                     'srcset' => sprintf('%s %sw, %s %sw', $thumbUrl, $size, $this->thumbUrl($size * 2), $size * 2),
                     'alt' => $this->thumbAlt(),
                 ],
@@ -3888,7 +3887,7 @@ JS, [
      */
     public function getStatus(): ?string
     {
-        if ($this->getIsDraft()) {
+        if ($this->getIsDraft() && !$this->isProvisionalDraft) {
             return self::STATUS_DRAFT;
         }
 
@@ -5283,9 +5282,14 @@ JS, [
 
             default:
                 // Is this a custom field?
-                if (preg_match('/^field:(.+)/', $attribute, $matches)) {
-                    $fieldUid = $matches[1];
-                    $field = $this->getFieldLayout()?->getFieldByUid($fieldUid);
+                if (preg_match('/^(field|fieldInstance):(.+)/', $attribute, $matches)) {
+                    $uid = $matches[2];
+                    if ($matches[1] === 'field') {
+                        $field = $this->getFieldLayout()?->getFieldByUid($uid);
+                    } else {
+                        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
+                        $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
+                    }
 
                     if ($field instanceof PreviewableFieldInterface) {
                         // Was this field value eager-loaded?
@@ -5570,7 +5574,7 @@ JS,
                 if (!static::hasStatuses()) {
                     return false;
                 }
-                if ($this->getIsUnpublishedDraft()) {
+                if ($this->getIsDraft() && !$this->isProvisionalDraft) {
                     $icon = Html::tag('span', '', [
                         'data' => ['icon' => 'draft'],
                         'aria' => ['hidden' => 'true'],

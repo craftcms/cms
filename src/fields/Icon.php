@@ -35,6 +35,14 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'icons';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function phpType(): string
     {
         return 'string|null';

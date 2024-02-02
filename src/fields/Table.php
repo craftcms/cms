@@ -48,6 +48,14 @@ class Table extends Field
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'table';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function phpType(): string
     {
         return 'array|null';

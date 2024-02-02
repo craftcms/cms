@@ -49,7 +49,7 @@
   --ui-control-hover-bg-color: #{transparentize($inputColor, 0.7)};
   --ui-control-active-bg-color: #{transparentize($inputColor, 0.5)};
   --ui-control-border-radius: var(--large-border-radius);
-  --ui-control-height: calc((34rem / 16)); // 1rem == 16px
+  --ui-control-height: calc(34rem / 16);
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -60,8 +60,11 @@
     0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
-  --touch-target-size: 24px; /* Minimum recommended touch target size */
-  --thumb-size: 20px;
+  --touch-target-size: calc(
+    24rem / 16
+  ); /* Minimum recommended touch target size */
+  --thumb-size: calc(20rem / 16);
+  --icon-size: 1rem;
   --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
   --lh: 1.42em;
 }
@@ -326,11 +329,13 @@ table.editable textarea {
 }
 
 .badge-icon {
+  position: relative;
+  top: -1px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 17px;
-  height: 17px;
+  width: 1rem;
+  height: 1rem;
   box-sizing: border-box;
   border: 1px solid var(--indicator-border-color);
   border-radius: var(--small-border-radius);
@@ -572,7 +577,7 @@ a:not([href]) {
 
 a.iconlink {
   &:before {
-    width: 16px;
+    width: 1rem;
     @include margin-right(var(--xs));
   }
 }
@@ -921,8 +926,8 @@ input.checkbox + label.smalltext {
 .required:after {
   content: 'asterisk';
   @include margin(-2px, 0, 0, 5px);
-  font-size: 7px;
-  color: var(--error-color);
+  font-size: 12px;
+  color: var(--rose-500);
 }
 
 .scrollpane {
@@ -1350,7 +1355,7 @@ ul.path {
 
     &:not(:last-child):after {
       @include margin(0, 5px, 0, 2px);
-      @include angle(right, var(--light-text-color), 1px);
+      @include angle(right, var(--light-text-color), calc(1rem / 16));
     }
   }
 }
@@ -2610,8 +2615,8 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: calc(var(--pane-padding, calc(var(--xl) - 2px)) * -1)
-    calc(var(--pane-padding, calc(var(--padding) - 2px)) * -1)
+  margin: calc(var(--pane-padding, var(--xl - 2px)) * -1)
+    calc(var(--pane-padding, var(--padding) - 2px) * -1)
     calc(
       var(--pane-padding, var(--padding)) * -1 + var(--pane-padding, var(--m))
     );
@@ -2681,7 +2686,7 @@ table {
         input.checkbox + label,
         div.checkbox {
           position: absolute;
-          top: calc(50% - 8px);
+          top: calc(50% - 8rem / 16);
         }
       }
     }
@@ -2952,7 +2957,7 @@ table {
 /* chips */
 .chip {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   cursor: default;
   user-select: none;
@@ -2964,8 +2969,8 @@ table {
 
   &.small {
     flex-direction: row;
-    height: 34px;
-    --thumb-size: 30px;
+    height: calc(26rem / 16 + 8px);
+    --thumb-size: calc(30rem / 16);
 
     & > .thumb {
       margin: calc(var(--xs) * -1 + 2px) calc(var(--s) * -1 + 2px);
@@ -2973,7 +2978,7 @@ table {
 
       &.cp-icon {
         @include margin-left(-2px);
-        --thumb-size: 20px;
+        --thumb-size: 1rem; // 16px
       }
     }
   }
@@ -3081,20 +3086,28 @@ table {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--thumb-size);
-  height: var(--thumb-size);
-  max-width: var(--thumb-size);
+  width: var(--icon-size);
+  height: var(--icon-size);
+  max-width: var(--icon-size);
 
   svg {
-    width: var(--thumb-size);
-    height: var(--thumb-size);
-    max-width: var(--thumb-size) !important;
-    max-height: var(--thumb-size) !important;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    max-width: var(--icon-size) !important;
+    max-height: var(--icon-size) !important;
     @include svg-mask(var(--icon-color, var(--ui-control-color)));
   }
 
+  &.large {
+    --icon-size: calc(20rem / 16);
+  }
+
   &.small {
-    --thumb-size: calc(14rem / 16);
+    --icon-size: calc(14rem / 16);
+  }
+
+  &.puny {
+    --icon-size: calc(12rem / 16);
   }
 }
 
@@ -3142,7 +3155,7 @@ table {
   flex-direction: row;
   align-items: stretch;
   padding: var(--m);
-  gap: var(--l);
+  gap: var(--m);
   border-radius: var(--large-border-radius);
   cursor: default;
   user-select: none;
@@ -3232,6 +3245,7 @@ table {
   }
 
   .card-content {
+    margin: calc((1rem - var(--lh)) / 2) 0;
     flex: 1 0 0 !important;
     overflow: hidden;
     position: relative;
@@ -3310,7 +3324,7 @@ table {
 
   .menubtn:not(.action-btn) {
     @include margin(0, -1px, 0, 0);
-    @include padding-right(calc(var(--s) + 1px) !important);
+    @include padding-right(2px !important);
     @include border-left(1px solid var(--medium-hairline-color));
     @include border-radius(
       0,
@@ -3369,10 +3383,10 @@ table {
       position: relative;
       top: -2px;
       @include margin(0, 5px, 0, 2px);
-      @include angle(right, var(--light-text-color), 1px);
+      @include angle(right, var(--light-text-color), calc(1rem / 16));
 
       .sel & {
-        @include angle(right, var(--white), 1px);
+        @include angle(right, var(--white), calc(1rem / 16));
       }
     }
   }
@@ -3383,7 +3397,7 @@ table {
     flex-direction: row;
     align-items: center;
     gap: var(--s);
-    min-height: var(--lh);
+    min-height: 1rem;
 
     &:empty {
       display: none;
@@ -3425,8 +3439,6 @@ table {
     color: var(--error-color);
   }
 }
-
-$checkboxPadding: $checkboxSize + 4;
 
 .element-index {
   .source-path {
@@ -3827,7 +3839,6 @@ $checkboxPadding: $checkboxSize + 4;
 
   .structure {
     .chip {
-      display: inline-flex;
       margin-top: var(--xs);
     }
 
@@ -4123,8 +4134,8 @@ ul.tree,
   display: inline-block;
   position: relative;
   @include margin-right(10px);
-  width: 12px;
-  height: 12px;
+  width: calc(12rem / 16);
+  height: calc(12rem / 16);
   border: 1px solid transparent;
   border-radius: 100%;
   box-sizing: border-box;
@@ -4155,11 +4166,11 @@ ul.tree,
 }
 
 .status:not(.on):not(.live):not(.active):not(.enabled):not(.all) {
-  &:not(.pending):not(.off):not(.suspended):not(.expired):not(.light) {
-    &:not(.gray):not(.red):not(.orange):not(.amber):not(.yellow):not(.lime) {
-      &:not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky):not(.blue) {
-        &:not(.indigo):not(.violet):not(.purple):not(.fuchsia):not(.pink) {
-          &:not(.rose):not(.grey):not(.black) {
+  &:not(.pending):not(.warning):not(.off):not(.suspended):not(.expired) {
+    &:not(.light):not(.gray):not(.red):not(.orange):not(.amber):not(.yellow) {
+      &:not(.lime):not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky) {
+        &:not(.blue):not(.indigo):not(.violet):not(.purple):not(.fuchsia) {
+          &:not(.pink):not(.rose):not(.grey):not(.black) {
             border-color: var(--ui-control-color);
           }
         }
@@ -4184,6 +4195,9 @@ ul.tree,
 .status.suspended,
 .status.expired {
   background-color: var(--disabled-color);
+}
+.status.warning {
+  background-color: var(--warning-color);
 }
 .status.orange,
 .bg-orange,
@@ -4276,7 +4290,12 @@ ul.tree,
 }
 
 .icon,
-.cp-icon {
+.cp-icon,
+[data-icon],
+[data-icon-after] {
+  &.warning {
+    --icon-color: var(--warning-color);
+  }
   &.red {
     --icon-color: var(--disabled-color);
   }
@@ -4336,6 +4355,33 @@ ul.tree,
   }
   &.gray {
     --icon-color: var(--gray-300);
+  }
+}
+
+.warning,
+.red,
+.orange,
+.amber,
+.yellow,
+.lime,
+.green,
+.emerald,
+.teal,
+.cyan,
+.sky,
+.blue,
+.indigo,
+.violet,
+.purple,
+.fuchsia,
+.pink,
+.rose,
+.white,
+.black,
+.gray {
+  &[data-icon]:before,
+  &[data-icon-after]:after {
+    color: var(--icon-color) !important;
   }
 }
 
@@ -6313,12 +6359,12 @@ $min2ColWidth: 400px;
         a,
         .menu-item,
         .menu-option {
-          @include padding-left(32px);
+          @include padding-left(calc(var(--m) + 18rem / 16));
 
           &.sel {
             &:not([data-icon]):before {
               @include floatleft;
-              @include margin(4px, 0, 0, -22px);
+              @include margin(4px, 0, 0, calc(-18rem / 16 - 4px));
               font-size: 14px;
               width: 14px;
               content: 'check';
@@ -6419,8 +6465,8 @@ $min2ColWidth: 400px;
     [data-icon]:before,
     span.icon:not([data-icon]) {
       display: inline-block;
-      width: 14px;
-      height: 14px;
+      width: calc(14rem / 16);
+      height: calc(14rem / 16);
       @include margin-left(-1px);
       @include margin-right(9px);
     }
@@ -6727,7 +6773,7 @@ textarea.text.fullwidth {
 .chars-left {
   position: relative;
   @include floatright;
-  @include margin(-27px, 7px, 0, 0);
+  @include margin(calc(-27rem / 16), 7px, 0, 0);
   color: var(--light-text-color);
 
   .input.ltr > & {
@@ -6802,6 +6848,8 @@ fieldset {
     }
 
     .t9n-indicator {
+      position: relative;
+      top: calc(-1rem / 16);
       @include margin-left(7px);
       color: var(--light-text-color);
     }
@@ -6913,9 +6961,9 @@ div.checkbox {
   display: inline-block;
   clear: none;
   position: relative;
-  @include padding-left($checkboxSize + 5);
-  line-height: 16px;
-  min-height: 16px;
+  @include padding-left(calc(1rem + 5px));
+  line-height: 1rem;
+  min-height: 1rem;
   cursor: pointer;
 
   &,
@@ -7044,7 +7092,7 @@ fieldset {
   .notice,
   .warning {
     margin-top: 2px;
-    @include padding-left($checkboxSize + 5);
+    @include padding-left(calc(1rem + 5px));
   }
 }
 
@@ -7061,7 +7109,7 @@ div.radio {
   display: inline-block;
   clear: none;
   position: relative;
-  @include padding-left($radioSize + 5);
+  @include padding-left(calc(1rem + 5px));
   line-height: calc(24 / 14);
   cursor: pointer;
 }
@@ -7200,7 +7248,7 @@ td.errors .text,
   &.icon {
     &:before {
       position: absolute;
-      top: 9px;
+      top: calc(50% - 7rem / 16);
       @include left(9px);
       color: var(--ui-control-color);
     }
@@ -7818,24 +7866,34 @@ body {
 /* slide picker */
 .slide-picker {
   display: flex;
-  height: 15px;
+  height: 1rem;
   white-space: nowrap;
 
   a {
+    position: relative;
     border: 1px solid var(--hairline-color);
     @include border-left(none);
     background-image: none;
-    width: 7px;
-    height: 13px;
+    width: calc(8rem / 16 - 1px);
+    height: calc(1rem - 2px);
     margin-left: 0;
-    display: inline-block;
     margin-top: 1px;
     margin-bottom: 1px;
     box-sizing: border-box;
+    cursor: pointer;
 
     &:first-child {
-      width: 8px;
+      width: calc(8rem / 16);
       @include border-left(1px solid var(--gray-400) !important);
+    }
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: calc(-4rem / 16 - 1px);
+      left: -1px;
+      width: calc(100% + 2px);
+      height: var(--touch-target-size);
     }
   }
 
@@ -7843,7 +7901,7 @@ body {
   &:hover a.active-hover {
     border-top-color: var(--gray-400);
     border-bottom-color: var(--gray-400);
-    height: 15px;
+    height: 1rem;
     margin-top: 0;
     margin-bottom: 0;
 
@@ -8240,9 +8298,10 @@ body.setup-2fa {
     align-items: center;
     gap: var(--xs);
     position: absolute;
-    top: 3px;
+    top: 0;
     @include right(var(--m));
     cursor: default;
+    min-height: calc(var(--lh) + 10px);
 
     & > * {
       margin: 0 !important;

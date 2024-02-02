@@ -55,6 +55,14 @@ class Url extends Field implements InlineEditableFieldInterface
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'link';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function phpType(): string
     {
         return 'string|null';
@@ -143,6 +151,7 @@ class Url extends Field implements InlineEditableFieldInterface
                 'step' => '10',
                 'value' => $this->maxLength,
                 'errors' => $this->getErrors('maxLength'),
+                'data' => ['error-key' => 'maxLength'],
             ]);
     }
 

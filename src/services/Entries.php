@@ -24,6 +24,7 @@ use craft\events\EntryTypeEvent;
 use craft\events\SectionEvent;
 use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -1632,14 +1633,16 @@ SQL)->execute();
     }
 
     /**
-     * Returns data for vue AdminTable (pagination and tableData).
+     * Returns data for the Entry Types index page in the control panel.
      *
      * @param int $page
      * @param int $limit
      * @param string|null $searchTerm
      * @return array
+     * @since 5.0.0
+     * @internal
      */
-    public function getTableData(int $page, int $limit, ?string $searchTerm = null): array
+    public function getTableData(int $page, int $limit, ?string $searchTerm): array
     {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
 
@@ -1660,6 +1663,7 @@ SQL)->execute();
 
         $results = $query->all();
 
+        /** @var EntryType[] $entryTypes */
         $entryTypes = array_values(array_filter(
             array_map(fn(array $result) => $this->_entryTypes()->firstWhere('id', $result['id']), $results)
         ));
@@ -1675,6 +1679,8 @@ SQL)->execute();
             $tableData[] = [
                 'id' => $entryType->id,
                 'title' => Craft::t('site', $entryType->name),
+                'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
+                'iconColor' => $entryType->color?->value,
                 'url' => $entryType->getCpEditUrl(),
                 'name' => Craft::t('site', $entryType->name),
                 'handle' => $entryType->handle,

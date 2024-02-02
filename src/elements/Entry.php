@@ -1925,7 +1925,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     'value' => $this->getType()->id,
                     'options' => array_map(fn(EntryType $et) => [
                         'icon' => $et->icon,
-                        'color' => $et->color,
+                        'iconColor' => $et->color,
                         'label' => Craft::t('site', $et->name),
                         'value' => $et->id,
                     ], $entryTypes),

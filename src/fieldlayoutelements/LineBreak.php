@@ -43,8 +43,10 @@ class LineBreak extends FieldLayoutElement
     {
         $label = Craft::t('app', 'Line Break');
         return <<<HTML
-<div class="fld-br">
-  <div class="smalltext light">$label</div>
+<div>
+  <div class="fld-br">
+    <div class="smalltext light">$label</div>
+  </div>
 </div>
 HTML;
     }

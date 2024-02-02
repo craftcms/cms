@@ -440,16 +440,15 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
-#global-header,
-li.crumb {
-  .menubtn,
-  .action-btn {
-    padding: 0 var(--s);
-    height: var(--touch-target-size);
+#global-header .btn.menubtn,
+li.crumb .btn.menubtn,
+.btn.action-btn {
+  padding: 0;
+  width: var(--touch-target-size);
+  height: var(--touch-target-size);
 
-    &:not(:hover):not(:active):not([aria-expanded='true']) {
-      background-color: transparent;
-    }
+  &:not(:hover):not(:active):not([aria-expanded='true']) {
+    background-color: transparent;
   }
 }
 
@@ -623,6 +622,9 @@ li.crumb {
   .chip {
     padding: 0;
     background-color: transparent;
+    --custom-bg-color: initial !important;
+    --custom-text-color: initial !important;
+    --custom-sel-bg-color: initial !important;
 
     .label-link {
       max-width: 15em;
@@ -700,24 +702,24 @@ li.breadcrumb-toggle-wrapper {
 
 #announcements-btn {
   @include header-btn;
-  width: 40px;
+  width: calc(28rem / 16 + 10px);
   position: relative;
 
   &.unread:after {
     content: '';
     display: block;
     position: absolute;
-    top: 3px;
+    top: calc(3rem / 16);
     @include right(5px);
-    width: 7px;
-    height: 7px;
-    border-radius: 4px;
+    width: calc(7rem / 16);
+    height: calc(7rem / 16);
+    border-radius: 50%;
     background-color: var(--blue-600);
   }
 
   svg {
-    width: 18px;
-    height: 18px;
+    width: 1rem;
+    height: 1rem;
     @include svg-mask(var(--ui-control-color));
   }
 
@@ -815,8 +817,8 @@ li.breadcrumb-toggle-wrapper {
   img,
   svg {
     display: block;
-    width: 30px;
-    height: 30px;
+    width: calc(30rem / 16);
+    height: calc(30rem / 16);
     max-width: none;
     border-radius: 50%;
     box-shadow:
@@ -1593,8 +1595,8 @@ li.breadcrumb-toggle-wrapper {
           }
 
           svg {
-            width: 16px;
-            height: 16px;
+            width: 1rem;
+            height: 1rem;
           }
 
           span[data-icon] {

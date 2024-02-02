@@ -216,6 +216,7 @@ Craft::setAlias('@appicons/craft-cms.svg', "$customIconsPath/craft-cms.svg");
 Craft::setAlias('@appicons/craft-partners.svg', "$customIconsPath/craft-partners.svg");
 Craft::setAlias('@appicons/craft-stack-exchange.svg', "$customIconsPath/craft-stack-exchange.svg");
 Craft::setAlias('@appicons/default-plugin.svg', "$customIconsPath/default-plugin.svg");
+Craft::setAlias('@appicons/element-card.svg', "$customIconsPath/element-card.svg");
 Craft::setAlias('@appicons/graphql.svg', "$customIconsPath/graphql.svg");
 Craft::setAlias('@appicons/grip-dots.svg', "$customIconsPath/grip-dots.svg");
 Craft::setAlias('@appicons/list-flip.svg', "$customIconsPath/list-flip.svg");

@@ -41,6 +41,14 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'ballot-check';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getStatus(ElementInterface $element): ?array
     {
         // If the value is invalid and has a default value (which is going to be pulled in via inputHtml()),

@@ -214,7 +214,7 @@ There are a few special column type that provide extra functionality. To use any
 
 #### Title
 
-The title column allows the use of `status`, `title` and `url` in the data to create a column similar to that of the title column in element index tables.
+The title column allows the use of `icon`, `iconColor`, `status`, `title` and `url` in the data to create a column similar to that of the title column in element index tables.
 
 ```javascript
 var data = [
