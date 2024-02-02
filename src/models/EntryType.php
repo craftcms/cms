@@ -216,16 +216,15 @@ class EntryType extends Model implements
             ];
 
             $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn($id) => <<<JS
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
 $('#' + $id).on('click', () => {
   new Craft.CpScreenSlideout('entry-types/edit', {
-    params: {
-      entryTypeId: $this->id,
-    },
+    params: $params,
   });
 });
 JS, [
                 $view->namespaceInputId($editId),
+                ['entryTypeId' => $this->id],
             ]);
         }
 
