@@ -226,7 +226,6 @@ $('#' + $id).on('click', () => {
 });
 JS, [
                 $view->namespaceInputId($editId),
-
             ]);
         }
 
