@@ -2615,8 +2615,8 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: calc(var(--pane-padding, calc(var(--xl) - 2px)) * -1)
-    calc(var(--pane-padding, calc(var(--padding) - 2px)) * -1)
+  margin: calc(var(--pane-padding, var(--xl - 2px)) * -1)
+    calc(var(--pane-padding, var(--padding) - 2px) * -1)
     calc(
       var(--pane-padding, var(--padding)) * -1 + var(--pane-padding, var(--m))
     );
