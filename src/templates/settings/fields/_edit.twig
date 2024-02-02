@@ -13,7 +13,10 @@
   value: field.name,
   errors: field.getErrors('name'),
   required: true,
-  autofocus: true
+  autofocus: true,
+  data: {
+    'error-key': 'name',
+  },
 }) }}
 
 {{ forms.textField({
@@ -28,6 +31,9 @@
   value: field.handle,
   errors: field.getErrors('handle'),
   required: true,
+  data: {
+    'error-key': 'handle',
+  },
 }) }}
 
 {{ forms.textareaField({
@@ -38,6 +44,9 @@
   name: 'instructions',
   value: field.instructions,
   errors: field.getErrors('instructions'),
+  data: {
+    'error-key': 'instructions',
+  },
 }) }}
 
 {{ forms.checkboxField({
@@ -56,6 +65,9 @@
   options: fieldTypeOptions,
   value: field is missing ? field.expectedType : className(field),
   errors: field.getErrors('type'),
+  data: {
+    'error-key': 'type',
+  },
 }) }}
 
 {{ missingFieldPlaceholder|raw }}
@@ -93,7 +105,10 @@
             class: 'code',
             name: 'translationKeyFormat',
             value: field.translationKeyFormat,
-            errors: field.getErrors('translationKeyFormat')
+            errors: field.getErrors('translationKeyFormat'),
+            data: {
+              'error-key': 'translationKeyFormat',
+            },
           }) }}
         {% endtag %}
       {% endif %}

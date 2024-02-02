@@ -11,6 +11,9 @@
     errors: (filesystem is defined ? filesystem.getErrors('name') : null),
     autofocus: true,
     required: true,
+    data: {
+        'error-key': 'name',
+    },
 }) }}
 
 {{ forms.textField({
@@ -24,6 +27,9 @@
     value: (filesystem is defined ? filesystem.handle : null),
     errors: (filesystem is defined ? filesystem.getErrors('handle') : null),
     required: true,
+    data: {
+        'error-key': 'handle',
+    },
 }) }}
 
 <hr>
@@ -88,7 +94,10 @@
                 value: (filesystem is defined ? filesystem.url : null),
                 errors: (filesystem is defined ? filesystem.getErrors('url') : null),
                 required: true,
-                placeholder: "//example.com/path/to/folder"
+                placeholder: "//example.com/path/to/folder",
+                data: {
+                    'error-key': 'url',
+                },
             }) }}
         </div>
     {% endif %}

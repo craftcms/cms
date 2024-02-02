@@ -11,5 +11,8 @@
     value: volume.path,
     errors: volume.getErrors('path'),
     required: true,
-    placeholder: "/path/to/folder"|t('app')
+    placeholder: "/path/to/folder"|t('app'),
+    data: {
+        'error-key': 'path',
+    },
 }) }}

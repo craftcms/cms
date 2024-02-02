@@ -11,7 +11,10 @@
     value: entryType.name,
     errors: entryType.getErrors('name'),
     autofocus: true,
-    required: true
+    required: true,
+    data: {
+        'error-key': 'name',
+    },
 }) }}
 
 {{ forms.textField({
@@ -24,7 +27,10 @@
     autocapitalize: false,
     value: entryType.handle,
     errors: entryType.getErrors('handle'),
-    required: true
+    required: true,
+    data: {
+        'error-key': 'handle',
+    },
 }) }}
 
 {{ forms.iconPickerField({
@@ -33,6 +39,9 @@
     name: 'icon',
     value: entryType.icon,
     errors: entryType.getErrors('icon'),
+    data: {
+        'error-key': 'icon',
+    },
 }) }}
 
 {{ forms.colorSelectField({
@@ -41,6 +50,9 @@
     name: 'color',
     value: entryType.color,
     errors: entryType.getErrors('color'),
+    data: {
+        'error-key': 'color',
+    },
 }) }}
 
 <hr>
@@ -87,7 +99,10 @@
                 id: 'translation-key-format',
                 name: 'titleTranslationKeyFormat',
                 value: entryType.titleTranslationKeyFormat,
-                errors: entryType.getErrors('titleTranslationKeyFormat')
+                errors: entryType.getErrors('titleTranslationKeyFormat'),
+                data: {
+                    'error-key': 'titleTranslationKeyFormat',
+                },
             }) }}
         </div>
     </div>
@@ -102,6 +117,9 @@
         class: 'code',
         value: entryType.titleFormat,
         errors: entryType.getErrors('titleFormat'),
+        data: {
+            'error-key': 'titleFormat',
+        },
     }) }}
 </div>
 
@@ -147,7 +165,10 @@
                 id: 'slug-translation-key-format',
                 name: 'slugTranslationKeyFormat',
                 value: entryType.slugTranslationKeyFormat,
-                errors: entryType.getErrors('slugTranslationKeyFormat')
+                errors: entryType.getErrors('slugTranslationKeyFormat'),
+                data: {
+                    'error-key': 'slugTranslationKeyFormat',
+                },
             }) }}
         </div>
     </div>
@@ -158,7 +179,10 @@
     id: 'showStatusField',
     name: 'showStatusField',
     on: entryType.showStatusField,
-    errors: entryType.getErrors('showStatusField')
+    errors: entryType.getErrors('showStatusField'),
+    data: {
+        'error-key': 'showStatusField',
+    },
 }) }}
 
 <hr>
