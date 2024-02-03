@@ -216,6 +216,12 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
     public ?string $viewMode = null;
 
     /**
+     * @var bool Whether cards should be shown in a multi-column grid
+     * @since 5.0.0
+     */
+    public bool $showCardsInGrid = false;
+
+    /**
      * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true).
      * @since 4.0.0
      */
@@ -419,6 +425,7 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
         $attributes[] = 'targetSiteId';
         $attributes[] = 'validateRelatedElements';
         $attributes[] = 'viewMode';
+        $attributes[] = 'showCardsInGrid';
         $attributes[] = 'allowSelfRelations';
         $attributes[] = 'maintainHierarchy';
         $attributes[] = 'branchLimit';
@@ -1133,6 +1140,8 @@ JS, [
             'name' => 'viewMode',
             'options' => $viewModeOptions,
             'value' => $this->viewMode,
+            'toggle' => true,
+            'targetPrefix' => 'view-mode--',
         ]);
     }
 
@@ -1254,6 +1263,7 @@ JS, [
             'disabledElementIds' => $disabledElementIds,
             'limit' => $this->allowLimit ? $this->maxRelations : null,
             'viewMode' => $this->viewMode(),
+            'showCardsInGrid' => $this->showCardsInGrid,
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
             'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,

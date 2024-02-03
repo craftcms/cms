@@ -476,25 +476,14 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     );
 
     disclosureMenu.on('show', () => {
-      if (this.$container.prev('.fld-tab').length) {
-        $(moveLeftBtn).parent().removeClass('hidden');
-      } else {
-        $(moveLeftBtn).parent().addClass('hidden');
-      }
-
-      if (this.$container.next('.fld-tab').length) {
-        $(moveRightBtn).parent().removeClass('hidden');
-      } else {
-        $(moveRightBtn).parent().addClass('hidden');
-      }
-
-      if (!this.$container.siblings('.fld-tab').length) {
-        $(moveUl).prev('hr').addClass('hidden');
-      } else {
-        $(moveUl).prev('hr').removeClass('hidden');
-      }
-
-      disclosureMenu.setContainerPosition();
+      disclosureMenu.toggleItem(
+        moveLeftBtn,
+        this.$container.prev('.fld-tab').length
+      );
+      disclosureMenu.toggleItem(
+        moveRightBtn,
+        this.$container.next('.fld-tab').length
+      );
     });
   },
 
@@ -962,46 +951,32 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     }
 
     disclosureMenu.on('show', () => {
-      if (this.config.required) {
-        $(makeRequiredBtn).parent().addClass('hidden');
-        $(dropRequiredBtn).parent().removeClass('hidden');
-      } else {
-        $(makeRequiredBtn).parent().removeClass('hidden');
-        $(dropRequiredBtn).parent().addClass('hidden');
+      if (this.requirable) {
+        disclosureMenu.toggleItem(makeRequiredBtn, !this.config.required);
+        disclosureMenu.toggleItem(dropRequiredBtn, this.config.required);
       }
 
-      if (this.config.providesThumbs) {
-        $(makeThumbnailBtn).parent().addClass('hidden');
-        $(dropThumbnailBtn).parent().removeClass('hidden');
-      } else {
-        $(makeThumbnailBtn).parent().removeClass('hidden');
-        $(dropThumbnailBtn).parent().addClass('hidden');
+      if (this.thumbable) {
+        disclosureMenu.toggleItem(
+          makeThumbnailBtn,
+          !this.config.providesThumbs
+        );
+        disclosureMenu.toggleItem(dropThumbnailBtn, this.config.providesThumbs);
       }
 
-      if (this.config.includeInCards) {
-        $(showInCardsBtn).parent().addClass('hidden');
-        $(omitFromCardsBtn).parent().removeClass('hidden');
-      } else {
-        $(showInCardsBtn).parent().removeClass('hidden');
-        $(omitFromCardsBtn).parent().addClass('hidden');
+      if (this.previewable) {
+        disclosureMenu.toggleItem(showInCardsBtn, !this.config.includeInCards);
+        disclosureMenu.toggleItem(omitFromCardsBtn, this.config.includeInCards);
       }
 
-      const $prev = this.$container.prev('.fld-element');
-      const $next = this.$container.next('.fld-element');
-
-      if ($prev.length) {
-        $(moveUpBtn).parent().removeClass('hidden');
-      } else {
-        $(moveUpBtn).parent().addClass('hidden');
-      }
-
-      if ($next.length) {
-        $(moveDownBtn).parent().removeClass('hidden');
-      } else {
-        $(moveDownBtn).parent().addClass('hidden');
-      }
-
-      disclosureMenu.setContainerPosition();
+      disclosureMenu.toggleItem(
+        moveUpBtn,
+        this.$container.prev('.fld-element').length
+      );
+      disclosureMenu.toggleItem(
+        moveDownBtn,
+        this.$container.next('.fld-element').length
+      );
     });
   },
 

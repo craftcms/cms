@@ -1825,7 +1825,6 @@ XML;
 
                     $copyImpersonationUrlId = sprintf('action-copy-impersonation-url-%s', mt_rand());
                     $sessionItems[] = [
-                        'type' => MenuItemType::Button,
                         'id' => $copyImpersonationUrlId,
                         'icon' => 'clipboard',
                         'label' => Craft::t('app', 'Copy impersonation URL…'),
@@ -1916,7 +1915,6 @@ JS, [
                     $view = Craft::$app->getView();
                     $deleteId = sprintf('action-delete-%s', mt_rand());
                     $items[] = [
-                        'type' => MenuItemType::Button,
                         'id' => $deleteId,
                         'icon' => 'trash',
                         'label' => Craft::t('app', 'Delete {type}', [
@@ -1974,7 +1972,6 @@ JS, [
         ]);
 
         return [
-            'type' => MenuItemType::Button,
             'id' => $id,
             'icon' => 'clipboard',
             'label' => $label,

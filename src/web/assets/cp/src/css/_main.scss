@@ -2615,8 +2615,8 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: calc(var(--pane-padding, calc(var(--xl) - 2px)) * -1)
-    calc(var(--pane-padding, calc(var(--padding) - 2px)) * -1)
+  margin: calc(var(--pane-padding, var(--xl - 2px)) * -1)
+    calc(var(--pane-padding, var(--padding) - 2px) * -1)
     calc(
       var(--pane-padding, var(--padding)) * -1 + var(--pane-padding, var(--m))
     );
@@ -3099,15 +3099,15 @@ table {
   }
 
   &.large {
-    --thumb-size: calc(20rem / 16);
+    --icon-size: calc(20rem / 16);
   }
 
   &.small {
-    --thumb-size: calc(14rem / 16);
+    --icon-size: calc(14rem / 16);
   }
 
   &.puny {
-    --thumb-size: calc(12rem / 16);
+    --icon-size: calc(12rem / 16);
   }
 }
 

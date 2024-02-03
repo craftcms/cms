@@ -32,7 +32,6 @@ use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
 use craft\enums\Color;
-use craft\enums\MenuItemType;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAttributeHtmlEvent;
@@ -3511,7 +3510,6 @@ abstract class Element extends Component implements ElementInterface
         if (Craft::$app->getElements()->canView($this)) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
-                'type' => MenuItemType::Button,
                 'id' => $editId,
                 'icon' => 'edit',
                 'label' => Craft::t('app', 'Edit {type}', [
@@ -3889,7 +3887,7 @@ JS, [
      */
     public function getStatus(): ?string
     {
-        if ($this->getIsDraft()) {
+        if ($this->getIsDraft() && !$this->isProvisionalDraft) {
             return self::STATUS_DRAFT;
         }
 
@@ -5576,7 +5574,7 @@ JS,
                 if (!static::hasStatuses()) {
                     return false;
                 }
-                if ($this->getIsUnpublishedDraft()) {
+                if ($this->getIsDraft() && !$this->isProvisionalDraft) {
                     $icon = Html::tag('span', '', [
                         'data' => ['icon' => 'draft'],
                         'aria' => ['hidden' => 'true'],

@@ -71,6 +71,7 @@ class Color extends Field implements InlineEditableFieldInterface
             'name' => 'defaultColor',
             'value' => $this->defaultColor,
             'errors' => $this->getErrors('defaultColor'),
+            'data' => ['error-key' => 'defaultColor'],
         ]);
     }
 
