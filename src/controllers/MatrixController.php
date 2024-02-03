@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\elements\db\EntryQuery;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
@@ -99,6 +100,7 @@ class MatrixController extends Controller
             throw new BadRequestHttpException("Invalid owner ID, element type, or site ID.");
         }
 
+        /** @var Entry $entry */
         $entry = Craft::createObject([
             'class' => Entry::class,
             'siteId' => $siteId,
@@ -113,6 +115,8 @@ class MatrixController extends Controller
         if (!$elementsService->canSave($entry, $user)) {
             throw new ForbiddenHttpException('User not authorized to create this element.');
         }
+
+        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
 
         if (!$elementsService->saveElement($entry, false)) {
             return $this->asFailure(Craft::t('app', 'Couldn’t create {type}.', [

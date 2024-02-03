@@ -2493,16 +2493,16 @@ $.extend(Craft, {
    * @param {Array} actions
    */
   addActionsToChip(chip, actions) {
-    const $actions = $(chip).find('.chip-actions,.card-actions');
-    let $actionMenuBtn = $actions.find('.action-btn');
-    let $actionMenu;
+    if (!actions?.length) {
+      return;
+    }
 
-    if ($actionMenuBtn.length) {
-      $actionMenu = $actionMenuBtn
-        .disclosureMenu()
-        .data('disclosureMenu').$container;
-      $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
-    } else {
+    const $actions = $(chip).find(
+      '> .chip-content > .chip-actions, > .card-actions-container > .card-actions'
+    );
+    let $actionMenuBtn = $actions.find('.action-btn');
+
+    if (!$actionMenuBtn.length) {
       // the chip/card doesn't have an action menu yet, so add one
       const menuId = `actions-${Math.floor(Math.random() * 1000000)}`;
       const labelId = `${menuId}-label`;
@@ -2519,66 +2519,28 @@ $.extend(Craft, {
         'aria-describedby': labelId,
         'data-disclosure-trigger': 'true',
       }).insertAfter($label);
-      $actionMenu = $('<div/>', {
+      $('<div/>', {
         id: menuId,
         class: 'menu menu--disclosure',
       }).insertAfter($actionMenuBtn);
-      $actionMenuBtn.disclosureMenu();
     }
+
+    const disclosureMenu = $actionMenuBtn
+      .disclosureMenu()
+      .data('disclosureMenu');
 
     const safeActions = actions.filter((a) => !a.destructive);
     const destructiveActions = actions.filter((a) => a.destructive);
-    let $items = $();
 
     if (safeActions.length) {
-      const $ul = $('<ul/>').appendTo($actionMenu);
-      for (let action of safeActions) {
-        const $li = $('<li/>').appendTo($ul);
-        const $a = $('<a/>', {
-          role: action.url ? null : 'button',
-          'data-icon': action.icon,
-          'aria-label': action.label,
-          text: action.label,
-          href: action.url,
-        })
-          .appendTo($li)
-          .data('actionCallback', action.callback);
-        if (action.attributes) {
-          $a.attr(action.attributes);
-        }
-        $items = $items.add($a);
-      }
+      disclosureMenu.addItems(safeActions, disclosureMenu.addGroup());
     }
-    if (safeActions.length && destructiveActions.length) {
-      $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
-    }
+
     if (destructiveActions.length) {
-      const $ul = $('<ul/>').appendTo($actionMenu);
-      for (let action of destructiveActions) {
-        const $li = $('<li/>').appendTo($ul);
-        const $a = $('<a/>', {
-          class: 'error',
-          type: 'button',
-          role: 'button',
-          'data-icon': action.icon,
-          'aria-label': action.label,
-          text: action.label,
-        })
-          .appendTo($li)
-          .data('actionCallback', action.callback);
-        if (action.attributes) {
-          $a.attr(action.attributes);
-        }
-        $items = $items.add($a);
-      }
+      disclosureMenu.addItems(destructiveActions, disclosureMenu.addGroup());
     }
 
-    $items.on('activate', (ev) => {
-      $actionMenuBtn.data('disclosureMenu').hide();
-      $(ev.currentTarget).data('actionCallback')();
-    });
-
-    Craft.initUiElements($actionMenu);
+    Craft.initUiElements(disclosureMenu.$container);
   },
 
   /**

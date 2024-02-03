@@ -151,6 +151,7 @@ class Url extends Field implements InlineEditableFieldInterface
                 'step' => '10',
                 'value' => $this->maxLength,
                 'errors' => $this->getErrors('maxLength'),
+                'data' => ['error-key' => 'maxLength'],
             ]);
     }
 

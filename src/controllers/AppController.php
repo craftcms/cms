@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\base\Iconic;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
-use craft\enums\MenuItemType;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
@@ -717,8 +716,8 @@ class AppController extends Controller
             $componentType = $componentInfo['type'];
             $id = $componentInfo['id'];
 
-            if (!$id || (!is_numeric($id) && !(is_array($id) && ArrayHelper::isNumeric($id)))) {
-                throw new BadRequestHttpException('Invalid component ID');
+            if (!$id) {
+                throw new BadRequestHttpException('Missing component ID');
             }
 
             $component = $componentType::get($id);
@@ -729,7 +728,6 @@ class AppController extends Controller
 
                 if ($withMenuItems) {
                     $menuItemHtml[$componentType][$id] = Cp::menuItem([
-                        'type' => MenuItemType::Button->value,
                         'label' => $component->getUiLabel(),
                         'icon' => $component instanceof Iconic ? $component->getIcon() : null,
                         'attributes' => [
