@@ -299,6 +299,7 @@
 - Added `craft\helpers\ProjectConfig::ensureAllEntryTypesProcessed()`.
 - Added `craft\i18n\Locale::$aliasOf`.
 - Added `craft\i18n\Locale::setDisplayName()`.
+- Added `craft\log\Dispatcher::getDefaultTarget()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
 - Added `craft\migrations\BaseContentRefactorMigration`.
 - Added `craft\models\EntryType::$color`.
 - Added `craft\models\FieldLayout::getCardBodyFields()`.
@@ -380,6 +381,7 @@
 - Renamed `craft\fields\Matrix::$maxBlocks` to `$maxEntries`.
 - Renamed `craft\fields\Matrix::$minBlocks` to `$minEntries`.
 - Renamed `craft\helpers\MailerHelper\EVENT_REGISTER_MAILER_TRANSPORT_TYPES` to `EVENT_REGISTER_MAILER_TRANSPORTS`.
+- Renamed `craft\log\Dispatcher::getTargets()` to `getDefaultTargets()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
 - Renamed `craft\services\Addresses::getLayout()` to `getFieldLayout()`.
 - Renamed `craft\services\Addresses::saveLayout()` to `saveFieldLayout()`.
 - Renamed `craft\services\Utilities::EVENT_REGISTER_UTILITY_TYPES` to `EVENT_REGISTER_UTILITIES`.

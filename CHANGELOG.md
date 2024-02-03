@@ -8,6 +8,8 @@
 - Component chips within component select inputs which have an “Edit” action can now be double-clicked on. 
 - The `queue/run` command now supports a `--job-id` option.
 - Removed the `--force` option from the `up` command. `--isolated=0` should be used instead. ([#14270](https://github.com/craftcms/cms/pull/14270))
+- Added `craft\log\Dispatcher::getDefaultTarget()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
+- Renamed `craft\log\Dispatcher::getTargets()` to `getDefaultTargets()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
 - Fixed a bug where newly-created inline Matrix entries could have validation errors.
 - Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag.
 - Fixed an error that occurred if a component select was used for components with non-numeric IDs.
