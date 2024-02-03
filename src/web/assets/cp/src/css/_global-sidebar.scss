@@ -4,7 +4,8 @@
   --prefix-size: 30px;
   --prefix-ratio: 1;
 
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: $sidebarZIndex;
   display: flex;
   flex-direction: column;
@@ -14,10 +15,6 @@
   background-color: transparent;
   border-right: 1px solid var(--hairline-color);
   width: var(--sidebar-width);
-
-  @media screen and (prefers-reduced-motion: no-preference) {
-    //transition: width 500ms cubic-bezier(0.33, 1, 0.68, 1);
-  }
 
   a {
     text-decoration: none;
@@ -29,10 +26,6 @@
       cursor: default;
       background-color: transparent;
     }
-  }
-
-  .light {
-    color: var(--gray-400);
   }
 
   @media only screen and (max-width: $minFullUiWidth - 1px) {

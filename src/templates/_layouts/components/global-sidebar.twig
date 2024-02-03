@@ -59,7 +59,7 @@
 
         <div class="global-sidebar__nav">
 
-            <nav class="global-nav" aria-label="{{ 'Primary'|t('app') }}">
+            <nav id="nav" class="global-nav" aria-label="{{ 'Primary'|t('app') }}">
                 <ul>
                     {% for item in craft.cp.nav() %}
                         {% set itemAttributes = {

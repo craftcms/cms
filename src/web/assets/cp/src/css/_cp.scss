@@ -223,82 +223,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
-#nav {
-  flex: 1;
-  margin: var(--s) 0 0;
-  padding: 0 0 var(--xl) 0;
-  overflow: visible;
-
-  body.has-debug-toolbar & {
-    padding-bottom: calc(42px + var(--xl));
-  }
-
-  li {
-    &:not(.has-subnav) > a.sel {
-      opacity: 1;
-      border-left: 5px solid var(--gray-400);
-      background-color: transparent;
-      color: currentColor;
-      border-radius: 0;
-
-      .icon {
-        opacity: 1;
-      }
-    }
-
-    a {
-      border-radius: 0;
-      position: relative;
-      border-left: 5px solid transparent;
-      padding-left: var(--m);
-      padding-right: var(--m);
-
-      &[href]:hover {
-        background-color: var(--gray-050);
-      }
-
-      &:focus {
-        z-index: 1;
-      }
-
-      &.menubtn {
-        line-height: 26px;
-      }
-
-      &.external:after {
-        @include margin-left(5px);
-        @include icon;
-        content: 'external';
-      }
-
-      .label {
-        &,
-        & span {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      }
-
-      .badge {
-        @include margin-right(0);
-        background-color: $badgeBackgroundColor;
-        color: $badgeColor;
-      }
-    }
-
-    ul {
-      display: block;
-      margin-bottom: 10px;
-
-      li a {
-        @include padding(3px, var(--m), 3px, 42px, !important);
-        font-size: 12px;
-      }
-    }
-  }
-}
-
 #global-footer {
   display: flex;
   flex-direction: column;
@@ -835,7 +759,6 @@ li.breadcrumb-toggle-wrapper {
 }
 
 /* main container */
-
 #main-container {
   position: relative;
   flex-grow: 1;
