@@ -14,9 +14,8 @@ use Illuminate\Support\Collection;
 /**
  * ElementCollection represents a collection of elements.
  *
- * @template TKey of array-key
  * @template TValue of ElementInterface
- * @extends Collection<TKey, TValue>
+ * @extends Collection<array-key, TValue>
  *
  * @method TValue one(callable|null $callback, mixed $default)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -27,7 +26,7 @@ class ElementCollection extends Collection
     /**
      * Returns a collection of the elements’ IDs.
      *
-     * @return Collection<TKey,int>
+     * @return Collection<array-key, int>
      */
     public function ids(): Collection
     {

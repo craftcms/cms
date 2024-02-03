@@ -287,6 +287,31 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
         if (actions.length) {
           Craft.addActionsToChip($element, actions);
+
+          const disclosureMenu = $element
+            .find(
+              '> .chip-content > .chip-actions .action-btn, > .card-actions-container > .card-actions .action-btn'
+            )
+            .data('disclosureMenu');
+          const moveForwardBtn = disclosureMenu.$container.find(
+            '[data-move-forward]'
+          )[0];
+          const moveBackwardBtn = disclosureMenu.$container.find(
+            '[data-move-backward]'
+          )[0];
+
+          disclosureMenu.on('show', () => {
+            const $li = $element.parent();
+            const $prev = $li.prev();
+            const $next = $li.next();
+
+            if (moveForwardBtn) {
+              disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
+            }
+            if (moveBackwardBtn) {
+              disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
+            }
+          });
         }
 
         if (this.settings.sortable) {
@@ -484,41 +509,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     onSortChange() {
       this.elementSelect?.resetItemOrder();
       this.$elements = $().add(this.$elements);
-
-      for (let i = 0; i < this.$elements.length; i++) {
-        const $element = this.$elements.eq(i);
-        const $actionMenuBtn = $element
-          .find('.chip-actions,.card-actions')
-          .find('.action-btn');
-        const disclosureMenu = $actionMenuBtn
-          .disclosureMenu()
-          .data('disclosureMenu');
-        const $menu = disclosureMenu.$container;
-        const $moveForward = $menu.find('[data-move-forward]').closest('li');
-        const $moveBackward = $menu.find('[data-move-backward]').closest('li');
-        const $ul = $moveForward.closest('ul');
-        const $hr = $ul.prev('hr');
-
-        if (i === 0) {
-          $moveForward.addClass('hidden');
-        } else {
-          $moveForward.removeClass('hidden');
-        }
-
-        if (i === this.$elements.length - 1) {
-          $moveBackward.addClass('hidden');
-        } else {
-          $moveBackward.removeClass('hidden');
-        }
-
-        if ($ul.children('li:not(.hidden)').length) {
-          $hr.removeClass('hidden');
-        } else {
-          $hr.addClass('hidden');
-        }
-
-        disclosureMenu.setContainerPosition();
-      }
     },
 
     moveElementForward($element) {

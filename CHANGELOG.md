@@ -1,5 +1,20 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Added the “Show cards in a grid” setting to relational fields that support card view. ([#14202](https://github.com/craftcms/cms/discussions/14202))
+- Made several subtle styling improvements, particularly for text-only zoom.
+- Increased the hit area for range select options.
+- Component chips within component select inputs which have an “Edit” action can now be double-clicked on. 
+- The `queue/run` command now supports a `--job-id` option.
+- Removed the `--force` option from the `up` command. `--isolated=0` should be used instead. ([#14270](https://github.com/craftcms/cms/pull/14270))
+- Fixed a bug where newly-created inline Matrix entries could have validation errors.
+- Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag.
+- Fixed an error that occurred if a component select was used for components with non-numeric IDs.
+- Fixed a bug where entry type, field, filesystem, and volume validation errors weren’t getting reported within slideouts.
+- Fixed a bug where it was possible to create new components from component selects whose limit had already been reached.
+- Fixed a JavaScript error that occurred when creating a Matrix field within another Matrix field’s settings. ([#14268](https://github.com/craftcms/cms/issues/14268))
+
 ## 5.0.0-alpha.11 - 2024-02-01
 
 - Added support for inline field creation and editing within field layout designers. ([#14260](https://github.com/craftcms/cms/pull/14260))
