@@ -47,6 +47,10 @@ class Dispatcher extends \yii\log\Dispatcher
 
     /**
      * Gets the active default target, or one specified by key.
+     *
+     * @param string|null $key The target key to use (`web`, `console`, or `queue`).
+     * @return MonologTarget|null
+     * @since 5.0.0
      */
     public function getDefaultTarget(?string $key = null): ?MonologTarget
     {
