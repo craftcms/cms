@@ -12,6 +12,7 @@
 - Fixed an error that occurred if a component select was used for components with non-numeric IDs.
 - Fixed a bug where entry type, field, filesystem, and volume validation errors weren’t getting reported within slideouts.
 - Fixed a bug where it was possible to create new components from component selects whose limit had already been reached.
+- Fixed a JavaScript error that occurred when creating a Matrix field within another Matrix field’s settings. ([#14268](https://github.com/craftcms/cms/issues/14268))
 
 ## 5.0.0-alpha.11 - 2024-02-01
 
