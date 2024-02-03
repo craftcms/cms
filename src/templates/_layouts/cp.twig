@@ -140,57 +140,65 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
             {% include '_layouts/components/alerts' %}
 
             <div id="global-header" role="region" aria-label="{{ 'My Account'|t('app') }}">
-                <div class="flex flex-nowrap gap-xs">
-                    {% include '_layouts/components/crumbs' %}
-                    {% if contextMenu %}
-                        <div id="context-menu-container" class="context-menu-container">
-                            {{ contextMenu|raw }}
-                        </div>
-                    {% endif %}
-                    {{ actionMenu|raw }}
-                    <div class="flex-grow"></div>
-                    <button type="button" id="announcements-btn" class="btn hidden" title="{{ 'What’s New'|t('app') }}">
-                        <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
-                        {{ iconSvg('gift') }}
-                    </button>
+                <div class="container">
 
-                    {# New account dropdown #}
-                    <div class="account-toggle-wrapper">
+                    <div class="flex flex-nowrap gap-xs">
+                        {% include '_layouts/components/crumbs' %}
+                        {% if contextMenu %}
+                            <div id="context-menu-container" class="context-menu-container">
+                                {{ contextMenu|raw }}
+                            </div>
+                        {% endif %}
+                        {{ actionMenu|raw }}
+                        <div class="flex-grow"></div>
                         <button
-                            id="user-info"
-                            aria-controls="account-menu"
-                            class="btn menu-toggle"
-                            aria-label="{{ 'My Account'|t('app') }}"
-                            title="{{ 'My Account'|t('app') }}"
-                            data-disclosure-trigger
+                            type="button"
+                            id="announcements-btn"
+                            class="btn hidden"
+                            title="{{ 'What’s New'|t('app') }}"
                         >
-                            {{ userPhoto|raw }}
+                            <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
+                            {{ iconSvg('gift') }}
                         </button>
-                        <div
-                            id="account-menu"
-                            class="menu menu--disclosure"
-                            data-align="right"
-                            data-align-to=".header-photo"
-                        >
-                            <ul>
-                                <li>
-                                    <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
-                                        {% if currentUser.photoId %}
-                                            {{ userPhoto|raw }}
-                                        {% endif %}
-                                        <div class="flex-grow">
-                                            <div>{{ currentUser.username }}</div>
-                                            {% if not craft.app.config.general.useEmailAsUsername %}
-                                                <div class="smalltext">{{ currentUser.email }}</div>
+
+                        {# New account dropdown #}
+                        <div class="account-toggle-wrapper">
+                            <button
+                                id="user-info"
+                                aria-controls="account-menu"
+                                class="btn menu-toggle"
+                                aria-label="{{ 'My Account'|t('app') }}"
+                                title="{{ 'My Account'|t('app') }}"
+                                data-disclosure-trigger
+                            >
+                                {{ userPhoto|raw }}
+                            </button>
+                            <div
+                                id="account-menu"
+                                class="menu menu--disclosure"
+                                data-align="right"
+                                data-align-to=".header-photo"
+                            >
+                                <ul>
+                                    <li>
+                                        <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
+                                            {% if currentUser.photoId %}
+                                                {{ userPhoto|raw }}
                                             {% endif %}
-                                        </div>
-                                    </a>
-                                </li>
-                            </ul>
-                            <hr>
-                            <ul>
-                                <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
-                            </ul>
+                                            <div class="flex-grow">
+                                                <div>{{ currentUser.username }}</div>
+                                                {% if not craft.app.config.general.useEmailAsUsername %}
+                                                    <div class="smalltext">{{ currentUser.email }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+                                <hr>
+                                <ul>
+                                    <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -233,78 +241,78 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                 </div>
                             {% endif %}
 
-                                <div id="main-content" class="{{ mainContentClasses|join(' ') }}">
-                                    {# sidebar #}
+                            <div id="main-content" class="{{ mainContentClasses|join(' ') }}">
+                                {# sidebar #}
+                                {% if sidebar %}
+                                    <div id="sidebar-toggle-container">
+                                        <button
+                                            type="button"
+                                            id="sidebar-toggle"
+                                            class="btn menubtn"
+                                            aria-controls="sidebar-container"
+                                            aria-expanded="false"
+                                        >
+                                            {{ 'Show sidebar'|t('app') }}
+                                        </button>
+                                    </div>
+                                    <div id="sidebar-container">
+                                        <div id="sidebar" class="sidebar">
+                                            {{ sidebar|raw }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {# content-container #}
+                                <div id="content-container">
                                     {% if sidebar %}
-                                        <div id="sidebar-toggle-container">
-                                            <button
-                                                type="button"
-                                                id="sidebar-toggle"
-                                                class="btn menubtn"
-                                                aria-controls="sidebar-container"
-                                                aria-expanded="false"
-                                            >
-                                                {{ 'Show sidebar'|t('app') }}
-                                            </button>
-                                        </div>
-                                        <div id="sidebar-container">
-                                            <div id="sidebar" class="sidebar">
-                                                {{ sidebar|raw }}
-                                            </div>
-                                        </div>
+                                        <h2 id="content-heading"></h2>
                                     {% endif %}
-
-                                    {# content-container #}
-                                    <div id="content-container">
-                                        {% if sidebar %}
-                                            <h2 id="content-heading"></h2>
+                                    {% block main %}
+                                        {% if errorSummary is not empty %}
+                                            {{ errorSummary is defined ? errorSummary|raw }}
                                         {% endif %}
-                                        {% block main %}
-                                            {% if errorSummary is not empty %}
-                                                {{ errorSummary is defined ? errorSummary|raw }}
+                                        <div id="content" class="content-pane">
+                                            {% if contentNotice or tabs %}
+                                                <header id="content-header" class="pane-header">
+                                                    {{ contentNotice ? tag('div', {
+                                                        id: 'content-notice',
+                                                        html: contentNotice,
+                                                        role: 'status',
+                                                    }) }}
+                                                    {% if tabs %}
+                                                        {% include "_includes/tabs" with {
+                                                            containerAttributes: {
+                                                                id: 'tabs',
+                                                            },
+                                                        } %}
+                                                    {% endif %}
+                                                </header>
                                             {% endif %}
-                                            <div id="content" class="content-pane">
-                                                {% if contentNotice or tabs %}
-                                                    <header id="content-header" class="pane-header">
-                                                        {{ contentNotice ? tag('div', {
-                                                            id: 'content-notice',
-                                                            html: contentNotice,
-                                                            role: 'status',
-                                                        }) }}
-                                                        {% if tabs %}
-                                                            {% include "_includes/tabs" with {
-                                                                containerAttributes: {
-                                                                    id: 'tabs',
-                                                                },
-                                                            } %}
-                                                        {% endif %}
-                                                    </header>
-                                                {% endif %}
 
-                                                {% block content %}
-                                                    {{ content is defined ? content|raw }}
-                                                {% endblock %}
+                                            {% block content %}
+                                                {{ content is defined ? content|raw }}
+                                            {% endblock %}
 
-                                                {# footer #}
-                                                {% if footer %}
-                                                    <div id="footer" class="flex flex-justify">
-                                                        {{ footer|raw }}
-                                                    </div>
-                                                {% endif %}
-                                            </div>
-                                        {% endblock %}
-                                    </div><!-- #content-container -->
-
-                                    {% if details is not empty %}
-                                        <div id="details-container">
-                                            <div id="details">
-                                                <div class="details">
-                                                    {{ details|raw }}
+                                            {# footer #}
+                                            {% if footer %}
+                                                <div id="footer" class="flex flex-justify">
+                                                    {{ footer|raw }}
                                                 </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endblock %}
+                                </div><!-- #content-container -->
+
+                                {% if details is not empty %}
+                                    <div id="details-container">
+                                        <div id="details">
+                                            <div class="details">
+                                                {{ details|raw }}
                                             </div>
                                         </div>
-                                    {% endif %}
-                                </div><!-- #main-content -->
+                                    </div>
+                                {% endif %}
+                            </div><!-- #main-content -->
 
                             {% if fullPageForm -%}
                         </form><!-- #main-form -->
