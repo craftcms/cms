@@ -92,6 +92,7 @@
 - `entrify/*` commands now ask if an entry type already exists for the section.
 - The `resave/entries` command now accepts a `--field` option.
 - The `up`, `migrate/up`, and `migrate/all` commands no longer overwrite pending project config YAML changes, if new project config changes were made by migrations.
+- Removed the `--force` option from the `up` command. `--isolated=0` should be used instead. ([#14270](https://github.com/craftcms/cms/pull/14270))
 - Removed the `resave/matrix-blocks` command.
 
 ### Development
