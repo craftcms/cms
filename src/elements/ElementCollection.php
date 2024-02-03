@@ -9,7 +9,12 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use Illuminate\Support\Collection;
+use Twig\Markup;
+use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 
 /**
  * ElementCollection represents a collection of elements.
@@ -64,5 +69,21 @@ class ElementCollection extends Collection
             Craft::$app->getElements()->eagerLoadElements(get_class($first), $this->items, $with);
         }
         return $this;
+    }
+
+    /**
+     * Renders the elements using their partial templates.
+     *
+     * If no partial template exists for an element, its string representation will be output instead.
+     *
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @see ElementHelper::renderElements()
+     * @since 5.0.0
+     */
+    public function render(): Markup
+    {
+        return ElementHelper::renderElements($this->items);
     }
 }
