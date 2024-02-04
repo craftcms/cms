@@ -27,8 +27,21 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface FieldInterface extends SavableComponentInterface
+interface FieldInterface extends SavableComponentInterface, Chippable
 {
+    /**
+     * Returns the field type’s SVG icon.
+     *
+     * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
+     * the path to an SVG file, or raw SVG markup.
+     *
+     * System icons can be found in `src/icons/solid/.`
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public static function icon(): string;
+
     /**
      * Returns whether the field can be included multiple times within a field layout.
      *

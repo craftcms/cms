@@ -21,6 +21,7 @@ use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
@@ -353,6 +354,9 @@ class Cp extends Component
             $path = 'users';
         }
 
+
+        // Modify aria-current value for exact page vs. subpages
+        // $item['linkAttributes']['aria']['current'] = $item['url'] === $path ? 'page' : 'true';
         return Nav::make()
             ->id('nav')
             ->label('Primary')
@@ -407,17 +411,17 @@ class Cp extends Component
 
         $label = Craft::t('app', 'Content');
 
-        $settings[$label]['fields'] = [
-            'iconMask' => '@app/icons/light/pen-to-square.svg',
-            'label' => Craft::t('app', 'Fields'),
+        $settings[$label]['sections'] = [
+            'iconMask' => '@app/icons/light/newspaper.svg',
+            'label' => Craft::t('app', 'Sections'),
         ];
         $settings[$label]['entry-types'] = [
             'iconMask' => '@app/icons/light/files.svg',
             'label' => Craft::t('app', 'Entry Types'),
         ];
-        $settings[$label]['sections'] = [
-            'iconMask' => '@app/icons/light/newspaper.svg',
-            'label' => Craft::t('app', 'Sections'),
+        $settings[$label]['fields'] = [
+            'iconMask' => '@app/icons/light/pen-to-square.svg',
+            'label' => Craft::t('app', 'Fields'),
         ];
         $settings[$label]['globals'] = [
             'iconMask' => '@app/icons/light/globe.svg',
@@ -434,14 +438,13 @@ class Cp extends Component
 
         $label = Craft::t('app', 'Media');
 
-        $settings[$label]['filesystems'] = [
-            'iconMask' => '@app/icons/light/folder-open.svg',
-            'label' => Craft::t('app', 'Filesystems'),
-        ];
-
         $settings[$label]['assets'] = [
             'iconMask' => '@app/icons/light/image.svg',
             'label' => Craft::t('app', 'Assets'),
+        ];
+        $settings[$label]['filesystems'] = [
+            'iconMask' => '@app/icons/light/folder-open.svg',
+            'label' => Craft::t('app', 'Filesystems'),
         ];
 
         $label = Craft::t('app', 'Plugins');
@@ -731,6 +734,50 @@ class Cp extends Component
     }
 
     /**
+     * Returns environment variable options for a language menu.
+     *
+     * @param bool $appOnly Whether to limit the env options to those that match available app locales
+     * @return array
+     * @since 5.0.0
+     */
+    public function getLanguageEnvOptions(bool $appOnly = false): array
+    {
+        $options = [];
+        if ($appOnly) {
+            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAppLocales());
+        } else {
+            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAllLocales());
+        }
+
+        foreach (array_keys($_SERVER) as $var) {
+            if (!is_string($var)) {
+                continue;
+            }
+            $value = App::env($var);
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $languageValue = null;
+            if (in_array($value, $allLanguages, true)) {
+                $languageValue = $value;
+            }
+
+            if ($languageValue !== null) {
+                $options[] = [
+                    'label' => "$$var",
+                    'value' => "$$var",
+                    'data' => [
+                        'hint' => $languageValue,
+                    ],
+                ];
+            }
+        }
+
+        return $this->_envOptions($options);
+    }
+
+    /**
      * @param array $options
      * @return array
      */
@@ -799,6 +846,62 @@ class Cp extends Component
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
+
+        return $options;
+    }
+
+    /**
+     * Returns all known language options for a language input.
+     *
+     * @param bool $showLocaleIds Whether to show the hint as locale id; e.g. en, en-GB
+     * @param bool $showLocalizedNames Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
+     * @param bool $appLocales Whether to limit the returned locales to just app locales (cp translation options) or show them all
+     * @return array
+     * @since 5.0.0
+     */
+    public function getLanguageOptions(
+        bool $showLocaleIds = false,
+        bool $showLocalizedNames = false,
+        bool $appLocales = false,
+    ): array {
+        $options = [];
+
+        $languageId = Craft::$app->getLocale()->getLanguageID();
+
+        if ($appLocales) {
+            $allLocales = Craft::$app->getI18n()->getAppLocales();
+        } else {
+            $allLocales = Craft::$app->getI18n()->getAllLocales();
+        }
+
+        ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
+
+        foreach ($allLocales as $locale) {
+            $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '';
+            $option = [
+                'label' => $locale->getDisplayName(Craft::$app->language),
+                'value' => $locale->id,
+                'data' => [
+                    'data' => [
+                        'keywords' => $name,
+                    ],
+                ],
+            ];
+
+            $hints = [];
+            if ($showLocaleIds) {
+                $hints[] = $locale->id;
+            }
+            if ($showLocalizedNames) {
+                $hints[] = $name;
+                $option['data']['data']['hintLang'] = $locale->id;
+            }
+            if (!empty($hints)) {
+                $option['data']['data']['hint'] = implode(', ', $hints);
+            }
+
+            $options[] = $option;
+        }
 
         return $options;
     }

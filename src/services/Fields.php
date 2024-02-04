@@ -47,12 +47,15 @@ use craft\fields\Tags as TagsField;
 use craft\fields\Time;
 use craft\fields\Url;
 use craft\fields\Users as UsersField;
+use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\records\Field as FieldRecord;
@@ -1045,6 +1048,13 @@ class Fields extends Component
         // Refresh CustomFieldBehavior in case any custom field handles were just added/removed
         $this->updateFieldVersion();
 
+        // Tell the current CustomFieldBehavior class about the fields, since they might have custom handles
+        foreach ($layout->getCustomFieldElements() as $layoutElement) {
+            if (isset($layoutElement->handle)) {
+                CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;
+            }
+        }
+
         return true;
     }
 
@@ -1268,6 +1278,82 @@ class Fields extends Component
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
+    }
+
+
+    /**
+     * Returns data for the Fields index page in the control panel.
+     *
+     * @param int $page
+     * @param int $limit
+     * @param string|null $searchTerm
+     * @return array
+     * @since 5.0.0
+     * @internal
+     */
+    public function getTableData(int $page, int $limit, ?string $searchTerm): array
+    {
+        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+
+        $offset = ($page - 1) * $limit;
+        $query = $this->_createFieldQuery();
+
+        if ($searchTerm !== null && $searchTerm !== '') {
+            $searchParams = $this->_getSearchParams($searchTerm);
+            if (!empty($searchParams)) {
+                $query->where(['or', ...$searchParams]);
+            }
+        }
+
+        $total = $query->count();
+
+        $query->limit($limit);
+        $query->offset($offset);
+
+        $result = $query->all();
+
+        $tableData = [];
+        foreach ($result as $item) {
+            $field = $this->createField($item);
+
+            $tableData[] = [
+                'id' => $field->id,
+                'title' => Craft::t('site', $field->name),
+                'translatable' => $field->getIsTranslatable(null) ? ($field->getTranslationDescription(null) ?? Craft::t('app', 'This field is translatable.')) : false,
+                'searchable' => (bool)$field->searchable,
+                'url' => UrlHelper::url('settings/fields/edit/' . $field->id),
+                'handle' => $field->handle,
+                'type' => [
+                    'isMissing' => $field instanceof MissingField,
+                    'label' => $field instanceof MissingField ? $field->expectedType : $field->displayName(),
+                    'icon' => Cp::iconSvg($field::icon()),
+                ],
+            ];
+        }
+
+        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+
+        return [$pagination, $tableData];
+    }
+
+    /**
+     * Returns the array of sql "like" params to be used in the 'where' param for the query.
+     *
+     * @param string $term
+     * @return array
+     */
+    private function _getSearchParams(string $term): array
+    {
+        $searchParams = ['name', 'handle', 'instructions', 'type'];
+        $searchQueries = [];
+
+        if ($term !== '') {
+            foreach ($searchParams as $param) {
+                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+            }
+        }
+
+        return $searchQueries;
     }
 
     /**

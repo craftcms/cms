@@ -84,13 +84,13 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
 
     refresh() {
       Craft.sendActionRequest('POST', 'auth/method-listing-html').then(
-        ({data}) => {
+        async ({data}) => {
           const $container = $('#auth-method-setup').html(
             $(data.html).children()
           );
           Craft.initUiElements($container);
-          Craft.appendHeadHtml(data.headHtml);
-          Craft.appendBodyHtml(data.bodyHtml);
+          await Craft.appendHeadHtml(data.headHtml);
+          await Craft.appendBodyHtml(data.bodyHtml);
           this.removeAllListeners();
           this.initUi();
           this.settings.onRefresh();

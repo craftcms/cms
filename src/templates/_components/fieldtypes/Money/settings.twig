@@ -22,8 +22,9 @@
 
 {{ forms.field({
     label: 'Currency'|t('app'),
-    errors: field.getErrors('currency'),
     required: true,
+    errors: field.getErrors('currency'),
+    data: {'error-key': 'currency'},
 }, currencyInput) }}
 
 {{ _self.numberField({
@@ -32,7 +33,8 @@
     name: 'defaultValue',
     value: field.defaultValue,
     size: 10,
-    errors: field.getErrors('defaultValue')
+    errors: field.getErrors('defaultValue'),
+    data: {'error-key': 'defaultValue'},
 }, subUnits) }}
 
 {{ _self.numberField({
@@ -41,7 +43,8 @@
     name: 'min',
     value: field.min,
     size: 10,
-    errors: field.getErrors('min')
+    errors: field.getErrors('min'),
+    data: {'error-key': 'min'},
 }, subUnits) }}
 
 {{ _self.numberField({
@@ -50,7 +53,8 @@
     name: 'max',
     value: field.max,
     size: 10,
-    errors: field.getErrors('max')
+    errors: field.getErrors('max'),
+    data: {'error-key': 'max'},
 }, subUnits) }}
 
 {{ forms.lightswitchField({
@@ -65,7 +69,8 @@
     name: 'size',
     value: field.size,
     size: 2,
-    errors: field.getErrors('size')
+    errors: field.getErrors('size'),
+    data: {'error-key': 'size'},
 }) }}
 
 {% js %}

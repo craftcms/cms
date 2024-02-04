@@ -417,7 +417,7 @@ class Application extends \yii\web\Application
             return;
         }
 
-        $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c-debug.svg'));
+        $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/custom-icons/c-debug.svg'));
         DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,$svg");
 
         // Determine the base path using reflection in case it wasn't loaded from @vendor

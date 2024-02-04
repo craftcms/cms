@@ -53,10 +53,11 @@
   <div class="flex flex-nowrap">
     {% set valueIds = values|map(component => component.getId()) %}
 
-    {{ disclosureMenu(options|multisort('uiLabel')|map(component => {
+    {{ disclosureMenu(options|sort(o => o.getUiLabel())|map(component => {
       type: 'button',
       label: component.getUiLabel(),
       icon: component is instance of('craft\\base\\Iconic') ? component.getIcon() : null,
+      color: component is instance of('craft\\base\\Colorable') ? component.getColor() : null,
       attributes: {
         data: {
           type: className(component),
@@ -72,7 +73,8 @@
       buttonLabel: 'Choose'|t('app'),
       buttonAttributes: {
         class: ['dashed', 'add-btn'],
-      }
+      },
+      omitIfEmpty: false,
     }) }}
 
     {% if createAction %}
@@ -80,7 +82,6 @@
         class: ['add', 'icon', 'dashed', 'create-btn'],
         label: 'Create'|t('app'),
         icon: 'plus',
-
       }) }}
     {% endif %}
   </div>

@@ -16,8 +16,10 @@ use craft\behaviors\DraftBehavior;
 use craft\db\Table;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\BulkElementsEvent;
+use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -49,6 +51,11 @@ class NestedElementManager extends Component
      * @event BulkElementsEvent The event that is triggered after nested elements are resaved.
      */
     public const EVENT_AFTER_SAVE_ELEMENTS = 'afterSaveElements';
+
+    /**
+     * @event DuplicateNestedElementsEvent The event that is triggered after nested elements are duplicated.
+     */
+    public const EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS = 'afterDuplicateNestedElements';
 
     /**
      * Constructor
@@ -92,6 +99,11 @@ class NestedElementManager extends Component
     public array $criteria = [];
 
     /**
+     * @var Closure|null Closure that will get the value.
+     */
+    public Closure|null $valueGetter = null;
+
+    /**
      * @var Closure|null|false Closure that will update the value.
      */
     public Closure|null|false $valueSetter = null;
@@ -114,6 +126,12 @@ class NestedElementManager extends Component
      * if [[$propagationMethod]] is set to [[PropagationMethod::Custom]].
      */
     public ?string $propagationKeyFormat = null;
+
+    /**
+     * @var bool Whether nested element deletion is allowed
+     * (as opposed to only allowing to delete an owner relation)
+     */
+    public bool $allowDeletion = true;
 
     /**
      * @inheritdoc
@@ -155,6 +173,10 @@ class NestedElementManager extends Component
 
     private function getValue(ElementInterface $owner, bool $fetchAll = false): ElementQueryInterface|ElementCollection
     {
+        if (isset($this->valueGetter)) {
+            return call_user_func($this->valueGetter, $owner, $fetchAll);
+        }
+
         if (isset($this->attribute)) {
             return $owner->{$this->attribute};
         }
@@ -165,7 +187,7 @@ class NestedElementManager extends Component
             $query = $this->nestedElementQuery($owner);
         }
 
-        if ($fetchAll && $query->getCachedResult() === null) {
+        if ($fetchAll && !$query->getCachedResult()) {
             $query
                 ->drafts(null)
                 ->status(null)
@@ -182,7 +204,7 @@ class NestedElementManager extends Component
         }
 
         if (isset($this->valueSetter)) {
-            call_user_func($this->valueSetter, $value);
+            call_user_func($this->valueSetter, $value, $owner);
         } elseif (isset($this->attribute)) {
             $owner->{$this->attribute} = $value;
         } else {
@@ -315,6 +337,10 @@ class NestedElementManager extends Component
      */
     public function getCardsHtml(?ElementInterface $owner, array $config = []): string
     {
+        $config += [
+            'showInGrid' => false,
+        ];
+
         return $this->createView(
             $owner,
             $config,
@@ -349,7 +375,10 @@ class NestedElementManager extends Component
                         $elements,
                     ), [
                         'encode' => false,
-                        'class' => ['elements', 'card-grid'],
+                        'class' => [
+                            'elements',
+                            $config['showInGrid'] ? 'card-grid' : 'cards',
+                        ],
                     ]);
                 }
 
@@ -464,13 +493,17 @@ class NestedElementManager extends Component
         $config += [
             'sortable' => false,
             'canCreate' => false,
-            'createButtonLabel' => Craft::t('app', 'New {type}', [
-                'type' => $elementType::lowerDisplayName(),
-            ]),
+            'createButtonLabel' => null,
             'createAttributes' => null,
             'minElements' => null,
             'maxElements' => null,
         ];
+
+        if ($config['createButtonLabel'] === null) {
+            $config['createButtonLabel'] = Craft::t('app', 'New {type}', [
+                'type' => $elementType::lowerDisplayName(),
+            ]);
+        }
 
         $authorizedOwnerId = $owner->id;
         if ($owner->isProvisionalDraft) {
@@ -507,6 +540,7 @@ class NestedElementManager extends Component
                 'createButtonLabel' => $config['createButtonLabel'],
                 'ownerIdParam' => $this->ownerIdParam,
                 'fieldHandle' => $this->field?->handle,
+                'baseInputName' => $view->getNamespace(),
             ];
 
             if (!empty($config['createAttributes'])) {
@@ -518,6 +552,9 @@ class NestedElementManager extends Component
                         $settings['createAttributes'] = array_map(function(array $attributes) {
                             if (isset($attributes['icon'])) {
                                 $attributes['icon'] = Cp::iconSvg($attributes['icon']);
+                            }
+                            if (isset($attributes['color']) && $attributes['color'] instanceof Color) {
+                                $attributes['color'] = $attributes['color']->value;
                             }
                             return $attributes;
                         }, $settings['createAttributes']);
@@ -539,7 +576,7 @@ JS, [
             ]);
 
             return $html;
-        }, Html::id($attribute));
+        }, Html::id($this->field->handle ?? $attribute));
     }
 
     /**
@@ -767,12 +804,14 @@ JS, [
         $elementsService = Craft::$app->getElements();
         $deleteOwnership = [];
 
-        foreach ($elements as $element) {
-            if ($element->getPrimaryOwnerId() === $owner->id) {
-                $elementsService->deleteElement($element);
-            } else {
-                // Just delete the ownership relation
-                $deleteOwnership[] = $element->id;
+        if ($this->allowDeletion) {
+            foreach ($elements as $element) {
+                if ($element->getPrimaryOwnerId() === $owner->id) {
+                    $elementsService->deleteElement($element);
+                } else {
+                    // Just delete the ownership relation
+                    $deleteOwnership[] = $element->id;
+                }
             }
         }
 
@@ -836,6 +875,17 @@ JS, [
                         (!$source::trackChanges() || $this->isModified($source, true))
                     ) {
                         $newElementId = $elementsService->updateCanonicalElement($element, $newAttributes)->id;
+                        // upsert newElementId in case it was removed from the ownership table before
+                        // this will happen if we add a nested element to the owner & save,
+                        // then remove that nested element & save,
+                        // and then revert to the revision that still has that nested element
+                        Db::upsert(Table::ELEMENTS_OWNERS, [
+                            'elementId' => $newElementId,
+                            'ownerId' => $target->id,
+                            'sortOrder' => $element->getSortOrder(),
+                        ], [
+                            'sortOrder' => $element->getSortOrder(),
+                        ], updateTimestamp: false);
                     } else {
                         $newElementId = $element->getCanonicalId();
                     }
@@ -854,12 +904,21 @@ JS, [
                     $newElementId = $elementsService->duplicateElement($element, $newAttributes)->id;
                 }
 
-                $newElementIds[] = $newElementId;
+                $newElementIds[$element->id] = $newElementId;
+            }
+
+            // Fire a 'afterDuplicateNestedElements' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS)) {
+                $this->trigger(self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS, new DuplicateNestedElementsEvent([
+                    'source' => $source,
+                    'target' => $target,
+                    'newElementIds' => $newElementIds,
+                ]));
             }
 
             if ($deleteOtherNestedElements) {
                 // Delete any nested elements that shouldn't be there anymore
-                $this->deleteOtherNestedElements($target, $newElementIds);
+                $this->deleteOtherNestedElements($target, array_values($newElementIds));
             }
 
             $transaction->commit();

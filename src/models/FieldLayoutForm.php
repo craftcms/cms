@@ -7,6 +7,7 @@
 
 namespace craft\models;
 
+use Craft;
 use craft\base\FieldLayoutComponent;
 use craft\base\Model;
 use craft\helpers\Html;
@@ -28,6 +29,12 @@ class FieldLayoutForm extends Model
      * @var string|null The prefix that should be applied to the tab’s HTML IDs.
      */
     public ?string $tabIdPrefix = null;
+
+    /**
+     * @var string|null The prefix that should be used for the data-error-key attribute
+     * @since 5.0.0
+     */
+    public ?string $errorKeyPrefix = null;
 
     /**
      * Returns the tab menu config.
@@ -59,6 +66,7 @@ class FieldLayoutForm extends Model
     {
         $html = [];
         $hasMultipleTabs = count($this->tabs) > 1;
+        $view = Craft::$app->getView();
         foreach ($this->tabs as $i => $tab) {
             $show = $showFirst && $i === 0;
             $id = $this->_tabId($tab->getId());
@@ -74,7 +82,7 @@ class FieldLayoutForm extends Model
                 ],
                 'role' => $hasMultipleTabs ? 'tabpanel' : false,
                 'aria' => [
-                    'labelledBy' => $hasMultipleTabs ? $tab->getTabId() : false,
+                    'labelledBy' => $hasMultipleTabs ? $view->namespaceInputId($tab->getTabId()) : false,
                 ],
             ]);
         }

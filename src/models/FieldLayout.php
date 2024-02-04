@@ -719,6 +719,24 @@ class FieldLayout extends Model
     }
 
     /**
+     * Returns a custom field by its UUID.
+     *
+     * @param string $uid The field UUID.
+     * @return FieldInterface|null
+     * @since 5.0.0
+     */
+    public function getFieldByUid(string $uid): ?FieldInterface
+    {
+        foreach ($this->getCustomFields() as $field) {
+            if ($field->uid === $uid) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns a custom field by its handle.
      *
      * @param string $handle The field handle.
@@ -809,10 +827,24 @@ class FieldLayout extends Model
                         }, $namespace);
 
                         if ($html) {
+                            $errorKey = null;
+                            // if error key prefix was set on the FieldLayoutForm - use it
+                            if ($form->errorKeyPrefix) {
+                                $tagAttributes = Html::parseTagAttributes($html);
+                                // if we already have an error-key for this field, prefix it
+                                if (isset($tagAttributes['data']['error-key'])) {
+                                    $errorKey = $form->errorKeyPrefix . '.' . $tagAttributes['data']['error-key'];
+                                } else {
+                                    // otherwise let's construct it
+                                    /** @phpstan-ignore-next-line */
+                                    $errorKey = $form->errorKeyPrefix . '.' . ($layoutElement->name ?? $layoutElement->attribute());
+                                }
+                            }
+
                             $html = Html::modifyTagAttributes($html, [
                                 'data' => [
                                     'layout-element' => $isConditional ? $layoutElement->uid : true,
-                                ],
+                                ] + ($errorKey ? ['error-key' => $errorKey] : []),
                             ]);
 
                             $layoutElements[] = [$layoutElement, $isConditional, $html];

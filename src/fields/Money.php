@@ -48,6 +48,14 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'dollar-sign';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function phpType(): string
     {
         return sprintf('\\%s', MoneyLibrary::class);

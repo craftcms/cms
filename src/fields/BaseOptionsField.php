@@ -263,6 +263,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'cols' => $cols,
             'rows' => $rows,
             'errors' => $this->getErrors('options'),
+            'data' => ['error-key' => 'options'],
         ]);
     }
 
@@ -282,7 +283,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = Json::decodeIfJson($value);
         } elseif ($value === '' && static::$multi) {
             $value = [];
-        } elseif ($value === '__BLANK__') {
+        } elseif (strtolower($value) === '__blank__') {
             $value = '';
         } elseif ($value === null && $this->isFresh($element)) {
             $value = $this->defaultValue();

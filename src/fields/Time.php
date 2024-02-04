@@ -39,6 +39,14 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'clock';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function phpType(): string
     {
         return sprintf('\\%s|null', DateTime::class);

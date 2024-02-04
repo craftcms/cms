@@ -4941,6 +4941,11 @@ return array(
     'name' => ' skull crossbones ',
     'terms' => ' black skull and crossbones dungeons dragons alert bones crossbones d d danger dangerous area dead deadly death dnd face fantasy halloween holiday jolly roger monster pirate poison skeleton skull skull and crossbones warning ',
   ),
+  'slash' =>
+  array(
+    'name' => ' slash ',
+    'terms' => ' cancel close mute off stop x ',
+  ),
   'sleigh' =>
   array(
     'name' => ' sleigh ',

@@ -5,9 +5,10 @@
 
 {% do view.registerTranslations('app', [
     'Are you sure you want to delete “{name}” and all entries of that type?',
+    'Entry Type',
     'Handle',
-    'Name',
     'No entry types exist yet.',
+    'No results.',
     'Used by',
 ]) %}
 
@@ -28,31 +29,29 @@
     <div id="entrytypes-vue-admin-table"></div>
 {% endblock %}
 
-{% set tableData = entryTypes|map(entryType => {
-    id: entryType.id,
-    title: entryType.name|t('site'),
-    url: entryType.getCpEditUrl(),
-    name: entryType.name|t('site')|e,
-    handle: entryType.handle,
-    usages: tag('ul', {
-        html: (entryTypeUsages[entryType.id] ?? [])|map(usage => tag('li', {
-            html: tag('a', {
-                text: usage[1],
-                href: usage[2],
-                class: 'iconlink',
-                data: {
-                    icon: usage[0],
-                }
-            }),
-        }))|join(''),
-    }),
-}) %}
-
 {% js %}
 var columns = [
-    { name: '__slot:title', title: Craft.t('app', 'Name') },
+    { name: '__slot:title', title: Craft.t('app', 'Entry Type') },
     { name: '__slot:handle', title: Craft.t('app', 'Handle') },
-    { name: 'usages', title: Craft.t('app', 'Used by') },
+    {
+        name: 'usages',
+        title: Craft.t('app', 'Used by'),
+        callback: value => {
+            if (!value) {
+                return null;
+            }
+
+            let list = `<ul>`;
+            for (let i = 0; i < value.length; i++) {
+                list += `<li>`;
+                list += `<a href="${value[i][2]}" class="iconlink" data-icon="${value[i][0]}">${value[i][1]}</a>`
+                list += `</li>`;
+            }
+            list += `</ul>`;
+
+            return list;
+        }
+    },
 ];
 
 new Craft.VueAdminTable({
@@ -61,6 +60,7 @@ new Craft.VueAdminTable({
     deleteAction: 'entry-types/delete',
     deleteConfirmationMessage: Craft.t('app', 'Are you sure you want to delete “{name}” and all entries of that type?'),
     emptyMessage: Craft.t('app', 'No entry types exist yet.'),
-    tableData: {{ tableData|json_encode|raw }},
+    tableDataEndpoint: 'entry-types/table-data',
+    search: true,
 });
 {% endjs %}

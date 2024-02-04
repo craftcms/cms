@@ -42,6 +42,14 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'tag';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function elementType(): string
     {
         return Tag::class;

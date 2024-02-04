@@ -31,7 +31,7 @@ use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
-use craft\enums\MenuItemType;
+use craft\enums\Color;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAttributeHtmlEvent;
@@ -58,6 +58,7 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -185,7 +186,7 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
 
     /**
-     * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
+     * @event RegisterElementActionsEvent The event that is triggered when registering the available bulk actions for the element type.
      */
     public const EVENT_REGISTER_ACTIONS = 'registerActions';
 
@@ -1078,10 +1079,10 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Defines the available element actions for a given source.
+     * Defines the available bulk element actions for a given source.
      *
      * @param string $source The selected source’s key, if any.
-     * @return array The available element actions.
+     * @return array The available bulk element actions.
      * @see actions()
      */
     protected static function defineActions(string $source): array
@@ -2372,6 +2373,7 @@ abstract class Element extends Component implements ElementInterface
         );
 
         $names['canonicalId'] = true;
+        $names['cpEditUrl'] = true;
         $names['isDraft'] = true;
         $names['isRevision'] = true;
         $names['isUnpublishedDraft'] = true;
@@ -3509,7 +3511,6 @@ abstract class Element extends Component implements ElementInterface
         if (Craft::$app->getElements()->canView($this)) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
-                'type' => MenuItemType::Button,
                 'id' => $editId,
                 'icon' => 'edit',
                 'label' => Craft::t('app', 'Edit {type}', [
@@ -3770,7 +3771,7 @@ JS, [
                     $this->hasRoundedThumb() ? 'rounded' : null,
                 ]),
                 'data' => [
-                    'sizes' => sprintf('%spx', $size),
+                    'sizes' => sprintf('calc(%srem/16)', $size),
                     'srcset' => sprintf('%s %sw, %s %sw', $thumbUrl, $size, $this->thumbUrl($size * 2), $size * 2),
                     'alt' => $this->thumbAlt(),
                 ],
@@ -3887,7 +3888,7 @@ JS, [
      */
     public function getStatus(): ?string
     {
-        if ($this->getIsDraft()) {
+        if ($this->getIsDraft() && !$this->isProvisionalDraft) {
             return self::STATUS_DRAFT;
         }
 
@@ -5282,26 +5283,29 @@ JS, [
 
             default:
                 // Is this a custom field?
-                if (preg_match('/^field:(.+)/', $attribute, $matches)) {
-                    $fieldUid = $matches[1];
-                    $field = Craft::$app->getFields()->getFieldByUid($fieldUid);
+                if (preg_match('/^(field|fieldInstance):(.+)/', $attribute, $matches)) {
+                    $uid = $matches[2];
+                    if ($matches[1] === 'field') {
+                        $field = $this->getFieldLayout()?->getFieldByUid($uid);
+                    } else {
+                        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
+                        $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
+                    }
 
-                    if ($field) {
-                        if ($field instanceof PreviewableFieldInterface) {
-                            // Was this field value eager-loaded?
-                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
-                                $value = $this->getEagerLoadedElements($field->handle);
-                            } else {
-                                // The field might not actually belong to this element
-                                try {
-                                    $value = $this->getFieldValue($field->handle);
-                                } catch (InvalidFieldException) {
-                                    return '';
-                                }
+                    if ($field instanceof PreviewableFieldInterface) {
+                        // Was this field value eager-loaded?
+                        if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                            $value = $this->getEagerLoadedElements($field->handle);
+                        } else {
+                            // The field might not actually belong to this element
+                            try {
+                                $value = $this->getFieldValue($field->handle);
+                            } catch (InvalidFieldException) {
+                                return '';
                             }
-
-                            return $field->getPreviewHtml($value, $this);
                         }
+
+                        return $field->getPreviewHtml($value, $this);
                     }
 
                     return '';
@@ -5569,7 +5573,7 @@ JS,
                 if (!static::hasStatuses()) {
                     return false;
                 }
-                if ($this->getIsUnpublishedDraft()) {
+                if ($this->getIsDraft() && !$this->isProvisionalDraft) {
                     $icon = Html::tag('span', '', [
                         'data' => ['icon' => 'draft'],
                         'aria' => ['hidden' => 'true'],
@@ -5578,16 +5582,20 @@ JS,
                 } else {
                     $status = $this->getStatus();
                     $statusDef = static::statuses()[$status] ?? null;
-                    $icon = Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
+                    $color = $statusDef['color'] ?? $status;
+                    if ($color instanceof Color) {
+                        $color = $color->value;
+                    }
+                    $icon = Html::tag('span', '', ['class' => ['status', $color]]);
                     $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
                 }
                 return $icon . Html::tag('span', $label);
             },
         ], $event->metadata, [
-            Craft::t('app', 'Created at') => $this->dateCreated
+            Craft::t('app', 'Created at') => $this->dateCreated && !$this->getIsUnpublishedDraft()
                 ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
                 : false,
-            Craft::t('app', 'Updated at') => $this->dateUpdated
+            Craft::t('app', 'Updated at') => $this->dateUpdated && !$this->getIsUnpublishedDraft()
                 ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT)
                 : false,
             Craft::t('app', 'Notes') => function() {
@@ -5991,5 +5999,21 @@ JS,
         return $query
             ->id($elementIds[$key + $dir])
             ->one();
+    }
+
+    /**
+     * Renders the element using its partial template.
+     *
+     * If no partial template exists for the element, its string representation will be output instead.
+     *
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @see ElementHelper::renderElements()
+     * @since 5.0.0
+     */
+    public function render(): Markup
+    {
+        return ElementHelper::renderElements([$this]);
     }
 }

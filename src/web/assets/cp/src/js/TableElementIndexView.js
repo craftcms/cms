@@ -485,7 +485,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         Craft.sendActionRequest('POST', this.settings.loadMoreElementsAction, {
           data,
         })
-          .then((response) => {
+          .then(async (response) => {
             // Do we even care about this anymore?
             if (!$spinnerRow.parent().length) {
               return;
@@ -532,8 +532,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
               this.tableSort.addItems($newElements);
             }
 
-            Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendBodyHtml(response.data.bodyHtml);
+            await Craft.appendHeadHtml(response.data.headHtml);
+            await Craft.appendBodyHtml(response.data.bodyHtml);
             Craft.cp.updateResponsiveTables();
 
             this.setTotalVisible(totalVisible);

@@ -46,6 +46,7 @@
         {{ include('_elements/cards.twig', {
             elements,
             viewMode,
+            showInGrid: showCardsInGrid ?? false,
             disabled,
             context: 'field',
             sortable: false,

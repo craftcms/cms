@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\MemoizableArray;
 use craft\db\Query;
@@ -21,12 +22,15 @@ use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
 use craft\events\SectionEvent;
+use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
@@ -1236,6 +1240,9 @@ SQL)->execute();
         if ($db->columnExists(Table::ENTRYTYPES, 'icon')) {
             $query->addSelect('icon');
         }
+        if ($db->columnExists(Table::ENTRYTYPES, 'color')) {
+            $query->addSelect('color');
+        }
 
         return $query;
     }
@@ -1372,6 +1379,7 @@ SQL)->execute();
             $entryTypeRecord->name = $data['name'];
             $entryTypeRecord->handle = $data['handle'];
             $entryTypeRecord->icon = $data['icon'] ?? null;
+            $entryTypeRecord->color = $data['color'] ?? null;
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
@@ -1622,6 +1630,130 @@ SQL)->execute();
     public function refreshEntryTypes(): void
     {
         $this->_entryTypes = null;
+    }
+
+    /**
+     * Returns data for the Entry Types index page in the control panel.
+     *
+     * @param int $page
+     * @param int $limit
+     * @param string|null $searchTerm
+     * @return array
+     * @since 5.0.0
+     * @internal
+     */
+    public function getTableData(int $page, int $limit, ?string $searchTerm): array
+    {
+        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+
+        $offset = ($page - 1) * $limit;
+        $query = $this->_createEntryTypeQuery();
+
+        if ($searchTerm !== null && $searchTerm !== '') {
+            $searchParams = $this->_getSearchParams($searchTerm);
+            if (!empty($searchParams)) {
+                $query->where(['or', ...$searchParams]);
+            }
+        }
+
+        $total = $query->count();
+
+        $query->limit($limit);
+        $query->offset($offset);
+
+        $results = $query->all();
+
+        /** @var EntryType[] $entryTypes */
+        $entryTypes = array_values(array_filter(
+            array_map(fn(array $result) => $this->_entryTypes()->firstWhere('id', $result['id']), $results)
+        ));
+
+        usort($entryTypes,
+            fn(EntryType $a, EntryType $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name)
+        );
+
+        $entryTypeUsages = $this->getEntryTypeUsages();
+
+        $tableData = [];
+        foreach ($entryTypes as $entryType) {
+            $tableData[] = [
+                'id' => $entryType->id,
+                'title' => Craft::t('site', $entryType->name),
+                'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
+                'iconColor' => $entryType->color?->value,
+                'url' => $entryType->getCpEditUrl(),
+                'name' => Craft::t('site', $entryType->name),
+                'handle' => $entryType->handle,
+                'usages' => $entryTypeUsages[$entryType->id] ?? null,
+            ];
+        }
+
+        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+
+        return [$pagination, $tableData];
+    }
+
+    /**
+     * Returns an array of sections and fields where entry type is used.
+     *
+     * @return array
+     */
+    protected function getEntryTypeUsages(): array
+    {
+        $entryTypeUsages = [];
+
+        // Sections
+        foreach ($this->getAllSections() as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $entryTypeUsages[$entryType->id][] = [
+                    'section',
+                    Craft::t('site', $section->name),
+                    $section->getCpEditUrl(),
+                ];
+            }
+        }
+
+        // Fields
+        foreach (Craft::$app->getFields()->getAllFields() as $field) {
+            if ($field instanceof ElementContainerFieldInterface) {
+                foreach ($field->getFieldLayoutProviders() as $provider) {
+                    if ($provider instanceof EntryType) {
+                        $entryTypeUsages[$provider->id][] = [
+                            'field',
+                            Craft::t('site', $field->name),
+                            UrlHelper::cpUrl("settings/fields/edit/$field->id"),
+                        ];
+                    }
+                }
+            }
+        }
+
+        // sort by name
+        foreach ($entryTypeUsages as &$usages) {
+            usort($usages, fn($a, $b) => $a[1] <=> $b[1]);
+        }
+
+        return $entryTypeUsages;
+    }
+
+    /**
+     * Returns the sql expression to be used in the 'where' param for the query.
+     *
+     * @param string $term
+     * @return array
+     */
+    private function _getSearchParams(string $term): array
+    {
+        $searchParams = ['name', 'handle'];
+        $searchQueries = [];
+
+        if ($term !== '') {
+            foreach ($searchParams as $param) {
+                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+            }
+        }
+
+        return $searchQueries;
     }
 
     /**

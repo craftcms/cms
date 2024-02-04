@@ -23,6 +23,7 @@ use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
@@ -957,6 +958,7 @@ class UsersController extends Controller
 
         $response->contentHtml(function() use ($user) {
             $config = [
+                'showInGrid' => true,
                 'canCreate' => true,
             ];
 
@@ -1059,61 +1061,29 @@ class UsersController extends Controller
         $response = $this->asEditScreen($user, self::SCREEN_PREFERENCES);
 
         $i18n = Craft::$app->getI18n();
-        $appLocales = $i18n->getAppLocales();
-        ArrayHelper::multisort($appLocales, fn(Locale $locale) => $locale->getDisplayName());
-        $languageId = Craft::$app->getLocale()->getLanguageID();
 
-        $languageOptions = array_map(fn(Locale $locale) => [
-            'label' => $locale->getDisplayName(Craft::$app->language),
-            'value' => $locale->id,
-            'data' => [
-                'data' => [
-                    'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '',
-                    'hintLang' => $locale->id,
-                ],
-            ],
-        ], $appLocales);
-
+        // user language
         $userLanguage = $user->getPreferredLanguage();
 
         if (
             !$userLanguage ||
-            !ArrayHelper::contains($appLocales, fn(Locale $locale) => $locale->id === $userLanguage)
+            !ArrayHelper::contains($i18n->getAppLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLanguage))
         ) {
             $userLanguage = Craft::$app->language;
         }
 
-        // Formatting Locale
-        $allLocales = $i18n->getAllLocales();
-        ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
-
-        $localeOptions = [
-            ['label' => Craft::t('app', 'Same as language'), 'value' => ''],
-        ];
-        array_push($localeOptions, ...array_map(fn(Locale $locale) => [
-            'label' => $locale->getDisplayName(Craft::$app->language),
-            'value' => $locale->id,
-            'data' => [
-                'data' => [
-                    'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
-                    'hintLang' => $locale->id,
-                ],
-            ],
-        ], $allLocales));
-
+        // user locale
         $userLocale = $user->getPreferredLocale();
 
         if (
             !$userLocale ||
-            !ArrayHelper::contains($allLocales, fn(Locale $locale) => $locale->id === $userLocale)
+            !ArrayHelper::contains($i18n->getAllLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLocale))
         ) {
             $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
         }
 
         $response->action('users/save-preferences');
         $response->contentTemplate('users/_preferences', compact(
-            'languageOptions',
-            'localeOptions',
             'userLanguage',
             'userLocale',
         ));
@@ -1132,13 +1102,18 @@ class UsersController extends Controller
         $this->requireCpRequest();
 
         $user = static::currentUser();
+        $preferredLocale = $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null;
+        if ($preferredLocale === '__blank__') {
+            $preferredLocale = null;
+        }
         $preferences = [
             'language' => $this->request->getBodyParam('preferredLanguage', $user->getPreference('language')),
-            'locale' => $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null,
+            'locale' => $preferredLocale,
             'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
             'alwaysShowFocusRings' => (bool)$this->request->getBodyParam('alwaysShowFocusRings', $user->getPreference('alwaysShowFocusRings')),
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
+            'disableAutofocus' => $this->request->getBodyParam('disableAutofocus', $user->getPreference('disableAutofocus')),
             'notificationDuration' => $this->request->getBodyParam('notificationDuration', $user->getPreference('notificationDuration')),
         ];
 
@@ -2153,7 +2128,7 @@ JS);
                 throw new BadRequestHttpException("Invalid address ID: $addressId");
             }
 
-            if ($address->ownerId !== $userId) {
+            if ($address->getOwnerId() !== $userId) {
                 throw new BadRequestHttpException("Address $addressId is not owned by user $userId");
             }
         } else {

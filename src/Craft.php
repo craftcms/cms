@@ -44,11 +44,6 @@ class Craft extends Yii
      */
     public static function getAlias($alias, $throwException = true)
     {
-        // @craft => @app
-        if ($alias === '@craft' || str_starts_with($alias, '@craft/')) {
-            $alias = '@app' . substr($alias, 6);
-        }
-
         // @app/icons/file.svg => @appicons/file.svg
         if (preg_match('/^@app\/icons\/([\w\-]+\.svg)$/', $alias, $match)) {
             $alias = "@appicons/$match[1]";

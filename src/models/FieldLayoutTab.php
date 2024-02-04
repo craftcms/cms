@@ -148,6 +148,14 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * @inheritdoc
      */
+    public function hasSettings()
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([
@@ -247,6 +255,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     public function setElements(array $elements): void
     {
         $fieldsService = Craft::$app->getFields();
+        $pluginsService = Craft::$app->getPlugins();
         $this->_elements = [];
 
         foreach ($elements as $layoutElement) {
@@ -263,8 +272,12 @@ class FieldLayoutTab extends FieldLayoutComponent
                 }
             }
 
-            $layoutElement->setLayout($this->getLayout());
-            $this->_elements[] = $layoutElement;
+            // if layout element belongs to a plugin, ensure the plugin is installed
+            $pluginHandle = $pluginsService->getPluginHandleByClass($layoutElement::class);
+            if ($pluginHandle === null || $pluginsService->isPluginEnabled($pluginHandle)) {
+                $layoutElement->setLayout($this->getLayout());
+                $this->_elements[] = $layoutElement;
+            }
         }
     }
 

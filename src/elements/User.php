@@ -23,6 +23,7 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\enums\Color;
 use craft\enums\MenuItemType;
 use craft\enums\PropagationMethod;
 use craft\events\AuthenticateUserEvent;
@@ -243,19 +244,18 @@ class User extends Element implements IdentityInterface
         return [
             self::STATUS_ACTIVE => [
                 'label' => Craft::t('app', 'Active'),
-                'color' => 'green',
             ],
             self::STATUS_PENDING => [
                 'label' => Craft::t('app', 'Pending'),
-                'color' => 'orange',
+                'color' => Color::Orange,
             ],
             self::STATUS_SUSPENDED => [
                 'label' => Craft::t('app', 'Suspended'),
-                'color' => 'red',
+                'color' => Color::Red,
             ],
             self::STATUS_LOCKED => [
                 'label' => Craft::t('app', 'Locked'),
-                'color' => 'red',
+                'color' => Color::Red,
             ],
             self::STATUS_INACTIVE => [
                 'label' => Craft::t('app', 'Inactive'),
@@ -1825,7 +1825,6 @@ XML;
 
                     $copyImpersonationUrlId = sprintf('action-copy-impersonation-url-%s', mt_rand());
                     $sessionItems[] = [
-                        'type' => MenuItemType::Button,
                         'id' => $copyImpersonationUrlId,
                         'icon' => 'clipboard',
                         'label' => Craft::t('app', 'Copy impersonation URL…'),
@@ -1916,7 +1915,6 @@ JS, [
                     $view = Craft::$app->getView();
                     $deleteId = sprintf('action-delete-%s', mt_rand());
                     $items[] = [
-                        'type' => MenuItemType::Button,
                         'id' => $deleteId,
                         'icon' => 'trash',
                         'label' => Craft::t('app', 'Delete {type}', [
@@ -1974,7 +1972,6 @@ JS, [
         ]);
 
         return [
-            'type' => MenuItemType::Button,
             'id' => $id,
             'icon' => 'clipboard',
             'label' => $label,
@@ -2026,6 +2023,17 @@ JS, [
     public function getPreferredLocale(): ?string
     {
         return $this->_validateLocale($this->getPreference('locale'), true);
+    }
+
+    /**
+     * Returns whether the user prefers to have form fields autofocused on page load.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function getAutofocusPreferred(): bool
+    {
+        return !$this->getPreference('disableAutofocus');
     }
 
     /**

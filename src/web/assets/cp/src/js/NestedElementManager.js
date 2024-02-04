@@ -16,6 +16,11 @@ Craft.NestedElementManager = Garnish.Base.extend(
     // index
     elementIndex: null,
 
+    /**
+     * @type {Craft.ElementEditor|null}
+     */
+    elementEditor: null,
+
     init: function (container, elementType, settings) {
       this.$container = $(container);
       this.elementType = elementType;
@@ -66,7 +71,11 @@ Craft.NestedElementManager = Garnish.Base.extend(
             const $li = $('<li/>').appendTo($ul);
             let buttonHtml = '';
             if (type.icon) {
-              buttonHtml += `<span class="icon">${type.icon}</span>`;
+              const $icon = $(`<span class="icon">${type.icon}</span>`);
+              if (type.color) {
+                $icon.addClass(type.color);
+              }
+              buttonHtml += $icon.prop('outerHTML');
             }
             buttonHtml += `<span class="label">${type.label}</span>`;
             const $button = $('<button/>', {
@@ -76,6 +85,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
             }).appendTo($li);
             this.addListener($button, 'activate', (ev) => {
               ev.preventDefault();
+              this.$createBtn.data('disclosureMenu').hide();
               this.createElement(type.attributes);
             });
           }
@@ -98,12 +108,14 @@ Craft.NestedElementManager = Garnish.Base.extend(
           .data('elementEditor');
 
         if (this.elementEditor) {
-          this.elementEditor.on('createProvisionalDraft', () => {
-            this.settings.ownerId = this.elementEditor.settings.elementId;
+          this.elementEditor.on('update', () => {
+            this.settings.ownerId = this.elementEditor.getDraftElementId(
+              this.settings.ownerId
+            );
 
             if (this.elementIndex) {
               this.elementIndex.settings.criteria[this.settings.ownerIdParam] =
-                this.elementEditor.settings.elementId;
+                this.settings.ownerId;
             }
           });
         }
@@ -171,17 +183,13 @@ Craft.NestedElementManager = Garnish.Base.extend(
               return this.canDelete($selectedItems.length);
             },
             onBeforeDuplicateElements: async () => {
-              if (this.elementEditor) {
-                await this.elementEditor.ensureIsDraftOrRevision();
-              }
+              await this.markAsDirty();
             },
             onDuplicateElements: async () => {
               await this.markAsDirty();
             },
             onBeforeDeleteElements: async () => {
-              if (this.elementEditor) {
-                await this.elementEditor.ensureIsDraftOrRevision();
-              }
+              await this.markAsDirty();
             },
             onDeleteElements: async () => {
               await this.markAsDirty();
@@ -203,16 +211,14 @@ Craft.NestedElementManager = Garnish.Base.extend(
     },
 
     async markAsDirty() {
-      if (this.elementEditor && this.settings.fieldHandle) {
-        await this.elementEditor.markFieldAsDirty(this.settings.fieldHandle);
+      if (this.elementEditor && this.settings.baseInputName) {
+        await this.elementEditor.setFormValue(this.settings.baseInputName, '*');
       }
     },
 
     async getBaseActionData() {
-      if (this.elementEditor) {
-        // this could end up updating this.settings.ownerId
-        await this.elementEditor.ensureIsDraftOrRevision();
-      }
+      // this could end up updating this.settings.ownerId
+      await this.markAsDirty();
 
       return {
         ownerElementType: this.settings.ownerElementType,
@@ -327,9 +333,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
         this.$createBtn.addClass('loading');
       }
 
-      if (this.elementEditor) {
-        await this.elementEditor.ensureIsDraftOrRevision();
-      }
+      await this.markAsDirty();
 
       attributes = Object.assign(
         {
@@ -395,7 +399,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
           .data('disclosureMenu');
         const $actionMenu = disclosureMenu.$container;
         $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
-        const $ul = $('<ul/>', {class: 'padded'}).appendTo($actionMenu);
+        const $ul = $('<ul/>').appendTo($actionMenu);
         const $li = $('<li/>').appendTo($ul);
         const $a = $('<a/>', {
           class: 'error',
@@ -478,7 +482,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
           ],
         },
       })
-        .then(({data}) => {
+        .then(async ({data}) => {
           if (!this.$elements) {
             this.initCards();
           }
@@ -486,8 +490,9 @@ Craft.NestedElementManager = Garnish.Base.extend(
           const $li = $('<li/>').appendTo(this.$elements);
           const $element = $(data.elements[element.id][0]).appendTo($li);
           this.initElement($element);
-          Craft.appendHeadHtml(data.headHtml);
-          Craft.appendBodyHtml(data.bodyHtml);
+          await Craft.appendHeadHtml(data.headHtml);
+          await Craft.appendBodyHtml(data.bodyHtml);
+          Craft.cp.elementThumbLoader.load($element);
           this.updateCreateBtn();
         })
         .catch(({response}) => {
@@ -528,6 +533,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       ownerIdParam: null,
       createAttributes: null,
       fieldHandle: null,
+      baseInputName: null,
       deleteLabel: null,
       deleteConfirmationMessage: null,
     },

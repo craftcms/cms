@@ -1,19 +1,26 @@
 {% set id = id ?? "menu-#{random()}" %}
 {% set withButton = withButton ?? false %}
+{% set buttonSpinner = buttonSpinner ?? false %}
 
 {% set hasSelected = items|map(i => i.items ?? [i])|flatten(1)|contains('selected') %}
 
 {% macro itemType(item) %}
   {%- if item.type ?? false %}
     {{- item.type }}
-  {%- elseif item.action ?? false %}
-    {{- 'button' }}
+  {%- elseif item.url ?? false %}
+    {{- 'link' }}
+  {%- elseif item.hr ?? false %}
+    {{- 'hr' }}
   {%- elseif item.heading ?? item.items ?? false %}
     {{- 'group' }}
   {%- else %}
-    {{- 'link' }}
+    {{- 'button' }}
   {%- endif %}
 {%- endmacro %}
+
+{% macro color(color) %}
+  {{- color is instance of ('craft\\enums\\Color') ? color.value : color -}}
+{% endmacro %}
 
 {% macro item(item, menuId) %}
   {% set type = _self.itemType(item) %}
@@ -45,7 +52,13 @@
     }|merge(item.attributes ?? {}, recursive=true) %}
       {%- apply spaceless %}
         {% if item.icon ?? false %}
-          <span class="icon">{{ iconSvg(item.icon) }}</span>
+          {{ tag('span', {
+            class: [
+              'icon',
+              _self.color(item.color ?? null),
+            ]|filter,
+            html: iconSvg(item.icon),
+          }) }}
         {% endif %}
         {% if item.status ?? false -%}
           {{ statusIndicator(item.status) }}
@@ -74,7 +87,7 @@
     <span >{{ label }}</span>
   {% endif %}
 
-  {{ tag('button', {
+  {% tag 'button' with {
     class: ['btn', 'menubtn'],
     type: 'button',
     aria: {
@@ -84,9 +97,23 @@
     data: {
       'disclosure-trigger': true,
     },
-    text: buttonLabel ?? null,
-    html: buttonHtml ?? null,
-  }|merge(buttonAttributes ?? {}, recursive=true)) }}
+  }|merge(buttonAttributes ?? {}, recursive=true) %}
+    {%- apply spaceless %}
+      {% if buttonSpinner %}
+        <div role="status" class="visually-hidden"></div>
+      {% endif %}
+      {{ (buttonLabel or buttonHtml) ? tag('div', {
+        class: 'label',
+        text: buttonLabel ?? null,
+        html: buttonHtml ?? null
+      }) }}
+      {% if buttonSpinner %}
+        <div class="spinner spinner-absolute">
+          <span class="visually-hidden">{{ 'Loading'|t('app') }}</span>
+        </div>
+      {% endif %}
+    {% endapply -%}
+  {% endtag %}
 {% endif %}
 
 {% tag 'div' with {

@@ -723,10 +723,10 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results to users who are teh author of the given entry.
+     * Narrows the query results to users who are the author of the given entry.
      *
      * @param Entry|null $value
-     * @retun static self reference
+     * @return static self reference
      * @uses $authorOf
      * @since 5.0.0
      */

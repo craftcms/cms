@@ -362,6 +362,7 @@ class ElementSources extends Component
     public function getTableAttributesForFieldLayouts(array $fieldLayouts): array
     {
         $user = Craft::$app->getUser()->getIdentity();
+        $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */
         $groupedFieldElements = [];
 
@@ -382,13 +383,20 @@ class ElementSources extends Component
                         $field instanceof PreviewableFieldInterface &&
                         (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
-                        $groupedFieldElements[$field->id][] = $layoutElement;
+                        if ($layoutElement->handle === null) {
+                            // The handle wasn't overridden, so combine it with any other instances (from other layouts)
+                            // where the handle also wasn't overridden
+                            $groupedFieldElements[$field->id][] = $layoutElement;
+                        } else {
+                            // The handle was overridden, so it gets its own table attribute
+                            $attributes["fieldInstance:$layoutElement->uid"] = [
+                                'label' => Craft::t('site', $field->name),
+                            ];
+                        }
                     }
                 }
             }
         }
-
-        $attributes = [];
 
         foreach ($groupedFieldElements as $fieldElements) {
             $field = $fieldElements[0]->getField();

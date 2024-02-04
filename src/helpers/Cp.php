@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
+use craft\base\Colorable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
@@ -18,6 +19,7 @@ use craft\base\Statusable;
 use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
+use craft\enums\Color;
 use craft\enums\LicenseKeyStatus;
 use craft\enums\MenuItemType;
 use craft\errors\InvalidHtmlTagException;
@@ -424,16 +426,16 @@ class Cp
      * The following config settings can be passed to `$config`:
      *
      * - `attributes` – Any custom HTML attributes that should be set on the chip
-     * - `autoReload` - Whether the element should auto-reload itself when it’s saved
+     * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
      * - `id` – The chip’s `id` attribute
-     * - `inputName` - The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
      * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
      * - `selectable` – Whether the chip should include a checkbox input
      * - `showActionMenu` – Whether the chip should include an action menu
-     * - `showLabel` - Whether the element label should be shown
-     * - `showStatus` - Whether the element status should be shown (if the element type has statuses)
-     * - `showThumb` - Whether the element thumb should be shown (if the element has one)
-     * - `size` - The size of the chip (`small` or `large`)
+     * - `showLabel` – Whether the component’s label should be shown
+     * - `showStatus` – Whether the component’s status should be shown (if it has statuses)
+     * - `showThumb` – Whether the component’s thumbnail should be shown (if it has one)
+     * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      *
      * @param Chippable $component The component that the chip represents
@@ -463,11 +465,17 @@ class Cp
         $config['showThumb'] = $config['showThumb'] && ($component instanceof Thumbable || $component instanceof Iconic);
 
         $label = $component->getUiLabel();
+        $color = $component instanceof Colorable ? $component->getColor() : null;
 
         $attributes = ArrayHelper::merge([
             'id' => $config['id'],
             'class' => ['chip', $config['size']],
             'title' => $label,
+            'style' => array_filter([
+                '--custom-bg-color' => $color?->cssVar(50),
+                '--custom-text-color' => $color?->cssVar(900),
+                '--custom-sel-bg-color' => $color?->cssVar(900),
+            ]),
             'data' => array_filter([
                 'type' => get_class($component),
                 'id' => $component->getId(),
@@ -494,7 +502,7 @@ class Cp
                 $icon = $component->getIcon();
                 if ($icon) {
                     $html .= Html::tag('div', static::iconSvg($icon), [
-                        'class' => ['thumb', 'cp-icon'],
+                        'class' => array_filter(['thumb', 'cp-icon', $color?->value]),
                     ]);
                 }
             }
@@ -546,18 +554,18 @@ class Cp
      *
      * The following config settings can be passed to `$config`:
      *
-     *  - `attributes` – Any custom HTML attributes that should be set on the chip
-     * - `autoReload` - Whether the element should auto-reload itself when it’s saved
-     * - `context` - The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `attributes` – Any custom HTML attributes that should be set on the chip
+     * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
+     * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
      * - `id` – The chip’s `id` attribute
-     * - `inputName` - The `name` attribute that should be set on the hidden input, if `context` is set to `field`
-     * - `selectable` – Whether the element should include a checkbox input
+     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `selectable` – Whether the chip should include a checkbox input
      * - `showActionMenu` – Whether the chip should include an action menu
-     * - `showDraftName` - Whether to show the draft name beside the label if the element is a draft of a published element
-     * - `showLabel` - Whether the element label should be shown
-     * - `showStatus` - Whether the element status should be shown (if the element type has statuses)
-     * - `showThumb` - Whether the element thumb should be shown (if the element has one)
-     * - `size` - The size of the chip (`small` or `large`)
+     * - `showDraftName` – Whether to show the draft name beside the label if the element is a draft of a published element
+     * - `showLabel` – Whether the element’s label should be shown
+     * - `showStatus` – Whether the element’s status should be shown (if the element type has statuses)
+     * - `showThumb` – Whether the element’s thumbnail should be shown (if the element has one)
+     * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      *
      * @param ElementInterface $element The element to be rendered
@@ -636,9 +644,14 @@ class Cp
      *
      * The following config settings can be passed to `$config`:
      *
-     * - `context` - The context the chip is going to be shown in (`index`, `field`, etc.)
-     * - `inputName` - The `name` attribute that should be set on the hidden input, if `context` is set to `field`
-     * - `autoReload` - Whether the element should auto-reload itself when it’s saved
+     * - `attributes` – Any custom HTML attributes that should be set on the card
+     * - `autoReload` – Whether the card should auto-reload itself when it’s saved
+     * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `id` – The card’s `id` attribute
+     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `selectable` – Whether the card should include a checkbox input
+     * - `showActionMenu` – Whether the card should include an action menu
+     * - `sortable` – Whether the card should include a drag handle
      *
      * @param ElementInterface $element The element to be rendered
      * @param array $config Card configuration
@@ -648,19 +661,27 @@ class Cp
     public static function elementCardHtml(ElementInterface $element, array $config = []): string
     {
         $config += [
+            'attributes' => [],
             'autoReload' => true,
-            'selectable' => false,
-            'sortable' => false,
             'context' => 'index',
             'id' => sprintf('card-%s', mt_rand()),
             'inputName' => null,
+            'selectable' => false,
             'showActionMenu' => false,
+            'sortable' => false,
         ];
+
+        $color = $element instanceof Colorable ? $element->getColor() : null;
 
         $attributes = ArrayHelper::merge(
             self::baseElementAttributes($element, $config),
             [
                 'class' => ['card'],
+                'style' => array_filter([
+                    '--custom-bg-color' => $color?->cssVar(50),
+                    '--custom-text-color' => $color?->cssVar(900),
+                    '--custom-sel-bg-color' => $color?->cssVar(900),
+                ]),
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'selectable' => $config['selectable'],
@@ -670,6 +691,7 @@ class Cp
                     ] : false,
                 ]),
             ],
+            $config['attributes'],
         );
 
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
@@ -729,10 +751,14 @@ class Cp
      */
     public static function statusIndicatorHtml(string $status, array $attributes = null): ?string
     {
+        $color = $attributes['color'] ?? null;
+        if ($color instanceof Color) {
+            $color = $color->value;
+        }
         return StatusIndicator::make()
             ->status($status)
             ->label($attributes['label'] ?? null)
-            ->color($attributes['color'] ?? null)
+            ->color($color)
             ->render();
     }
 
@@ -854,6 +880,13 @@ class Cp
 
                 if (empty($actionMenuItems)) {
                     return '';
+                }
+
+                foreach ($actionMenuItems as &$item) {
+                    if (str_starts_with($item['id'] ?? '', 'action-edit-')) {
+                        $item['attributes']['data']['edit-action'] = true;
+                        break;
+                    }
                 }
 
                 return static::disclosureMenu($actionMenuItems, [
@@ -1223,6 +1256,8 @@ JS, [
         $fieldId = $config['fieldId'] ?? "$id-field";
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
 
+        $data = $config['data'] ?? [];
+
         if ($label === '__blank__') {
             $label = null;
         }
@@ -1302,7 +1337,7 @@ JS, [
         //             'id' => $fieldId,
         //             'data' => [
         //                 'attribute' => $attribute,
-        //             ],
+        //             ] + $data,
         //         ],
         //         $config['fieldAttributes'] ?? []
         //     )) .
@@ -1488,6 +1523,19 @@ JS, [
         $config['id'] = $config['id'] ?? 'color' . mt_rand();
         $config['fieldset'] = true;
         return static::fieldHtml('template:_includes/forms/color.twig', $config);
+    }
+
+    /**
+     * Renders a color select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @since 5.0.0
+     */
+    public static function colorSelectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'colorselect' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/colorSelect.twig', $config);
     }
 
     /**
@@ -1967,6 +2015,9 @@ JS, [
                 'autocomplete' => $belongsToCurrentUser ? 'address-line1' : 'off',
                 'required' => isset($requiredFields['addressLine1']),
                 'errors' => $address->getErrors('addressLine1'),
+                'data' => [
+                    'error-key' => 'addressLine1',
+                ],
             ]) .
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine2'),
@@ -1977,6 +2028,9 @@ JS, [
                 'autocomplete' => $belongsToCurrentUser ? 'address-line2' : 'off',
                 'required' => isset($requiredFields['addressLine2']),
                 'errors' => $address->getErrors('addressLine2'),
+                'data' => [
+                    'error-key' => 'addressLine2',
+                ],
             ]) .
             self::_subdivisionField(
                 $address,
@@ -2018,6 +2072,9 @@ JS, [
                 'autocomplete' => $belongsToCurrentUser ? 'postal-code' : 'off',
                 'required' => isset($requiredFields['postalCode']),
                 'errors' => $address->getErrors('postalCode'),
+                'data' => [
+                    'error-key' => 'postalCode',
+                ],
             ]) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([
@@ -2031,6 +2088,9 @@ JS, [
                 'value' => $address->sortingCode,
                 'required' => isset($requiredFields['sortingCode']),
                 'errors' => $address->getErrors('sortingCode'),
+                'data' => [
+                    'error-key' => 'sortingCode',
+                ],
             ]);
     }
 
@@ -2078,6 +2138,9 @@ JS, [
                     'id' => $name,
                     'required' => $required,
                     'errors' => $errors,
+                    'data' => [
+                        'error-key' => $name,
+                    ],
                 ]);
             }
 
@@ -2092,6 +2155,9 @@ JS, [
                 'required' => $required,
                 'errors' => $address->getErrors($name),
                 'autocomplete' => $autocomplete,
+                'data' => [
+                    'error-key' => $name,
+                ],
             ]);
         }
 
@@ -2106,6 +2172,9 @@ JS, [
             'value' => $value,
             'required' => $required,
             'errors' => $address->getErrors($name),
+            'data' => [
+                'error-key' => $name,
+            ],
         ]);
     }
 
@@ -2163,6 +2232,7 @@ JS, [
 
         $view = Craft::$app->getView();
         $jsSettings = Json::encode([
+            'elementType' => $fieldLayout->type,
             'customizableTabs' => $config['customizableTabs'],
             'customizableUi' => $config['customizableUi'],
         ]);
@@ -2262,7 +2332,7 @@ JS;
             Html::endTag('div') . // .fld-field-library
             ($config['customizableUi']
                 ? Html::beginTag('div', ['class' => ['fld-ui-library', 'hidden']]) .
-                implode('', array_map(fn(FieldLayoutElement $element) => self::_fldElementSelectorHtml($element, true), $availableUiElements)) .
+                implode('', array_map(fn(FieldLayoutElement $element) => self::layoutElementSelectorHtml($element, true), $availableUiElements)) .
                 Html::endTag('div') // .fld-ui-library
                 : '') .
             Html::endTag('div') . // .fld-sidebar
@@ -2312,18 +2382,10 @@ JS;
                 'role' => 'img',
             ]) : '') .
             Html::endTag('span') .
-            ($customizable
-                ? Html::a('', null, [
-                    'role' => 'button',
-                    'class' => ['settings', 'icon'],
-                    'title' => Craft::t('app', 'Edit'),
-                    'aria' => ['label' => Craft::t('app', 'Edit')],
-                ]) :
-                '') .
             Html::endTag('div') . // .tab
             Html::endTag('div') . // .tabs
             Html::beginTag('div', ['class' => 'fld-tabcontent']) .
-            implode('', array_map(fn(FieldLayoutElement $element) => self::_fldElementSelectorHtml($element, false), $tab->getElements())) .
+            implode('', array_map(fn(FieldLayoutElement $element) => self::layoutElementSelectorHtml($element, false), $tab->getElements())) .
             Html::endTag('div') . // .fld-tabcontent
             Html::endTag('div'); // .fld-tab
     }
@@ -2351,15 +2413,21 @@ JS;
     }
 
     /**
+     * Renders a field layout element’s selector HTML.
+     *
      * @param FieldLayoutElement $element
      * @param bool $forLibrary
-     * @param array $attr
+     * @param array $attributes
      * @return string
+     * @since 5.0.0
      */
-    private static function _fldElementSelectorHtml(FieldLayoutElement $element, bool $forLibrary, array $attr = []): string
-    {
+    public static function layoutElementSelectorHtml(
+        FieldLayoutElement $element,
+        bool $forLibrary = false,
+        array $attributes = [],
+    ): string {
         if ($element instanceof BaseField) {
-            $attr = ArrayHelper::merge($attr, [
+            $attributes = ArrayHelper::merge($attributes, [
                 'data' => [
                     'keywords' => $forLibrary ? implode(' ', array_map('mb_strtolower', $element->keywords())) : false,
                 ],
@@ -2369,20 +2437,11 @@ JS;
         if ($element instanceof CustomField) {
             $originalField = Craft::$app->getFields()->getFieldByUid($element->getFieldUid());
             if ($originalField) {
-                $attr['data']['default-handle'] = $originalField->handle;
+                $attributes['data']['default-handle'] = $originalField->handle;
             }
         }
 
-        $view = Craft::$app->getView();
-        $oldNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName('element-' . ($forLibrary ? 'ELEMENT_UID' : $element->uid));
-        $view->setNamespace($namespace);
-        $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs($element->getSettingsHtml());
-        $settingsJs = $view->clearJsBuffer(false);
-        $view->setNamespace($oldNamespace);
-
-        $attr = ArrayHelper::merge($attr, [
+        $attributes = ArrayHelper::merge($attributes, [
             'class' => array_filter([
                 'fld-element',
                 $forLibrary ? 'unused' : null,
@@ -2390,15 +2449,14 @@ JS;
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,
                 'config' => $forLibrary ? ['type' => get_class($element)] + $element->toArray() : false,
+                'ui-label' => $forLibrary && $element instanceof CustomField ? $element->getField()->getUiLabel() : false,
                 'is-multi-instance' => $element->isMultiInstance(),
                 'has-custom-width' => $element->hasCustomWidth(),
-                'settings-namespace' => $namespace,
-                'settings-html' => $settingsHtml ?: false,
-                'settings-js' => $settingsJs ?: false,
+                'has-settings' => $element->hasSettings(),
             ],
         ]);
 
-        return Html::modifyTagAttributes($element->selectorHtml(), $attr);
+        return Html::modifyTagAttributes($element->selectorHtml(), $attributes);
     }
 
     /**
@@ -2423,7 +2481,7 @@ JS;
                 'data' => ['name' => mb_strtolower($groupName)],
             ]) .
             Html::tag('h6', Html::encode($groupName)) .
-            implode('', array_map(fn(BaseField $field) => self::_fldElementSelectorHtml($field, true, [
+            implode('', array_map(fn(BaseField $field) => self::layoutElementSelectorHtml($field, true, [
                 'class' => array_filter([
                     !self::_showFldFieldSelector($fieldLayout, $field) ? 'hidden' : null,
                 ]),
@@ -2481,14 +2539,14 @@ JS;
      *
      * Horizontal rules can be defined with the following key:
      *
-     * - `hr` - Set to `true`
+     * - `hr` – Set to `true`
      *
      * Groups of items can be defined as well, using the following keys:
      *
      * - `group` – Set to `true`
      * - `heading` – The group heading
      * - `items` – The nested item definitions
-     * - `listAttributes` - any HTML attributes that should be included on the `<ul>`
+     * - `listAttributes` – any HTML attributes that should be included on the `<ul>`
      *
      * @param array $items The menu items.
      * @param array $config
@@ -2506,6 +2564,7 @@ JS;
             'autoLabel' => false,
             'buttonAttributes' => [],
             'hiddenLabel' => null,
+            'omitIfEmpty' => true,
         ];
 
         // Item normalization & cleanup
@@ -2531,7 +2590,7 @@ JS;
         ));
 
         // If we're left without any items, just return an empty string
-        if ($items->isEmpty()) {
+        if ($config['omitIfEmpty'] && $items->isEmpty()) {
             return '';
         }
 
@@ -2558,28 +2617,28 @@ JS;
      *
      * The item config can contain a `type` key set to a [[MenuItemType]] case. By default, it will be set to:
      *
-     * - [[MenuItemType::Button]] if `action` is set
+     * - [[MenuItemType::Link]] if `url` is set
      * - [[MenuItemType::Group]] if `heading` or `items` are set
-     * - [[MenuItemType::Link]] in all other cases
+     * - [[MenuItemType::Button]] in all other cases
      *
      * Link and button item configs can contain the following keys:
      *
-     *  - `id` – The item’s ID
-     *  - `label` – The item label, to be HTML-encoded
-     *  - `icon` – The item icon name
-     *  - `html` - The item label, which will be output verbatim, without being HTML-encoded
-     *  - `description` – The item description
-     *  - `status` – The status indicator that should be shown beside the item label
-     *  - `url` – The URL that the item should link to
-     *  - `action` – The controller action that the item should trigger
-     *  - `params` – Request parameters that should be sent to the `action`
-     *  - `confirm` – A confirmation message that should be presented to the user before triggering the `action`
-     *  - `redirect` – The redirect path that the `action` should use
-     *  - `requireElevatedSession` – Whether an elevated session is required before the `action` is triggered
-     *  - `selected` – Whether the item should be marked as selected
-     *  - `hidden` – Whether the item should be hidden
-     *  - `attributes` – Any HTML attributes that should be set on the item’s `<a>` or `<button>` tag
-     *  - `liAttributes` – Any HTML attributes that should be set on the item’s `<li>` tag
+     * - `id` – The item’s ID
+     * - `label` – The item label, to be HTML-encoded
+     * - `icon` – The item icon name
+     * - `html` – The item label, which will be output verbatim, without being HTML-encoded
+     * - `description` – The item description
+     * - `status` – The status indicator that should be shown beside the item label
+     * - `url` – The URL that the item should link to
+     * - `action` – The controller action that the item should trigger
+     * - `params` – Request parameters that should be sent to the `action`
+     * - `confirm` – A confirmation message that should be presented to the user before triggering the `action`
+     * - `redirect` – The redirect path that the `action` should use
+     * - `requireElevatedSession` – Whether an elevated session is required before the `action` is triggered
+     * - `selected` – Whether the item should be marked as selected
+     * - `hidden` – Whether the item should be hidden
+     * - `attributes` – Any HTML attributes that should be set on the item’s `<a>` or `<button>` tag
+     * - `liAttributes` – Any HTML attributes that should be set on the item’s `<li>` tag
      *
      * @param array $config
      * @param string $menuId ,
@@ -2605,12 +2664,14 @@ JS;
     {
         return array_map(function(array $item) {
             if (!isset($item['type'])) {
-                if (isset($item['action'])) {
-                    $item['type'] = MenuItemType::Button;
+                if (isset($item['url'])) {
+                    $item['type'] = MenuItemType::Link;
+                } elseif ($item['hr'] ?? false) {
+                    $item['type'] = MenuItemType::HR;
                 } elseif (isset($item['heading']) || isset($item['items'])) {
                     $item['type'] = MenuItemType::Group;
                 } else {
-                    $item['type'] = MenuItemType::Link;
+                    $item['type'] = MenuItemType::Button;
                 }
             }
 
@@ -2722,7 +2783,6 @@ JS;
             'alert' => 'triangle-exclamation',
             'asc' => 'arrow-down-short-wide',
             'asset', 'assets' => 'image',
-            'brush' => 'paintbrush',
             'circleuarr' => 'circle-arrow-up',
             'collapse' => 'down-left-and-up-right-to-center',
             'condition' => 'diamond',
@@ -2732,7 +2792,6 @@ JS;
             'disabled' => 'circle-dashed',
             'done' => 'circle-check',
             'downangle' => 'angle-down',
-            'download' => 'cloud-arrow-down',
             'draft' => 'scribble',
             'edit' => 'pencil',
             'enabled' => 'circle',
@@ -2761,7 +2820,6 @@ JS;
             'rotate' => 'rotate-left',
             'routes' => 'signs-post',
             'search' => 'magnifying-glass',
-            'section' => 'newspaper',
             'secure' => 'lock',
             'settings' => 'gear',
             'shareleft' => 'share-flip',
@@ -2775,7 +2833,6 @@ JS;
             'tool' => 'wrench',
             'uarr' => 'arrow-up',
             'upangle' => 'angle-up',
-            'upload' => 'cloud-arrow-up',
             'view' => 'eye',
             'wand' => 'wand-magic-sparkles',
             'world', 'earth' => self::earthIcon(),

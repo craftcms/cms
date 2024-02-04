@@ -14,8 +14,10 @@ use yii\base\InvalidConfigException;
 /**
  * NestedElementTrait
  *
- * @property ElementInterface|null $primaryOwner the owner element
+ * @property ElementInterface|null $primaryOwner the primary owner element
  * @property ElementInterface|null $owner the owner element
+ * @property int|null $primaryOwnerId the primary owner element’s ID
+ * @property int|null $ownerId the owner element’s ID
  * @property ElementContainerFieldInterface|null $field the element’s field
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
@@ -25,12 +27,12 @@ trait NestedElementTrait
     /**
      * @var int|null Primary owner ID
      */
-    public ?int $primaryOwnerId = null;
+    private ?int $primaryOwnerId = null;
 
     /**
      * @var int|null Owner ID
      */
-    public ?int $ownerId = null;
+    private ?int $ownerId = null;
 
     /**
      * @var int|null Field ID
@@ -64,9 +66,39 @@ trait NestedElementTrait
     /**
      * @inheritdoc
      */
+    public function attributes(): array
+    {
+        $names = parent::attributes();
+        $names[] = 'primaryOwnerId';
+        $names[] = 'ownerId';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields(): array
+    {
+        $names = parent::extraFields();
+        $names[] = 'primaryOwner';
+        $names[] = 'owner';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getPrimaryOwnerId(): ?int
     {
         return $this->primaryOwnerId ?? $this->ownerId;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPrimaryOwnerId(?int $id): void
+    {
+        $this->primaryOwnerId = $id;
     }
 
     /**
@@ -104,6 +136,14 @@ trait NestedElementTrait
     public function getOwnerId(): ?int
     {
         return $this->ownerId ?? $this->primaryOwnerId;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setOwnerId(?int $id): void
+    {
+        $this->ownerId = $id;
     }
 
     /**
@@ -149,7 +189,9 @@ trait NestedElementTrait
             return null;
         }
 
-        $field = $this->getOwner()->getFieldLayout()->getFieldById($this->fieldId);
+        $field = $this->getOwner()?->getFieldLayout()->getFieldById($this->fieldId)
+            ?? Craft::$app->getFields()->getFieldById($this->fieldId);
+
         if (!$field instanceof ElementContainerFieldInterface) {
             throw new InvalidConfigException("Invalid field ID: $this->fieldId");
         }

@@ -12,6 +12,8 @@ use craft\base\ElementInterface;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\enums\AttributeStatus;
+use craft\fields\data\MultiOptionsFieldData;
+use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\Cp;
 
@@ -34,6 +36,14 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
     public static function displayName(): string
     {
         return Craft::t('app', 'Dropdown');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'ballot-check';
     }
 
     /**
@@ -80,8 +90,11 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
         $hasBlankOption = false;
         foreach ($options as &$option) {
             if (isset($option['value']) && $option['value'] === '') {
-                $option['value'] = '__BLANK__';
+                $option['value'] = '__blank__';
                 $hasBlankOption = true;
+            }
+            if (isset($option['label']) && $option['label'] === '') {
+                $option['label'] = ' ';
             }
         }
 
@@ -98,24 +111,25 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
 
                 // Add a blank option to the beginning if one doesn't already exist
                 if (!$hasBlankOption) {
-                    array_unshift($options, ['label' => '', 'value' => '__BLANK__']);
+                    array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
                 }
             }
-        }
-
-        $encValue = $this->encodeValue($value);
-        if ($encValue === null || $encValue === '') {
-            $encValue = '__BLANK__';
         }
 
         return Cp::selectizeHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'value' => $encValue,
+            'value' => $this->encodeValue($value),
             'options' => $options,
             'disabled' => $static,
         ]);
+    }
+
+    protected function encodeValue(MultiOptionsFieldData|OptionData|string|null $value): string|array|null
+    {
+        $encValue = parent::encodeValue($value);
+        return $encValue === null || $encValue === '' ? '__blank__' : $encValue;
     }
 
     /**

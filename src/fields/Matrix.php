@@ -39,6 +39,7 @@ use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Gql;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -87,6 +88,14 @@ class Matrix extends Field implements
     public static function displayName(): string
     {
         return Craft::t('app', 'Matrix');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'binary';
     }
 
     /**
@@ -201,6 +210,12 @@ class Matrix extends Field implements
      * @since 5.0.0
      */
     public string $viewMode = self::VIEW_MODE_CARDS;
+
+    /**
+     * @var bool Whether cards should be shown in a multi-column grid
+     * @since 5.0.0
+     */
+    public bool $showCardsInGrid = false;
 
     /**
      * @var bool Include table view in element indexes
@@ -521,7 +536,8 @@ class Matrix extends Field implements
      */
     public function canViewElement(NestedElementInterface $element, User $user): ?bool
     {
-        return Craft::$app->getElements()->canView($element->getOwner(), $user);
+        $owner = $element->getOwner();
+        return $owner && Craft::$app->getElements()->canView($owner, $user);
     }
 
     /**
@@ -529,7 +545,9 @@ class Matrix extends Field implements
      */
     public function canSaveElement(NestedElementInterface $element, User $user): ?bool
     {
-        if (!Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+        $owner = $element->getOwner();
+
+        if (!$owner || !Craft::$app->getElements()->canSave($owner, $user)) {
             return false;
         }
 
@@ -547,7 +565,8 @@ class Matrix extends Field implements
     public function canDuplicateElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-        if (!Craft::$app->getElements()->canSave($owner, $user)) {
+
+        if (!$owner || !Craft::$app->getElements()->canSave($owner, $user)) {
             return false;
         }
 
@@ -561,7 +580,8 @@ class Matrix extends Field implements
     public function canDeleteElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-        if (!Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+
+        if (!$owner || !Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
             return false;
         }
 
@@ -575,7 +595,8 @@ class Matrix extends Field implements
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-        if (!Craft::$app->getElements()->canSave($owner, $user)) {
+
+        if (!$owner || !Craft::$app->getElements()->canSave($owner, $user)) {
             return false;
         }
 
@@ -772,6 +793,14 @@ class Matrix extends Field implements
 
     private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element): string
     {
+        if (!$element?->id) {
+            $message = Craft::t('app', '{nestedType} can only be created after the {ownerType} has been saved.', [
+                'nestedType' => Entry::pluralDisplayName(),
+                'ownerType' => $element ? $element::lowerDisplayName() : Craft::t('app', 'element'),
+            ]);
+            return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
+        }
+
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
         }
@@ -794,7 +823,7 @@ class Matrix extends Field implements
         $createDefaultEntries = (
             $this->minEntries != 0 &&
             count($entryTypeInfo) === 1 &&
-            (!$element || !$element->hasErrors($this->handle))
+            !$element->hasErrors($this->handle)
         );
         $staticEntries = (
             $createDefaultEntries &&
@@ -808,9 +837,10 @@ class Matrix extends Field implements
             'fieldId' => $this->id,
             'maxEntries' => $this->maxEntries,
             'namespace' => $view->getNamespace(),
-            'ownerElementType' => $element ? $element::class : null,
-            'ownerId' => $element?->id,
-            'siteId' => $element?->siteId,
+            'baseInputName' => $view->namespaceInputName($this->handle),
+            'ownerElementType' => $element::class,
+            'ownerId' => $element->id,
+            'siteId' => $element->siteId,
             'staticEntries' => $staticEntries,
         ];
 
@@ -838,23 +868,25 @@ class Matrix extends Field implements
 
         $view->registerJs("(() => {\n$js\n})();");
 
-        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig',
-            [
-                'id' => $id,
-                'field' => $this,
-                'name' => $this->handle,
-                'entryTypes' => $entryTypes,
-                'entries' => $value,
-                'static' => false,
-                'staticEntries' => $staticEntries,
-                'labelId' => $this->getLabelId(),
-            ]);
+        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
+            'id' => $id,
+            'field' => $this,
+            'name' => $this->handle,
+            'entryTypes' => $entryTypes,
+            'entries' => $value,
+            'static' => false,
+            'staticEntries' => $staticEntries,
+            'createButtonLabel' => $this->createButtonLabel() ?? Craft::t('app', 'New block'),
+            'labelId' => $this->getLabelId(),
+        ]);
     }
 
     private function nestedElementManagerHtml(?ElementInterface $owner, bool $static = false): string
     {
         $entryTypes = $this->getEntryTypes();
-        $config = [];
+        $config = [
+            'showInGrid' => $this->showCardsInGrid,
+        ];
 
         if (!$static) {
             $config += [
@@ -862,12 +894,14 @@ class Matrix extends Field implements
                 'canCreate' => true,
                 'createAttributes' => array_map(fn(EntryType $entryType) => [
                     'icon' => $entryType->icon,
+                    'color' => $entryType->color,
                     'label' => Craft::t('site', $entryType->name),
                     'attributes' => [
                         'fieldId' => $this->id,
                         'typeId' => $entryType->id,
                     ],
                 ], $entryTypes),
+                'createButtonLabel' => $this->createButtonLabel(),
                 'minElements' => $this->minEntries,
                 'maxElements' => $this->maxEntries,
             ];
@@ -898,6 +932,19 @@ class Matrix extends Field implements
         }
 
         return $this->entryManager()->getIndexHtml($owner, $config);
+    }
+
+    private function createButtonLabel(): ?string
+    {
+        $entryTypes = $this->getEntryTypes();
+        if (count($entryTypes) === 1) {
+            $entryType = reset($entryTypes);
+            return Craft::t('app', 'New {type}', [
+                'type' => mb_strtolower(Craft::t('site', $entryType->name)),
+            ]);
+        }
+
+        return null;
     }
 
     /**
@@ -946,15 +993,8 @@ class Matrix extends Field implements
                     $entry->setScenario($scenario);
                 }
 
-                // Don't validate the title if the entry type has a dynamic title format
-                if (!$entry->getType()->hasTitleField) {
-                    $attributes = ArrayHelper::withoutValue($entry->activeAttributes(), 'title');
-                } else {
-                    $attributes = null;
-                }
-
-                if (!$entry->validate($attributes)) {
-                    $element->addModelErrors($entry, "$this->handle[$i]");
+                if (!$entry->validate()) {
+                    $element->addModelErrors($entry, "$this->handle[$entry->uid]");
                     $allEntriesValidate = false;
                 }
             }
@@ -1015,9 +1055,21 @@ class Matrix extends Field implements
             return '<p class="light">' . Craft::t('app', 'No entries.') . '</p>';
         }
 
-        $id = StringHelper::randomString();
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(MatrixAsset::class);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
+        $id = StringHelper::randomString();
+        $js = '';
+
+        foreach ($entries as $entry) {
+            $js .= <<<JS
+Craft.MatrixInput.initTabs($('.matrixblock[data-uid="$entry->uid"] > .titlebar .matrixblock-tabs'));
+JS;
+        }
+
+        $view->registerJs("(() => {\n$js\n})();");
+
+        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
             'id' => $id,
             'name' => $id,
             'entryTypes' => $this->getEntryTypes(),
@@ -1300,8 +1352,8 @@ class Matrix extends Field implements
             $oldEntriesById = [];
         }
 
-        // If we're saving a draft, get the canonical entry UUIDs in case the data was posted with them
-        if ($uids && $element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
+        if ($uids) {
+            // Get the canonical entry UUIDs in case the data was posted with them
             $derivatives = Collection::make($oldEntriesById)
                 ->filter(fn(Entry $entry) => $entry->getIsDerivative())
                 ->keyBy(fn(Entry $entry) => $entry->getCanonicalId());
@@ -1377,7 +1429,7 @@ class Matrix extends Field implements
                 $forceSave = !empty($entryData);
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                if ($forceSave && $element->getIsDerivative() && $entry->primaryOwnerId === $element->getCanonicalId()) {
+                if ($forceSave && $element->getIsDerivative() && $entry->getPrimaryOwnerId() === $element->getCanonicalId()) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
                     $entry = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [
                         'canonicalId' => $entry->id,
@@ -1398,7 +1450,8 @@ class Matrix extends Field implements
                 $entry = new Entry();
                 $entry->fieldId = $this->id;
                 $entry->typeId = $entryTypes[$entryData['type']]->id;
-                $entry->primaryOwnerId = $entry->ownerId = $element->id;
+                $entry->setPrimaryOwner($element);
+                $entry->setOwner($element);
                 $entry->siteId = $element->siteId;
 
                 // Use the provided UUID, so the block can persist across future autosaves

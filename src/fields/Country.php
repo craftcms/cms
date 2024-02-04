@@ -34,6 +34,14 @@ class Country extends Field implements InlineEditableFieldInterface
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'flag';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function phpType(): string
     {
         return 'string|null';
@@ -52,7 +60,7 @@ class Country extends Field implements InlineEditableFieldInterface
      */
     public function normalizeValue(mixed $value, ElementInterface $element = null): mixed
     {
-        return !in_array($value, ['', '__BLANK__']) ? $value : null;
+        return !in_array(strtolower($value), ['', '__blank__']) ? $value : null;
     }
 
     /**
@@ -61,7 +69,7 @@ class Country extends Field implements InlineEditableFieldInterface
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $options = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
-        array_unshift($options, ['label' => '', 'value' => '__BLANK__']);
+        array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
 
         return Cp::selectizeHtml([
             'id' => $this->getInputId(),

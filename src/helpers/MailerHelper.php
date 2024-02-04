@@ -134,12 +134,12 @@ class MailerHelper
      */
     public static function settingsReport(Mailer $mailer, ?TransportAdapterInterface $transportAdapter = null): string
     {
-        $transport = $mailer->getTransport();
+        $transportType = $transportAdapter ? get_class($transportAdapter) : App::mailSettings()->transportType;
         $settings = [
             Craft::t('app', 'From') => self::_emailList($mailer->from),
             Craft::t('app', 'Reply To') => self::_emailList($mailer->replyTo),
             Craft::t('app', 'Template') => $mailer->template,
-            Craft::t('app', 'Transport Type') => get_class($transport),
+            Craft::t('app', 'Transport Type') => $transportType,
         ];
 
         $transportSettings = [];

@@ -89,6 +89,7 @@ class GeneralConfig extends BaseConfig
         'alwaysShowFocusRings' => false,
         'useShapes' => false,
         'underlineLinks' => false,
+        'disableAutofocus' => false,
         'notificationDuration' => 5000,
     ];
 
@@ -1911,6 +1912,36 @@ class GeneralConfig extends BaseConfig
     public string $pageTrigger = 'p';
 
     /**
+     * @var string The path within the `templates` folder where element partial templates will live.
+     *
+     * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
+     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     *
+     * For example, you could render all the entries within a Matrix field like so:
+     *
+     * ```twig
+     * {{ entry.myMatrixField.render() }}
+     * ```
+     *
+     * The full path to a partial template will also include the element type handle (e.g. `asset` or `entry`) and the
+     * field layout provider’s handle (e.g. the volume handle or entry type handle). For an entry of type `article`,
+     * that would be: `_partials/entry/article.twig`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->partialTemplatesPath('_cp/partials')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PARTIAL_TEMPLATES_PATH=_cp/partials
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 5.0.0
+     */
+    public string $partialTemplatesPath = '_partials';
+
+    /**
      * @var string|null The query string param that Craft will check when determining the request’s path.
      *
      * This can be set to `null` if your web server is capable of directing traffic to `index.php` without a query string param.
@@ -3266,6 +3297,7 @@ class GeneralConfig extends BaseConfig
      * - `alwaysShowFocusRings` - Whether focus rings should always be shown when an element has focus.
      * - `useShapes` – Whether shapes should be used to represent statuses.
      * - `underlineLinks` – Whether links should be underlined.
+     * - `disableAutofocus` – Whether search inputs should be focused on page load.
      * - `notificationDuration` – How long notifications should be shown before they disappear automatically (in
      *   milliseconds). Set to `0` to show them indefinitely.
      *
@@ -5250,6 +5282,43 @@ class GeneralConfig extends BaseConfig
     public function pageTrigger(string $value): self
     {
         $this->pageTrigger = $value;
+        return $this;
+    }
+
+    /**
+     * The path within the `templates` folder where element partial templates will live.
+     *
+     * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
+     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     *
+     * For example, you could render all the entries within a Matrix field like so:
+     *
+     * ```twig
+     * {{ entry.myMatrixField.render() }}
+     * ```
+     *
+     * The full path to a partial template will also include the element type handle (e.g. `asset` or `entry`) and the
+     * field layout provider’s handle (e.g. the volume handle or entry type handle). For an entry of type `article`,
+     * that would be: `_partials/entry/article.twig`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->partialTemplatesPath('_cp/partials')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PARTIAL_TEMPLATES_PATH=_cp/partials
+     * ```
+     * :::
+     *
+     * @group System
+     * @param string $value
+     * @return self
+     * @see $partialTemplatesPath
+     * @since 5.0.0
+     */
+    public function partialTemplatesPath(string $value): self
+    {
+        $this->partialTemplatesPath = $value;
         return $this;
     }
 
