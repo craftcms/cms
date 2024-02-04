@@ -258,14 +258,14 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
         ],
       },
     })
-      .then(({data}) => {
+      .then(async ({data}) => {
         const elementInfo = Craft.getElementInfo(
           data.elements[result.assetId][0]
         );
         this.selectElements([elementInfo]);
 
-        Craft.appendHeadHtml(data.headHtml);
-        Craft.appendBodyHtml(data.bodyHtml);
+        await Craft.appendHeadHtml(data.headHtml);
+        await Craft.appendBodyHtml(data.bodyHtml);
 
         // Last file
         if (this.uploader.isLastUpload()) {

@@ -1595,7 +1595,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
     },
 
-    _afterUpdateFieldLayout(data, selectedTabId, response) {
+    async _afterUpdateFieldLayout(data, selectedTabId, response) {
       // Keep track of whether anything changed while we were waiting.
       // If not, we can safely update lastSerializedValue after swapping out the fields
       const noChanges = this.serializeForm(true) === data;
@@ -1723,8 +1723,8 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       }
 
-      Craft.appendHeadHtml(response.data.headHtml);
-      Craft.appendBodyHtml(response.data.bodyHtml);
+      await Craft.appendHeadHtml(response.data.headHtml);
+      await Craft.appendBodyHtml(response.data.bodyHtml);
 
       // Did any layout elements get added or removed?
       if (changedElements) {

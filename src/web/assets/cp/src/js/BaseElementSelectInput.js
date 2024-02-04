@@ -482,14 +482,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             ],
           },
         })
-          .then(({data}) => {
+          .then(async ({data}) => {
             this.removeElement($existing);
             const elementInfo = Craft.getElementInfo(
               data.elements[replacementId][0]
             );
             this.selectElements([elementInfo]).then(resolve);
-            Craft.appendHeadHtml(data.headHtml);
-            Craft.appendBodyHtml(data.bodyHtml);
+            await Craft.appendHeadHtml(data.headHtml);
+            await Craft.appendBodyHtml(data.bodyHtml);
           })
           .catch(({response}) => {
             if (response && response.data && response.data.message) {
@@ -704,7 +704,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       return ids;
     },
 
-    onModalSelect: async function (elements) {
+    onModalSelect: async (elements) => {
       // Disable the modal
       this.modal.disable();
       this.modal.disableCancelBtn();
@@ -753,8 +753,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         }
       }
 
-      Craft.appendHeadHtml(data.headHtml);
-      Craft.appendBodyHtml(data.bodyHtml);
+      await Craft.appendHeadHtml(data.headHtml);
+      await Craft.appendBodyHtml(data.bodyHtml);
 
       if (this.settings.maintainHierarchy) {
         await this.selectStructuredElements(elements);

@@ -213,7 +213,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         this.loaded = true;
       };
       Craft.sendActionRequest('POST', 'assets/preview-file', {data})
-        .then((response) => {
+        .then(async (response) => {
           onResponse();
 
           if (response.data.requestId != this.requestId) {
@@ -234,8 +234,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
           this.$container.append(response.data.previewHtml);
           this._addBumperButtons();
           this._addModalName();
-          Craft.appendHeadHtml(response.data.headHtml);
-          Craft.appendBodyHtml(response.data.bodyHtml);
+          await Craft.appendHeadHtml(response.data.headHtml);
+          await Craft.appendBodyHtml(response.data.bodyHtml);
         })
         .catch(({response}) => {
           onResponse();

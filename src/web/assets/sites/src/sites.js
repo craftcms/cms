@@ -101,7 +101,7 @@
       return new Promise((resolve, reject) => {
         Craft.sendActionRequest('POST', 'sites/rename-group-field', {
           data: {name: oldName},
-        }).then((response) => {
+        }).then(async (response) => {
           let $form = $('<form/>', {class: 'modal prompt'}).appendTo(
             Garnish.$bod
           );
@@ -120,7 +120,7 @@
             text: Craft.t('app', 'Save'),
           }).appendTo($buttons);
 
-          Craft.appendBodyHtml(response.data.js);
+          await Craft.appendBodyHtml(response.data.js);
 
           let success = false;
           let modal = new Garnish.Modal($form, {
