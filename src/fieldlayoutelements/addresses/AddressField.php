@@ -144,7 +144,7 @@ class AddressField extends BaseField
                     params: Object.assign({}, hotValues, {
                         namespace: $namespace,
                     }),
-                }).then(response => {
+                }).then(async (response) => {
                     const values = Object.assign(
                         Object.fromEntries(fieldNames.map(name => [name, fields[name].val()])),
                         Object.fromEntries(hotFieldNames.map(name => [name, hotValues[name] || null]))
@@ -157,8 +157,8 @@ class AddressField extends BaseField
                     );
                     \$addressFields.eq(0).replaceWith(response.data.fieldsHtml);
                     \$addressFields.remove();
-                    Craft.appendHeadHtml(response.data.headHtml);
-                    Craft.appendBodyHtml(response.data.bodyHtml);
+                    await Craft.appendHeadHtml(response.data.headHtml);
+                    await Craft.appendBodyHtml(response.data.bodyHtml);
                     initFields(values);
                     if (activeElementId) {
                         $('#' + activeElementId).focus();                        

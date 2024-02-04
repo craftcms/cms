@@ -66,7 +66,7 @@
           cancelToken: this._cancelToken.token,
           data: data,
         })
-          .then((response) => {
+          .then(async (response) => {
             let $settings = $(response.data.settingsHtml || '');
             if (this.settings.wrapWithTypeClassDiv) {
               $settings = $('<div/>', {
@@ -75,8 +75,8 @@
             }
             this.$container.html('').append($settings);
             Craft.initUiElements(this.$container);
-            Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendBodyHtml(response.data.bodyHtml);
+            await Craft.appendHeadHtml(response.data.headHtml);
+            await Craft.appendBodyHtml(response.data.bodyHtml);
           })
           .catch(() => {
             if (!this._ignoreFailedRequest) {

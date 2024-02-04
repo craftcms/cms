@@ -329,7 +329,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       Craft.sendActionRequest('POST', this.settings.loadMoreElementsAction, {
         data: this.getLoadMoreParams(),
       })
-        .then((response) => {
+        .then(async (response) => {
           this.loadingMore = false;
           this.$loadingMoreSpinner.addClass('hidden');
 
@@ -341,8 +341,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           let $newElements = $(response.data.html);
 
           this.appendElements($newElements);
-          Craft.appendHeadHtml(response.data.headHtml);
-          Craft.appendBodyHtml(response.data.bodyHtml);
+          await Craft.appendHeadHtml(response.data.headHtml);
+          await Craft.appendBodyHtml(response.data.bodyHtml);
 
           if (this.elementSelect) {
             this.elementSelect.addItems(

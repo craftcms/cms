@@ -97,7 +97,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
         hideOnEsc: false,
         hideOnShadeClick: false,
         shadeClass: 'modal-shade dark login-modal-shade',
-        onFadeIn: () => {
+        onFadeIn: async () => {
           Craft.initUiElements($container);
           new Craft.LoginForm($container.find('.login-container'), {
             showPasskeyBtn: Craft.userHasPasskeys,
@@ -106,8 +106,8 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
               this.loginModal.hide();
             },
           });
-          Craft.appendHeadHtml(data.headHtml);
-          Craft.appendBodyHtml(data.bodyHtml);
+          await Craft.appendHeadHtml(data.headHtml);
+          await Craft.appendBodyHtml(data.bodyHtml);
         },
         onFadeOut: () => {
           this.loginModal.destroy();
