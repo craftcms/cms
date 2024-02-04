@@ -53,7 +53,7 @@ class NestedElementManager extends Component
     public const EVENT_AFTER_SAVE_ELEMENTS = 'afterSaveElements';
 
     /**
-     * @event
+     * @event DuplicateNestedElementsEvent The event that is triggered after nested elements are duplicated.
      */
     public const EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS = 'afterDuplicateNestedElements';
 
@@ -853,7 +853,6 @@ JS, [
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
-            $map = [];
 
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
@@ -905,22 +904,21 @@ JS, [
                     $newElementId = $elementsService->duplicateElement($element, $newAttributes)->id;
                 }
 
-                $newElementIds[] = $newElementId;
-                $map[] = ['oldId' => $element->id, 'newId' => $newElementId];
+                $newElementIds[$element->id] = $newElementId;
             }
 
             // Fire a 'afterDuplicateNestedElements' event
             if ($this->hasEventHandlers(self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS)) {
                 $this->trigger(self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS, new DuplicateNestedElementsEvent([
-                    'elementIds' => $map,
                     'source' => $source,
                     'target' => $target,
+                    'newElementIds' => $newElementIds,
                 ]));
             }
 
             if ($deleteOtherNestedElements) {
                 // Delete any nested elements that shouldn't be there anymore
-                $this->deleteOtherNestedElements($target, $newElementIds);
+                $this->deleteOtherNestedElements($target, array_values($newElementIds));
             }
 
             $transaction->commit();

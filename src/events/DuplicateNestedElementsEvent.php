@@ -19,17 +19,17 @@ use craft\base\Event;
 class DuplicateNestedElementsEvent extends Event
 {
     /**
-     * @var array Map of old element IDs and the new (duplicate) element IDs
-     */
-    public array $elementIds;
-
-    /**
-     * @var ElementInterface Owner element from which the duplication started
+     * @var ElementInterface The source element that nested elements were duplicated from
      */
     public ElementInterface $source;
 
     /**
-     * @var ElementInterface Owner element to which the duplication was made
+     * @var ElementInterface The target element that nested elements were duplicated to
      */
     public ElementInterface $target;
+
+    /**
+     * @var array The new nested element IDs, indexed by their original elements’ IDs
+     */
+    public array $newElementIds;
 }
