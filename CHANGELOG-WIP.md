@@ -234,6 +234,7 @@
 - Added `craft\events\BulkOpEvent`. ([#14032](https://github.com/craftcms/cms/pull/14032))
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\events\DefineFieldHtmlEvent::$inline`.
+- Added `craft\events\DuplicateNestedElementsEvent`.
 - Added `craft\events\SetEagerLoadedElementsEvent::$plan`.
 - Added `craft\fieldlayoutelements\BaseField::$includeInCards`.
 - Added `craft\fieldlayoutelements\BaseField::$providesThumbs`.

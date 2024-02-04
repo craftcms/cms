@@ -12,9 +12,14 @@
 - Added the `partialTemplatesPath` config setting. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\base\Element::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\elements\ElementCollection::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
+- Added `craft\elements\NestedElementManager::$allowDeletion`.
+- Added `craft\elements\NestedElementManager::$valueGetter`.
+- Added `craft\elements\NestedElementManager::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS`.
+- Added `craft\events\DuplicateNestedElementsEvent`.
 - Added `craft\helpers\ElementHelper::renderElements()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\log\Dispatcher::getDefaultTarget()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
 - Renamed `craft\log\Dispatcher::getTargets()` to `getDefaultTargets()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
+- `craft\elements\NestedElementManager` now passes the owner element to the `valueSetter` closure.
 - `craft\helpers\Cp::elementCardHtml()` now accepts an `attributes` config key.
 - Fixed a bug where newly-created inline Matrix entries could have validation errors.
 - Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag.
