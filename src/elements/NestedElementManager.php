@@ -175,24 +175,26 @@ class NestedElementManager extends Component
     {
         if (isset($this->valueGetter)) {
             return call_user_func($this->valueGetter, $owner, $fetchAll);
-        } elseif (isset($this->attribute)) {
-            return $owner->{$this->attribute};
-        } else {
-            $query = $owner->getFieldValue($this->field->handle);
-
-            if (!$query instanceof ElementQueryInterface) {
-                $query = $this->nestedElementQuery($owner);
-            }
-
-            if ($fetchAll && !$query->getCachedResult()) {
-                $query
-                    ->drafts(null)
-                    ->status(null)
-                    ->limit(null);
-            }
-
-            return $query;
         }
+
+        if (isset($this->attribute)) {
+            return $owner->{$this->attribute};
+        }
+
+        $query = $owner->getFieldValue($this->field->handle);
+
+        if (!$query instanceof ElementQueryInterface) {
+            $query = $this->nestedElementQuery($owner);
+        }
+
+        if ($fetchAll && !$query->getCachedResult()) {
+            $query
+                ->drafts(null)
+                ->status(null)
+                ->limit(null);
+        }
+
+        return $query;
     }
 
     private function setValue(ElementInterface $owner, ElementQueryInterface|ElementCollection $value): void
