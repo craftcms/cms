@@ -640,6 +640,7 @@ class Cp
      *
      * The following config settings can be passed to `$config`:
      *
+     * - `attributes` – Any custom HTML attributes that should be set on the card
      * - `autoReload` – Whether the card should auto-reload itself when it’s saved
      * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
      * - `id` – The card’s `id` attribute
@@ -656,6 +657,7 @@ class Cp
     public static function elementCardHtml(ElementInterface $element, array $config = []): string
     {
         $config += [
+            'attributes' => [],
             'autoReload' => true,
             'context' => 'index',
             'id' => sprintf('card-%s', mt_rand()),
@@ -685,6 +687,7 @@ class Cp
                     ] : false,
                 ]),
             ],
+            $config['attributes'],
         );
 
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
