@@ -10,6 +10,7 @@
 - Removed the `--force` option from the `up` command. `--isolated=0` should be used instead. ([#14270](https://github.com/craftcms/cms/pull/14270))
 - Added support for element partial templates. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added the `partialTemplatesPath` config setting. ([#14284](https://github.com/craftcms/cms/pull/14284))
+- Garbage collection now deletes orphaned nested entries.
 - Added `craft\base\Element::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\elements\ElementCollection::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\elements\NestedElementManager::$allowDeletion`.
