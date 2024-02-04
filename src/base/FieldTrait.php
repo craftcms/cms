@@ -51,6 +51,7 @@ trait FieldTrait
 
     /**
      * @var string The field’s translation method
+     * @phpstan-var Field::TRANSLATION_METHOD_*
      */
     public string $translationMethod = Field::TRANSLATION_METHOD_NONE;
 

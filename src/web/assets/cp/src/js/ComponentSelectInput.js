@@ -513,8 +513,8 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         });
       }
 
-      Craft.appendHeadHtml(data.headHtml);
-      Craft.appendBodyHtml(data.bodyHtml);
+      await Craft.appendHeadHtml(data.headHtml);
+      await Craft.appendBodyHtml(data.bodyHtml);
     },
   },
   {

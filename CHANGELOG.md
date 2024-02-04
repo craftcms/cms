@@ -7,11 +7,28 @@
 - Increased the hit area for range select options.
 - Component chips within component select inputs which have an “Edit” action can now be double-clicked on. 
 - The `queue/run` command now supports a `--job-id` option.
+- Removed the `--force` option from the `up` command. `--isolated=0` should be used instead. ([#14270](https://github.com/craftcms/cms/pull/14270))
+- Added support for element partial templates. ([#14284](https://github.com/craftcms/cms/pull/14284))
+- Added the `partialTemplatesPath` config setting. ([#14284](https://github.com/craftcms/cms/pull/14284))
+- Garbage collection now deletes orphaned nested entries.
+- Added `craft\base\Element::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
+- Added `craft\elements\ElementCollection::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
+- Added `craft\elements\NestedElementManager::$allowDeletion`.
+- Added `craft\elements\NestedElementManager::$valueGetter`.
+- Added `craft\elements\NestedElementManager::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS`.
+- Added `craft\events\DuplicateNestedElementsEvent`.
+- Added `craft\helpers\ElementHelper::renderElements()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
+- Added `craft\log\Dispatcher::getDefaultTarget()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
+- Renamed `craft\log\Dispatcher::getTargets()` to `getDefaultTargets()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
+- `craft\elements\NestedElementManager` now passes the owner element to the `valueSetter` closure.
+- `craft\helpers\Cp::elementCardHtml()` now accepts an `attributes` config key.
 - Fixed a bug where newly-created inline Matrix entries could have validation errors.
 - Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag.
 - Fixed an error that occurred if a component select was used for components with non-numeric IDs.
 - Fixed a bug where entry type, field, filesystem, and volume validation errors weren’t getting reported within slideouts.
 - Fixed a bug where it was possible to create new components from component selects whose limit had already been reached.
+- Fixed a JavaScript error that occurred when creating a Matrix field within another Matrix field’s settings. ([#14268](https://github.com/craftcms/cms/issues/14268))
+- Fixed a JavaScript error that could occur when previewing an image.
 
 ## 5.0.0-alpha.11 - 2024-02-01
 

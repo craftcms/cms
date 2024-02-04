@@ -124,6 +124,7 @@ class Gc extends Component
 
         $this->_deleteUnsupportedSiteEntries();
 
+        $this->_deleteOrphanedNestedEntries();
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
         $this->_deleteOrphanedRelations();
@@ -481,6 +482,40 @@ SQL;
                 $this->db->createCommand($sql, $params)->execute();
             }
         }
+
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Deletes any orphaned nested entries.
+     */
+    private function _deleteOrphanedNestedEntries(): void
+    {
+        $this->_stdout('    > deleting orphaned nested entries ... ');
+
+        $now = Db::prepareDateForDb(new DateTime());
+        $elementsTable = Table::ELEMENTS;
+        $entriesTable = Table::ENTRIES;
+        $elementsOwnersTable = Table::ELEMENTS_OWNERS;
+
+        if ($this->db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[el]].* FROM $elementsTable [[el]]
+INNER JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = [[el.id]]
+WHERE [[en.fieldId]] IS NOT NULL AND [[eo.elementId]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $elementsTable
+USING $elementsTable [[el]]
+INNER JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = [[el.id]]
+WHERE [[en.fieldId]] IS NOT NULL AND [[eo.elementId]] IS NULL
+SQL;
+        }
+
+        $this->db->createCommand($sql)->execute();
 
         $this->_stdout("done\n", Console::FG_GREEN);
     }

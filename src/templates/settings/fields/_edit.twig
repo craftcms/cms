@@ -40,6 +40,9 @@
   name: 'instructions',
   value: field.instructions,
   errors: field.getErrors('instructions'),
+  data: {
+    'error-key': 'instructions',
+  },
 }) }}
 
 {{ forms.checkboxField({
@@ -58,6 +61,9 @@
   options: fieldTypeOptions,
   value: field is missing ? field.expectedType : className(field),
   errors: field.getErrors('type'),
+  data: {
+    'error-key': 'type',
+  },
 }) }}
 
 {{ missingFieldPlaceholder|raw }}

@@ -85,6 +85,8 @@
 - Volumes now have a “Subpath” setting, and can reuse filesystems so long as the subpaths don’t overlap. ([#11044](https://github.com/craftcms/cms/discussions/11044))
 - Volumes now have an “Alternative Text Translation Method” setting. ([#11576](https://github.com/craftcms/cms/issues/11576))
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
+- Added support for element partial templates. ([#14284](https://github.com/craftcms/cms/pull/14284))
+- Added the `partialTemplatesPath` config setting. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added the `tempAssetUploadFs` config setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
 - Removed the concept of field groups.
 - Removed the “Temp Uploads Location” asset setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
@@ -92,6 +94,7 @@
 - `entrify/*` commands now ask if an entry type already exists for the section.
 - The `resave/entries` command now accepts a `--field` option.
 - The `up`, `migrate/up`, and `migrate/all` commands no longer overwrite pending project config YAML changes, if new project config changes were made by migrations.
+- Removed the `--force` option from the `up` command. `--isolated=0` should be used instead. ([#14270](https://github.com/craftcms/cms/pull/14270))
 - Removed the `resave/matrix-blocks` command.
 
 ### Development
@@ -138,6 +141,7 @@
 - Added `craft\base\Element::crumbs()`.
 - Added `craft\base\Element::destructiveActionMenuItems()`.
 - Added `craft\base\Element::inlineAttributeInputHtml()`.
+- Added `craft\base\Element::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\base\Element::safeActionMenuItems()`.
 - Added `craft\base\Element::shouldValidateTitle()`.
 - Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
@@ -190,6 +194,7 @@
 - Added `craft\elements\Address::GQL_TYPE_NAME`.
 - Added `craft\elements\Asset::gqlTypeName()`.
 - Added `craft\elements\Category::gqlTypeName()`.
+- Added `craft\elements\ElementCollection::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\elements\Entry::$collapsed`.
 - Added `craft\elements\Entry::$dirty`.
 - Added `craft\elements\Entry::gqlTypeName()`.
@@ -229,6 +234,7 @@
 - Added `craft\events\BulkOpEvent`. ([#14032](https://github.com/craftcms/cms/pull/14032))
 - Added `craft\events\DefineEntryTypesForFieldEvent`.
 - Added `craft\events\DefineFieldHtmlEvent::$inline`.
+- Added `craft\events\DuplicateNestedElementsEvent`.
 - Added `craft\events\SetEagerLoadedElementsEvent::$plan`.
 - Added `craft\fieldlayoutelements\BaseField::$includeInCards`.
 - Added `craft\fieldlayoutelements\BaseField::$providesThumbs`.
@@ -291,6 +297,7 @@
 - Added `craft\helpers\ElementHelper::actionConfig()`.
 - Added `craft\helpers\ElementHelper::addElementEditorUrlParams()`.
 - Added `craft\helpers\ElementHelper::elementEditorUrl()`.
+- Added `craft\helpers\ElementHelper::renderElements()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\helpers\ElementHelper::rootElementIfCanonical()`.
 - Added `craft\helpers\Gql::getSchemaContainedSections()`.
 - Added `craft\helpers\Json::detectIndent()`.
@@ -298,6 +305,7 @@
 - Added `craft\helpers\ProjectConfig::ensureAllEntryTypesProcessed()`.
 - Added `craft\i18n\Locale::$aliasOf`.
 - Added `craft\i18n\Locale::setDisplayName()`.
+- Added `craft\log\Dispatcher::getDefaultTarget()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
 - Added `craft\migrations\BaseContentRefactorMigration`.
 - Added `craft\models\EntryType::$color`.
 - Added `craft\models\FieldLayout::getCardBodyFields()`.
@@ -379,6 +387,7 @@
 - Renamed `craft\fields\Matrix::$maxBlocks` to `$maxEntries`.
 - Renamed `craft\fields\Matrix::$minBlocks` to `$minEntries`.
 - Renamed `craft\helpers\MailerHelper\EVENT_REGISTER_MAILER_TRANSPORT_TYPES` to `EVENT_REGISTER_MAILER_TRANSPORTS`.
+- Renamed `craft\log\Dispatcher::getTargets()` to `getDefaultTargets()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
 - Renamed `craft\services\Addresses::getLayout()` to `getFieldLayout()`.
 - Renamed `craft\services\Addresses::saveLayout()` to `saveFieldLayout()`.
 - Renamed `craft\services\Utilities::EVENT_REGISTER_UTILITY_TYPES` to `EVENT_REGISTER_UTILITIES`.
@@ -594,6 +603,7 @@
 - Improved the performance of control panel screens that include field layout designers.
 - Improved the performance of autosaves for elements with newly-created Matrix entries.
 - Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
+- Garbage collection now deletes orphaned nested entries.
 - Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
 - Fixed a bug where layout components provided by disabled plugins weren’t getting omitted. ([#14219](https://github.com/craftcms/cms/pull/14219))
