@@ -9,12 +9,10 @@
     id: 'name',
     name: 'name',
     value: entryType.name,
-    errors: entryType.getErrors('name'),
     autofocus: true,
     required: true,
-    data: {
-        'error-key': 'name',
-    },
+    errors: entryType.getErrors('name'),
+    data: {'error-key': 'name'},
 }) }}
 
 {{ forms.textField({
@@ -26,11 +24,9 @@
     autocorrect: false,
     autocapitalize: false,
     value: entryType.handle,
-    errors: entryType.getErrors('handle'),
     required: true,
-    data: {
-        'error-key': 'handle',
-    },
+    errors: entryType.getErrors('handle'),
+    data: {'error-key': 'handle'},
 }) }}
 
 {{ forms.iconPickerField({

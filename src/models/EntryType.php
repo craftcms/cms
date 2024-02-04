@@ -18,7 +18,6 @@ use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
 use craft\enums\Color;
-use craft\enums\MenuItemType;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
@@ -211,24 +210,21 @@ class EntryType extends Model implements
         ) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
-                'type' => MenuItemType::Button,
                 'id' => $editId,
                 'icon' => 'edit',
                 'label' => Craft::t('app', 'Edit'),
             ];
 
             $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn($id) => <<<JS
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
 $('#' + $id).on('click', () => {
   new Craft.CpScreenSlideout('entry-types/edit', {
-    params: {
-      entryTypeId: $this->id,
-    },
+    params: $params,
   });
 });
 JS, [
                 $view->namespaceInputId($editId),
-
+                ['entryTypeId' => $this->id],
             ]);
         }
 

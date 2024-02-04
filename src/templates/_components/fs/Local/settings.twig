@@ -9,10 +9,8 @@
     suggestEnvVars: true,
     suggestAliases: true,
     value: volume.path,
-    errors: volume.getErrors('path'),
     required: true,
     placeholder: "/path/to/folder"|t('app'),
-    data: {
-        'error-key': 'path',
-    },
+    errors: volume.getErrors('path'),
+    data: {'error-key': 'path'},
 }) }}

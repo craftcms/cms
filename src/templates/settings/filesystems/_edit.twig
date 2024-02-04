@@ -8,12 +8,10 @@
     id: 'name',
     name: 'name',
     value: (filesystem is defined ? filesystem.name : null),
-    errors: (filesystem is defined ? filesystem.getErrors('name') : null),
     autofocus: true,
     required: true,
-    data: {
-        'error-key': 'name',
-    },
+    errors: (filesystem is defined ? filesystem.getErrors('name') : null),
+    data: {'error-key': 'name'},
 }) }}
 
 {{ forms.textField({
@@ -25,11 +23,9 @@
     autocorrect: false,
     autocapitalize: false,
     value: (filesystem is defined ? filesystem.handle : null),
-    errors: (filesystem is defined ? filesystem.getErrors('handle') : null),
     required: true,
-    data: {
-        'error-key': 'handle',
-    },
+    errors: (filesystem is defined ? filesystem.getErrors('handle') : null),
+    data: {'error-key': 'handle'},
 }) }}
 
 <hr>
@@ -92,12 +88,10 @@
                 suggestEnvVars: true,
                 suggestAliases: true,
                 value: (filesystem is defined ? filesystem.url : null),
-                errors: (filesystem is defined ? filesystem.getErrors('url') : null),
                 required: true,
                 placeholder: "//example.com/path/to/folder",
-                data: {
-                    'error-key': 'url',
-                },
+                errors: (filesystem is defined ? filesystem.getErrors('url') : null),
+                data: {'error-key': 'url'},
             }) }}
         </div>
     {% endif %}

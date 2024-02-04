@@ -356,11 +356,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         this.updateHeaderVisibility();
         this.$footer.removeClass('hidden');
 
-        Garnish.requestAnimationFrame(() => {
-          Craft.appendHeadHtml(data.headHtml);
-          Craft.appendBodyHtml(data.bodyHtml);
-
+        Garnish.requestAnimationFrame(async () => {
           Craft.initUiElements(this.$content);
+          await Craft.appendHeadHtml(data.headHtml);
+          await Craft.appendBodyHtml(data.bodyHtml);
           Craft.cp.elementThumbLoader.load($(this.$content));
 
           if (data.sidebar) {

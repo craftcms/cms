@@ -3112,7 +3112,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // View
     // -------------------------------------------------------------------------
 
-    _updateView: function (params, response) {
+    async _updateView(params, response) {
       // Cleanup
       // -------------------------------------------------------------
 
@@ -3240,8 +3240,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // -------------------------------------------------------------
 
       this.$elements.html(response.html);
-      Craft.appendHeadHtml(response.headHtml);
-      Craft.appendBodyHtml(response.bodyHtml);
+      await Craft.appendHeadHtml(response.headHtml);
+      await Craft.appendBodyHtml(response.bodyHtml);
 
       // Batch actions setup
       // -------------------------------------------------------------
@@ -4462,14 +4462,14 @@ const FilterHud = Garnish.HUD.extend({
         id: `${this.id}-filters`,
       },
     })
-      .then((response) => {
+      .then(async (response) => {
         this.loading = false;
         this.$hud.removeClass('loading');
         $loadingContent.remove();
 
         this.$main.append(response.data.hudHtml);
-        Craft.appendHeadHtml(response.data.headHtml);
-        Craft.appendBodyHtml(response.data.bodyHtml);
+        await Craft.appendHeadHtml(response.data.headHtml);
+        await Craft.appendBodyHtml(response.data.bodyHtml);
 
         const $btnContainer = $('<div/>', {
           class: 'flex flex-nowrap',
