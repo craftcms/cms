@@ -1,0 +1,42 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set id = id ?? "selectize#{random()}" %}
+{% set value = value ?? null %}
+{% set static = static ?? false %}
+
+<div id="{{ id }}" class="icon-picker">
+  {% tag 'div' with {
+    class: 'icon-picker--icon',
+    title: value ?: false,
+    aria: {
+      label: value ?: false,
+    },
+  } %}
+    {% if value %}
+      {{ svg("@appicons/#{value}.svg") }}
+    {% endif %}
+  {% endtag %}
+
+  {% if not static %}
+    {{ forms.button({
+      class: 'icon-picker--choose-btn',
+      label: value ? 'Change'|t('app') : 'Choose'|t('app'),
+    }) }}
+
+    {{ forms.button({
+      class: {
+        'icon-picker--remove-btn': true,
+        hidden: not value,
+      }|filter|keys,
+      label: 'Remove'|t('app'),
+    }) }}
+
+    {% if name ?? false %}
+      {{ hiddenInput(name, value ?? '') }}
+    {% endif %}
+  {% endif %}
+</div>
+
+{% js %}
+  new Craft.IconPicker('#{{ id|namespaceInputId }}');
+{% endjs %}

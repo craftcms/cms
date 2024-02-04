@@ -43,7 +43,6 @@ html.noscroll body {
 .modal.imageeditor .icon::before {
   width: 24px;
   height: 24px;
-  margin-top: -4px;
   margin-left: -3px;
   display: inline-block;
   content: '';
@@ -246,7 +245,7 @@ html.noscroll body {
   }
 
   .custom {
-    @include padding-left($radioSize + 5);
+    @include padding-left(calc(1rem + 5px));
   }
 
   .orientation {

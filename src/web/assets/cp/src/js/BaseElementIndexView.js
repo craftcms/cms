@@ -81,13 +81,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       // Enable inline element editing if this is an index page
       if (this.elementIndex.isAdministrative) {
         this._handleElementEditing = (ev) => {
-          var $target = $(ev.target);
-
-          if ($target.prop('nodeName') === 'A') {
+          if (['A', 'BUTTON'].includes(ev.target.nodeName)) {
             // Let the link do its thing
             return;
           }
 
+          const $target = $(ev.target);
           var $element;
 
           if ($target.hasClass('element')) {
@@ -140,6 +139,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       for (let i = 0; i < $elements.length; i++) {
         const $element = $elements.eq(i);
         if ($element.hasClass('disabled')) {
+          // remove checkbox from tab order and mark as checked
+          $element.find('.checkbox').attr({
+            tabindex: '-1',
+            'aria-checked': 'true',
+          });
           continue;
         }
         if (this.canSelectElement($element)) {
@@ -325,7 +329,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       Craft.sendActionRequest('POST', this.settings.loadMoreElementsAction, {
         data: this.getLoadMoreParams(),
       })
-        .then((response) => {
+        .then(async (response) => {
           this.loadingMore = false;
           this.$loadingMoreSpinner.addClass('hidden');
 
@@ -337,8 +341,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           let $newElements = $(response.data.html);
 
           this.appendElements($newElements);
-          Craft.appendHeadHtml(response.data.headHtml);
-          Craft.appendBodyHtml(response.data.bodyHtml);
+          await Craft.appendHeadHtml(response.data.headHtml);
+          await Craft.appendBodyHtml(response.data.bodyHtml);
 
           if (this.elementSelect) {
             this.elementSelect.addItems(
@@ -383,17 +387,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     onSelectionChange: function () {
       this.settings.onSelectionChange();
       this.trigger('selectionChange');
-
-      // Update checkboxes
-      if (this.settings.checkboxMode) {
-        const $items = this.elementSelect.$items.each((index, item) => {
-          if (this.elementSelect.isSelected(item)) {
-            this.getElementCheckbox(item).attr('aria-checked', 'true');
-          } else {
-            this.getElementCheckbox(item).attr('aria-checked', 'false');
-          }
-        });
-      }
     },
 
     disable: function () {

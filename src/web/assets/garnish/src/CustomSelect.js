@@ -50,7 +50,7 @@ export default Base.extend(
       });
 
       this.$container.find('ul').attr('role', 'group');
-      this.addOptions(this.$container.find('a'));
+      this.addOptions(this.$container.find('a,.menu-item,.menu-option'));
 
       // Deprecated
       if (this.settings.attachToElement) {

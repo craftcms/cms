@@ -29,6 +29,7 @@ use Exception;
 use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\ExpressionInterface;
 use yii\db\Schema;
@@ -137,6 +138,23 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getFields()->getFieldById($id);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'i-cursor';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function isMultiInstance(): bool
     {
         return static::dbType() !== null;
@@ -207,13 +225,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Returns a coalescing value SQL expression for the given field instances.
      *
      * @param static[] $instances
+     * @param string|null $key The data key to fetch, if this field stores multiple values
      * @return string|null
      * @since 5.0.0
      */
-    protected static function valueSql(array $instances): ?string
+    protected static function valueSql(array $instances, string $key = null): ?string
     {
         $valuesSql = array_filter(
-            array_map(fn(self $field) => $field->getValueSql(), $instances),
+            array_map(fn(self $field) => $field->getValueSql($key), $instances),
             fn(?string $valueSql) => $valueSql !== null,
         );
 
@@ -378,6 +397,11 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'propagateAll',
                 'propagating',
                 'ref',
+                'relatedToAssets',
+                'relatedToCategories',
+                'relatedToEntries',
+                'relatedToTags',
+                'relatedToUsers',
                 'resaving',
                 'revisionId',
                 'rgt',
@@ -420,6 +444,22 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
     }
 
     /**
@@ -736,7 +776,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getValueSql(): ?string
+    public function getValueSql(?string $key = null): ?string
     {
         if (!isset($this->layoutElement)) {
             return null;
@@ -748,12 +788,17 @@ abstract class Field extends SavableComponent implements FieldInterface
             return null;
         }
 
+        if ($key !== null && (!is_array($dbType) || !isset($dbType[$key]))) {
+            throw new InvalidArgumentException(sprintf('%s doesn’t store values under the key “%s”.', __CLASS__, $key));
+        }
+
         $jsonPath = [$this->layoutElement->uid];
 
         if (is_array($dbType)) {
-            // Focus on the primary value by default
-            $jsonPath[] = array_key_first($dbType);
-            $dbType = reset($dbType);
+            // Get the primary value by default
+            $key ??= array_key_first($dbType);
+            $jsonPath[] = $key;
+            $dbType = $dbType[$key];
         }
 
         $db = Craft::$app->getDb();
@@ -936,6 +981,22 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'element' => $element,
             ]));
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDeleteForSite(ElementInterface $element): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementDeleteForSite(ElementInterface $element): void
+    {
+        // carry on
     }
 
     /**

@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\errors\MutexException;
 use craft\errors\SiteNotFoundException;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
@@ -16,7 +17,6 @@ use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Throwable;
 use UnexpectedValueException;
-use yii\base\Application;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -726,10 +726,10 @@ class FileHelper extends \yii\helpers\FileHelper
             $mutex = Craft::$app->getMutex();
             $name = uniqid('test_lock', true);
             if (!$mutex->acquire($name)) {
-                throw new Exception('Unable to acquire test lock.');
+                throw new MutexException($name, 'Unable to acquire test lock.');
             }
             if (!$mutex->release($name)) {
-                throw new Exception('Unable to release test lock.');
+                throw new MutexException($name, 'Unable to release test lock.');
             }
             self::$_useFileLocks = true;
         } catch (Throwable $e) {
@@ -900,11 +900,11 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function deleteFileAfterRequest(string $filename): void
     {
-        self::$_filesToBeDeleted[] = $filename;
-
-        if (count(self::$_filesToBeDeleted) === 1) {
-            Craft::$app->on(Application::EVENT_AFTER_REQUEST, [static::class, 'deleteQueuedFiles']);
+        if (empty(self::$_filesToBeDeleted)) {
+            register_shutdown_function([static::class, 'deleteQueuedFiles']);
         }
+
+        self::$_filesToBeDeleted[] = $filename;
     }
 
     /**
@@ -919,6 +919,8 @@ class FileHelper extends \yii\helpers\FileHelper
                 self::unlink($source);
             }
         }
+
+        self::$_filesToBeDeleted = [];
     }
 
     /**

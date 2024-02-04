@@ -14,7 +14,7 @@ use craft\base\ElementInterface;
 use craft\db\QueryBatcher;
 use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
-use craft\queue\BaseBatchedJob;
+use craft\queue\BaseBatchedElementJob;
 
 /**
  * PropagateElements job
@@ -22,7 +22,7 @@ use craft\queue\BaseBatchedJob;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.13
  */
-class PropagateElements extends BaseBatchedJob
+class PropagateElements extends BaseBatchedElementJob
 {
     /**
      * @var string The element type that should be propagated

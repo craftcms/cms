@@ -28,7 +28,12 @@ class Entry extends ElementMutationArguments
             'authorId' => [
                 'name' => 'authorId',
                 'type' => Type::id(),
-                'description' => 'The ID of the user that created this entry.',
+                'description' => 'The entry author’s ID.',
+            ],
+            'authorIds' => [
+                'name' => 'authorIds',
+                'type' => Type::listOf(Type::id()),
+                'description' => 'The entry authors’ IDs.',
             ],
             'postDate' => [
                 'name' => 'postDate',

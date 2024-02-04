@@ -29,10 +29,8 @@ use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
-use craft\web\CpScreenResponseBehavior;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\web\Response;
 
 /**
  * Category represents a category element.
@@ -448,6 +446,36 @@ class Category extends Element
     /**
      * @inheritdoc
      */
+    protected function crumbs(): array
+    {
+        $group = $this->getGroup();
+
+        $crumbs = [
+            [
+                'label' => Craft::t('app', 'Categories'),
+                'url' => UrlHelper::url('categories'),
+            ],
+            [
+                'label' => Craft::t('site', $group->name),
+                'url' => UrlHelper::url('categories/' . $group->handle),
+            ],
+        ];
+
+        $elementsService = Craft::$app->getElements();
+        $user = Craft::$app->getUser()->getIdentity();
+
+        foreach ($this->getAncestors()->all() as $ancestor) {
+            if ($elementsService->canView($ancestor, $user)) {
+                $crumbs[] = ['html' => Cp::elementChipHtml($ancestor)];
+            }
+        }
+
+        return $crumbs;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function createAnother(): ?self
     {
         $group = $this->getGroup();
@@ -581,40 +609,6 @@ class Category extends Element
     public function getPostEditUrl(): ?string
     {
         return UrlHelper::cpUrl('categories');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function prepareEditScreen(Response $response, string $containerId): void
-    {
-        $group = $this->getGroup();
-
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Categories'),
-                'url' => UrlHelper::url('categories'),
-            ],
-            [
-                'label' => Craft::t('site', $group->name),
-                'url' => UrlHelper::url('categories/' . $group->handle),
-            ],
-        ];
-
-        $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
-
-        foreach ($this->getCanonical()->getAncestors()->all() as $ancestor) {
-            if ($elementsService->canView($ancestor, $user)) {
-                $crumbs[] = [
-                    'label' => $ancestor->title,
-                    'url' => $ancestor->getCpEditUrl(),
-                ];
-            }
-        }
-
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response->crumbs($crumbs);
     }
 
     /**

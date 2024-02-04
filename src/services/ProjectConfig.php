@@ -743,8 +743,10 @@ class ProjectConfig extends Component
             return;
         }
 
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'updateParsedConfigTimes']);
         $this->_waitingToUpdateParsedConfigTimes = true;
+        Craft::$app->onAfterRequest(function() {
+            $this->updateParsedConfigTimes();
+        });
     }
 
     /**
@@ -1678,8 +1680,10 @@ class ProjectConfig extends Component
 
     private function setNameMappingInternal(string $uid, ?string $name): void
     {
-        // call _setInternal() so we avoid recursive calls to _saveConfigAfterRequest() via set()
-        $this->_setInternal(sprintf('%s.%s', self::PATH_META_NAMES, $uid), $name, updateTimestamp: false);
+        if (!$this->readOnly) {
+            // call _setInternal() so we avoid recursive calls to _saveConfigAfterRequest() via set()
+            $this->_setInternal(sprintf('%s.%s', self::PATH_META_NAMES, $uid), $name, updateTimestamp: false);
+        }
     }
 
     /**

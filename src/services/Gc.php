@@ -103,6 +103,7 @@ class Gc extends Component
         $this->_deleteStaleSessions();
         $this->_deleteStaleAnnouncements();
         $this->_deleteStaleElementActivity();
+        $this->_deleteStaleBulkElementOps();
 
         // elements should always go first
         $this->hardDeleteElements();
@@ -416,6 +417,16 @@ SQL;
     {
         $this->_stdout('    > deleting stale element activity records ... ');
         Db::delete(Table::ELEMENTACTIVITY, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('1 minute ago'))]);
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Deletes any stale bulk element operation records.
+     */
+    private function _deleteStaleBulkElementOps(): void
+    {
+        $this->_stdout('    > deleting stale bulk element operation records ... ');
+        Db::delete(Table::ELEMENTS_BULKOPS, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('2 weeks ago'))]);
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 

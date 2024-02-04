@@ -31,6 +31,13 @@ interface NestedElementInterface extends ElementInterface
     public function getPrimaryOwnerId(): ?int;
 
     /**
+     * Sets the primary owner element’s ID, if the element has one.
+     *
+     * @param int|null $id
+     */
+    public function setPrimaryOwnerId(?int $id): void;
+
+    /**
      * Returns the primary owner element, if the element has one.
      *
      * @return ElementInterface|null
@@ -52,6 +59,13 @@ interface NestedElementInterface extends ElementInterface
      * @throws InvalidConfigException if the element is misconfigured
      */
     public function getOwnerId(): ?int;
+
+    /**
+     * Sets the owner element’s ID, if the element has one.
+     *
+     * @param int|null $id
+     */
+    public function setOwnerId(?int $id): void;
 
     /**
      * Returns the owner element, if the element has one.

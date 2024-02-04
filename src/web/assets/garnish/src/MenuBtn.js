@@ -144,7 +144,13 @@ export default Base.extend(
         this.searchStr += ev.key.toLowerCase();
         for (let i = 0; i < this.menu.$options.length; i++) {
           const $o = this.menu.$options.eq(i);
-          if ($o.text().toLowerCase().trimStart().startsWith(this.searchStr)) {
+          if (typeof $o.data('searchText') === 'undefined') {
+            // clone without nested SVGs
+            const $clone = $o.clone();
+            $clone.find('svg').remove();
+            $o.data('searchText', $clone.text().toLowerCase().trimStart());
+          }
+          if ($o.data('searchText').startsWith(this.searchStr)) {
             $option = $o;
             break;
           }
@@ -295,7 +301,11 @@ export default Base.extend(
       const $focusedOption = this.menu.$options.filter('.hover');
       if ($focusedOption.length) {
         const index = this.menu.$options.index($focusedOption[0]);
-        const $option = this.menu.$options.eq(Math.max(index - dist, 0));
+        let $option = this.menu.$options.eq(Math.max(index - dist, 0));
+        while ($option.hasClass('disabled') && index - dist >= 0) {
+          dist++;
+          $option = this.menu.$options.eq(Math.max(index - dist, 0));
+        }
         this.focusOption($option);
       } else {
         this.focusFirstOption();
@@ -309,9 +319,18 @@ export default Base.extend(
       const $focusedOption = this.menu.$options.filter('.hover');
       if ($focusedOption.length) {
         const index = this.menu.$options.index($focusedOption[0]);
-        const $option = this.menu.$options.eq(
+        let $option = this.menu.$options.eq(
           Math.min(index + dist, this.menu.$options.length - 1)
         );
+        while (
+          $option.hasClass('disabled') &&
+          index + dist <= this.menu.$options.length - 1
+        ) {
+          dist++;
+          $option = this.menu.$options.eq(
+            Math.min(index + dist, this.menu.$options.length - 1)
+          );
+        }
         this.focusOption($option);
       } else {
         this.focusFirstOption();

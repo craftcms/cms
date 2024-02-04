@@ -598,7 +598,7 @@ EOD;
         $this->stdout(" → $message\n\n");
 
         Craft::$app->getComposer()->install([
-            'craftcms/cloud' => '^1.0.0',
+            'craftcms/cloud' => '*',
         ], function($type, $buffer) {
             if ($type === Process::ERR) {
                 $this->stderr($buffer);

@@ -37,9 +37,9 @@ class PhpInfo extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath(): ?string
+    public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/info-circle.svg');
+        return 'circle-info';
     }
 
     /**

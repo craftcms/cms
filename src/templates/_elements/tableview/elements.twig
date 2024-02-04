@@ -23,9 +23,10 @@
                     class: 'checkbox',
                     title: 'Select'|t('app'),
                     role: 'checkbox',
+                    tabindex: '0',
                     aria: {
-                        label: 'Select'|t('app'),
                         checked: 'false',
+                        label: elementTitle,
                     },
                 }) }}
             </td>
@@ -55,7 +56,6 @@
                         {% endif %}
                         {% set chip = elementChip(element, {
                           context: context ?? 'index',
-                          autoReload: false,
                         }) %}
                         {% if not (showHeaderColumn ?? false) %}
                             {% set chip = chip|attr({class: 'hidden'}) %}
@@ -79,7 +79,7 @@
             {% else %}
                 <td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">
                     {% if showInputs %}
-                        {% set namespace = "#{nestedInputNamespace}[#{element.id}]" %}
+                        {% set namespace = "#{nestedInputNamespace}[element-#{element.id}]" %}
                         {% if attribute[0] starts with 'field:' %}
                             {% set namespace = "#{namespace}[fields]" %}
                         {% endif %}

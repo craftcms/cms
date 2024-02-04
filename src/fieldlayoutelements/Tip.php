@@ -58,7 +58,15 @@ class Tip extends BaseUiElement
      */
     protected function selectorIcon(): ?string
     {
-        return '@appicons/' . ($this->_isTip() ? 'tip' : 'alert') . '.svg';
+        return $this->_isTip() ? 'lightbulb' : 'triangle-exclamation';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasSettings()
+    {
+        return true;
     }
 
     /**
@@ -101,7 +109,7 @@ class Tip extends BaseUiElement
             $classes[] = 'dismissible';
         }
 
-        $tip = Markdown::process(Html::encode(Craft::t('site', $this->tip)));
+        $tip = Markdown::process(Html::encode(Craft::t('site', $this->tip)), 'pre-encoded');
         $closeBtn = $this->dismissible
             ? Html::button('', [
                 'class' => 'tip-dismiss-btn',

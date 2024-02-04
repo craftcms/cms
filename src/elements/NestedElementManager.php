@@ -10,11 +10,13 @@ namespace craft\elements;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\db\Table;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
@@ -35,13 +37,16 @@ use yii\base\InvalidConfigException;
  * This can be used by elements or fields to manage nested elements, such as users → addresses,
  * or Matrix fields → nested entries.
  *
- * If this is for a custom field, [[fieldHandle]] must be set. Otherwise, [[attribute]] must be set.
+ * If this is for a custom field, [[field]] must be set. Otherwise, [[attribute]] must be set.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
 class NestedElementManager extends Component
 {
+    private const VIEW_MODE_CARDS = 'cards';
+    private const VIEW_MODE_INDEX = 'index';
+
     /**
      * @event BulkElementsEvent The event that is triggered after nested elements are resaved.
      */
@@ -74,9 +79,9 @@ class NestedElementManager extends Component
     public ?string $attribute = null;
 
     /**
-     * @var string|null The field handle used to access nested elements.
+     * @var FieldInterface|null The field associated with this nested element manager.
      */
-    public ?string $fieldHandle = null;
+    public ?FieldInterface $field = null;
 
     /**
      * @var string The name of the element query param that nested elements use to associate with the owner’s ID
@@ -135,11 +140,11 @@ class NestedElementManager extends Component
     {
         parent::init();
 
-        if (!isset($this->attribute) && !isset($this->fieldHandle)) {
-            throw new InvalidConfigException('NestedElementManager requires that either `attribute` or `fieldHandle` is set.');
+        if (!isset($this->attribute) && !isset($this->field)) {
+            throw new InvalidConfigException('NestedElementManager requires that either `attribute` or `field` is set.');
         }
-        if (isset($this->attribute) && isset($this->fieldHandle)) {
-            throw new InvalidConfigException('NestedElementManager requires that either `attribute` or `fieldHandle` is set, but not both.');
+        if (isset($this->attribute) && isset($this->field)) {
+            throw new InvalidConfigException('NestedElementManager requires that either `attribute` or `field` is set, but not both.');
         }
     }
 
@@ -173,7 +178,7 @@ class NestedElementManager extends Component
         } elseif (isset($this->attribute)) {
             return $owner->{$this->attribute};
         } else {
-            $query = $owner->getFieldValue($this->fieldHandle);
+            $query = $owner->getFieldValue($this->field->handle);
 
             if (!$query instanceof ElementQueryInterface) {
                 $query = $this->nestedElementQuery($owner);
@@ -201,7 +206,7 @@ class NestedElementManager extends Component
         } elseif (isset($this->attribute)) {
             $owner->{$this->attribute} = $value;
         } else {
-            $owner->setFieldValue($this->fieldHandle, $value);
+            $owner->setFieldValue($this->field->handle, $value);
         }
     }
 
@@ -276,7 +281,10 @@ class NestedElementManager extends Component
     {
         /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
-        $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+        $ownerSiteIds = array_map(
+            fn(array $siteInfo) => $siteInfo['siteId'],
+            ElementHelper::supportedSitesForElement($owner),
+        );
         $siteIds = [];
 
         $view = Craft::$app->getView();
@@ -319,7 +327,80 @@ class NestedElementManager extends Component
     }
 
     /**
-     * Returns element index HTML for administering the nested elements.
+     * Returns the HTML for managing nested elements via cards.
+     *
+     * @param ElementInterface|null $owner
+     * @param array $config
+     * @return string
+     */
+    public function getCardsHtml(?ElementInterface $owner, array $config = []): string
+    {
+        $config += [
+            'showInGrid' => false,
+        ];
+
+        return $this->createView(
+            $owner,
+            $config,
+            self::VIEW_MODE_CARDS,
+            function(string $id, array $config, $attribute, &$settings) use ($owner) {
+                /** @var NestedElementInterface|string $elementType */
+                $elementType = $this->elementType;
+
+                $settings += [
+                    'deleteLabel' => Craft::t('app', 'Delete {type}', [
+                        'type' => $elementType::lowerDisplayName(),
+                    ]),
+                    'deleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
+                        'type' => $elementType::lowerDisplayName(),
+                    ]),
+                ];
+
+                $html = Html::beginTag('div', options: [
+                    'id' => $id,
+                    'class' => 'nested-element-cards',
+                ]);
+
+                $elements = $this->getValue($owner, true)->all();
+
+                if (!empty($elements)) {
+                    $html .= Html::ul(array_map(
+                        fn(ElementInterface $element) => Cp::elementCardHtml($element, [
+                            'context' => 'field',
+                            'showActionMenu' => true,
+                            'sortable' => $config['sortable'],
+                        ]),
+                        $elements,
+                    ), [
+                        'encode' => false,
+                        'class' => [
+                            'elements',
+                            $config['showInGrid'] ? 'card-grid' : 'cards',
+                        ],
+                    ]);
+                }
+
+                $html .=
+                    Html::tag('div', Craft::t('app', 'No {type} yet.', [
+                        'type' => $elementType::pluralLowerDisplayName(),
+                    ]), [
+                        'class' => array_keys(array_filter([
+                            'pane' => true,
+                            'no-border' => true,
+                            'zilch' => true,
+                            'small' => true,
+                            'hidden' => !empty($elements),
+                        ])),
+                    ]) .
+                    Html::endTag('div');
+
+                return $html;
+            }
+        );
+    }
+
+    /**
+     * Returns the HTML for managing nested elements via an element index.
      *
      * @param ElementInterface|null $owner
      * @param array $config
@@ -327,50 +408,39 @@ class NestedElementManager extends Component
      */
     public function getIndexHtml(?ElementInterface $owner, array $config = []): string
     {
-        /** @var NestedElementInterface|string $elementType */
-        $elementType = $this->elementType;
-
-        if (!$owner?->id) {
-            $message = Craft::t('app', '{nestedType} can only be created after the {ownerType} has been saved.', [
-                'nestedType' => $elementType::pluralDisplayName(),
-                'ownerType' => $owner ? $owner::lowerDisplayName() : Craft::t('app', 'element'),
-            ]);
-            return Html::tag('div', $message, ['class' => 'pane hairline zilch small']);
-        }
-
         $config += [
             'allowedViewModes' => null,
             'showHeaderColumn' => true,
             'fieldLayouts' => [],
             'defaultTableColumns' => null,
             'pageSize' => 50,
-            'inlineEditable' => false,
-            'sortable' => false,
-            'canCreate' => false,
-            'createButtonLabel' => Craft::t('app', 'New {type}', [
-                'type' => $elementType::lowerDisplayName(),
-            ]),
-            'createAttributes' => null,
-            'minElements' => null,
-            'maxElements' => null,
+            'storageKey' => null,
         ];
 
-        $authorizedOwnerId = $owner->id;
-        if ($owner->isProvisionalDraft) {
-            /** @var ElementInterface|DraftBehavior $owner */
-            if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
-                $authorizedOwnerId = $owner->getCanonicalId();
+        if ($config['storageKey'] === null) {
+            if (isset($this->field)) {
+                if ($this->field::isMultiInstance()) {
+                    if (isset($this->field->layoutElement)) {
+                        $config['storageKey'] = sprintf('field:%s', $this->field->layoutElement->uid);
+                    }
+                } else {
+                    $config['storageKey'] = sprintf('field:%s', $this->field->uid);
+                }
+            } elseif ($owner !== null) {
+                $config['storageKey'] = sprintf('%s:%s', $owner::class, $this->attribute);
             }
         }
-        $attribute = $this->attribute ?? "field:$this->fieldHandle";
-        Craft::$app->getSession()->authorize(sprintf('editNestedElements::%s::%s', $authorizedOwnerId, $attribute));
 
-        $view = Craft::$app->getView();
-        return $view->namespaceInputs(function() use ($elementType, $attribute, $view, $owner, $config) {
-            $id = sprintf('element-index-%s', mt_rand());
+        return $this->createView(
+            $owner,
+            $config,
+            self::VIEW_MODE_INDEX,
+            function(string $id, array $config, string $attribute, array &$settings) use ($owner): string {
+                /** @var NestedElementInterface|string $elementType */
+                $elementType = $this->elementType;
+                $view = Craft::$app->getView();
 
-            $settings = [
-                'indexSettings' => [
+                $settings['indexSettings'] = [
                     'namespace' => $view->getNamespace(),
                     'allowedViewModes' => $config['allowedViewModes']
                         ? array_map(fn($mode) => StringHelper::toString($mode), $config['allowedViewModes'])
@@ -380,96 +450,131 @@ class NestedElementManager extends Component
                         $this->ownerIdParam => $owner->id,
                     ], $this->criteria),
                     'batchSize' => $config['pageSize'],
-                    'sortable' => $config['sortable'],
                     'actions' => [],
                     'canHaveDrafts' => $elementType::hasDrafts(),
-                ],
+                    'storageKey' => $config['storageKey'],
+                ];
+
+                if ($config['sortable']) {
+                    $view->startJsBuffer();
+                    $actionConfig = ElementHelper::actionConfig(new ChangeSortOrder($owner, $attribute));
+                    $actionConfig['bodyHtml'] = $view->clearJsBuffer();
+                    $settings['indexSettings']['actions'][] = $actionConfig;
+                }
+
+                return Cp::elementIndexHtml($this->elementType, [
+                    'context' => 'embedded-index',
+                    'id' => $id,
+                    'showSiteMenu' => false,
+                    'sources' => false,
+                    'fieldLayouts' => $config['fieldLayouts'],
+                    'defaultTableColumns' => $config['defaultTableColumns'],
+                    'registerJs' => false,
+                ]);
+            },
+        );
+    }
+
+    private function createView(?ElementInterface $owner, array $config, string $mode, callable $renderHtml): string
+    {
+        /** @var NestedElementInterface|string $elementType */
+        $elementType = $this->elementType;
+
+        if (!$owner?->id) {
+            $message = Craft::t('app', '{nestedType} can only be created after the {ownerType} has been saved.', [
+                'nestedType' => $elementType::pluralDisplayName(),
+                'ownerType' => $owner ? $owner::lowerDisplayName() : Craft::t('app', 'element'),
+            ]);
+            return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
+        }
+
+        $config += [
+            'sortable' => false,
+            'canCreate' => false,
+            'createButtonLabel' => null,
+            'createAttributes' => null,
+            'minElements' => null,
+            'maxElements' => null,
+        ];
+
+        if ($config['createButtonLabel'] === null) {
+            $config['createButtonLabel'] = Craft::t('app', 'New {type}', [
+                'type' => $elementType::lowerDisplayName(),
+            ]);
+        }
+
+        $authorizedOwnerId = $owner->id;
+        if ($owner->isProvisionalDraft) {
+            /** @var ElementInterface|DraftBehavior $owner */
+            if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
+                $authorizedOwnerId = $owner->getCanonicalId();
+            }
+        }
+        $attribute = $this->attribute ?? sprintf('field:%s', $this->field->handle);
+        Craft::$app->getSession()->authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
+
+        $view = Craft::$app->getView();
+        return $view->namespaceInputs(function() use (
+            $mode,
+            $elementType,
+            $attribute,
+            $view,
+            $owner,
+            $config,
+            $renderHtml,
+        ) {
+            $id = sprintf('element-index-%s', mt_rand());
+
+            $settings = [
+                'mode' => $mode,
+                'ownerElementType' => $owner::class,
+                'ownerId' => $owner->id,
+                'ownerSiteId' => $owner->siteId,
+                'attribute' => $attribute,
+                'sortable' => $config['sortable'],
                 'canCreate' => $config['canCreate'],
                 'minElements' => $config['minElements'],
                 'maxElements' => $config['maxElements'],
                 'createButtonLabel' => $config['createButtonLabel'],
-                'baseCreateAttributes' => array_filter([
-                    'elementType' => $elementType,
-                    'ownerId' => $owner->id,
-                    'siteId' => $elementType::isLocalized() ? $owner->siteId : null,
-                ]),
                 'ownerIdParam' => $this->ownerIdParam,
-                'fieldHandle' => $this->fieldHandle,
+                'fieldHandle' => $this->field?->handle,
+                'baseInputName' => $view->getNamespace(),
             ];
 
             if (!empty($config['createAttributes'])) {
                 $settings['createAttributes'] = $config['createAttributes'];
-                if (count($settings['createAttributes']) === 1 && ArrayHelper::isIndexed($settings['createAttributes'])) {
-                    $settings['createAttributes'] = ArrayHelper::firstValue($settings['createAttributes'])['attributes'];
+                if (ArrayHelper::isIndexed($settings['createAttributes'])) {
+                    if (count($settings['createAttributes']) === 1) {
+                        $settings['createAttributes'] = ArrayHelper::firstValue($settings['createAttributes'])['attributes'];
+                    } else {
+                        $settings['createAttributes'] = array_map(function(array $attributes) {
+                            if (isset($attributes['icon'])) {
+                                $attributes['icon'] = Cp::iconSvg($attributes['icon']);
+                            }
+                            if (isset($attributes['color']) && $attributes['color'] instanceof Color) {
+                                $attributes['color'] = $attributes['color']->value;
+                            }
+                            return $attributes;
+                        }, $settings['createAttributes']);
+                    }
                 }
             }
 
-            if ($config['sortable']) {
-                $view->startJsBuffer();
-                $actionConfig = ElementHelper::actionConfig(new ChangeSortOrder($owner, $attribute));
-                $actionConfig['bodyHtml'] = $view->clearJsBuffer();
-                $settings['indexSettings']['actions'][] = $actionConfig;
-            }
+            // render the HTML, and give the render function a chance to modify the JS settings
+            $html = $renderHtml($id, $config, $attribute, $settings);
 
-            $view->registerJsWithVars(fn($id, $elementType, $settings, $reorderParams) => <<<JS
+            $view->registerJsWithVars(fn($id, $elementType, $settings) => <<<JS
 (() => {
-  const settings = $settings;
-  const index = new Craft.EmbeddedElementIndex('#' + $id, $elementType, Object.assign(settings, {
-    indexSettings: Object.assign(settings.indexSettings, {
-      onSortChange: async (draggee) => {
-        const elementIndex = index.elementIndex;
-        const id = parseInt(draggee.find('.element').data('id'));
-        const allIds = elementIndex.view.getAllElements()
-           .toArray()
-           .map(container => $(container).find('.element:first').data('id'))
-           .filter(id => id)
-           .map(id => parseInt(id));
-
-        const data = Object.assign($reorderParams, {
-          elementIds: [id],
-          offset: (elementIndex.settings.batchSize * (elementIndex.page - 1)) + allIds.indexOf(id),
-        });
-        
-        if (index.elementEditor) {
-          await index.elementEditor.ensureIsDraftOrRevision();
-          data.ownerId = index.elementEditor.settings.elementId;
-        }
-
-        try {
-          const response = await Craft.sendActionRequest('POST', 'nested-elements/reorder', {data});
-          Craft.cp.displayNotice(response.data.message);
-        } catch (e) {
-          Craft.cp.displayError(e && e.response && e.response.data && e.response.data.error);
-        }
-        
-        if (index.elementEditor && index.settings.fieldHandle) {
-          await index.elementEditor.markFieldAsDirty(index.settings.fieldHandle);
-        }
-      },
-    }),
-  }));
+  new Craft.NestedElementManager('#' + $id, $elementType, $settings);
 })();
 JS, [
                 $view->namespaceInputId($id),
                 $this->elementType,
                 $settings,
-                [
-                    'ownerElementType' => $owner::class,
-                    'ownerId' => $owner->id,
-                    'ownerSiteId' => $owner->siteId,
-                    'attribute' => $attribute,
-                ],
             ]);
 
-            return Cp::elementIndexHtml($this->elementType, [
-                'context' => 'embedded-index',
-                'id' => $id,
-                'sources' => false,
-                'fieldLayouts' => $config['fieldLayouts'],
-                'defaultTableColumns' => $config['defaultTableColumns'],
-                'registerJs' => false,
-            ]);
-        }, Html::id($attribute));
+            return $html;
+        }, Html::id($this->field->handle ?? $attribute));
     }
 
     /**
@@ -489,7 +594,8 @@ JS, [
             // If this is a draft, its nested element ownership will be duplicated by Drafts::createDraft()
             if ($owner->getIsRevision()) {
                 $this->createRevisions($owner->duplicateOf, $owner);
-            } elseif (!$owner->getIsDraft()) {
+            // getIsUnpublishedDraft is needed for "save as new" duplication
+            } elseif (!$owner->getIsDraft() || $owner->getIsUnpublishedDraft()) {
                 $this->duplicateNestedElements($owner->duplicateOf, $owner, true, !$isNew);
             }
             $resetValue = true;
@@ -514,7 +620,7 @@ JS, [
             return $owner->isAttributeDirty($this->attribute);
         }
 
-        return $owner->isFieldDirty($this->fieldHandle);
+        return $owner->isFieldDirty($this->field->handle);
     }
 
     private function isModified(ElementInterface $owner, bool $anySite = false): bool
@@ -523,7 +629,7 @@ JS, [
             return $owner->isAttributeModified($this->attribute);
         }
 
-        return $owner->isFieldModified($this->fieldHandle, $anySite);
+        return $owner->isFieldModified($this->field->handle, $anySite);
     }
 
     private function saveNestedElements(ElementInterface $owner): void
@@ -589,7 +695,10 @@ JS, [
                 ($owner->propagateAll || !empty($owner->newSiteIds))
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's nested elements
-                $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+                $ownerSiteIds = array_map(
+                    fn(array $siteInfo) => $siteInfo['siteId'],
+                    ElementHelper::supportedSitesForElement($owner),
+                );
                 $fieldSiteIds = $this->getSupportedSiteIds($owner);
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
@@ -755,6 +864,7 @@ JS, [
                     'owner' => $target,
                     'siteId' => $target->siteId,
                     'propagating' => false,
+                    'sortOrder' => $element->getSortOrder(),
                 ];
 
                 if ($target->updatingFromDerivative && $element->getIsDerivative()) {
@@ -820,7 +930,10 @@ JS, [
         // Duplicate elements for other sites as well?
         if ($checkOtherSites && $this->propagationMethod !== PropagationMethod::All) {
             // Find the target's site IDs that *aren't* supported by this site's nested elements
-            $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
+            $targetSiteIds = array_map(
+                fn(array $siteInfo) => $siteInfo['siteId'],
+                ElementHelper::supportedSitesForElement($target),
+            );
             $fieldSiteIds = $this->getSupportedSiteIds($target);
             $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
 
@@ -879,7 +992,10 @@ JS, [
     private function createRevisions(ElementInterface $canonical, ElementInterface $revision): void
     {
         // Only fetch nested elements in the sites the owner element supports
-        $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($canonical), 'siteId');
+        $siteIds = array_map(
+            fn(array $siteInfo) => $siteInfo['siteId'],
+            ElementHelper::supportedSitesForElement($canonical),
+        );
 
         /** @var NestedElementInterface[] $elements */
         $elements = $this->nestedElementQuery($canonical)

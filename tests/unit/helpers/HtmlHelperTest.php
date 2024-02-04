@@ -147,12 +147,16 @@ class HtmlHelperTest extends TestCase
 
     /**
      * @dataProvider idDataProvider
-     * @param string $expected
+     * @param string|null $expected
      * @param string $id
      */
-    public function testId(string $expected, string $id): void
+    public function testId(?string $expected, string $id): void
     {
-        self::assertSame($expected, Html::id($id));
+        if ($expected) {
+            self::assertSame($expected, Html::id($id));
+        } else {
+            self::assertEquals(10, strlen(Html::id($id)));
+        }
     }
 
     /**
@@ -485,6 +489,9 @@ class HtmlHelperTest extends TestCase
             ['foo-bar', 'foo--bar'],
             ['foo-bar-baz', 'foo[bar][baz]'],
             ['foo-bar-baz', 'foo bar baz'],
+            ['foo.bar', 'foo.bar'],
+            ['foo-bar', 'foo bar'],
+            [null, '100'],
         ];
     }
 
@@ -510,6 +517,9 @@ class HtmlHelperTest extends TestCase
             ['foo-bar-baz', 'bar[baz]', 'foo'],
             ['foo-bar-baz', 'baz', 'foo[bar]'],
             ['foo-bar', 'foo[bar]', null],
+            ['foo__', '__foo__', null],
+            ['__FOO__', '__FOO__', null],
+            ['__FOO_BAR__', '__FOO_BAR__', null],
         ];
     }
 
@@ -521,6 +531,8 @@ class HtmlHelperTest extends TestCase
         return [
             ['<input name="foo[bar]">', '<input name="bar">', 'foo'],
             ['<input name="foo[bar][baz]">', '<input name="bar[baz]">', 'foo'],
+            ['<textarea name="foo[bar]"></textarea>', '<textarea name="bar"></textarea>', 'foo'],
+            ['<textarea name="foo[bar]">blah</textarea>', '<textarea name="bar">blah</textarea>', 'foo'],
             ['<textarea name="foo[bar]"><input name="foo"></textarea>', '<textarea name="bar"><input name="foo"></textarea>', 'foo'],
             ['<input name="3[foo]">', '<input name="foo">', '3'],
         ];

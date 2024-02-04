@@ -436,11 +436,30 @@ export default Base.extend(
         $.data(item, 'select-handle', $handle);
         $handle.data('select-item', item);
 
+        // Get the checkbox element
+        let $checkbox;
+        if (this.settings.checkboxClass) {
+          $checkbox = $(item).find(`.${this.settings.checkboxClass}`);
+        }
+
         this.addListener($handle, 'mousedown', 'onMouseDown');
         this.addListener($handle, 'mouseup', 'onMouseUp');
         this.addListener($handle, 'click', function () {
           this.ignoreClick = true;
         });
+
+        if ($checkbox && $checkbox.length) {
+          $checkbox.data('select-item', item);
+          this.addListener($checkbox, 'keydown', (event) => {
+            if (
+              event.keyCode === Garnish.SPACE_KEY ||
+              event.keyCode === Garnish.RETURN_KEY
+            ) {
+              event.preventDefault();
+              this.onCheckboxActivate(event);
+            }
+          });
+        }
 
         this.addListener(item, 'keydown', 'onKeyDown');
       }
@@ -584,7 +603,7 @@ export default Base.extend(
       this.mousedownTarget = null;
 
       // ignore right/ctrl-clicks
-      if (!Garnish.isPrimaryClick(ev)) {
+      if (!Garnish.isPrimaryClick(ev) && !Garnish.isCtrlKeyPressed(ev)) {
         return;
       }
 
@@ -612,7 +631,7 @@ export default Base.extend(
      */
     onMouseUp: function (ev) {
       // ignore right clicks
-      if (!Garnish.isPrimaryClick(ev)) {
+      if (!Garnish.isPrimaryClick(ev) && !Garnish.isCtrlKeyPressed(ev)) {
         return;
       }
 
@@ -644,6 +663,17 @@ export default Base.extend(
           this.deselectAll();
           this.selectItem($item, true, true);
         }
+      }
+    },
+
+    onCheckboxActivate: function (ev) {
+      ev.stopImmediatePropagation();
+      const $item = $($.data(event.currentTarget, 'select-item'));
+
+      if (!this.isSelected($item)) {
+        this.selectItem($item);
+      } else {
+        this.deselectItem($item);
       }
     },
 
@@ -852,12 +882,24 @@ export default Base.extend(
 
     _selectItems: function ($items) {
       $items.addClass(this.settings.selectedClass);
+
+      if (this.settings.checkboxClass) {
+        const $checkboxes = $items.find(`.${this.settings.checkboxClass}`);
+        $checkboxes.attr('aria-checked', 'true');
+      }
+
       this.$selectedItems = this.$selectedItems.add($items);
       this.onSelectionChange();
     },
 
     _deselectItems: function ($items) {
       $items.removeClass(this.settings.selectedClass);
+
+      if (this.settings.checkboxClass) {
+        const $checkboxes = $items.find(`.${this.settings.checkboxClass}`);
+        $checkboxes.attr('aria-checked', 'false');
+      }
+
       this.$selectedItems = this.$selectedItems.not($items);
       this.onSelectionChange();
     },
@@ -884,6 +926,7 @@ export default Base.extend(
   {
     defaults: {
       selectedClass: 'sel',
+      checkboxClass: 'checkbox',
       multi: false,
       allowEmpty: true,
       vertical: false,
@@ -891,7 +934,7 @@ export default Base.extend(
       handle: null,
       filter: null,
       checkboxMode: false,
-      makeFocusable: true,
+      makeFocusable: false,
       onSelectionChange: $.noop,
     },
 

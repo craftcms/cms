@@ -16,7 +16,7 @@ namespace craft\base;
 trait WidgetTrait
 {
     /**
-     * @var int|null The user’s chosen cospan for the widget
+     * @var int|null The user’s chosen colspan for the widget
      */
     public ?int $colspan = null;
 }

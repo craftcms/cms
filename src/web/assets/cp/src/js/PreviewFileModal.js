@@ -20,6 +20,15 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
      * @returns {*|void}
      */
     init: function (assetId, elementSelect, settings) {
+      // (assetId, settings)
+      if (
+        typeof settings === 'undefined' &&
+        jQuery.isPlainObject(elementSelect)
+      ) {
+        settings = elementSelect;
+        elementSelect = null;
+      }
+
       settings = $.extend(this.defaultSettings, settings);
       this.$triggerElement = Garnish.getFocusedElement();
 
@@ -204,7 +213,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         this.loaded = true;
       };
       Craft.sendActionRequest('POST', 'assets/preview-file', {data})
-        .then((response) => {
+        .then(async (response) => {
           onResponse();
 
           if (response.data.requestId != this.requestId) {
@@ -225,8 +234,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
           this.$container.append(response.data.previewHtml);
           this._addBumperButtons();
           this._addModalName();
-          Craft.appendHeadHtml(response.data.headHtml);
-          Craft.appendBodyHtml(response.data.bodyHtml);
+          await Craft.appendHeadHtml(response.data.headHtml);
+          await Craft.appendBodyHtml(response.data.bodyHtml);
         })
         .catch(({response}) => {
           onResponse();
@@ -255,9 +264,102 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
     },
   },
   {
+    openInstance: null,
+
     defaultSettings: {
+      minGutter: 50,
       startingWidth: null,
       startingHeight: null,
+    },
+
+    resizePreviewImage() {
+      const instance = Craft.PreviewFileModal.openInstance;
+      if (!instance) {
+        return;
+      }
+
+      let containerHeight = Garnish.$win.height() * 0.66;
+      let containerWidth = Math.min(
+        (containerHeight / 3) * 4,
+        Garnish.$win.width() - instance.settings.minGutter * 2
+      );
+      containerHeight = (containerWidth / 4) * 3;
+
+      const $img = instance.$container.find('img');
+
+      $img.css({
+        width: containerWidth,
+        height: containerHeight,
+      });
+
+      if (instance.loaded && $img.length) {
+        // Make sure we maintain the ratio
+
+        const maxWidth = $img.data('maxwidth');
+        const maxHeight = $img.data('maxheight');
+        const imageRatio = maxWidth / maxHeight;
+        const desiredWidth = instance.desiredWidth
+          ? instance.desiredWidth
+          : instance.getWidth();
+        const desiredHeight = instance.desiredHeight
+          ? instance.desiredHeight
+          : instance.getHeight();
+        let width = Math.min(desiredWidth, maxWidth);
+        let height = Math.round(Math.min(maxHeight, width / imageRatio));
+
+        if (height > desiredHeight) {
+          height = desiredHeight;
+        }
+
+        width = Math.round(height * imageRatio);
+
+        $img.css({width: width, height: height});
+        instance._resizeContainer(width, height);
+
+        instance.desiredWidth = width;
+        instance.desiredHeight = height;
+      }
+
+      instance.base();
+
+      if (instance.loaded && $img.length) {
+        // Correct anomalies
+        containerWidth = Math.round(
+          Math.min(
+            Math.max($img.height() * imageRatio),
+            Garnish.$win.width() - instance.settings.minGutter * 2
+          )
+        );
+        containerHeight = Math.round(
+          Math.min(
+            Math.max(containerWidth / imageRatio),
+            Garnish.$win.height() - instance.settings.minGutter * 2
+          )
+        );
+        containerWidth = Math.round(containerHeight * imageRatio);
+
+        // This might actually have put width over the viewport limits, so double-check that
+        if (
+          containerWidth >
+          Math.min(
+            containerWidth,
+            Garnish.$win.width() - instance.settings.minGutter * 2
+          )
+        ) {
+          containerWidth = Math.min(
+            containerWidth,
+            Garnish.$win.width() - instance.settings.minGutter * 2
+          );
+          containerHeight = containerWidth / imageRatio;
+        }
+
+        instance._resizeContainer(containerWidth, containerHeight);
+        $img.css({width: containerWidth, height: containerHeight});
+
+        if (window.imageFocalPoint) {
+          window.imageFocalPoint.renderFocal();
+        }
+      }
     },
   }
 );

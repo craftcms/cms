@@ -963,7 +963,12 @@ $.extend($.event.special, {
       $elem.on({
         'mousedown.garnish-activate': function (e) {
           // Prevent buttons from getting focus on click
-          e.preventDefault();
+          if (
+            e.currentTarget.nodeName === 'BUTTON' ||
+            e.currentTarget.role === 'button'
+          ) {
+            e.preventDefault();
+          }
         },
         'click.garnish-activate': function (e) {
           const disabled = $elem.hasClass('disabled');
@@ -979,7 +984,12 @@ $.extend($.event.special, {
             return;
           }
 
-          e.preventDefault();
+          if (
+            e.currentTarget.nodeName === 'BUTTON' ||
+            e.currentTarget.role === 'button'
+          ) {
+            e.preventDefault();
+          }
 
           if (!disabled) {
             $elem.trigger('activate');
@@ -1035,8 +1045,8 @@ $.extend($.event.special, {
         data && typeof data.delay !== 'undefined'
           ? data.delay
           : ev.data && ev.data.delay !== undefined
-          ? ev.data.delay
-          : null;
+            ? ev.data.delay
+            : null;
       var handleObj = ev.handleObj;
       var targetData = $.data(ev.target);
 

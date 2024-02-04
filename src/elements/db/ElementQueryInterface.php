@@ -20,6 +20,7 @@ use yii\db\QueryInterface;
  *
  * @mixin Query
  * @mixin ElementQuery
+ * @phpstan-require-extends ElementQuery
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -998,6 +999,15 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @return static self reference
      */
     public function search(mixed $value): static;
+
+    /**
+     * Narrows the query results to only {elements} that were involved in a bulk element operation.
+     *
+     * @param string|null $value The property value
+     * @return static self reference
+     * @since 5.0.0
+     */
+    public function inBulkOp(?string $value): static;
 
     /**
      * Narrows the query results based on a reference string.

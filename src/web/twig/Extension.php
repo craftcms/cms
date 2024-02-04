@@ -60,6 +60,7 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use Money\Money;
@@ -201,6 +202,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('filesize', [$this, 'filesizeFilter']),
             new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true]),
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
+            new TwigFilter('firstWhere', [ArrayHelper::class, 'firstWhere']),
+            new TwigFilter('flatten', [Arr::class, 'flatten']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
             new TwigFilter('httpdate', [$this, 'httpdateFilter'], ['needs_environment' => true]),
@@ -558,7 +561,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * Formats the value in bytes as a size in human readable form for example `12 kB`.
+     * Formats the value in bytes as a size in human-readable form, for example `12 kB`.
      *
      * @param mixed $value
      * @param int|null $decimals
@@ -945,7 +948,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param DateTimeInterface|DateInterval|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param string|null $locale The target locale the date should be formatted for. By default the current system locale will be used.
+     * @param string|null $locale The target locale the date should be formatted for. By default, the current system locale will be used.
      * @return string
      */
     public function dateFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
@@ -1044,7 +1047,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
+     * @param string|null $locale The target locale the date should be formatted for. By default, the current system locale will be used.
      * @return string
      */
     public function timeFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
@@ -1074,7 +1077,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
+     * @param string|null $locale The target locale the date should be formatted for. By default, the current system locale will be used.
      * @return string
      */
     public function datetimeFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
@@ -1139,7 +1142,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * Groups an array by a the results of an arrow function, or value of a property.
+     * Groups an array by the results of an arrow function, or value of a property.
      *
      * @param iterable $arr
      * @param callable|string $arrow The arrow function or property name that determines the group the item should be grouped in
@@ -1252,10 +1255,25 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * 'gfm-comment' (GFM with newlines converted to `<br>`s),
      * or 'extra' (Markdown Extra). Default is 'original'.
      * @param bool $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
+     * @param bool $encode Whether special characters should be pre-encoded, before parsing the text as Markdown.
+     * Note that the `flavor` cannot be specified if this option is used.
      * @return string
      */
-    public function markdownFilter(mixed $markdown, ?string $flavor = null, bool $inlineOnly = false): string
-    {
+    public function markdownFilter(
+        mixed $markdown,
+        ?string $flavor = null,
+        bool $inlineOnly = false,
+        bool $encode = false,
+    ): string {
+        if ($encode) {
+            if ($flavor !== null && !in_array($flavor, ['original', 'pre-encoded'])) {
+                throw new InvalidArgumentException('The Markdown flavor cannot be specified when passing `encode=true`.');
+            }
+
+            $markdown = Html::encode($markdown);
+            $flavor = 'pre-encoded';
+        }
+
         if ($inlineOnly) {
             return Markdown::processParagraph((string)$markdown, $flavor);
         }
@@ -1559,11 +1577,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param string|Asset $svg An SVG asset, a file path, or raw SVG markup
      * @param bool|null $sanitize Whether the SVG should be sanitized of potentially
-     * malicious scripts. By default the SVG will only be sanitized if an asset
+     * malicious scripts. By default, the SVG will only be sanitized if an asset
      * or markup is passed in. (File paths are assumed to be safe.)
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
-     * By default the SVG will only be namespaced if an asset or markup is passed in.
+     * By default, the SVG will only be namespaced if an asset or markup is passed in.
      * @param string|null $class A CSS class name that should be added to the `<svg>` element.
      * (This argument is deprecated. The `|attr` filter should be used instead.)
      * @return string

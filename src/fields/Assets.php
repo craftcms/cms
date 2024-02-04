@@ -76,6 +76,14 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'image';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function elementType(): string
     {
         return Asset::class;
@@ -601,7 +609,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                     // Find the files with temp sources and just move those.
                     /** @var Asset[] $assetsToMove */
                     $assetsToMove = $assetsService->createTempAssetQuery()
-                        ->id(ArrayHelper::getColumn($assets, 'id'))
+                        ->id(array_map(fn(Asset $asset) => $asset->id, $assets))
                         ->all();
                 }
 
@@ -747,7 +755,6 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                 $variables['defaultSourcePath'] = array_map(function(VolumeFolder $folder) {
                     return $folder->getSourcePathInfo();
                 }, $folders);
-                $variables['preferStoredSource'] = true;
             }
         }
 

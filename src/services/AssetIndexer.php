@@ -18,6 +18,7 @@ use craft\errors\AssetNotIndexableException;
 use craft\errors\FsException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
+use craft\errors\MutexException;
 use craft\errors\VolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
@@ -301,7 +302,7 @@ class AssetIndexer extends Component
         $lockName = 'idx--' . $indexingSession->id . '--';
 
         if (!$mutex->acquire($lockName, 3)) {
-            throw new Exception('Could not acquire a lock for the indexing session "' . $indexingSession->id . '".');
+            throw new MutexException($lockName, sprintf('Could not acquire a lock for the indexing session "%s".', $indexingSession->id));
         }
 
         $indexEntry = $this->getNextIndexEntry($indexingSession);
@@ -378,12 +379,13 @@ class AssetIndexer extends Component
      * Get missing entries after an indexing session.
      *
      * @param AssetIndexingSession $session
+     * @param string $path
      * @return array with `files` and `folders` keys, containing missing entries.
      * @phpstan-return array{folders:array<int,string>,files:array<int,string>}
      * @throws AssetException
      * @since 4.0.0
      */
-    public function getMissingEntriesForSession(AssetIndexingSession $session): array
+    public function getMissingEntriesForSession(AssetIndexingSession $session, string $path = ''): array
     {
         if (!$session->actionRequired) {
             throw new AssetException('A session must be finished before missing entries can be fetched');
@@ -411,6 +413,10 @@ class AssetIndexer extends Component
             ->andWhere(['folders.volumeId' => $volumeList])
             ->andWhere(['not', ['folders.parentId' => null]]);
 
+        if ($path !== '') {
+            $missingFoldersQuery->andWhere(['like', 'folders.path', "$path%", false]);
+        }
+
         if (!$session->listEmptyFolders) {
             $missingFoldersQuery
                 ->leftJoin(['indexData' => Table::ASSETINDEXDATA], ['and', '[[folders.id]] = [[indexData.recordId]]', ['indexData.isDir' => true]])
@@ -419,7 +425,7 @@ class AssetIndexer extends Component
 
         $missingFolders = $missingFoldersQuery->all();
 
-        $missingFiles = (new Query())
+        $missingFilesQuery = (new Query())
             ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'filename' => 'assets.filename', 'assetId' => 'assets.id'])
             ->from(['assets' => Table::ASSETS])
             ->leftJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[assets.id]]')
@@ -429,8 +435,13 @@ class AssetIndexer extends Component
             ->where(['<', 'assets.dateCreated', $cutoff])
             ->andWhere(['assets.volumeId' => $volumeList])
             ->andWhere(['elements.dateDeleted' => null])
-            ->andWhere(['indexData.id' => null])
-            ->all();
+            ->andWhere(['indexData.id' => null]);
+
+        if ($path !== '') {
+            $missingFilesQuery->andWhere(['like', 'folders.path', "$path%", false]);
+        }
+
+        $missingFiles = $missingFilesQuery->all();
 
         foreach ($missingFolders as ['folderId' => $folderId, 'path' => $path, 'volumeName' => $volumeName, 'volumeId' => $volumeId]) {
             /**
@@ -837,7 +848,7 @@ class AssetIndexer extends Component
         $lockName = 'idx--update-' . $session->id . '--';
 
         if (!$mutex->acquire($lockName, 5)) {
-            throw new Exception('Could not acquire a lock for the indexing session "' . $session->id . '".');
+            throw new MutexException($lockName, sprintf('Could not acquire a lock for the indexing session "%s".', $session->id));
         }
 
         /** @var AssetIndexingSessionRecord $record */

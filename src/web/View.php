@@ -1660,13 +1660,13 @@ JS;
             // If no namespace was passed in, just return the callable response directly.
             // No need to namespace it via the currently-set namespace in this case; if there is one, it should get applied later on.
             if ($namespace === null) {
-                return $html();
+                return (string)$html();
             }
 
             $oldNamespace = $this->getNamespace();
             $this->setNamespace($this->namespaceInputName($namespace));
             try {
-                $response = $this->namespaceInputs($html(), $namespace, $otherAttributes, $withClasses);
+                $response = $this->namespaceInputs((string)$html(), $namespace, $otherAttributes, $withClasses);
             } finally {
                 $this->setNamespace($oldNamespace);
             }
@@ -2294,10 +2294,10 @@ JS;
             return null;
         }
 
-        if (isset($context['size']) && in_array($context['size'], [Cp::ELEMENT_SIZE_SMALL, Cp::ELEMENT_SIZE_LARGE], true)) {
+        if (isset($context['size']) && in_array($context['size'], [Cp::CHIP_SIZE_SMALL, Cp::CHIP_SIZE_LARGE], true)) {
             $size = $context['size'];
         } else {
-            $size = (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
+            $size = (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') ? Cp::CHIP_SIZE_LARGE : Cp::CHIP_SIZE_SMALL;
         }
 
         return Cp::elementHtml(

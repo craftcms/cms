@@ -21,7 +21,21 @@ use craft\test\TestCase;
 class EntryQueryTest extends TestCase
 {
     /**
-     *
+     * @return void
+     */
+    public function testAuthorIds(): void
+    {
+        $query = Entry::find();
+
+        $query->authorId(1);
+        $this->assertSame(1, $query->authorId);
+
+        $query->authorId(['and', 1, 2, 3]);
+        $this->assertSame(['and', 1, 2, 3], $query->authorId);
+    }
+
+    /**
+     * @return void
      */
     public function testAuthorGroup(): void
     {

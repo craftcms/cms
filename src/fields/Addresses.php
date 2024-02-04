@@ -33,7 +33,6 @@ use craft\gql\arguments\elements\Address as AddressArguments;
 use craft\gql\interfaces\elements\Address as AddressGqlInterface;
 use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\input\Addresses as AddressesInput;
-use craft\helpers\Cp;
 use craft\helpers\Gql;
 use craft\helpers\StringHelper;
 use craft\services\Elements;
@@ -52,12 +51,23 @@ class Addresses extends Field implements
     ElementContainerFieldInterface,
     EagerLoadingFieldInterface
 {
+    public const VIEW_MODE_CARDS = 'cards';
+    public const VIEW_MODE_INDEX = 'index';
+
     /**
      * @inheritdoc
      */
     public static function displayName(): string
     {
         return Craft::t('app', 'Addresses');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'map-location';
     }
 
     /**
@@ -142,6 +152,12 @@ class Addresses extends Field implements
     public ?int $maxAddresses = null;
 
     /**
+     * @var string The view mode
+     * @phpstan-var self::VIEW_MODE_*
+     */
+    public string $viewMode = self::VIEW_MODE_CARDS;
+
+    /**
      * @see addressManager()
      */
     private NestedElementManager $_addressManager;
@@ -168,6 +184,7 @@ class Addresses extends Field implements
     {
         $rules = parent::defineRules();
         $rules[] = [['minAddresses', 'maxAddresses'], 'integer', 'min' => 0];
+        $rules[] = [['viewMode'], 'in', 'range' => [self::VIEW_MODE_CARDS, self::VIEW_MODE_INDEX]];
         return $rules;
     }
 
@@ -178,7 +195,7 @@ class Addresses extends Field implements
                 Address::class,
                 fn(ElementInterface $owner) => $this->createAddressQuery($owner),
                 [
-                    'fieldHandle' => $this->handle,
+                    'field' => $this,
                     'criteria' => [
                         'fieldId' => $this->id,
                     ],
@@ -339,32 +356,9 @@ class Addresses extends Field implements
      */
     public function getSettingsHtml(): ?string
     {
-        return Cp::textFieldHtml([
-                'label' => Craft::t('app', 'Min {type}', [
-                    'type' => Address::pluralDisplayName(),
-                ]),
-                'instructions' => Craft::t('app', 'The minimum number of {type} the field is allowed to have.', [
-                    'type' => Address::pluralLowerDisplayName(),
-                ]),
-                'id' => 'min-addresses',
-                'name' => 'minAddresses',
-                'value' => $this->minAddresses,
-                'size' => 3,
-                'errors' => $this->getErrors('minAddresses'),
-            ]) .
-            Cp::textFieldHtml([
-                'label' => Craft::t('app', 'Max {type}', [
-                    'type' => Address::pluralDisplayName(),
-                ]),
-                'instructions' => Craft::t('app', 'The maximum number of {type} the field is allowed to have.', [
-                    'type' => Address::pluralLowerDisplayName(),
-                ]),
-                'id' => 'max-addresses',
-                'name' => 'maxAddresses',
-                'value' => $this->maxAddresses,
-                'size' => 3,
-                'errors' => $this->getErrors('maxAddresses'),
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Addresses/settings.twig', [
+            'field' => $this,
+        ]);
     }
 
     /**
@@ -452,7 +446,7 @@ class Addresses extends Field implements
                 $address = $oldAddressesById[$addressId];
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                if ($element->getIsDerivative() && $address->primaryOwnerId === $element->getCanonicalId()) {
+                if ($element->getIsDerivative() && $address->getPrimaryOwnerId() === $element->getCanonicalId()) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
                     $address = Craft::$app->getDrafts()->createDraft($address, Craft::$app->getUser()->getId(), null, null, [
                         'canonicalId' => $address->id,
@@ -468,7 +462,8 @@ class Addresses extends Field implements
             } else {
                 $address = new Address();
                 $address->fieldId = $this->id;
-                $address->primaryOwnerId = $address->ownerId = $element->id;
+                $address->setPrimaryOwner($element);
+                $address->setOwner($element);
                 $address->siteId = $element->siteId;
             }
 
@@ -568,6 +563,7 @@ class Addresses extends Field implements
         $new = 0;
 
         foreach ($value->all() as $address) {
+            /** @var Address $address */
             $addressId = $address->id ?? 'new' . ++$new;
             $serialized[$addressId] = [
                 'countryCode' => $address->countryCode,
@@ -627,7 +623,7 @@ class Addresses extends Field implements
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return $this->indexInputHtml($element);
+        return $this->inputHtmlInternal($element);
     }
 
     /**
@@ -635,14 +631,13 @@ class Addresses extends Field implements
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        return $this->indexInputHtml($element, true);
+        return $this->inputHtmlInternal($element, true);
     }
 
-    private function indexInputHtml(?ElementInterface $owner, bool $static = false): string
+    private function inputHtmlInternal(?ElementInterface $owner, bool $static = false): string
     {
         $config = [
-            'allowedViewModes' => [ElementIndexViewMode::Cards],
-            'pageSize' => $this->pageSize ?? 50,
+            'showInGrid' => true,
         ];
 
         if (!$static) {
@@ -656,6 +651,15 @@ class Addresses extends Field implements
                 'maxElements' => $this->maxAddresses,
             ];
         }
+
+        if ($this->viewMode === self::VIEW_MODE_CARDS) {
+            return $this->addressManager()->getCardsHtml($owner, $config);
+        }
+
+        $config += [
+            'allowedViewModes' => [ElementIndexViewMode::Cards],
+            'pageSize' => $this->pageSize ?? 50,
+        ];
 
         return $this->addressManager()->getIndexHtml($owner, $config);
     }

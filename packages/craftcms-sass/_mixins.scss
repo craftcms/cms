@@ -116,7 +116,7 @@ $pink800: #9d174d;
 $pink900: #831843;
 
 // submit button colors
-$primaryColor: $red500;
+$primaryColor: $red600;
 $secondaryColor: $grey500;
 
 $inputColor: hsl(212, 25%, 50%);
@@ -130,8 +130,8 @@ $linkColor: #1f5fea;
 
 // menu colors
 $menuOptionColor: $textColor;
-$menuOptionActiveColor: $white;
-$menuOptionActiveBackgroundColor: $grey500;
+$menuOptionActiveColor: $textColor;
+$menuOptionActiveBackgroundColor: $grey050;
 
 // hairline colors
 $hairlineColor: transparentize($grey800, 0.9);
@@ -144,11 +144,14 @@ $mediumFocusColor: $blue500;
 $darkFocusColor: #0f74b1;
 
 // focus rings
-$lightFocusRing: 0 0 0 1px $lightFocusColor,
+$lightFocusRing:
+  0 0 0 1px $lightFocusColor,
   0 0 0 3px transparentize($lightFocusColor, 0.3);
-$mediumFocusRing: 0 0 0 1px $mediumFocusColor,
+$mediumFocusRing:
+  0 0 0 1px $mediumFocusColor,
   0 0 0 3px transparentize($mediumFocusColor, 0.3);
-$darkFocusRing: 0 0 0 1px $darkFocusColor,
+$darkFocusRing:
+  0 0 0 1px $darkFocusColor,
   0 0 0 3px transparentize($darkFocusColor, 0.3);
 
 // selection colors
@@ -167,13 +170,21 @@ $mediumBorderRadius: 4px;
 $largeBorderRadius: 5px;
 
 $menuBorderRadius: $mediumBorderRadius;
-$checkboxSize: 16px;
-$radioSize: 16px;
 
 @mixin sans-serif-font {
-  font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI',
-    'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
-    'Helvetica Neue', sans-serif;
+  font-family:
+    system-ui,
+    BlinkMacSystemFont,
+    -apple-system,
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
 }
 
 @mixin fixed-width-font {
@@ -226,7 +237,7 @@ $radioSize: 16px;
 
 @mixin icon {
   font-family: 'Craft';
-  speak: none;
+  speak: never;
   -webkit-font-feature-settings: 'liga', 'dlig';
   -moz-font-feature-settings: 'liga=1, dlig=1';
   -moz-font-feature-settings: 'liga', 'dlig';
@@ -248,16 +259,14 @@ $radioSize: 16px;
   vertical-align: middle;
   word-wrap: normal !important;
   user-select: none;
-
-  opacity: var(--icon-opacity);
 }
 
-@mixin angle($dir: down, $color: currentColor, $width: 2px) {
+@mixin angle($dir: down, $color: currentColor, $width: calc(2rem / 16)) {
   display: block;
   content: '';
   font-size: 0;
-  width: 7px;
-  height: 7px;
+  width: calc(7rem / 16);
+  height: calc(7rem / 16);
   border: solid $color;
   border-width: 0 $width $width 0;
   opacity: 0.8;
@@ -297,7 +306,9 @@ $radioSize: 16px;
 
 @mixin pane {
   background: $white;
-  box-shadow: 0 0 0 1px $grey200, 0 2px 12px transparentize($grey200, 0.5);
+  box-shadow:
+    0 0 0 1px $grey200,
+    0 2px 12px transparentize($grey200, 0.5);
 
   &:focus {
     box-shadow: var(--focus-ring);
@@ -566,8 +577,8 @@ $radioSize: 16px;
 }
 
 @mixin header-btn {
-  width: 30px;
-  height: 30px;
+  width: calc(30rem / 16);
+  height: calc(30rem / 16);
   padding-left: 0;
   padding-right: 0;
 
@@ -608,11 +619,12 @@ $radioSize: 16px;
   overflow: auto;
   background: $white;
   user-select: none;
-  box-shadow: 0 0 0 1px transparentize($grey900, 0.9),
+  box-shadow:
+    0 0 0 1px transparentize($grey900, 0.9),
     0 5px 20px transparentize($grey900, 0.75);
 }
 
-@mixin menu-option-styles {
+@mixin menu-item-styles {
   margin: 0 -14px;
   padding: 10px 14px;
   color: $menuOptionColor;
@@ -620,7 +632,7 @@ $radioSize: 16px;
   white-space: nowrap;
 }
 
-@mixin menu-option-active-styles {
+@mixin menu-item-active-styles {
   color: $menuOptionActiveColor;
   background-color: $menuOptionActiveBackgroundColor;
 }
@@ -695,6 +707,7 @@ $radioSize: 16px;
   @include right(9px);
   user-select: none;
   pointer-events: none;
+  color: var(--ui-control-color);
 }
 
 @mixin select-input-styles {
@@ -918,5 +931,9 @@ $radioSize: 16px;
       #{transparentize($grey300, 0.75)} 75%
     );
   background-size: $size $size;
-  background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
+  background-position:
+    0 0,
+    $halfSize 0,
+    $halfSize -#{$halfSize},
+    0 $halfSize;
 }

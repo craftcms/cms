@@ -8,7 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Chippable;
 use craft\base\ElementInterface;
+use craft\base\Iconic;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\BusyResourceException;
@@ -20,6 +22,8 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
+use craft\helpers\Search;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
@@ -29,6 +33,7 @@ use craft\web\ServiceUnavailableHttpException;
 use DateInterval;
 use Throwable;
 use yii\base\InvalidConfigException;
+use yii\caching\FileDependency;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -365,11 +370,8 @@ class AppController extends Controller
         $currentTime = DateTimeHelper::currentUTCDateTime();
         $tomorrow = $currentTime->add(new DateInterval('P1D'));
 
-        if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
-            return $this->asSuccess();
-        }
-
-        return $this->asFailure(Craft::t('app', 'A server error occurred.'));
+        Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow);
+        return $this->asSuccess();
     }
 
     /**
@@ -681,8 +683,165 @@ class AppController extends Controller
             }
         }
 
+        $view = Craft::$app->getView();
+
         return $this->asJson([
             'elements' => $elementHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
         ]);
+    }
+
+    /**
+     * Renders component chips the control panel.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 5.0.0
+     */
+    public function actionRenderComponents(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+
+        $components = $this->request->getRequiredBodyParam('components');
+        $withMenuItems = (bool)$this->request->getBodyParam('withMenuItems');
+        $menuId = $this->request->getBodyParam('menuId');
+
+        $componentHtml = [];
+        $menuItemHtml = [];
+
+        foreach ($components as $componentInfo) {
+            /** @var string|Chippable $componentType */
+            $componentType = $componentInfo['type'];
+            $id = $componentInfo['id'];
+
+            if (!$id) {
+                throw new BadRequestHttpException('Missing component ID');
+            }
+
+            $component = $componentType::get($id);
+            if ($component) {
+                foreach ($componentInfo['instances'] as $config) {
+                    $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
+                }
+
+                if ($withMenuItems) {
+                    $menuItemHtml[$componentType][$id] = Cp::menuItem([
+                        'label' => $component->getUiLabel(),
+                        'icon' => $component instanceof Iconic ? $component->getIcon() : null,
+                        'attributes' => [
+                            'data' => [
+                                'type' => get_class($component),
+                                'id' => $component->getId(),
+                            ],
+                        ],
+                    ], $menuId);
+                }
+            }
+        }
+
+        $view = Craft::$app->getView();
+        $data = [
+            'components' => $componentHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ];
+
+        if ($withMenuItems) {
+            $data['menuItems'] = $menuItemHtml;
+        }
+
+        return $this->asJson($data);
+    }
+
+    /**
+     * Returns icon picker options.
+     *
+     * @return Response
+     * @since 5.0.0
+     */
+    public function actionIconPickerOptions(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+
+        $search = $this->request->getRequiredBodyParam('search');
+        $noSearch = $search === '';
+
+        if ($noSearch) {
+            $cache = Craft::$app->getCache();
+            $cacheKey = 'icon-picker-options-list-html';
+            $listHtml = $cache->get($cacheKey);
+            if ($listHtml !== false) {
+                return $this->asJson([
+                    'listHtml' => $listHtml,
+                ]);
+            }
+            $searchTerms = null;
+        } else {
+            $searchTerms = explode(' ', Search::normalizeKeywords($search));
+        }
+
+        $indexPath = '@app/icons/index.php';
+        $icons = require Craft::getAlias($indexPath);
+        $output = [];
+        $scores = [];
+
+        foreach ($icons as $name => $icon) {
+            if ($searchTerms) {
+                $score = $this->matchTerms($searchTerms, $icon['name']) * 5 + $this->matchTerms($searchTerms, $icon['terms']);
+                if ($score === 0) {
+                    continue;
+                }
+                $scores[] = $score;
+            }
+
+            $file = Craft::getAlias("@appicons/$name.svg");
+            $output[] = Html::beginTag('li') .
+                Html::button(file_get_contents($file), [
+                    'class' => 'icon-picker--icon',
+                    'title' => $name,
+                    'aria' => [
+                        'label' => $name,
+                    ],
+                ]) .
+                Html::endTag('li');
+        }
+
+        if ($searchTerms) {
+            array_multisort($scores, SORT_DESC, $output);
+        }
+
+        $listHtml = implode('', $output);
+
+        if ($noSearch) {
+            /** @phpstan-ignore-next-line */
+            $cache->set($cacheKey, $listHtml, dependency: new FileDependency([
+                'fileName' => $indexPath,
+            ]));
+        }
+
+        return $this->asJson([
+            'listHtml' => $listHtml,
+        ]);
+    }
+
+    private function matchTerms(array $searchTerms, string $indexTerms): int
+    {
+        $score = 0;
+
+        foreach ($searchTerms as $searchTerm) {
+            // extra points for whole word matches
+            if (str_contains($indexTerms, " $searchTerm ")) {
+                $score += 10;
+            } elseif (str_contains($indexTerms, " $searchTerm")) {
+                $score += 1;
+            } else {
+                return 0;
+            }
+        }
+
+        return $score;
     }
 }

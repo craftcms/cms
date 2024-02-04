@@ -15,44 +15,55 @@
       :is="isMenuButton ? 'div' : 'button'"
       ref="button"
       class="btn"
-      :class="{
-        menubtn: isMenuButton,
-        error: error,
-        disabled: !enabled || buttonDisabled,
-      }"
+      :class="menuBtnClasses"
       :data-icon="icon"
       :disabled="buttonDisabled"
       :type="enabled && !isMenuButton && !ajax ? 'submit' : null"
       v-on="
         enabled && !isMenuButton && ajax
-          ? {click: handleClick(param, value, action, ajax)}
+          ? {click: handleClick(param, value, action, ajax, handleClick)}
           : {}
       "
       >{{ label }}</component
     >
     <div class="menu" v-if="isMenuButton">
       <template v-for="(actList, ind) in actionsList">
+        <hr
+          v-if="
+            actionsList.length > 1 && ind === actionsList.length - 1 && ind != 0
+          "
+          :key="ind"
+        />
         <ul class="padded" :key="ind">
           <li v-for="(act, index) in actList" :key="index">
             <a
               href="#"
               :class="{
-                error: act.error !== undefined && act.error,
-                disabled:
-                  act.allowMultiple !== undefined &&
-                  !act.allowMultiple &&
-                  hasMultipleSelected,
+                ...(act.class ? act.class : {}),
+                ...{
+                  error: act.error,
+                  disabled:
+                    typeof act.allowMultiple !== 'undefined' &&
+                    !act.allowMultiple &&
+                    hasMultipleSelected,
+                },
               }"
               :data-param="act.param"
               :data-value="act.value"
               :data-ajax="act.ajax"
               @click.prevent="
                 !(
-                  act.allowMultiple !== undefined &&
+                  typeof act.allowMultiple !== 'undefined' &&
                   !act.allowMultiple &&
                   hasMultipleSelected
                 )
-                  ? handleClick(act.param, act.value, act.action, act.ajax)
+                  ? handleClick(
+                      act.param,
+                      act.value,
+                      act.action,
+                      act.ajax,
+                      act.handleClick
+                    )
                   : null
               "
             >
@@ -91,6 +102,14 @@
         type: Boolean,
         default: true,
       },
+      handleClick: {
+        type: Boolean,
+        default: true,
+      },
+      menuBtnClass: {
+        type: String,
+        default: '',
+      },
       enabled: Boolean,
       ids: Array,
       label: String,
@@ -113,7 +132,14 @@
     },
 
     methods: {
-      handleClick(param, value, action, ajax) {
+      handleClick(param, value, action, ajax, handleClick) {
+        this.$emit('click', param, value, action, ajax);
+
+        // Is the action button the one to deal with the click?
+        if (typeof handleClick !== 'undefined' && !handleClick) {
+          return;
+        }
+
         if (ajax) {
           let data = {
             ids: this.ids,
@@ -200,6 +226,28 @@
         }
 
         return true;
+      },
+
+      menuBtnClasses() {
+        let menuBtnClasses = [];
+
+        if (this.isMenuButton) {
+          menuBtnClasses.push('menubtn');
+        }
+
+        if (this.error) {
+          menuBtnClasses.push('error');
+        }
+
+        if (!this.enabled || this.buttonDisabled) {
+          menuBtnClasses.push('disabled');
+        }
+
+        if (this.menuBtnClass) {
+          menuBtnClasses.push(this.menuBtnClass);
+        }
+
+        return menuBtnClasses;
       },
     },
 

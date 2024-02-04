@@ -58,8 +58,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.$editLink = $('<a/>', {
         target: '_blank',
         class: 'btn header-btn hidden',
-        title: Craft.t('app', 'Open the full edit page in a new tab'),
-        'aria-label': Craft.t('app', 'Open the full edit page in a new tab'),
+        title: Craft.t('app', 'Open in a new tab'),
+        'aria-label': Craft.t('app', 'Open in a new tab'),
         'data-icon': 'external',
       }).appendTo(this.$toolbar);
       this.$sidebarBtn = $('<button/>', {
@@ -301,6 +301,29 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           this.hasCpLink = false;
         }
 
+        if (data.actionMenu) {
+          const labelId = Craft.namespaceId(
+            'action-menu-label',
+            this.namespace
+          );
+          const menuId = Craft.namespaceId('action-menu', this.namespace);
+          $('<label/>', {
+            id: labelId,
+            class: 'visually-hidden',
+            text: Craft.t('app', 'Actions'),
+          }).insertBefore(this.$editLink);
+          const $trigger = $('<button/>', {
+            class: 'btn action-btn header-btn',
+            type: 'button',
+            title: Craft.t('app', 'Actions'),
+            'aria-controls': menuId,
+            'aria-describedby': labelId,
+            'data-disclosure-trigger': 'true',
+          }).insertBefore(this.$editLink);
+          $(data.actionMenu).insertBefore(this.$editLink);
+          $trigger.disclosureMenu();
+        }
+
         if (data.sidebar) {
           this.$container.addClass('has-sidebar');
           this.$sidebarBtn.removeClass('hidden');
@@ -333,11 +356,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         this.updateHeaderVisibility();
         this.$footer.removeClass('hidden');
 
-        Garnish.requestAnimationFrame(() => {
-          Craft.appendHeadHtml(data.headHtml);
-          Craft.appendBodyHtml(data.bodyHtml);
-
+        Garnish.requestAnimationFrame(async () => {
           Craft.initUiElements(this.$content);
+          await Craft.appendHeadHtml(data.headHtml);
+          await Craft.appendBodyHtml(data.bodyHtml);
           Craft.cp.elementThumbLoader.load($(this.$content));
 
           if (data.sidebar) {
@@ -466,7 +488,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
     handleSubmit: function (ev) {
       ev.preventDefault();
-      this.submit();
+      // give other submit handlers a chance to modify things
+      setTimeout(() => {
+        this.submit();
+      }, 1);
     },
 
     submit: function () {
@@ -503,6 +528,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       if (data.message) {
         Craft.cp.displaySuccess(data.message, data.notificationSettings);
       }
+      if (data.modelClass && data.modelId) {
+        Craft.refreshComponentInstances(data.modelClass, data.modelId);
+      }
       this.trigger('submit', {
         response: response,
         data: (data.modelName && data[data.modelName]) || {},
@@ -536,10 +564,33 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.clearErrors();
 
       Object.entries(errors).forEach(([name, fieldErrors]) => {
-        const $field = this.$container.find(`[data-attribute="${name}"]`);
+        const $field = this.$container.find(`[data-error-key="${name}"]`);
         if ($field) {
           Craft.ui.addErrorsToField($field, fieldErrors);
           this.fieldsWithErrors.push($field);
+
+          // mark the tab as having errors
+          let fieldTabAnchors = Craft.ui.findTabAnchorForField(
+            $field,
+            this.$container
+          );
+
+          if (fieldTabAnchors.length > 0) {
+            for (let i = 0; i < fieldTabAnchors.length; i++) {
+              let $fieldTabAnchor = $(fieldTabAnchors[i]);
+
+              if ($fieldTabAnchor.hasClass('error') == false) {
+                $fieldTabAnchor.addClass('error');
+                $fieldTabAnchor
+                  .find('.tab-label')
+                  .append(
+                    '<span data-icon="alert">' +
+                      '<span class="visually-hidden">This tab contains errors</span>\n' +
+                      '</span>'
+                  );
+              }
+            }
+          }
         }
       });
     },

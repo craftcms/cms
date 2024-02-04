@@ -10,13 +10,13 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\behaviors\DraftBehavior;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\helpers\Db;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /**
@@ -27,6 +27,9 @@ use yii\web\Response;
  */
 class NestedElementsController extends Controller
 {
+    private ElementInterface $owner;
+    private ElementQueryInterface|ElementCollection $nestedElements;
+
     /**
      * @inheritdoc
      */
@@ -37,6 +40,34 @@ class NestedElementsController extends Controller
         }
 
         $this->requireCpRequest();
+
+        // Get the owner element
+        /** @var ElementInterface|string $ownerElementType */
+        $ownerElementType = $this->request->getRequiredBodyParam('ownerElementType');
+        $ownerId = $this->request->getRequiredBodyParam('ownerId');
+        $ownerSiteId = $this->request->getRequiredBodyParam('ownerSiteId');
+        $owner = Craft::$app->getElements()->getElementById($ownerId, $ownerElementType, $ownerSiteId);
+        if (!$owner) {
+            throw new BadRequestHttpException('Invalid owner params');
+        }
+        $this->owner = $owner;
+
+        // Make sure they're authorized to manage it
+        $session = Craft::$app->getSession();
+        $attribute = $this->request->getRequiredBodyParam('attribute');
+        if (
+            !$session->checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->id, $attribute)) &&
+            (
+                $owner->id === $owner->getCanonicalId() ||
+                !$session->checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->getCanonicalId(), $attribute))
+            )
+        ) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action');
+        }
+
+        // Set the nested elements for the action
+        $this->nestedElements = $this->owner->$attribute;
+
         return true;
     }
 
@@ -47,42 +78,18 @@ class NestedElementsController extends Controller
      */
     public function actionReorder(): Response
     {
-        /** @var ElementInterface|string $ownerElementType */
-        $ownerElementType = $this->request->getRequiredBodyParam('ownerElementType');
-        $ownerId = $this->request->getRequiredBodyParam('ownerId');
-        $ownerSiteId = $this->request->getRequiredBodyParam('ownerSiteId');
-        $attribute = $this->request->getRequiredBodyParam('attribute');
         $ids = array_map(fn($id) => (int)$id, $this->request->getRequiredBodyParam('elementIds'));
         $offset = $this->request->getRequiredBodyParam('offset');
 
-        $elementsService = Craft::$app->getElements();
-        $owner = $elementsService->getElementById($ownerId, $ownerElementType, $ownerSiteId);
-
-        if (!$owner) {
-            throw new BadRequestHttpException('Invalid owner params');
-        }
-
-        $authorizedOwnerId = $owner->id;
-        if ($owner->isProvisionalDraft) {
-            /** @var ElementInterface|DraftBehavior $owner */
-            if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
-                $authorizedOwnerId = $owner->getCanonicalId();
-            }
-        }
-        $this->requireAuthorization(sprintf('editNestedElements::%s::%s', $authorizedOwnerId, $attribute));
-
-        // Get the current sort orders, so we know what needs to change
-        /** @var ElementQueryInterface|ElementCollection $nestedElements */
-        $nestedElements = $owner->$attribute;
-
-        if ($nestedElements instanceof ElementQueryInterface) {
-            $oldSortOrders = (clone $nestedElements)
+        if ($this->nestedElements instanceof ElementQueryInterface) {
+            $oldSortOrders = (clone $this->nestedElements)
                 ->asArray()
                 ->select(['id', 'sortOrder'])
                 ->pairs();
         } else {
-            $oldSortOrders = $nestedElements
-                ->keyBy(fn(NestedElementInterface $element) => $element->id)
+            $oldSortOrders = $this->nestedElements
+                ->keyBy(fn(ElementInterface $element) => $element->id)
+                /** @phpstan-ignore-next-line */
                 ->map(fn(NestedElementInterface $element) => $element->getSortOrder())
                 ->all();
         }
@@ -98,16 +105,73 @@ class NestedElementsController extends Controller
                 Db::update(Table::ELEMENTS_OWNERS, [
                     'sortOrder' => $sortOrder,
                 ], [
-                    'ownerId' => $owner->id,
+                    'ownerId' => $this->owner->id,
                     'elementId' => $id,
                 ]);
             }
         }
 
-        $elementsService->invalidateCachesForElement($owner);
+        Craft::$app->getElements()->invalidateCachesForElement($this->owner);
 
         return $this->asSuccess(Craft::t('app', 'New {total, plural, =1{position} other{positions}} saved.', [
             'total' => count($ids),
+        ]));
+    }
+
+    /**
+     * Deletes a given element.
+     *
+     * @return Response
+     */
+    public function actionDelete(): Response
+    {
+        $elementId = (int)$this->request->getRequiredBodyParam('elementId');
+
+        if ($this->nestedElements instanceof ElementQueryInterface) {
+            $element = $this->nestedElements
+                ->id($elementId)
+                ->status(null)
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->one();
+        } else {
+            $element = $this->nestedElements->first(
+                fn(ElementInterface $element) => (
+                    $element->id === $elementId ||
+                    $element->getCanonicalId() === $elementId
+                )
+            );
+        }
+
+        if (!$element) {
+            throw new BadRequestHttpException('Invalid elementId param');
+        }
+
+        $elementsService = Craft::$app->getElements();
+
+        if (!$elementsService->canDelete($element)) {
+            throw new ForbiddenHttpException('User not authorized to delete this element.');
+        }
+
+        // If the element primarily belongs to a different element, just delete the ownership
+        if ($element->getPrimaryOwnerId() !== $this->owner->id) {
+            Db::delete(Table::ELEMENTS_OWNERS, [
+                'elementId' => $element->id,
+                'ownerId' => $this->owner->id,
+            ]);
+            $success = true;
+        } else {
+            $success = $elementsService->deleteElement($element);
+        }
+
+        if (!$success) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ]));
+        }
+
+        return $this->asSuccess(Craft::t('app', '{type} deleted.', [
+            'type' => $element::displayName(),
         ]));
     }
 }

@@ -23,11 +23,25 @@ use yii\validators\Validator;
  * @mixin YiiComponent
  * @mixin Model
  * @mixin SavableComponentTrait
+ * @phpstan-require-extends Field
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface FieldInterface extends SavableComponentInterface
+interface FieldInterface extends SavableComponentInterface, Chippable
 {
+    /**
+     * Returns the field type’s SVG icon.
+     *
+     * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
+     * the path to an SVG file, or raw SVG markup.
+     *
+     * System icons can be found in `src/icons/solid/.`
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public static function icon(): string;
+
     /**
      * Returns whether the field can be included multiple times within a field layout.
      *
@@ -81,11 +95,8 @@ interface FieldInterface extends SavableComponentInterface
      * Returns the DB data type(s) that this field will store within the `elements_sites.content` column.
      *
      * ```php
-     * return 'string(100)';
+     * return \yii\db\Schema::TYPE_STRING;
      * ```
-     *
-     * [[\yii\db\QueryBuilder::getColumnType()]] will be used to normalize the provided type.
-     * For example, `string(100)` will become `varchar(100)`.
      *
      * Specifying the DB type isn’t strictly necessary, but it enables individual field values to be targeted
      * by functional indexes.
@@ -95,8 +106,8 @@ interface FieldInterface extends SavableComponentInterface
      *
      * ```php
      * return [
-     *     'date' => 'datetime',
-     *     'tz' => 'string',
+     *     'date' => \yii\db\Schema::TYPE_DATETIME,
+     *     'tz' => \yii\db\Schema::TYPE_STRING,
      * ];
      * ```
      *
@@ -382,6 +393,8 @@ interface FieldInterface extends SavableComponentInterface
      * - If an existing element was retrieved from the database, the value will be whatever is stored in the field’s
      *   `content` table column. (Or if the field doesn’t have a `content` table column per [[hasContentColumn()]],
      *   the value will be `null`.)
+     * - If the field is being cleared out (e.g. via the `resave/entries` command with `--to :empty:`),
+     *   the value will be an empty string (`''`).
      *
      * There are cases where a pre-normalized value could be passed in as well, so be sure to account for that.
      *
@@ -438,10 +451,11 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns a SQL expression which extracts the field’s value from the `elements_sites.content` column.
      *
+     * @param string|null $key The data key to fetch, if this field stores multiple values
      * @return string|null
      * @since 5.0.0
      */
-    public function getValueSql(): ?string;
+    public function getValueSql(string $key = null): ?string;
 
     /**
      * Modifies an element index query.
@@ -537,6 +551,23 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element that was just deleted
      */
     public function afterElementDelete(ElementInterface $element): void;
+
+    /**
+     * Performs actions before an element is deleted for a site.
+     *
+     * @param ElementInterface $element The element that is about to be deleted
+     * @return bool Whether the element should be deleted for a site
+     * @since 4.7.0
+     */
+    public function beforeElementDeleteForSite(ElementInterface $element): bool;
+
+    /**
+     * Performs actions after the element has been deleted.
+     *
+     * @param ElementInterface $element The element that was just deleted for a site
+     * @since 4.7.0
+     */
+    public function afterElementDeleteForSite(ElementInterface $element): void;
 
     /**
      * Performs actions before an element is restored.

@@ -697,7 +697,11 @@ class Request extends \yii\web\Request
      */
     public function getIsPreview(): bool
     {
-        return $this->getQueryParam('x-craft-preview') !== null || $this->getQueryParam('x-craft-live-preview') !== null;
+        return (
+            ($this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview')) !== null &&
+            // If there's a token but it expired, they're looking at the live site
+            (!$this->getHadToken() || $this->getToken() !== null)
+        );
     }
 
     /**
@@ -834,7 +838,7 @@ class Request extends \yii\web\Request
             // Was a namespace passed?
             $namespace = $this->getHeaders()->get('X-Craft-Namespace');
             if ($namespace) {
-                $params = $params[$namespace] ?? [];
+                $params = ArrayHelper::getValue($params, $namespace, []);
             }
 
             $this->setBodyParams($this->_utf8AllTheThings($params));
@@ -975,6 +979,23 @@ class Request extends \yii\web\Request
         }
 
         return parent::getQueryParams();
+    }
+
+    /**
+     * Returns the named GET parameters, without the path parameter.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getQueryParamsWithoutPath(): array
+    {
+        $params = $this->getQueryParams();
+
+        if ($this->generalConfig->pathParam) {
+            unset($params[$this->generalConfig->pathParam]);
+        }
+
+        return $params;
     }
 
     /**

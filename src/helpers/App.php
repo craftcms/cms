@@ -44,6 +44,8 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
+use yii\mutex\MysqlMutex;
+use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
 
 /**
@@ -175,6 +177,9 @@ class App
      * If the string references an environment variable with a value of `true`
      * or `false`, a boolean value will be returned.
      *
+     * If the string references an environment variable that’s not defined,
+     * `null` will be returned.
+     *
      * ---
      *
      * ```php
@@ -197,8 +202,8 @@ class App
             $env = static::env($matches[1]);
 
             if ($env === null) {
-                // starts with $ but not an environment variable/constant, so just give up, it's hopeless!
-                return $value;
+                // No env var or constant is defined here by that name
+                return null;
             }
 
             $value = $env;
@@ -239,7 +244,11 @@ class App
             return null;
         }
 
-        return filter_var(static::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        $value = static::parseEnv($value);
+        if ($value === null) {
+            return null;
+        }
+        return filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
     }
 
     /**
@@ -984,6 +993,32 @@ class App
     }
 
     /**
+     * Returns a database-based mutex driver config.
+     *
+     * @return array
+     * @since 4.6.0
+     */
+    public static function dbMutexConfig(): array
+    {
+        // Use a dedicated connection, to avoid erratic behavior when locks are used during transactions
+        // https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions
+        $dbConfig = static::dbConfig();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            return [
+                'class' => MysqlMutex::class,
+                'db' => $dbConfig,
+                'keyPrefix' => Craft::$app->id,
+            ];
+        }
+
+        return [
+            'class' => PgsqlMutex::class,
+            'db' => $dbConfig,
+        ];
+    }
+
+    /**
      * Returns a file-based mutex driver config.
      *
      * ::: tip
@@ -994,6 +1029,7 @@ class App
      *
      * @return array
      * @since 3.0.18
+     * @deprecated in 4.6.0
      */
     public static function mutexConfig(): array
     {

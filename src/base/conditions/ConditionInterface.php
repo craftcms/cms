@@ -9,9 +9,10 @@ use yii\base\InvalidArgumentException;
  *
  * A base implementation is provided by [[BaseCondition]].
  *
+ * @mixin BaseCondition
+ * @phpstan-require-extends BaseCondition
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @mixin BaseCondition
  */
 interface ConditionInterface
 {
@@ -46,16 +47,6 @@ interface ConditionInterface
      * @throws InvalidArgumentException if the condition rule does not implement [[ConditionRuleInterface]]
      */
     public function createConditionRule(array|string $config): ConditionRuleInterface;
-
-    /**
-     * Returns the available rule types for this condition.
-     *
-     * Rule types should be defined as either the class name or an array with a `class` key set to the class name.
-     *
-     * @return string[]|array[]
-     * @phpstan-return string[]|array{class:string}[]
-     */
-    public function getConditionRuleTypes(): array;
 
     /**
      * Returns the selectable rules for the condition, indexed by type.

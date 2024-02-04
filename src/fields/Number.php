@@ -54,6 +54,14 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'input-numeric';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function phpType(): string
     {
         return 'int|float|null';

@@ -461,7 +461,7 @@ class DateTimeHelper
      */
     public static function nextYear(?DateTimeZone $timeZone = null): DateTime
     {
-        return static::thisMonth($timeZone)->modify('+1 year');
+        return static::thisYear($timeZone)->modify('+1 year');
     }
 
     /**
@@ -473,7 +473,7 @@ class DateTimeHelper
      */
     public static function lastYear(?DateTimeZone $timeZone = null): DateTime
     {
-        return static::thisMonth($timeZone)->modify('-1 year');
+        return static::thisYear($timeZone)->modify('-1 year');
     }
 
     /**
@@ -951,7 +951,7 @@ class DateTimeHelper
                                 (?:\.\d+)?                       # .s (decimal fraction of a second -- not supported)
                             )?
                             (?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?    # An optional space and AM or PM
-                            (?P<tz>Z|(?P<tzd>[+\-]\d\d\:?\d\d))? # Z or [+ or -]hh(:)ss (UTC or a timezone offset)
+                            (?P<tz>Z|(?P<tzd>[+\-]\d\d\:?\d\d)|([ ]?(?P<tz2>[a-zA-Z]{1,5}))|([ ]?(?P<tz3>(Africa|America|Antarctica|Arctic|Asia|Atlantic|Australia|Europe|Indian|Pacific)\/[\w-]+(\/[\w-]+)?)))? # Z or [+ or -]hh(:)ss or timezone abbreviation or IANA notation timezone
                         )?
                     )?
                 )?$/x', $value, $m)) {
@@ -974,6 +974,12 @@ class DateTimeHelper
                 if (!empty($m['tzd'])) {
                     $format .= str_contains($m['tzd'], ':') ? 'P' : 'O';
                     $date .= $m['tzd'];
+                } elseif (!empty($m['tz2'])) {
+                    $format .= ' e';
+                    $date .= ' ' . static::normalizeTimeZone($m['tz2']);
+                } elseif (!empty($m['tz3'])) {
+                    $format .= ' e';
+                    $date .= ' ' . $m['tz3'];
                 } else {
                     // "Z" = UTC
                     $format .= 'e';

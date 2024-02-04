@@ -39,12 +39,6 @@ class Gmail extends BaseTransportAdapter
     public ?string $password = null;
 
     /**
-     * @var int The timeout duration (in seconds)
-     * @deprecated in 4.3.7.
-     */
-    public int $timeout = 10;
-
-    /**
      * @inheritdoc
      */
     protected function defineBehaviors(): array

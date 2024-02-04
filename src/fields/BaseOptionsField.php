@@ -53,13 +53,17 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
+    public static function phpType(): string
+    {
+        return sprintf('\\%s', static::$multi ? MultiOptionsFieldData::class : SingleOptionFieldData::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function dbType(): string
     {
-        if (!static::$multi) {
-            return Schema::TYPE_STRING;
-        }
-
-        return parent::dbType();
+        return static::$multi ? Schema::TYPE_JSON : Schema::TYPE_STRING;
     }
 
     /**
@@ -259,6 +263,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'cols' => $cols,
             'rows' => $rows,
             'errors' => $this->getErrors('options'),
+            'data' => ['error-key' => 'options'],
         ]);
     }
 
@@ -278,7 +283,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = Json::decodeIfJson($value);
         } elseif ($value === '' && static::$multi) {
             $value = [];
-        } elseif ($value === '__BLANK__') {
+        } elseif (strtolower($value) === '__blank__') {
             $value = '';
         } elseif ($value === null && $this->isFresh($element)) {
             $value = $this->defaultValue();
@@ -427,12 +432,11 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var MultiOptionsFieldData|SingleOptionFieldData $value */
-        if ($value instanceof SingleOptionFieldData) {
-            return $value->value === null || $value->value === '';
+        if ($value instanceof MultiOptionsFieldData) {
+            return count($value) === 0;
         }
 
-        return count($value) === 0;
+        return $value->value === null || $value->value === '';
     }
 
     /**
@@ -446,7 +450,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
             foreach ($value as $option) {
                 /** @var OptionData $option */
-                if ($option->value) {
+                if (!$this->isValueEmpty($option, $element)) {
                     $labels[] = Craft::t('site', $option->label);
                 }
             }
@@ -455,7 +459,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         /** @var SingleOptionFieldData $value */
-        return $value->value ? Craft::t('site', (string)$value->label) : '';
+        return !$this->isValueEmpty($value, $element) ? Craft::t('site', (string)$value->label) : '';
     }
 
     /**

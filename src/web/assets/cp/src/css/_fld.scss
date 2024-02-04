@@ -3,7 +3,7 @@
 
 $base: 24px;
 $tabPadding: 14px;
-$tabWidth: $base * 10;
+$tabWidth: $base * 11;
 $gridColor: hsl(212, 50%, 95%);
 
 @mixin workspaceBg {
@@ -54,14 +54,20 @@ $gridColor: hsl(212, 50%, 95%);
     height: 100%;
     width: $tabWidth + 1;
     padding: $tabPadding;
-    overflow: auto;
-    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 
     .btngroup {
       margin-bottom: $tabPadding;
     }
 
     .fld-field-library {
+      margin: -3px;
+      padding: 3px;
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+
       .fld-field-group {
         margin-top: $tabPadding;
 
@@ -87,14 +93,9 @@ $gridColor: hsl(212, 50%, 95%);
 .fld-new-tab-btn,
 .fld-new-tab-btn:hover {
   background-color: var(--white);
-  box-shadow: 0 0 0 1px transparentize($grey900, 0.9),
+  box-shadow:
+    0 0 0 1px transparentize($grey900, 0.9),
     0 2px 5px -2px transparentize($grey900, 0.8);
-}
-
-.fld-tab .settings,
-.fld-element .settings,
-.fld-element .slide-picker {
-  @include margin-left(7px);
 }
 
 .fld-tab .settings:before,
@@ -124,6 +125,7 @@ $gridColor: hsl(212, 50%, 95%);
 
     .tab {
       display: flex;
+      gap: var(--xs);
       max-width: calc(100% - 10px);
       box-sizing: border-box;
       padding: 8px $tabPadding;
@@ -173,22 +175,12 @@ $gridColor: hsl(212, 50%, 95%);
   min-height: 24px;
 }
 
-.fld-indicator {
-  display: inline-flex;
-  font-size: 11px;
-  color: var(--uicontrol-color);
-  @include margin-left(4px);
-
-  & + .fld-indicator {
-    @include margin-left(2px);
-  }
-}
-
 .fld-element {
   position: relative;
   display: flex;
   align-items: center;
-  padding: 7px 10px;
+  padding: var(--s);
+  gap: var(--s);
   box-shadow: inset 0 0 0 1px var(--hairline-color);
   border-radius: var(--medium-border-radius);
   background-color: var(--white);
@@ -222,25 +214,14 @@ $gridColor: hsl(212, 50%, 95%);
       box-shadow: none;
     }
 
-    .fld-field-hidden:not(.hidden) {
-      margin-top: -3px;
-      @include margin-right(5px);
-
-      &:before {
-        @include icon;
-        content: 'shuteye';
-      }
-    }
-
     .field-name {
-      .fld-element-label {
-        margin-bottom: 2px;
-      }
+      display: flex;
+      flex-direction: column;
+      gap: var(--xs);
     }
   }
 
   .fld-element-icon {
-    @include margin-right(5px);
     text-align: center;
 
     &,
@@ -282,16 +263,17 @@ $gridColor: hsl(212, 50%, 95%);
 
 .fld-hr,
 .fld-br {
+  position: relative;
+  flex: 1;
   display: flex;
   justify-content: center;
-  padding: 9px 10px;
 
   &:before {
     position: absolute;
     display: block;
     top: calc(50% - 2px);
-    left: 10px;
-    width: calc(100% - 20px);
+    left: 0;
+    width: 100%;
     height: 4px;
     content: '';
     font-size: 0;
@@ -300,9 +282,13 @@ $gridColor: hsl(212, 50%, 95%);
 
   .smalltext {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background-color: var(--gray-100);
-    border-radius: 8px;
-    padding: 1px 7px;
+    border-radius: var(--large-border-radius);
+    padding: 0 var(--s);
+    height: var(--touch-target-size);
   }
 }
 

@@ -40,9 +40,15 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function getFunctions(): array
     {
         return [
+            new TwigFunction('chip', [Cp::class, 'chipHtml'], ['is_safe' => ['html']]),
+            new TwigFunction('customSelect', [Cp::class, 'customSelectHtml'], ['is_safe' => ['html']]),
+            new TwigFunction('disclosureMenu', [Cp::class, 'disclosureMenu'], ['is_safe' => ['html']]),
             new TwigFunction('elementCard', [Cp::class, 'elementCardHtml'], ['is_safe' => ['html']]),
             new TwigFunction('elementChip', [Cp::class, 'elementChipHtml'], ['is_safe' => ['html']]),
             new TwigFunction('elementIndex', [Cp::class, 'elementIndexHtml'], ['is_safe' => ['html']]),
+            new TwigFunction('statusIndicator', [Cp::class, 'statusIndicatorHtml'], ['is_safe' => ['html']]),
+            new TwigFunction('siteMenuItems', [Cp::class, 'siteMenuItems']),
+            new TwigFunction('iconSvg', [Cp::class, 'iconSvg'], ['is_safe' => ['html']]),
         ];
     }
 }

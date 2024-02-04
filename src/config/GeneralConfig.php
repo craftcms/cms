@@ -89,6 +89,7 @@ class GeneralConfig extends BaseConfig
         'alwaysShowFocusRings' => false,
         'useShapes' => false,
         'underlineLinks' => false,
+        'disableAutofocus' => false,
         'notificationDuration' => 5000,
     ];
 
@@ -387,9 +388,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether drafts should be saved automatically as they are edited.
      *
-     * ::: warning
-     * Disabling this will also disable Live Preview.
-     * :::
+     * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
      *
      * ::: code
      * ```shell Environment Override
@@ -955,6 +954,26 @@ class GeneralConfig extends BaseConfig
      * @since 3.1.9
      */
     public string|array|null $disabledPlugins = null;
+
+    /**
+     * @var string[] Array of utility IDs that should be disabled.
+     *
+     * ::: code
+     * ```php Static Config
+     *  ->disabledUtilities([
+     *      'updates',
+     *      'find-replace',
+     *  ])
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DISABLED_UTILITIES=updates,find-replace
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 4.6.0
+     */
+    public array $disabledUtilities = [];
 
     /**
      * @var bool Whether front end requests should respond with `X-Robots-Tag: none` HTTP headers, indicating that pages should not be indexed,
@@ -1893,6 +1912,36 @@ class GeneralConfig extends BaseConfig
     public string $pageTrigger = 'p';
 
     /**
+     * @var string The path within the `templates` folder where element partial templates will live.
+     *
+     * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
+     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     *
+     * For example, you could render all the entries within a Matrix field like so:
+     *
+     * ```twig
+     * {{ entry.myMatrixField.render() }}
+     * ```
+     *
+     * The full path to a partial template will also include the element type handle (e.g. `asset` or `entry`) and the
+     * field layout provider’s handle (e.g. the volume handle or entry type handle). For an entry of type `article`,
+     * that would be: `_partials/entry/article.twig`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->partialTemplatesPath('_cp/partials')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PARTIAL_TEMPLATES_PATH=_cp/partials
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 5.0.0
+     */
+    public string $partialTemplatesPath = '_partials';
+
+    /**
      * @var string|null The query string param that Craft will check when determining the request’s path.
      *
      * This can be set to `null` if your web server is capable of directing traffic to `index.php` without a query string param.
@@ -2757,6 +2806,23 @@ class GeneralConfig extends BaseConfig
     public ?array $secureProtocolHeaders = null;
 
     /**
+     * @var bool Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->showFirstAndLastNameFields()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SHOW_FIRST_AND_LAST_NAME_FIELDS=true
+     * ```
+     * :::
+     *
+     * @group Users
+     * @since 4.6.0
+     */
+    public bool $showFirstAndLastNameFields = false;
+
+    /**
      * @var mixed The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
      *
      * Set to `0` if you don’t ever want to delete soft-deleted items.
@@ -2794,6 +2860,24 @@ class GeneralConfig extends BaseConfig
      * @since 3.1.0
      */
     public bool $storeUserIps = false;
+
+    /**
+     * @var string|null The handle of the filesystem that should be used for storing temporary asset uploads. A local temp folder will
+     * be used by default.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_TEMP_ASSET_UPLOAD_FS=tempAssetUploads
+     * ```
+     * :::
+     *
+     * @group Assets
+     * @since 5.0.0
+     */
+    public ?string $tempAssetUploadFs = null;
 
     /**
      * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
@@ -3213,6 +3297,7 @@ class GeneralConfig extends BaseConfig
      * - `alwaysShowFocusRings` - Whether focus rings should always be shown when an element has focus.
      * - `useShapes` – Whether shapes should be used to represent statuses.
      * - `underlineLinks` – Whether links should be underlined.
+     * - `disableAutofocus` – Whether search inputs should be focused on page load.
      * - `notificationDuration` – How long notifications should be shown before they disappear automatically (in
      *   milliseconds). Set to `0` to show them indefinitely.
      *
@@ -4085,7 +4170,7 @@ class GeneralConfig extends BaseConfig
      * ```php
      * ->dev([
      *     'disabledPlugins' => '*',
-     * ],
+     * ])
      * ```
      *
      * ::: warning
@@ -4110,6 +4195,33 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->disabledPlugins = $value;
+        return $this;
+    }
+
+    /**
+     * Array of utility IDs that should be disabled.
+     *
+     *  ::: code
+     *  ```php Static Config
+     *   ->disabledUtilities([
+     *       'updates',
+     *       'find-replace',
+     *   ])
+     *  ```
+     *  ```shell Environment Override
+     *  CRAFT_DISABLED_UTILITIES=updates,find-replace
+     *  ```
+     *  :::
+     *
+     * @group System
+     * @param string[] $value
+     * @return self
+     * @see $disabledUtilities
+     * @since 4.6.0
+     */
+    public function disabledUtilities(array $value): self
+    {
+        $this->disabledUtilities = $value;
         return $this;
     }
 
@@ -5174,6 +5286,43 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * The path within the `templates` folder where element partial templates will live.
+     *
+     * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
+     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     *
+     * For example, you could render all the entries within a Matrix field like so:
+     *
+     * ```twig
+     * {{ entry.myMatrixField.render() }}
+     * ```
+     *
+     * The full path to a partial template will also include the element type handle (e.g. `asset` or `entry`) and the
+     * field layout provider’s handle (e.g. the volume handle or entry type handle). For an entry of type `article`,
+     * that would be: `_partials/entry/article.twig`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->partialTemplatesPath('_cp/partials')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PARTIAL_TEMPLATES_PATH=_cp/partials
+     * ```
+     * :::
+     *
+     * @group System
+     * @param string $value
+     * @return self
+     * @see $partialTemplatesPath
+     * @since 5.0.0
+     */
+    public function partialTemplatesPath(string $value): self
+    {
+        $this->partialTemplatesPath = $value;
+        return $this;
+    }
+
+    /**
      * The query string param that Craft will check when determining the request’s path.
      *
      * This can be set to `null` if your web server is capable of directing traffic to `index.php` without a query string param.
@@ -5499,7 +5648,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 1 hour
-     * ->previewTokenDuration(3600),
+     * ->previewTokenDuration(3600)
      * ```
      *
      * @group Security
@@ -5552,7 +5701,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 2 weeks
-     * ->purgePendingUsersDuration(1209600),
+     * ->purgePendingUsersDuration(1209600)
      * ```
      *
      * @group Garbage Collection
@@ -5576,7 +5725,7 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * // 1 week
-     * ->purgeStaleUserSessionDuration(604800),
+     * ->purgeStaleUserSessionDuration(604800)
      * ```
      *
      * @group Garbage Collection
@@ -6157,7 +6306,7 @@ class GeneralConfig extends BaseConfig
      *     'CF-Visitor' => [
      *         '{\"scheme\":\"https\"}',
      *     ],
-     * ],
+     * ])
      * ```
      *
      * @group Security
@@ -6169,6 +6318,25 @@ class GeneralConfig extends BaseConfig
     public function secureProtocolHeaders(?array $value): self
     {
         $this->secureProtocolHeaders = $value;
+        return $this;
+    }
+
+    /**
+     * Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
+     *
+     * ```php
+     * ->showFirstAndLastNameFields()
+     * ```
+     *
+     * @group Users
+     * @param bool $value
+     * @return self
+     * @see $showFirstAndLastNameFields
+     * @since 4.6.0
+     */
+    public function showFirstAndLastNameFields(bool $value = true): self
+    {
+        $this->showFirstAndLastNameFields = $value;
         return $this;
     }
 
@@ -6212,6 +6380,26 @@ class GeneralConfig extends BaseConfig
     public function storeUserIps(bool $value = true): self
     {
         $this->storeUserIps = $value;
+        return $this;
+    }
+
+    /**
+     * The handle of the filesystem that should be used for storing temporary asset uploads. A local temp folder will
+     * be used by default.
+     *
+     *  ```php
+     *  ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')
+     *  ```
+     *
+     * @group Assets
+     * @param string|null $value
+     * @return self
+     * @see $tempAssetUploadFs
+     * @since 5.0.0
+     */
+    public function tempAssetUploadFs(string|null $value): self
+    {
+        $this->tempAssetUploadFs = $value;
         return $this;
     }
 

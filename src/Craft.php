@@ -41,6 +41,19 @@ class Craft extends Yii
 
     /**
      * @inheritdoc
+     */
+    public static function getAlias($alias, $throwException = true)
+    {
+        // @app/icons/file.svg => @appicons/file.svg
+        if (preg_match('/^@app\/icons\/([\w\-]+\.svg)$/', $alias, $match)) {
+            $alias = "@appicons/$match[1]";
+        }
+
+        return parent::getAlias($alias, $throwException);
+    }
+
+    /**
+     * @inheritdoc
      * @template T
      * @param string|array|callable $type
      * @phpstan-param class-string<T>|array{class:class-string<T>}|callable():T $type
@@ -348,10 +361,19 @@ EOD;
      */
     private static function _fields(): array
     {
-        return array_merge(...array_map(
-            fn(FieldLayout $fieldLayout) => $fieldLayout->getCustomFields(),
-            Craft::$app->getFields()->getAllLayouts(),
-        ));
+        // Return all fields merged with all layouts' field instances, to be sure we're not missing anything
+        $fields = array_merge(
+            static::$app->getFields()->getAllFields(false),
+            ...array_map(
+                fn(FieldLayout $fieldLayout) => $fieldLayout->getCustomFields(),
+                Craft::$app->getFields()->getAllLayouts(),
+            ),
+        );
+
+        // Sort by handle
+        usort($fields, fn(FieldInterface $a, FieldInterface $b) => $a->handle <=> $b->handle);
+
+        return $fields;
     }
 
     /**

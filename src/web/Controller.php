@@ -8,9 +8,12 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\Chippable;
+use craft\base\Identifiable;
 use craft\base\ModelInterface;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
+use craft\helpers\Cp;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -269,6 +272,10 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asCpScreen(): Response
     {
+        if ($this->response->getBehavior(CpScreenResponseBehavior::NAME)) {
+            return $this->response;
+        }
+
         $this->response->attachBehavior(CpScreenResponseBehavior::NAME, CpScreenResponseBehavior::class);
         $this->response->formatters[CpScreenResponseFormatter::FORMAT] = CpScreenResponseFormatter::class;
         $this->response->format = CpScreenResponseFormatter::FORMAT;
@@ -396,13 +403,24 @@ abstract class Controller extends \yii\web\Controller
     ): YiiResponse {
         $data += array_filter([
             'modelName' => $modelName,
+            'modelClass' => get_class($model),
             ($modelName ?? 'model') => $model->toArray(),
         ]);
+
+        if ($model instanceof Identifiable) {
+            $data['modelId'] = $model->getId();
+        }
+
+        $notificationSettings = [];
+        if ($model instanceof Chippable) {
+            $notificationSettings['details'] = Cp::chipHtml($model);
+        }
 
         return $this->asSuccess(
             $message,
             $data,
             $redirect ?? $this->getPostedRedirectUrl($model),
+            $notificationSettings,
         );
     }
 
