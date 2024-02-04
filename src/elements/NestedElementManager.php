@@ -204,7 +204,7 @@ class NestedElementManager extends Component
         }
 
         if (isset($this->valueSetter)) {
-            call_user_func($this->valueSetter, $owner, $value);
+            call_user_func($this->valueSetter, $value, $owner);
         } elseif (isset($this->attribute)) {
             $owner->{$this->attribute} = $value;
         } else {
