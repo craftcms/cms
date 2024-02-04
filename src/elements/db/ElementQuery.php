@@ -40,9 +40,11 @@ use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
+use Twig\Markup;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\base\NotSupportedException;
 use yii\db\Connection as YiiConnection;
@@ -1822,6 +1824,22 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->select($select);
 
         return $result;
+    }
+
+    /**
+     * Executes the query and renders the resulting elements using their partial templates.
+     *
+     * If no partial template exists for an element, its string representation will be output instead.
+     *
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @see ElementHelper::renderElements()
+     * @since 5.0.0
+     */
+    public function render(): Markup
+    {
+        return ElementHelper::renderElements($this->all());
     }
 
     /**

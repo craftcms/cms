@@ -85,6 +85,8 @@
 - Volumes now have a “Subpath” setting, and can reuse filesystems so long as the subpaths don’t overlap. ([#11044](https://github.com/craftcms/cms/discussions/11044))
 - Volumes now have an “Alternative Text Translation Method” setting. ([#11576](https://github.com/craftcms/cms/issues/11576))
 - Added support for defining custom locale aliases, via a new `localeAliases` config setting. ([#12705](https://github.com/craftcms/cms/pull/12705))
+- Added support for element partial templates. ([#14284](https://github.com/craftcms/cms/pull/14284))
+- Added the `partialTemplatesPath` config setting. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added the `tempAssetUploadFs` config setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
 - Removed the concept of field groups.
 - Removed the “Temp Uploads Location” asset setting. ([#13957](https://github.com/craftcms/cms/pull/13957))
@@ -139,6 +141,7 @@
 - Added `craft\base\Element::crumbs()`.
 - Added `craft\base\Element::destructiveActionMenuItems()`.
 - Added `craft\base\Element::inlineAttributeInputHtml()`.
+- Added `craft\base\Element::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\base\Element::safeActionMenuItems()`.
 - Added `craft\base\Element::shouldValidateTitle()`.
 - Added `craft\base\ElementContainerFieldInterface`, which should be implemented by fields which contain nested elements, such as Matrix.
@@ -191,6 +194,7 @@
 - Added `craft\elements\Address::GQL_TYPE_NAME`.
 - Added `craft\elements\Asset::gqlTypeName()`.
 - Added `craft\elements\Category::gqlTypeName()`.
+- Added `craft\elements\ElementCollection::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\elements\Entry::$collapsed`.
 - Added `craft\elements\Entry::$dirty`.
 - Added `craft\elements\Entry::gqlTypeName()`.
@@ -292,6 +296,7 @@
 - Added `craft\helpers\ElementHelper::actionConfig()`.
 - Added `craft\helpers\ElementHelper::addElementEditorUrlParams()`.
 - Added `craft\helpers\ElementHelper::elementEditorUrl()`.
+- Added `craft\helpers\ElementHelper::renderElements()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\helpers\ElementHelper::rootElementIfCanonical()`.
 - Added `craft\helpers\Gql::getSchemaContainedSections()`.
 - Added `craft\helpers\Json::detectIndent()`.

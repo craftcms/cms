@@ -19,9 +19,14 @@ use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
 use craft\i18n\Locale;
 use craft\services\ElementSources;
+use craft\web\View;
 use DateTime;
 use Throwable;
+use Twig\Error\LoaderError as TwigLoaderError;
+use Twig\Markup;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 
 /**
  * Class ElementHelper
@@ -869,5 +874,43 @@ class ElementHelper
             'confirm' => $action->getConfirmationMessage(),
             'settings' => $action->getSettings() ?: null,
         ];
+    }
+
+    /**
+     * Renders the given elements using their partial templates.
+     *
+     * If no partial template exists for an element, its string representation will be output instead.
+     *
+     * @param ElementInterface[] $elements
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @since 5.0.0
+     */
+    public static function renderElements(array $elements): Markup
+    {
+        $view = Craft::$app->getView();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $output = [];
+
+        foreach ($elements as $element) {
+            $refHandle = $element::refHandle();
+            if ($refHandle === null) {
+                throw new NotSupportedException(sprintf('Element type “%s” doesn’t define a reference handle, so it doesn’t support partial templates.', $element::displayName()));
+            }
+            $providerHandle = $element->getFieldLayout()?->provider->getHandle();
+            if ($providerHandle === null) {
+                throw new InvalidConfigException(sprintf('Element “%s” doesn’t have a field layout provider that defines a handle, so it can’t be rendered with a partial template.', $element));
+            }
+            $template = sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle);
+            try {
+                $output[] = $view->renderTemplate($template, [$refHandle => $element], View::TEMPLATE_MODE_SITE);
+            } catch (TwigLoaderError) {
+                // fallback to the string representation of the element
+                $output[] = Html::tag('p', Html::encode((string)$element));
+            }
+        }
+
+        return new Markup(implode("\n", $output), Craft::$app->charset);
     }
 }

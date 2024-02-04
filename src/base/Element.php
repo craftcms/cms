@@ -6001,4 +6001,20 @@ JS,
             ->id($elementIds[$key + $dir])
             ->one();
     }
+
+    /**
+     * Renders the element using its partial template.
+     *
+     * If no partial template exists for the element, its string representation will be output instead.
+     *
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @see ElementHelper::renderElements()
+     * @since 5.0.0
+     */
+    public function render(): Markup
+    {
+        return ElementHelper::renderElements([$this]);
+    }
 }
