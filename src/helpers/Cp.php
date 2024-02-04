@@ -422,16 +422,16 @@ class Cp
      * The following config settings can be passed to `$config`:
      *
      * - `attributes` – Any custom HTML attributes that should be set on the chip
-     * - `autoReload` - Whether the element should auto-reload itself when it’s saved
+     * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
      * - `id` – The chip’s `id` attribute
-     * - `inputName` - The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
      * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
      * - `selectable` – Whether the chip should include a checkbox input
      * - `showActionMenu` – Whether the chip should include an action menu
-     * - `showLabel` - Whether the element label should be shown
-     * - `showStatus` - Whether the element status should be shown (if the element type has statuses)
-     * - `showThumb` - Whether the element thumb should be shown (if the element has one)
-     * - `size` - The size of the chip (`small` or `large`)
+     * - `showLabel` – Whether the component’s label should be shown
+     * - `showStatus` – Whether the component’s status should be shown (if it has statuses)
+     * - `showThumb` – Whether the component’s thumbnail should be shown (if it has one)
+     * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      *
      * @param Chippable $component The component that the chip represents
@@ -550,18 +550,18 @@ class Cp
      *
      * The following config settings can be passed to `$config`:
      *
-     *  - `attributes` – Any custom HTML attributes that should be set on the chip
-     * - `autoReload` - Whether the element should auto-reload itself when it’s saved
-     * - `context` - The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `attributes` – Any custom HTML attributes that should be set on the chip
+     * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
+     * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
      * - `id` – The chip’s `id` attribute
-     * - `inputName` - The `name` attribute that should be set on the hidden input, if `context` is set to `field`
-     * - `selectable` – Whether the element should include a checkbox input
+     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `selectable` – Whether the chip should include a checkbox input
      * - `showActionMenu` – Whether the chip should include an action menu
-     * - `showDraftName` - Whether to show the draft name beside the label if the element is a draft of a published element
-     * - `showLabel` - Whether the element label should be shown
-     * - `showStatus` - Whether the element status should be shown (if the element type has statuses)
-     * - `showThumb` - Whether the element thumb should be shown (if the element has one)
-     * - `size` - The size of the chip (`small` or `large`)
+     * - `showDraftName` – Whether to show the draft name beside the label if the element is a draft of a published element
+     * - `showLabel` – Whether the element’s label should be shown
+     * - `showStatus` – Whether the element’s status should be shown (if the element type has statuses)
+     * - `showThumb` – Whether the element’s thumbnail should be shown (if the element has one)
+     * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      *
      * @param ElementInterface $element The element to be rendered
@@ -640,9 +640,13 @@ class Cp
      *
      * The following config settings can be passed to `$config`:
      *
-     * - `context` - The context the chip is going to be shown in (`index`, `field`, etc.)
-     * - `inputName` - The `name` attribute that should be set on the hidden input, if `context` is set to `field`
-     * - `autoReload` - Whether the element should auto-reload itself when it’s saved
+     * - `autoReload` – Whether the card should auto-reload itself when it’s saved
+     * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `id` – The card’s `id` attribute
+     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `selectable` – Whether the card should include a checkbox input
+     * - `showActionMenu` – Whether the card should include an action menu
+     * - `sortable` – Whether the card should include a drag handle
      *
      * @param ElementInterface $element The element to be rendered
      * @param array $config Card configuration
@@ -653,12 +657,12 @@ class Cp
     {
         $config += [
             'autoReload' => true,
-            'selectable' => false,
-            'sortable' => false,
             'context' => 'index',
             'id' => sprintf('card-%s', mt_rand()),
             'inputName' => null,
+            'selectable' => false,
             'showActionMenu' => false,
+            'sortable' => false,
         ];
 
         $color = $element instanceof Colorable ? $element->getColor() : null;
@@ -2554,14 +2558,14 @@ JS;
      *
      * Horizontal rules can be defined with the following key:
      *
-     * - `hr` - Set to `true`
+     * - `hr` – Set to `true`
      *
      * Groups of items can be defined as well, using the following keys:
      *
      * - `group` – Set to `true`
      * - `heading` – The group heading
      * - `items` – The nested item definitions
-     * - `listAttributes` - any HTML attributes that should be included on the `<ul>`
+     * - `listAttributes` – any HTML attributes that should be included on the `<ul>`
      *
      * @param array $items The menu items.
      * @param array $config
@@ -2638,22 +2642,22 @@ JS;
      *
      * Link and button item configs can contain the following keys:
      *
-     *  - `id` – The item’s ID
-     *  - `label` – The item label, to be HTML-encoded
-     *  - `icon` – The item icon name
-     *  - `html` - The item label, which will be output verbatim, without being HTML-encoded
-     *  - `description` – The item description
-     *  - `status` – The status indicator that should be shown beside the item label
-     *  - `url` – The URL that the item should link to
-     *  - `action` – The controller action that the item should trigger
-     *  - `params` – Request parameters that should be sent to the `action`
-     *  - `confirm` – A confirmation message that should be presented to the user before triggering the `action`
-     *  - `redirect` – The redirect path that the `action` should use
-     *  - `requireElevatedSession` – Whether an elevated session is required before the `action` is triggered
-     *  - `selected` – Whether the item should be marked as selected
-     *  - `hidden` – Whether the item should be hidden
-     *  - `attributes` – Any HTML attributes that should be set on the item’s `<a>` or `<button>` tag
-     *  - `liAttributes` – Any HTML attributes that should be set on the item’s `<li>` tag
+     * - `id` – The item’s ID
+     * - `label` – The item label, to be HTML-encoded
+     * - `icon` – The item icon name
+     * - `html` – The item label, which will be output verbatim, without being HTML-encoded
+     * - `description` – The item description
+     * - `status` – The status indicator that should be shown beside the item label
+     * - `url` – The URL that the item should link to
+     * - `action` – The controller action that the item should trigger
+     * - `params` – Request parameters that should be sent to the `action`
+     * - `confirm` – A confirmation message that should be presented to the user before triggering the `action`
+     * - `redirect` – The redirect path that the `action` should use
+     * - `requireElevatedSession` – Whether an elevated session is required before the `action` is triggered
+     * - `selected` – Whether the item should be marked as selected
+     * - `hidden` – Whether the item should be hidden
+     * - `attributes` – Any HTML attributes that should be set on the item’s `<a>` or `<button>` tag
+     * - `liAttributes` – Any HTML attributes that should be set on the item’s `<li>` tag
      *
      * @param array $config
      * @param string $menuId,
