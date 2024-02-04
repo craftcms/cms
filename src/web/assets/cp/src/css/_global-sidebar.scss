@@ -137,6 +137,51 @@
   }
 }
 
+.sidebar-action--job {
+  align-items: flex-start;
+
+  .sidebar-action__label {
+    padding-block: var(--xs);
+  }
+
+  &[href]:hover {
+    background-color: transparent;
+
+    .icon > span.icon > canvas#job-icon-hover {
+      opacity: 1;
+    }
+  }
+
+  .label {
+    white-space: normal;
+  }
+
+  .progress-label {
+    display: block;
+    color: var(--gray-300);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .nav-icon {
+    display: block;
+    position: relative;
+    width: 16px;
+    height: 16px;
+
+    & > canvas {
+      display: block;
+      position: absolute;
+      width: 16px;
+      height: 16px;
+
+      &#job-icon-hover {
+        opacity: 0;
+      }
+    }
+  }
+}
+
 .sidebar-action__prefix {
   display: flex;
   align-items: center;
@@ -144,9 +189,7 @@
   width: var(--prefix-size);
   aspect-ratio: var(--prefix-ratio);
   line-height: 0;
-
-  .nav-item__subnav {
-  }
+  flex-shrink: 0;
 }
 
 .sidebar-action__label {

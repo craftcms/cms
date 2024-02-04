@@ -187,42 +187,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
-#job-icon {
-  align-items: flex-start;
-
-  & > span.icon {
-    display: block;
-    position: relative;
-    width: 16px;
-    height: 16px;
-    margin-top: 2px !important;
-
-    & > canvas {
-      display: block;
-      position: absolute;
-      width: 16px;
-      height: 16px;
-
-      &#job-icon-hover {
-        opacity: 0;
-      }
-    }
-  }
-
-  &[href]:hover {
-    .icon > span.icon > canvas#job-icon-hover {
-      opacity: 1;
-    }
-  }
-
-  .progress-label {
-    display: block;
-    color: var(--gray-300);
-    font-size: 11px;
-    line-height: 1.5;
-  }
-}
-
 #global-footer {
   display: flex;
   flex-direction: column;
