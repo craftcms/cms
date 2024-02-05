@@ -1609,11 +1609,13 @@ ul.icons {
     background-color: transparent;
 
     &:hover,
-    &:active {
+    &:active,
+    &[aria-expanded='true'] {
       border-color: var(--dark-hairline-color);
     }
 
-    &:active {
+    &:active,
+    &[aria-expanded='true'] {
       background-color: var(--ui-control-static-bg-color);
     }
   }
@@ -6517,12 +6519,6 @@ $min2ColWidth: 400px;
   li
   .menu-option:not(.sel):not(.disabled).hover {
   @include menu-item-active-styles;
-
-  span.icon,
-  &:before,
-  div.code {
-    color: var(--menu-item-active-color);
-  }
 }
 .menu {
   hr.padded,

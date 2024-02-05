@@ -1223,6 +1223,8 @@ class Elements extends Component
      * (this will happen via a background job if this is a web request)
      * @param bool $forceTouch Whether to force the `dateUpdated` timestamp to be updated for the element,
      * regardless of whether it’s being resaved
+     * @param bool|null $crossSiteValidate Whether the element should be validated across all supported sites
+     * @param bool $saveContent Whether the element’s content should be saved
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
@@ -1235,6 +1237,7 @@ class Elements extends Component
         ?bool $updateSearchIndex = null,
         bool $forceTouch = false,
         ?bool $crossSiteValidate = false,
+        bool $saveContent = true,
     ): bool {
         // Force propagation for new elements
         $propagate = !$element->id || $propagate;
@@ -1250,6 +1253,7 @@ class Elements extends Component
             $updateSearchIndex,
             forceTouch: $forceTouch,
             crossSiteValidate: $crossSiteValidate,
+            saveContent: $saveContent,
         );
         $element->duplicateOf = $duplicateOf;
         return $success;
@@ -3365,6 +3369,8 @@ class Elements extends Component
      * @param array|null $supportedSites The element’s supported site info, indexed by site ID
      * @param bool $forceTouch Whether to force the `dateUpdated` timestamp to be updated for the element,
      * regardless of whether it’s being resaved
+     * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
+     * @param bool $saveContent Whether the element’s content should be saved
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
@@ -3378,6 +3384,7 @@ class Elements extends Component
         ?array $supportedSites = null,
         bool $forceTouch = false,
         bool $crossSiteValidate = false,
+        bool $saveContent = true,
     ): bool {
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
@@ -3423,9 +3430,6 @@ class Elements extends Component
             $element->propagateAll = $originalPropagateAll;
             return false;
         }
-
-        // Get the field layout
-        $fieldLayout = $element->getFieldLayout();
 
         // Get the sites supported by this element
         $supportedSites = $supportedSites ?? ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
@@ -3487,6 +3491,7 @@ class Elements extends Component
             $originalFirstSave,
             $originalPropagateAll,
             $forceTouch,
+            $saveContent,
             $trackChanges,
             $dirtyAttributes,
             $updateSearchIndex,
@@ -3632,19 +3637,21 @@ class Elements extends Component
                     }
                 }
 
-                // Set the field values
-                $content = [];
-                if ($fieldLayout) {
-                    foreach ($fieldLayout->getCustomFields() as $field) {
-                        if ($field::dbType() !== null) {
-                            $serializedValue = $field->serializeValue($element->getFieldValue($field->handle), $element);
-                            if ($serializedValue !== null) {
-                                $content[$field->layoutElement->uid] = $serializedValue;
+                if ($saveContent) {
+                    // Set the field values
+                    $content = [];
+                    if ($fieldLayout) {
+                        foreach ($fieldLayout->getCustomFields() as $field) {
+                            if ($field::dbType() !== null) {
+                                $serializedValue = $field->serializeValue($element->getFieldValue($field->handle), $element);
+                                if ($serializedValue !== null) {
+                                    $content[$field->layoutElement->uid] = $serializedValue;
+                                }
                             }
                         }
                     }
+                    $siteSettingsRecord->content = $content ?: null;
                 }
-                $siteSettingsRecord->content = $content ?: null;
 
                 // Save the site settings record
                 if (!$siteSettingsRecord->save(false)) {
@@ -3692,6 +3699,7 @@ class Elements extends Component
                                     $siteId,
                                     $siteElement,
                                     crossSiteValidate: $runValidation && $crossSiteValidate,
+                                    saveContent: $saveContent,
                                 )) {
                                     throw new InvalidConfigException();
                                 }
@@ -3832,7 +3840,8 @@ class Elements extends Component
      * @param array $supportedSites The element’s supported site info, indexed by site ID
      * @param int $siteId The site ID being propagated to
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site
-     * @param bool $crossSiteValidate Whether we should "live" validate the element across all sites
+     * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
+     * @param bool $saveContent Whether the element’s content should be saved
      * @retrun bool
      * @throws Exception if the element couldn't be propagated
      */
@@ -3842,6 +3851,7 @@ class Elements extends Component
         int $siteId,
         ElementInterface|false|null &$siteElement = null,
         bool $crossSiteValidate = false,
+        bool $saveContent = true,
     ): bool {
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$siteId])) {
@@ -3926,23 +3936,25 @@ class Elements extends Component
             return $attribute !== 'title' && $attribute !== 'slug';
         }));
 
-        // Copy any non-translatable field values
-        if ($isNewSiteForElement) {
-            // Copy all the field values
-            $siteElement->setFieldValues($element->getFieldValues());
-        } else {
-            $fieldLayout = $element->getFieldLayout();
+        if ($saveContent) {
+            // Copy any non-translatable field values
+            if ($isNewSiteForElement) {
+                // Copy all the field values
+                $siteElement->setFieldValues($element->getFieldValues());
+            } else {
+                $fieldLayout = $element->getFieldLayout();
 
-            if ($fieldLayout !== null) {
-                // Only copy the non-translatable field values
-                foreach ($fieldLayout->getCustomFields() as $field) {
-                    // Has this field changed, and does it produce the same translation key as it did for the initial element?
-                    if (
-                        $element->isFieldDirty($field->handle) &&
-                        $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
-                    ) {
-                        // Copy the initial element’s value over
-                        $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
+                if ($fieldLayout !== null) {
+                    // Only copy the non-translatable field values
+                    foreach ($fieldLayout->getCustomFields() as $field) {
+                        // Has this field changed, and does it produce the same translation key as it did for the initial element?
+                        if (
+                            $element->isFieldDirty($field->handle) &&
+                            $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
+                        ) {
+                            // Copy the initial element’s value over
+                            $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
+                        }
                     }
                 }
             }
@@ -3959,7 +3971,15 @@ class Elements extends Component
         $siteElement->propagating = true;
         $siteElement->propagatingFrom = $element;
 
-        if ($this->_saveElementInternal($siteElement, $crossSiteValidate, false, null, $supportedSites) === false) {
+        $success = $this->_saveElementInternal(
+            $siteElement,
+            $crossSiteValidate,
+            false,
+            supportedSites: $supportedSites,
+            saveContent: $saveContent
+        );
+
+        if (!$success) {
             // if the element we're trying to save has validation errors, notify original element about them
             if ($siteElement->hasErrors()) {
                 return $this->_crossSiteValidationErrors($siteElement, $element);

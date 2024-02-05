@@ -1751,7 +1751,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return false;
         }
 
-        if ($this->getIsDraft() && $this->getIsDerivative()) {
+        if ($this->getIsDraft()) {
             /** @var static|DraftBehavior $this */
             return (
                 $this->creatorId === $user->id ||

@@ -22,6 +22,7 @@
 - Renamed `craft\log\Dispatcher::getTargets()` to `getDefaultTargets()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
 - `craft\elements\NestedElementManager` now passes the owner element to the `valueSetter` closure.
 - `craft\helpers\Cp::elementCardHtml()` now accepts an `attributes` config key.
+- `craft\services\Elements::saveElement()` now has a `$saveContent` argument.
 - Fixed a bug where newly-created inline Matrix entries could have validation errors.
 - Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag.
 - Fixed an error that occurred if a component select was used for components with non-numeric IDs.
@@ -30,6 +31,7 @@
 - Fixed a JavaScript error that occurred when creating a Matrix field within another Matrix field’s settings. ([#14268](https://github.com/craftcms/cms/issues/14268))
 - Fixed a JavaScript error that could occur when previewing an image.
 - Fixed a bug where new entries would keep propagating all content across all sites for newly-created elements, even after switching to a different site.
+- Fixed a bug where users with “Create entries” permission but not “Delete entries” weren’t allowed to delete their own unpublished drafts. ([#14294](https://github.com/craftcms/cms/issues/14294))
 
 ## 5.0.0-alpha.11 - 2024-02-01
 
