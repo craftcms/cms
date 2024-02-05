@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\config\GeneralConfig;
 use craft\elements\User;
+use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -451,6 +452,7 @@ JS;
             'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
+            'isDevMode' => App::devMode(),
             'fileKinds' => Assets::getFileKinds(),
             'language' => Craft::$app->language,
             'left' => $orientation === 'ltr' ? 'left' : 'right',
