@@ -24,7 +24,7 @@
 - `craft\helpers\Cp::elementCardHtml()` now accepts an `attributes` config key.
 - `craft\services\Elements::saveElement()` now has a `$saveContent` argument.
 - Fixed a bug where newly-created inline Matrix entries could have validation errors.
-- Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag.
+- Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag. ([#14292](https://github.com/craftcms/cms/issues/14292))
 - Fixed an error that occurred if a component select was used for components with non-numeric IDs.
 - Fixed a bug where entry type, field, filesystem, and volume validation errors weren’t getting reported within slideouts.
 - Fixed a bug where it was possible to create new components from component selects whose limit had already been reached.
