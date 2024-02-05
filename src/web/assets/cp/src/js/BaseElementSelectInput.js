@@ -704,7 +704,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       return ids;
     },
 
-    onModalSelect: async (elements) => {
+    onModalSelect: async function (elements) {
       // Disable the modal
       this.modal.disable();
       this.modal.disableCancelBtn();

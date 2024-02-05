@@ -29,6 +29,7 @@
 - Fixed a bug where it was possible to create new components from component selects whose limit had already been reached.
 - Fixed a JavaScript error that occurred when creating a Matrix field within another Matrix field’s settings. ([#14268](https://github.com/craftcms/cms/issues/14268))
 - Fixed a JavaScript error that could occur when previewing an image.
+- Fixed a bug where new entries would keep propagating all content across all sites for newly-created elements, even after switching to a different site.
 
 ## 5.0.0-alpha.11 - 2024-02-01
 
