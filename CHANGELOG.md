@@ -33,6 +33,7 @@
 - Fixed a JavaScript error that could occur when previewing an image.
 - Fixed a bug where new entries would keep propagating all content across all sites for newly-created elements, even after switching to a different site.
 - Fixed a bug where users with “Create entries” permission but not “Delete entries” weren’t allowed to delete their own unpublished drafts. ([#14294](https://github.com/craftcms/cms/issues/14294))
+- Fixed a bug where Yii-provided Chinese translations weren’t getting picked up in the control panel. ([#14287](https://github.com/craftcms/cms/issues/14287))
 
 ## 5.0.0-alpha.11 - 2024-02-01
 
