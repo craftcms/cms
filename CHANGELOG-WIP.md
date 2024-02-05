@@ -437,6 +437,7 @@
 - `craft\services\AssetIndexer::indexFolderByListing()` now has a `$volume` argument in place of `$volumeId`.
 - `craft\services\AssetIndexer::storeIndexList()` now has a `$volume` argument in place of `$volumeId`.
 - `craft\services\Elements::duplicateElement()` now has an `$asUnpublishedDraft` argument, and no longer has a `$trackDuplication` argument.
+- `craft\services\Elements::saveElement()` now has a `$saveContent` argument.
 - `craft\services\Plugins::getPluginLicenseKeyStatus()` now returns a `craft\enums\LicenseKeyStatus` case.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` no longer has a `$writeExternalConfig` argument, and no longer writes out updated project config YAML files.
 - `craft\services\Users::activateUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
