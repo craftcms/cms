@@ -2747,6 +2747,7 @@ JS;
         $request = Craft::$app->getRequest();
         $path = $request->getPathInfo();
         $params = $request->getQueryParamsWithoutPath();
+        unset($params['fresh']);
 
         foreach ($siteGroups as $siteGroup) {
             $groupSites = $siteGroup->getSites();
