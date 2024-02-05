@@ -8,6 +8,7 @@
 - Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers weren’t always getting enabled when they should, if a new tab was added.
 - Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers were labelled incorrectly for right-to-left languages.
 - Fixed a bug where users with “Create entries” permission but not “Delete entries” weren’t allowed to delete their own unpublished drafts. ([#14294](https://github.com/craftcms/cms/issues/14294))
+- Fixed a bug where Yii-provided Chinese translations weren’t getting picked up in the control panel. ([#14287](https://github.com/craftcms/cms/issues/14287))
 
 ## 4.7.1 - 2024-01-29
 
