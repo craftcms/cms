@@ -31,6 +31,7 @@
 - Fixed a JavaScript error that occurred when creating a Matrix field within another Matrix field’s settings. ([#14268](https://github.com/craftcms/cms/issues/14268))
 - Fixed a JavaScript error that could occur when previewing an image.
 - Fixed a bug where new entries would keep propagating all content across all sites for newly-created elements, even after switching to a different site.
+- Fixed a bug where users with “Create entries” permission but not “Delete entries” weren’t allowed to delete their own unpublished drafts. ([#14294](https://github.com/craftcms/cms/issues/14294))
 
 ## 5.0.0-alpha.11 - 2024-02-01
 
