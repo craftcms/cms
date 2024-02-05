@@ -11,6 +11,7 @@
 - Added support for element partial templates. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added the `partialTemplatesPath` config setting. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Garbage collection now deletes orphaned nested entries.
+- The `{% js %}` and `{% css %}` tags now support `.js.gz` and `.css.gz` URLs. ([#14243](https://github.com/craftcms/cms/issues/14243))
 - Added `craft\base\Element::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\elements\ElementCollection::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\elements\NestedElementManager::$allowDeletion`.
