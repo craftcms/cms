@@ -1172,11 +1172,11 @@ $.extend(Craft, {
 
     for (let name of deltaNames) {
       if (
-        Craft.inArray(name, modifiedDeltaNames) ||
-        (typeof groupedNewParams[name] === 'object' &&
-          (typeof groupedOldParams[name] !== 'object' ||
-            JSON.stringify(groupedOldParams[name]) !==
-              JSON.stringify(groupedNewParams[name])))
+        !modifiedDeltaNames.includes(name) &&
+        typeof groupedNewParams[name] === 'object' &&
+        (typeof groupedOldParams[name] !== 'object' ||
+          JSON.stringify(groupedOldParams[name]) !==
+            JSON.stringify(groupedNewParams[name]))
       ) {
         modifiedDeltaNames.push(name);
       }

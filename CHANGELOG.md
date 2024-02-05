@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Added `Craft.ElementEditor::markDeltaNameAsModified()`.
+- Fixed a bug where element editor forms could submit duplicate input values. ([#14276](https://github.com/craftcms/cms/issues/14276))
+
 ## 5.0.0-alpha.12 - 2024-02-05
 
 - Added the “Show cards in a grid” setting to relational fields that support card view. ([#14202](https://github.com/craftcms/cms/discussions/14202))

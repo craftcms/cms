@@ -1069,6 +1069,15 @@ Craft.ElementEditor = Garnish.Base.extend(
       await this.saveDraft();
     },
 
+    async markDeltaNameAsModified(name) {
+      let names = this.$container.data('modified-delta-names') || [];
+      if (!names.includes(name)) {
+        names.push(name);
+        this.$container.data('modified-delta-names', names);
+        await this.saveDraft();
+      }
+    },
+
     serializeForm: function (removeActionParams) {
       let data = this.$container.serialize();
 

@@ -578,6 +578,8 @@
 - Added `Craft.CP::setSiteCrumbMenuItemStatus()`.
 - Added `Craft.CP::showSiteCrumbMenuItem()`.
 - Added `Craft.CP::updateContext()`.
+- Added `Craft.ElementEditor::setFormValue()`.
+- Added `Craft.ElementEditor::markDeltaNameAsModified()`.
 - Added `Garnish.DisclosureMenu::addGroup()`.
 - Added `Garnish.DisclosureMenu::addHr()`.
 - Added `Garnish.DisclosureMenu::addItem()`.
