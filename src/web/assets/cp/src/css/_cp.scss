@@ -179,6 +179,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       border-radius: var(--medium-border-radius);
       padding: var(--xs) var(--s);
       white-space: nowrap;
+      pointer-events: none;
 
       @media screen and (prefers-reduced-motion: no-preference) {
         transition:
