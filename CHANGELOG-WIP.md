@@ -1,6 +1,8 @@
 # Release Notes for Craft CMS 5.0.0 (WIP)
 
 ### Content Management
+- Improved global sidebar styling. ([#14281](https://github.com/craftcms/cms/pull/14281))
+- The global sidebar is now collapsible. ([#14281](https://github.com/craftcms/cms/pull/14281))
 - Redesigned the global breadcrumb bar to include quick links to other areas of the control panel, page context menus, and action menus. ([#13902](https://github.com/craftcms/cms/pull/13902))
 - All elements can now have thumbnails, provided by Assets fields. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
 - Element indexes and relational fields now have the option to use card views. ([#6024](https://github.com/craftcms/cms/pull/6024))
