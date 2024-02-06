@@ -1666,6 +1666,7 @@ return [
     'Today' => 'Today',
     'Toggle explorer' => 'Toggle explorer',
     'Toggle history' => 'Toggle history',
+    'Toggle sidebar' => 'Toggle sidebar',
     'Tokens' => 'Tokens',
     'Top of preview' => 'Top of preview',
     'Top-Center' => 'Top-Center',

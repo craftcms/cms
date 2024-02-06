@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Improved global sidebar styling. ([#14281](https://github.com/craftcms/cms/pull/14281))
+- The global sidebar is now collapsible. ([#14281](https://github.com/craftcms/cms/pull/14281))
 - Added `Craft.ElementEditor::markDeltaNameAsModified()`.
 - Removed `craft\elements\NestedElementManager::$allowDeletion`.
 - Fixed a bug where element editor forms could submit duplicate input values. ([#14276](https://github.com/craftcms/cms/issues/14276))

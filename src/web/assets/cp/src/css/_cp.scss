@@ -1,16 +1,6 @@
 @charset "UTF-8";
 @import '@craftcms/sass/mixins';
 
-:root {
-  --xs: 4px;
-  --s: 8px;
-  --m: 14px;
-  --l: 18px;
-  --xl: 24px;
-  --padding: var(--xl);
-  --neg-padding: calc(var(--padding) * -1);
-}
-
 $sidebarWidth: 226px;
 $sidebarZIndex: 100;
 $detailsWidth: 350px;
@@ -22,6 +12,18 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 // Colors
 $badgeBackgroundColor: var(--gray-200);
 $badgeColor: var(--gray-800);
+
+:root {
+  --xs: 4px;
+  --s: 8px;
+  --m: 14px;
+  --l: 18px;
+  --xl: 24px;
+  --padding: var(--xl);
+  --neg-padding: calc(var(--padding) * -1);
+  --sidebar-width: #{$sidebarWidth};
+  --max-width: 1920px;
+}
 
 html {
   -webkit-text-size-adjust: 100%;
@@ -81,17 +83,15 @@ body {
 #global-container {
   position: relative;
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
-  @include left(0);
 
   @media screen and (prefers-reduced-motion: no-preference) {
     body.ltr & {
-      transition: left 250ms ease-out;
+      transition: left 100ms cubic-bezier(0.33, 1, 0.68, 1);
     }
 
     body.rtl & {
-      transition: right 250ms ease-out;
+      transition: right 100ms cubic-bezier(0.33, 1, 0.68, 1);
     }
   }
 }
@@ -100,63 +100,22 @@ body {
 $sidebarLinkStaticColor: var(--gray-100);
 $sidebarLinkSecondaryColor: var(--gray-200);
 
-#global-sidebar {
-  --is-always-visible: true;
-  position: fixed;
-  z-index: $sidebarZIndex;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  @include light-on-dark-text;
-  @include light-focus-ring;
-  background-color: var(--gray-800);
-
-  a {
-    color: $sidebarLinkStaticColor;
-    text-decoration: none;
-  }
-
-  & > a,
-  *:not(.has-subnav) > a {
-    &[href] {
-      &:not(.sel):hover {
-        background-color: darken($grey800, 5%);
-      }
-    }
-
-    &:not([href]) {
-      cursor: default;
-      background-color: transparent;
-    }
-  }
-
-  .light {
-    color: var(--gray-400);
-  }
-
-  @media only screen and (max-width: $minFullUiWidth - 1px) {
-    --is-always-visible: false;
-  }
-}
-
 $systemInfoBgColor: darken($grey800, 5%);
 $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #system-info {
   display: grid;
   grid-template-columns: 30px auto;
-  grid-gap: 10px;
-  height: calc(44rem / 16);
+  gap: 10px;
+  height: calc(45rem / 16);
   padding: 0 10px;
   position: relative;
-  flex: 0 0 calc(44rem / 16);
+  flex: 0 0 calc(45rem / 16);
   flex-direction: row;
   align-items: center;
-  background-color: $systemInfoBgColor;
+  color: currentColor;
+  border-bottom: 1px solid var(--hairline-color);
+  background-clip: padding-box;
 
   &:after {
     display: none;
@@ -164,7 +123,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   &:focus,
   &:hover {
-    background-color: $systemInfoHoverBgColor !important;
+    text-decoration: none;
+    background-color: var(--gray-200);
   }
 }
 
@@ -198,135 +158,32 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-
-    &:after {
-      display: block;
-      content: '';
-      font-size: 0;
-      position: absolute;
-      top: 0;
-      @include right(0);
-      width: var(--m);
-      background-image: linear-gradient(
-        to right,
-        transparentize($systemInfoBgColor, 1),
-        $systemInfoBgColor
-      );
-
-      #system-info:hover & {
-        background-image: linear-gradient(
-          to right,
-          transparentize($systemInfoHoverBgColor, 1),
-          $systemInfoHoverBgColor
-        );
-      }
-    }
   }
 }
 
-#job-icon {
-  align-items: flex-start;
+@media only screen and (min-width: $minFullUiWidth) {
+  [data-sidebar='collapsed'] {
+    #system-info:hover #system-name {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
 
-  & > span.icon {
-    display: block;
-    position: relative;
-    width: 16px;
-    height: 16px;
-    margin-top: 2px !important;
-
-    & > canvas {
-      display: block;
+    #system-name {
       position: absolute;
-      width: 16px;
-      height: 16px;
+      left: calc(100% + (var(--s) * 2));
+      top: 50%;
+      transform: translateY(-50%) translateX(-5px);
+      opacity: 0;
+      @include pane;
+      color: var(--text-color);
+      border-radius: var(--medium-border-radius);
+      padding: var(--xs) var(--s);
+      white-space: nowrap;
 
-      &#job-icon-hover {
-        opacity: 0;
-      }
-    }
-  }
-
-  &[href]:hover {
-    .icon > span.icon > canvas#job-icon-hover {
-      opacity: 1;
-    }
-  }
-
-  .progress-label {
-    display: block;
-    color: var(--gray-300);
-    font-size: 11px;
-    line-height: 1.5;
-  }
-}
-
-#nav {
-  flex: 1;
-  margin: 22px 0 0;
-  padding-bottom: var(--xl);
-  overflow: visible;
-
-  body.has-debug-toolbar & {
-    padding-bottom: calc(42px + var(--xl));
-  }
-
-  li {
-    &:not(.has-subnav) > a.sel {
-      color: var(--gray-800);
-      background-color: var(--gray-100) !important;
-      opacity: 1;
-
-      .icon {
-        opacity: 1;
-      }
-    }
-
-    a {
-      position: relative;
-      padding-left: var(--m);
-      padding-right: var(--m);
-
-      &:focus {
-        z-index: 1;
-      }
-
-      &.menubtn {
-        line-height: 26px;
-      }
-
-      &.external:after {
-        @include margin-left(5px);
-        @include icon;
-        content: 'external';
-      }
-
-      .label {
-        &,
-        & span {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      }
-
-      .badge {
-        @include margin-right(0);
-        background-color: $badgeBackgroundColor;
-        color: $badgeColor;
-      }
-    }
-
-    ul {
-      display: block;
-      margin-bottom: 10px;
-
-      li a {
-        @include padding(3px, var(--m), 3px, 42px, !important);
-        font-size: 12px;
-
-        &:not(.active) {
-          color: $sidebarLinkSecondaryColor;
-        }
+      @media screen and (prefers-reduced-motion: no-preference) {
+        transition:
+          opacity 50ms cubic-bezier(0.33, 1, 0.68, 1),
+          transform 150ms cubic-bezier(0.33, 1, 0.68, 1);
       }
     }
   }
@@ -403,6 +260,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #devmode {
+  margin-top: auto;
   flex: 0 0 4px;
   width: 100%;
   min-height: 4px; // fixes Windows scaling bug (https://github.com/craftcms/cms/issues/3259)
@@ -411,7 +269,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #page-container {
-  @include padding-left($sidebarWidth);
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -488,8 +345,7 @@ li.crumb .btn.menubtn,
 #global-header {
   width: 100%;
   margin-bottom: var(--m);
-  @include pane;
-  background: var(--gray-050);
+  border-bottom: 1px solid var(--hairline-color);
 
   .flex {
     height: calc(44rem / 16);
@@ -869,7 +725,6 @@ li.breadcrumb-toggle-wrapper {
 }
 
 /* main container */
-
 #main-container {
   position: relative;
   flex-grow: 1;
@@ -982,10 +837,9 @@ li.breadcrumb-toggle-wrapper {
   flex-wrap: nowrap;
   justify-content: space-between;
   gap: var(--s);
-  padding: var(--s) var(--padding);
+  padding: 5px var(--padding);
   position: relative;
   z-index: 2;
-  width: calc(100vw - #{$sidebarWidth});
   box-sizing: border-box;
   background-color: transparentize($grey300, 1);
   box-shadow: 0 1px 0 transparentize($grey800, 1);
@@ -998,7 +852,7 @@ li.breadcrumb-toggle-wrapper {
     z-index: 12;
     top: 0;
     background-color: var(--gray-100);
-    box-shadow: inset 0 -1px 0 transparentize($grey700, 0.9);
+    box-shadow: 0 1px 0 transparentize($grey700, 0.9);
   }
 
   @supports (backdrop-filter: blur(10px)) {
@@ -1099,7 +953,6 @@ li.breadcrumb-toggle-wrapper {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  width: calc(100vw - #{$sidebarWidth});
   padding: 0 var(--padding) 48px;
   box-sizing: border-box;
 
@@ -1208,11 +1061,11 @@ li.breadcrumb-toggle-wrapper {
   z-index: 1;
   margin: calc(var(--xl) + 1px) calc(var(--padding) * -1 + 2px)
     calc(var(--xl) * -1 + 2px);
-  padding: var(--s) var(--padding);
+  padding: 5px var(--padding);
   background-color: var(--gray-050);
   border-radius: var(--small-border-radius);
   box-sizing: border-box;
-  min-height: 50px;
+  min-height: 44px;
 
   &:empty {
     display: none;
@@ -1571,13 +1424,12 @@ li.breadcrumb-toggle-wrapper {
       &:not(.has-subnav) > a {
         &:not(.sel):hover {
           text-decoration: none;
-          background-color: var(--gray-100);
         }
 
         &.sel,
         &.active-drop-target {
           cursor: default;
-          background-color: var(--gray-500) !important;
+          background-color: var(--gray-500);
 
           &,
           & + .toggle {
@@ -1835,4 +1687,10 @@ li.breadcrumb-toggle-wrapper {
       }
     }
   }
+}
+
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
 }
