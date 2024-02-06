@@ -272,6 +272,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+
+  & > .container {
+    flex: 1;
+  }
 }
 
 #alerts {
