@@ -605,6 +605,7 @@
 - Updated `yiisoft/yii2-symfonymailer` to v4.
 - Craft no longer requires `composer/composer`.
 - New database tables now default to the `utf8mb4` charset, and the `utf8mb4_0900_ai_ci` or `utf8mb4_unicode_ci` collation, on MySQL. Existing installs should run `db/convert-charset` after upgrading, to ensure all tables have consistent charsets and collations. ([#11823](https://github.com/craftcms/cms/discussions/11823))
+- The `deprecationerrors.traces`, `fieldlayouts.config`, `gqlschemas.scope`, `sections.previewTargets`, `userpreferences.preferences`, and `widgets.settings` columns are now of type `JSON` for MySQL and PostgreSQL. ([#14300](https://github.com/craftcms/cms/pull/14300))
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))
 - Improved the initial page load performance for element edit screens that contain Matrix fields.
 - Improved the performance of control panel screens that include field layout designers.
