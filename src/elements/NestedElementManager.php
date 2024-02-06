@@ -58,6 +58,12 @@ class NestedElementManager extends Component
     public const EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS = 'afterDuplicateNestedElements';
 
     /**
+     * @event DuplicateNestedElementsEvent The event that is triggered after revisions are created for nested elements.
+     * @see createRevisions()
+     */
+    public const EVENT_AFTER_CREATE_REVISIONS = 'afterCreateRevisions';
+
+    /**
      * Constructor
      *
      * @param class-string<NestedElementInterface> $elementType The nested element type.
@@ -1003,8 +1009,8 @@ JS, [
 
         $revisionsService = Craft::$app->getRevisions();
         $ownershipData = [];
-
         $map = [];
+
         foreach ($elements as $element) {
             $elementRevisionId = $revisionsService->createRevision($element, null, null, [
                 'primaryOwnerId' => $revision->id,
@@ -1017,7 +1023,7 @@ JS, [
         Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $ownershipData);
 
         // Fire a 'afterDuplicateNestedElements' event
-        if (!empty($map) && $this->hasEventHandlers(self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS)) {
+        if (!empty($map) && $this->hasEventHandlers(self::EVENT_AFTER_CREATE_REVISIONS)) {
             $revisionOwners = [$revision] + $revision::find()
                     ->id($revision->id ?: false)
                     ->siteId(['not', $revision->siteId])
@@ -1030,7 +1036,7 @@ JS, [
                     ->all();
 
             foreach ($revisionOwners as $revisionOwner) {
-                $this->trigger(self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS, new DuplicateNestedElementsEvent([
+                $this->trigger(self::EVENT_AFTER_CREATE_REVISIONS, new DuplicateNestedElementsEvent([
                     'source' => $canonical,
                     'target' => $revisionOwner,
                     'newElementIds' => $map,
