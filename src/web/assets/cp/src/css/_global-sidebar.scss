@@ -242,6 +242,7 @@ States
       color: var(--text-color);
       border-radius: var(--medium-border-radius);
       padding: var(--xs) var(--s);
+      pointer-events: none;
 
       @media screen and (prefers-reduced-motion: no-preference) {
         transition:
