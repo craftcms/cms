@@ -5,6 +5,9 @@
 - Improved global sidebar styling. ([#14281](https://github.com/craftcms/cms/pull/14281))
 - The global sidebar is now collapsible. ([#14281](https://github.com/craftcms/cms/pull/14281))
 - Entry cards without a thumbnail now show their entry type icon. ([#14305](https://github.com/craftcms/cms/issues/14305))
+- Craft now has a default limit of 100 sites, which can be increased via `craft\ervices\Sites::$maxSites` at your own peril. ([#14307](https://github.com/craftcms/cms/pull/14307))
+- Added `craft\services\Sites::$maxSites`. ([#14307](https://github.com/craftcms/cms/pull/14307))
+- Added `craft\services\Sites::getRemainingSites()`. ([#14307](https://github.com/craftcms/cms/pull/14307))
 - Added `Craft.ElementEditor::markDeltaNameAsModified()`.
 - Removed `craft\elements\NestedElementManager::$allowDeletion`.
 - Fixed a bug where element editor forms could submit duplicate input values. ([#14276](https://github.com/craftcms/cms/issues/14276))

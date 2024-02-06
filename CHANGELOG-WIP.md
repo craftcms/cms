@@ -359,6 +359,8 @@
 - Added `craft\services\ProjectConfig::find()`.
 - Added `craft\services\ProjectConfig::flush()`.
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
+- Added `craft\services\Sites::$maxSites`. ([#14307](https://github.com/craftcms/cms/pull/14307))
+- Added `craft\services\Sites::getRemainingSites()`. ([#14307](https://github.com/craftcms/cms/pull/14307))
 - Added `craft\web\CpScreenResponseBehavior::$actionMenuItems`.
 - Added `craft\web\CpScreenResponseBehavior::$contextMenuItems`.
 - Added `craft\web\CpScreenResponseBehavior::$selectableSites`.
@@ -609,6 +611,7 @@
 - Improved the performance of autosaves for elements with newly-created Matrix entries.
 - Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
 - Garbage collection now deletes orphaned nested entries.
+- Craft now has a default limit of 100 sites, which can be increased via `craft\ervices\Sites::$maxSites` at your own peril. ([#14307](https://github.com/craftcms/cms/pull/14307))
 - Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
 - Fixed a bug where layout components provided by disabled plugins weren’t getting omitted. ([#14219](https://github.com/craftcms/cms/pull/14219))
