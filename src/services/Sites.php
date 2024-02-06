@@ -130,7 +130,7 @@ class Sites extends Component
      *
      * @var int The maximum number of sites that can be created.
      */
-    public int $maxSites = 200;
+    public int $maxSites = 100;
 
     /**
      * @var MemoizableArray<SiteGroup>|null
