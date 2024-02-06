@@ -181,7 +181,7 @@ class NestedElementManager extends Component
             $query = $this->nestedElementQuery($owner);
         }
 
-        if ($fetchAll && !$query->getCachedResult()) {
+        if ($fetchAll && $query->getCachedResult() === null) {
             $query
                 ->drafts(null)
                 ->savedDraftsOnly()
@@ -803,7 +803,8 @@ JS, [
 
         foreach ($elements as $element) {
             if ($element->getPrimaryOwnerId() === $owner->id) {
-                $elementsService->deleteElement($element);
+                $hardDelete = $element->getIsUnpublishedDraft();
+                $elementsService->deleteElement($element, $hardDelete);
             } else {
                 // Just delete the ownership relation
                 $deleteOwnership[] = $element->id;

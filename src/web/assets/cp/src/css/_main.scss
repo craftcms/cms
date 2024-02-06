@@ -3261,6 +3261,10 @@ table {
     }
   }
 
+  & > .cp-icon {
+    @include margin(0, -4px, 0, -2px);
+  }
+
   .card-content,
   .card-content .card-body {
     display: flex;

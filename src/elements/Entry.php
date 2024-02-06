@@ -1184,6 +1184,24 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getThumbHtml(int $size): ?string
+    {
+        $html = parent::getThumbHtml($size);
+        if ($html === null) {
+            $entryType = $this->getType();
+            if ($entryType->icon) {
+                $html = Html::tag('div', Cp::iconSvg($entryType->icon), [
+                    'title' => $entryType->getUiLabel(),
+                    'class' => array_filter(['cp-icon', $entryType->color?->value]),
+                ]);
+            }
+        }
+        return $html;
+    }
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null

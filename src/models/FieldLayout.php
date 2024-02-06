@@ -834,9 +834,8 @@ class FieldLayout extends Model
                                 // if we already have an error-key for this field, prefix it
                                 if (isset($tagAttributes['data']['error-key'])) {
                                     $errorKey = $form->errorKeyPrefix . '.' . $tagAttributes['data']['error-key'];
-                                } else {
+                                } elseif ($layoutElement instanceof BaseField) {
                                     // otherwise let's construct it
-                                    /** @phpstan-ignore-next-line */
                                     $errorKey = $form->errorKeyPrefix . '.' . ($layoutElement->name ?? $layoutElement->attribute());
                                 }
                             }
