@@ -114,7 +114,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: row;
   align-items: center;
   color: currentColor;
-  border-bottom: 1px solid var(--hairline-color);
 
   &:after {
     display: none;
