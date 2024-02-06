@@ -604,7 +604,7 @@ a.iconlink {
 }
 
 a.sel,
-li.sel a {
+li.sel > a {
   cursor: default !important;
   text-decoration: none;
 }
