@@ -2823,23 +2823,6 @@ class GeneralConfig extends BaseConfig
     public bool $showFirstAndLastNameFields = false;
 
     /**
-     * @var int The maximum number of sites that can be created.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->maxSites(201)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_SITES=201
-     * ```
-     * :::
-     *
-     * @group System
-     * @since 5.0.0
-     */
-    public int $maxSites = 200;
-
-    /**
      * @var mixed The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
      *
      * Set to `0` if you don’t ever want to delete soft-deleted items.
@@ -6354,25 +6337,6 @@ class GeneralConfig extends BaseConfig
     public function showFirstAndLastNameFields(bool $value = true): self
     {
         $this->showFirstAndLastNameFields = $value;
-        return $this;
-    }
-
-    /**
-     * The maximum number of sites that can be created.
-     *
-     * ```php
-     * ->maxSites(201)
-     * ```
-     *
-     * @group System
-     * @param int $value
-     * @return self
-     * @see $maxSites
-     * @since 5.0.0
-     */
-    public function maxSites(int $value): self
-    {
-        $this->maxSites = $value;
         return $this;
     }
 
