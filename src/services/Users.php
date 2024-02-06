@@ -369,9 +369,11 @@ class Users extends Component
                 ->select(['preferences'])
                 ->from([Table::USERPREFERENCES])
                 ->where(['userId' => $userId])
-                ->scalar();
+                ->scalar() ?: [];
 
-            $this->_userPreferences[$userId] = $preferences ? Json::decode($preferences) : [];
+            $this->_userPreferences[$userId] = is_string($preferences)
+                ? Json::decode($preferences)
+                : $preferences;
         }
 
         return $this->_userPreferences[$userId];
@@ -390,7 +392,7 @@ class Users extends Component
 
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
-            'preferences' => Json::encode($preferences),
+            'preferences' => $preferences,
         ]);
 
         $this->_userPreferences[$user->id] = $preferences;

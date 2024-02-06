@@ -9,6 +9,7 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
+use craft\helpers\Json;
 
 /**
  * Class GqlSchema record.
@@ -29,5 +30,14 @@ class GqlSchema extends ActiveRecord
     public static function tableName(): string
     {
         return Table::GQLSCHEMAS;
+    }
+
+    public function __construct($config = [])
+    {
+        if (is_string($config['scope'] ?? null)) {
+            $config['scope'] = Json::decode($config['scope']);
+        }
+
+        parent::__construct($config);
     }
 }

@@ -149,7 +149,7 @@ class Deprecator extends Component
                     'file' => $log->file,
                     'line' => $log->line,
                     'message' => $log->message,
-                    'traces' => Json::encode($log->traces),
+                    'traces' => $log->traces,
                 ]);
                 $log->id = (int)$db->getLastInsertID();
             } catch (Exception $e) {

@@ -992,7 +992,7 @@ class Gql extends Component
             $schemaRecord->uid = $schemaUid;
             $schemaRecord->name = $data['name'];
             $schemaRecord->isPublic = (bool)($data['isPublic'] ?? false);
-            $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? Json::encode($data['scope']) : [];
+            $schemaRecord->scope = empty($data['scope']) ? [] : $data['scope'];
 
             // Save the schema record
             $schemaRecord->save(false);

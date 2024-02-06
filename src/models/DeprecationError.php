@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use craft\base\Model;
+use craft\helpers\Json;
 use craft\validators\DateTimeValidator;
 use DateTime;
 
@@ -58,6 +59,15 @@ class DeprecationError extends Model
      * @var array|null Traces
      */
     public ?array $traces = null;
+
+    public function __construct($config = [])
+    {
+        if (is_string($config['traces'] ?? null)) {
+            $config['traces'] = Json::decode($config['traces']);
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc

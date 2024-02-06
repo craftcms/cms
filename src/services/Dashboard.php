@@ -17,6 +17,7 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\WidgetEvent;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\records\Widget as WidgetRecord;
 use craft\widgets\CraftSupport as CraftSupportWidget;
 use craft\widgets\Feed as FeedWidget;
@@ -120,6 +121,10 @@ class Dashboard extends Component
     {
         if (is_string($config)) {
             $config = ['type' => $config];
+        }
+
+        if (is_string($config['settings'] ?? null)) {
+            $config['settings'] = Json::decode($config['settings']);
         }
 
         try {
