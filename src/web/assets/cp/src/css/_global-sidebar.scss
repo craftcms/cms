@@ -225,6 +225,7 @@ States
       flex-direction: column;
       justify-content: center;
 
+      &:focus-visible,
       &:hover {
         .sidebar-action__label {
           opacity: 1;
