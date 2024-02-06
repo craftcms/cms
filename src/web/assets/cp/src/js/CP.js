@@ -832,6 +832,7 @@ Craft.CP = Garnish.Base.extend(
         this.$headerContainer[0].getBoundingClientRect().top < 0
       ) {
         const headerHeight = this.$headerContainer.height();
+        const headerWidth = this.$header.width();
         if (!this.fixedHeader) {
           // Hard-set the minimum content container height
           this.$contentContainer.css(
@@ -841,6 +842,7 @@ Craft.CP = Garnish.Base.extend(
 
           // Hard-set the header container height
           this.$headerContainer.height(headerHeight);
+          this.$header.width(headerWidth);
           Garnish.$bod.addClass('fixed-header');
 
           this.fixedHeader = true;
@@ -850,6 +852,7 @@ Craft.CP = Garnish.Base.extend(
         this._setFixedTopPos(this.$details, headerHeight);
       } else if (this.fixedHeader) {
         this.$headerContainer.height('auto');
+        this.$header.width('auto');
         Garnish.$bod.removeClass('fixed-header');
         this.$contentContainer.css('min-height', '');
         this.$sidebar.removeClass('fixed').css('top', '');
@@ -1832,16 +1835,25 @@ var JobProgressIcon = Garnish.Base.extend({
   _progressBar: null,
 
   init: function () {
-    this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
+    this.$li = $('<li/>', {
+      class: 'nav-item nav-item--job',
+    }).appendTo(Craft.cp.$nav.children('ul'));
     this.$a = $('<a/>', {
       id: 'job-icon',
+      class: 'sidebar-action sidebar-action--job',
       href: Craft.canAccessQueueManager
         ? Craft.getUrl('utilities/queue-manager')
         : null,
     }).appendTo(this.$li);
-    this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
-    var $labelContainer = $('<span class="label"/>').appendTo(this.$a);
-    this.$label = $('<span/>').appendTo($labelContainer);
+    const $prefixContainer = $('<span class="sidebar-action__prefix"/>');
+    this.$canvasContainer = $('<span class="nav-icon"/>').appendTo(
+      $prefixContainer
+    );
+    $prefixContainer.appendTo(this.$a);
+
+    const $labelContainer = $('<span class="sidebar-action__label">');
+    $labelContainer.appendTo(this.$a);
+    this.$label = $('<span class="label"/>').appendTo($labelContainer);
     this.$progressLabel = $('<span class="progress-label"/>')
       .appendTo($labelContainer)
       .hide();

@@ -1,6 +1,8 @@
 # Release Notes for Craft CMS 5.0.0 (WIP)
 
 ### Content Management
+- Improved global sidebar styling. ([#14281](https://github.com/craftcms/cms/pull/14281))
+- The global sidebar is now collapsible. ([#14281](https://github.com/craftcms/cms/pull/14281))
 - Redesigned the global breadcrumb bar to include quick links to other areas of the control panel, page context menus, and action menus. ([#13902](https://github.com/craftcms/cms/pull/13902))
 - All elements can now have thumbnails, provided by Assets fields. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
 - Element indexes and relational fields now have the option to use card views. ([#6024](https://github.com/craftcms/cms/pull/6024))
@@ -357,6 +359,8 @@
 - Added `craft\services\ProjectConfig::find()`.
 - Added `craft\services\ProjectConfig::flush()`.
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
+- Added `craft\services\Sites::$maxSites`. ([#14307](https://github.com/craftcms/cms/pull/14307))
+- Added `craft\services\Sites::getRemainingSites()`. ([#14307](https://github.com/craftcms/cms/pull/14307))
 - Added `craft\web\CpScreenResponseBehavior::$actionMenuItems`.
 - Added `craft\web\CpScreenResponseBehavior::$contextMenuItems`.
 - Added `craft\web\CpScreenResponseBehavior::$selectableSites`.
@@ -578,6 +582,8 @@
 - Added `Craft.CP::setSiteCrumbMenuItemStatus()`.
 - Added `Craft.CP::showSiteCrumbMenuItem()`.
 - Added `Craft.CP::updateContext()`.
+- Added `Craft.ElementEditor::setFormValue()`.
+- Added `Craft.ElementEditor::markDeltaNameAsModified()`.
 - Added `Garnish.DisclosureMenu::addGroup()`.
 - Added `Garnish.DisclosureMenu::addHr()`.
 - Added `Garnish.DisclosureMenu::addItem()`.
@@ -605,6 +611,7 @@
 - Improved the performance of autosaves for elements with newly-created Matrix entries.
 - Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
 - Garbage collection now deletes orphaned nested entries.
+- Craft now has a default limit of 100 sites, which can be increased via `craft\ervices\Sites::$maxSites` at your own peril. ([#14307](https://github.com/craftcms/cms/pull/14307))
 - Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
 - Fixed a bug where layout components provided by disabled plugins weren’t getting omitted. ([#14219](https://github.com/craftcms/cms/pull/14219))

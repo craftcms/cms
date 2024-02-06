@@ -1,5 +1,22 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Improved global sidebar styling. ([#14281](https://github.com/craftcms/cms/pull/14281))
+- The global sidebar is now collapsible. ([#14281](https://github.com/craftcms/cms/pull/14281))
+- Entry cards without a thumbnail now show their entry type icon. ([#14305](https://github.com/craftcms/cms/issues/14305))
+- Craft now has a default limit of 100 sites, which can be increased via `craft\ervices\Sites::$maxSites` at your own peril. ([#14307](https://github.com/craftcms/cms/pull/14307))
+- Added `craft\services\Sites::$maxSites`. ([#14307](https://github.com/craftcms/cms/pull/14307))
+- Added `craft\services\Sites::getRemainingSites()`. ([#14307](https://github.com/craftcms/cms/pull/14307))
+- Added `Craft.ElementEditor::markDeltaNameAsModified()`.
+- Removed `craft\elements\NestedElementManager::$allowDeletion`.
+- Fixed a bug where element editor forms could submit duplicate input values. ([#14276](https://github.com/craftcms/cms/issues/14276))
+- Fixed a bug where unedited, unpublished drafts created within Matrix fields would appear on page reload.
+- Fixed a bug where nested drafts weren’t getting deleted if no longer needed by a Matrix or Addresses field.
+- Fixed a bug where Matrix fields in inline-editable blocks view weren’t deleting the last entry. ([14303](https://github.com/craftcms/cms/issues/14303))
+- Fixed a PHP error that could occur when field layouts contained UI elements.
+- Fixed an alignment bug with sortable structure views. ([#14299](https://github.com/craftcms/cms/issues/14299))
+
 ## 5.0.0-alpha.12 - 2024-02-05
 
 - Added the “Show cards in a grid” setting to relational fields that support card view. ([#14202](https://github.com/craftcms/cms/discussions/14202))

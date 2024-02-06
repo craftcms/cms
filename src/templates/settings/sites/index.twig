@@ -6,8 +6,11 @@
 
 
 {% block actionButton %}
-    {% set newSiteUrl = url('settings/sites/new', (group ? { groupId: group.id } : null)) %}
-    <a href="{{ newSiteUrl }}" class="btn submit add icon">{{ "New site"|t('app') }}</a>
+    {{ tag('a', {
+        href: url('settings/sites/new', (group ? { groupId: group.id } : null)),
+        class:  ['btn', 'submit', 'add', 'icon', craft.app.sites.getRemainingSites() ? null : 'disabled'],
+        text: "New site"|t('app'),
+    }) }}
 {% endblock %}
 
 
@@ -15,7 +18,7 @@
     <nav>
         <ul id="groups">
             <li><a href="{{ url('settings/sites') }}"{% if not group %} class="sel"{% endif %}>{{ "All Sites"|t('app') }}</a></li>
-            {% for g in allGroups %}
+            {% for g in craft.app.sites.getAllGroups() %}
                 <li>
                     {{ tag('a', {
                         href: url('settings/sites', {groupId: g.id}),

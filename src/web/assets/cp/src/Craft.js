@@ -92,3 +92,6 @@ import './js/Tooltip.js';
 import './js/Uploader.js';
 import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
+
+// Custom elements
+import './js/CraftGlobalSidebar.js';

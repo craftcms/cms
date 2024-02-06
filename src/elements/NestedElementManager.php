@@ -128,12 +128,6 @@ class NestedElementManager extends Component
     public ?string $propagationKeyFormat = null;
 
     /**
-     * @var bool Whether nested element deletion is allowed
-     * (as opposed to only allowing to delete an owner relation)
-     */
-    public bool $allowDeletion = true;
-
-    /**
      * @inheritdoc
      */
     public function init()
@@ -187,9 +181,10 @@ class NestedElementManager extends Component
             $query = $this->nestedElementQuery($owner);
         }
 
-        if ($fetchAll && !$query->getCachedResult()) {
+        if ($fetchAll && $query->getCachedResult() === null) {
             $query
                 ->drafts(null)
+                ->savedDraftsOnly()
                 ->status(null)
                 ->limit(null);
         }
@@ -796,6 +791,8 @@ JS, [
     {
         /** @var NestedElementInterface[] $elements */
         $elements = $this->nestedElementQuery($owner)
+            ->drafts(null)
+            ->savedDraftsOnly(false)
             ->status(null)
             ->siteId($owner->siteId)
             ->andWhere(['not', ['elements.id' => $except]])
@@ -804,14 +801,13 @@ JS, [
         $elementsService = Craft::$app->getElements();
         $deleteOwnership = [];
 
-        if ($this->allowDeletion) {
-            foreach ($elements as $element) {
-                if ($element->getPrimaryOwnerId() === $owner->id) {
-                    $elementsService->deleteElement($element);
-                } else {
-                    // Just delete the ownership relation
-                    $deleteOwnership[] = $element->id;
-                }
+        foreach ($elements as $element) {
+            if ($element->getPrimaryOwnerId() === $owner->id) {
+                $hardDelete = $element->getIsUnpublishedDraft();
+                $elementsService->deleteElement($element, $hardDelete);
+            } else {
+                // Just delete the ownership relation
+                $deleteOwnership[] = $element->id;
             }
         }
 
