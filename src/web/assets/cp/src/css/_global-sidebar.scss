@@ -51,7 +51,7 @@
 
 .global-nav > ul > li {
   position: relative;
-  padding: 0 var(--s);
+  padding: 0 10px; // match padding of #system-info
 }
 
 .global-nav > ul > li.sel {
@@ -110,11 +110,12 @@
   border-radius: var(--medium-border-radius);
   color: currentColor;
   cursor: pointer;
+  gap: 7px; // magic number to align with system name
 
   &:before {
     content: '';
     position: absolute;
-    left: calc(var(--xs) * -2);
+    left: calc(10px * -1); // match #system-name
     top: 50%;
     height: 80%;
     transform: translateY(-50%);
@@ -222,9 +223,6 @@ States
     }
 
     .sidebar-action {
-      flex-direction: column;
-      justify-content: center;
-
       &:focus-visible,
       &:hover {
         .sidebar-action__label {
