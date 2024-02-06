@@ -107,13 +107,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: grid;
   grid-template-columns: 30px auto;
   gap: 10px;
-  height: calc(44rem / 16);
+  height: calc(45rem / 16);
   padding: 0 10px;
   position: relative;
-  flex: 0 0 calc(44rem / 16);
+  flex: 0 0 calc(45rem / 16);
   flex-direction: row;
   align-items: center;
   color: currentColor;
+  border-bottom: 1px solid var(--hairline-color);
 
   &:after {
     display: none;
