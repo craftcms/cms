@@ -147,29 +147,27 @@
                                 <form method="post" accept-charset="UTF-8">
                                     {{ hiddenInput('pluginHandle', handle) }}
                                     {{ csrfInput() }}
-                                    <div class="btngroup">
-                                        <button type="button" class="btn menubtn" data-icon="settings" aria-label="{{ 'Settings'|t('app') }}"></button>
-                                        <div class="menu" data-align="right">
-                                            <ul>
-                                                {% if not config.isInstalled %}
-                                                    {% if forceDisabled %}
-                                                        <li><a class="disabled" title="{{ '{plugin} can’t be installed due to the {setting} config setting.'|t({plugin: config.name, setting: 'disabledPlugins'}) }}">{{ 'Install'|t('app') }}</a></li>
-                                                    {% else %}
-                                                        <li><a class="formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</a></li>
-                                                    {% endif %}
-                                                    <li><a class="formsubmit error" data-action="pluginstore/remove" data-param="packageName" data-value="{{ config.packageName }}">{{ 'Remove'|t('app') }}</a></li>
+                                    <button type="button" class="btn menubtn action-btn hairline" aria-label="{{ 'Settings'|t('app') }}"></button>
+                                    <div class="menu" data-align="right">
+                                        <ul>
+                                            {% if not config.isInstalled %}
+                                                {% if forceDisabled %}
+                                                    <li><a class="disabled" title="{{ '{plugin} can’t be installed due to the {setting} config setting.'|t({plugin: config.name, setting: 'disabledPlugins'}) }}">{{ 'Install'|t('app') }}</a></li>
                                                 {% else %}
-                                                    {% if config.isEnabled %}
-                                                        <li><a class="formsubmit" data-action="plugins/disable-plugin">{{ 'Disable'|t('app') }}</a></li>
-                                                        <li><a class="formsubmit error" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</a></li>
-                                                    {% elseif forceDisabled %}
-                                                        <li><a class="disabled" title="{{ '{plugin} is disabled by the {setting} config setting.'|t({plugin: config.name, setting: 'disabledPlugins'}) }}">{{ 'Enable'|t('app') }}</a></li>
-                                                    {% else %}
-                                                        <li><a class="formsubmit" data-action="plugins/enable-plugin">{{ 'Enable'|t('app') }}</a></li>
-                                                    {% endif %}
+                                                    <li><a class="formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</a></li>
                                                 {% endif %}
-                                            </ul>
-                                        </div>
+                                                <li><a class="formsubmit error" data-action="pluginstore/remove" data-param="packageName" data-value="{{ config.packageName }}">{{ 'Remove'|t('app') }}</a></li>
+                                            {% else %}
+                                                {% if config.isEnabled %}
+                                                    <li><a class="formsubmit" data-action="plugins/disable-plugin">{{ 'Disable'|t('app') }}</a></li>
+                                                    <li><a class="formsubmit error" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</a></li>
+                                                {% elseif forceDisabled %}
+                                                    <li><a class="disabled" title="{{ '{plugin} is disabled by the {setting} config setting.'|t({plugin: config.name, setting: 'disabledPlugins'}) }}">{{ 'Enable'|t('app') }}</a></li>
+                                                {% else %}
+                                                    <li><a class="formsubmit" data-action="plugins/enable-plugin">{{ 'Enable'|t('app') }}</a></li>
+                                                {% endif %}
+                                            {% endif %}
+                                        </ul>
                                     </div>
                                 </form>
                             </td>
