@@ -68,7 +68,6 @@ use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
@@ -992,7 +991,7 @@ class Gql extends Component
             $schemaRecord->uid = $schemaUid;
             $schemaRecord->name = $data['name'];
             $schemaRecord->isPublic = (bool)($data['isPublic'] ?? false);
-            $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? Json::encode($data['scope']) : [];
+            $schemaRecord->scope = ($data['scope'] ?? false) ?: [];
 
             // Save the schema record
             $schemaRecord->save(false);
