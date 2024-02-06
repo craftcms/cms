@@ -135,10 +135,10 @@
 
 .sidebar-action--sub {
   &:before {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 100%;
-    left: 13px; // magic number to align with center of the prefix icons
+    left: 11px; // magic number to align with center of the prefix icons
   }
 }
 

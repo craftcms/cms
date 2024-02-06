@@ -357,6 +357,27 @@ table.editable textarea {
   content: attr(data-icon-after);
 }
 
+[data-icon-size='large'] {
+  &[data-icon]:before,
+  &[data-icon-after]:after {
+    font-size: 20px;
+  }
+}
+
+[data-icon-size='small'] {
+  &[data-icon]:before,
+  &[data-icon-after]:after {
+    font-size: 14px;
+  }
+}
+
+[data-icon-size='puny'] {
+  &[data-icon]:before,
+  &[data-icon-after]:after {
+    font-size: 12px;
+  }
+}
+
 body.rtl [data-icon='list']:before,
 body.rtl [data-icon-after='list']:after {
   content: 'listrtl';
@@ -5526,7 +5547,7 @@ $min2ColWidth: 400px;
 .footer,
 .hud-footer {
   border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
-  padding: var(--s) var(--pane-padding, var(--xl));
+  padding: 5px var(--pane-padding, var(--xl));
   box-shadow: inset 0 1px 0 var(--hairline-color);
 
   &.flex {
