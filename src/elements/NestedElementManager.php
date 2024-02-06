@@ -1004,15 +1004,39 @@ JS, [
         $revisionsService = Craft::$app->getRevisions();
         $ownershipData = [];
 
+        $map = [];
         foreach ($elements as $element) {
             $elementRevisionId = $revisionsService->createRevision($element, null, null, [
                 'primaryOwnerId' => $revision->id,
                 'saveOwnership' => false,
             ]);
             $ownershipData[] = [$elementRevisionId, $revision->id, $element->getSortOrder()];
+            $map[$element->id] = $elementRevisionId;
         }
 
         Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $ownershipData);
+
+        // Fire a 'afterDuplicateNestedElements' event
+        if (!empty($map) && $this->hasEventHandlers(self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS)) {
+            $revisionOwners = [$revision] + $revision::find()
+                    ->id($revision->id ?: false)
+                    ->siteId(['not', $revision->siteId])
+                    ->drafts($revision->getIsDraft())
+                    ->provisionalDrafts($revision->isProvisionalDraft)
+                    ->revisions($revision->getIsRevision())
+                    ->status(null)
+                    ->ignorePlaceholders()
+                    ->indexBy('siteId')
+                    ->all();
+
+            foreach ($revisionOwners as $revisionOwner) {
+                $this->trigger(self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS, new DuplicateNestedElementsEvent([
+                    'source' => $canonical,
+                    'target' => $revisionOwner,
+                    'newElementIds' => $map,
+                ]));
+            }
+        }
     }
 
     /**
