@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-alpha.13 - 2024-02-06
 
 - Improved global sidebar styling. ([#14281](https://github.com/craftcms/cms/pull/14281))
 - The global sidebar is now collapsible. ([#14281](https://github.com/craftcms/cms/pull/14281))
