@@ -641,6 +641,14 @@ class Sites extends Component
     }
 
     /**
+     * @return int
+     */
+    public function getRemainingSites(): int
+    {
+        return max($this->maxSites - count($this->_allSitesById), 0);
+    }
+
+    /**
      * Saves a site.
      *
      * @param Site $site The site to be saved
@@ -653,7 +661,7 @@ class Sites extends Component
     {
         $isNewSite = !$site->id;
 
-        if ($isNewSite && count($this->_allSitesById) >= $this->maxSites) {
+        if ($isNewSite && !$this->getRemainingSites()) {
             throw new Exception("Maximum number of sites cannot exceed $this->maxSites.");
         }
 

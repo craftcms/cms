@@ -56,7 +56,6 @@ class SitesController extends Controller
     public function actionSettingsIndex(?int $groupId = null): Response
     {
         $sitesService = Craft::$app->getSites();
-        $allGroups = $sitesService->getAllGroups();
 
         if ($groupId) {
             if (($group = $sitesService->getGroupById($groupId)) === null) {
@@ -88,9 +87,8 @@ class SitesController extends Controller
 
         return $this->renderTemplate('settings/sites/index.twig', compact(
             'crumbs',
-            'allGroups',
             'group',
-            'sites'
+            'sites',
         ));
     }
 
