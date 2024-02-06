@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Added `Craft.ElementEditor::markDeltaNameAsModified()`.
+- Removed `craft\elements\NestedElementManager::$allowDeletion`.
+- Fixed a bug where element editor forms could submit duplicate input values. ([#14276](https://github.com/craftcms/cms/issues/14276))
+- Fixed a bug where unedited, unpublished drafts created within Matrix fields would appear on page reload.
+- Fixed a bug where nested drafts weren’t getting deleted if no longer needed by a Matrix or Addresses field.
+
+## 5.0.0-alpha.12 - 2024-02-05
+
 - Added the “Show cards in a grid” setting to relational fields that support card view. ([#14202](https://github.com/craftcms/cms/discussions/14202))
 - Made several subtle styling improvements, particularly for text-only zoom.
 - Increased the hit area for range select options.
@@ -11,6 +19,7 @@
 - Added support for element partial templates. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added the `partialTemplatesPath` config setting. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Garbage collection now deletes orphaned nested entries.
+- The `{% js %}` and `{% css %}` tags now support `.js.gz` and `.css.gz` URLs. ([#14243](https://github.com/craftcms/cms/issues/14243))
 - Added `craft\base\Element::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\elements\ElementCollection::render()`. ([#14284](https://github.com/craftcms/cms/pull/14284))
 - Added `craft\elements\NestedElementManager::$allowDeletion`.
@@ -22,14 +31,17 @@
 - Renamed `craft\log\Dispatcher::getTargets()` to `getDefaultTargets()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
 - `craft\elements\NestedElementManager` now passes the owner element to the `valueSetter` closure.
 - `craft\helpers\Cp::elementCardHtml()` now accepts an `attributes` config key.
+- `craft\services\Elements::saveElement()` now has a `$saveContent` argument.
 - Fixed a bug where newly-created inline Matrix entries could have validation errors.
-- Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag.
+- Fixed a bug where selecting a field type via keyboard was unreliable if a field type’s icon contained a `<style>` tag. ([#14292](https://github.com/craftcms/cms/issues/14292))
 - Fixed an error that occurred if a component select was used for components with non-numeric IDs.
 - Fixed a bug where entry type, field, filesystem, and volume validation errors weren’t getting reported within slideouts.
 - Fixed a bug where it was possible to create new components from component selects whose limit had already been reached.
 - Fixed a JavaScript error that occurred when creating a Matrix field within another Matrix field’s settings. ([#14268](https://github.com/craftcms/cms/issues/14268))
 - Fixed a JavaScript error that could occur when previewing an image.
 - Fixed a bug where new entries would keep propagating all content across all sites for newly-created elements, even after switching to a different site.
+- Fixed a bug where users with “Create entries” permission but not “Delete entries” weren’t allowed to delete their own unpublished drafts. ([#14294](https://github.com/craftcms/cms/issues/14294))
+- Fixed a bug where Yii-provided Chinese translations weren’t getting picked up in the control panel. ([#14287](https://github.com/craftcms/cms/issues/14287))
 
 ## 5.0.0-alpha.11 - 2024-02-01
 

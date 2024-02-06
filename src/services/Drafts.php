@@ -394,7 +394,9 @@ SQL,
         }
 
         try {
-            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false)) {
+            // no need to propagate or save content here – and it could end up overriding any
+            // content changes made to other sites from a previous onAfterPropagate(), etc.
+            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false, false, saveContent: false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
             Db::delete(Table::DRAFTS, [
