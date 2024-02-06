@@ -46,7 +46,7 @@
 .global-nav > ul {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--xs);
 }
 
 .global-nav > ul > li {
@@ -58,7 +58,10 @@
 }
 
 .nav-icon {
-  display: inline-block;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   width: 1rem;
   aspect-ratio: 1;
   line-height: 0;
@@ -67,18 +70,17 @@
 
   > svg {
     @include svg-mask(currentColor);
-    max-width: 100%;
+    width: 100%;
+    height: 100%;
   }
-}
-
-.nav-item {
 }
 
 .nav-item__subnav {
   --prefix-ratio: 4/3;
+  @include visually-hidden;
 
-  [data-sidebar='collapsed'] & {
-    display: none;
+  .sel & {
+    @include not-visually-hidden;
   }
 }
 
@@ -97,7 +99,7 @@
 }
 
 .sidebar-actions {
-  padding: var(--s);
+  padding: 10px; // match padding of #system-info
 }
 
 .sidebar-action {
@@ -111,6 +113,7 @@
   color: currentColor;
   cursor: pointer;
   gap: 7px; // magic number to align with system name
+  min-height: 30px;
 
   &:before {
     content: '';
@@ -122,23 +125,52 @@
     width: var(--xs);
   }
 
+  &:focus-visible,
   &:hover {
     background-color: var(--gray-200);
   }
 
   &.sel {
     &:before {
+      --indicator-size: 6px;
       background-color: currentColor;
     }
   }
 }
 
+.nav-item__indicator {
+  --icon-size: 10px;
+  position: absolute;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  z-index: 1;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 100%;
+  top: 15px;
+  transform: translateY(-50%);
+  right: calc(var(--m) + var(--xs));
+
+  .cp-icon {
+    position: relative;
+    top: 0.5px;
+  }
+}
+
 .sidebar-action--sub {
+  --indicator-size: 4px;
+  font-size: 0.9em;
+  min-height: 26px;
+
   &:before {
-    width: 8px;
-    height: 8px;
+    width: var(--indicator-size);
+    height: var(--indicator-size);
     border-radius: 100%;
-    left: 11px; // magic number to align with center of the prefix icons
+    left: calc((30px / 2) - (var(--indicator-size) / 2));
+    top: 50%;
+    background-color: var(--gray-300);
   }
 }
 
@@ -209,8 +241,15 @@
 }
 
 .sidebar-action__badge {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 0 var(--s);
   margin-left: auto;
+
+  [data-sidebar='expanded'] .has-subnav & {
+    margin-right: var(--l);
+  }
 }
 
 /**
@@ -222,7 +261,14 @@ States
       width: var(--collapsed-width);
     }
 
+    .nav-item__indicator {
+      right: -1px;
+    }
+
     .sidebar-action {
+      width: 30px;
+      min-height: 30px;
+
       &:focus-visible,
       &:hover {
         .sidebar-action__label {
@@ -242,6 +288,7 @@ States
       color: var(--text-color);
       border-radius: var(--medium-border-radius);
       padding: var(--xs) var(--s);
+      pointer-events: none;
 
       @media screen and (prefers-reduced-motion: no-preference) {
         transition:
@@ -257,6 +304,16 @@ States
       bottom: 0;
       transform: translateY(25%);
       padding: 0;
+    }
+
+    .sidebar-action--sub {
+      min-height: 26px;
+
+      &:before {
+        left: 50%;
+        top: 50%;
+        transform: translateX(-50%) translateY(-50%);
+      }
     }
   }
 
