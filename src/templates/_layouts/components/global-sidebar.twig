@@ -74,6 +74,10 @@
                             {{ _self.action(item) }}
 
                             {% if item.subnav %}
+                                {% set icon = item.sel ? 'angle-down' : 'angle-right' %}
+                                <div type="button" class="nav-item__indicator">
+                                    <span class="cp-icon">{{ iconSvg(icon) }}</span>
+                                </div>
                                 <ul class="nav-item__subnav">
                                     {% for itemId, item in item.subnav %}
                                         {% set itemIsSelected = (

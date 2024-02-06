@@ -112,6 +112,7 @@
   color: currentColor;
   cursor: pointer;
   gap: 7px; // magic number to align with system name
+  min-height: 30px;
 
   &:before {
     content: '';
@@ -123,6 +124,7 @@
     width: var(--xs);
   }
 
+  &:focus-visible,
   &:hover {
     background-color: var(--gray-200);
   }
@@ -135,15 +137,36 @@
   }
 }
 
+.nav-item__indicator {
+  --icon-size: 10px;
+  position: absolute;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  z-index: 1;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 100%;
+  top: 15px;
+  transform: translateY(-50%);
+  right: calc(var(--m) + var(--xs));
+
+  .cp-icon {
+    position: relative;
+    top: 0.5px;
+  }
+}
+
 .sidebar-action--sub {
   --indicator-size: 4px;
-  padding-block: var(--xs);
+  font-size: 0.9em;
+  min-height: 26px;
 
   &:before {
     width: var(--indicator-size);
     height: var(--indicator-size);
     border-radius: 100%;
-    // icon size / 2 - indicator size / 2
     left: calc((30px / 2) - (var(--indicator-size) / 2));
     top: 50%;
     background-color: var(--gray-300);
@@ -217,8 +240,15 @@
 }
 
 .sidebar-action__badge {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 0 var(--s);
   margin-left: auto;
+
+  [data-sidebar='expanded'] .has-subnav & {
+    margin-right: var(--l);
+  }
 }
 
 /**
@@ -230,33 +260,13 @@ States
       width: var(--collapsed-width);
     }
 
-    .has-subnav > .sidebar-action {
-      --chevron-size: 4px;
-      --chevron-height: calc(var(--chevron-size) * 0.8);
-
-      &:after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        transform-origin: calc(var(--chevron-size) / 2) 50%;
-        right: calc(var(--chevron-size) * -2);
-        width: 0;
-        height: 0;
-        border-top: var(--chevron-height) solid transparent;
-        border-bottom: var(--chevron-height) solid transparent;
-        border-left: var(--chevron-size) solid currentColor;
-        border-right: var(--chevron-size) solid transparent;
-      }
-
-      &.sel:after {
-        transform: translateY(-50%) rotate(90deg);
-      }
+    .nav-item__indicator {
+      right: -1px;
     }
 
     .sidebar-action {
       width: 30px;
-      height: 30px;
+      min-height: 30px;
 
       &:focus-visible,
       &:hover {
@@ -296,6 +306,8 @@ States
     }
 
     .sidebar-action--sub {
+      min-height: 26px;
+
       &:before {
         left: 50%;
         top: 50%;
