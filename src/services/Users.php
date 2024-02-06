@@ -371,7 +371,15 @@ class Users extends Component
                 ->where(['userId' => $userId])
                 ->scalar();
 
-            $this->_userPreferences[$userId] = $preferences ? Json::decode($preferences) : [];
+            if ($preferences) {
+                if (is_string($preferences)) {
+                    $preferences = Json::decode($preferences);
+                }
+            } else {
+                $preferences = [];
+            }
+
+            $this->_userPreferences[$userId] = $preferences;
         }
 
         return $this->_userPreferences[$userId];
@@ -387,10 +395,11 @@ class Users extends Component
     {
         // Merge in any other saved preferences
         $preferences += $this->getUserPreferences($user->id);
+        $tableSchema = Craft::$app->getDb()->getSchema()->getTableSchema(Table::USERPREFERENCES);
 
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
-            'preferences' => Json::encode($preferences),
+            'preferences' => Db::prepareValueForDb($preferences, $tableSchema->columns['preferences']->dbType),
         ]);
 
         $this->_userPreferences[$user->id] = $preferences;

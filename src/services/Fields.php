@@ -757,7 +757,7 @@ class Fields extends Component
                 if (array_key_exists('config', $config)) {
                     $nestedConfig = ArrayHelper::remove($config, 'config');
                     if ($nestedConfig) {
-                        $config += Json::decode($nestedConfig);
+                        $config += is_string($nestedConfig) ? Json::decode($nestedConfig) : $nestedConfig;
                     }
                     $loadTabs = false;
                 } else {

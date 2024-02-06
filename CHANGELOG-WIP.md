@@ -359,6 +359,8 @@
 - Added `craft\services\ProjectConfig::find()`.
 - Added `craft\services\ProjectConfig::flush()`.
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
+- Added `craft\services\Sites::$maxSites`. ([#14307](https://github.com/craftcms/cms/pull/14307))
+- Added `craft\services\Sites::getRemainingSites()`. ([#14307](https://github.com/craftcms/cms/pull/14307))
 - Added `craft\web\CpScreenResponseBehavior::$actionMenuItems`.
 - Added `craft\web\CpScreenResponseBehavior::$contextMenuItems`.
 - Added `craft\web\CpScreenResponseBehavior::$selectableSites`.
@@ -603,12 +605,14 @@
 - Updated `yiisoft/yii2-symfonymailer` to v4.
 - Craft no longer requires `composer/composer`.
 - New database tables now default to the `utf8mb4` charset, and the `utf8mb4_0900_ai_ci` or `utf8mb4_unicode_ci` collation, on MySQL. Existing installs should run `db/convert-charset` after upgrading, to ensure all tables have consistent charsets and collations. ([#11823](https://github.com/craftcms/cms/discussions/11823))
+- The `deprecationerrors.traces`, `fieldlayouts.config`, `gqlschemas.scope`, `sections.previewTargets`, `userpreferences.preferences`, and `widgets.settings` columns are now of type `JSON` for MySQL and PostgreSQL. ([#14300](https://github.com/craftcms/cms/pull/14300))
 - The `defaultTemplateExtensions` config setting now lists `twig` before `html` by default. ([#11809](https://github.com/craftcms/cms/discussions/11809))
 - Improved the initial page load performance for element edit screens that contain Matrix fields.
 - Improved the performance of control panel screens that include field layout designers.
 - Improved the performance of autosaves for elements with newly-created Matrix entries.
 - Slugs are no longer required for elements that don’t have a URI format that contains `slug`.
 - Garbage collection now deletes orphaned nested entries.
+- Craft now has a default limit of 100 sites, which can be increased via `craft\ervices\Sites::$maxSites` at your own peril. ([#14307](https://github.com/craftcms/cms/pull/14307))
 - Fixed a bug where multi-site element queries weren’t scoring elements on a per-site basis. ([#13801](https://github.com/craftcms/cms/discussions/13801))
 - Fixed an error that could occur if eager-loading aliases conflicted with native eager-loading handles, such as `author`. ([#14057](https://github.com/craftcms/cms/issues/14057))
 - Fixed a bug where layout components provided by disabled plugins weren’t getting omitted. ([#14219](https://github.com/craftcms/cms/pull/14219))

@@ -651,7 +651,7 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
   },
   {
     HELPER_MARGIN: 0,
-    LEVEL_INDENT: 44,
+    LEVEL_INDENT: 48,
     MAX_GIVE: 22,
 
     defaults: {

@@ -3023,6 +3023,7 @@ table {
     flex-direction: row;
     align-items: center;
     gap: var(--s);
+    max-width: 100%;
 
     .status,
     .icon {

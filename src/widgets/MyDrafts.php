@@ -98,7 +98,7 @@ class MyDrafts extends Widget
         }
 
         $html = Html::beginTag('ul', [
-            'class' => 'widget__list',
+            'class' => 'widget__list chips',
             'role' => 'list',
         ]);
 
