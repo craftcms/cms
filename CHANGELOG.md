@@ -10,7 +10,8 @@
 - Fixed a bug where element editor forms could submit duplicate input values. ([#14276](https://github.com/craftcms/cms/issues/14276))
 - Fixed a bug where unedited, unpublished drafts created within Matrix fields would appear on page reload.
 - Fixed a bug where nested drafts weren’t getting deleted if no longer needed by a Matrix or Addresses field.
-- Added `craft\services\Sites::maxSites`.
+- Added `craft\services\Sites::$maxSites`.
+- Added `craft\services\Sites::getRemainingSites()`
 - Fixed a bug where Matrix fields in inline-editable blocks view weren’t deleting the last entry. ([14303](https://github.com/craftcms/cms/issues/14303))
 - Fixed a PHP error that could occur when field layouts contained UI elements.
 
