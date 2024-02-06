@@ -641,7 +641,8 @@ class Sites extends Component
     }
 
     /**
-     * @return int
+     * @return int The remaining number of sites that can be created
+     * @see $maxSites
      */
     public function getRemainingSites(): int
     {
