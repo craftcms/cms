@@ -128,7 +128,13 @@ class Sites extends Component
     /**
      * This value can be configured as needed, but exists as a safeguard against performance issues.
      *
+     * ::: warning
+     * Craft’s multi-site support is not designed to be infinitely scalable.
+     * Increase this limit at your own risk!
+     * :::
+     *
      * @var int The maximum number of sites that can be created.
+     * @since 5.0.0
      */
     public int $maxSites = 100;
 
@@ -641,8 +647,11 @@ class Sites extends Component
     }
 
     /**
-     * @return int The remaining number of sites that can be created
+     * Returns the number of sites that can be created, based on [[$maxSites]].
+     *
+     * @return int
      * @see $maxSites
+     * @since 5.0.0
      */
     public function getRemainingSites(): int
     {
