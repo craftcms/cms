@@ -15,12 +15,24 @@ class m240206_035135_convert_json_columns extends Migration
      */
     public function safeUp(): bool
     {
-        $this->alterColumn(Table::DEPRECATIONERRORS, 'traces', $this->json());
-        $this->alterColumn(Table::FIELDLAYOUTS, 'config', $this->json());
-        $this->alterColumn(Table::GQLSCHEMAS, 'scope', $this->json());
-        $this->alterColumn(Table::SECTIONS, 'previewTargets', $this->json());
-        $this->alterColumn(Table::USERPREFERENCES, 'preferences', $this->json());
-        $this->alterColumn(Table::WIDGETS, 'settings', $this->json());
+        $columns = [
+            [Table::DEPRECATIONERRORS, 'traces'],
+            [Table::FIELDLAYOUTS, 'config'],
+            [Table::GQLSCHEMAS, 'scope'],
+            [Table::SECTIONS, 'previewTargets'],
+            [Table::USERPREFERENCES, 'preferences'],
+            [Table::WIDGETS, 'settings'],
+        ];
+
+        foreach ($columns as [$table, $column]) {
+            if ($this->db->getIsPgsql()) {
+                $this->execute(<<<SQL
+alter table $table alter column "$column" type jsonb using "$column"::jsonb; 
+SQL);
+            } else {
+                $this->alterColumn($table, $column, $this->json());
+            }
+        }
 
         return true;
     }
