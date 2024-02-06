@@ -9,6 +9,7 @@
 - Fixed a bug where element editor forms could submit duplicate input values. ([#14276](https://github.com/craftcms/cms/issues/14276))
 - Fixed a bug where unedited, unpublished drafts created within Matrix fields would appear on page reload.
 - Fixed a bug where nested drafts weren’t getting deleted if no longer needed by a Matrix or Addresses field.
+- Added `craft\services\Sites::maxSites`.
 
 ## 5.0.0-alpha.12 - 2024-02-05
 
