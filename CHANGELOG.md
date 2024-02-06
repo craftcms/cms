@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `Craft.ElementEditor::markDeltaNameAsModified()`.
+- Removed `craft\elements\NestedElementManager::$allowDeletion`.
 - Fixed a bug where element editor forms could submit duplicate input values. ([#14276](https://github.com/craftcms/cms/issues/14276))
 
 ## 5.0.0-alpha.12 - 2024-02-05
