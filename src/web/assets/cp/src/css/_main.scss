@@ -8154,9 +8154,8 @@ body.setup-2fa {
   }
 
   & > .titlebar {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
+    display: grid;
+    grid-template-columns: auto 1fr;
     align-items: center;
     gap: var(--m);
     margin: 0 calc(var(--m) * -1);
