@@ -17,6 +17,7 @@
 - Fixed a bug where Matrix fields in inline-editable blocks view weren’t deleting the last entry. ([14303](https://github.com/craftcms/cms/issues/14303))
 - Fixed a PHP error that could occur when field layouts contained UI elements.
 - Fixed an alignment bug with sortable structure views. ([#14299](https://github.com/craftcms/cms/issues/14299))
+- Fixed a bug where component selects weren’t showing the “Create” button if no components existed yet.
 
 ## 5.0.0-alpha.12 - 2024-02-05
 

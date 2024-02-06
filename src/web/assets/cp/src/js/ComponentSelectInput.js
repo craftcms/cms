@@ -164,40 +164,28 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       );
     },
 
-    updateAddComponentBtn() {
-      if (
-        this.canAddMoreComponents() &&
-        this.getOptions().parent(':not(.hidden)').length
-      ) {
-        this.enableAddComponentBtns();
+    updateButtons() {
+      if (this.canAddMoreComponents()) {
+        if (this.$addBtn.length) {
+          if (this.getOptions().parent(':not(.hidden)').length) {
+            this.$addBtn.removeClass('hidden');
+          } else {
+            this.$addBtn.addClass('hidden');
+          }
+        }
+
+        if (this.$createBtn.length) {
+          this.$createBtn.removeClass('hidden');
+        }
       } else {
-        this.disableAddComponentBtns();
-      }
-    },
-
-    enableAddComponentBtns: function () {
-      if (this.$addBtn.length) {
-        this.$addBtn.removeClass('hidden');
-      }
-      if (this.$createBtn.length) {
-        this.$createBtn.removeClass('hidden');
+        if (this.$addBtn.length) {
+          this.$addBtn.addClass('hidden');
+        }
+        if (this.$createBtn.length) {
+          this.$createBtn.addClass('hidden');
+        }
       }
 
-      this.updateButtonContainer();
-    },
-
-    disableAddComponentBtns: function () {
-      if (this.$addBtn.length) {
-        this.$addBtn.addClass('hidden');
-      }
-      if (this.$createBtn.length) {
-        this.$createBtn.addClass('hidden');
-      }
-
-      this.updateButtonContainer();
-    },
-
-    updateButtonContainer: function () {
       const $container = this.$addBtn.length && this.$addBtn.parent('.flex');
       if ($container && $container.length) {
         if ($container.children(':not(.hidden)').length) {
@@ -370,7 +358,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       this.componentSelect?.resetItemOrder();
       this.$components = $().add(this.$components);
 
-      this.updateAddComponentBtn();
+      this.updateButtons();
 
       if (this._initialized) {
         this.trigger('change');
