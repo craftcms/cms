@@ -8,7 +8,6 @@
 namespace craft\models;
 
 use craft\base\Model;
-use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
@@ -51,15 +50,6 @@ class GqlSchema extends Model
      * @since 3.3.16
      */
     private array $_cachedPairs = [];
-
-    public function __construct($config = [])
-    {
-        if (isset($config['scope']) && is_string($config['scope'])) {
-            $config['scope'] = Json::decode($config['scope']);
-        }
-
-        parent::__construct($config);
-    }
 
     /**
      * @inheritdoc

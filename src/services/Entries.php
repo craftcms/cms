@@ -227,10 +227,8 @@ class Entries extends Component
             }
 
             $this->_sections = new MemoizableArray($results, function(array $result) use (&$siteSettingsBySection) {
-                if (!empty($result['previewTargets'])) {
-                    $result['previewTargets'] = is_string($result['previewTargets'])
-                        ? Json::decode($result['previewTargets'])
-                        : $result['previewTargets'];
+                if (!empty($result['previewTargets']) && is_string($result['previewTargets'])) {
+                    $result['previewTargets'] = Json::decode($result['previewTargets']);
                 } else {
                     $result['previewTargets'] = [];
                 }
