@@ -1293,7 +1293,7 @@ JS);
         }
 
         $response->pageSidebarTemplate('_includes/nav', [
-            'label' => Craft::t('app', 'My Account'),
+            'label' => Craft::t('app', 'Account'),
             'items' => $navItems,
         ]);
 
