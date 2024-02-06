@@ -1024,24 +1024,11 @@ JS, [
 
         // Fire a 'afterDuplicateNestedElements' event
         if (!empty($map) && $this->hasEventHandlers(self::EVENT_AFTER_CREATE_REVISIONS)) {
-            $revisionOwners = [$revision] + $revision::find()
-                    ->id($revision->id ?: false)
-                    ->siteId(['not', $revision->siteId])
-                    ->drafts($revision->getIsDraft())
-                    ->provisionalDrafts($revision->isProvisionalDraft)
-                    ->revisions($revision->getIsRevision())
-                    ->status(null)
-                    ->ignorePlaceholders()
-                    ->indexBy('siteId')
-                    ->all();
-
-            foreach ($revisionOwners as $revisionOwner) {
-                $this->trigger(self::EVENT_AFTER_CREATE_REVISIONS, new DuplicateNestedElementsEvent([
-                    'source' => $canonical,
-                    'target' => $revisionOwner,
-                    'newElementIds' => $map,
-                ]));
-            }
+            $this->trigger(self::EVENT_AFTER_CREATE_REVISIONS, new DuplicateNestedElementsEvent([
+                'source' => $canonical,
+                'target' => $revision,
+                'newElementIds' => $map,
+            ]));
         }
     }
 
