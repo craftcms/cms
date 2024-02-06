@@ -4,6 +4,7 @@
 
 - Improved global sidebar styling. ([#14281](https://github.com/craftcms/cms/pull/14281))
 - The global sidebar is now collapsible. ([#14281](https://github.com/craftcms/cms/pull/14281))
+- Entry cards without a thumbnail now show their entry type icon. ([#14305](https://github.com/craftcms/cms/issues/14305))
 - Added `Craft.ElementEditor::markDeltaNameAsModified()`.
 - Removed `craft\elements\NestedElementManager::$allowDeletion`.
 - Fixed a bug where element editor forms could submit duplicate input values. ([#14276](https://github.com/craftcms/cms/issues/14276))
