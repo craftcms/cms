@@ -366,7 +366,9 @@ class Cp extends Component
                 $item['linkAttributes']['aria']['current'] = $item['url'] === $path ? 'page' : 'true';
             } else {
                 $item['sel'] = false;
-                $item['subnav'] = false;
+                if (!isset($item['subnav'])) {
+                    $item['subnav'] = false;
+                }
             }
 
             if (!isset($item['id'])) {

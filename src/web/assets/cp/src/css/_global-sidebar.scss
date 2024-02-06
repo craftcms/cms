@@ -46,7 +46,7 @@
 .global-nav > ul {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--xs);
 }
 
 .global-nav > ul > li {
@@ -58,7 +58,10 @@
 }
 
 .nav-icon {
-  display: inline-block;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   width: 1rem;
   aspect-ratio: 1;
   line-height: 0;
@@ -71,14 +74,12 @@
   }
 }
 
-.nav-item {
-}
-
 .nav-item__subnav {
   --prefix-ratio: 4/3;
+  @include visually-hidden;
 
-  [data-sidebar='collapsed'] & {
-    display: none;
+  .sel & {
+    @include not-visually-hidden;
   }
 }
 
@@ -97,7 +98,7 @@
 }
 
 .sidebar-actions {
-  padding: var(--s);
+  padding: 10px; // match padding of #system-info
 }
 
 .sidebar-action {
@@ -128,17 +129,24 @@
 
   &.sel {
     &:before {
+      --indicator-size: 6px;
       background-color: currentColor;
     }
   }
 }
 
 .sidebar-action--sub {
+  --indicator-size: 4px;
+  padding-block: var(--xs);
+
   &:before {
-    width: 8px;
-    height: 8px;
+    width: var(--indicator-size);
+    height: var(--indicator-size);
     border-radius: 100%;
-    left: 11px; // magic number to align with center of the prefix icons
+    // icon size / 2 - indicator size / 2
+    left: calc((30px / 2) - (var(--indicator-size) / 2));
+    top: 50%;
+    background-color: var(--gray-300);
   }
 }
 
@@ -222,7 +230,34 @@ States
       width: var(--collapsed-width);
     }
 
+    .has-subnav > .sidebar-action {
+      --chevron-size: 4px;
+      --chevron-height: calc(var(--chevron-size) * 0.8);
+
+      &:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        transform-origin: calc(var(--chevron-size) / 2) 50%;
+        right: calc(var(--chevron-size) * -2);
+        width: 0;
+        height: 0;
+        border-top: var(--chevron-height) solid transparent;
+        border-bottom: var(--chevron-height) solid transparent;
+        border-left: var(--chevron-size) solid currentColor;
+        border-right: var(--chevron-size) solid transparent;
+      }
+
+      &.sel:after {
+        transform: translateY(-50%) rotate(90deg);
+      }
+    }
+
     .sidebar-action {
+      width: 30px;
+      height: 30px;
+
       &:focus-visible,
       &:hover {
         .sidebar-action__label {
@@ -258,6 +293,14 @@ States
       bottom: 0;
       transform: translateY(25%);
       padding: 0;
+    }
+
+    .sidebar-action--sub {
+      &:before {
+        left: 50%;
+        top: 50%;
+        transform: translateX(-50%) translateY(-50%);
+      }
     }
   }
 
