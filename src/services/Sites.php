@@ -126,6 +126,13 @@ class Sites extends Component
     public const EVENT_AFTER_DELETE_SITE = 'afterDeleteSite';
 
     /**
+     * This value can be configured as needed, but exists as a safeguard against performance issues.
+     *
+     * @var int The maximum number of sites that can be created.
+     */
+    public int $maxSites = 200;
+
+    /**
      * @var MemoizableArray<SiteGroup>|null
      * @see _groups()
      */
@@ -645,6 +652,10 @@ class Sites extends Component
     public function saveSite(Site $site, bool $runValidation = true): bool
     {
         $isNewSite = !$site->id;
+
+        if ($isNewSite && count($this->_allSitesById) >= $this->maxSites) {
+            throw new Exception("Maximum number of sites cannot exceed $this->maxSites.");
+        }
 
         if (!empty($this->_allSitesById)) {
             $primarySite = $this->getPrimarySite();
