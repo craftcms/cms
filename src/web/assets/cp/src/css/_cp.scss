@@ -115,6 +115,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   align-items: center;
   color: currentColor;
   border-bottom: 1px solid var(--hairline-color);
+  background-clip: padding-box;
 
   &:after {
     display: none;
