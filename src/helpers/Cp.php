@@ -2054,6 +2054,19 @@ JS, [
                     'error-key' => 'addressLine2',
                 ],
             ]) .
+            static::textFieldHtml([
+                'status' => $address->getAttributeStatus('addressLine3'),
+                'label' => $address->getAttributeLabel('addressLine3'),
+                'id' => 'addressLine3',
+                'name' => 'addressLine3',
+                'value' => $address->addressLine3,
+                'autocomplete' => $belongsToCurrentUser ? 'address-line3' : 'off',
+                'required' => isset($requiredFields['addressLine3']),
+                'errors' => $address->getErrors('addressLine3'),
+                'data' => [
+                    'error-key' => 'addressLine3',
+                ],
+            ]) .
             self::_subdivisionField(
                 $address,
                 'administrativeArea',

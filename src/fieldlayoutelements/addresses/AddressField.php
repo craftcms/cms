@@ -103,6 +103,7 @@ class AddressField extends BaseField
             'countryCode',
             'addressLine1',
             'addressLine2',
+            'addressLine3',
             'administrativeArea',
             'locality',
             'dependentLocality',
