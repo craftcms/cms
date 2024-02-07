@@ -3300,7 +3300,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
           });
         }
-      } else {
+      } else if (this.$selectAllContainer.prop('nodeName') !== 'TH') {
         if (!this.$selectAllContainer.siblings().length) {
           this.$selectAllContainer.parent('.header').remove();
         }

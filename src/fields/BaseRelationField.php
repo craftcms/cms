@@ -16,6 +16,7 @@ use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
+use craft\db\CallbackExpression;
 use craft\db\Query;
 use craft\db\Table as DbTable;
 use craft\elements\conditions\ElementCondition;
@@ -644,35 +645,11 @@ JS, [
                 }
             }
 
-            $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
+            // Make our query customizations via EVENT_AFTER_PREPARE/EVENT_AFTER_PREPARE,
+            // so they get applied for cloned queries as well
 
-            if ($this->sortable && !$this->maintainHierarchy) {
-                $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
-            }
-
-            // join the relations table via EVENT_BEFORE_PREPARE so it gets joined for cloned queries as well
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_BEFORE_PREPARE => function(
-                    CancelableEvent $event,
-                    ElementQuery $query,
-                ) use ($element, $relationsAlias) {
-                    $query->innerJoin(
-                        [$relationsAlias => DbTable::RELATIONS],
-                        [
-                            'and',
-                            "[[$relationsAlias.targetId]] = [[elements.id]]",
-                            [
-                                "$relationsAlias.sourceId" => $element->id,
-                                "$relationsAlias.fieldId" => $this->id,
-                            ],
-                            [
-                                'or',
-                                ["$relationsAlias.sourceSiteId" => null],
-                                ["$relationsAlias.sourceSiteId" => $element->siteId],
-                            ],
-                        ]
-                    );
-
+            $query->attachBehavior(sprintf('%s-once', self::class), new EventBehavior([
+                ElementQuery::EVENT_BEFORE_PREPARE => function(CancelableEvent  $event, ElementQuery $query) {
                     if ($this->maintainHierarchy && $query->id === null) {
                         $structuresService = Craft::$app->getStructures();
 
@@ -692,6 +669,49 @@ JS, [
                     }
                 },
             ], true));
+
+            $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
+
+            $query->attachBehavior(self::class, new EventBehavior([
+                ElementQuery::EVENT_AFTER_PREPARE => function(
+                    CancelableEvent $event,
+                    ElementQuery $query,
+                ) use ($element, $relationsAlias) {
+                    // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
+                    // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
+                    // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
+                    // to the eager-loading query and cause a SQL error.
+                    foreach ([$query->query, $query->subQuery] as $q) {
+                        $q->innerJoin(
+                            [$relationsAlias => DbTable::RELATIONS],
+                            [
+                                'and',
+                                "[[$relationsAlias.targetId]] = [[elements.id]]",
+                                [
+                                    "$relationsAlias.sourceId" => $element->id,
+                                    "$relationsAlias.fieldId" => $this->id,
+                                ],
+                                [
+                                    'or',
+                                    ["$relationsAlias.sourceSiteId" => null],
+                                    ["$relationsAlias.sourceSiteId" => $element->siteId],
+                                ],
+                            ]
+                        );
+
+                        if (
+                            $this->sortable &&
+                            !$this->maintainHierarchy &&
+                            (
+                                !$query->orderBy ||
+                                (count($query->orderBy) === 1) && ($query->orderBy[0] ?? null) instanceof CallbackExpression
+                            )
+                        ) {
+                            $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
+                        }
+                    }
+                },
+            ]));
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $element);

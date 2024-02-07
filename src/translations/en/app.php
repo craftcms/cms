@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'Access the site when the system is off',
     'Access {plugin}' => 'Access {plugin}',
     'Accessibility' => 'Accessibility',
+    'Account' => 'Account',
     'Account Security' => 'Account Security',
     'Account Type' => 'Account Type',
     'Account has not been activated.' => 'Account has not been activated.',

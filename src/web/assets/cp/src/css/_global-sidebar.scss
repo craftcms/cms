@@ -1,6 +1,5 @@
 .global-sidebar {
   --is-always-visible: true;
-  --collapsed-width: 50px;
   --prefix-size: 30px;
   --prefix-ratio: 1;
 
@@ -14,7 +13,7 @@
   -webkit-overflow-scrolling: touch;
   background-color: transparent;
   border-right: 1px solid var(--hairline-color);
-  width: var(--sidebar-width);
+  width: var(--global-sidebar-width);
 
   a {
     text-decoration: none;
@@ -273,7 +272,7 @@ States
 @media only screen and (min-width: $minFullUiWidth) {
   [data-sidebar='collapsed'] {
     .global-sidebar {
-      width: var(--collapsed-width);
+      --global-sidebar-width: 50px;
     }
 
     .nav-item__indicator {

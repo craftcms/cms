@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => '当系统关闭时访问此站点',
     'Access {plugin}' => '访问 {plugin}',
     'Accessibility' => '无障碍功能',
+    'Account' => '帐户',
     'Account Security' => 'Account Security',
     'Account Type' => '帐户类型',
     'Account has not been activated.' => '帐号还没有激活。',

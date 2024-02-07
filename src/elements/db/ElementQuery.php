@@ -16,8 +16,12 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\cache\ElementQueryTagDependency;
+use craft\db\CallbackExpression;
+use craft\db\CallbackExpressionBuilder;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
+use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
+use craft\db\pgsql\QueryBuilder as PgsqlQueryBuilder;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -366,13 +370,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public mixed $ref = null;
 
-    /**
-     * @inheritdoc
-     * @used-by orderBy()
-     * @used-by addOrderBy()
-     */
-    public $orderBy = '';
-
     // Eager-loading
     // -------------------------------------------------------------------------
 
@@ -567,8 +564,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         $this->elementType = $elementType;
 
-        // Use ** as a placeholder for "all the default columns"
-        $config['select'] = $config['select'] ?? ['**' => '**'];
+        // Set the default `select` and `orderBy` params to callback expressions,
+        // so we can determine the SQL dynamically only once the query is being executed
+        if (!isset($this->select)) {
+            $this->select(new CallbackExpression(fn(QueryBuilder $builder) => $this->defaultSelectSql($builder)));
+        }
+        if (!isset($this->orderBy)) {
+            $this->orderBy(new CallbackExpression(fn(QueryBuilder $builder) => $this->defaultOrderBySql($builder)));
+        }
 
         parent::__construct($config);
     }
@@ -1376,6 +1379,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function prepare($builder): Query
     {
+        // Set our callback expression builder
+        $builder->setExpressionBuilders([
+            CallbackExpression::class => CallbackExpressionBuilder::class,
+        ]);
+
         // Log a warning if the app isn't fully initialized yet
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(
@@ -1714,7 +1722,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if (!$eagerLoaded) {
             Craft::$app->getElements()->eagerLoadElements(
-                $this->elementType,
+                $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
                 [
                     new EagerLoadPlan([
@@ -2959,33 +2967,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        // Any other empty value means we should set it
-        if (empty($this->orderBy)) {
-            if ($this->fixedOrder) {
-                if (empty($this->id)) {
-                    throw new QueryAbortedException();
-                }
-
-                $ids = $this->id;
-                if (!is_array($ids)) {
-                    $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
-                }
-
-                if (!$db instanceof Connection) {
-                    throw new Exception('The database connection doesn’t support fixed ordering.');
-                }
-                $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
-            } elseif ($this->revisions) {
-                $this->orderBy = ['num' => SORT_DESC];
-            } elseif ($this->_shouldJoinStructureData()) {
-                $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
-            } elseif (!empty($this->defaultOrderBy)) {
-                $this->orderBy = $this->defaultOrderBy;
-            } else {
-                return;
-            }
-        }
-
         // Rename orderBy keys based on the real column name mapping
         // (yes this is awkward but we need to preserve the order of the keys!)
         /** @var array $orderBy */
@@ -3052,6 +3033,57 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->subQuery->orderBy($orderBy);
     }
 
+    private function defaultOrderBySql(QueryBuilder $builder): string
+    {
+        $db = $builder->db;
+
+        if ($this->fixedOrder) {
+            if (empty($this->id)) {
+                throw new QueryAbortedException();
+            }
+
+            $ids = $this->id;
+            if (!is_array($ids)) {
+                $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
+            }
+
+            if (!($builder instanceof MysqlQueryBuilder || $builder instanceof PgsqlQueryBuilder)) {
+                throw new Exception('The database connection doesn’t support fixed ordering.');
+            }
+
+            if ($this->inReverse) {
+                $ids = array_reverse($ids);
+            }
+
+            return $builder->fixedOrder('elements.id', $ids);
+        }
+
+        if ($this->revisions) {
+            $columns = ['num' => SORT_DESC];
+        } elseif ($this->_shouldJoinStructureData()) {
+            $columns = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
+        } elseif (!empty($this->defaultOrderBy)) {
+            $columns = $this->defaultOrderBy;
+        } else {
+            return '';
+        }
+
+        $orders = [];
+        foreach ($columns as $name => $direction) {
+            if ($direction instanceof ExpressionInterface) {
+                $orders[] = $builder->buildExpression($direction);
+            } else {
+                if ($this->inReverse) {
+                    $direction = $direction === SORT_DESC ? SORT_ASC : SORT_DESC;
+                }
+
+                $orders[] = $db->quoteColumnName($name) . ($direction === SORT_DESC ? ' DESC' : '');
+            }
+        }
+
+        return implode(', ', $orders);
+    }
+
     /**
      * Applies the 'select' param to the query being prepared.
      */
@@ -3059,60 +3091,66 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         // Select all columns defined by [[select]], swapping out any mapped column names
         $select = [];
-        $includeDefaults = false;
 
         foreach ((array)$this->select as $alias => $column) {
-            if ($alias === '**') {
-                $includeDefaults = true;
-            } else {
-                // Is this a mapped column name (without a custom alias)?
-                if ($alias === $column && isset($this->_columnMap[$alias])) {
-                    $column = $this->_columnMap[$alias];
+            // Is this a mapped column name (without a custom alias)?
+            if ($alias === $column && isset($this->_columnMap[$alias])) {
+                $column = $this->_columnMap[$alias];
 
-                    // Completely ditch the mapped name if instantiated elements are going to be returned
-                    if (!$this->asArray) {
-                        $alias = $this->_columnMap[$alias];
-                    }
+                // Completely ditch the mapped name if instantiated elements are going to be returned
+                if (!$this->asArray) {
+                    $alias = $this->_columnMap[$alias];
                 }
-
-                $select[$alias] = $column;
             }
+
+            $select[$alias] = $column;
         }
 
-        // Is there still a ** placeholder param?
-        if ($includeDefaults) {
-            // Merge in the default columns
-            $select = array_merge($select, [
-                'elements.id' => 'elements.id',
-                'elements.canonicalId' => 'elements.canonicalId',
-                'elements.fieldLayoutId' => 'elements.fieldLayoutId',
-                'elements.uid' => 'elements.uid',
-                'elements.enabled' => 'elements.enabled',
-                'elements.archived' => 'elements.archived',
-                'elements.dateLastMerged' => 'elements.dateLastMerged',
-                'elements.dateCreated' => 'elements.dateCreated',
-                'elements.dateUpdated' => 'elements.dateUpdated',
-                'siteSettingsId' => 'elements_sites.id',
-                'elements_sites.siteId' => 'elements_sites.siteId',
-                'elements_sites.title' => 'elements_sites.title',
-                'elements_sites.slug' => 'elements_sites.slug',
-                'elements_sites.uri' => 'elements_sites.uri',
-                'elements_sites.content' => 'elements_sites.content',
-                'enabledForSite' => 'elements_sites.enabled',
-            ]);
-
-            // If the query includes soft-deleted elements, include the date deleted
-            if ($this->trashed !== false) {
-                $select['elements.dateDeleted'] = 'elements.dateDeleted';
-            }
-
-            // If the query already specifies any columns, merge those in too
-            if (!empty($this->query->select)) {
-                $select = array_merge($select, $this->query->select);
-            }
+        // If the query already specifies any columns, merge those in too
+        if (!empty($this->query->select)) {
+            $select = array_merge($select, $this->query->select);
         }
 
         $this->query->select = $select;
+    }
+
+    private function defaultSelectSql(QueryBuilder $builder): string
+    {
+        $columns = [
+            'elements.id' => 'elements.id',
+            'elements.canonicalId' => 'elements.canonicalId',
+            'elements.fieldLayoutId' => 'elements.fieldLayoutId',
+            'elements.uid' => 'elements.uid',
+            'elements.enabled' => 'elements.enabled',
+            'elements.archived' => 'elements.archived',
+            'elements.dateLastMerged' => 'elements.dateLastMerged',
+            'elements.dateCreated' => 'elements.dateCreated',
+            'elements.dateUpdated' => 'elements.dateUpdated',
+            'siteSettingsId' => 'elements_sites.id',
+            'elements_sites.siteId' => 'elements_sites.siteId',
+            'elements_sites.title' => 'elements_sites.title',
+            'elements_sites.slug' => 'elements_sites.slug',
+            'elements_sites.uri' => 'elements_sites.uri',
+            'elements_sites.content' => 'elements_sites.content',
+            'enabledForSite' => 'elements_sites.enabled',
+        ];
+
+        // If the query includes soft-deleted elements, include the date deleted
+        if ($this->trashed !== false) {
+            $columns['elements.dateDeleted'] = 'elements.dateDeleted';
+        }
+
+        $db = $builder->db;
+
+        foreach ($columns as $alias => &$column) {
+            if ($alias === $column) {
+                $column = $db->quoteColumnName($column);
+            } else {
+                $column = sprintf('%s AS %s', $db->quoteColumnName($column), $db->quoteColumnName($alias));
+            }
+        }
+
+        return implode(', ', $columns);
     }
 
     /**

@@ -22,6 +22,7 @@ $badgeColor: var(--gray-800);
   --padding: var(--xl);
   --neg-padding: calc(var(--padding) * -1);
   --sidebar-width: #{$sidebarWidth};
+  --global-sidebar-width: #{$sidebarWidth};
   --max-width: 1920px;
 }
 
@@ -1015,27 +1016,13 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #content-container {
-  flex: 1;
-
-  #main-content:not(.has-sidebar):not(.has-details) & {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  #main-content.has-sidebar & {
-    width: calc(100% - #{$sidebarWidth - 24});
-    max-width: calc(100% - #{$sidebarWidth - 24});
-  }
-
-  #main-content.has-details & {
-    width: calc(100% - #{$detailsWidth} - var(--m));
-    max-width: calc(100% - #{$detailsWidth} - var(--m));
-  }
-
-  #main-content.has-sidebar.has-details {
-    width: calc(100% - #{$sidebarWidth} - #{$detailsWidth} - 38px);
-    max-width: calc(100% - #{$sidebarWidth} - #{$detailsWidth} - 38px);
-  }
+  flex: 1 1 auto;
+  /*
+  Admittedly I'm not totally sure why this is necessary, but it seems to be.
+  We have to give #content-container some kind of "hard" width for it to properly
+  clip the content when table cells are long.
+   */
+  width: 400px;
 }
 
 #content-heading {
@@ -1060,17 +1047,34 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+#footer,
+.footer {
+  padding: 6px var(--pane-padding, var(--xl));
+  min-height: 44px;
+  line-height: calc(32rem / 16);
+
+  .buttons {
+    height: 32px;
+    display: flex;
+    align-items: center;
+  }
+
+  .btn {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    height: var(--ui-control-height--small);
+  }
+}
+
 #footer {
   position: sticky;
   bottom: 0;
   z-index: 1;
   margin: calc(var(--xl) + 1px) calc(var(--padding) * -1 + 2px)
     calc(var(--xl) * -1 + 2px);
-  padding: 5px var(--padding);
   background-color: var(--gray-050);
   border-radius: var(--small-border-radius);
   box-sizing: border-box;
-  min-height: 44px;
 
   &:empty {
     display: none;

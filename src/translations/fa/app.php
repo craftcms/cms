@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'دسترسی به سایت در زمان نگهداری سیستم',
     'Access {plugin}' => 'دسترسی به {plugin}',
     'Accessibility' => 'دسترس پذیری',
+    'Account' => 'حساب کاربری',
     'Account Security' => 'Account Security',
     'Account Type' => 'نوع حساب کاربری',
     'Account has not been activated.' => 'حساب کاربری فعال نشده است.',
