@@ -104,6 +104,7 @@ class Install extends Migration
             'sortingCode' => $this->string(),
             'addressLine1' => $this->string(),
             'addressLine2' => $this->string(),
+            'addressLine3' => $this->string(),
             'organization' => $this->string(),
             'organizationTaxId' => $this->string(),
             'fullName' => $this->string(),

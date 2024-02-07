@@ -283,6 +283,26 @@ class AddressQuery extends ElementQuery
     public ?string $addressLine2 = null;
 
     /**
+     * @var string|null Narrows the query results based on the third address line the addresses have.
+     * ---
+     * ```php
+     * // fetch addresses by address line 3
+     * $addresses = \craft\elements\Address::find()
+     *     ->addressLine3('Suite 212')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch addresses by address line 3 #}
+     * {% set addresses = craft.addresses()
+     *   .addressLine3('Suite 212')
+     *   .all() %}
+     * ```
+     * @used-by addressLine3()
+     * @since 5.0.0
+     */
+    public ?string $addressLine3 = null;
+
+    /**
      * @var string|null Narrows the query results based on the full name the addresses have.
      * ---
      * ```php
@@ -734,6 +754,45 @@ class AddressQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results based on the third address line the addresses have.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches addresses…
+     * | - | -
+     * | `'Suite 212'` | with an addressLine3 of `Suite 212`.
+     * | `'*Suite*'` | with an addressLine3 containing `Suite`.
+     * | `'Suite*'` | with an addressLine3 beginning with `Suite`.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch addresses at Suite 212 #}
+     * {% set {elements-var} = {twig-method}
+     *   .addressLine3('Suite 212')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch addresses at Suite 212
+     * ${elements-var} = {php-method}
+     *     ->addressLine3('Suite 212')
+     *     ->all();
+     * ```
+     *
+     * @param string|null $value The property value
+     * @return static self reference
+     * @uses $addressLine3
+     * @since 5.0.0
+     */
+    public function addressLine3(?string $value): static
+    {
+        $this->addressLine3 = $value;
+
+        return $this;
+    }
+
+    /**
      * Narrows the query results based on the full name the addresses have.
      *
      * Possible values include:
@@ -1158,6 +1217,7 @@ class AddressQuery extends ElementQuery
             'addresses.sortingCode',
             'addresses.addressLine1',
             'addresses.addressLine2',
+            'addresses.addressLine3',
             'addresses.organization',
             'addresses.organizationTaxId',
             'addresses.fullName',
@@ -1254,6 +1314,10 @@ class AddressQuery extends ElementQuery
 
         if ($this->addressLine2) {
             $this->subQuery->andWhere(Db::parseParam('addresses.addressLine2', $this->addressLine2));
+        }
+
+        if ($this->addressLine3) {
+            $this->subQuery->andWhere(Db::parseParam('addresses.addressLine3', $this->addressLine3));
         }
 
         if ($this->lastName) {

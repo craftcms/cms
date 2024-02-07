@@ -223,6 +223,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
             AddressField::SORTING_CODE => Craft::t('app', 'Sorting Code'),
             AddressField::ADDRESS_LINE1 => Craft::t('app', 'Address Line 1'),
             AddressField::ADDRESS_LINE2 => Craft::t('app', 'Address Line 2'),
+            AddressField::ADDRESS_LINE3 => Craft::t('app', 'Address Line 3'),
             AddressField::ORGANIZATION => Craft::t('app', 'Organization'),
             AddressField::GIVEN_NAME => Craft::t('app', 'First Name'),
             AddressField::ADDITIONAL_NAME => 'Additional Name', // Unused in Craft
@@ -321,9 +322,9 @@ class Addresses extends Component implements FieldLayoutProviderInterface
             AdministrativeAreaType::DO_SI => Craft::t('app', 'Do Si'),
             AdministrativeAreaType::EMIRATE => Craft::t('app', 'Emirate'),
             AdministrativeAreaType::ISLAND => Craft::t('app', 'Island'),
-            AdministrativeAreaType::OBLAST => Craft::t('app', 'Oblast'),
             AdministrativeAreaType::PARISH => Craft::t('app', 'Parish'),
             AdministrativeAreaType::PREFECTURE => Craft::t('app', 'Prefecture'),
+            AdministrativeAreaType::REGION => Craft::t('app', 'Region'),
             AdministrativeAreaType::STATE => Craft::t('app', 'State'),
             default => Craft::t('app', 'Province'),
         };

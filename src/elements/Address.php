@@ -137,6 +137,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             'sortingCode',
             'addressLine1',
             'addressLine2',
+            'addressLine3',
             'organization',
             'organizationTaxId',
             'fullName',
@@ -200,6 +201,12 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * @var string|null Second line of the address
      */
     public ?string $addressLine2 = null;
+
+    /**
+     * @var string|null Third line of the address
+     * @since 5.0.0
+     */
+    public ?string $addressLine3 = null;
 
     /**
      * @var string|null Organization name
@@ -412,6 +419,14 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    public function getAddressLine3(): ?string
+    {
+        return $this->addressLine3;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getOrganization(): ?string
     {
         return $this->organization;
@@ -583,6 +598,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         $record->sortingCode = $this->sortingCode;
         $record->addressLine1 = $this->addressLine1;
         $record->addressLine2 = $this->addressLine2;
+        $record->addressLine3 = $this->addressLine3;
         $record->organization = $this->organization;
         $record->organizationTaxId = $this->organizationTaxId;
         $record->fullName = $this->fullName;

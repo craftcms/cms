@@ -28,7 +28,8 @@
 - Improved the styling of element chips.
 - Improved checkbox-style deselection behavior for control panel items, to account for double-clicks.
 - Table views are no longer available for element indexes on mobile.
-- Address conditions now have “Address Line 1”, “Address Line 2”, “Administrative Area”, “Country”, “Dependent Locality”, “First Name”, “Full Name”, “Last Name”, “Locality”, “Organization Tax ID”, “Organization”, “Postal Code”, and “Sorting Code” rules.
+- Added the “Address Line 3” address field. ([#14318](https://github.com/craftcms/cms/discussions/14318))
+- Address conditions now have “Address Line 1”, “Address Line 2”, “Address Line 3”, “Administrative Area”, “Country”, “Dependent Locality”, “First Name”, “Full Name”, “Last Name”, “Locality”, “Organization Tax ID”, “Organization”, “Postal Code”, and “Sorting Code” rules.
 - Added live conditional field support to user edit pages and inline-editable Matrix blocks. ([#14115](https://github.com/craftcms/cms/pull/14115), [#14223](https://github.com/craftcms/cms/pull/14223))
 - Earth icons are now localized based on the system time zone.
 
@@ -105,7 +106,7 @@
 - Assets, categories, entries, and tags now support eager-loading paths prefixed with a field layout provider’s handle (e.g. `myEntryType:myField`).
 - Element queries now have an `eagerly` param, which can be used to lazily eager-load the resulting elements for all peer elements, when `all()`, `collect()`, `one()`, `nth()`, or `count()` is called.
 - Element queries now have an `inBulkOp` param, which limits the results to elements which were involved in a bulk operation. ([#14032](https://github.com/craftcms/cms/pull/14032))
-- Address queries now have `addressLine1`, `addressLine2`, `administrativeArea`, `countryCode`, `dependentLocality`, `firstName`, `fullName`, `lastName`, `locality`, `organizationTaxId`, `organization`, `postalCode`, and `sortingCode` params.
+- Address queries now have `addressLine1`, `addressLine2`, `addressLine3`, `administrativeArea`, `countryCode`, `dependentLocality`, `firstName`, `fullName`, `lastName`, `locality`, `organizationTaxId`, `organization`, `postalCode`, and `sortingCode` params.
 - Entry queries now have `field`, `fieldId`, `primaryOwner`, `primaryOwnerId`, `owner`, `ownerId`, `allowOwnerDrafts`, and `allowOwnerRevisions` params.
 - Entry queries’ `authorId` params now support passing multiple IDs prefixed with `and`, to fetch entries with multiple listed authors.
 - User queries now have an `authorOf` param.
@@ -211,6 +212,7 @@
 - Added `craft\elements\conditions\ElementConditionInterface::getFieldLayouts()`.
 - Added `craft\elements\conditions\addresses\AddressLine1ConditionRule`.
 - Added `craft\elements\conditions\addresses\AddressLine2ConditionRule`.
+- Added `craft\elements\conditions\addresses\AddressLine3ConditionRule`.
 - Added `craft\elements\conditions\addresses\AdministrativeAreaConditionRule`.
 - Added `craft\elements\conditions\addresses\CountryConditionRule`.
 - Added `craft\elements\conditions\addresses\DependentLocalityConditionRule`.
@@ -604,6 +606,7 @@
 - Craft now requires `pragmarx/google2fa`.
 - Craft now requires `pragmarx/recovery`.
 - Craft now requires `web-auth/webauthn-lib`.
+- Updated `commerceguys/addressing` to v2. ([#14318](https://github.com/craftcms/cms/discussions/14318))
 - Updated `illuminate/collections` to v10.
 - Updated `yiisoft/yii2-symfonymailer` to v4.
 - Craft no longer requires `composer/composer`.
