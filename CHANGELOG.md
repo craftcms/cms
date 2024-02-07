@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.7.2 - 2024-02-07
 
 - It’s now possible to select the temp asset volume within Assets fields, if the temp upload location includes a subpath. ([#14246](https://github.com/craftcms/cms/pull/14246))
 - Fixed a bug where it wasn’t possible to set the “Formatting Locale” user preference back to “Same as language” once another value had been selected.
