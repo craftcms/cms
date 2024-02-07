@@ -702,10 +702,8 @@ JS, [
                         if (
                             $this->sortable &&
                             !$this->maintainHierarchy &&
-                            (
-                                !$query->orderBy ||
-                                (count($query->orderBy) === 1) && ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
-                            )
+                            count($query->orderBy ?? []) === 1 &&
+                            ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
                         ) {
                             $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
                         }
