@@ -53,7 +53,7 @@
   <div class="flex flex-nowrap">
     {% set valueIds = values|map(component => component.getId()) %}
 
-    {{ disclosureMenu(options|sort(o => o.getUiLabel())|map(component => {
+    {{ disclosureMenu(options|sort((a, b) => a.getUiLabel() <=> b.getUiLabel())|map(component => {
       type: 'button',
       label: component.getUiLabel(),
       icon: component is instance of('craft\\base\\Iconic') ? component.getIcon() : null,

@@ -8,6 +8,7 @@
 - Fixed a bug where very wide tables could bleed off the page.
 - Fixed an error that occurred when activating a new user. ([#14316](https://github.com/craftcms/cms/issues/14316))
 - Fixed a bug where newly-added components could be selected multiple times by component selects. ([#14320](https://github.com/craftcms/cms/issues/14320))
+- Fixed a bug where components weren’t getting sorted alphabetically within component select menus.
 
 ## 5.0.0-alpha.13 - 2024-02-06
 
