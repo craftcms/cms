@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'システムがオフの場合にサイトにアクセスする',
     'Access {plugin}' => '{plugin} のアクセス',
     'Accessibility' => 'アクセシビリティ',
+    'Account' => 'アカウント',
     'Account Security' => 'Account Security',
     'Account Type' => 'アカウントタイプ',
     'Account has not been activated.' => 'アカウントが有効になっていません。',

@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'Tilgang til nettstedet når systemet er stengt',
     'Access {plugin}' => 'Tilgang til {plugin}',
     'Accessibility' => 'Tilgjengelighet',
+    'Account' => 'Konto',
     'Account Security' => 'Account Security',
     'Account Type' => 'Kontotype',
     'Account has not been activated.' => 'Kontoen har ikke blitt aktivert.',

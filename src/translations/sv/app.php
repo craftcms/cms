@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'Kom åt hemsidan när systemet är avstängt',
     'Access {plugin}' => 'Åtkomst till {plugin}',
     'Accessibility' => 'Tillgänglighet',
+    'Account' => 'Konto',
     'Account Security' => 'Account Security',
     'Account Type' => 'Typ av konto',
     'Account has not been activated.' => 'Kontot är inte aktiverat.',

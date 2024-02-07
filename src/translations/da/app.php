@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'Adgang til Kontrolpanelet når systemet er slukket',
     'Access {plugin}' => 'Tilgå {plugin}',
     'Accessibility' => 'Tilgængelighed',
+    'Account' => 'Brugerkonto',
     'Account Security' => 'Account Security',
     'Account Type' => 'Kontotype',
     'Account has not been activated.' => 'Kontoen er ikke blevet aktiveret.',

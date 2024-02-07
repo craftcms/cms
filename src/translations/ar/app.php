@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'الوصول إلى الموقع عندما يكون النظام متوقف',
     'Access {plugin}' => 'الوصول إلى {plugin}',
     'Accessibility' => 'إمكانية الوصول',
+    'Account' => 'الحساب',
     'Account Security' => 'Account Security',
     'Account Type' => 'نوع الحساب',
     'Account has not been activated.' => 'لم يتم تفعيل الحساب',

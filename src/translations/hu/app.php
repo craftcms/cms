@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'Lépjen be az oldalra, amikor a rendszer ki van kapcsolva',
     'Access {plugin}' => '{plugin} hozzáférés',
     'Accessibility' => 'Elérhetőség',
+    'Account' => 'Fiók',
     'Account Security' => 'Account Security',
     'Account Type' => 'Fiók típusa',
     'Account has not been activated.' => 'A felhasználói fiók nincs aktiválva.',

@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'การเข้าถึงเว็บไซต์เมื่อระบบปิด',
     'Access {plugin}' => 'การเข้าถึง {plugin}',
     'Accessibility' => 'การช่วยการเข้าถึง',
+    'Account' => 'บัญชี',
     'Account Security' => 'Account Security',
     'Account Type' => 'ประเภทบัญชี',
     'Account has not been activated.' => 'ยังไม่ได้เปิดใช้งานบัญชี',

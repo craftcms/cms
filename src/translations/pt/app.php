@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'Acesse o site quando o sistema está desligado',
     'Access {plugin}' => 'Acesso {plugin}',
     'Accessibility' => 'Acessibilidade',
+    'Account' => 'Conta',
     'Account Security' => 'Account Security',
     'Account Type' => 'Tipo de conta',
     'Account has not been activated.' => 'Conta ainda não foi ativada.',
