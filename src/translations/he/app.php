@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'כניסה לאתר כאשר המערכת מכובה.',
     'Access {plugin}' => 'כנס ל-{plugin}',
     'Accessibility' => 'נגישות',
+    'Account' => 'חשבון',
     'Account Security' => 'Account Security',
     'Account Type' => 'סוג חשבון',
     'Account has not been activated.' => 'החשבון לא הופעל.',
