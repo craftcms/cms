@@ -16,7 +16,6 @@ use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
-use craft\db\CallbackExpression;
 use craft\db\Query;
 use craft\db\Table as DbTable;
 use craft\elements\conditions\ElementCondition;
@@ -24,6 +23,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
+use craft\elements\db\OrderByPlaceholderExpression;
 use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
@@ -704,7 +704,7 @@ JS, [
                             !$this->maintainHierarchy &&
                             (
                                 !$query->orderBy ||
-                                (count($query->orderBy) === 1) && ($query->orderBy[0] ?? null) instanceof CallbackExpression
+                                (count($query->orderBy) === 1) && ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
                             )
                         ) {
                             $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
