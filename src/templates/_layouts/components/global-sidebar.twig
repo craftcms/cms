@@ -74,11 +74,12 @@
                             {{ _self.action(item) }}
 
                             {% if item.subnav %}
-                                {% set icon = item.sel ? 'angle-down' : 'angle-right' %}
-                                <div type="button" class="nav-item__indicator">
-                                    <span class="cp-icon">{{ iconSvg(icon) }}</span>
-                                </div>
-                                <ul class="nav-item__subnav">
+                                <craft-disclosure class="nav-item__trigger">
+                                  <button type="button" class="btn menubtn hairline" aria-controls="{{ item.id }}-subnav" aria-expanded="{{ item.sel ?  'true' : 'false' }}">
+                                      <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
+                                  </button>
+                                </craft-disclosure>
+                                <ul class="nav-item__subnav {{ item.sel ? 'is-open' : '' -}}" id="{{ item.id }}-subnav">
                                     {% for itemId, item in item.subnav %}
                                         {% set itemIsSelected = (
                                             (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
