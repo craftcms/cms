@@ -74,9 +74,9 @@
                             {{ _self.action(item) }}
 
                             {% if item.subnav %}
-                                <craft-disclosure>
-                                  <button type="button" class="nav-item__trigger" aria-controls="{{ item.id }}-subnav" aria-expanded="{{ item.sel ?  'true' : 'false' }}">
-                                      <span class="cp-icon">{{ iconSvg('angle-down') }}</span>
+                                <craft-disclosure class="nav-item__trigger">
+                                  <button type="button" class="btn menubtn hairline" aria-controls="{{ item.id }}-subnav" aria-expanded="{{ item.sel ?  'true' : 'false' }}">
+                                      <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
                                   </button>
                                 </craft-disclosure>
                                 <ul class="nav-item__subnav {{ item.sel ? 'is-open' : '' -}}" id="{{ item.id }}-subnav">
