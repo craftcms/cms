@@ -647,11 +647,18 @@ JS, [
             $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
 
             if ($this->sortable && !$this->maintainHierarchy) {
-                $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
+                $query->attachBehavior(self::class, new EventBehavior([
+                    ElementQuery::EVENT_BEFORE_PREPARE => function(
+                        CancelableEvent $event,
+                        ElementQuery $query,
+                    ) use ($relationsAlias) {
+                        $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
+                    },
+                ]));
             }
 
             // join the relations table via EVENT_BEFORE_PREPARE so it gets joined for cloned queries as well
-            $query->attachBehavior(self::class, new EventBehavior([
+            $query->attachBehavior(sprintf('%s-once', self::class), new EventBehavior([
                 ElementQuery::EVENT_BEFORE_PREPARE => function(
                     CancelableEvent $event,
                     ElementQuery $query,

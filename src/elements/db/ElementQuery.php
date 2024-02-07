@@ -1714,7 +1714,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if (!$eagerLoaded) {
             Craft::$app->getElements()->eagerLoadElements(
-                $this->elementType,
+                $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
                 [
                     new EagerLoadPlan([

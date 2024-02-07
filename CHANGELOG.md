@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where querying elements with `eagerly()` wasn’t working across element types.
+- Fixed a PHP error that could occur when querying relations with `eagerly()`.
+
 ## 5.0.0-alpha.13 - 2024-02-06
 
 - Improved global sidebar styling. ([#14281](https://github.com/craftcms/cms/pull/14281))
