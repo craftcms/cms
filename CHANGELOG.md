@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where querying elements with `eagerly()` wasn’t working across element types.
-- Fixed a PHP error that could occur when querying relations with `eagerly()`.
+- Fixed a SQL error that could occur when querying relations with `eagerly()`.
 
 ## 5.0.0-alpha.13 - 2024-02-06
 
