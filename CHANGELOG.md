@@ -2,10 +2,15 @@
 
 ## Unreleased
 
+- It’s now possible to expand and collapse global sidebar items without navigating to them. ([#14313](https://github.com/craftcms/cms/issues/14313), [#14321](https://github.com/craftcms/cms/pull/14321))
+- Removed the maximum content area width. ([#14281](https://github.com/craftcms/cms/pull/14281))
 - Fixed a bug where querying elements with `eagerly()` wasn’t working across element types.
 - Fixed a SQL error that could occur when querying relations with `eagerly()`.
 - Fixed a bug where element actions weren’t working for elements that were added to a relational field.
 - Fixed a bug where very wide tables could bleed off the page.
+- Fixed an error that occurred when activating a new user. ([#14316](https://github.com/craftcms/cms/issues/14316))
+- Fixed a bug where newly-added components could be selected multiple times by component selects. ([#14320](https://github.com/craftcms/cms/issues/14320))
+- Fixed a bug where components weren’t getting sorted alphabetically within component select menus.
 
 ## 5.0.0-alpha.13 - 2024-02-06
 

@@ -23,7 +23,6 @@ $badgeColor: var(--gray-800);
   --neg-padding: calc(var(--padding) * -1);
   --sidebar-width: #{$sidebarWidth};
   --global-sidebar-width: #{$sidebarWidth};
-  --max-width: 1920px;
 }
 
 html {
@@ -274,10 +273,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-
-  & > .container {
-    flex: 1;
-  }
 }
 
 #alerts {
@@ -1696,10 +1691,4 @@ li.breadcrumb-toggle-wrapper {
       }
     }
   }
-}
-
-.container {
-  width: 100%;
-  max-width: var(--max-width);
-  margin: 0 auto;
 }

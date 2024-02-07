@@ -270,9 +270,11 @@ $menuBorderRadius: $mediumBorderRadius;
   border: solid $color;
   border-width: 0 $width $width 0;
   opacity: 0.8;
+  position: relative;
 
   @if $dir == up {
     transform: rotate(225deg);
+    top: 2px;
   } @else if $dir == down {
     transform: rotate(45deg);
   } @else if $dir == left {
