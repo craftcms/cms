@@ -22,7 +22,6 @@
 - Inline-editable Matrix blocks have been redesigned to be visually lighter. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Inline-editable Matrix blocks now include “Open in a new tab” action items.
 - Matrix fields set to the inline-editable blocks view mode no longer show inline entry-creation buttons unless there’s a single entry type. ([#14187](https://github.com/craftcms/cms/pull/14187))
-- Selected elements within relational fields now include a context menu with “View in a new tab”, “Edit”, and “Remove” options.
 - Selected elements within relational fields now include a dedicated drag handle.
 - Selected assets within Assets fields no longer open the file preview modal when their thumbnail is clicked on. The “Preview file” quick action, or the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut, can be used instead.
 - Improved the styling of element chips.
@@ -64,8 +63,9 @@
 - Increased the hit area for range select options.
 
 ### Administration
-- Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added the “Color” entry type setting. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added the “Addresses” field type. ([#11438](https://github.com/craftcms/cms/discussions/11438))
 - Added the “Icon” field type. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Field layouts can now designate an Assets field as the source for elements’ thumbnails. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
 - Field layouts can now choose to include previewable fields’ content in element cards. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#6024](https://github.com/craftcms/cms/pull/6024))
@@ -76,7 +76,6 @@
 - Entry types are no longer required to have a Title Format, if the Title field isn’t shown.
 - Entry types now have a “Show the Slug field” setting. ([#13799](https://github.com/craftcms/cms/discussions/13799))
 - Sites’ Language settings can now be set to environment variables. ([#14235](https://github.com/craftcms/cms/pull/14235), [#14135](https://github.com/craftcms/cms/discussions/14135))
-- Added the “Addresses” field type. ([#11438](https://github.com/craftcms/cms/discussions/11438))
 - Matrix fields now manage nested entries, rather than Matrix blocks. During the upgrade, existing Matrix block types will be converted to entry types; their nested fields will be made global; and Matrix blocks will be converted to entries.
 - Matrix fields now have “Entry URI Format” and “Template” settings for each site.
 - Matrix fields now have a “View Mode” setting, giving admins the choice to display nested entries as cards, inline-editable blocks, or an embedded element index.
