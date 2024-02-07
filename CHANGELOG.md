@@ -4,6 +4,11 @@
 
 - It’s now possible to expand and collapse global sidebar items without navigating to them. ([#14313](https://github.com/craftcms/cms/issues/14313), [#14321](https://github.com/craftcms/cms/pull/14321))
 - Removed the maximum content area width. ([#14281](https://github.com/craftcms/cms/pull/14281))
+- Added the “Address Line 3” address field. ([#14318](https://github.com/craftcms/cms/discussions/14318))
+- Address conditions now have an “Address Line 3” rule.
+- Address queries now have `addressLine3` params.
+- Added `craft\elements\conditions\addresses\AddressLine3ConditionRule`.
+- Updated `commerceguys/addressing` to v2. ([#14318](https://github.com/craftcms/cms/discussions/14318))
 - Fixed a bug where querying elements with `eagerly()` wasn’t working across element types.
 - Fixed a SQL error that could occur when querying relations with `eagerly()`.
 - Fixed a bug where element actions weren’t working for elements that were added to a relational field.
