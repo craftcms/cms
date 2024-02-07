@@ -646,40 +646,9 @@ JS, [
 
             $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
 
-            if ($this->sortable && !$this->maintainHierarchy) {
-                $query->attachBehavior(self::class, new EventBehavior([
-                    ElementQuery::EVENT_BEFORE_PREPARE => function(
-                        CancelableEvent $event,
-                        ElementQuery $query,
-                    ) use ($relationsAlias) {
-                        $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
-                    },
-                ]));
-            }
-
             // join the relations table via EVENT_BEFORE_PREPARE so it gets joined for cloned queries as well
             $query->attachBehavior(sprintf('%s-once', self::class), new EventBehavior([
-                ElementQuery::EVENT_BEFORE_PREPARE => function(
-                    CancelableEvent $event,
-                    ElementQuery $query,
-                ) use ($element, $relationsAlias) {
-                    $query->innerJoin(
-                        [$relationsAlias => DbTable::RELATIONS],
-                        [
-                            'and',
-                            "[[$relationsAlias.targetId]] = [[elements.id]]",
-                            [
-                                "$relationsAlias.sourceId" => $element->id,
-                                "$relationsAlias.fieldId" => $this->id,
-                            ],
-                            [
-                                'or',
-                                ["$relationsAlias.sourceSiteId" => null],
-                                ["$relationsAlias.sourceSiteId" => $element->siteId],
-                            ],
-                        ]
-                    );
-
+                ElementQuery::EVENT_BEFORE_PREPARE => function(CancelableEvent  $event, ElementQuery $query) {
                     if ($this->maintainHierarchy && $query->id === null) {
                         $structuresService = Craft::$app->getStructures();
 
@@ -698,7 +667,34 @@ JS, [
                         $query->id(array_map(fn(ElementInterface $element) => $element->id, $structureElements));
                     }
                 },
-            ], true));
+                ElementQuery::EVENT_AFTER_PREPARE => function(
+                    CancelableEvent $event,
+                    ElementQuery $query,
+                ) use ($element, $relationsAlias) {
+                    foreach ([$query->query, $query->subQuery] as $q) {
+                        $q->innerJoin(
+                            [$relationsAlias => DbTable::RELATIONS],
+                            [
+                                'and',
+                                "[[$relationsAlias.targetId]] = [[elements.id]]",
+                                [
+                                    "$relationsAlias.sourceId" => $element->id,
+                                    "$relationsAlias.fieldId" => $this->id,
+                                ],
+                                [
+                                    'or',
+                                    ["$relationsAlias.sourceSiteId" => null],
+                                    ["$relationsAlias.sourceSiteId" => $element->siteId],
+                                ],
+                            ]
+                        );
+
+                        if ($this->sortable && !$this->maintainHierarchy && !$q->orderBy) {
+                            $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
+                        }
+                    }
+                },
+            ]));
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $element);

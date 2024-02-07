@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'Доступ к сайту в автономном режиме',
     'Access {plugin}' => 'Доступ к плагину {plugin}',
     'Accessibility' => 'Специальные возможности',
+    'Account' => 'Учетная запись',
     'Account Security' => 'Account Security',
     'Account Type' => 'Тип учетной записи',
     'Account has not been activated.' => 'Учетная запись не была активирована.',

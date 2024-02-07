@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'Sistem kapalıyken siteye giriş yapabilme',
     'Access {plugin}' => '{plugin} İzinleri',
     'Accessibility' => 'Erişebilirlik',
+    'Account' => 'Hesap',
     'Account Security' => 'Account Security',
     'Account Type' => 'Hesap Türü',
     'Account has not been activated.' => 'Hesap etkinleştirilmedi.',

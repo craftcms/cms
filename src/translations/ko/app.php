@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => '시스템이 꺼졌을 때 사이트에 접근하기',
     'Access {plugin}' => '{plugin}에 접근하기',
     'Accessibility' => '접근성',
+    'Account' => '계정',
     'Account Security' => 'Account Security',
     'Account Type' => '계정 유형',
     'Account has not been activated.' => '계정이 활성화되었습니다.',

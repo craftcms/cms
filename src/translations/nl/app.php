@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'Toegang tot de site wanneer het systeem is uitgeschakeld',
     'Access {plugin}' => 'Toegang tot {plugin}',
     'Accessibility' => 'Toegankelijkheid',
+    'Account' => 'Account',
     'Account Security' => 'Account Security',
     'Account Type' => 'Account Type',
     'Account has not been activated.' => 'Account is niet geactiveerd.',
