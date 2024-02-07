@@ -366,13 +366,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public mixed $ref = null;
 
-    /**
-     * @inheritdoc
-     * @used-by orderBy()
-     * @used-by addOrderBy()
-     */
-    public $orderBy = '';
-
     // Eager-loading
     // -------------------------------------------------------------------------
 
@@ -569,6 +562,11 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Use ** as a placeholder for "all the default columns"
         $config['select'] = $config['select'] ?? ['**' => '**'];
+
+        // Set a placeholder for the default `orderBy` param
+        if (!isset($this->orderBy)) {
+            $this->orderBy(new OrderByPlaceholderExpression());
+        }
 
         parent::__construct($config);
     }
@@ -2959,8 +2957,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        // Any other empty value means we should set it
-        if (empty($this->orderBy)) {
+        $orderBy = array_merge($this->orderBy ?: []);
+
+        // Only set to the default order if `orderBy` is still set to the placeholder
+        if (
+            count($orderBy) === 1 &&
+            ($orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
+        ) {
             if ($this->fixedOrder) {
                 if (empty($this->id)) {
                     throw new QueryAbortedException();
@@ -2974,22 +2977,22 @@ class ElementQuery extends Query implements ElementQueryInterface
                 if (!$db instanceof Connection) {
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
-                $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
+                $orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
             } elseif ($this->revisions) {
-                $this->orderBy = ['num' => SORT_DESC];
+                $orderBy = ['num' => SORT_DESC];
             } elseif ($this->_shouldJoinStructureData()) {
-                $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
+                $orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
             } elseif (!empty($this->defaultOrderBy)) {
-                $this->orderBy = $this->defaultOrderBy;
+                $orderBy = $this->defaultOrderBy;
             } else {
                 return;
             }
+        } else {
+            $orderBy = array_filter($orderBy, fn($value) => !$value instanceof OrderByPlaceholderExpression);
         }
 
         // Rename orderBy keys based on the real column name mapping
         // (yes this is awkward but we need to preserve the order of the keys!)
-        /** @var array $orderBy */
-        $orderBy = array_merge($this->orderBy);
         $orderByColumns = array_keys($orderBy);
 
         foreach ($this->_columnMap as $orderValue => $columnName) {

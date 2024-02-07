@@ -23,6 +23,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
+use craft\elements\db\OrderByPlaceholderExpression;
 use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
@@ -644,9 +645,9 @@ JS, [
                 }
             }
 
-            $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
+            // Make our query customizations via EVENT_AFTER_PREPARE/EVENT_AFTER_PREPARE,
+            // so they get applied for cloned queries as well
 
-            // join the relations table via EVENT_BEFORE_PREPARE so it gets joined for cloned queries as well
             $query->attachBehavior(sprintf('%s-once', self::class), new EventBehavior([
                 ElementQuery::EVENT_BEFORE_PREPARE => function(CancelableEvent  $event, ElementQuery $query) {
                     if ($this->maintainHierarchy && $query->id === null) {
@@ -667,10 +668,19 @@ JS, [
                         $query->id(array_map(fn(ElementInterface $element) => $element->id, $structureElements));
                     }
                 },
+            ], true));
+
+            $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
+
+            $query->attachBehavior(self::class, new EventBehavior([
                 ElementQuery::EVENT_AFTER_PREPARE => function(
                     CancelableEvent $event,
                     ElementQuery $query,
                 ) use ($element, $relationsAlias) {
+                    // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
+                    // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
+                    // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
+                    // to the eager-loading query and cause a SQL error.
                     foreach ([$query->query, $query->subQuery] as $q) {
                         $q->innerJoin(
                             [$relationsAlias => DbTable::RELATIONS],
@@ -689,7 +699,14 @@ JS, [
                             ]
                         );
 
-                        if ($this->sortable && !$this->maintainHierarchy && !$q->orderBy) {
+                        if (
+                            $this->sortable &&
+                            !$this->maintainHierarchy &&
+                            (
+                                !$query->orderBy ||
+                                (count($query->orderBy) === 1) && ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
+                            )
+                        ) {
                             $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
                         }
                     }

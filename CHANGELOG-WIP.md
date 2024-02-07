@@ -182,6 +182,8 @@
 - Added `craft\base\conditions\ConditionInterface::createConditionRule()`.
 - Added `craft\behaviors\EventBehavior`.
 - Added `craft\controllers\EntryTypesController`.
+- Added `craft\db\CallbackExpressionBuilder`.
+- Added `craft\db\CallbackExpression`.
 - Added `craft\db\Connection::getIsMaria()`.
 - Added `craft\db\QueryParam`.
 - Added `craft\db\Table::ELEMENTS_OWNERS`.
