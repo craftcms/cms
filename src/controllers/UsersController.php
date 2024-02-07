@@ -1143,7 +1143,7 @@ class UsersController extends Controller
             ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
 
             $localeOptions = [
-                ['label' => Craft::t('app', 'Same as language'), 'value' => ''],
+                ['label' => Craft::t('app', 'Same as language'), 'value' => '__blank__'],
             ];
             array_push($localeOptions, ...array_map(fn(Locale $locale) => [
                 'label' => $locale->getDisplayName(Craft::$app->language),
@@ -1484,9 +1484,13 @@ JS,
 
         if ($isCurrentUser) {
             // Save their preferences too
+            $preferredLocale = $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null;
+            if ($preferredLocale === '__blank__') {
+                $preferredLocale = null;
+            }
             $preferences = [
                 'language' => $this->request->getBodyParam('preferredLanguage', $user->getPreference('language')),
-                'locale' => $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null,
+                'locale' => $preferredLocale,
                 'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
                 'alwaysShowFocusRings' => (bool)$this->request->getBodyParam('alwaysShowFocusRings', $user->getPreference('alwaysShowFocusRings')),
                 'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
