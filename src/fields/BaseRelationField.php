@@ -652,7 +652,9 @@ JS, [
                         CancelableEvent $event,
                         ElementQuery $query,
                     ) use ($relationsAlias) {
-                        $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
+                        if ($query->orderBy === '') {
+                            $query->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
+                        }
                     },
                 ]));
             }
