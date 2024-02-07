@@ -753,9 +753,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         }
       }
 
-      await Craft.appendHeadHtml(data.headHtml);
-      await Craft.appendBodyHtml(data.bodyHtml);
-
       if (this.settings.maintainHierarchy) {
         await this.selectStructuredElements(elements);
       } else {
@@ -778,6 +775,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.modal.enableSelectBtn();
       this.modal.hideFooterSpinner();
       this.modal.hide();
+
+      await Craft.appendHeadHtml(data.headHtml);
+      await Craft.appendBodyHtml(data.bodyHtml);
     },
 
     onModalHide: function () {

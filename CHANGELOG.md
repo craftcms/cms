@@ -4,6 +4,7 @@
 
 - Fixed a bug where querying elements with `eagerly()` wasn’t working across element types.
 - Fixed a SQL error that could occur when querying relations with `eagerly()`.
+- Fixed a bug where element actions weren’t working for elements that were added to a relational field.
 
 ## 5.0.0-alpha.13 - 2024-02-06
 
