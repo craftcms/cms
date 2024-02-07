@@ -1293,7 +1293,7 @@ JS);
         }
 
         $response->pageSidebarTemplate('_includes/nav', [
-            'label' => $this->editScreenTitle($currentScreen),
+            'label' => Craft::t('app', 'Account'),
             'items' => $navItems,
         ]);
 
