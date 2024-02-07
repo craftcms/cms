@@ -28,6 +28,7 @@ return [
     'Access the site when the system is off' => 'Povolit přístup když je systém deaktivován',
     'Access {plugin}' => 'Otevřít {plugin}',
     'Accessibility' => 'Přístupnost',
+    'Account' => 'Účet',
     'Account Security' => 'Account Security',
     'Account Type' => 'Typ účtu',
     'Account has not been activated.' => 'Účet nebyl aktivován.',
