@@ -2652,7 +2652,7 @@ h2 + .actions {
     th,
     td {
       &:first-child {
-        @include padding-left(24px);
+        @include padding-left(var(--m));
       }
     }
   }
