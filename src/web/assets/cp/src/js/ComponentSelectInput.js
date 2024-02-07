@@ -492,10 +492,10 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
 
       if (addToMenu && disclosureMenu) {
         const $menuItem = $(data.menuItems[type][id]);
-        if (canAdd) {
-          $menuItem.addClass('hidden');
-        }
         disclosureMenu.addItem($menuItem);
+        if (canAdd) {
+          disclosureMenu.hideItem($menuItem.children()[0]);
+        }
         this.addListener($menuItem.find('button'), 'activate', () => {
           this.addComponent(type, id);
         });
