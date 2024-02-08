@@ -1296,7 +1296,8 @@ class Fields extends Component
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
 
         $offset = ($page - 1) * $limit;
-        $query = $this->_createFieldQuery();
+        $query = $this->_createFieldQuery()
+            ->andWhere(['context' => 'global']);
 
         if ($searchTerm !== null && $searchTerm !== '') {
             $searchParams = $this->_getSearchParams($searchTerm);

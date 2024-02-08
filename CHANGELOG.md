@@ -16,6 +16,7 @@
 - Fixed an error that occurred when activating a new user. ([#14316](https://github.com/craftcms/cms/issues/14316))
 - Fixed a bug where newly-added components could be selected multiple times by component selects. ([#14320](https://github.com/craftcms/cms/issues/14320))
 - Fixed a bug where components weren’t getting sorted alphabetically within component select menus.
+- Fixed a bug where non-global custom fields were being shown on the Fields index page.
 
 ## 5.0.0-alpha.13 - 2024-02-06
 
