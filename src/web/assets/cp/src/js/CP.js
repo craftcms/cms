@@ -495,16 +495,32 @@ Craft.CP = Garnish.Base.extend(
       if (isExpanded === null) return;
 
       if (isExpanded) {
-        this.disableGlobalSidebarLinks();
+        this.disableGlobalSidebar();
         this.$navToggle.focus();
         this.$navToggle.attr('aria-expanded', 'false');
         Garnish.$bod.removeClass('showing-nav');
       } else {
-        this.enableGlobalSidebarLinks();
+        this.enableGlobalSidebar();
         this.$globalSidebar.find(':focusable')[0].focus();
         this.$navToggle.attr('aria-expanded', 'true');
         Garnish.$bod.addClass('showing-nav');
       }
+    },
+
+    /**
+     * Makes the global sidebar navigable by screen reader and keyboard users
+     **/
+    enableGlobalSidebar: function () {
+      this.enableGlobalSidebarLinks();
+      this.$globalSidebar.attr('aria-hidden', 'false');
+    },
+
+    /**
+     * Hides the global sidebar from screen reader and keyboard users
+     **/
+    disableGlobalSidebar: function () {
+      this.disableGlobalSidebarLinks();
+      this.$globalSidebar.attr('aria-hidden', 'true');
     },
 
     enableGlobalSidebarLinks: function () {
@@ -529,9 +545,9 @@ Craft.CP = Garnish.Base.extend(
       if (isExpanded === null) return;
 
       if (!isExpanded) {
-        this.disableGlobalSidebarLinks();
+        this.disableGlobalSidebar();
       } else {
-        this.enableGlobalSidebarLinks();
+        this.enableGlobalSidebar();
       }
     },
 
