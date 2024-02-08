@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## 4.7.2.1 - 2024-02-08
+
+- Craft now requires Composer ^2.7.0. ([CVE-2024-24821](https://github.com/advisories/GHSA-7c6p-848j-wh5h))
+- Fixed a PHP error that could occur when using Checkboxes or Multi-select fields. ([#14326](https://github.com/craftcms/cms/issues/14326))
+
 ## 4.7.2 - 2024-02-07
 
 - It’s now possible to select the temp asset volume within Assets fields, if the temp upload location includes a subpath. ([#14246](https://github.com/craftcms/cms/pull/14246))
