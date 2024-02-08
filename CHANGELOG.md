@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a PHP error that could occur when using Checkboxes or Multi-select fields. ([#14326](https://github.com/craftcms/cms/issues/14326))
+
 ## 4.7.2 - 2024-02-07
 
 - It’s now possible to select the temp asset volume within Assets fields, if the temp upload location includes a subpath. ([#14246](https://github.com/craftcms/cms/pull/14246))
