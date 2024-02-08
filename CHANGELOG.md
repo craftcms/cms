@@ -17,6 +17,7 @@
 - Fixed a bug where newly-added components could be selected multiple times by component selects. ([#14320](https://github.com/craftcms/cms/issues/14320))
 - Fixed a bug where components weren’t getting sorted alphabetically within component select menus.
 - Fixed a bug where non-global custom fields were being shown on the Fields index page.
+- Fixed a PHP error that could occur when using Checkboxes or Multi-select fields. ([#14326](https://github.com/craftcms/cms/issues/14326))
 
 ## 5.0.0-alpha.13 - 2024-02-06
 
