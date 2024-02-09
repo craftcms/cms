@@ -2674,6 +2674,9 @@ JS;
                 'required' => true,
                 'class' => ['text', 'filename'],
                 'disabled' => $static,
+                'data' => [
+                    'attribute' => 'newLocation',
+                ],
             ]),
             parent::metaFieldsHtml($static),
         ]);
