@@ -72,7 +72,7 @@ class SessionBehavior extends Behavior
      * Stores a success message in the user’s flash data.
      *
      * The message will be stored on the session, and can be retrieved by calling
-     * [[getFlash()|`getFlash('notice')`]] or [[getAllFlashes()]].
+     * [[getFlash()|`getFlash('success')`]] or [[getAllFlashes()]].
      * Only one flash notice can be stored at a time.
      *
      * @param string $message The message
@@ -87,8 +87,7 @@ class SessionBehavior extends Behavior
                     'iconLabel' => Craft::t('app', 'Success'),
                 ]);
         } else {
-            // todo: switch to `success` in Craft 5
-            $this->owner->setFlash('notice', $message);
+            $this->owner->setFlash('success', $message);
         }
     }
 
@@ -140,8 +139,7 @@ class SessionBehavior extends Behavior
             return $this->_getNotificationFlashMessage('success');
         }
 
-        // todo: switch to `success` in Craft 5
-        return $this->owner->getFlash('notice');
+        return $this->owner->getFlash('success');
     }
 
     /**
