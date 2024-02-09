@@ -105,10 +105,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #system-info {
   display: grid;
-  grid-template-columns: 30px auto;
+  grid-template-columns: var(--prefix-width) auto;
   gap: 10px;
   height: calc(45rem / 16);
-  padding: 0 10px;
+  padding: 0 var(--gutter-width);
   position: relative;
   flex: 0 0 calc(45rem / 16);
   flex-direction: row;
@@ -129,13 +129,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #site-icon {
-  height: 30px;
+  --size: var(--prefix-width); // Matches .sidebar-action__prefix
+  height: var(--size);
 
   img,
   svg {
     display: block;
-    width: 30px;
-    height: 30px;
+    width: var(--size);
+    height: var(--size);
     border-radius: 4px;
   }
 
@@ -1509,7 +1510,7 @@ li.breadcrumb-toggle-wrapper {
           @include margin(0, -4px, 0, 10px);
           flex-shrink: 1;
           padding: 0 6px;
-          font-size: 11px;
+          font-size: calc(11rem / 16);
           line-height: 16px;
           border-radius: var(--s);
           background-color: var(--medium-text-color);

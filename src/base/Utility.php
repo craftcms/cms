@@ -29,7 +29,7 @@ abstract class Utility extends Component implements UtilityInterface
     public static function badgeCount(): int
     {
         // 0 = no badge
-        return 0;
+        return 1;
     }
 
     /**
