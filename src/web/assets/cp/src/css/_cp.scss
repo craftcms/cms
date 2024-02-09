@@ -6,7 +6,7 @@ $sidebarZIndex: 100;
 $detailsWidth: 350px;
 $minFullUiWidth: calc(1200rem / 16);
 $minXlUiWidth: calc(1536rem / 16);
-$minDesktopWidth: 600px;
+$minDesktopWidth: calc(600rem / 16);
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 // Colors
