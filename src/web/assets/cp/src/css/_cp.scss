@@ -1,11 +1,11 @@
 @charset "UTF-8";
 @import '@craftcms/sass/mixins';
 
-$sidebarWidth: 226px;
+$sidebarWidth: calc(226rem / 16);
 $sidebarZIndex: 100;
 $detailsWidth: 350px;
-$minFullUiWidth: 1200px;
-$minXlUiWidth: 1536px;
+$minFullUiWidth: calc(1200rem / 16);
+$minXlUiWidth: calc(1536rem / 16);
 $minDesktopWidth: 600px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
@@ -946,7 +946,7 @@ li.breadcrumb-toggle-wrapper {
     }
   }
 
-  @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+  @media only screen and (max-width: $minHorizontalUiWidth - calc(1rem/16)) {
     margin-top: 10px;
   }
 }
@@ -1171,7 +1171,7 @@ li.breadcrumb-toggle-wrapper {
 }
 
 // Hide the sidebar at < 1200
-@media only screen and (max-width: $minFullUiWidth - 1px) {
+@media only screen and (max-width: $minFullUiWidth - calc(1rem/16)) {
   #global-container {
     @include left(-$sidebarWidth);
     width: calc(100vw + #{$sidebarWidth});
@@ -1199,7 +1199,7 @@ li.breadcrumb-toggle-wrapper {
 }
 
 // Rearrange #main-content to flow vertically at < 999
-@media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+@media only screen and (max-width: $minHorizontalUiWidth - calc(1rem/16)) {
   #header {
     display: block;
 
@@ -1668,7 +1668,7 @@ li.breadcrumb-toggle-wrapper {
       }
 
       // 2 cols for 600 - 1535px
-      @media only screen and (min-width: $minDesktopWidth) and (max-width: $minXlUiWidth - 1px) {
+      @media only screen and (min-width: $minDesktopWidth) and (max-width: $minXlUiWidth - calc(1rem/16)) {
         &.width-25,
         &.width-50 {
           width: 50%;

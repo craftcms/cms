@@ -28,7 +28,7 @@
     }
   }
 
-  @media only screen and (max-width: $minFullUiWidth - 1px) {
+  @media only screen and (max-width: $minFullUiWidth - calc(1rem/16)) {
     --is-always-visible: false;
   }
 }
