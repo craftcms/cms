@@ -73,7 +73,7 @@ class SessionBehavior extends Behavior
      *
      * The message will be stored on the session, and can be retrieved by calling
      * [[getFlash()|`getFlash('success')`]] or [[getAllFlashes()]].
-     * Only one flash notice can be stored at a time.
+     * Only one flash success message can be stored at a time.
      *
      * @param string $message The message
      * @param array $settings The control panel notification settings
