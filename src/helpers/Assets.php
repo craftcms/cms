@@ -88,11 +88,12 @@ class Assets
      * @return string
      * @throws InvalidConfigException if the asset doesn’t have a filename.
      */
-    public static function generateUrl(BaseFsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    public static function generateUrl(Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
+        $volume = $asset->getVolume();
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
-        $rootUrl = $fs->getRootUrl() ?? '';
+        $rootUrl = $volume->getRootUrl() ?? '';
         $url = ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') . $path;
 
         if (Craft::$app->getConfig()->getGeneral()->revAssetUrls) {

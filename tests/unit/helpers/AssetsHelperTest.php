@@ -56,9 +56,8 @@ class AssetsHelperTest extends TestCase
 
         /** @var Asset|null $asset */
         $asset = $assetQuery->one();
-        $fs = $asset->getVolume()->getFs();
 
-        self::assertSame($expected, Assets::generateUrl($fs, $asset));
+        self::assertSame($expected, Assets::generateUrl($asset));
     }
 
     /**
