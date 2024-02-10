@@ -161,7 +161,7 @@ class Application extends \yii\web\Application
             // Process resource requests before anything else
             $this->_processResourceRequest($request);
 
-            // Disable read/write splitting for POST requests
+            // Disable read/write splitting for most POST requests
             if (
                 $request->getIsPost() &&
                 !in_array($request->getActionSegments(), [
@@ -171,7 +171,9 @@ class Application extends \yii\web\Application
                     ['element-indexes', 'get-elements'],
                     ['element-indexes', 'get-more-elements'],
                     ['element-indexes', 'get-source-tree-html'],
-                ])
+                    ['graphql', 'api'],
+                ]) &&
+                !$request->getIsGraphql()
             ) {
                 $this->getDb()->enableReplicas = false;
             }
