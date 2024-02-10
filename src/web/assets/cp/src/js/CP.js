@@ -511,32 +511,16 @@ Craft.CP = Garnish.Base.extend(
      * Makes the global sidebar navigable by screen reader and keyboard users
      **/
     enableGlobalSidebar: function () {
-      this.enableGlobalSidebarLinks();
       this.$globalSidebar.attr('aria-hidden', 'false');
+      this.$globalSidebar.find(':focusable').attr('tabindex', '0');
     },
 
     /**
      * Hides the global sidebar from screen reader and keyboard users
      **/
     disableGlobalSidebar: function () {
-      this.disableGlobalSidebarLinks();
       this.$globalSidebar.attr('aria-hidden', 'true');
-    },
-
-    enableGlobalSidebarLinks: function () {
-      const focusableItems = this.$globalSidebar.find(':focusable');
-
-      $(focusableItems).each(function () {
-        $(this).attr('tabindex', '0');
-      });
-    },
-
-    disableGlobalSidebarLinks: function () {
-      const focusableItems = this.$globalSidebar.find(':focusable');
-
-      $(focusableItems).each(function () {
-        $(this).attr('tabindex', '-1');
-      });
+      this.$globalSidebar.find(':focusable').attr('tabindex', '-1');
     },
 
     setSidebarNavAttributes: function () {
