@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Restored the “Preview” and “Edit Image” buttons on asset image previews. ([#14333](https://github.com/craftcms/cms/discussions/14333))
+- Improved the accessibility of the global sidebar. ([#14335](https://github.com/craftcms/cms/pull/14335))
 - Fixed a bug where read/write splitting was always getting disabled for GraphQL POST requests. ([#14324](https://github.com/craftcms/cms/issues/14324))
 
 ## 5.0.0-beta.1 - 2024-02-08
