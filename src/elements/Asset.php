@@ -2614,7 +2614,7 @@ JS,[
                 Html::tag('div', $this->getPreviewThumbImg(350, 190), [
                     'class' => 'preview-thumb',
                 ]) .
-                Html::endTag('div'); // .preview-thumb-container;
+                Html::endTag('div'); // .preview-thumb-container
 
             $html .= $previewThumbHtml;
         } catch (NotSupportedException) {
