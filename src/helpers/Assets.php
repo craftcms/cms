@@ -81,7 +81,6 @@ class Assets
     /**
      * Generates the URL for an asset.
      *
-     * @param BaseFsInterface $fs
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
