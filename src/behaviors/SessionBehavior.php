@@ -62,7 +62,6 @@ class SessionBehavior extends Behavior
                     'icon' => 'info',
                     'iconLabel' => Craft::t('app', 'Notice'),
                 ]);
-            $this->owner->setFlash('cp-notice', $message);
         } else {
             $this->owner->setFlash('notice', $message);
         }
