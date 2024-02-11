@@ -2614,7 +2614,81 @@ JS,[
                 Html::tag('div', $this->getPreviewThumbImg(350, 190), [
                     'class' => 'preview-thumb',
                 ]) .
-                Html::endTag('div'); // .preview-thumb-container;
+                Html::endTag('div'); // .preview-thumb-container
+
+            if ($previewable || $editable) {
+                $isMobile = Craft::$app->getRequest()->isMobileBrowser(true);
+                $imageButtonHtml = Html::beginTag('div', [
+                    'class' => array_filter([
+                        'image-actions',
+                        'buttons',
+                        ($isMobile ? 'is-mobile' : null),
+                    ]),
+                ]);
+                $view = Craft::$app->getView();
+
+                if ($previewable) {
+                    $imageButtonHtml .= Html::button(Craft::t('app', 'Preview'), [
+                        'id' => 'preview-btn',
+                        'class' => ['btn', 'preview-btn'],
+                    ]);
+
+                    $previewBtnId = $view->namespaceInputId('preview-btn');
+                    $settings = [];
+                    $width = $this->getWidth();
+                    $height = $this->getHeight();
+                    if ($width && $height) {
+                        $settings['startingWidth'] = $width;
+                        $settings['startingHeight'] = $height;
+                    }
+                    $jsSettings = Json::encode($settings);
+                    $js = <<<JS
+$('#$previewBtnId').on('click', () => {
+    new Craft.PreviewFileModal($this->id, null, $jsSettings);
+});
+JS;
+                    $view->registerJs($js);
+                }
+
+                if ($editable) {
+                    $imageButtonHtml .= Html::button(Craft::t('app', 'Edit Image'), [
+                        'id' => 'edit-btn',
+                        'class' => ['btn', 'edit-btn'],
+                    ]);
+
+                    $editBtnId = $view->namespaceInputId('edit-btn');
+                    $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
+                    $js = <<<JS
+$('#$editBtnId').on('click', () => {
+    new Craft.AssetImageEditor($this->id, {
+        allowDegreeFractions: Craft.isImagick,
+        onSave: data => {
+            if (data.newAssetId) {
+                // If this is within an Assets field’s editor slideout, replace the selected asset 
+                const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
+                if (slideout && slideout.settings.elementSelectInput) {
+                    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
+                        .catch(() => {});
+                }
+                return;
+            }
+
+            $updatePreviewThumbJs
+        },
+    });
+});
+JS;
+                    $view->registerJs($js);
+                }
+
+                $imageButtonHtml .= Html::endTag('div'); // .image-actions
+
+                if (Craft::$app->getRequest()->isMobileBrowser(true)) {
+                    $previewThumbHtml .= $imageButtonHtml;
+                } else {
+                    $previewThumbHtml = Html::appendToTag($previewThumbHtml, $imageButtonHtml);
+                }
+            }
 
             $html .= $previewThumbHtml;
         } catch (NotSupportedException) {
