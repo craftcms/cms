@@ -650,60 +650,38 @@ class Gql extends Component
         $mutations = [];
 
         // Sites
-        $components = $this->_getSiteSchemaComponents();
         $label = Craft::t('app', 'Sites');
-        $queries[$label] = $components['query'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->siteSchemaComponents();
 
         // Elements
-        $components = $this->_getElementSchemaComponents();
         $label = Craft::t('app', 'All elements');
-        $queries[$label] = $components['query'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->elementSchemaComponents();
 
-        // Sections
-        // ---------------------------------------------------------------------
-        $components = $this->_getSectionSchemaComponents();
+        // Entries
         $label = Craft::t('app', 'Entries');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->entrySchemaComponents();
 
         // Assets
-        // ---------------------------------------------------------------------
-        $components = $this->_getVolumeSchemaComponents();
         $label = Craft::t('app', 'Assets');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->assetSchemaComponents();
 
         // Global Sets
-        // ---------------------------------------------------------------------
-        $components = $this->_getGlobalSetSchemaComponents();
         $label = Craft::t('app', 'Global Sets');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->globalSetSchemaComponents();
 
         // Users
-        // ---------------------------------------------------------------------
-        $components = $this->_getUserSchemaComponents();
         $label = Craft::t('app', 'Users');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->userSchemaComponents();
 
         // Categories
-        // ---------------------------------------------------------------------
-        $components = $this->_getCategorySchemaComponents();
         $label = Craft::t('app', 'Categories');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->categorySchemaComponents();
 
         // Tags
-        // ---------------------------------------------------------------------
-        $components = $this->_getTagSchemaComponents();
         $label = Craft::t('app', 'Tags');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->tagSchemaComponents();
 
         // Let plugins customize them and add new ones
-        // ---------------------------------------------------------------------
-
         $event = new RegisterGqlSchemaComponentsEvent([
             'queries' => $queries,
             'mutations' => $mutations,
@@ -1479,46 +1457,44 @@ class Gql extends Component
     }
 
     /**
-     * Return element schema components.
-     *
-     * @return array
-     */
-    private function _getElementSchemaComponents(): array
-    {
-        return [
-            'query' => [
-                'elements.drafts:read' => ['label' => Craft::t('app', 'Allow listing element drafts')],
-                'elements.revisions:read' => ['label' => Craft::t('app', 'Allow listing element revisions')],
-                'elements.inactive:read' => ['label' => Craft::t('app', 'Allow listing non-live and otherwise inactive elements.')],
-            ],
-        ];
-    }
-
-    /**
      * Return site schema components.
      *
      * @return array
      */
-    private function _getSiteSchemaComponents(): array
+    private function siteSchemaComponents(): array
     {
         $sites = Craft::$app->getSites()->getAllSites(true);
-        $query = [];
+        $queryComponents = [];
 
         foreach ($sites as $site) {
-            $query["sites.{$site->uid}:read"] = ['label' => Craft::t('app', 'Allow querying elements from the “{site}” site.', ['site' => $site->name])];
+            $queryComponents["sites.{$site->uid}:read"] = ['label' => Craft::t('app', 'Allow querying elements from the “{site}” site.', ['site' => $site->name])];
         }
 
-        return [
-            'query' => $query,
-        ];
+        return [$queryComponents, []];
     }
 
     /**
-     * Return the available schema components for sections.
+     * Return element schema components.
      *
      * @return array
      */
-    private function _getSectionSchemaComponents(): array
+    private function elementSchemaComponents(): array
+    {
+        $queryComponents = [
+            'elements.drafts:read' => ['label' => Craft::t('app', 'Allow listing element drafts')],
+            'elements.revisions:read' => ['label' => Craft::t('app', 'Allow listing element revisions')],
+            'elements.inactive:read' => ['label' => Craft::t('app', 'Allow listing non-live and otherwise inactive elements.')],
+        ];
+
+        return [$queryComponents, []];
+    }
+
+    /**
+     * Return the available schema components for entries.
+     *
+     * @return array
+     */
+    private function entrySchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -1557,10 +1533,7 @@ class Gql extends Component
             ];
         }
 
-        return [
-            'query' => $queryComponents,
-            'mutation' => $mutationComponents,
-        ];
+        return [$queryComponents, $mutationComponents];
     }
 
     /**
@@ -1568,7 +1541,7 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getVolumeSchemaComponents(): array
+    private function assetSchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -1590,10 +1563,7 @@ class Gql extends Component
             }
         }
 
-        return [
-            'query' => $queryComponents,
-            'mutation' => $mutationComponents,
-        ];
+        return [$queryComponents, $mutationComponents];
     }
 
     /**
@@ -1601,7 +1571,7 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getGlobalSetSchemaComponents(): array
+    private function globalSetSchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -1616,10 +1586,27 @@ class Gql extends Component
             }
         }
 
-        return [
-            'query' => $queryComponents,
-            'mutation' => $mutationComponents,
-        ];
+        return [$queryComponents, $mutationComponents];
+    }
+
+    /**
+     * Return user permissions.
+     *
+     * @return array
+     */
+    private function userSchemaComponents(): array
+    {
+        $queryComponents = [];
+        $userGroups = Craft::$app->getUserGroups()->getAllGroups();
+
+        $queryComponents['usergroups.everyone:read'] = ['label' => Craft::t('app', 'View all users')];
+
+        foreach ($userGroups as $userGroup) {
+            $suffix = 'usergroups.' . $userGroup->uid;
+            $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View user group - {userGroup}', ['userGroup' => Craft::t('site', $userGroup->name)])];
+        }
+
+        return [$queryComponents, []];
     }
 
     /**
@@ -1627,7 +1614,7 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getCategorySchemaComponents(): array
+    private function categorySchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -1648,10 +1635,7 @@ class Gql extends Component
             }
         }
 
-        return [
-            'query' => $queryComponents,
-            'mutation' => $mutationComponents,
-        ];
+        return [$queryComponents, $mutationComponents];
     }
 
     /**
@@ -1659,7 +1643,7 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getTagSchemaComponents(): array
+    private function tagSchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -1680,32 +1664,7 @@ class Gql extends Component
             }
         }
 
-        return [
-            'query' => $queryComponents,
-            'mutation' => $mutationComponents,
-        ];
-    }
-
-    /**
-     * Return user permissions.
-     *
-     * @return array
-     */
-    private function _getUserSchemaComponents(): array
-    {
-        $queryComponents = [];
-        $userGroups = Craft::$app->getUserGroups()->getAllGroups();
-
-        $queryComponents['usergroups.everyone:read'] = ['label' => Craft::t('app', 'View all users')];
-
-        foreach ($userGroups as $userGroup) {
-            $suffix = 'usergroups.' . $userGroup->uid;
-            $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View user group - {userGroup}', ['userGroup' => Craft::t('site', $userGroup->name)])];
-        }
-
-        return [
-            'query' => $queryComponents,
-        ];
+        return [$queryComponents, $mutationComponents];
     }
 
     /**
