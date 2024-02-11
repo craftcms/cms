@@ -137,8 +137,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
                 'name' => ($exception instanceof Exception || $exception instanceof ErrorException) ? $exception->getName() : 'Exception',
                 'message' => $message,
                 'code' => $exception->getCode(),
-                // TODO: remove in v5; error message should only be in `message`
-                'error' => $message,
             ];
 
             if ($exception instanceof HttpException) {

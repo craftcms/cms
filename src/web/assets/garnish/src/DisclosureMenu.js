@@ -77,12 +77,21 @@ export default Base.extend(
         Craft.initUiElements(this.$container);
       }
       this.addDisclosureMenuEventListeners();
+
+      Garnish.DisclosureMenu.instances.push(this);
     },
 
     addDisclosureMenuEventListeners: function () {
       this.addListener(this.$trigger, 'mousedown', (ev) => {
         ev.stopPropagation();
         ev.preventDefault();
+
+        // Let the other disclosure menus know about it, at least
+        for (const disclosureMenu of Garnish.DisclosureMenu.instances) {
+          if (disclosureMenu !== this) {
+            disclosureMenu.handleMousedown(ev);
+          }
+        }
       });
 
       this.addListener(this.$trigger, 'mouseup', (ev) => {
@@ -712,6 +721,11 @@ export default Base.extend(
      */
     destroy: function () {
       this.$trigger.removeData('trigger');
+
+      Garnish.DisclosureMenu.instances = Craft.Preview.instances.filter(
+        (o) => o !== this
+      );
+
       this.base();
     },
 
@@ -750,5 +764,10 @@ export default Base.extend(
     defaults: {
       windowSpacing: 5,
     },
+
+    /**
+     * @type {Garnish.DisclosureMenu[]}
+     */
+    instances: [],
   }
 );

@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Restored the “Preview” and “Edit Image” buttons on asset image previews. ([#14333](https://github.com/craftcms/cms/discussions/14333))
+- Improved the accessibility of the global sidebar. ([#14335](https://github.com/craftcms/cms/pull/14335))
+- Improved the contrast of the Dev Mode caution tape indicator. ([#14336](https://github.com/craftcms/cms/pull/14336))
+- `craft\behaviors\SessionBehavior::setSuccess()` and `getSuccess()` use the `success` flash key now, rather than `notice`. ([#14345](https://github.com/craftcms/cms/pull/14345))
+- Exception response data no longer includes an `error` key with the exception message. `message` should be used instead. ([#14346](https://github.com/craftcms/cms/pull/14346))
+- Fixed a bug where read/write splitting was always getting disabled for GraphQL POST requests. ([#14324](https://github.com/craftcms/cms/issues/14324))
+- Fixed an error that occurred when adding a new block to a Matrix field with an overridden handle. ([#14350](https://github.com/craftcms/cms/issues/14350))
+- Fixed a bug where opening a disclosure menu wasn’t hiding others. ([#14354](https://github.com/craftcms/cms/issues/14354))
+
 ## 5.0.0-beta.1 - 2024-02-08
 
 ### Content Management

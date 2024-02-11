@@ -61,6 +61,7 @@
 - Improved the accessibility of layout tabs. ([#14215](https://github.com/craftcms/cms/pull/14215))
 - Improved the accessibility of overflow tab menus. ([#14214](https://github.com/craftcms/cms/pull/14214))
 - Increased the hit area for range select options.
+- Improved the accessibility of the global sidebar. ([#14335](https://github.com/craftcms/cms/pull/14335))
 
 ### Administration
 - Added the “Color” entry type setting. ([#14187](https://github.com/craftcms/cms/pull/14187))
@@ -420,6 +421,7 @@
 - `craft\base\Field::inputHtml()` now has an `$inline` argument.
 - `craft\base\FieldInterface::getIsTranslatable()`, `getTranslationDescription()`, `getInputHtml()`, `normalizeValue()`, `normalizeValueFromRequest()`, and `serializeValue()` no longer need to specify a default value for the `$element` argument.
 - `craft\base\WidgetInterface::icon()` can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- `craft\behaviors\SessionBehavior::setSuccess()` and `getSuccess()` use the `success` flash key now, rather than `notice`. ([#14345](https://github.com/craftcms/cms/pull/14345))
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\elemens\db\ElementQueryInterface::collect()` now has an `ElementCollection` return type, rather than `Collection`.
 - `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
@@ -459,6 +461,7 @@
 - `craft\services\Users::verifyEmailForUser()` now has a `void` return type, and throws an `InvalidElementException` in case of failure.
 - `craft\web\Controller::asModelSuccess()` now includes a `modelClass` key in the response data (and `modelId` if the model implements `craft\base\Identifiable`).
 - Colors defined by elements’ `statuses()` methods can now be a `craft\enums\Color` instance.
+- Exception response data no longer includes an `error` key with the exception message. `message` should be used instead. ([#14346](https://github.com/craftcms/cms/pull/14346))
 - Deprecated `craft\events\DefineElementInnerHtmlEvent`.
 - Deprecated `craft\events\SearchEvent::$siteId`.
 - Deprecated `craft\helpers\Component::iconSvg()`. `craft\helpers\Cp::iconSvg()` and `fallbackIconSvg()` should be used instead. ([#14169](https://github.com/craftcms/cms/pull/14169))

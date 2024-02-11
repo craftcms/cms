@@ -1041,12 +1041,7 @@ $.extend($.event.special, {
     handle: function (ev, data) {
       var el = this;
       var args = arguments;
-      var delay =
-        data && typeof data.delay !== 'undefined'
-          ? data.delay
-          : ev.data && ev.data.delay !== undefined
-            ? ev.data.delay
-            : null;
+      var delay = data?.delay ?? ev?.data?.delay ?? null;
       var handleObj = ev.handleObj;
       var targetData = $.data(ev.target);
 

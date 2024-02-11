@@ -79,7 +79,13 @@ class MatrixController extends Controller
         $siteId = $this->request->getRequiredBodyParam('siteId');
         $namespace = $this->request->getRequiredBodyParam('namespace');
 
-        $field = Craft::$app->getFields()->getFieldById($fieldId);
+        $elementsService = Craft::$app->getElements();
+        $owner = $elementsService->getElementById($ownerId, $ownerElementType, $siteId);
+        if (!$owner) {
+            throw new BadRequestHttpException("Invalid owner ID, element type, or site ID.");
+        }
+
+        $field = $owner->getFieldLayout()?->getFieldById($fieldId);
         if (!$field instanceof Matrix) {
             throw new BadRequestHttpException("Invalid Matrix field ID: $fieldId");
         }
@@ -92,12 +98,6 @@ class MatrixController extends Controller
         $site = Craft::$app->getSites()->getSiteById($siteId, true);
         if (!$site) {
             throw new BadRequestHttpException("Invalid site ID: $siteId");
-        }
-
-        $elementsService = Craft::$app->getElements();
-        $owner = $elementsService->getElementById($ownerId, $ownerElementType, $siteId);
-        if (!$owner) {
-            throw new BadRequestHttpException("Invalid owner ID, element type, or site ID.");
         }
 
         /** @var Entry $entry */
