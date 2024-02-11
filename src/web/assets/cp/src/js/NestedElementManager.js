@@ -245,9 +245,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
         );
         Craft.cp.displayNotice(response.data.message);
       } catch (e) {
-        Craft.cp.displayError(
-          e && e.response && e.response.data && e.response.data.error
-        );
+        Craft.cp.displayError(e?.response?.data?.message);
       }
 
       await this.markAsDirty();
@@ -367,8 +365,8 @@ Craft.NestedElementManager = Garnish.Base.extend(
             await this.markAsDirty();
           });
         })
-        .catch(({response}) => {
-          Craft.cp.displayError((response.data && response.data.error) || null);
+        .catch((e) => {
+          Craft.cp.displayError(e?.response?.data?.message);
         })
         .finally(() => {
           if (this.$createBtn) {
@@ -431,9 +429,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
         );
         Craft.cp.displayNotice(response.data.message);
       } catch (e) {
-        Craft.cp.displayError(
-          e && e.response && e.response.data && e.response.data.error
-        );
+        Craft.cp.displayError(e?.response?.data?.message);
         throw e;
       }
 
@@ -495,14 +491,9 @@ Craft.NestedElementManager = Garnish.Base.extend(
           Craft.cp.elementThumbLoader.load($element);
           this.updateCreateBtn();
         })
-        .catch(({response}) => {
-          if (response && response.data && response.data.message) {
-            Craft.cp.displayError(response.data.message);
-          } else {
-            Craft.cp.displayError();
-          }
-
-          throw response.data.message;
+        .catch((e) => {
+          Craft.cp.displayError(e?.response?.data?.message);
+          throw e?.response?.data?.message ?? e;
         })
         .finally(() => {
           if (this.$createBtn) {
