@@ -433,6 +433,7 @@
 - `craft\fields\fieldlayoutelements\BaseUiElement::selectorIcon()` can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - `craft\gql\mutations\Entry::createSaveMutations()` now accepts a `$section` argument.
 - `craft\helpers\App::parseEnv()` now returns `null` when a missing environment variable name is passed to it. ([#14253](https://github.com/craftcms/cms/pull/14253))
+- `craft\helpers\Assets::generateUrl()` no longer has an `$fs` argument. ([#14353](https://github.com/craftcms/cms/pull/14353))
 - `craft\helpers\Cp::fieldHtml()` now supports a `labelExtra` config value.
 - `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
 - `craft\helpers\Html::id()` and `Craft.formatInputId()` now retain colons and periods, and ensure the string begins with a letter.
