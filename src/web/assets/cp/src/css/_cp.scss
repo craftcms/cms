@@ -265,7 +265,9 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex: 0 0 4px;
   width: 100%;
   min-height: 4px; // fixes Windows scaling bug (https://github.com/craftcms/cms/issues/3259)
-  background: url(../images/dev-mode.svg) repeat-x 21px 0;
+  background:
+    url(../images/dev-mode.svg) repeat-x 21px 0,
+    var(--gray-900);
   cursor: help;
 }
 

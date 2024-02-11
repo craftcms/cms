@@ -495,32 +495,32 @@ Craft.CP = Garnish.Base.extend(
       if (isExpanded === null) return;
 
       if (isExpanded) {
-        this.disableGlobalSidebarLinks();
+        this.disableGlobalSidebar();
         this.$navToggle.focus();
         this.$navToggle.attr('aria-expanded', 'false');
         Garnish.$bod.removeClass('showing-nav');
       } else {
-        this.enableGlobalSidebarLinks();
+        this.enableGlobalSidebar();
         this.$globalSidebar.find(':focusable')[0].focus();
         this.$navToggle.attr('aria-expanded', 'true');
         Garnish.$bod.addClass('showing-nav');
       }
     },
 
-    enableGlobalSidebarLinks: function () {
-      const focusableItems = this.$globalSidebar.find(':focusable');
-
-      $(focusableItems).each(function () {
-        $(this).attr('tabindex', '0');
-      });
+    /**
+     * Makes the global sidebar navigable by screen reader and keyboard users
+     **/
+    enableGlobalSidebar: function () {
+      this.$globalSidebar.attr('aria-hidden', 'false');
+      this.$globalSidebar.find(':focusable').attr('tabindex', '0');
     },
 
-    disableGlobalSidebarLinks: function () {
-      const focusableItems = this.$globalSidebar.find(':focusable');
-
-      $(focusableItems).each(function () {
-        $(this).attr('tabindex', '-1');
-      });
+    /**
+     * Hides the global sidebar from screen reader and keyboard users
+     **/
+    disableGlobalSidebar: function () {
+      this.$globalSidebar.attr('aria-hidden', 'true');
+      this.$globalSidebar.find(':focusable').attr('tabindex', '-1');
     },
 
     setSidebarNavAttributes: function () {
@@ -529,9 +529,9 @@ Craft.CP = Garnish.Base.extend(
       if (isExpanded === null) return;
 
       if (!isExpanded) {
-        this.disableGlobalSidebarLinks();
+        this.disableGlobalSidebar();
       } else {
-        this.enableGlobalSidebarLinks();
+        this.enableGlobalSidebar();
       }
     },
 
