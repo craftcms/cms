@@ -95,9 +95,9 @@ new Vue({
               this.loading = false;
               resolve(true);
             },
-            (response) => {
-              Craft.cp.displayError(response.response.data.error);
-              reject(response);
+            (e) => {
+              Craft.cp.displayError(e?.response?.data?.message);
+              reject(e);
             }
           );
       });
