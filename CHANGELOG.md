@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where read/write splitting was always getting disabled for GraphQL POST requests. ([#14324](https://github.com/craftcms/cms/issues/14324))
+
 ## 4.7.2.1 - 2024-02-08
 
 - Craft now requires Composer ^2.7.0. ([CVE-2024-24821](https://github.com/advisories/GHSA-7c6p-848j-wh5h))
