@@ -142,7 +142,9 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
     },
 
     // No "add" button
-    getAddElementsBtn: $.noop,
+    getAddElementsBtn: function () {
+      return [];
+    },
 
     getElementSortAxis: function () {
       return null;
@@ -245,36 +247,39 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
       var title = $option.text();
 
       var $element = $('<div/>', {
-        class: 'element small removable',
+        class: 'chip element small removable',
         'data-id': id,
         'data-site-id': this.settings.targetSiteId,
         'data-label': title,
         'data-editable': '1',
       }).appendTo(this.$elementsContainer);
 
-      var $input = $('<input/>', {
-        type: 'hidden',
-        name: this.settings.name + '[]',
-        value: id,
-      }).appendTo($element);
-
-      $('<button/>', {
-        class: 'delete icon',
-        title: Craft.t('app', 'Remove'),
-        type: 'button',
-        'aria-label': Craft.t('app', 'Remove {label}', {
-          label: title,
-        }),
+      var $chipContent = $('<div/>', {
+        class: 'chip-content',
       }).appendTo($element);
 
       var $titleContainer = $('<div/>', {
         class: 'label',
-      }).appendTo($element);
+      }).appendTo($chipContent);
+
+      var $labelLinkContainer = $('<a/>', {
+        class: 'label-link',
+      }).appendTo($titleContainer);
 
       $('<span/>', {
         class: 'title',
         text: title,
-      }).appendTo($titleContainer);
+      }).appendTo($labelLinkContainer);
+
+      var $chipActions = $('<div/>', {
+        class: 'chip-actions',
+      }).appendTo($chipContent);
+
+      var $input = $('<input/>', {
+        type: 'hidden',
+        name: this.settings.name + '[]',
+        value: id,
+      }).appendTo($chipContent);
 
       this.$elements = this.$elements.add($element);
 
