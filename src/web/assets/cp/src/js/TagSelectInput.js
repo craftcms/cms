@@ -74,7 +74,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 let $nextOption = $hoverOption
                   .parent()
                   .nextAll()
-                  .find('a:not(.disabled)')
+                  .find('button:not(.disabled)')
                   .first();
                 if ($nextOption.length) {
                   this.focusOption($nextOption);
@@ -94,7 +94,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 let $prevOption = $hoverOption
                   .parent()
                   .prevAll()
-                  .find('a:not(.disabled)')
+                  .find('button:not(.disabled)')
                   .last();
                 if ($prevOption.length) {
                   this.focusOption($prevOption);
@@ -198,7 +198,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             for (var i = 0; i < response.data.tags.length; i++) {
               $li = $('<li/>').appendTo($ul);
 
-              $('<a data-icon="tag"/>')
+              $('<button class="menu-item" data-icon="tag"/>')
                 .appendTo($li)
                 .text(response.data.tags[i].title)
                 .data('id', response.data.tags[i].id)
@@ -207,10 +207,12 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
             if (!response.data.exactMatch) {
               $li = $('<li/>').appendTo($ul);
-              $('<a data-icon="plus"/>').appendTo($li).text(data.search);
+              $('<button class="menu-item" data-icon="plus"/>')
+                .appendTo($li)
+                .text(data.search);
             }
 
-            $ul.find('a:not(.disabled):first').addClass('hover');
+            $ul.find('button:not(.disabled):first').addClass('hover');
 
             this.searchMenu = new Garnish.Menu($menu, {
               attachToElement: this.$addTagInput,
