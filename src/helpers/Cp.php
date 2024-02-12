@@ -777,7 +777,7 @@ class Cp
                     'class' => $fieldClass,
                     'id' => $fieldId,
                     'data' => [
-                        'attribute' => $config['data']['attribute'] ?? $attribute,
+                        'attribute' => $attribute,
                     ],
                 ],
                 $config['fieldAttributes'] ?? []
