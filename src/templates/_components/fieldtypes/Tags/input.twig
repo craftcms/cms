@@ -10,12 +10,14 @@
 
 <div id="{{ id }}" class="elementselect tagselect">
     <div class="elements">
+        {%- apply spaceless  %}
         {% for element in elements %}
             {{ elementChip(element, {
                 context: 'field',
                 inputName: (name ?? false) ? "#{name}[]" : null,
             }) }}
         {% endfor %}
+        {% endapply -%}
     </div>
 
     <div class="texticon add icon">

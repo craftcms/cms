@@ -6577,6 +6577,7 @@ $min2ColWidth: 400px;
 
   .chip.small {
     clear: none;
+    @include margin-right(7px);
   }
 
   .add {
