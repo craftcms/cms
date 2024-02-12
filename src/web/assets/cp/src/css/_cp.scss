@@ -440,7 +440,7 @@ li.crumb .btn.menubtn,
     color: var(--light-text-color);
 
     &:not(.current) {
-      @include padding-right(calc(var(--arrow-width) * 1.1rem / 16));
+      @include padding-right(calc(var(--arrow-width) * 1.125rem / 16));
 
       &:before,
       &:after {
