@@ -110,6 +110,8 @@
 - Entry queries now have `field`, `fieldId`, `primaryOwner`, `primaryOwnerId`, `owner`, `ownerId`, `allowOwnerDrafts`, and `allowOwnerRevisions` params.
 - Entry queries’ `authorId` params now support passing multiple IDs prefixed with `and`, to fetch entries with multiple listed authors.
 - User queries now have an `authorOf` param.
+- Nested addresses are now cached by their field ID, and address queries now register cache tags based on their `field` and `fieldId` params.
+- Nested entries are now cached by their field ID, and entry queries now register cache tags based on their `field` and `fieldId` params.
 - Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
 - Entries now have `author` and `authorIds` GraphQL field.
 - Matrix fields’ GraphQL mutation types now expect nested entries to be defined by an `entries` field rather than `blocks`.
