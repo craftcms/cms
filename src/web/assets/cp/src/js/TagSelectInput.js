@@ -147,7 +147,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
     },
 
     getElementSortAxis: function () {
-      return null;
+      return 'x';
     },
 
     searchForTags: function () {

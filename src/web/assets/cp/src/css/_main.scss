@@ -6572,7 +6572,9 @@ $min2ColWidth: 400px;
 /* tag select fields */
 .tagselect {
   .elements {
-    display: inline;
+    li {
+      display: inline;
+    }
   }
 
   .chip.small {
