@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where read/write splitting was always getting disabled for GraphQL POST requests. ([#14324](https://github.com/craftcms/cms/issues/14324))
+- Fixed a bug where GraphQL schema edit pages could include empty category headings.
 
 ## 4.7.2.1 - 2024-02-08
 
