@@ -87,13 +87,6 @@
   > .sidebar-action {
     grid-area: action;
   }
-
-  [data-sidebar='collapsed'] & {
-    grid-template-areas: '. action .' '. trigger .' 'subnav subnav subnav';
-    grid-template-columns: var(--gutter-width) var(--prefix-width) var(
-        --gutter-width
-      );
-  }
 }
 
 .nav-item__trigger {
@@ -290,6 +283,13 @@ States
   [data-sidebar='collapsed'] {
     .global-sidebar {
       --global-sidebar-width: calc(50rem / 16);
+    }
+
+    .nav-item {
+      grid-template-areas: '. action .' '. trigger .' 'subnav subnav subnav';
+      grid-template-columns: var(--gutter-width) var(--prefix-width) var(
+          --gutter-width
+        );
     }
 
     .nav-item__indicator {
