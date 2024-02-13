@@ -5164,9 +5164,6 @@ JS,
             $field->afterElementSave($this, $isNew);
         }
 
-        // clean up relations for fields that are no longer part of the layout
-        Craft::$app->getRelations()->deleteRelationsForFieldsNotInLayout($this);
-
         // Trigger an 'afterSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
             $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
@@ -5183,6 +5180,11 @@ JS,
         // Tell the fields about it
         foreach ($this->fieldLayoutFields() as $field) {
             $field->afterElementPropagate($this, $isNew);
+        }
+
+        // Delete relations that don’t belong to a relational field on the element's field layout
+        if (!ElementHelper::isDraftOrRevision($this)) {
+            Craft::$app->getRelations()->deleteLeftoverRelations($this);
         }
 
         // Trigger an 'afterPropagate' event

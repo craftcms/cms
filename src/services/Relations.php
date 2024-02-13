@@ -15,7 +15,6 @@ use craft\db\Table;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\BaseRelationField;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use Throwable;
 use yii\base\Component;
 
@@ -129,50 +128,49 @@ class Relations extends Component
     }
 
     /**
-     * Delete relations that belong to a field that is no longer part of the element's layout.
+     * Deletes relations that don’t belong to a relational field on the given element’s field layout.
      *
-     * @param $element
-     * @return void
-     * @throws \yii\db\Exception
+     * @param ElementInterface $element
+     * @since 4.8.0
      */
-    public function deleteRelationsForFieldsNotInLayout($element): void
+    public function deleteLeftoverRelations(ElementInterface $element): void
     {
-        if (!ElementHelper::isDraftOrRevision($element)) {
-            $relationalFieldsInLayout = [];
-            $fieldLayout = $element->getFieldLayout();
+        if (!$element->id) {
+            return;
+        }
 
-            if ($fieldLayout) {
-                // get all the relational field in the element's layout
-                foreach ($fieldLayout->getTabs() as $tab) {
-                    foreach ($tab->getElements() as $layoutElement) {
-                        if ($layoutElement instanceof CustomField && ($field = $layoutElement->getField()) instanceof BaseRelationField) {
-                            $relationalFieldsInLayout[] = $field->id;
-                        }
+        $fieldLayout = $element->getFieldLayout();
+        if (!$fieldLayout) {
+            return;
+        }
+
+        $relationFieldIds = [];
+        foreach ($fieldLayout->getTabs() as $tab) {
+            foreach ($tab->getElements() as $layoutElement) {
+                if ($layoutElement instanceof CustomField) {
+                    $field = $layoutElement->getField();
+                    if ($field instanceof BaseRelationField) {
+                        $relationFieldIds[] = $field->id;
                     }
                 }
-
-                $db = Craft::$app->getDb();
-
-                // get those relations for the element that don't belong to any relational fields that are in the layout;
-                // limit to the element's siteId or null; don't touch relations for other sites
-                $removedFieldsRelationIds = (new Query())
-                    ->select(['id'])
-                    ->from(Table::RELATIONS)
-                    ->where([
-                        'and',
-                        ['sourceId' => $element->id],
-                        ['or', ['sourceSiteId' => null], ['sourceSiteId' => $element->siteId]],
-                    ])
-                    ->andWhere(['not', ['fieldId' => $relationalFieldsInLayout]])
-                    ->all($db);
-
-                // if relations were returned - delete them
-                if (!empty($removedFieldsRelationIds)) {
-                    Db::delete(Table::RELATIONS, [
-                        'id' => array_map(fn($item) => $item['id'], $removedFieldsRelationIds),
-                    ], [], $db);
-                }
             }
+        }
+
+        // get those relations for the element that don't belong to any relational fields that are in the layout
+        $query = (new Query())
+            ->select(['id'])
+            ->from(Table::RELATIONS)
+            ->where(['sourceId' => $element->id]);
+
+        if (!empty($relationFieldIds)) {
+            $query->andWhere(['not', ['fieldId' => $relationFieldIds]]);
+        }
+
+        $leftoverRelationIds = $query->column();
+
+        // if relations were returned - delete them
+        if (!empty($leftoverRelationIds)) {
+            Db::delete(Table::RELATIONS, ['id' => $leftoverRelationIds]);
         }
     }
 }
