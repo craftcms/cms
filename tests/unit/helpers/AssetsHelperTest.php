@@ -193,6 +193,7 @@ class AssetsHelperTest extends TestCase
     {
         return [
             ['https://cdn.test.craftcms.test/test%20volume%201/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']],
+            ['https://cdn.test.craftcms.test/test-subpath/test%20volume%204/product.jpg', ['volumeId' => '1003', 'filename' => 'product.jpg']],
         ];
     }
 
