@@ -5,8 +5,12 @@
 - Restored the “Preview” and “Edit Image” buttons on asset image previews. ([#14333](https://github.com/craftcms/cms/discussions/14333))
 - Improved the accessibility of the global sidebar. ([#14335](https://github.com/craftcms/cms/pull/14335))
 - Improved the contrast of the Dev Mode caution tape indicator. ([#14336](https://github.com/craftcms/cms/pull/14336))
+- GraphQL schemas can now include queries and mutations for nested entries (e.g. within Matrix or CKEditor fields) directly. ([#14366](https://github.com/craftcms/cms/pull/14366))
+- Added the `fieldId`, `fieldHandle`, `ownerId`, and `sortOrder` entry GraphQL fields. ([#14366](https://github.com/craftcms/cms/pull/14366))
 - Nested addresses are now cached by their field ID, and address queries now register cache tags based on their `field` and `fieldId` params.
 - Nested entries are now cached by their field ID, and entry queries now register cache tags based on their `field` and `fieldId` params.
+- Added `craft\services\Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES`.
+- Added `craft\services\Fields::getNestedEntryFieldTypes()`.
 - `craft\behaviors\SessionBehavior::setSuccess()` and `getSuccess()` use the `success` flash key now, rather than `notice`. ([#14345](https://github.com/craftcms/cms/pull/14345))
 - Exception response data no longer includes an `error` key with the exception message. `message` should be used instead. ([#14346](https://github.com/craftcms/cms/pull/14346))
 - Fixed an error that occurred when adding a new block to a Matrix field with an overridden handle. ([#14350](https://github.com/craftcms/cms/issues/14350))
