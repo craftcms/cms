@@ -5164,6 +5164,9 @@ JS,
             $field->afterElementSave($this, $isNew);
         }
 
+        // clean up relations for fields that are no longer part of the layout
+        Craft::$app->getRelations()->deleteRelationsForFieldsNotInLayout($this);
+
         // Trigger an 'afterSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
             $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
