@@ -18,6 +18,7 @@
 - Fixed an error that occurred when adding a new block to a Matrix field with an overridden handle. ([#14350](https://github.com/craftcms/cms/issues/14350))
 - Fixed a bug where opening a disclosure menu wasn’t hiding others. ([#14354](https://github.com/craftcms/cms/issues/14354))
 - Fixed a bug where non-global custom fields were being shown on the Fields index page when searching. ([#14344](https://github.com/craftcms/cms/issues/14344))
+- Fixed a bug where component slideouts would open when long-pressing on a component’s action menu button or drag handle within a component select input.
 - Fixed a bug where read/write splitting was always getting disabled for GraphQL POST requests. ([#14324](https://github.com/craftcms/cms/issues/14324))
 - Fixed a bug where GraphQL schema edit pages could include empty category headings.
 - Fixed a bug where asset slideouts weren’t showing validation errors on the Filename field. ([#14329](https://github.com/craftcms/cms/issues/14329))
