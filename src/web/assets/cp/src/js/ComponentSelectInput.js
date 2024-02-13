@@ -270,12 +270,10 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
 
         this.addListener($component, 'dblclick,taphold', (ev) => {
           // don't open the edit slideout if we are tapholding to drag
-          if (
-            ev.type !== 'taphold' ||
-            !$(ev.originalEvent.originalTarget).hasClass('move')
-          ) {
-            disclosureMenu.$container.find('[data-edit-action]').click();
+          if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
+            return;
           }
+          disclosureMenu.$container.find('[data-edit-action]').click();
         });
 
         this.hideOption($component.data('id'));
