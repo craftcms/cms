@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Fixed a bug where read/write splitting was always getting disabled for GraphQL POST requests. ([#14324](https://github.com/craftcms/cms/issues/14324))
+- Fixed a bug where GraphQL schema edit pages could include empty category headings.
+- Fixed a bug where asset slideouts weren’t showing validation errors on the Filename field. ([#14329](https://github.com/craftcms/cms/issues/14329))
+- Fixed a bug where element slideouts would open when long-pressing on an element’s “Remove” button within an element select input.
+
+## 4.7.2.1 - 2024-02-08
+
+- Craft now requires Composer ^2.7.0. ([CVE-2024-24821](https://github.com/advisories/GHSA-7c6p-848j-wh5h))
+- Fixed a PHP error that could occur when using Checkboxes or Multi-select fields. ([#14326](https://github.com/craftcms/cms/issues/14326))
+
+## 4.7.2 - 2024-02-07
+
 - It’s now possible to select the temp asset volume within Assets fields, if the temp upload location includes a subpath. ([#14246](https://github.com/craftcms/cms/pull/14246))
 - Fixed a bug where it wasn’t possible to set the “Formatting Locale” user preference back to “Same as language” once another value had been selected.
 - Fixed a bug where layout components provided by disabled plugins weren’t getting omitted. ([#14236](https://github.com/craftcms/cms/pull/14236))
@@ -9,6 +21,7 @@
 - Fixed a bug where “Move to the left” and “Move to the right” actions within field layout designers were labelled incorrectly for right-to-left languages.
 - Fixed a bug where users with “Create entries” permission but not “Delete entries” weren’t allowed to delete their own unpublished drafts. ([#14294](https://github.com/craftcms/cms/issues/14294))
 - Fixed a bug where Yii-provided Chinese translations weren’t getting picked up in the control panel. ([#14287](https://github.com/craftcms/cms/issues/14287))
+- Fixed an alignment bug with sortable structure views. ([#14299](https://github.com/craftcms/cms/issues/14299))
 
 ## 4.7.1 - 2024-01-29
 
