@@ -9,6 +9,7 @@ namespace crafttests\unit\gql;
 
 use Craft;
 use craft\db\Table;
+use craft\enums\PropagationMethod;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
@@ -27,6 +28,7 @@ use craft\records\Structure;
 use craft\records\TagGroup;
 use craft\records\UserGroup;
 use craft\records\Volume;
+use craft\services\Entries;
 use craft\test\TestCase;
 use UnitTester;
 
@@ -93,6 +95,8 @@ class PrepareQueryTest extends TestCase
         $this->_globalSet->delete();
         $this->_tagGroup->delete();
         $this->_userGroup->delete();
+
+        Craft::$app->set('entries', new Entries());
     }
 
     public const VOLUME_UID = 'volume-uid';
@@ -184,7 +188,8 @@ class PrepareQueryTest extends TestCase
             ],
             [
                 EntryResolver::class, [null, []], function($result) {
-                    return $result->where === ['in', 'entries.sectionId', []];
+                    $section = Craft::$app->getEntries()->getSectionByUid(self::SECTION_UID);
+                    return $result->where === ['or', ['in', 'entries.sectionId', [$section->id]]];
                 },
             ],
 
@@ -307,9 +312,10 @@ class PrepareQueryTest extends TestCase
             'handle' => StringHelper::randomString(),
             'type' => 'channel',
             'enableVersioning' => true,
-            'propagationMethod' => StringHelper::randomString(),
+            'propagationMethod' => PropagationMethod::All->value,
         ]);
         $this->_section->save();
+        Craft::$app->set('entries', new Entries());
 
         Db::insert(Table::SECTIONS_ENTRYTYPES, [
             'sectionId' => $this->_section->id,
