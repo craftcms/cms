@@ -9,7 +9,6 @@ namespace crafttests\unit\gql;
 
 use Craft;
 use craft\db\Table;
-use craft\elements\ElementCollection;
 use craft\enums\PropagationMethod;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
@@ -100,13 +99,13 @@ class PrepareQueryTest extends TestCase
         Craft::$app->set('entries', new Entries());
     }
 
-    public const VOLUME_UID = 'volume-uid';
-    public const CATEGORY_GROUP_UID = 'categoryGroup-uid';
-    public const SECTION_UID = 'section-uid';
-    public const ENTRY_TYPE_UID = 'entryType-uid';
-    public const GLOBAL_SET_UID = 'globalSet-uid';
-    public const TAG_GROUP_UID = 'tagGroup-uid';
-    public const USER_GROUP_UID = 'userGroup-uid';
+    public const VOLUME_UID = 'volume-uid--------------------------';
+    public const CATEGORY_GROUP_UID = 'categoryGroup-uid-------------------';
+    public const SECTION_UID = 'section-uid-------------------------';
+    public const ENTRY_TYPE_UID = 'entryType-uid-----------------------';
+    public const GLOBAL_SET_UID = 'globalSet-uid-----------------------';
+    public const TAG_GROUP_UID = 'tagGroup-uid------------------------';
+    public const USER_GROUP_UID = 'userGroup-uid-----------------------';
 
     /**
      * Test relational field query preparation
@@ -190,10 +189,6 @@ class PrepareQueryTest extends TestCase
             [
                 EntryResolver::class, [null, []], function($result) {
                     $section = Craft::$app->getEntries()->getSectionByUid(self::SECTION_UID);
-                    // todo: figure out why $section is null during CI
-                    if (!$section) {
-                        return $result instanceof ElementCollection && $result->isEmpty();
-                    }
                     return $result->where === ['or', ['in', 'entries.sectionId', [$section->id]]];
                 },
             ],
