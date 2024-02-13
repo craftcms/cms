@@ -248,13 +248,16 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
       var id = $option.data('id');
       var title = $option.text();
 
-      var $element = $('<div/>', {
+      const $element = $('<div/>', {
         class: 'chip element small removable',
         'data-id': id,
         'data-site-id': this.settings.targetSiteId,
         'data-label': title,
         'data-editable': '1',
-      }).appendTo(this.$elementsContainer);
+      });
+
+      const $li = $('<li/>').appendTo(this.$elementsContainer);
+      $element.appendTo($li);
 
       var $chipContent = $('<div/>', {
         class: 'chip-content',
