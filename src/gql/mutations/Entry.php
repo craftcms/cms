@@ -45,7 +45,7 @@ class Entry extends Mutation
             $canSave = Gql::canSchema($scope, 'save');
 
             if ($canCreate || $canSave) {
-                // Create a mutation for each editable section that includes the entry type
+                // Create a mutation for each entry type
                 foreach ($section->getEntryTypes() as $entryType) {
                     foreach (static::createSaveMutations($section, $entryType, $canSave) as $mutation) {
                         $mutationList[$mutation['name']] = $mutation;

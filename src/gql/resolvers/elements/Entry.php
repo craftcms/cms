@@ -31,8 +31,6 @@ class Entry extends ElementResolver
         // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
             $query = EntryElement::find();
-
-
             $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
             if (!isset($pairs['sections'])) {

@@ -107,7 +107,7 @@ class Entry extends Query
                 $sectionQueryType = [
                     'name' => "{$section->handle}Entries",
                     'args' => $arguments,
-                    'description' => "Entries within the $section->name section.",
+                    'description' => sprintf('Entries within the “%s” section.', $section->name),
                     'type' => Type::listOf(GqlHelper::getUnionType("{$section->handle}SectionEntryUnion", $entryTypesInSection)),
                     // Enforce the section argument and set the source to `null`, to enforce a new element query.
                     'resolve' => fn($source, array $arguments, $context, ResolveInfo $resolveInfo) =>
