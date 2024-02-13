@@ -189,7 +189,7 @@ class PrepareQueryTest extends TestCase
             [
                 EntryResolver::class, [null, []], function($result) {
                     $section = Craft::$app->getEntries()->getSectionByUid(self::SECTION_UID);
-                    return $result->where === ['or', ['in', 'entries.sectionId', [$section->id]]];
+                    return $result->where === ['or', ['in', 'entries.sectionId', array_filter([$section?->id])]];
                 },
             ],
 
