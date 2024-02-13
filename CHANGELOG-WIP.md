@@ -112,6 +112,8 @@
 - User queries now have an `authorOf` param.
 - Nested addresses are now cached by their field ID, and address queries now register cache tags based on their `field` and `fieldId` params.
 - Nested entries are now cached by their field ID, and entry queries now register cache tags based on their `field` and `fieldId` params.
+- GraphQL schemas can now include queries and mutations for nested entries (e.g. within Matrix or CKEditor fields) directly. ([#14366](https://github.com/craftcms/cms/pull/14366))
+- Added the `fieldId`, `fieldHandle`, `ownerId`, and `sortOrder` entry GraphQL fields. ([#14366](https://github.com/craftcms/cms/pull/14366))
 - Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
 - Entries now have `author` and `authorIds` GraphQL field.
 - Matrix fields’ GraphQL mutation types now expect nested entries to be defined by an `entries` field rather than `blocks`.
@@ -359,7 +361,9 @@
 - Added `craft\services\Entries::refreshEntryTypes()`.
 - Added `craft\services\Entries::saveSection()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
+- Added `craft\services\Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES`.
 - Added `craft\services\Fields::getAllLayouts()`.
+- Added `craft\services\Fields::getNestedEntryFieldTypes()`.
 - Added `craft\services\Gql::defineContentArgumentsForFieldLayouts()`.
 - Added `craft\services\Gql::defineContentArgumentsForFields()`.
 - Added `craft\services\Gql::getOrSetContentArguments()`.
