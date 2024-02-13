@@ -571,6 +571,20 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
     /**
      * @inheritdoc
+     */
+    protected function cacheTags(): array
+    {
+        $tags = [];
+
+        if (isset($this->fieldId)) {
+            $tags[] = "field:$this->fieldId";
+        }
+
+        return $tags;
+    }
+
+    /**
+     * @inheritdoc
      * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void

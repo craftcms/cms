@@ -1391,11 +1391,18 @@ class AddressQuery extends ElementQuery
     {
         $tags = [];
 
+        if ($this->fieldId) {
+            foreach ($this->fieldId as $fieldId) {
+                $tags[] = "field:$fieldId";
+            }
+        }
+
         if ($this->primaryOwnerId) {
             foreach ($this->primaryOwnerId as $ownerId) {
                 $tags[] = "element::$ownerId";
             }
         }
+
         if ($this->ownerId) {
             foreach ($this->ownerId as $ownerId) {
                 $tags[] = "element::$ownerId";

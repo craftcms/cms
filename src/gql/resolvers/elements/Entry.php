@@ -31,25 +31,37 @@ class Entry extends ElementResolver
         // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
             $query = EntryElement::find();
-
-
             $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
+            $condition = [];
 
-            if (!isset($pairs['sections'])) {
-                return ElementCollection::empty();
-            }
-
-            $sectionUids = array_flip($pairs['sections']);
-            $sectionIds = [];
-
-            foreach (Craft::$app->getEntries()->getAllSections() as $section) {
-                if (isset($sectionUids[$section->uid])) {
-                    $sectionIds[] = $section->id;
+            if (isset($pairs['sections'])) {
+                $entriesService = Craft::$app->getEntries();
+                $sectionIds = array_filter(array_map(
+                    fn(string $uid) => $entriesService->getSectionByUid($uid)?->id,
+                    $pairs['sections'],
+                ));
+                if (!empty($sectionIds)) {
+                    $condition[] = ['in', 'entries.sectionId', $sectionIds];
                 }
             }
 
-            $query->andWhere(['in', 'entries.sectionId', $sectionIds]);
+            if (isset($pairs['nestedentryfields'])) {
+                $fieldsService = Craft::$app->getFields();
+                $types = array_flip($fieldsService->getNestedEntryFieldTypes());
+                $fieldIds = array_filter(array_map(function(string $uid) use ($fieldsService, $types) {
+                    $field = $fieldsService->getFieldByUid($uid);
+                    return $field && isset($types[$field::class]) ? $field->id : null;
+                }, $pairs['nestedentryfields']));
+                if (!empty($fieldIds)) {
+                    $condition[] = ['in', 'entries.fieldId', $fieldIds];
+                }
+            }
 
+            if (empty($condition)) {
+                return ElementCollection::empty();
+            }
+
+            $query->andWhere(['or', ...$condition]);
         // If not, get the prepared element query
         } else {
             $query = $source->$fieldName;

@@ -337,6 +337,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       if (this.settings.editable) {
         this._handleShowElementEditor = (ev) => {
+          // don't open the edit slideout if we are tapholding to drag
+          if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
+            return;
+          }
+
           var $element = $(ev.currentTarget);
           if (
             Garnish.hasAttr($element, 'data-editable') &&
@@ -491,14 +496,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             await Craft.appendHeadHtml(data.headHtml);
             await Craft.appendBodyHtml(data.bodyHtml);
           })
-          .catch(({response}) => {
-            if (response && response.data && response.data.message) {
-              Craft.cp.displayError(response.data.message);
-            } else {
-              Craft.cp.displayError();
-            }
-
-            reject(response.data.message);
+          .catch((e) => {
+            Craft.cp.displayError(e?.response?.data?.message);
+            reject(e?.response?.data?.message);
           })
           .finally(() => {
             this.hideSpinner();
