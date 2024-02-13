@@ -15,27 +15,27 @@ contact_links:
   - name: Craft Stack Exchange
     url: https://craftcms.stackexchange.com/
     about: Get help and help others
-  - name: "Feature Request: Craft CMS"
+  - name: 'Feature Request: Craft CMS'
     url: https://github.com/craftcms/cms/discussions/new?category=ideas
     about: Make a feature request or enhancement for Craft CMS
-  - name: "Feature Request: Craft Console / Plugin Store"
+  - name: 'Feature Request: Craft Console / Plugin Store'
     url: https://github.com/craftcms/console/discussions/new?category=ideas
     about: Make a feature request or enhancement for Craft Console or the Plugin Store
-  - name: "Feature Request: Craft Cloud"
+  - name: 'Feature Request: Craft Cloud'
     url: https://github.com/craftcms/cloud/discussions/new?category=ideas
     about: Make a feature request or enhancement for Craft Cloud
-  - name: "Feature Request: Craft Commerce"
+  - name: 'Feature Request: Craft Commerce'
     url: https://github.com/craftcms/commerce/discussions/new?category=ideas
     about: Make a feature request or enhancement for Craft Commerce
-  - name: "Bug Report: Craft CMS"
+  - name: 'Bug Report: Craft CMS'
     url: https://github.com/craftcms/cms/issues/new/choose
     about: Create a bug report for Craft CMS
-  - name: "Bug Report: Craft Console / Plugin Store"
+  - name: 'Bug Report: Craft Console / Plugin Store'
     url: https://github.com/craftcms/console/issues/new/choose
     about: Create a bug report for Craft Console or the Plugin Store
-  - name: "Bug Report: Craft Cloud"
+  - name: 'Bug Report: Craft Cloud'
     url: https://craftcms.com/contact
     about: Create a bug report for Craft Cloud
-  - name: "Bug Report: Craft Commerce"
+  - name: 'Bug Report: Craft Commerce'
     url: https://github.com/craftcms/commerce/issues/new/choose
     about: Create a bug report for Craft Commerce
