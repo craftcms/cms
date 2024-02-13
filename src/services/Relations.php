@@ -72,13 +72,6 @@ class Relations extends Component
         $sourceSiteId = $field->localizeRelations ? $source->siteId : null;
 
         foreach ($oldRelations as $relation) {
-            $elementFieldRelations[$source->id][$field->id] = [
-                $relation['id'] => [
-                    'targetId' => $relation['targetId'],
-                    'sourceSiteId' => $sourceSiteId,
-                ],
-            ];
-
             // Does this relation still exist?
             if (isset($targetIds[$relation['targetId']])) {
                 // Anything to update?
