@@ -151,6 +151,8 @@ class Relations extends Component
                     }
                 }
 
+                $db = Craft::$app->getDb();
+
                 // get those relations for the element that don't belong to any relational fields that are in the layout;
                 // limit to the element's siteId or null; don't touch relations for other sites
                 $removedFieldsRelationIds = (new Query())
@@ -162,13 +164,13 @@ class Relations extends Component
                         ['or', ['sourceSiteId' => null], ['sourceSiteId' => $element->siteId]],
                     ])
                     ->andWhere(['not', ['fieldId' => $relationalFieldsInLayout]])
-                    ->all();
+                    ->all($db);
 
                 // if relations were returned - delete them
                 if (!empty($removedFieldsRelationIds)) {
                     Db::delete(Table::RELATIONS, [
                         'id' => array_map(fn($item) => $item['id'], $removedFieldsRelationIds),
-                    ]);
+                    ], [], $db);
                 }
             }
         }
