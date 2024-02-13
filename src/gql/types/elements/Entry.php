@@ -42,8 +42,12 @@ class Entry extends Element
 
         return match ($fieldName) {
             'sectionId' => $source->sectionId,
+            'fieldId' => $source->fieldId,
+            'ownerId' => $source->ownerId,
+            'sortOrder' => $source->sortOrder,
             'typeId' => $source->getTypeId(),
-            'sectionHandle' => $source->getSection()->handle,
+            'sectionHandle' => $source->getSection()?->handle,
+            'fieldHandle' => $source->getField()?->handle,
             'typeHandle' => $source->getType()->handle,
             'draftName', 'draftNotes' => $source->getIsDraft() ? $source->{$fieldName} : null,
             'draftCreator' => $source->getIsDraft() ? $source->getCreator() : null,
