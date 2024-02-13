@@ -32,12 +32,7 @@ class Entry extends ElementResolver
         if ($source === null) {
             $query = EntryElement::find();
             $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
-
-            if (!isset($pairs['sections']) && !isset($pairs['nestedentryfields'])) {
-                return ElementCollection::empty();
-            }
-
-            $condition = ['or'];
+            $condition = [];
 
             if (isset($pairs['sections'])) {
                 $entriesService = Craft::$app->getEntries();
@@ -62,8 +57,11 @@ class Entry extends ElementResolver
                 }
             }
 
-            $query->andWhere($condition);
+            if (empty($condition)) {
+                return ElementCollection::empty();
+            }
 
+            $query->andWhere(['or', ...$condition]);
         // If not, get the prepared element query
         } else {
             $query = $source->$fieldName;
