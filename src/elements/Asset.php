@@ -2740,6 +2740,7 @@ JS;
         return implode("\n", [
             Cp::textFieldHtml([
                 'label' => Craft::t('app', 'Filename'),
+                'attribute' => 'newLocation',
                 'id' => 'new-filename',
                 'name' => 'newFilename',
                 'value' => $this->_filename,

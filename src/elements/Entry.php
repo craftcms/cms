@@ -1001,6 +1001,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if (isset($this->sectionId)) {
             $tags[] = "section:$this->sectionId";
+        } elseif (isset($this->fieldId)) {
+            $tags[] = "field:$this->fieldId";
         }
 
         return $tags;

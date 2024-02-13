@@ -43,6 +43,26 @@ class Entry extends StructureElementArguments
                 'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results based on the sections the entries belong to, per the sections’ IDs.',
             ],
+            'field' => [
+                'name' => 'field',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'Narrows the query results based on the field the entries are contained by.',
+            ],
+            'fieldId' => [
+                'name' => 'fieldId',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results based on the field the entries are contained by, per the fields’ IDs.',
+            ],
+            'primaryOwnerId' => [
+                'name' => 'primaryOwnerId',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results based on the primary owner element of the entries, per the owners’ IDs.',
+            ],
+            'ownerId' => [
+                'name' => 'ownerId',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results based on the owner element of the entries, per the owners’ IDs.',
+            ],
             'type' => [
                 'name' => 'type',
                 'type' => Type::listOf(Type::string()),
