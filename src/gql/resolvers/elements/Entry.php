@@ -33,20 +33,36 @@ class Entry extends ElementResolver
             $query = EntryElement::find();
             $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
-            if (!isset($pairs['sections'])) {
+            if (!isset($pairs['sections']) && !isset($pairs['nestedentryfields'])) {
                 return ElementCollection::empty();
             }
 
-            $sectionUids = array_flip($pairs['sections']);
-            $sectionIds = [];
+            $condition = ['or'];
 
-            foreach (Craft::$app->getEntries()->getAllSections() as $section) {
-                if (isset($sectionUids[$section->uid])) {
-                    $sectionIds[] = $section->id;
+            if (isset($pairs['sections'])) {
+                $entriesService = Craft::$app->getEntries();
+                $sectionIds = array_filter(array_map(
+                    fn(string $uid) => $entriesService->getSectionByUid($uid)?->id,
+                    $pairs['sections'],
+                ));
+                if (!empty($sectionIds)) {
+                    $condition[] = ['in', 'entries.sectionId', $sectionIds];
                 }
             }
 
-            $query->andWhere(['in', 'entries.sectionId', $sectionIds]);
+            if (isset($pairs['nestedentryfields'])) {
+                $fieldsService = Craft::$app->getFields();
+                $types = array_flip($fieldsService->getNestedEntryFieldTypes());
+                $fieldIds = array_filter(array_map(function(string $uid) use ($fieldsService, $types) {
+                    $field = $fieldsService->getFieldByUid($uid);
+                    return $field && isset($types[$field::class]) ? $field->id : null;
+                }, $pairs['nestedentryfields']));
+                if (!empty($fieldIds)) {
+                    $condition[] = ['in', 'entries.fieldId', $fieldIds];
+                }
+            }
+
+            $query->andWhere($condition);
 
         // If not, get the prepared element query
         } else {

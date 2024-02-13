@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface as BaseElementInterface;
 use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
@@ -1546,6 +1547,56 @@ class Gql extends Component
                     ],
                     "$prefix:delete" => [
                         'label' => Craft::t('app', 'Delete entries in the “{section}” section', ['section' => $name]),
+                    ],
+                ],
+            ];
+        }
+
+        // Add components for fields that manage nested entries
+        $fieldsService = Craft::$app->getFields();
+        /** @var ElementContainerFieldInterface[] $fields */
+        $fields = array_merge(...array_map(
+            fn(string $type) => $fieldsService->getFieldsByType($type),
+            $fieldsService->getNestedEntryFieldTypes(),
+        ));
+        usort($fields, fn(ElementContainerFieldInterface $a, ElementContainerFieldInterface $b) =>
+            $a::displayName() <=> $b::displayName());
+
+        foreach ($fields as $field) {
+            $name = Craft::t('site', $field->name);
+            $type = $field::displayName();
+            $prefix = "nestedentryfields.$field->uid";
+
+            $queryComponents["$prefix:read"] = [
+                'label' => Craft::t('app', 'Query for entries in the “{name}” {type} field', [
+                    'name' => $name,
+                    'type' => $type,
+                ]),
+            ];
+
+            $mutationComponents["$prefix:edit"] = [
+                'label' => Craft::t('app', 'Edit entries in the “{name}” {type} field', [
+                    'name' => $name,
+                    'type' => $type,
+                ]),
+                'nested' => [
+                    "$prefix:create" => [
+                        'label' => Craft::t('app', 'Create entries in the “{section}” {type} field', [
+                            'name' => $name,
+                            'type' => $type,
+                        ]),
+                    ],
+                    "$prefix:save" => [
+                        'label' => Craft::t('app', 'Save entries in the “{section}” {type} field', [
+                            'name' => $name,
+                            'type' => $type,
+                        ]),
+                    ],
+                    "$prefix:delete" => [
+                        'label' => Craft::t('app', 'Delete entries in the “{section}” {type} field', [
+                            'name' => $name,
+                            'type' => $type,
+                        ]),
                     ],
                 ],
             ];

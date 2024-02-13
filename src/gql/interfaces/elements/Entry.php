@@ -94,14 +94,35 @@ class Entry extends Structure
             ],
             'sectionId' => [
                 'name' => 'sectionId',
-                'type' => Type::nonNull(Type::int()),
+                'type' => Type::int(),
                 'description' => 'The ID of the section that contains the entry.',
             ],
             'sectionHandle' => [
                 'name' => 'sectionHandle',
-                'type' => Type::nonNull(Type::string()),
+                'type' => Type::string(),
                 'description' => 'The handle of the section that contains the entry.',
                 'complexity' => Gql::singleQueryComplexity(),
+            ],
+            'fieldId' => [
+                'name' => 'fieldId',
+                'type' => Type::int(),
+                'description' => 'The ID of the field that contains the entry.',
+            ],
+            'fieldHandle' => [
+                'name' => 'fieldHandle',
+                'type' => Type::string(),
+                'description' => 'The handle of the field that contains the entry.',
+                'complexity' => Gql::singleQueryComplexity(),
+            ],
+            'ownerId' => [
+                'name' => 'ownerId',
+                'type' => Type::int(),
+                'description' => 'The ID of the entry’s owner elementt.',
+            ],
+            'sortOrder' => [
+                'name' => 'sortOrder',
+                'type' => Type::int(),
+                'description' => 'The entry’s position within the field that contains it.',
             ],
             'typeId' => [
                 'name' => 'typeId',
