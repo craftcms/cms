@@ -257,24 +257,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             $this->fullName = null;
         }
 
-        // commerceguys/addressing 2.0.x - remap changed subdivision IDs
-        // update the subdivision ID to its ISO code where available
-        if (isset($values['countryCode'])) {
-            if (isset($values['administrativeArea'])) {
-                $values['administrativeArea'] = SubdivisionUpdater::updateValue(
-                    $values['countryCode'],
-                    $values['administrativeArea']
-                );
-            }
-            // Andorra is the only country with remapped localities.
-            if ($values['countryCode'] == 'AD' && isset($values['locality'])) {
-                $values['locality'] = SubdivisionUpdater::updateValue(
-                    $values['countryCode'],
-                    $values['locality']
-                );
-            }
-        }
-
         parent::setAttributes($values, $safeOnly);
     }
 
@@ -600,6 +582,32 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         }
 
         return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        // commerceguys/addressing 2.0.x - remap changed subdivision IDs
+        // update the subdivision ID to its ISO code where available
+        if (isset($this->countryCode)) {
+            if (isset($this->administrativeArea)) {
+                $this->administrativeArea = SubdivisionUpdater::updateValue(
+                    $this->countryCode,
+                    $this->administrativeArea,
+                );
+            }
+            // Andorra is the only country with remapped localities.
+            if ($this->countryCode == 'AD' && isset($this->locality)) {
+                $this->locality = SubdivisionUpdater::updateValue(
+                    $this->countryCode,
+                    $this->locality,
+                );
+            }
+        }
+
+        return parent::beforeSave($isNew);
     }
 
     /**
