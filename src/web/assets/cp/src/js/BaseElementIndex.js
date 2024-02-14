@@ -361,8 +361,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       const sourcePath = this.getDefaultSourcePath();
 
-      // If no default source path was explicitly configured, use the localStorage key
-      if (!sourcePath && stepKey) {
+      // If no default source path was explicitly configured, or it's set to the root of the volume, use the localStorage key
+      if ((!sourcePath || sourcePath.length == 1) && stepKey) {
         this.loadSourcePathByKey(stepKey).then((sourcePath) => {
           if (sourcePath) {
             // Filter out any source path steps that are above the source's root
