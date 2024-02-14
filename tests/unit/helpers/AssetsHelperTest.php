@@ -192,8 +192,8 @@ class AssetsHelperTest extends TestCase
     public static function generateUrlDataProvider(): array
     {
         return [
-            ['https://cdn.test.craftcms.test/test%20volume%201/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']],
-            ['https://cdn.test.craftcms.test/test-subpath/test%20volume%204/product2.jpg', ['volumeId' => '1003', 'filename' => 'product2.jpg']],
+            ['https://cdn.test.craftcms.test/test%20volume%201/shinybrad.png', ['volumeId' => '1000', 'filename' => 'shinybrad.png']],
+            ['https://cdn.test.craftcms.test/test-subpath/test%20volume%204/shinybrad2.png', ['volumeId' => '1003', 'filename' => 'shinybrad2.png']],
         ];
     }
 
