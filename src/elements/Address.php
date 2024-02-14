@@ -4,6 +4,7 @@ namespace craft\elements;
 
 use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
+use CommerceGuys\Addressing\Subdivision\SubdivisionUpdater;
 use Craft;
 use craft\base\Element;
 use craft\base\NameTrait;
@@ -254,6 +255,24 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
             $this->fullName = null;
+        }
+
+        // commerceguys/addressing 2.0.x - remap changed subdivision IDs
+        // update the subdivision ID to its ISO code where available
+        if (isset($values['countryCode'])) {
+            if (isset($values['administrativeArea'])) {
+                $values['administrativeArea'] = SubdivisionUpdater::updateValue(
+                    $values['countryCode'],
+                    $values['administrativeArea']
+                );
+            }
+            // Andorra is the only country with remapped localities.
+            if ($values['countryCode'] == 'AD' && isset($values['locality'])) {
+                $values['locality'] = SubdivisionUpdater::updateValue(
+                    $values['countryCode'],
+                    $values['locality']
+                );
+            }
         }
 
         parent::setAttributes($values, $safeOnly);
