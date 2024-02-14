@@ -273,6 +273,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       if (this.settings.editable) {
         this._handleShowElementEditor = (ev) => {
+          // don't open the edit slideout if we are tapholding to drag
+          if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
+            return;
+          }
+
           var $element = $(ev.currentTarget);
           if (
             Garnish.hasAttr($element, 'data-editable') &&
