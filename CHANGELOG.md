@@ -7,6 +7,7 @@
 - Fixed a bug where asset slideouts weren’t showing validation errors on the Filename field. ([#14329](https://github.com/craftcms/cms/issues/14329))
 - Fixed a bug where element slideouts would open when long-pressing on an element’s “Remove” button within an element select input.
 - Fixed a bug where relations weren’t getting deleted when an element was deleted for a site. ([#14347](https://github.com/craftcms/cms/issues/14347))
+- Fixed a SQL error that occurred when saving a Number field with Decimals set to more than 30 on MySQL. ([#14370](https://github.com/craftcms/cms/issues/14370))
 
 ## 4.7.2.1 - 2024-02-08
 
