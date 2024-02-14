@@ -2892,9 +2892,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        if (isset($this->orderBy['score'])) {
+        $searchService = Craft::$app->getSearch();
+
+        if (isset($this->orderBy['score']) || $searchService->shouldCallSearchElements($this)) {
             // Get the scored results up front
-            $searchResults = Craft::$app->getSearch()->searchElements($this);
+            $searchResults = $searchService->searchElements($this);
 
             if ($this->orderBy['score'] === SORT_ASC) {
                 $searchResults = array_reverse($searchResults, true);
@@ -2920,7 +2922,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(['elements.id' => array_keys($searchResults)]);
         } else {
             // Just filter the main query by the search query
-            $searchQuery = Craft::$app->getSearch()->createDbQuery($this->search, $this);
+            $searchQuery = $searchService->createDbQuery($this->search, $this);
 
             if ($searchQuery === false) {
                 throw new QueryAbortedException();

@@ -30,7 +30,6 @@ use yii\web\NotFoundHttpException;
 /**
  * @inheritdoc
  * @property string $fullPath The full requested path, including the control panel trigger and pagination info.
- * @property string $path The requested path, sans control panel trigger and pagination info.
  * @property array $segments The segments of the requested path.
  * @property int $pageNum The requested page number.
  * @property string $token The token submitted with the request, if there is one.

@@ -128,6 +128,16 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
+    protected function supportedViewModes(): array
+    {
+        return [
+            'list' => Craft::t('app', 'List'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryTags($schema);
