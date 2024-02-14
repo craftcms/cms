@@ -2082,7 +2082,10 @@ JS, [
                 $belongsToCurrentUser ? 'address-level2' : 'off',
                 isset($visibleFields['locality']),
                 isset($requiredFields['locality']),
-                [$address->countryCode, $address->administrativeArea],
+                array_merge(
+                    [$address->countryCode],
+                    array_key_exists('administrativeArea', $visibleFields) ? [$address->administrativeArea] : [],
+                ),
                 true,
             ) .
             self::_subdivisionField(
@@ -2091,7 +2094,11 @@ JS, [
                 $belongsToCurrentUser ? 'address-level3' : 'off',
                 isset($visibleFields['dependentLocality']),
                 isset($requiredFields['dependentLocality']),
-                [$address->countryCode, $address->administrativeArea, $address->locality],
+                array_merge(
+                    [$address->countryCode],
+                    array_key_exists('administrativeArea', $visibleFields) ? [$address->administrativeArea] : [],
+                    array_key_exists('locality', $visibleFields) ? [$address->locality] : [],
+                ),
                 false,
             ) .
             static::textFieldHtml([
