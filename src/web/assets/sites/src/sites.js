@@ -53,12 +53,12 @@
                 groupId: response.data.group.id,
               });
             })
-            .catch(({response}) => {
-              if (response.data && response.data.errors) {
+            .catch((e) => {
+              if (e?.response?.data?.errors) {
                 Craft.cp.displayError(
                   Craft.t('app', 'Could not create the group:') +
                     '\n\n' +
-                    response.data.errors.join('\n')
+                    e.response.data.errors.join('\n')
                 );
               } else {
                 Craft.cp.displayError();
@@ -82,12 +82,12 @@
               this.$selectedGroup.data('raw-name', newName);
               Craft.cp.displaySuccess(Craft.t('app', 'Group renamed.'));
             })
-            .catch(({response}) => {
-              if (response.data && response.data.errors) {
+            .catch((e) => {
+              if (e?.response?.data?.errors) {
                 Craft.cp.displayError(
                   Craft.t('app', 'Could not rename the group:') +
                     '\n\n' +
-                    response.data.errors.join('\n')
+                    e.response.data.errors.join('\n')
                 );
               } else {
                 Craft.cp.displayError();

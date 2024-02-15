@@ -8,8 +8,14 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Chippable;
+use craft\base\Colorable;
+use craft\base\CpEditable;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\base\FieldLayoutProviderInterface;
+use craft\base\Iconic;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
@@ -18,6 +24,7 @@ use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
@@ -198,14 +205,99 @@ JS, [
             });
 
         if ($field->id) {
-            $response->addAltAction(Craft::t('app', 'Delete'), [
-                'action' => 'fields/delete-field',
-                'redirect' => 'settings/fields',
-                'destructive' => true,
-                'confirm' => Craft::t('app', 'Are you sure you want to delete “{name}”?', [
-                    'name' => $field->name,
-                ]),
-            ]);
+            $response
+                ->addAltAction(Craft::t('app', 'Delete'), [
+                    'action' => 'fields/delete-field',
+                    'redirect' => 'settings/fields',
+                    'destructive' => true,
+                    'confirm' => Craft::t('app', 'Are you sure you want to delete “{name}”?', [
+                        'name' => $field->name,
+                    ]),
+                ])
+                ->metaSidebarHtml(Cp::metadataHtml([
+                    Craft::t('app', 'ID') => $field->id,
+                    Craft::t('app', 'Used by') => function() use ($fieldsService, $field) {
+                        $layouts = $fieldsService->findFieldUsages($field);
+                        if (empty($layouts)) {
+                            return Html::tag('i', Craft::t('app', 'No usages'));
+                        }
+
+                        /** @var FieldLayout[][] $layoutsByType */
+                        $layoutsByType = ArrayHelper::index($layouts,
+                            fn(FieldLayout $layout) => $layout->uid,
+                            [fn(FieldLayout $layout) => $layout->type ?? '__UNKNOWN__'],
+                        );
+                        /** @var FieldLayout[] $unknownLayouts */
+                        $unknownLayouts = ArrayHelper::remove($layoutsByType, '__UNKNOWN__');
+                        /** @var FieldLayout[] $layoutsWithProviders */
+                        $layoutsWithProviders = [];
+
+                        // re-fetch as many of these as we can from the element types,
+                        // so they have a chance to supply the layout providers
+                        foreach ($layoutsByType as $type => &$typeLayouts) {
+                            /** @var string|ElementInterface $type */
+                            /** @phpstan-ignore-next-line */
+                            foreach ($type::fieldLayouts(null) as $layout) {
+                                if (isset($typeLayouts[$layout->uid]) && $layout->provider instanceof Chippable) {
+                                    $layoutsWithProviders[] = $layout;
+                                    unset($typeLayouts[$layout->uid]);
+                                }
+                            }
+                        }
+                        unset($typeLayouts);
+
+                        $labels = [];
+                        $items = array_map(function(FieldLayout $layout) use (&$labels) {
+                            /** @var FieldLayoutProviderInterface&Chippable $provider */
+                            $provider = $layout->provider;
+                            $label = $labels[] = $provider->getUiLabel();
+                            $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
+                            $icon = $provider instanceof Iconic ? $provider->getIcon() : null;
+
+                            $labelHtml = Html::beginTag('span', [
+                                'class' => ['flex', 'flex-nowrap', 'gap-s'],
+                            ]);
+                            if ($icon) {
+                                $labelHtml .= Html::tag('div', Cp::iconSvg($icon), [
+                                    'class' => array_filter([
+                                        'cp-icon',
+                                        'small',
+                                        $provider instanceof Colorable ? $provider->getColor()?->value : null,
+                                    ]),
+                                ]);
+                            }
+                            $labelHtml .= Html::tag('span', Html::encode($label)) .
+                                Html::endTag('span');
+
+                            return $url ? Html::a($labelHtml, $url) : $labelHtml;
+                        }, $layoutsWithProviders);
+
+                        // sort by label
+                        array_multisort($labels, SORT_ASC, $items);
+
+                        foreach ($layoutsByType as $type => $typeLayouts) {
+                            // any remaining layouts for this type?
+                            if (!empty($typeLayouts)) {
+                                /** @var string|ElementInterface $type */
+                                $items[] = Craft::t('app', '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
+                                    'total' => count($typeLayouts),
+                                    'type' => $type::lowerDisplayName(),
+                                ]);
+                            }
+                        }
+
+                        if (!empty($unknownLayouts)) {
+                            $items[] = Craft::t('app', '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
+                                'total' => count($unknownLayouts),
+                                'type' => Craft::t('app', 'unknown'),
+                            ]);
+                        }
+
+                        return Html::ul($items, [
+                            'encode' => false,
+                        ]);
+                    },
+                ]));
         }
 
         return $response;

@@ -156,6 +156,7 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
         $rules = parent::defineRules();
         $rules[] = [['defaultValue', 'min', 'max'], 'number'];
         $rules[] = [['decimals', 'size'], 'integer'];
+
         $rules[] = [
             ['max'],
             'compare',

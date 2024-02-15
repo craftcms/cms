@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
 use craft\base\Colorable;
+use craft\base\CpEditable;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Iconic;
@@ -33,6 +35,7 @@ use craft\validators\UniqueValidator;
 class EntryType extends Model implements
     FieldLayoutProviderInterface,
     Chippable,
+    CpEditable,
     Iconic,
     Colorable,
     Actionable
@@ -326,13 +329,11 @@ JS, [
     }
 
     /**
-     * Returns the entry’s edit URL in the control panel.
-     *
-     * @return string
+     * @inheritdoc
      */
-    public function getCpEditUrl(): string
+    public function getCpEditUrl(): ?string
     {
-        return UrlHelper::cpUrl("settings/entry-types/$this->id");
+        return $this->id ? UrlHelper::cpUrl("settings/entry-types/$this->id") : null;
     }
 
     /**
@@ -367,5 +368,46 @@ JS, [
         }
 
         return $config;
+    }
+
+    /**
+     * Returns an array of sections and custom fields that make use of this entry type.
+     *
+     * @return array<Section|ElementContainerFieldInterface>
+     * @since 5.0.0
+     */
+    public function findUsages(): array
+    {
+        if (!isset($this->id)) {
+            return [];
+        }
+
+        $usages = [];
+
+        // Sections
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                if ($entryType->id === $this->id) {
+                    $usages[] = $section;
+                    break;
+                }
+            }
+        }
+
+        // Fields
+        $fieldsService = Craft::$app->getFields();
+        foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
+            /** @var ElementContainerFieldInterface[] $fields */
+            $fields = $fieldsService->getFieldsByType($type);
+            foreach ($fields as $field) {
+                foreach ($field->getFieldLayoutProviders() as $provider) {
+                    if ($provider instanceof EntryType && $provider->id === $this->id) {
+                        $usages[] = $field;
+                    }
+                }
+            }
+        }
+
+        return $usages;
     }
 }

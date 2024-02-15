@@ -23,6 +23,7 @@ $badgeColor: var(--gray-800);
   --neg-padding: calc(var(--padding) * -1);
   --sidebar-width: #{$sidebarWidth};
   --global-sidebar-width: #{$sidebarWidth};
+  --header-height: calc(44rem / 16);
 }
 
 html {
@@ -266,7 +267,9 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex: 0 0 4px;
   width: 100%;
   min-height: 4px; // fixes Windows scaling bug (https://github.com/craftcms/cms/issues/3259)
-  background: url(../images/dev-mode.svg) repeat-x 21px 0;
+  background:
+    url(../images/dev-mode.svg) repeat-x 21px 0,
+    var(--gray-900);
   cursor: help;
 }
 
@@ -350,7 +353,7 @@ li.crumb .btn.menubtn,
   border-bottom: 1px solid var(--hairline-color);
 
   .flex {
-    height: calc(44rem / 16);
+    height: var(--header-height);
     align-items: center;
   }
 
@@ -371,7 +374,7 @@ li.crumb .btn.menubtn,
   justify-content: center;
   width: 44px;
   min-width: 44px;
-  height: calc(44rem / 16);
+  height: var(--header-height);
   border-right: 1px solid var(--medium-hairline-color);
   line-height: 26px;
   color: currentColor;
@@ -419,7 +422,7 @@ li.crumb .btn.menubtn,
   align-items: stretch;
   flex-wrap: nowrap;
   max-width: 100%;
-  height: calc(44rem / 16);
+  height: var(--header-height);
 
   --arrow-padding: 10;
   --arrow-height: 22;
@@ -439,7 +442,7 @@ li.crumb .btn.menubtn,
     color: var(--light-text-color);
 
     &:not(.current) {
-      @include padding-right(calc(var(--arrow-width) * 1rem / 16));
+      @include padding-right(calc(var(--arrow-width) * 1.125rem / 16));
 
       &:before,
       &:after {

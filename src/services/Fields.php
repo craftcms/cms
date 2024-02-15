@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
@@ -22,6 +23,7 @@ use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
 use craft\events\FieldLayoutEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Addresses as AddressesField;
 use craft\fields\Assets as AssetsField;
@@ -97,6 +99,15 @@ class Fields extends Component
      * ```
      */
     public const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
+
+    /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering field types which manage nested entries.
+     *
+     * These field types must implement [[ElementContainerFieldInterface]].
+     *
+     * @since 5.0.0
+     */
+    public const EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES = 'registerNestedEntryFieldTypes';
 
     /**
      * @event DefineCompatibleFieldTypesEvent The event that is triggered when defining the compatible field types for a field.
@@ -296,6 +307,26 @@ class Fields extends Component
         }
 
         return $types;
+    }
+
+    /**
+     * Returns all field types which manage nested entries.
+     *
+     * @return string[] The field type classes which manage nested entries
+     * @phpstan-return class-string<ElementContainerFieldInterface>[]
+     */
+    public function getNestedEntryFieldTypes(): array
+    {
+        $fieldTypes = [
+            MatrixField::class,
+        ];
+
+        $event = new RegisterComponentTypesEvent([
+            'types' => $fieldTypes,
+        ]);
+        $this->trigger(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, $event);
+
+        return $event->types;
     }
 
     /**
@@ -734,6 +765,33 @@ class Fields extends Component
     {
         $this->_fields = null;
         $this->updateFieldVersion();
+    }
+
+    /**
+     * Returns all the field layouts that contain the given field.
+     *
+     * @param FieldInterface $field
+     * @return FieldLayout[]
+     * @since 5.0.0
+     */
+    public function findFieldUsages(FieldInterface $field): array
+    {
+        if (!isset($field->id)) {
+            return [];
+        }
+
+        $layouts = [];
+
+        foreach ($this->getAllLayouts() as $layout) {
+            if ($layout->isFieldIncluded(fn(BaseField $layoutField) => (
+                $layoutField instanceof CustomField &&
+                $layoutField->getFieldUid() === $field->uid
+            ))) {
+                $layouts[] = $layout;
+            }
+        }
+
+        return $layouts;
     }
 
     // Layouts
@@ -1302,7 +1360,7 @@ class Fields extends Component
         if ($searchTerm !== null && $searchTerm !== '') {
             $searchParams = $this->_getSearchParams($searchTerm);
             if (!empty($searchParams)) {
-                $query->where(['or', ...$searchParams]);
+                $query->andWhere(['or', ...$searchParams]);
             }
         }
 
