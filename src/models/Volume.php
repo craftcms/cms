@@ -9,6 +9,8 @@ namespace craft\models;
 
 use Craft;
 use craft\base\BaseFsInterface;
+use craft\base\Chippable;
+use craft\base\CpEditable;
 use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\FsInterface;
@@ -19,6 +21,7 @@ use craft\fs\MissingFs;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -34,8 +37,21 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterface
+class Volume extends Model implements
+    BaseFsInterface,
+    Chippable,
+    CpEditable,
+    FieldLayoutProviderInterface
 {
+    /**
+     * @inheritdoc
+     */
+    public static function get(string|int $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getVolumes()->getVolumeById($id);
+    }
+
     /**
      * @var int|null ID
      */
@@ -158,6 +174,30 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
                 'elementType' => Asset::class,
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl(): ?string
+    {
+        return $this->id ? UrlHelper::cpUrl("settings/assets/volumes/$this->id") : null;
     }
 
     /**

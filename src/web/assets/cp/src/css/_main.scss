@@ -583,7 +583,7 @@ a {
   }
 
   .cp-icon svg {
-    @include svg-mask(var(--link-color));
+    @include svg-mask(var(--icon-color, var(--link-color)));
   }
 }
 
@@ -594,13 +594,6 @@ a:not([href]) {
   body.underline-links &,
   &:hover {
     text-decoration: none;
-  }
-}
-
-a.iconlink {
-  &:before {
-    width: 1rem;
-    @include margin-right(var(--xs));
   }
 }
 
