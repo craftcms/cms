@@ -2540,7 +2540,7 @@ JS;
                 Html::tag('div', $this->getPreviewThumbImg(350, 190), [
                     'class' => 'preview-thumb',
                 ]) .
-                Html::endTag('div'); // .preview-thumb-container;
+                Html::endTag('div'); // .preview-thumb-container
 
             if ($previewable || $editable) {
                 $isMobile = Craft::$app->getRequest()->isMobileBrowser(true);
@@ -2557,6 +2557,7 @@ JS;
                     $imageButtonHtml .= Html::button(Craft::t('app', 'Preview'), [
                         'id' => 'preview-btn',
                         'class' => ['btn', 'preview-btn'],
+                        'aria-label' => Craft::t('app', 'Preview'),
                     ]);
 
                     $previewBtnId = $view->namespaceInputId('preview-btn');
@@ -2666,6 +2667,7 @@ JS;
         return implode("\n", [
             Cp::textFieldHtml([
                 'label' => Craft::t('app', 'Filename'),
+                'attribute' => 'newLocation',
                 'id' => 'new-filename',
                 'name' => 'newFilename',
                 'value' => $this->_filename,

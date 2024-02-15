@@ -1,5 +1,15 @@
 # Release Notes for Craft CMS 4
 
+## 4.7.3 - 2024-02-15
+
+- Updated the bundled `composer.phar` to Composer 2.7.1. ([CVE-2024-24821](https://github.com/advisories/GHSA-7c6p-848j-wh5h))
+- Fixed a bug where read/write splitting was always getting disabled for GraphQL POST requests. ([#14324](https://github.com/craftcms/cms/issues/14324))
+- Fixed a bug where GraphQL schema edit pages could include empty category headings.
+- Fixed a bug where asset slideouts weren’t showing validation errors on the Filename field. ([#14329](https://github.com/craftcms/cms/issues/14329))
+- Fixed a bug where element slideouts would open when long-pressing on an element’s “Remove” button within an element select input.
+- Fixed a bug where relations weren’t getting deleted when an element was deleted for a site. ([#14347](https://github.com/craftcms/cms/issues/14347))
+- Fixed a SQL error that occurred when saving a Number field with Decimals set to more than 30 on MySQL. ([#14370](https://github.com/craftcms/cms/issues/14370))
+
 ## 4.7.2.1 - 2024-02-08
 
 - Craft now requires Composer ^2.7.0. ([CVE-2024-24821](https://github.com/advisories/GHSA-7c6p-848j-wh5h))

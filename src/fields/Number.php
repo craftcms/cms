@@ -130,6 +130,11 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         $rules = parent::defineRules();
         $rules[] = [['defaultValue', 'min', 'max'], 'number'];
         $rules[] = [['decimals', 'size'], 'integer'];
+
+        if ($this->decimals && Craft::$app->getDb()->getIsMysql()) {
+            $rules[] = [['decimals'], 'integer', 'max' => 30];
+        }
+
         $rules[] = [
             ['max'],
             'compare',

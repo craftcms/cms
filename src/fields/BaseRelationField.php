@@ -1014,6 +1014,22 @@ JS, [
     }
 
     /**
+     * @inheritdoc
+     */
+    public function afterElementDeleteForSite(ElementInterface $element): void
+    {
+        if ($this->localizeRelations) {
+            Db::delete(DbTable::RELATIONS, [
+                'fieldId' => $this->id,
+                'sourceSiteId' => $element->siteId,
+                'sourceId' => $element->id,
+            ]);
+        }
+
+        parent::afterElementDeleteForSite($element);
+    }
+
+    /**
      * Normalizes the available sources into select input options.
      *
      * @return array
