@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\MemoizableArray;
 use craft\db\Query;
@@ -30,7 +29,6 @@ use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
@@ -1672,7 +1670,7 @@ SQL)->execute();
             fn(EntryType $a, EntryType $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name)
         );
 
-        $entryTypeUsages = $this->getEntryTypeUsages();
+        $entryTypeIds = array_map(fn(EntryType $entryType) => $entryType->id, $entryTypes);
 
         $tableData = [];
         foreach ($entryTypes as $entryType) {
@@ -1684,59 +1682,12 @@ SQL)->execute();
                 'url' => $entryType->getCpEditUrl(),
                 'name' => Craft::t('site', $entryType->name),
                 'handle' => $entryType->handle,
-                'usages' => $entryTypeUsages[$entryType->id] ?? null,
             ];
         }
 
         $pagination = AdminTable::paginationLinks($page, $total, $limit);
 
         return [$pagination, $tableData];
-    }
-
-    /**
-     * Returns an array of sections and fields where entry type is used.
-     *
-     * @return array
-     */
-    protected function getEntryTypeUsages(): array
-    {
-        $entryTypeUsages = [];
-
-        // Sections
-        foreach ($this->getAllSections() as $section) {
-            foreach ($section->getEntryTypes() as $entryType) {
-                $entryTypeUsages[$entryType->id][] = [
-                    'section',
-                    Craft::t('site', $section->name),
-                    $section->getCpEditUrl(),
-                ];
-            }
-        }
-
-        // Fields
-        $fieldsService = Craft::$app->getFields();
-        foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
-            /** @var ElementContainerFieldInterface[] $fields */
-            $fields = $fieldsService->getFieldsByType($type);
-            foreach ($fields as $field) {
-                foreach ($field->getFieldLayoutProviders() as $provider) {
-                    if ($provider instanceof EntryType) {
-                        $entryTypeUsages[$provider->id][] = [
-                            'field',
-                            Craft::t('site', $field->name),
-                            UrlHelper::cpUrl("settings/fields/edit/$field->id"),
-                        ];
-                    }
-                }
-            }
-        }
-
-        // sort by name
-        foreach ($entryTypeUsages as &$usages) {
-            usort($usages, fn($a, $b) => $a[1] <=> $b[1]);
-        }
-
-        return $entryTypeUsages;
     }
 
     /**
