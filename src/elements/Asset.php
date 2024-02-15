@@ -2078,7 +2078,7 @@ JS,[
             return null;
         }
 
-        return Html::encodeSpaces(Assets::generateUrl($volume, $this));
+        return Html::encodeSpaces(Assets::generateUrl($this));
     }
 
     /**

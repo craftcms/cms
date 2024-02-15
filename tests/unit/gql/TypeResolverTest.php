@@ -72,7 +72,7 @@ class TypeResolverTest extends TestCase
         // Not using a data provider for this because of fixture load/unload on *every* iteration.
         $data = [
             // Assets
-            [Asset::class, ['filename' => 'product.jpg'], AssetResolver::class],
+            [Asset::class, ['filename' => 'shinybrad.png'], AssetResolver::class],
             [Asset::class, ['folderId' => 1000], AssetResolver::class],
             [Asset::class, ['filename' => StringHelper::randomString(128)], AssetResolver::class],
 
