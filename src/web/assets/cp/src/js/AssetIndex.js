@@ -213,6 +213,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         class: 'btn submit',
         'data-icon': 'upload',
         style: 'position: relative; overflow: hidden;',
+        'aria-label': Craft.t('app', 'Upload files'),
         text: Craft.t('app', 'Upload files'),
       });
       this.addButton(this.$uploadButton);
