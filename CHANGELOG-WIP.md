@@ -448,6 +448,7 @@
 - `craft\helpers\StringHelper::toString()` now supports backed enums.
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
+- `craft\models\FieldLayout::getField()` and `isFieldIncluded()` now now have a `$filter` argument rather than `$attribute`, and it can be set to a callable.
 - `craft\models\Section::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
 - `craft\services\AssetIndexer::indexFileByListing()` now has a `$volume` argument in place of `$volumeId`.
 - `craft\services\AssetIndexer::indexFolderByListing()` now has a `$volume` argument in place of `$volumeId`.

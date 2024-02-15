@@ -470,16 +470,16 @@ class FieldLayout extends Model
     }
 
     /**
-     * Returns whether a field is included in the layout by its attribute.
+     * Returns whether a field is included in the layout by a callback or its attribute
      *
-     * @param string $attribute
+     * @param callable|string $filter
      * @return bool
      * @since 3.5.0
      */
-    public function isFieldIncluded(string $attribute): bool
+    public function isFieldIncluded(callable|string $filter): bool
     {
         try {
-            $this->getField($attribute);
+            $this->getField($filter);
             return true;
         } catch (InvalidArgumentException) {
             return false;
@@ -487,24 +487,30 @@ class FieldLayout extends Model
     }
 
     /**
-     * Returns a field that’s included in the layout by its attribute.
+     * Returns a field that’s included in the layout by a callback or its attribute name.
      *
-     * @param string $attribute
+     * @param callable|string $filter
      * @return BaseField
      * @throws InvalidArgumentException if the field isn’t included
      * @since 3.5.0
      */
-    public function getField(string $attribute): BaseField
+    public function getField(callable|string $filter): BaseField
     {
-        $filter = fn(FieldLayoutElement $layoutElement) => (
-            $layoutElement instanceof BaseField &&
-            $layoutElement->attribute() === $attribute
-        );
-        /** @var BaseField|null $field */
-        $field = $this->_element($filter);
-        if (!$field) {
-            throw new InvalidArgumentException("Invalid field: $attribute");
+        if (is_string($filter)) {
+            $attribute = $filter;
+            $filter = fn(BaseField $field) => $field->attribute() === $attribute;
         }
+
+        /** @var BaseField|null $field */
+        $field = $this->_element(fn(FieldLayoutElement $layoutElement) => (
+            $layoutElement instanceof BaseField &&
+            $filter($layoutElement)
+        ));
+
+        if (!$field) {
+            throw new InvalidArgumentException(isset($attribute) ? "Invalid field: $attribute" : 'Invalid field');
+        }
+
         return $field;
     }
 

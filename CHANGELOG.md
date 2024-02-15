@@ -15,6 +15,7 @@
 - Added `craft\services\Relations::deleteLeftoverRelations()`. ([#13956](https://github.com/craftcms/cms/issues/13956))
 - Added `craft\services\Search::shouldCallSearchElements()`. ([#14293](https://github.com/craftcms/cms/issues/14293))
 - `craft\behaviors\SessionBehavior::setSuccess()` and `getSuccess()` use the `success` flash key now, rather than `notice`. ([#14345](https://github.com/craftcms/cms/pull/14345))
+- `craft\models\FieldLayout::getField()` and `isFieldIncluded()` now now have a `$filter` argument rather than `$attribute`, and it can be set to a callable.
 - Exception response data no longer includes an `error` key with the exception message. `message` should be used instead. ([#14346](https://github.com/craftcms/cms/pull/14346))
 - Relations for fields that are no longer included in an element’s field layout are now deleted after element save. ([#13956](https://github.com/craftcms/cms/issues/13956))
 - Assets fields’ selection modals now open to the last-viewed location by default, if their Default Upload Location doesn’t specify a subpath. ([#14382](https://github.com/craftcms/cms/pull/14382))
@@ -23,6 +24,7 @@
 - Fixed a bug where non-global custom fields were being shown on the Fields index page when searching. ([#14344](https://github.com/craftcms/cms/issues/14344))
 - Fixed a bug where component slideouts would open when long-pressing on a component’s action menu button or drag handle within a component select input.
 - Fixed various issues with Tags fields. ([#14356](https://github.com/craftcms/cms/issues/14356), [#14359](https://github.com/craftcms/cms/pull/14359))
+- Fixed a bug where it was possible to include single-instance fields multiple times in a field layout. ([#14352](https://github.com/craftcms/cms/issues/14352))
 - Fixed a bug where read/write splitting was always getting disabled for GraphQL POST requests. ([#14324](https://github.com/craftcms/cms/issues/14324))
 - Fixed a bug where GraphQL schema edit pages could include empty category headings.
 - Fixed a bug where asset slideouts weren’t showing validation errors on the Filename field. ([#14329](https://github.com/craftcms/cms/issues/14329))
