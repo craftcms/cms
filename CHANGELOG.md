@@ -17,6 +17,7 @@
 - `craft\behaviors\SessionBehavior::setSuccess()` and `getSuccess()` use the `success` flash key now, rather than `notice`. ([#14345](https://github.com/craftcms/cms/pull/14345))
 - Exception response data no longer includes an `error` key with the exception message. `message` should be used instead. ([#14346](https://github.com/craftcms/cms/pull/14346))
 - Relations for fields that are no longer included in an element’s field layout are now deleted after element save. ([#13956](https://github.com/craftcms/cms/issues/13956))
+- Assets fields’ selection modals now open to the last-viewed location by default, if their Default Upload Location doesn’t specify a subpath. ([#14382](https://github.com/craftcms/cms/pull/14382))
 - Fixed an error that occurred when adding a new block to a Matrix field with an overridden handle. ([#14350](https://github.com/craftcms/cms/issues/14350))
 - Fixed a bug where opening a disclosure menu wasn’t hiding others. ([#14354](https://github.com/craftcms/cms/issues/14354))
 - Fixed a bug where non-global custom fields were being shown on the Fields index page when searching. ([#14344](https://github.com/craftcms/cms/issues/14344))
