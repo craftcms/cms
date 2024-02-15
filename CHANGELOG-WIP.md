@@ -110,6 +110,10 @@
 - Entry queries now have `field`, `fieldId`, `primaryOwner`, `primaryOwnerId`, `owner`, `ownerId`, `allowOwnerDrafts`, and `allowOwnerRevisions` params.
 - Entry queries’ `authorId` params now support passing multiple IDs prefixed with `and`, to fetch entries with multiple listed authors.
 - User queries now have an `authorOf` param.
+- Nested addresses are now cached by their field ID, and address queries now register cache tags based on their `field` and `fieldId` params.
+- Nested entries are now cached by their field ID, and entry queries now register cache tags based on their `field` and `fieldId` params.
+- GraphQL schemas can now include queries and mutations for nested entries (e.g. within Matrix or CKEditor fields) directly. ([#14366](https://github.com/craftcms/cms/pull/14366))
+- Added the `fieldId`, `fieldHandle`, `ownerId`, and `sortOrder` entry GraphQL fields. ([#14366](https://github.com/craftcms/cms/pull/14366))
 - Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
 - Entries now have `author` and `authorIds` GraphQL field.
 - Matrix fields’ GraphQL mutation types now expect nested entries to be defined by an `entries` field rather than `blocks`.
@@ -357,7 +361,9 @@
 - Added `craft\services\Entries::refreshEntryTypes()`.
 - Added `craft\services\Entries::saveSection()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
+- Added `craft\services\Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES`.
 - Added `craft\services\Fields::getAllLayouts()`.
+- Added `craft\services\Fields::getNestedEntryFieldTypes()`.
 - Added `craft\services\Gql::defineContentArgumentsForFieldLayouts()`.
 - Added `craft\services\Gql::defineContentArgumentsForFields()`.
 - Added `craft\services\Gql::getOrSetContentArguments()`.
@@ -443,6 +449,7 @@
 - `craft\helpers\StringHelper::toString()` now supports backed enums.
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
+- `craft\models\FieldLayout::getField()` and `isFieldIncluded()` now now have a `$filter` argument rather than `$attribute`, and it can be set to a callable.
 - `craft\models\Section::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
 - `craft\services\AssetIndexer::indexFileByListing()` now has a `$volume` argument in place of `$volumeId`.
 - `craft\services\AssetIndexer::indexFolderByListing()` now has a `$volume` argument in place of `$volumeId`.

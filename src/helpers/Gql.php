@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;
@@ -576,12 +577,16 @@ class Gql
     {
         $entryTypes = [];
 
-        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
-            if (self::isSchemaAwareOf("sections.$section->uid", $schema)) {
-                foreach ($section->getEntryTypes() as $entryType) {
-                    if (!isset($entryTypes[$entryType->uid])) {
-                        $entryTypes[$entryType->uid] = $entryType;
-                    }
+        foreach (static::getSchemaContainedSections($schema) as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $entryTypes[$entryType->uid] = $entryType;
+            }
+        }
+
+        foreach (static::getSchemaContainedNestedEntryFields($schema) as $field) {
+            foreach ($field->getFieldLayoutProviders() as $provider) {
+                if ($provider instanceof EntryType) {
+                    $entryTypes[$provider->uid] = $provider;
                 }
             }
         }
@@ -599,8 +604,26 @@ class Gql
     {
         return array_filter(
             Craft::$app->getEntries()->getAllSections(),
-            fn(Section $section) => self::isSchemaAwareOf("sections.$section->uid", $schema),
+            fn(Section $section) => static::isSchemaAwareOf("sections.$section->uid", $schema),
         );
+    }
+
+    /**
+     * Returns all nested entry fields a given (or loaded) schema contains.
+     *
+     * @return ElementContainerFieldInterface[]
+     * @since 5.0.0
+     */
+    public static function getSchemaContainedNestedEntryFields(?GqlSchema $schema = null): array
+    {
+        $fieldsService = Craft::$app->getFields();
+        /** @var ElementContainerFieldInterface[] $fields */
+        $fields = array_merge(...array_map(
+            fn(string $type) => $fieldsService->getFieldsByType($type),
+            $fieldsService->getNestedEntryFieldTypes()
+        ));
+        return array_filter($fields, fn(ElementContainerFieldInterface $field) =>
+            static::isSchemaAwareOf("nestedentryfields.$field->uid", $schema));
     }
 
     /**

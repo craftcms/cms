@@ -1714,8 +1714,11 @@ SQL)->execute();
         }
 
         // Fields
-        foreach (Craft::$app->getFields()->getAllFields() as $field) {
-            if ($field instanceof ElementContainerFieldInterface) {
+        $fieldsService = Craft::$app->getFields();
+        foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
+            /** @var ElementContainerFieldInterface[] $fields */
+            $fields = $fieldsService->getFieldsByType($type);
+            foreach ($fields as $field) {
                 foreach ($field->getFieldLayoutProviders() as $provider) {
                     if ($provider instanceof EntryType) {
                         $entryTypeUsages[$provider->id][] = [

@@ -1641,12 +1641,18 @@ class EntryQuery extends ElementQuery
             foreach ($this->sectionId as $sectionId) {
                 $tags[] = "section:$sectionId";
             }
+        } elseif ($this->fieldId) {
+            foreach ($this->fieldId as $fieldId) {
+                $tags[] = "field:$fieldId";
+            }
         }
+
         if ($this->primaryOwnerId) {
             foreach ($this->primaryOwnerId as $ownerId) {
                 $tags[] = "element::$ownerId";
             }
         }
+
         if ($this->ownerId) {
             foreach ($this->ownerId as $ownerId) {
                 $tags[] = "element::$ownerId";
