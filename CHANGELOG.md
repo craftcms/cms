@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Entry type and field edit pages now list their usages. ([#14397](https://github.com/craftcms/cms/pull/14397))
 - Restored the “Preview” and “Edit Image” buttons on asset image previews. ([#14333](https://github.com/craftcms/cms/discussions/14333))
 - Improved the accessibility of the global sidebar. ([#14335](https://github.com/craftcms/cms/pull/14335))
 - Improved the contrast of the Dev Mode caution tape indicator. ([#14336](https://github.com/craftcms/cms/pull/14336))
@@ -9,7 +10,10 @@
 - Added the `fieldId`, `fieldHandle`, `ownerId`, and `sortOrder` entry GraphQL fields. ([#14366](https://github.com/craftcms/cms/pull/14366))
 - Nested addresses are now cached by their field ID, and address queries now register cache tags based on their `field` and `fieldId` params.
 - Nested entries are now cached by their field ID, and entry queries now register cache tags based on their `field` and `fieldId` params.
+- Added `craft\base\CpEditable`.
+- Added `craft\models\EntryType::findUsages()`.
 - Added `craft\services\Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES`.
+- Added `craft\services\Fields::findFieldUsages()`.
 - Added `craft\services\Fields::getNestedEntryFieldTypes()`.
 - Added `craft\services\ProjectConfig::EVENT_AFTER_WRITE_YAML_FILES`. ([#14365](https://github.com/craftcms/cms/discussions/14365))
 - Added `craft\services\Relations::deleteLeftoverRelations()`. ([#13956](https://github.com/craftcms/cms/issues/13956))
