@@ -2652,8 +2652,16 @@ h2 + .actions {
   table.data {
     th,
     td {
-      &:first-child {
-        @include padding-left(var(--m));
+      &:first-child:not(.checkbox-cell) {
+        @include padding-left(
+          var(--pane-padding, var(--pane-x-padding-default))
+        );
+      }
+
+      &:last-child {
+        @include padding-right(
+          var(--pane-padding, var(--pane-x-padding-default))
+        );
       }
     }
   }
