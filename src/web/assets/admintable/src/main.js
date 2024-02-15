@@ -67,8 +67,8 @@ Craft.VueAdminTable = Garnish.Base.extend(
       fullPage: false,
       fullPane: true,
       itemLabels: {
-        singular: Craft.t('app', 'Item'),
-        plural: Craft.t('app', 'Items'),
+        singular: Craft.t('app', 'item'),
+        plural: Craft.t('app', 'items'),
       },
       minItems: null,
       moveToPageAction: null,

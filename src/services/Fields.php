@@ -23,6 +23,7 @@ use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
 use craft\events\FieldLayoutEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Addresses as AddressesField;
 use craft\fields\Assets as AssetsField;
@@ -764,6 +765,33 @@ class Fields extends Component
     {
         $this->_fields = null;
         $this->updateFieldVersion();
+    }
+
+    /**
+     * Returns all the field layouts that contain the given field.
+     *
+     * @param FieldInterface $field
+     * @return FieldLayout[]
+     * @since 5.0.0
+     */
+    public function findFieldUsages(FieldInterface $field): array
+    {
+        if (!isset($field->id)) {
+            return [];
+        }
+
+        $layouts = [];
+
+        foreach ($this->getAllLayouts() as $layout) {
+            if ($layout->isFieldIncluded(fn(BaseField $layoutField) => (
+                $layoutField instanceof CustomField &&
+                $layoutField->getFieldUid() === $field->uid
+            ))) {
+                $layouts[] = $layout;
+            }
+        }
+
+        return $layouts;
     }
 
     // Layouts

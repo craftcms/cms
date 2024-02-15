@@ -32,7 +32,13 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Statusable, Actionable
+interface ElementInterface extends
+    ComponentInterface,
+    Chippable,
+    CpEditable,
+    Thumbable,
+    Statusable,
+    Actionable
 {
     /**
      * Returns the lowercase version of [[displayName()]].
@@ -906,13 +912,6 @@ interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Sta
      * @since 4.0.0
      */
     public function prepareEditScreen(Response $response, string $containerId): void;
-
-    /**
-     * Returns the element’s edit URL in the control panel.
-     *
-     * @return string|null
-     */
-    public function getCpEditUrl(): ?string;
 
     /**
      * Returns the URL that users should be redirected to after editing the element.
