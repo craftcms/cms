@@ -2320,14 +2320,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 }
             }
 
-            // ownerId will be null when creating a revision
-            if (isset($this->fieldId, $this->ownerId) && $this->saveOwnership) {
+            // getPrimaryOwnerId will return null when creating a revision
+            $primaryOwnerId = $this->getPrimaryOwnerId();
+            if (isset($this->fieldId, $primaryOwnerId) && $this->saveOwnership) {
                 if (!isset($this->sortOrder)) {
                     $max = (new Query())
                         ->from(['eo' => Table::ELEMENTS_OWNERS])
                         ->innerJoin(['e' => Table::ENTRIES], '[[e.id]] = [[eo.elementId]]')
                         ->where([
-                            'eo.ownerId' => $this->ownerId,
+                            'eo.ownerId' => $primaryOwnerId,
                             'e.fieldId' => $this->fieldId,
                         ])
                         ->max('[[eo.sortOrder]]');
@@ -2336,7 +2337,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 if ($isNew) {
                     Db::insert(Table::ELEMENTS_OWNERS, [
                         'elementId' => $this->id,
-                        'ownerId' => $this->ownerId,
+                        'ownerId' => $primaryOwnerId,
                         'sortOrder' => $this->sortOrder,
                     ]);
                 } else {
@@ -2344,7 +2345,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                         'sortOrder' => $this->sortOrder,
                     ], [
                         'elementId' => $this->id,
-                        'ownerId' => $this->ownerId,
+                        'ownerId' => $primaryOwnerId,
                     ]);
                 }
             }
