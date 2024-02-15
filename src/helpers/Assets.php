@@ -81,19 +81,19 @@ class Assets
     /**
      * Generates the URL for an asset.
      *
-     * @param BaseFsInterface $fs
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
      * @throws InvalidConfigException if the asset doesn’t have a filename.
      */
-    public static function generateUrl(BaseFsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    public static function generateUrl(Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
+        $volume = $asset->getVolume();
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
-        $rootUrl = $fs->getRootUrl() ?? '';
-        $url = ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') . $path;
+        $rootUrl = $volume->getRootUrl() ?? '';
+        $url = $rootUrl . $path;
 
         if (Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
             return self::revUrl($url, $asset, $dateUpdated);

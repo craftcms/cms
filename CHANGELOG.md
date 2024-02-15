@@ -15,6 +15,7 @@
 - Added `craft\services\Relations::deleteLeftoverRelations()`. ([#13956](https://github.com/craftcms/cms/issues/13956))
 - Added `craft\services\Search::shouldCallSearchElements()`. ([#14293](https://github.com/craftcms/cms/issues/14293))
 - `craft\behaviors\SessionBehavior::setSuccess()` and `getSuccess()` use the `success` flash key now, rather than `notice`. ([#14345](https://github.com/craftcms/cms/pull/14345))
+- `craft\helpers\Assets::generateUrl()` no longer has an `$fs` argument. ([#14353](https://github.com/craftcms/cms/pull/14353))
 - `craft\models\FieldLayout::getField()` and `isFieldIncluded()` now now have a `$filter` argument rather than `$attribute`, and it can be set to a callable.
 - Exception response data no longer includes an `error` key with the exception message. `message` should be used instead. ([#14346](https://github.com/craftcms/cms/pull/14346))
 - Relations for fields that are no longer included in an element’s field layout are now deleted after element save. ([#13956](https://github.com/craftcms/cms/issues/13956))
