@@ -32,6 +32,7 @@
 - Fixed various issues with Tags fields. ([#14356](https://github.com/craftcms/cms/issues/14356), [#14359](https://github.com/craftcms/cms/pull/14359))
 - Fixed a bug where it was possible to include single-instance fields multiple times in a field layout. ([#14352](https://github.com/craftcms/cms/issues/14352))
 - Fixed a bug where nested entries could become orphaned when pressing “Save as a new entry”. ([#14378](https://github.com/craftcms/cms/issues/14378))
+- Fixed a bug where querying for addresses by `primaryOwnerId` wasn’t working ase expected. ([#14395](https://github.com/craftcms/cms/pull/14395))
 - Fixed a bug where read/write splitting was always getting disabled for GraphQL POST requests. ([#14324](https://github.com/craftcms/cms/issues/14324))
 - Fixed a bug where GraphQL schema edit pages could include empty category headings.
 - Fixed a bug where asset slideouts weren’t showing validation errors on the Filename field. ([#14329](https://github.com/craftcms/cms/issues/14329))
