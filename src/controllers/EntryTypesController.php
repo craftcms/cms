@@ -52,11 +52,9 @@ class EntryTypesController extends Controller
      */
     public function actionEdit(?int $entryTypeId = null, ?EntryType $entryType = null): Response
     {
-        $entriesService = Craft::$app->getEntries();
-
         if ($entryTypeId !== null) {
             if ($entryType === null) {
-                $entryType = $entriesService->getEntryTypeById($entryTypeId);
+                $entryType = Craft::$app->getEntries()->getEntryTypeById($entryTypeId);
 
                 if (!$entryType) {
                     throw new NotFoundHttpException('Entry type not found');
