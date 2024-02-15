@@ -1,12 +1,12 @@
 @charset "UTF-8";
 @import '@craftcms/sass/mixins';
 
-$sidebarWidth: 226px;
+$sidebarWidth: calc(226rem / 16);
 $sidebarZIndex: 100;
 $detailsWidth: 350px;
-$minFullUiWidth: 1200px;
-$minXlUiWidth: 1536px;
-$minDesktopWidth: 600px;
+$minFullUiWidth: calc(1200rem / 16);
+$minXlUiWidth: calc(1536rem / 16);
+$minDesktopWidth: calc(600rem / 16);
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 // Colors
@@ -106,10 +106,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #system-info {
   display: grid;
-  grid-template-columns: 30px auto;
+  grid-template-columns: var(--prefix-width) auto;
   gap: 10px;
   height: calc(45rem / 16);
-  padding: 0 10px;
+  padding: 0 var(--gutter-width);
   position: relative;
   flex: 0 0 calc(45rem / 16);
   flex-direction: row;
@@ -130,13 +130,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #site-icon {
-  height: 30px;
+  --size: var(--prefix-width); // Matches .sidebar-action__prefix
+  height: var(--size);
 
   img,
   svg {
     display: block;
-    width: 30px;
-    height: 30px;
+    width: var(--size);
+    height: var(--size);
     border-radius: 4px;
   }
 
@@ -948,7 +949,7 @@ li.breadcrumb-toggle-wrapper {
     }
   }
 
-  @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+  @media only screen and (max-width: $minHorizontalUiWidth - calc(1rem/16)) {
     margin-top: 10px;
   }
 }
@@ -1173,7 +1174,7 @@ li.breadcrumb-toggle-wrapper {
 }
 
 // Hide the sidebar at < 1200
-@media only screen and (max-width: $minFullUiWidth - 1px) {
+@media only screen and (max-width: $minFullUiWidth - calc(1rem/16)) {
   #global-container {
     @include left(-$sidebarWidth);
     width: calc(100vw + #{$sidebarWidth});
@@ -1201,7 +1202,7 @@ li.breadcrumb-toggle-wrapper {
 }
 
 // Rearrange #main-content to flow vertically at < 999
-@media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+@media only screen and (max-width: $minHorizontalUiWidth - calc(1rem/16)) {
   #header {
     display: block;
 
@@ -1512,7 +1513,7 @@ li.breadcrumb-toggle-wrapper {
           @include margin(0, -4px, 0, 10px);
           flex-shrink: 1;
           padding: 0 6px;
-          font-size: 11px;
+          font-size: calc(11rem / 16);
           line-height: 16px;
           border-radius: var(--s);
           background-color: var(--medium-text-color);
@@ -1670,7 +1671,7 @@ li.breadcrumb-toggle-wrapper {
       }
 
       // 2 cols for 600 - 1535px
-      @media only screen and (min-width: $minDesktopWidth) and (max-width: $minXlUiWidth - 1px) {
+      @media only screen and (min-width: $minDesktopWidth) and (max-width: $minXlUiWidth - calc(1rem/16)) {
         &.width-25,
         &.width-50 {
           width: 50%;

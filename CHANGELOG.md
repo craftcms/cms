@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Entry type and field edit pages now list their usages. ([#14397](https://github.com/craftcms/cms/pull/14397))
 - Restored the “Preview” and “Edit Image” buttons on asset image previews. ([#14333](https://github.com/craftcms/cms/discussions/14333))
 - Improved the accessibility of the global sidebar. ([#14335](https://github.com/craftcms/cms/pull/14335))
 - Improved the contrast of the Dev Mode caution tape indicator. ([#14336](https://github.com/craftcms/cms/pull/14336))
@@ -9,7 +10,11 @@
 - Added the `fieldId`, `fieldHandle`, `ownerId`, and `sortOrder` entry GraphQL fields. ([#14366](https://github.com/craftcms/cms/pull/14366))
 - Nested addresses are now cached by their field ID, and address queries now register cache tags based on their `field` and `fieldId` params.
 - Nested entries are now cached by their field ID, and entry queries now register cache tags based on their `field` and `fieldId` params.
+- Improved the global sidebar for text zoom. ([#14351](https://github.com/craftcms/cms/pull/14351))
+- Added `craft\base\CpEditable`.
+- Added `craft\models\EntryType::findUsages()`.
 - Added `craft\services\Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES`.
+- Added `craft\services\Fields::findFieldUsages()`.
 - Added `craft\services\Fields::getNestedEntryFieldTypes()`.
 - Added `craft\services\ProjectConfig::EVENT_AFTER_WRITE_YAML_FILES`. ([#14365](https://github.com/craftcms/cms/discussions/14365))
 - Added `craft\services\Relations::deleteLeftoverRelations()`. ([#13956](https://github.com/craftcms/cms/issues/13956))
@@ -26,6 +31,7 @@
 - Fixed a bug where component slideouts would open when long-pressing on a component’s action menu button or drag handle within a component select input.
 - Fixed various issues with Tags fields. ([#14356](https://github.com/craftcms/cms/issues/14356), [#14359](https://github.com/craftcms/cms/pull/14359))
 - Fixed a bug where it was possible to include single-instance fields multiple times in a field layout. ([#14352](https://github.com/craftcms/cms/issues/14352))
+- Fixed a bug where nested entries could become orphaned when pressing “Save as a new entry”. ([#14378](https://github.com/craftcms/cms/issues/14378))
 - Fixed a bug where read/write splitting was always getting disabled for GraphQL POST requests. ([#14324](https://github.com/craftcms/cms/issues/14324))
 - Fixed a bug where GraphQL schema edit pages could include empty category headings.
 - Fixed a bug where asset slideouts weren’t showing validation errors on the Filename field. ([#14329](https://github.com/craftcms/cms/issues/14329))

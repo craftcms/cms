@@ -8,8 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\ElementContainerFieldInterface;
 use craft\elements\Entry;
 use craft\enums\Color;
+use craft\helpers\Cp;
+use craft\helpers\Html;
+use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
@@ -67,7 +71,7 @@ class EntryTypesController extends Controller
         }
 
         return $this->asCpScreen()
-            ->editUrl($entryType->id ? "settings/entry-types/$entryType->id" : null)
+            ->editUrl($entryType->getCpEditUrl())
             ->title($title)
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('app', 'Entry Types'), 'settings/entry-types')
@@ -83,7 +87,46 @@ class EntryTypesController extends Controller
                 'entryType' => $entryType,
                 'typeName' => Entry::displayName(),
                 'lowerTypeName' => Entry::lowerDisplayName(),
-            ]);
+            ])
+            ->metaSidebarHtml($entryType->id ? Cp::metadataHtml([
+                Craft::t('app', 'ID') => $entryType->id,
+                Craft::t('app', 'Used by') => function() use ($entryType) {
+                    $usages = $entryType->findUsages();
+                    if (empty($usages)) {
+                        return Html::tag('i', Craft::t('app', 'No usages'));
+                    }
+
+                    $labels = [];
+                    $items = array_map(function(Section|ElementContainerFieldInterface $usage) use (&$labels) {
+                        if ($usage instanceof Section) {
+                            $label = Craft::t('site', $usage->name);
+                            $url = $usage->getCpEditUrl();
+                            $icon = 'newspaper';
+                        } else {
+                            $label = Craft::t('site', $usage->name);
+                            $url = UrlHelper::cpUrl("settings/fields/edit/$usage->id");
+                            $icon = $usage::icon();
+                        }
+                        $labels[] = $label;
+                        $labelHtml = Html::beginTag('span', [
+                            'class' => ['flex', 'flex-nowrap', 'gap-s'],
+                        ]) .
+                            Html::tag('div', Cp::iconSvg($icon), [
+                                'class' => ['cp-icon', 'small'],
+                            ]) .
+                            Html::tag('span', Html::encode($label)) .
+                            Html::endTag('span');
+                        return Html::a($labelHtml, $url);
+                    }, $entryType->findUsages());
+
+                    // sort by label
+                    array_multisort($labels, SORT_ASC, $items);
+
+                    return Html::ul($items, [
+                        'encode' => false,
+                    ]);
+                },
+            ]) : null);
     }
 
     /**
