@@ -10,6 +10,7 @@
 - Added the `fieldId`, `fieldHandle`, `ownerId`, and `sortOrder` entry GraphQL fields. ([#14366](https://github.com/craftcms/cms/pull/14366))
 - Nested addresses are now cached by their field ID, and address queries now register cache tags based on their `field` and `fieldId` params.
 - Nested entries are now cached by their field ID, and entry queries now register cache tags based on their `field` and `fieldId` params.
+- Improved the global sidebar for text zoom. ([#14351](https://github.com/craftcms/cms/pull/14351))
 - Added `craft\base\CpEditable`.
 - Added `craft\models\EntryType::findUsages()`.
 - Added `craft\services\Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES`.
