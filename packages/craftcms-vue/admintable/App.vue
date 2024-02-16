@@ -526,23 +526,24 @@
             }
 
             if (this.tableDataEndpoint) {
-              if (this.endpointResponse) {
-                // Check to see if `bodyHtml` is in the response
-                if (this.endpointResponse['bodyHtml']) {
-                  // Append the bodyHtml to the page
-                  const bodyHtml = this.endpointResponse.bodyHtml;
-                  Craft.appendBodyHtml(bodyHtml);
-                }
+              new Promise(async (resolve) => {
+                if (this.endpointResponse) {
+                  // Check to see if `headHtml` is in the response
+                  if (this.endpointResponse['headHtml']) {
+                    // Append the headHtml to the page
+                    await Craft.appendHeadHtml(this.endpointResponse.headHtml);
+                  }
 
-                // Check to see if `headHtml` is in the response
-                if (this.endpointResponse['headHtml']) {
-                  // Append the headHtml to the page
-                  const headHtml = this.endpointResponse.headHtml;
-                  Craft.appendHeadHtml(headHtml);
+                  // Check to see if `bodyHtml` is in the response
+                  if (this.endpointResponse['bodyHtml']) {
+                    // Append the bodyHtml to the page
+                    await Craft.appendBodyHtml(this.endpointResponse.bodyHtml);
+                  }
                 }
-              }
-
-              Craft.initUiElements(this.container);
+                resolve();
+              }).finally(() => {
+                Craft.initUiElements(this.container);
+              });
             }
           }
         });
