@@ -217,9 +217,11 @@ EOD;
     {
         $this->stdout('Generating an application ID ... ', Console::FG_YELLOW);
         $key = 'CraftCMS--' . StringHelper::UUID();
-        if (!$this->_setEnvVar('CRAFT_APP_ID', $key)) {
+
+        if (!App::isEphemeral() && !$this->_setEnvVar('CRAFT_APP_ID', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
+
         $this->stdout("done ($key)" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }
@@ -233,7 +235,7 @@ EOD;
     {
         $this->stdout('Generating a security key ... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
-        if (!$this->_setEnvVar('CRAFT_SECURITY_KEY', $key)) {
+        if (!App::isEphemeral() && !$this->_setEnvVar('CRAFT_SECURITY_KEY', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -468,29 +470,31 @@ EOD;
         $db->getSchema()->defaultSchema = $this->schema;
         Craft::$app->setIsInstalled(null);
 
-        $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
+        if (!App::isEphemeral()) {
+            $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
-        // If there's a DB_DSN environment variable, go with that
-        if (App::env('CRAFT_DB_DSN') !== null) {
-            if (!$this->_setEnvVar('CRAFT_DB_DSN', $dbConfig->dsn)) {
+            // If there's a DB_DSN environment variable, go with that
+            if (App::env('CRAFT_DB_DSN') !== null) {
+                if (!$this->_setEnvVar('CRAFT_DB_DSN', $dbConfig->dsn)) {
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
+            } elseif (
+                !$this->_setEnvVar('CRAFT_DB_DRIVER', $this->driver) ||
+                !$this->_setEnvVar('CRAFT_DB_SERVER', $this->server) ||
+                !$this->_setEnvVar('CRAFT_DB_PORT', $this->port) ||
+                !$this->_setEnvVar('CRAFT_DB_DATABASE', $this->database)
+            ) {
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } elseif (
-            !$this->_setEnvVar('CRAFT_DB_DRIVER', $this->driver) ||
-            !$this->_setEnvVar('CRAFT_DB_SERVER', $this->server) ||
-            !$this->_setEnvVar('CRAFT_DB_PORT', $this->port) ||
-            !$this->_setEnvVar('CRAFT_DB_DATABASE', $this->database)
-        ) {
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
 
-        if (
-            !$this->_setEnvVar('CRAFT_DB_USER', $this->user) ||
-            !$this->_setEnvVar('CRAFT_DB_PASSWORD', $this->password) ||
-            !$this->_setEnvVar('CRAFT_DB_SCHEMA', $this->schema) ||
-            !$this->_setEnvVar('CRAFT_DB_TABLE_PREFIX', $this->tablePrefix)
-        ) {
-            return ExitCode::UNSPECIFIED_ERROR;
+            if (
+                !$this->_setEnvVar('CRAFT_DB_USER', $this->user) ||
+                !$this->_setEnvVar('CRAFT_DB_PASSWORD', $this->password) ||
+                !$this->_setEnvVar('CRAFT_DB_SCHEMA', $this->schema) ||
+                !$this->_setEnvVar('CRAFT_DB_TABLE_PREFIX', $this->tablePrefix)
+            ) {
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
         }
 
         $this->stdout('done' . PHP_EOL, Console::FG_YELLOW);
