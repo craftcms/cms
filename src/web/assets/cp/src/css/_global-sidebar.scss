@@ -137,11 +137,11 @@
   display: inline-flex;
   justify-content: center;
   text-align: center;
-  flex-shrink: 1;
   font-size: 11px;
   line-height: 1rem;
-  width: 1.1rem;
+  min-width: 1.1rem;
   height: 1rem;
+  padding: 0 var(--xs);
   border-radius: var(--s);
   background-color: var(--medium-text-color);
   color: var(--white);
