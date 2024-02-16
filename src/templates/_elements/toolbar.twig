@@ -13,7 +13,7 @@
 {% set context = context is defined ? context : 'index' %}
 {% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementInstance.hasStatuses()) %}
 {% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
-{% if showSiteMenu == 'auto' %}
+{% if showSiteMenu is same as ('auto') %}
     {% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
 {% set idPrefix = "elementtoolbar#{random()}-" %}
