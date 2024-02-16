@@ -108,16 +108,18 @@
 
         <div class="global-sidebar__footer">
             <div class="sidebar-actions">
-                <button type="button" class="sidebar-action" id="sidebar-trigger" aria-controls="global-sidebar" aria-expanded="{{ sidebarState == 'expanded' ? 'true' : 'false' }}">
-                    <span class="sidebar-action__prefix">
-                        <span class="nav-icon" aria-hidden="true" id="sidebar-toggle-icon">
-                            {{ iconSvg('angle-right') }}
+                <craft-disclosure id="sidebar-trigger">
+                    <button type="button" class="sidebar-action" aria-controls="global-sidebar" aria-expanded="{{ sidebarState == 'expanded' ? 'true' : 'false' }}">
+                        <span class="sidebar-action__prefix">
+                            <span class="nav-icon" aria-hidden="true" id="sidebar-toggle-icon">
+                                {{ iconSvg('angle-right') }}
+                            </span>
                         </span>
-                    </span>
-                    <span class="sidebar-action__label">
-                        <span class="label">{{ 'Toggle sidebar'|t('app') }}</span>
-                    </span>
-                </button>
+                        <span class="sidebar-action__label">
+                            <span class="label">{{ 'Toggle sidebar'|t('app') }}</span>
+                        </span>
+                    </button>
+                </craft-disclosure>
             </div>
 
             {% if currentUser.admin and devMode %}

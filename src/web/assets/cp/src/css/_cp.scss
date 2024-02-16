@@ -24,6 +24,7 @@ $badgeColor: var(--gray-800);
   --sidebar-width: #{$sidebarWidth};
   --global-sidebar-width: #{$sidebarWidth};
   --header-height: calc(44rem / 16);
+  --details-width: #{$detailsWidth};
 }
 
 html {
@@ -1104,18 +1105,52 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+//#details-container {
+//  display: none;
+//}
+
 #details-container {
-  flex: 0 0 #{$detailsWidth + 38};
-  width: $detailsWidth + 38;
-  @include margin-right(calc(var(--xl) * -1));
-  box-sizing: border-box;
+  display: block;
+  flex: 0 1 auto;
+  width: calc(var(--details-width) + var(--m));
+  //@include margin-right(calc(var(--xl) * -1));
+  //box-sizing: border-box;
+  @include padding-left(var(--m));
 }
 
+//.details-toggle {
+//  position: absolute;
+//  top: 0;
+//  right: 0;
+//  bottom: 0;
+//  height: 100%;
+//
+//  [aria-expanded="false"] .cp-icon {
+//    transform: rotate(180deg);
+//  }
+//}
+//
+//.details-toggle > button {
+//  position: sticky;
+//  display: inline-flex;
+//  flex-direction: column;
+//  justify-content: center;
+//  align-items: center;
+//  bottom: calc(var(--header-height) + var(--m));
+//  //background-color: rgba(0, 0, 255, 0.1);
+//  right: 0;
+//  z-index: 999;
+//  width: var(--touch-target-size);
+//  height: calc(var(--touch-target-size) * 1.5);
+//}
+
 #details {
-  box-sizing: border-box;
-  @include padding-right(var(--xl));
-  @include padding-left(var(--m));
-  width: $detailsWidth + 38;
+  display: none;
+}
+
+#details[data-state='expanded'] {
+  display: block;
+  width: $detailsWidth;
   z-index: 1;
 
   &.fixed {

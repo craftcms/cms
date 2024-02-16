@@ -128,7 +128,7 @@
   @include visually-hidden;
   grid-area: subnav;
 
-  &.is-open {
+  &[data-state='expanded'] {
     @include not-visually-hidden;
   }
 }

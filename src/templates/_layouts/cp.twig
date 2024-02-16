@@ -298,10 +298,27 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                         {% endif %}
                                     </div>
                                 {% endblock %}
+
+                                {% if details is not empty %}
+                                {% endif %}
+
                             </div><!-- #content-container -->
 
                             {% if details is not empty %}
                                 <div id="details-container">
+                                    <craft-disclosure class="details-toggle">
+                                        <button
+                                            type="button"
+                                            class="sidebar-btn btn btn-empty hairline"
+                                            aria-controls="details"
+                                            aria-expanded="true"
+                                        >
+                                            <span aria-hidden="true" class="cp-icon">
+                                                {{ iconSvg('sidebar-right') }}
+                                            </span>
+                                            <span class="visually-hidden">{{ 'Toggle details' |t('app') }}</span>
+                                        </button>
+                                    </craft-disclosure>
                                     <div id="details">
                                         <div class="details">
                                             {{ details|raw }}
