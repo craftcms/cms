@@ -977,6 +977,16 @@ class User extends Element implements IdentityInterface
             $this->fullName = null;
         }
 
+        // if we're set to show full name field, and it's empty, clear out first and last names too
+        if (
+            !Craft::$app->getConfig()->getGeneral()->showFirstAndLastNameFields &&
+            array_key_exists('fullName', $values) &&
+            empty(trim($values['fullName']))
+        ) {
+            $this->firstName = null;
+            $this->lastName = null;
+        }
+
         parent::setAttributes($values, $safeOnly);
     }
 
