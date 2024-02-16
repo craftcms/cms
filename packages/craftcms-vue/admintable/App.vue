@@ -96,6 +96,7 @@
             :no-data-template="noDataTemplate"
             :query-params="queryParams"
             :row-class="rowClass"
+            :http-fetch="fetch"
             pagination-path="pagination"
             @vuetable:loaded="init"
             @vuetable:loading="loading"
@@ -570,6 +571,10 @@
         if (!this.tableDataEndpoint && this.onData instanceof Function) {
           this.onData(this.tableData);
         }
+      },
+
+      fetch(url, options) {
+        return Craft.sendActionRequest('GET', url, options);
       },
 
       loading(isLoading = true) {
