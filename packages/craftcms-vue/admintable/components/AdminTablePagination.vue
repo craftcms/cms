@@ -31,8 +31,8 @@
         type: Object,
         default: () => {
           return {
-            singular: Craft.t('app', 'Item'),
-            plural: Craft.t('app', 'Items'),
+            singular: Craft.t('app', 'item'),
+            plural: Craft.t('app', 'items'),
           };
         },
       },

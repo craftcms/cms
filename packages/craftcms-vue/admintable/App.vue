@@ -1169,11 +1169,10 @@
     background-color: #fff;
     border-top: 1px solid #f3f7fc;
     bottom: 0;
-    margin-bottom: -14px;
+    margin-bottom: calc(var(--xl) * -1);
     margin-top: 14px;
-    padding-bottom: 14px;
-    padding-top: 14px;
     position: sticky;
+    min-height: 44px;
   }
 
   .vue-admin-tablepane + .vue-admin-table-footer {

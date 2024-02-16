@@ -33,25 +33,6 @@
 var columns = [
     { name: '__slot:title', title: Craft.t('app', 'Entry Type') },
     { name: '__slot:handle', title: Craft.t('app', 'Handle') },
-    {
-        name: 'usages',
-        title: Craft.t('app', 'Used by'),
-        callback: value => {
-            if (!value) {
-                return null;
-            }
-
-            let list = `<ul>`;
-            for (let i = 0; i < value.length; i++) {
-                list += `<li>`;
-                list += `<a href="${value[i][2]}" class="iconlink" data-icon="${value[i][0]}">${value[i][1]}</a>`
-                list += `</li>`;
-            }
-            list += `</ul>`;
-
-            return list;
-        }
-    },
 ];
 
 new Craft.VueAdminTable({

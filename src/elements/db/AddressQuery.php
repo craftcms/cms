@@ -1269,11 +1269,11 @@ class AddressQuery extends ElementQuery
             }
 
             $this->defaultOrderBy = ['elements_owners.sortOrder' => SORT_ASC];
-        } elseif (isset($this->ownerId)) {
-            if (!$this->ownerId) {
+        } elseif (isset($this->primaryOwnerId) || isset($this->ownerId)) {
+            if (!$this->primaryOwnerId && !$this->ownerId) {
                 throw new QueryAbortedException();
             }
-            $this->subQuery->andWhere(['addresses.primaryOwnerId' => $this->ownerId]);
+            $this->subQuery->andWhere(['addresses.primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId]);
         }
 
         if ($this->countryCode) {

@@ -76,6 +76,7 @@
 - Entry types are now managed independently of sections.
 - Entry types are no longer required to have a Title Format, if the Title field isn’t shown.
 - Entry types now have a “Show the Slug field” setting. ([#13799](https://github.com/craftcms/cms/discussions/13799))
+- Entry type and field edit pages now list their usages. ([#14397](https://github.com/craftcms/cms/pull/14397))
 - Sites’ Language settings can now be set to environment variables. ([#14235](https://github.com/craftcms/cms/pull/14235), [#14135](https://github.com/craftcms/cms/discussions/14135))
 - Matrix fields now manage nested entries, rather than Matrix blocks. During the upgrade, existing Matrix block types will be converted to entry types; their nested fields will be made global; and Matrix blocks will be converted to entries.
 - Matrix fields now have “Entry URI Format” and “Template” settings for each site.
@@ -144,6 +145,7 @@
 - Added `craft\base\ApplicationTrait::getAuth()`.
 - Added `craft\base\Chippable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\Colorable`. ([#14187](https://github.com/craftcms/cms/pull/14187))
+- Added `craft\base\CpEditable`.
 - Added `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`.
 - Added `craft\base\Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML`.
 - Added `craft\base\Element::crumbs()`.
@@ -319,6 +321,7 @@
 - Added `craft\log\Dispatcher::getDefaultTarget()`. ([#14283](https://github.com/craftcms/cms/pull/14283))
 - Added `craft\migrations\BaseContentRefactorMigration`.
 - Added `craft\models\EntryType::$color`.
+- Added `craft\models\EntryType::findUsages()`.
 - Added `craft\models\FieldLayout::getCardBodyFields()`.
 - Added `craft\models\FieldLayout::getElementByUid()`.
 - Added `craft\models\FieldLayout::getFieldById()`.
@@ -362,6 +365,7 @@
 - Added `craft\services\Entries::saveSection()`.
 - Added `craft\services\Fields::$fieldContext`, which replaces `craft\services\Content::$fieldContext`.
 - Added `craft\services\Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES`.
+- Added `craft\services\Fields::findFieldUsages()`.
 - Added `craft\services\Fields::getAllLayouts()`.
 - Added `craft\services\Fields::getNestedEntryFieldTypes()`.
 - Added `craft\services\Gql::defineContentArgumentsForFieldLayouts()`.
@@ -439,6 +443,7 @@
 - `craft\fields\fieldlayoutelements\BaseUiElement::selectorIcon()` can now return a system icon name. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - `craft\gql\mutations\Entry::createSaveMutations()` now accepts a `$section` argument.
 - `craft\helpers\App::parseEnv()` now returns `null` when a missing environment variable name is passed to it. ([#14253](https://github.com/craftcms/cms/pull/14253))
+- `craft\helpers\Assets::generateUrl()` no longer has an `$fs` argument. ([#14353](https://github.com/craftcms/cms/pull/14353))
 - `craft\helpers\Cp::fieldHtml()` now supports a `labelExtra` config value.
 - `craft\helpers\Db::parseParam()`, `parseDateParam()`, `parseMoneyParam()`, and `parseNumericParam()` now return `null` instead of an empty string if no condition should be applied.
 - `craft\helpers\Html::id()` and `Craft.formatInputId()` now retain colons and periods, and ensure the string begins with a letter.
@@ -448,6 +453,7 @@
 - `craft\helpers\StringHelper::toString()` now supports backed enums.
 - `craft\i18n\I18N::getPrimarySiteLocale()` is now deprecated. `craft\models\Site::getLocale()` should be used instead.
 - `craft\i18n\I18N::getPrimarySiteLocaleId()` is now deprecated. `craft\models\Site::$language` should be used instead.
+- `craft\models\FieldLayout::getField()` and `isFieldIncluded()` now now have a `$filter` argument rather than `$attribute`, and it can be set to a callable.
 - `craft\models\Section::$propagationMethod` now has a type of `craft\enums\PropagationMethod`.
 - `craft\services\AssetIndexer::indexFileByListing()` now has a `$volume` argument in place of `$volumeId`.
 - `craft\services\AssetIndexer::indexFolderByListing()` now has a `$volume` argument in place of `$volumeId`.

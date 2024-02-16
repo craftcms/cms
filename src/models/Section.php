@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\CpEditable;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
@@ -31,7 +32,7 @@ use craft\validators\UniqueValidator;
  * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
-class Section extends Model
+class Section extends Model implements CpEditable
 {
     public const TYPE_SINGLE = 'single';
     public const TYPE_CHANNEL = 'channel';
@@ -358,14 +359,11 @@ class Section extends Model
     }
 
     /**
-     * Returns the section’s edit URL in the control panel.
-     *
-     * @return string
-     * @since 5.0.0
+     * @inheritdoc
      */
-    public function getCpEditUrl(): string
+    public function getCpEditUrl(): ?string
     {
-        return UrlHelper::cpUrl("settings/sections/$this->id");
+        return $this->id ? UrlHelper::cpUrl("settings/sections/$this->id") : null;
     }
 
     /**

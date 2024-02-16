@@ -2078,7 +2078,7 @@ JS,[
             return null;
         }
 
-        return Html::encodeSpaces(Assets::generateUrl($volume, $this));
+        return Html::encodeSpaces(Assets::generateUrl($this));
     }
 
     /**
@@ -2631,6 +2631,7 @@ JS,[
                     $imageButtonHtml .= Html::button(Craft::t('app', 'Preview'), [
                         'id' => 'preview-btn',
                         'class' => ['btn', 'preview-btn'],
+                        'aria-label' => Craft::t('app', 'Preview'),
                     ]);
 
                     $previewBtnId = $view->namespaceInputId('preview-btn');

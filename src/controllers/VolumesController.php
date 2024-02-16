@@ -124,7 +124,7 @@ class VolumesController extends Controller
                 'shortcut' => true,
                 'retainScroll' => true,
             ])
-            ->editUrl($volume->id ? "settings/assets/volumes/$volume->id" : null)
+            ->editUrl($volume->getCpEditUrl())
             ->contentTemplate('settings/assets/volumes/_edit.twig', [
                 'volumeId' => $volumeId,
                 'volume' => $volume,

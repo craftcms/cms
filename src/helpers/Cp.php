@@ -2533,9 +2533,17 @@ JS;
 
     private static function _showFldFieldSelector(FieldLayout $fieldLayout, BaseField $field): bool
     {
+        $attribute = $field->attribute();
+        $uid = $field instanceof CustomField ? $field->getField()->uid : null;
+
         return (
             $field->isMultiInstance() ||
-            !$fieldLayout->isFieldIncluded($field->attribute())
+            !$fieldLayout->isFieldIncluded(function(BaseField $field) use ($attribute, $uid) {
+                if ($field instanceof CustomField) {
+                    return $field->getField()->uid === $uid;
+                }
+                return $field->attribute() === $attribute;
+            })
         );
     }
 
