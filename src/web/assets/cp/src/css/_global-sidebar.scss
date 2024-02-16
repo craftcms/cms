@@ -77,7 +77,7 @@
 .nav-item {
   --gutter-width: calc(10rem / 16);
   display: grid;
-  grid-template-columns: var(--gutter-width) 1fr var(--prefix-width) var(
+  grid-template-columns: var(--gutter-width) minmax(0, 1fr) var(--prefix-width) var(
       --gutter-width
     );
   grid-template-areas: '. action trigger .' 'subnav subnav subnav subnav';
@@ -153,7 +153,8 @@
 
 .sidebar-action {
   --thumb-size: 0.75rem;
-  display: flex;
+  display: grid;
+  grid-template-columns: var(--prefix-width) minmax(0, 1fr) auto;
   width: 100%;
   align-items: center;
   position: relative;
@@ -258,17 +259,17 @@
 }
 
 .sidebar-action__label {
-  display: inline-flex;
+  display: flex;
   gap: var(--s);
   align-items: center;
   padding: 0 var(--xs);
-  white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
-  flex-grow: 1;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .sidebar-action__badge {
+  flex: 0 1 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
