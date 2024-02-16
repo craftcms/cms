@@ -119,6 +119,7 @@ JS;
             '<span class="visually-hidden">Characters left:</span> {chars, number}',
             'A server error occurred.',
             'Actions',
+            'Add',
             'Add…',
             'All',
             'Announcements',
