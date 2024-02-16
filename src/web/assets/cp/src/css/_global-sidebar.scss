@@ -162,7 +162,6 @@
   border-radius: var(--medium-border-radius);
   color: currentColor;
   cursor: pointer;
-  gap: 7px; // magic number to align with system name
   min-height: 30px;
 
   &:before {
@@ -259,13 +258,13 @@
 }
 
 .sidebar-action__label {
-  display: flex;
   gap: var(--s);
   align-items: center;
   padding: 0 var(--xs);
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  margin-left: 7px; // magic number to align with system name
 }
 
 .sidebar-action__badge {
