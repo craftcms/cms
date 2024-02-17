@@ -1,14 +1,16 @@
 /** global: Craft */
 import $ from 'jquery';
+import disclosureMenu from '../../../garnish/src/DisclosureMenu';
 
 /** global: Garnish */
 Craft.FieldLayoutDesigner = Garnish.Base.extend(
   {
     $container: null,
+    $innerContainer: null,
     $configInput: null,
     $tabContainer: null,
     $newTabBtn: null,
-    $sidebar: null,
+    $libraryContainer: null,
     $selectedLibrary: null,
     $fieldLibrary: null,
     $uiLibrary: null,
@@ -37,19 +39,20 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 
       this._fieldHandles = {};
 
-      let $workspace = this.$container.children('.fld-workspace');
+      this.$innerContainer = this.$container.children('.fld-container');
+      const $workspace = this.$innerContainer.children('.fld-workspace');
       this.$tabContainer = $workspace.children('.fld-tabs');
       this.$newTabBtn = $workspace.children('.fld-new-tab-btn');
-      this.$sidebar = this.$container.children('.fld-sidebar');
+      this.$libraryContainer = this.$innerContainer.children('.fld-library');
 
       this.$fieldLibrary = this.$selectedLibrary =
-        this.$sidebar.children('.fld-field-library');
+        this.$libraryContainer.children('.fld-field-library');
       let $fieldSearchContainer = this.$fieldLibrary.children('.search');
       this.$fieldSearch = $fieldSearchContainer.children('input');
       this.$clearFieldSearchBtn = $fieldSearchContainer.children('.clear');
-      this.$fieldGroups = this.$sidebar.find('.fld-field-group');
+      this.$fieldGroups = this.$libraryContainer.find('.fld-field-group');
       this.$fields = this.$fieldGroups.children('.fld-element');
-      this.$uiLibrary = this.$sidebar.children('.fld-ui-library');
+      this.$uiLibrary = this.$libraryContainer.children('.fld-ui-library');
       this.$uiLibraryElements = this.$uiLibrary.children();
 
       // Set up the layout grids
@@ -66,6 +69,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       }
 
       this.elementDrag = new Craft.FieldLayoutDesigner.ElementDrag(this);
+      this.initLibraryElements(this.$libraryContainer.find('.fld-element'));
 
       if (this.settings.customizableTabs) {
         this.tabDrag = new Craft.FieldLayoutDesigner.TabDrag(this);
@@ -73,9 +77,9 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         this.addListener(this.$newTabBtn, 'activate', 'addTab');
       }
 
-      // Set up the sidebar
+      // Set up the library
       if (this.settings.customizableUi) {
-        const $libraryPicker = this.$sidebar.children('.btngroup');
+        const $libraryPicker = this.$libraryContainer.children('.btngroup');
         new Craft.Listbox($libraryPicker, {
           onChange: ($selectedOption) => {
             const library = $selectedOption.data('library');
@@ -124,7 +128,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
           label: Craft.t('app', 'New field'),
           class: 'mt-m fullwidth add icon dashed',
         })
-        .appendTo(this.$sidebar);
+        .appendTo(this.$libraryContainer);
 
       this.addListener(this.$createFieldBtn, 'activate', async () => {
         this.createField();
@@ -190,6 +194,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         return;
       }
 
+      const menuId = `menu-${Math.floor(Math.random() * 1000000)}`;
       const $tab = $(`
 <div class="fld-tab">
   <div class="tabs">
@@ -197,7 +202,12 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       <span>${name}</span>
     </div>
   </div>
-  <div class="fld-tabcontent"></div>
+  <div class="fld-tabcontent">
+    <button class="btn add icon dashed fullwidth fld-add-btn" type="button" aria-controls="${menuId}">
+      ${Craft.t('app', 'Add')}
+    </button>
+    <div id="${menuId}" class="menu menu--disclosure fld-library-menu"></div>
+  </div>
 </div>
 `);
       // keep it before the resize object
@@ -271,7 +281,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         const $selector = $(response.data.selectorHtml);
         this.$fieldGroups.last().append($selector).removeClass('hidden');
         this.refreshLibraryFields();
-        this.elementDrag.addItems($selector);
+        this.initLibraryElements($selector);
 
         // refresh all instances of this field
         const $fields = designer.$tabContainer.find(
@@ -281,6 +291,51 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
           $fields.eq(i).data('fld-element')?.refresh();
         }
       });
+    },
+
+    initLibraryElements($elements) {
+      this.elementDrag.addItems($elements);
+
+      this.addListener($elements, 'activate', (ev) => {
+        // if the library is in a disclosure menu, go ahead and add it to the tab
+        const $parent = this.$libraryContainer.parent();
+        if ($parent.is('.fld-library-menu')) {
+          const disclosureMenu = $parent.data('disclosureMenu');
+          const $libraryElement = $(ev.currentTarget);
+          const $element =
+            this.cloneLibraryElementForSelection($libraryElement);
+          const tab = disclosureMenu.$trigger
+            .closest('.fld-tab')
+            .data('fld-tab');
+          $element.insertBefore(disclosureMenu.$trigger);
+          const element = tab.initElement($element);
+          element.updatePositionInConfig();
+          this.tabGrid.refreshCols(true);
+          disclosureMenu.hide();
+        }
+      });
+    },
+
+    cloneLibraryElementForSelection($libraryElement) {
+      // Create a new element based on that one
+      const $element = $libraryElement.clone().removeClass('unused');
+
+      if (!Garnish.hasAttr($libraryElement, 'data-is-multi-instance')) {
+        // Hide the library element
+        $libraryElement
+          .css({visibility: 'inherit', display: 'field'})
+          .addClass('hidden');
+
+        // Hide the group too?
+        if ($libraryElement.siblings('.fld-field:not(.hidden)').length === 0) {
+          $libraryElement.closest('.fld-field-group').addClass('hidden');
+        }
+      }
+
+      // Add it to the element dragger
+      this.elementDrag.addItems($element);
+
+      return $element;
     },
   },
   {
@@ -352,6 +407,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
   designer: null,
   uid: null,
   $container: null,
+  $addBtn: null,
   slideout: null,
   destroyed: false,
 
@@ -396,7 +452,22 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     }
 
     // initialize the elements
-    const $elements = this.$container.children('.fld-tabcontent').children();
+    const $tabContent = this.$container.children('.fld-tabcontent');
+    this.$addBtn = $tabContent.children('.fld-add-btn');
+
+    const disclosureMenu = this.$addBtn
+      .disclosureMenu({
+        position: 'below',
+      })
+      .data('disclosureMenu');
+    disclosureMenu.on('beforeShow', () => {
+      this.designer.$libraryContainer.appendTo(disclosureMenu.$container);
+    });
+    disclosureMenu.on('hide', () => {
+      this.designer.$libraryContainer.appendTo(this.designer.$innerContainer);
+    });
+
+    const $elements = $tabContent.children().not(this.$addBtn);
 
     for (let i = 0; i < $elements.length; i++) {
       this.initElement($($elements[i]));
@@ -1632,10 +1703,8 @@ Craft.FieldLayoutDesigner.ElementDrag =
     },
 
     findItems: function () {
-      // Return all of the used + unused fields
-      return this.designer.$tabContainer
-        .find('.fld-element')
-        .add(this.designer.$sidebar.find('.fld-element'));
+      // Return all of the in-use layout elements. (We'll add the library elements via initLibraryElement().)
+      return this.designer.$tabContainer.find('.fld-element');
     },
 
     /**
@@ -1648,7 +1717,11 @@ Craft.FieldLayoutDesigner.ElementDrag =
       );
 
       for (let i = 0; i < $fieldContainers.length; i++) {
-        $caboose = $caboose.add($('<div/>').appendTo($fieldContainers[i]));
+        $caboose = $caboose.add(
+          $('<div/>').insertBefore(
+            $fieldContainers.eq(i).children('.fld-add-btn')
+          )
+        );
       }
 
       return $caboose;
@@ -1670,28 +1743,10 @@ Craft.FieldLayoutDesigner.ElementDrag =
       let showingInsertion = this.showingInsertion;
       if (showingInsertion) {
         if (this.draggingLibraryElement) {
-          // Create a new element based on that one
-          const $element = this.$draggee.clone().removeClass('unused');
-
-          if (!this.draggingMultiInstanceElement) {
-            // Hide the library field
+          // Clone the element nad set this.$draggee to the clone, as if we were dragging that all along
+          this.$draggee = this.designer.cloneLibraryElementForSelection(
             this.$draggee
-              .css({visibility: 'inherit', display: 'field'})
-              .addClass('hidden');
-
-            // Hide the group too?
-            if (
-              this.$draggee.siblings('.fld-field:not(.hidden)').length === 0
-            ) {
-              this.$draggee.closest('.fld-field-group').addClass('hidden');
-            }
-          }
-
-          // Set this.$draggee to the clone, as if we were dragging that all along
-          this.$draggee = $element;
-
-          // Remember it for later
-          this.addItems($element);
+          );
         }
       } else if (!this.draggingLibraryElement) {
         let $libraryElement = this.draggingField
