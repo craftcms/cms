@@ -61,6 +61,7 @@ return [
     'Add an option' => '옵션 추가',
     'Add to cart' => '장바구니에 추가',
     'Add {type} above' => '위의 {type} 추가',
+    'Add' => 'Add',
     'Added to cart' => '장바구니에 추가됨',
     'Address Fields' => '주소 필드',
     'Address Line 1' => '주소 입력 1',
