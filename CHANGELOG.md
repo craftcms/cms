@@ -15,6 +15,7 @@
 - Fixed a bug where site crumbs didn’t always have a localized Earth icon. ([#14415](https://github.com/craftcms/cms/issues/14415))
 - Fixed a JavaScript error that could occur when switching between asset sources, if the user had permission to upload assets to some but not others. ([#14403](https://github.com/craftcms/cms/issues/14403))
 - Fixed a bug where setting `showSiteMenu` to `true` on element index templates was being treated as `'auto'`. ([#14404](https://github.com/craftcms/cms/pull/14404))
+- Fixed a bug where `data-target` and `data-reverse-target` attributes weren’t getting properly namespaced if they included a class name selector.
 
 ## 5.0.0-beta.2 - 2024-02-15
 
