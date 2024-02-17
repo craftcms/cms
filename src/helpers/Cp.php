@@ -693,8 +693,22 @@ class Cp
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
+        $thumb = $element->getThumbHtml(120);
+        if ($thumb === null && $element instanceof Iconic) {
+            $icon = $element->getIcon();
+            if ($icon) {
+                $thumb = Html::tag('div', Cp::iconSvg($icon), [
+                    'class' => array_filter([
+                        'cp-icon',
+                        $element instanceof Colorable ? $element->getColor()?->value : null,
+                    ]),
+                    'aria' => ['hidden' => true],
+                ]);
+            }
+        }
+
         $html = Html::beginTag('div', $attributes) .
-            ($element->getThumbHtml(120) ?? '') .
+            ($thumb ?? '') .
             Html::beginTag('div', ['class' => 'card-content']) .
             ($headingContent !== '' ? Html::tag('div', $headingContent, ['class' => 'card-heading']) : '') .
             ($bodyContent !== '' ? Html::tag('div', $bodyContent, ['class' => 'card-body']) : '') .
