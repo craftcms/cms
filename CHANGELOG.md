@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a JavaScript error that could occur when switching between asset sources, if the user had permission to upload assets to some but not others. ([#14403](https://github.com/craftcms/cms/issues/14403))
+- Fixed a bug where setting `showSiteMenu` to `true` on element index templates was being treated as `'auto'`. ([#14404](https://github.com/craftcms/cms/pull/14404))
 
 ## 4.7.3 - 2024-02-15
 
