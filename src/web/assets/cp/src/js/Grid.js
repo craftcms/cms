@@ -145,7 +145,11 @@ Craft.Grid = Garnish.Base.extend(
       }
 
       // Same number of columns as before?
-      if (force !== true && this.totalCols === this.refreshCols._.totalCols) {
+      if (
+        force !== true &&
+        this.totalCols === this.refreshCols._.totalCols &&
+        !this.settings.snapToGrid
+      ) {
         this.completeRefreshCols();
         return;
       }
@@ -486,7 +490,7 @@ Craft.Grid = Garnish.Base.extend(
             // Now position the items
             this.positionItems();
 
-            // Update the positions as the items' heigthts change
+            // Update the positions as the items' heights change
             this.addListener(this.$items, 'resize', 'onItemResize');
           }
         }
