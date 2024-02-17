@@ -61,6 +61,7 @@ return [
     'Add an option' => 'إضافة خيار',
     'Add to cart' => 'أضف إلى السلة',
     'Add {type} above' => 'إضافة {type} أعلاه',
+    'Add' => 'Add',
     'Added to cart' => 'تمت الإضافة إلى السلة',
     'Address Fields' => 'حقول العنوان',
     'Address Line 1' => 'العنوان 1',
