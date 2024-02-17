@@ -325,7 +325,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         }
 
         if (data.sidebar) {
-          this.$container.addClass('has-sidebar');
           this.$sidebarBtn.removeClass('hidden');
           this.$sidebar.html(data.sidebar);
 
@@ -340,8 +339,15 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           });
 
           this.hasSidebar = true;
+
+          // is the slideout wide enough to show it alongside the content?
+          if (this.$container.width() > 700) {
+            this.showSidebar();
+          } else {
+            this.hideSidebar();
+          }
         } else {
-          this.$container.removeClass('has-sidebar');
+          this.hideSidebar();
           this.$sidebarBtn.addClass('hidden');
           this.$sidebar.addClass('hidden').html('');
           this.hasSidebar = false;
@@ -407,6 +413,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         return;
       }
 
+      this.$container.addClass('showing-sidebar');
       this.$body.scrollTop(0).addClass('no-scroll');
 
       this.$sidebar
@@ -447,6 +454,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         return;
       }
 
+      this.$container.removeClass('showing-sidebar');
       this.$body.removeClass('no-scroll');
 
       this.$sidebar

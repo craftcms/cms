@@ -973,7 +973,14 @@ class User extends Element implements IdentityInterface
             }
         }
 
-        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+        if (array_key_exists('fullName', $values)) {
+            // Clear out the first and last names.
+            // They'll get reset from prepareNamesForSave() if fullName isn't empty.
+            $this->firstName = null;
+            $this->lastName = null;
+        } elseif (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            // Clear out the full name.
+            // It'll get reset from prepareNamesForSave() if the first/last names aren't empty.
             $this->fullName = null;
         }
 
