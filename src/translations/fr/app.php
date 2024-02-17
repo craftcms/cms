@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Ajouter une option',
     'Add to cart' => 'Ajouter au panier',
     'Add {type} above' => 'Ajouter {type} au-dessus',
+    'Add' => 'Add',
     'Added to cart' => 'Ajouté au panier',
     'Address Fields' => 'Champs d’adresse',
     'Address Line 1' => 'Adresse ligne 1',
