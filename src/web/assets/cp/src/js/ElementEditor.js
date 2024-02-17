@@ -1066,7 +1066,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         name,
         value,
       }).prependTo(this.$container);
-      await this.saveDraft();
+      if (this.settings.canCreateDrafts) {
+        await this.saveDraft();
+      }
     },
 
     async markDeltaNameAsModified(name) {
