@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where `craft\web\Request::getIsPreview()` was returning `true` for requests with expired tokens. ([#14066](https://github.com/craftcms/cms/discussions/14066))
+- Fixed a bug where asset conflict resolution modals were closing prematurely if there were multiple conflicts. ([#14045](https://github.com/craftcms/cms/issues/14045), [#14405](https://github.com/craftcms/cms/issues/14405))
 
 ## 3.9.10 - 2024-01-02
 
