@@ -10,6 +10,7 @@
 - Fixed a bug where double-digit nav item badge counts were overflowing. ([#14406](https://github.com/craftcms/cms/issues/14406))
 - Fixed a bug where fresh installs had a `fieldGroups` array in the project config. ([#14412](https://github.com/craftcms/cms/issues/14412))
 - Fixed an alignment issue within sidebar meta info. ([#14413](https://github.com/craftcms/cms/pull/14413))
+- Fixed a bug where site crumbs didn’t always have a localized Earth icon. ([#14415](https://github.com/craftcms/cms/issues/14415))
 - Fixed a JavaScript error that could occur when switching between asset sources, if the user had permission to upload assets to some but not others. ([#14403](https://github.com/craftcms/cms/issues/14403))
 - Fixed a bug where setting `showSiteMenu` to `true` on element index templates was being treated as `'auto'`. ([#14404](https://github.com/craftcms/cms/pull/14404))
 

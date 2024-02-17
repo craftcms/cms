@@ -563,6 +563,10 @@ li.crumb {
 
     &:not(:hover) {
       color: var(--text-color);
+
+      svg {
+        @include svg-mask(var(--text-color));
+      }
     }
 
     &:hover {
