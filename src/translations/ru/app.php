@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Добавить опцию',
     'Add to cart' => 'Добавить в корзину',
     'Add {type} above' => 'Добавить {type} выше',
+    'Add' => 'Add',
     'Added to cart' => 'Добавлено в корзину',
     'Address Fields' => 'Поля адреса',
     'Address Line 1' => 'Адресная строка 1',

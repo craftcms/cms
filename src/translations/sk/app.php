@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Pridať možnosť',
     'Add to cart' => 'Pridať do košíka',
     'Add {type} above' => 'Pridať {type} nad',
+    'Add' => 'Add',
     'Added to cart' => 'Pridané do košíka',
     'Address Fields' => 'Polia s adresou',
     'Address Line 1' => 'Adresa, riadok 1',

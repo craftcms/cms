@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Add an option',
     'Add to cart' => 'Add to cart',
     'Add {type} above' => 'Add {type} above',
+    'Add' => 'Add',
     'Added to cart' => 'Added to cart',
     'Address Fields' => 'Address Fields',
     'Address Line 1' => 'Address Line 1',

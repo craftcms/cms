@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Lägg till ett alternativ',
     'Add to cart' => 'Lägg till i kundvagn',
     'Add {type} above' => 'Lägg till {type} ovan',
+    'Add' => 'Add',
     'Added to cart' => 'Lagts till i kundvagn',
     'Address Fields' => 'Adressfält',
     'Address Line 1' => 'Adressrad 1',

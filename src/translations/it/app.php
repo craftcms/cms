@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Aggiungi un\'opzione',
     'Add to cart' => 'Aggiungi al carrello',
     'Add {type} above' => 'Aggiungi {type} sopra',
+    'Add' => 'Add',
     'Added to cart' => 'Aggiunto al carrello',
     'Address Fields' => 'Campi dell\'indirizzo',
     'Address Line 1' => 'Indirizzo (linea 1)',

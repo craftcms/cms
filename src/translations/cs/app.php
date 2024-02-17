@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Přidat volbu',
     'Add to cart' => 'Přidat do vozíku',
     'Add {type} above' => 'Přidat {type} nahoru',
+    'Add' => 'Add',
     'Added to cart' => 'Přidáno do košíku',
     'Address Fields' => 'Pole adresy',
     'Address Line 1' => 'Řádek adresy 1',
