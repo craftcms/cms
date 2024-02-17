@@ -45,8 +45,10 @@ export default Base.extend(
         return;
       }
 
-      const triggerId = this.$trigger.attr('aria-controls');
-      this.$container = $('#' + triggerId);
+      this.$trigger.attr('data-disclosure-trigger', 'true');
+
+      const containerId = this.$trigger.attr('aria-controls');
+      this.$container = $('#' + containerId);
 
       this.$trigger.data('disclosureMenu', this);
       this.$container.data('disclosureMenu', this);
@@ -265,6 +267,8 @@ export default Base.extend(
         return;
       }
 
+      this.trigger('beforeShow');
+
       // Move the menu to the end of the DOM
       this.$container.appendTo(Garnish.$bod);
 
@@ -393,6 +397,7 @@ export default Base.extend(
         this._alignmentElementOffsetBottom;
 
       if (
+        this.settings.position === 'below' ||
         bottomClearance >= this._menuHeight ||
         (topClearance < this._menuHeight && bottomClearance >= topClearance)
       ) {
@@ -762,6 +767,7 @@ export default Base.extend(
   },
   {
     defaults: {
+      position: null,
       windowSpacing: 5,
     },
 
