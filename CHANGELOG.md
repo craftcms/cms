@@ -8,6 +8,7 @@
 - Fixed a bug where it wasn’t possible to clear out users’ full names once they were set. ([#14402](https://github.com/craftcms/cms/pull/14402))
 - Fixed an error that occurred when attempting to add nested elements to Addresses or Matrix fields on element types that don’t support drafts. ([#14396](https://github.com/craftcms/cms/pull/14396))
 - Fixed a bug where double-digit nav item badge counts were overflowing. ([#14406](https://github.com/craftcms/cms/issues/14406))
+- Fixed a bug where fresh installs had a `fieldGroups` array in the project config. ([#14412](https://github.com/craftcms/cms/issues/14412))
 - Fixed a JavaScript error that could occur when switching between asset sources, if the user had permission to upload assets to some but not others. ([#14403](https://github.com/craftcms/cms/issues/14403))
 - Fixed a bug where setting `showSiteMenu` to `true` on element index templates was being treated as `'auto'`. ([#14404](https://github.com/craftcms/cms/pull/14404))
 

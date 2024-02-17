@@ -1219,11 +1219,6 @@ class Install extends Migration
 
         return [
             'dateModified' => DateTimeHelper::currentTimeStamp(),
-            'fieldGroups' => [
-                StringHelper::UUID() => [
-                    'name' => 'Common',
-                ],
-            ],
             'email' => [
                 'fromEmail' => $this->email,
                 'fromName' => $this->site->getName(),
