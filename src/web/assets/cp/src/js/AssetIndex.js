@@ -237,6 +237,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       });
     },
 
+    selectSource: function (source) {
+      this.uploader = null;
+      this.base(source);
+    },
+
     onSelectSource: function () {
       if (!this.settings.foldersOnly) {
         this.currentFolderId =

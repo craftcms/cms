@@ -3011,12 +3011,12 @@ $.extend($.fn, {
     });
   },
 
-  disclosureMenu: function () {
+  disclosureMenu: function (settings) {
     return this.each(function () {
       const $trigger = $(this);
       // Only instantiate if it's not already a disclosure trigger, and it references a disclosure content
       if (!$trigger.data('trigger') && $trigger.attr('aria-controls')) {
-        new Garnish.DisclosureMenu($trigger);
+        new Garnish.DisclosureMenu($trigger, settings);
       }
     });
   },

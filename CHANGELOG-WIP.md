@@ -15,6 +15,7 @@
 - Entries can now have multiple authors. ([#12380](https://github.com/craftcms/cms/pull/12380))
 - Entry chips, cards, and blocks are now tinted according to their entry type’s color. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Quick Post widgets now create entries via slideouts. ([#14228](https://github.com/craftcms/cms/pull/14228))
+- Slideout sidebars are now always toggleable; not just when the slideout is too narrow to show the sidebar alongside the content. ([#14418](https://github.com/craftcms/cms/pull/14418))
 - The “Save as a new entry” action is now available to all users with the “Create entries” permission, and will create a new unpublished draft rather than a fully-saved entry. ([#9577](https://github.com/craftcms/cms/issues/9577), [#10244](https://github.com/craftcms/cms/discussions/10244))
 - Entry conditions can now have a “Matrix field” rule. ([#13794](https://github.com/craftcms/cms/discussions/13794))
 - Money field condition rules now use money inputs. ([#14148](https://github.com/craftcms/cms/pull/14148))
@@ -71,6 +72,7 @@
 - Field layouts can now designate an Assets field as the source for elements’ thumbnails. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
 - Field layouts can now choose to include previewable fields’ content in element cards. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#6024](https://github.com/craftcms/cms/pull/6024))
 - Field layouts can now override custom fields’ handles.
+- Field Layout Designers now hide the component library sidebar in favor of “Add” disclosure menus, when they’re too narrow to show the sidebar alongside configured tabs. ([#14411](https://github.com/craftcms/cms/pull/14411))
 - Most custom fields can now be included multiple times within the same field layout. ([#8497](https://github.com/craftcms/cms/discussions/8497))
 - Sections now have a “Max Authors” setting. ([#12380](https://github.com/craftcms/cms/pull/12380))
 - Entry types are now managed independently of sections.
