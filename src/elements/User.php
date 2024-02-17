@@ -973,18 +973,15 @@ class User extends Element implements IdentityInterface
             }
         }
 
-        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
-            $this->fullName = null;
-        }
-
-        // if we're set to show full name field, and it's empty, clear out first and last names too
-        if (
-            !Craft::$app->getConfig()->getGeneral()->showFirstAndLastNameFields &&
-            array_key_exists('fullName', $values) &&
-            empty(trim($values['fullName']))
-        ) {
+        if (array_key_exists('fullName', $values)) {
+            // Clear out the first and last names.
+            // They'll get reset from prepareNamesForSave() if fullName isn't empty.
             $this->firstName = null;
             $this->lastName = null;
+        } elseif (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            // Clear out the full name.
+            // It'll get reset from prepareNamesForSave() if the first/last names aren't empty.
+            $this->fullName = null;
         }
 
         parent::setAttributes($values, $safeOnly);
