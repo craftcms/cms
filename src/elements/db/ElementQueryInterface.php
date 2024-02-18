@@ -1088,7 +1088,8 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * | `1` | with a level of 1.
      * | `'not 1'` | not with a level of 1.
      * | `'>= 3'` | with a level greater than or equal to 3.
-     * | `[1, 2]` | with a level of 1 or 2
+     * | `[1, 2]` | with a level of 1 or 2.
+     * | `[null, 1]` | without a level, or a level of 1.
      * | `['not', 1, 2]` | not with level of 1 or 2.
      *
      * ---
