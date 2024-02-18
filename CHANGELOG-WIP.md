@@ -1,7 +1,8 @@
 # Release notes for Craft CMS 4.8.0 (WIP)
 
 ### Content Management
-- Assets fields’ selection modals now open to the last-viewed location by default, if their Default Upload Location doesn’t specify a subpath. ([#14382](https://github.com/craftcms/cms/pull/14382)) 
+- Assets fields’ selection modals now open to the last-viewed location by default, if their Default Upload Location doesn’t specify a subpath. ([#14382](https://github.com/craftcms/cms/pull/14382))
+- Element sources no longer display `0` badges.
 
 ### Administration
 - The `queue/run` command now supports a `--job-id` option.
