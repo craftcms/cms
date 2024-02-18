@@ -27,7 +27,7 @@ class CustomFieldBehavior extends Behavior
     public bool $canSetProperties = true;
 
     /**
-     * @var string[] List of supported field handles.
+     * @var array<string,bool> List of supported field handles.
      */
     public static $fieldHandles = [];
 }

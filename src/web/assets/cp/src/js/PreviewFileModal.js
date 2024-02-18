@@ -98,7 +98,9 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
     _onHide: function () {
       Craft.PreviewFileModal.openInstance = null;
       if (this.elementSelect) {
-        this.elementSelect.focusItem(this.elementSelect.$focusedItem);
+        this.elementSelect.focusItem(
+          this.elementSelect.$items.filter(`[data-id=${this.assetId}]`)
+        );
       } else if (this.$triggerElement && this.$triggerElement.length) {
         this.$triggerElement.trigger('focus');
       }
@@ -292,12 +294,14 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         height: containerHeight,
       });
 
+      let imageRatio;
+
       if (instance.loaded && $img.length) {
         // Make sure we maintain the ratio
 
         const maxWidth = $img.data('maxwidth');
         const maxHeight = $img.data('maxheight');
-        const imageRatio = maxWidth / maxHeight;
+        imageRatio = maxWidth / maxHeight;
         const desiredWidth = instance.desiredWidth
           ? instance.desiredWidth
           : instance.getWidth();
