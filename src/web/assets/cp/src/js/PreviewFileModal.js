@@ -284,12 +284,14 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         height: containerHeight,
       });
 
+      let imageRatio;
+
       if (instance.loaded && $img.length) {
         // Make sure we maintain the ratio
 
         const maxWidth = $img.data('maxwidth');
         const maxHeight = $img.data('maxheight');
-        const imageRatio = maxWidth / maxHeight;
+        imageRatio = maxWidth / maxHeight;
         const desiredWidth = instance.desiredWidth
           ? instance.desiredWidth
           : instance.getWidth();
