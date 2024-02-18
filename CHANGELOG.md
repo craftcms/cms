@@ -7,6 +7,8 @@
 - Fixed a SQL error that occurred when setting the Max Length of a URL field beyond what’s allowed by a `varchar` column. ([#14408](https://github.com/craftcms/cms/issues/14408))
 - Fixed a bug where `data-target` and `data-reverse-target` attributes weren’t getting properly namespaced if they included a class name selector.
 - Fixed the type annotation for `craft\behaviors\CustomFieldBehavior::$fieldHandles`. ([#14421](https://github.com/craftcms/cms/issues/14421))
+- Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets was only working for the first selected asset, rather than the focussed one.
+Fixed a JavaScript error that could occur when previewing an image.
 
 ## 4.7.3 - 2024-02-15
 
