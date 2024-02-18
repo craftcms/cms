@@ -72,7 +72,9 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
     _onHide: function () {
       Craft.PreviewFileModal.openInstance = null;
       if (this.elementSelect) {
-        this.elementSelect.focusItem(this.elementSelect.$focusedItem);
+        this.elementSelect.focusItem(
+          this.elementSelect.$items.filter(`[data-id=${this.assetId}]`)
+        );
       }
 
       this.$shade.remove();
