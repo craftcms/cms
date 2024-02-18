@@ -9,6 +9,7 @@
 - Fixed the type annotation for `craft\behaviors\CustomFieldBehavior::$fieldHandles`. ([#14421](https://github.com/craftcms/cms/issues/14421))
 - Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets was only working for the first selected asset, rather than the focussed one.
 Fixed a JavaScript error that could occur when previewing an image.
+- Fixed a bug where PHP errors that occurred during bootstrap weren’t getting logged to `stderr` for console requests. ([#14424](https://github.com/craftcms/cms/pull/14424))
 
 ## 4.7.3 - 2024-02-15
 
