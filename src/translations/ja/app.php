@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'アンロック',
     'Unread announcements' => '未読のお知らせ',
     'Unsuspend' => '停止を解除する',
-    'Untitled entry' => '無題のエントリ',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'YAMLファイルを更新',
     'Update YAML files' => 'YAMLファイルを更新',
     'Update aborted.' => 'アップデートが中止されました。',
