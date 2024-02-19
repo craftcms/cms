@@ -1740,7 +1740,7 @@ return [
     'Unlock' => 'Déverrouiller',
     'Unread announcements' => 'Annonces non lues',
     'Unsuspend' => 'Réactiver',
-    'Untitled entry' => 'Entrée sans titre',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'Mettre à jour les fichiers YAML',
     'Update YAML files' => 'Mettre à jour les fichiers YAML',
     'Update aborted.' => 'Mise à jour annulée.',
