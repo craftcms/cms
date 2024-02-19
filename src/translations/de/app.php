@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'Entsperren',
     'Unread announcements' => 'Ungelesene Ankündigungen',
     'Unsuspend' => 'Entsperren',
-    'Untitled entry' => 'Unbenannter Eintrag',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'YAML-Dateien aktualisieren',
     'Update YAML files' => 'YAML-Dateien aktualisieren',
     'Update aborted.' => 'Update wurde abgebrochen.',
