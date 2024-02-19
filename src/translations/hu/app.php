@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'Engedélyez',
     'Unread announcements' => 'Olvasatlan bejelentések',
     'Unsuspend' => 'Engedélyez',
-    'Untitled entry' => 'Cím nélküli bejegyzés',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'YAML-fájlok feltöltése',
     'Update YAML files' => 'YAML-fájlok feltöltése',
     'Update aborted.' => 'A frissítés megszakítva.',
