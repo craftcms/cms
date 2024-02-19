@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'Розблокувати',
     'Unread announcements' => 'Непрочитані повідомлення',
     'Unsuspend' => 'Включити',
-    'Untitled entry' => 'Запис без назви',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'Оновіть YAML-файли',
     'Update YAML files' => 'Оновити YAML-файли',
     'Update aborted.' => 'Оновлення перервано.',
