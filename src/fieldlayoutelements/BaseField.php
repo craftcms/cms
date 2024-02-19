@@ -261,7 +261,7 @@ abstract class BaseField extends FieldLayoutElement
      *
      * System icons can be found in `src/icons/solid/.`
      *
-     * @return string
+     * @return string|null
      * @since 5.0.0
      */
     protected function selectorIcon(): ?string
