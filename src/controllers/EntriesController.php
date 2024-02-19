@@ -135,7 +135,7 @@ class EntriesController extends BaseEntriesController
 
         // Make sure the user is allowed to create this entry
         if (!Craft::$app->getElements()->canSave($entry, $user)) {
-            throw new ForbiddenHttpException('User not authorized to save this entry.');
+            throw new ForbiddenHttpException('User not authorized to create this entry.');
         }
 
         // Title & slug
