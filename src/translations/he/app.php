@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'פתח',
     'Unread announcements' => 'הודעות שלא נקראו',
     'Unsuspend' => 'בטל השעיה',
-    'Untitled entry' => 'רשומה ללא כותרת',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'עדכן קובצי YAML',
     'Update YAML files' => 'עדכן קובצי YAML',
     'Update aborted.' => 'העדכון בוטל.',
