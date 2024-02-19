@@ -13,6 +13,8 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\enums\MenuItemType;
 use craft\errors\InvalidElementException;
@@ -2083,6 +2085,18 @@ JS, [
 
         if (!$elementsService->canView($element, static::currentUser())) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
+        }
+
+        // if this is a nested entry, and we don't have a sort order - let's get it,
+        // so we can keep passing it around and set it correctly
+        // https://github.com/craftcms/cms/issues/14427
+        if ($element->getPrimaryOwnerId() && $element->sortOrder === null) {
+            $element->sortOrder = (new Query())
+                ->select(['sortOrder'])
+                ->from(['eo' => Table::ELEMENTS_OWNERS])
+                ->innerJoin(['e' => Table::ENTRIES], '[[e.id]] = [[eo.elementId]]')
+                ->where(['eo.elementId' => $element->id])
+                ->scalar();
         }
 
         if (!$strictSite && $element->siteId !== $site->id) {
