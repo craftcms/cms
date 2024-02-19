@@ -1739,7 +1739,7 @@ return [
     'Unlock' => '잠금 해제',
     'Unread announcements' => '읽지 않은 알림',
     'Unsuspend' => '중지 해제',
-    'Untitled entry' => '제목 없는 항목',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'YAML 파일 업데이트',
     'Update YAML files' => 'YAML 파일 업데이트',
     'Update aborted.' => '업데이트가 중단되었습니다.',
