@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'Odomknúť',
     'Unread announcements' => 'Neprečítané oznámenia',
     'Unsuspend' => 'Pozastavenie zrušené',
-    'Untitled entry' => 'Záznam bez názvu',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'Aktualizovať súbory YAML',
     'Update YAML files' => 'Aktualizovať súbory YAML',
     'Update aborted.' => 'Aktualizácia bola zrušená.',
