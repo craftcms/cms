@@ -1739,7 +1739,7 @@ return [
     'Unlock' => '解锁',
     'Unread announcements' => '未读公告',
     'Unsuspend' => '取消挂起',
-    'Untitled entry' => '无标题条目',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => '更新 YAML 文件',
     'Update YAML files' => '更新 YAML 文件',
     'Update aborted.' => '更新已中止。',
