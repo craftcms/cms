@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'Sblocca',
     'Unread announcements' => 'Annunci non letti',
     'Unsuspend' => 'Rimuovi sospensione',
-    'Untitled entry' => 'Articolo senza titolo',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'Aggiorna file YAML',
     'Update YAML files' => 'Aggiorna file YAML',
     'Update aborted.' => 'Aggiornamento interrotto.',
