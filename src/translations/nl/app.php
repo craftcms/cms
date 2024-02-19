@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'Activeer',
     'Unread announcements' => 'Ongelezen aankondigingen',
     'Unsuspend' => 'Schorsing opgeheven',
-    'Untitled entry' => 'Naamloze record',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'YAML-bestanden bijwerken',
     'Update YAML files' => 'YAML-bestanden bijwerken',
     'Update aborted.' => 'Update afgebroken.',
