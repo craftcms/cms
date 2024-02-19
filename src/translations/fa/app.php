@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'قفل گشایی',
     'Unread announcements' => 'اطلاعیه های خوانده نشده',
     'Unsuspend' => 'از تعلیق در آوردن',
-    'Untitled entry' => 'ورودی بدون عنوان',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'به‌روزرسانی فایل‌های YAML',
     'Update YAML files' => 'به‌روزرسانی از فایل‌های YAML',
     'Update aborted.' => 'بروزرسانی ناقص ماند.',
