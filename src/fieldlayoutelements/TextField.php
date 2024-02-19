@@ -129,9 +129,6 @@ class TextField extends BaseNativeField
      */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        if ($this->attribute === 'title') {
-            $test = true;
-        }
         return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
             'type' => $this->inputType ?? $this->type,
             'autocomplete' => $this->autocomplete,
