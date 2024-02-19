@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'Lås opp',
     'Unread announcements' => 'Marker kunngjøringer som ikke lest',
     'Unsuspend' => 'Opphev suspensasjon',
-    'Untitled entry' => 'Oppføring uten tittel',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'Oppdater YAML-filer',
     'Update YAML files' => 'Oppdater YAML-filer',
     'Update aborted.' => 'Oppdatering avbrutt.',
