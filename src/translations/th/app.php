@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'Unlock',
     'Unread announcements' => 'ประกาศที่ไม่ได้อ่าน',
     'Unsuspend' => 'Unsuspend',
-    'Untitled entry' => 'Untitled entry',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'Update YAML Files',
     'Update YAML files' => 'Update YAML files',
     'Update aborted.' => 'Update aborted.',
