@@ -382,9 +382,6 @@ abstract class BaseField extends FieldLayoutElement
             'translatable' => $this->translatable($element, $static),
             'translationDescription' => $this->translationDescription($element, $static),
             'errors' => !$static ? $this->errors($element) : [],
-            'data' => [
-                'error-key' => $this->name ?? $this->attribute(),
-            ],
         ]);
     }
 
@@ -533,6 +530,41 @@ abstract class BaseField extends FieldLayoutElement
         ]);
 
         return $ids ? implode(' ', $ids) : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
+    {
+        return ArrayHelper::merge(parent::containerAttributes($element, $static), [
+            'data' => [
+                'base-input-name' => Craft::$app->getView()->namespaceInputName($this->baseInputName()),
+                'error-key' => $this->errorKey(),
+            ],
+        ]);
+    }
+
+    /**
+     * Returns the base input name for the field (sans namespace).
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    protected function baseInputName(): string
+    {
+        return $this->attribute();
+    }
+
+    /**
+     * Returns the error key this field should be associated with.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    protected function errorKey(): string
+    {
+        return $this->attribute();
     }
 
     /**

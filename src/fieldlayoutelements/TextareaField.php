@@ -105,4 +105,20 @@ class TextareaField extends BaseNativeField
             'placeholder' => $this->placeholder,
         ]);
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function baseInputName(): string
+    {
+        return $this->name ?? parent::baseInputName();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function errorKey(): string
+    {
+        return $this->name ?? parent::errorKey();
+    }
 }

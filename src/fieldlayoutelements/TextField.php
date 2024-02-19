@@ -166,4 +166,20 @@ class TextField extends BaseNativeField
     {
         return [];
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function baseInputName(): string
+    {
+        return $this->name ?? parent::baseInputName();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function errorKey(): string
+    {
+        return $this->name ?? parent::errorKey();
+    }
 }
