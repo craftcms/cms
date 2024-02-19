@@ -2090,7 +2090,7 @@ JS, [
         // if this is a nested entry, and we don't have a sort order - let's get it,
         // so we can keep passing it around and set it correctly
         // https://github.com/craftcms/cms/issues/14427
-        if ($element->getPrimaryOwnerId() && $element->sortOrder === null) {
+        if (method_exists($elementType, 'getPrimaryOwnerId') && $element->getPrimaryOwnerId() && $element->sortOrder === null) {
             $element->sortOrder = (new Query())
                 ->select(['sortOrder'])
                 ->from(['eo' => Table::ELEMENTS_OWNERS])
