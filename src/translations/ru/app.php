@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'Разблокировать',
     'Unread announcements' => 'Непрочитанные уведомления',
     'Unsuspend' => 'Возобновить',
-    'Untitled entry' => 'Запись без названия',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'Обновить YAML-файлы',
     'Update YAML files' => 'Обновить YAML-файлы',
     'Update aborted.' => 'Обновление прервано.',
