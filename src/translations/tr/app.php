@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'Aç',
     'Unread announcements' => 'Okunmamış duyurular',
     'Unsuspend' => 'Askıdan çıkar',
-    'Untitled entry' => 'Adsız kayıt',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'YAML Dosyalarını Güncelle',
     'Update YAML files' => 'YAML dosyalarını güncelle',
     'Update aborted.' => 'Güncelleme durduruldu.',
