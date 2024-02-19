@@ -2366,6 +2366,8 @@ JS, [
             throw $e;
         }
 
+        $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);
+
         return true;
     }
 
