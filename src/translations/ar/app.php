@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'إلغاء القفل',
     'Unread announcements' => 'الإعلانات غير المقروءة',
     'Unsuspend' => 'إلغاء الإيقاف',
-    'Untitled entry' => 'إدخال بدون عنوان',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'تحديث ملفات YAML',
     'Update YAML files' => 'تحديث ملفات YAML',
     'Update aborted.' => 'تم إيقاف التحديث.',
