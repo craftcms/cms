@@ -1739,7 +1739,7 @@ return [
     'Unlock' => 'Lås upp',
     'Unread announcements' => 'Markera tillkännagivanden som olästa',
     'Unsuspend' => 'Upphäv avstängningen',
-    'Untitled entry' => 'Inlägg utan namn',
+    'Untitled {type}' => 'Untitled {type}',
     'Update YAML Files' => 'Uppdatera YAML-filer',
     'Update YAML files' => 'Uppdatera YAML-filer',
     'Update aborted.' => 'Uppdateringen har avbrutits.',
