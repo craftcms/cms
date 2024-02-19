@@ -61,6 +61,7 @@ return [
     'Add an option' => 'اضافه کردن یک گزینه',
     'Add to cart' => 'اضافه کردن به سبد خرید',
     'Add {type} above' => 'اضافه کردن {type} به بالا',
+    'Add' => 'Add',
     'Added to cart' => 'به سبد خرید اضافه شد',
     'Address Fields' => 'فیلدهای نشانی',
     'Address Line 1' => 'آدرس 1',

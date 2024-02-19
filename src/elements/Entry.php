@@ -12,6 +12,7 @@ use craft\base\Colorable;
 use craft\base\Element;
 use craft\base\ExpirableElementInterface;
 use craft\base\Field;
+use craft\base\Iconic;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\behaviors\DraftBehavior;
@@ -77,7 +78,7 @@ use yii\db\Expression;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Entry extends Element implements NestedElementInterface, ExpirableElementInterface, Colorable
+class Entry extends Element implements NestedElementInterface, ExpirableElementInterface, Iconic, Colorable
 {
     use NestedElementTrait {
         attributes as traitAttributes;
@@ -1188,19 +1189,9 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
-    public function getThumbHtml(int $size): ?string
+    public function getIcon(): ?string
     {
-        $html = parent::getThumbHtml($size);
-        if ($html === null) {
-            $entryType = $this->getType();
-            if ($entryType->icon) {
-                $html = Html::tag('div', Cp::iconSvg($entryType->icon), [
-                    'title' => $entryType->getUiLabel(),
-                    'class' => array_filter(['cp-icon', $entryType->color?->value]),
-                ]);
-            }
-        }
-        return $html;
+        return $this->getType()->getIcon();
     }
 
     /**

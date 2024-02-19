@@ -1663,7 +1663,6 @@ ul.icons {
     width: 36px;
   }
 
-  &.active,
   &.loading {
     cursor: default;
   }
@@ -4836,7 +4835,6 @@ ul.tree,
       color: var(--medium-text-color);
 
       & > .data {
-        align-items: baseline;
         min-height: auto;
 
         & > .heading,
@@ -5475,15 +5473,7 @@ $min2ColWidth: 400px;
 
 @container (width > 700px) {
   .slideout {
-    &.has-sidebar {
-      .pane-header:not(.so-visible) {
-        display: none;
-      }
-
-      .sidebar-btn {
-        display: none;
-      }
-
+    &.showing-sidebar {
       .so-body {
         display: flex;
         flex-direction: row;

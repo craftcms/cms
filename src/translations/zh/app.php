@@ -61,6 +61,7 @@ return [
     'Add an option' => '添加选项',
     'Add to cart' => '添加到购物车',
     'Add {type} above' => '添加上方的{type}',
+    'Add' => 'Add',
     'Added to cart' => '添加到购物车',
     'Address Fields' => '地址字段',
     'Address Line 1' => '地址行 1',

@@ -49,7 +49,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       Craft.PreviewFileModal.openInstance.selfDestruct();
     } else {
       if (!$element) {
-        $element = this.elementSelect.$focusedItem;
+        $element = this.$elements
+          .filter(':focus')
+          .add(this.$elements.has(':focus'));
       }
 
       if ($element.length) {

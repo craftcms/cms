@@ -4,7 +4,7 @@
 $base: 24px;
 $tabPadding: 14px;
 $tabWidth: $base * 11;
-$gridColor: hsl(212, 50%, 95%);
+$gridColor: var(--gray-100);
 
 @mixin workspaceBg {
   background-color: var(--gray-050);
@@ -14,6 +14,10 @@ $gridColor: hsl(212, 50%, 95%);
 }
 
 .layoutdesigner {
+  container-type: inline-size;
+}
+
+.fld-container {
   display: flex;
   align-items: stretch;
   position: relative;
@@ -30,10 +34,10 @@ $gridColor: hsl(212, 50%, 95%);
   .fld-workspace {
     flex: 1;
     @include border-radius(
-      var(--small-border-radius),
+      calc(var(--small-border-radius) - 1px),
       0,
       0,
-      var(--small-border-radius)
+      calc(var(--small-border-radius - 1px))
     );
     @include padding($base, 0, $base, $base);
     @include workspaceBg;
@@ -47,47 +51,68 @@ $gridColor: hsl(212, 50%, 95%);
     }
   }
 
-  .fld-sidebar {
+  &:not(:has(.fld-library)) {
+    @include padding-right(0);
+
+    .fld-workspace {
+      @include padding-right($base);
+    }
+  }
+
+  .fld-library {
     position: absolute;
     top: 0;
     @include right(0);
     height: 100%;
     width: $tabWidth + 1;
     padding: $tabPadding;
-    display: flex;
-    flex-direction: column;
-
-    .btngroup {
-      margin-bottom: $tabPadding;
-    }
-
-    .fld-field-library {
-      margin: -3px;
-      padding: 3px;
-      flex: 1;
-      min-height: 0;
-      overflow: auto;
-
-      .fld-field-group {
-        margin-top: $tabPadding;
-
-        h6 {
-          margin-bottom: 7px;
-        }
-      }
-    }
-
-    .filtered {
-      display: none;
-    }
-  }
-
-  .fld-new-tab-btn:active {
-    background-color: var(--gray-050);
   }
 }
 
-.fld-sidebar,
+.fld-new-tab-btn:active {
+  background-color: var(--gray-050);
+}
+
+.fld-library-menu {
+  width: $tabWidth;
+  @include margin-left($tabPadding * -1);
+  padding: $tabPadding;
+}
+
+.fld-library {
+  display: flex;
+  flex-direction: column;
+
+  .btngroup {
+    margin-bottom: $tabPadding;
+  }
+
+  .fld-field-library {
+    margin: -3px;
+    padding: 3px;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+
+    .fld-field-group {
+      margin-top: $tabPadding;
+
+      & > *:not(:first-child) {
+        margin-top: var(--s);
+      }
+    }
+  }
+
+  .fld-ui-library > *:not(:first-child) {
+    margin-top: var(--s);
+  }
+
+  .filtered {
+    display: none;
+  }
+}
+
+.layoutdesigner .fld-library,
 .fld-tab .tabs .tab,
 .fld-tab .fld-tabcontent,
 .fld-new-tab-btn,
@@ -152,6 +177,17 @@ $gridColor: hsl(212, 50%, 95%);
       var(--medium-border-radius),
       var(--medium-border-radius)
     );
+
+    & > .fld-element,
+    & > .fld-add-btn {
+      &:not(:first-child) {
+        margin-top: var(--s);
+      }
+    }
+
+    .fld-add-btn:not([aria-expanded='true']) {
+      display: none;
+    }
   }
 
   &.fld-insertion {
@@ -188,10 +224,6 @@ $gridColor: hsl(212, 50%, 95%);
   body:not(.dragging) & {
     cursor: move;
     cursor: grab;
-  }
-
-  & + .fld-element {
-    margin-top: 7px;
   }
 
   &.fld-insertion {
@@ -335,5 +367,27 @@ $gridColor: hsl(212, 50%, 95%);
 
   & > .spinner {
     @include margin(0, var(--neg-padding), 0, 0);
+  }
+}
+
+@container (width < #{$base + $tabWidth + $base + $tabWidth + 1}) {
+  .fld-container {
+    @include padding-right(0);
+
+    .fld-workspace {
+      @include padding-right($base);
+    }
+
+    & > .fld-library {
+      display: none;
+    }
+  }
+
+  .fld-tab {
+    .fld-tabcontent {
+      .fld-add-btn {
+        display: inline-flex !important;
+      }
+    }
   }
 }

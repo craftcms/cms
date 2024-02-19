@@ -61,6 +61,7 @@ return [
     'Add an option' => 'הוסף אפשרות',
     'Add to cart' => 'הוסף לעגלה',
     'Add {type} above' => 'הוסף {type} למעלה',
+    'Add' => 'Add',
     'Added to cart' => 'נוסף לעגלה',
     'Address Fields' => 'שדות כתובת',
     'Address Line 1' => 'שורת כתובת 1',

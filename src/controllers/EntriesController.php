@@ -95,11 +95,11 @@ class EntriesController extends BaseEntriesController
         $entry = Craft::createObject(Entry::class);
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
-
-        $authorIds = $this->request->getQueryParam('authorIds') ?? $this->request->getQueryParam('authorId');
-        if ($authorIds !== null) {
-            $entry->setAuthorIds($authorIds);
-        }
+        $entry->setAuthorIds(
+            $this->request->getQueryParam('authorIds') ??
+            $this->request->getQueryParam('authorId') ??
+            $user->id
+        );
 
         // Type
         if (($typeHandle = $this->request->getParam('type')) !== null) {

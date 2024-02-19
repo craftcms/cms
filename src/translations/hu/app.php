@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Opció hozzáadása',
     'Add to cart' => 'Kosárba',
     'Add {type} above' => 'Új {type} hozzáadása fentebb',
+    'Add' => 'Add',
     'Added to cart' => 'Hozzáadva a kosárhoz',
     'Address Fields' => 'Címmezők',
     'Address Line 1' => 'Címsor 1',
