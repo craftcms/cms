@@ -1,0 +1,16 @@
+{% set attributes = attributes ?? {} %}
+{% set controls = controls ?? null %}
+{% set expanded = expanded ?? 'true' %}
+
+{% if controls %}
+    <craft-disclosure id="{{ id ?? null }}">
+        <button
+            type="button"
+            aria-controls="{{ controls }}"
+            aria-expanded="{{ expanded }}"
+            {{ attr(attributes) }}
+        >
+            {{ content | raw }}
+        </button>
+    </craft-disclosure>
+{% endif %}

@@ -108,18 +108,26 @@
 
         <div class="global-sidebar__footer">
             <div class="sidebar-actions">
-                <craft-disclosure id="sidebar-trigger">
-                    <button type="button" class="sidebar-action" aria-controls="global-sidebar" aria-expanded="{{ sidebarState == 'expanded' ? 'true' : 'false' }}">
-                        <span class="sidebar-action__prefix">
-                            <span class="nav-icon" aria-hidden="true" id="sidebar-toggle-icon">
-                                {{ iconSvg('angle-right') }}
-                            </span>
+                {% set toggleContent %}
+                    <span class="sidebar-action__prefix">
+                        <span class="nav-icon" aria-hidden="true" id="sidebar-toggle-icon">
+                            {{ iconSvg('angle-right') }}
                         </span>
-                        <span class="sidebar-action__label">
-                            <span class="label">{{ 'Toggle sidebar'|t('app') }}</span>
-                        </span>
-                    </button>
-                </craft-disclosure>
+                    </span>
+                    <span class="sidebar-action__label">
+                        <span class="label">{{ 'Toggle sidebar'|t('app') }}</span>
+                    </span>
+                {% endset %}
+
+                {% include '_includes/disclosure-toggle' with {
+                    id: 'sidebar-trigger',
+                    controls: 'global-sidebar',
+                    expanded: sidebarState == 'expanded' ? 'true' : 'false',
+                    content: toggleContent,
+                    attributes: {
+                        class: 'sidebar-action',
+                    },
+                } %}
             </div>
 
             {% if currentUser.admin and devMode %}
