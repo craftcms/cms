@@ -608,6 +608,20 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
                   {num: tabErrorCount}
                 )
               );
+
+            // if there are errors in any other tabs - tell users about it.
+            if ($tabsWithErrors.length - 1 > 0) {
+              $tabErrorSummary.append(
+                '<p>' +
+                  Craft.t(
+                    'app',
+                    'Errors found in {num, number} other {num, plural, =1{tab} other{tabs}}.',
+                    {num: $tabsWithErrors.length - 1}
+                  ) +
+                  '</p>'
+              );
+            }
+
             $tabErrorSummary.prependTo($tabContainer);
             Craft.ui.setFocusOnErrorSummary($tabContainer); // this also makes the deep linking work
           }

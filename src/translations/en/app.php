@@ -635,6 +635,7 @@ return [
     'Environment Variables' => 'Environment Variables',
     'Error' => 'Error',
     'Error:' => 'Error:',
+    'Errors found in {num, number} other {num, plural, =1{tab} other{tabs}}.' => 'Errors found in {num, number} other {num, plural, =1{tab} other{tabs}}.',
     'Expand' => 'Expand',
     'Expanded' => 'Expanded',
     'Expired' => 'Expired',
