@@ -96,6 +96,7 @@
             :no-data-template="noDataTemplate"
             :query-params="queryParams"
             :row-class="rowClass"
+            :http-fetch="fetch"
             pagination-path="pagination"
             @vuetable:loaded="init"
             @vuetable:loading="loading"
@@ -487,6 +488,7 @@
         lastPage: 1,
         detailRow: AdminTableDetailRow,
         dragging: false,
+        endpointResponse: null,
         initTableData: [],
         isEmpty: false,
         isLoading: true,
@@ -525,7 +527,24 @@
             }
 
             if (this.tableDataEndpoint) {
-              Craft.initUiElements(this.container);
+              new Promise(async (resolve) => {
+                if (this.endpointResponse) {
+                  // Check to see if `headHtml` is in the response
+                  if (this.endpointResponse['headHtml']) {
+                    // Append the headHtml to the page
+                    await Craft.appendHeadHtml(this.endpointResponse.headHtml);
+                  }
+
+                  // Check to see if `bodyHtml` is in the response
+                  if (this.endpointResponse['bodyHtml']) {
+                    // Append the bodyHtml to the page
+                    await Craft.appendBodyHtml(this.endpointResponse.bodyHtml);
+                  }
+                }
+                resolve();
+              }).finally(() => {
+                Craft.initUiElements(this.container);
+              });
             }
           }
         });
@@ -552,6 +571,10 @@
         if (!this.tableDataEndpoint && this.onData instanceof Function) {
           this.onData(this.tableData);
         }
+      },
+
+      fetch(url, options) {
+        return Craft.sendActionRequest('GET', url, options);
       },
 
       loading(isLoading = true) {
@@ -765,7 +788,9 @@
       },
 
       onLoadSuccess(data) {
+        this.endpointResponse = null;
         if (data && data.data && data.data.data) {
+          this.endpointResponse = data.data;
           let emitData = data.data.data;
           this.$emit('data', emitData);
           if (this.onData instanceof Function) {

@@ -378,6 +378,8 @@
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
 - Added `craft\services\Sites::$maxSites`. ([#14307](https://github.com/craftcms/cms/pull/14307))
 - Added `craft\services\Sites::getRemainingSites()`. ([#14307](https://github.com/craftcms/cms/pull/14307))
+- Added `craft\web\CpModalResponseBehavior`.
+- Added `craft\web\CpModalResponseFormatter`.
 - Added `craft\web\CpScreenResponseBehavior::$actionMenuItems`.
 - Added `craft\web\CpScreenResponseBehavior::$contextMenuItems`.
 - Added `craft\web\CpScreenResponseBehavior::$selectableSites`.
@@ -599,6 +601,9 @@
 - Removed `craft\web\User::startElevatedSession()`. `login()` should be used instead.
 - Removed `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
 - Admin tables now support client-side searching when not running in API mode. ([#14126](https://github.com/craftcms/cms/pull/14126))
+- Admin tables now support appending `bodyHtml` and `headHtml` when running in API mode.
+- Admin tables now use `Craft.sendActionRequest()` to request data when running in API mode.
+- Added `Craft.CpModal`.
 - Added `Craft.BaseElementSelectInput::defineElementActions()`.
 - Added `Craft.CP::setSiteCrumbMenuItemStatus()`.
 - Added `Craft.CP::showSiteCrumbMenuItem()`.

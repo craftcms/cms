@@ -1897,6 +1897,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     handleSubmit: function (ev) {
       ev.preventDefault();
       ev.stopPropagation();
+      ev.stopImmediatePropagation();
 
       // Prevent double form submits
       if (this.submittingForm) {
@@ -1940,6 +1941,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (this.isFullPage) {
         this.stopListeningForChanges();
         const $form = Craft.createForm(data);
+        $form.attr('id', 'element-editor-form');
         $form.appendTo(Garnish.$bod);
         $form.submit();
       } else {
