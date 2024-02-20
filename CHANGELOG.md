@@ -30,6 +30,7 @@
 - Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets was only working for the first selected asset, rather than the focussed one.
 Fixed a JavaScript error that could occur when previewing an image.
 - Fixed a bug where PHP errors that occurred during bootstrap weren’t getting logged to `stderr` for console requests. ([#14424](https://github.com/craftcms/cms/pull/14424))
+- Fixed a bug where disabled elements and drafts weren’t automatically getting propagated to newly-created sites, when appropriate.
 
 ## 5.0.0-beta.2 - 2024-02-15
 
