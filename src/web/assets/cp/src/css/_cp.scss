@@ -1584,6 +1584,13 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+.slideout {
+  .error-summary {
+    margin-left: var(--row-gap);
+    margin-right: var(--row-gap);
+  }
+}
+
 .content.has-sidebar:not(.hiding-sidebar) {
   @include margin-left($sidebarWidth);
 }
@@ -1611,7 +1618,7 @@ li.breadcrumb-toggle-wrapper {
   margin: 0 calc(var(--row-gap) * -1) calc(var(--row-gap) * -1);
   width: calc(100% + var(--row-gap) * 2);
 
-  & > * {
+  & > :not(.error-summary) {
     margin: 0 0 var(--row-gap) !important;
     padding: 0 var(--row-gap);
     box-sizing: border-box;

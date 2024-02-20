@@ -563,6 +563,60 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       if (data.errors) {
         this.showErrors(data.errors);
       }
+
+      if (data.errorSummary) {
+        this.showErrorSummary(data.errorSummary);
+      }
+    },
+
+    showErrorSummary: function (errorSummary) {
+      // start by clearing any error summary that might be left
+      Craft.ui.clearErrorSummary(this.$body);
+
+      // if we have multiple tabs - split the error summary into them
+      if (this.tabManager !== null) {
+        let $tabs = this.tabManager.$tabs;
+        let $tabsWithErrors = $tabs.filter('.error');
+        let $content = this.$content;
+
+        $tabsWithErrors.each(function (i, tab) {
+          let tabDataId = $(tab).data('id');
+          let $tabContainer = $content.find('#' + tabDataId);
+          if ($tabContainer.length > 0) {
+            let tabUid = $tabContainer.data('layout-tab');
+            let $tabErrorSummary = $(errorSummary);
+            let tabErrorCount = $tabErrorSummary.find('ul.errors li').length;
+
+            // remove any errors that are not specifically for this tab
+            // leave out errors that don't have a tab assignment (e.g. cross-validation errors)
+            $tabErrorSummary.find('ul.errors li').each(function (j, error) {
+              let errorTabUid = $(error).find('a').data('layout-tab');
+              if (
+                typeof errorTabUid !== 'undefined' &&
+                errorTabUid !== tabUid
+              ) {
+                $(error).remove();
+                tabErrorCount--;
+              }
+            });
+            $tabErrorSummary
+              .find('h2')
+              .text(
+                Craft.t(
+                  'app',
+                  'Found {num, number} {num, plural, =1{error} other{errors}}',
+                  {num: tabErrorCount}
+                )
+              );
+            $tabErrorSummary.prependTo($tabContainer);
+            Craft.ui.setFocusOnErrorSummary($tabContainer); // this also makes the deep linking work
+          }
+        });
+      } else {
+        // if we only have one tab - just show the error summary as is
+        $(errorSummary).prependTo(this.$content);
+        Craft.ui.setFocusOnErrorSummary(this.$content);
+      }
     },
 
     /**

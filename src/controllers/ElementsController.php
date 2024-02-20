@@ -20,6 +20,7 @@ use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
 use craft\events\DraftEvent;
+use craft\fieldlayoutelements\BaseField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
@@ -1022,6 +1023,7 @@ JS, [
                 }
             }
             $errorsList = [];
+            $tabs = $element->getFieldLayout()->getTabs();
             foreach ($allErrors as $key => $errors) {
                 foreach ($errors as $error) {
                     $errorItem = Html::beginTag('li');
@@ -1030,10 +1032,23 @@ JS, [
                     if (preg_match('/^\s?\<a /', $error)) {
                         $errorItem .= $error;
                     } else {
+                        $tabUid = null;
+                        $bracketPos = strpos($key, '[');
+                        $fieldKey = substr($key, 0, $bracketPos ?: null);
+                        foreach ($tabs as $tab) {
+                            foreach ($tab->getElements() as $layoutElement) {
+                                if ($layoutElement instanceof BaseField && $layoutElement->attribute() === $fieldKey) {
+                                    $tabUid = $tab->uid;
+                                    continue 2;
+                                }
+                            }
+                        }
+
                         $error = Markdown::processParagraph(htmlspecialchars($error));
                         $errorItem .= Html::a(Craft::t('app', $error), '#', [
                             'data' => [
                                 'field-error-key' => $key,
+                                'layout-tab' => $tabUid,
                             ],
                         ]);
                     }
