@@ -1898,6 +1898,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       ev.preventDefault();
       ev.stopPropagation();
 
+      // Prevent the beforeunload listener from getting run
+      ev.stopImmediatePropagation();
+
       // Prevent double form submits
       if (this.submittingForm) {
         return;
