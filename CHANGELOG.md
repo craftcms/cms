@@ -10,6 +10,8 @@
 - Entry chips no longer display their entry type’s icon.
 - Element types can now implement `craft\base\Iconic` to have an icon displayed within their cards.
 - Element queries’ `level` param now supports passing an array which includes `null`. ([#14419](https://github.com/craftcms/cms/issues/14419))
+- Added `craft\fieldlayoutelements\BaseField::baseInputName()`.
+- Added `craft\fieldlayoutelements\BaseField::errorKey()`.
 - Fixed a bug where it wasn’t possible to clear out users’ full names once they were set. ([#14402](https://github.com/craftcms/cms/pull/14402))
 - Fixed an error that occurred when attempting to add nested elements to Addresses or Matrix fields on element types that don’t support drafts. ([#14396](https://github.com/craftcms/cms/pull/14396))
 - Fixed a bug where double-digit nav item badge counts were overflowing. ([#14406](https://github.com/craftcms/cms/issues/14406))
