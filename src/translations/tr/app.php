@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Bir seçenek ekle',
     'Add to cart' => 'Sepete ekle',
     'Add {type} above' => '{type} i yukarıya ekle',
+    'Add' => 'Add',
     'Added to cart' => 'Sepete ekle',
     'Address Fields' => 'Adres Alanları',
     'Address Line 1' => 'Adres Satırı 1',

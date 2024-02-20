@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Tilføj en mulighed',
     'Add to cart' => 'Føj til kurv',
     'Add {type} above' => 'Tilføj {type} ovenfor',
+    'Add' => 'Add',
     'Added to cart' => 'Føjet til kurv',
     'Address Fields' => 'Adressefelter',
     'Address Line 1' => 'Adresselinje 1',

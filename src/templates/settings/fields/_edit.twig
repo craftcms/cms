@@ -45,11 +45,11 @@
   },
 }) }}
 
-{{ forms.checkboxField({
+{{ forms.lightswitchField({
   label: 'Use this field’s values as search keywords'|t('app'),
   id: 'searchable',
   name: 'searchable',
-  checked: field.searchable
+  on: field.searchable
 }) }}
 
 {{ forms.customSelectField({

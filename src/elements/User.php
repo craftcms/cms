@@ -973,7 +973,14 @@ class User extends Element implements IdentityInterface
             }
         }
 
-        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+        if (array_key_exists('fullName', $values)) {
+            // Clear out the first and last names.
+            // They'll get reset from prepareNamesForSave() if fullName isn't empty.
+            $this->firstName = null;
+            $this->lastName = null;
+        } elseif (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            // Clear out the full name.
+            // It'll get reset from prepareNamesForSave() if the first/last names aren't empty.
             $this->fullName = null;
         }
 
@@ -1717,7 +1724,9 @@ XML;
         $miscItems = [];
 
         if ($edition === Craft::Pro) {
-            switch ($this->getStatus()) {
+            $status = $this->getStatus();
+
+            switch ($status) {
                 case Element::STATUS_ARCHIVED:
                 case Element::STATUS_DISABLED:
                     if (Craft::$app->getElements()->canSave($this)) {
@@ -1807,6 +1816,33 @@ XML;
                         }
                     }
                     break;
+            }
+
+            if (
+                in_array($status, [self::STATUS_PENDING, self::STATUS_ACTIVE]) &&
+                $canAdministrateUsers &&
+                !$isCurrentUser
+            ) {
+                if ($this->passwordResetRequired) {
+                    $statusItems[] = [
+                        'icon' => 'asterisk-slash',
+                        'iconColor' => 'gray',
+                        'label' => Craft::t('app', 'Don’t require a password reset on next login'),
+                        'action' => 'users/remove-password-reset-requirement',
+                        'params' => [
+                            'userId' => $this->id,
+                        ],
+                    ];
+                } else {
+                    $statusItems[] = [
+                        'icon' => 'asterisk',
+                        'label' => Craft::t('app', 'Require a password reset on next login'),
+                        'action' => 'users/require-password-reset',
+                        'params' => [
+                            'userId' => $this->id,
+                        ],
+                    ];
+                }
             }
 
             if (!$isCurrentUser) {
@@ -1902,7 +1938,7 @@ JS, [
                 if (($isCurrentUser || $canAdministrateUsers) && ($this->active || $this->pending)) {
                     $items[] = [
                         'icon' => 'disabled',
-                        'label' => Craft::t('app', 'Deactivate…'),
+                        'label' => Craft::t('app', 'Deactivate'),
                         'action' => 'users/deactivate-user',
                         'params' => [
                             'userId' => $this->id,
@@ -2358,6 +2394,8 @@ JS, [
             $transaction->rollBack();
             throw $e;
         }
+
+        $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);
 
         return true;
     }

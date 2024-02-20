@@ -693,8 +693,22 @@ class Cp
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
+        $thumb = $element->getThumbHtml(120);
+        if ($thumb === null && $element instanceof Iconic) {
+            $icon = $element->getIcon();
+            if ($icon) {
+                $thumb = Html::tag('div', Cp::iconSvg($icon), [
+                    'class' => array_filter([
+                        'cp-icon',
+                        $element instanceof Colorable ? $element->getColor()?->value : null,
+                    ]),
+                    'aria' => ['hidden' => true],
+                ]);
+            }
+        }
+
         $html = Html::beginTag('div', $attributes) .
-            ($element->getThumbHtml(120) ?? '') .
+            ($thumb ?? '') .
             Html::beginTag('div', ['class' => 'card-content']) .
             ($headingContent !== '' ? Html::tag('div', $headingContent, ['class' => 'card-heading']) : '') .
             ($bodyContent !== '' ? Html::tag('div', $bodyContent, ['class' => 'card-body']) : '') .
@@ -2325,6 +2339,7 @@ JS;
             Html::hiddenInput('fieldLayout', Json::encode($fieldLayoutConfig), [
                 'data' => ['config-input' => true],
             ]) .
+            Html::beginTag('div', ['class' => 'fld-container']) .
             Html::beginTag('div', ['class' => 'fld-workspace']) .
             Html::beginTag('div', ['class' => 'fld-tabs']) .
             implode('', array_map(fn(FieldLayoutTab $tab) => self::_fldTabHtml($tab, $config['customizableTabs']), $tabs)) .
@@ -2336,7 +2351,7 @@ JS;
                 ])
                 : '') .
             Html::endTag('div') . // .fld-workspace
-            Html::beginTag('div', ['class' => 'fld-sidebar']) .
+            Html::beginTag('div', ['class' => 'fld-library']) .
             ($config['customizableUi']
                 ? Html::beginTag('section', [
                     'class' => ['btngroup', 'btngroup--exclusive', 'small', 'fullwidth'],
@@ -2377,7 +2392,8 @@ JS;
                 implode('', array_map(fn(FieldLayoutElement $element) => self::layoutElementSelectorHtml($element, true), $availableUiElements)) .
                 Html::endTag('div') // .fld-ui-library
                 : '') .
-            Html::endTag('div') . // .fld-sidebar
+            Html::endTag('div') . // .fld-library
+            Html::endTag('div') . // .fld-container
             Html::endTag('div'); // .layoutdesigner
     }
 
@@ -2399,6 +2415,7 @@ JS;
      */
     private static function _fldTabHtml(FieldLayoutTab $tab, bool $customizable): string
     {
+        $menuId = sprintf('menu-%s', mt_rand());
         return
             Html::beginTag('div', [
                 'class' => 'fld-tab',
@@ -2428,6 +2445,14 @@ JS;
             Html::endTag('div') . // .tabs
             Html::beginTag('div', ['class' => 'fld-tabcontent']) .
             implode('', array_map(fn(FieldLayoutElement $element) => self::layoutElementSelectorHtml($element, false), $tab->getElements())) .
+            Html::button(Craft::t('app', 'Add'), [
+                'class' => ['btn', 'add', 'icon', 'dashed', 'fullwidth', 'fld-add-btn'],
+                'aria' => ['controls' => $menuId],
+            ]) .
+            Html::tag('div', options: [
+                'id' => $menuId,
+                'class' => ['menu', 'menu--disclosure', 'fld-library-menu'],
+            ]) .
             Html::endTag('div') . // .fld-tabcontent
             Html::endTag('div'); // .fld-tab
     }
@@ -2893,7 +2918,12 @@ JS;
         try {
             // system icon name?
             if (preg_match('/^[a-z\-]+$/', $icon)) {
-                $path = Craft::getAlias("@appicons/$icon.svg");
+                $path = match ($icon) {
+                    'asterisk-slash', 'diamond-slash', 'element-card', 'element-card-slash', 'element-cards', 'graphql',
+                    'grip-dots', 'image-slash', 'list-flip', 'list-tree-flip', 'share-flip' =>
+                        Craft::getAlias("@app/icons/custom-icons/$icon.svg"),
+                    default => Craft::getAlias("@appicons/$icon.svg"),
+                };
                 if (!file_exists($path)) {
                     throw new InvalidArgumentException("Invalid system icon: $icon");
                 }

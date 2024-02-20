@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Agregar una opción',
     'Add to cart' => 'Añadir al carro',
     'Add {type} above' => 'Agregar {type} arriba',
+    'Add' => 'Add',
     'Added to cart' => 'Añadido al carro',
     'Address Fields' => 'Campos de dirección',
     'Address Line 1' => 'Línea de dirección 1',

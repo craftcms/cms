@@ -665,6 +665,66 @@ class UsersController extends Controller
     }
 
     /**
+     * Requires a user to reset their password on next login.
+     *
+     * @return Response|null
+     * @since 5.0.0
+     */
+    public function actionRequirePasswordReset(): ?Response
+    {
+        $this->requirePermission('administrateUsers');
+
+        $userId = $this->request->getRequiredParam('userId');
+        $user = Craft::$app->getUsers()->getUserById($userId);
+
+        if (!$user) {
+            $this->_noUserExists();
+        }
+
+        $user->passwordResetRequired = true;
+
+        if (!Craft::$app->getElements()->saveElement($user, false)) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
+        }
+
+        return $this->asSuccess(Craft::t('app', '{type} saved.', [
+            'type' => User::displayName(),
+        ]));
+    }
+
+    /**
+     * Removes the requirement for a user to reset their password on next login.
+     *
+     * @return Response|null
+     * @since 5.0.0
+     */
+    public function actionRemovePasswordResetRequirement(): ?Response
+    {
+        $this->requirePermission('administrateUsers');
+
+        $userId = $this->request->getRequiredParam('userId');
+        $user = Craft::$app->getUsers()->getUserById($userId);
+
+        if (!$user) {
+            $this->_noUserExists();
+        }
+
+        $user->passwordResetRequired = false;
+
+        if (!Craft::$app->getElements()->saveElement($user, false)) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
+        }
+
+        return $this->asSuccess(Craft::t('app', '{type} saved.', [
+            'type' => User::displayName(),
+        ]));
+    }
+
+    /**
      * Sets a user’s password once they’ve verified they have access to their email.
      *
      * @return Response

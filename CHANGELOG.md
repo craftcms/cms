@@ -1,5 +1,35 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Added the “Require a password reset on next login” user account action.
+- Slideout sidebars are now always toggleable; not just when the slideout is too narrow to show the sidebar alongside the content. ([#14418](https://github.com/craftcms/cms/pull/14418))
+- Field Layout Designers now hide the component library sidebar in favor of “Add” disclosure menus, when they’re too narrow to show the sidebar alongside configured tabs. ([#14411](https://github.com/craftcms/cms/pull/14411))
+- Element sources can now override the default badge count label for screen readers, via a `badgeLabel` key. ([#14410](https://github.com/craftcms/cms/pull/14410))
+- Element sources no longer display `0` badges.
+- Entry chips no longer display their entry type’s icon.
+- Element types can now implement `craft\base\Iconic` to have an icon displayed within their cards.
+- Element queries’ `level` param now supports passing an array which includes `null`. ([#14419](https://github.com/craftcms/cms/issues/14419))
+- Added `craft\fieldlayoutelements\BaseField::baseInputName()`.
+- Added `craft\fieldlayoutelements\BaseField::errorKey()`.
+- Fixed a bug where it wasn’t possible to clear out users’ full names once they were set. ([#14402](https://github.com/craftcms/cms/pull/14402))
+- Fixed an error that occurred when attempting to add nested elements to Addresses or Matrix fields on element types that don’t support drafts. ([#14396](https://github.com/craftcms/cms/pull/14396))
+- Fixed a bug where double-digit nav item badge counts were overflowing. ([#14406](https://github.com/craftcms/cms/issues/14406))
+- Fixed a bug where fresh installs had a `fieldGroups` array in the project config. ([#14412](https://github.com/craftcms/cms/issues/14412))
+- Fixed an alignment issue within sidebar meta info. ([#14413](https://github.com/craftcms/cms/pull/14413))
+- Fixed a bug where site crumbs didn’t always have a localized Earth icon. ([#14415](https://github.com/craftcms/cms/issues/14415))
+- Fixed a bug where entry types’ “Title Format” setting wasn’t toggling based on the “Show the Title field” setting, from within slideouts.
+- Fixed a bug where newly-created entries didn’t always have the current user assigned as the author by default. ([#14417](https://github.com/craftcms/cms/issues/14417))
+- Fixed a bug where some errors that occurred when creating a nested element weren’t getting handled properly.
+- Fixed a bug where users’ addresses weren’t getting deleted immediately when a user was deleted.
+- Fixed a JavaScript error that could occur when switching between asset sources, if the user had permission to upload assets to some but not others. ([#14403](https://github.com/craftcms/cms/issues/14403))
+- Fixed a bug where setting `showSiteMenu` to `true` on element index templates was being treated as `'auto'`. ([#14404](https://github.com/craftcms/cms/pull/14404))
+- Fixed a bug where `data-target` and `data-reverse-target` attributes weren’t getting properly namespaced if they included a class name selector.
+- Fixed the type annotation for `craft\behaviors\CustomFieldBehavior::$fieldHandles`. ([#14421](https://github.com/craftcms/cms/issues/14421))
+- Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets was only working for the first selected asset, rather than the focussed one.
+Fixed a JavaScript error that could occur when previewing an image.
+- Fixed a bug where PHP errors that occurred during bootstrap weren’t getting logged to `stderr` for console requests. ([#14424](https://github.com/craftcms/cms/pull/14424))
+
 ## 5.0.0-beta.2 - 2024-02-15
 
 - Entry type and field edit pages now list their usages. ([#14397](https://github.com/craftcms/cms/pull/14397))

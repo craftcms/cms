@@ -61,6 +61,7 @@ return [
     'Add an option' => 'เพิ่มตัวเลือก',
     'Add to cart' => 'เพิ่มใส่รถเข็น',
     'Add {type} above' => 'เพิ่ม {type} ด้านบน',
+    'Add' => 'Add',
     'Added to cart' => 'เพิ่มใส่รถเข็นแล้ว',
     'Address Fields' => 'ฟิลด์ที่อยู่',
     'Address Line 1' => 'ที่อยู่บรรทัดที่ 1',

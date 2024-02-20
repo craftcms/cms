@@ -61,6 +61,7 @@ return [
     'Add an option' => 'オプションを追加',
     'Add to cart' => 'カートに追加',
     'Add {type} above' => '{type} を上に追加',
+    'Add' => 'Add',
     'Added to cart' => 'カートに追加済み',
     'Address Fields' => '住所フィールド',
     'Address Line 1' => '住所欄1',

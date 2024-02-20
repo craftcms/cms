@@ -2716,7 +2716,17 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->level) {
-            $this->subQuery->andWhere(Db::parseNumericParam('structureelements.level', $this->level));
+            $allowNull = is_array($this->level) && in_array(null, $this->level, true);
+            if ($allowNull) {
+                $levelCondition = [
+                    'or',
+                    Db::parseNumericParam('structureelements.level', array_filter($this->level, fn($v) => $v !== null)),
+                    ['structureelements.level' => null],
+                ];
+            } else {
+                $levelCondition = Db::parseNumericParam('structureelements.level', $this->level);
+            }
+            $this->subQuery->andWhere($levelCondition);
         }
 
         if ($this->leaves) {

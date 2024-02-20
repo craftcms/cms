@@ -1066,7 +1066,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         name,
         value,
       }).prependTo(this.$container);
-      await this.saveDraft();
+      if (this.settings.canCreateDrafts) {
+        await this.saveDraft();
+      }
     },
 
     async markDeltaNameAsModified(name) {
@@ -1895,6 +1897,9 @@ Craft.ElementEditor = Garnish.Base.extend(
     handleSubmit: function (ev) {
       ev.preventDefault();
       ev.stopPropagation();
+
+      // Prevent the beforeunload listener from getting run
+      ev.stopImmediatePropagation();
 
       // Prevent double form submits
       if (this.submittingForm) {

@@ -269,6 +269,7 @@ interface ElementInterface extends
      * - **`status`** – The status color that should be shown beside the source label. Possible values include `green`,
      *   `orange`, `red`, `yellow`, `pink`, `purple`, `blue`, `turquoise`, `light`, `grey`, `black`, and `white`. (Optional)
      * - **`badgeCount`** – The badge count that should be displayed alongside the label. (Optional)
+     * - **`badgeLabel`** – The badge count label that should be provided for screen readers. (Optional)
      * - **`sites`** – An array of site IDs or UUIDs that the source should be shown for, on multi-site element indexes.
      *   (Optional; by default the source will be shown for all sites.)
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.

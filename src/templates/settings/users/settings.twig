@@ -89,27 +89,27 @@
     <hr>
     <h2>{{ 'Public Registration'|t('app') }}</h2>
 
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
       fieldClass: 'first',
       label: 'Allow public registration'|t('app'),
       name: 'allowPublicRegistration',
-      checked: settings.allowPublicRegistration,
+      on: settings.allowPublicRegistration,
       toggle: 'publicRegistrationSettings'
     }) }}
 
     <div id="publicRegistrationSettings" class="nested-fields{% if not settings.allowPublicRegistration %} hidden{% endif %}">
-      {{ forms.checkboxField({
+      {{ forms.lightswitchField({
         label: 'Validate custom fields on public registration'|t('app'),
         instructions: 'Whether custom fields should be validated during public registration.'|t('app'),
         name: 'validateOnPublicRegistration',
-        checked: settings.validateOnPublicRegistration,
+        on: settings.validateOnPublicRegistration,
       }) }}
 
-      {{ forms.checkboxField({
+      {{ forms.lightswitchField({
         label: 'Deactivate users by default'|t('app'),
         instructions: 'Should users who register their own accounts be deactivated by default? This will prevent them from receiving an activation email or logging in.'|t('app'),
         name: 'deactivateByDefault',
-        checked: settings.deactivateByDefault,
+        on: settings.deactivateByDefault,
       }) }}
 
       {% set groups = [{ label: "None"|t('app'), value: '' }] %}
@@ -129,12 +129,12 @@
     <hr>
     <h2>{{ 'Security'|t('app') }}</h2>
 
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
       fieldClass: 'first',
       label: 'Verify email addresses'|t('app'),
       instructions: 'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)'|t('app'),
       name: 'requireEmailVerification',
-      checked: settings.requireEmailVerification,
+      on: settings.requireEmailVerification,
     }) }}
 
     {{ forms.checkboxSelectField({

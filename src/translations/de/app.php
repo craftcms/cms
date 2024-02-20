@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Option hinzufügen',
     'Add to cart' => 'Zum Warenkorb hinzufügen',
     'Add {type} above' => '{type} oberhalb einfügen',
+    'Add' => 'Add',
     'Added to cart' => 'Zum Warenkorb hinzugefügt',
     'Address Fields' => 'Adressfelder',
     'Address Line 1' => 'Anschrift',

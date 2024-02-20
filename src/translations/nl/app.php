@@ -61,6 +61,7 @@ return [
     'Add an option' => 'Voeg een optie toe',
     'Add to cart' => 'Toevoegen aan winkelwagen',
     'Add {type} above' => 'Voeg {type} toe boven',
+    'Add' => 'Add',
     'Added to cart' => 'Toegevoegd aan winkelwagen',
     'Address Fields' => 'Adresvelden',
     'Address Line 1' => 'Adresregel 1',

@@ -1663,7 +1663,6 @@ ul.icons {
     width: 36px;
   }
 
-  &.active,
   &.loading {
     cursor: default;
   }
@@ -2645,7 +2644,7 @@ h2 + .actions {
   table.data {
     th,
     td {
-      &:first-child:not(.checkbox-cell) {
+      &:first-child:not(.checkbox-cell):not(.vuetable-th-slot-checkbox) {
         @include padding-left(
           var(--pane-padding, var(--pane-x-padding-default))
         );
@@ -2704,7 +2703,8 @@ table {
       padding-right: 12px;
       box-sizing: border-box;
 
-      &.checkbox-cell {
+      &.checkbox-cell,
+      &.vuetable-th-slot-checkbox {
         width: var(--checkbox-size) !important;
         min-width: var(--checkbox-size);
         box-sizing: content-box;
@@ -4836,7 +4836,6 @@ ul.tree,
       color: var(--medium-text-color);
 
       & > .data {
-        align-items: baseline;
         min-height: auto;
 
         & > .heading,
@@ -5475,15 +5474,7 @@ $min2ColWidth: 400px;
 
 @container (width > 700px) {
   .slideout {
-    &.has-sidebar {
-      .pane-header:not(.so-visible) {
-        display: none;
-      }
-
-      .sidebar-btn {
-        display: none;
-      }
-
+    &.showing-sidebar {
       .so-body {
         display: flex;
         flex-direction: row;
