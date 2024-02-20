@@ -476,7 +476,7 @@ return [
     'Date' => 'Date',
     'Days' => 'Days',
     'Deactivate users by default' => 'Deactivate users by default',
-    'Deactivate…' => 'Deactivate…',
+    'Deactivate' => 'Deactivate',
     'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?' => 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?',
     'Debug Toolbar' => 'Debug Toolbar',
     'Decimal Points' => 'Decimal Points',

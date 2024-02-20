@@ -1909,7 +1909,7 @@ JS, [
                 if (($isCurrentUser || $canAdministrateUsers) && ($this->active || $this->pending)) {
                     $items[] = [
                         'icon' => 'disabled',
-                        'label' => Craft::t('app', 'Deactivate…'),
+                        'label' => Craft::t('app', 'Deactivate'),
                         'action' => 'users/deactivate-user',
                         'params' => [
                             'userId' => $this->id,
