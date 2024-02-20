@@ -554,6 +554,7 @@ return [
     'Do Si' => 'Do Si',
     'Documentation' => 'Documentation',
     'Done' => 'Done',
+    'Don’t require a password reset on next login' => 'Don’t require a password reset on next login',
     'Don’t show in element cards' => 'Don’t show in element cards',
     'Don’t use for element thumbnails' => 'Don’t use for element thumbnails',
     'Download backup' => 'Download backup',

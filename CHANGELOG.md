@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the “Require a password reset on next login” user account action.
 - Slideout sidebars are now always toggleable; not just when the slideout is too narrow to show the sidebar alongside the content. ([#14418](https://github.com/craftcms/cms/pull/14418))
 - Field Layout Designers now hide the component library sidebar in favor of “Add” disclosure menus, when they’re too narrow to show the sidebar alongside configured tabs. ([#14411](https://github.com/craftcms/cms/pull/14411))
 - Element sources can now override the default badge count label for screen readers, via a `badgeLabel` key. ([#14410](https://github.com/craftcms/cms/pull/14410))

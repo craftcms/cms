@@ -2918,7 +2918,12 @@ JS;
         try {
             // system icon name?
             if (preg_match('/^[a-z\-]+$/', $icon)) {
-                $path = Craft::getAlias("@appicons/$icon.svg");
+                $path = match ($icon) {
+                    'asterisk-slash', 'diamond-slash', 'element-card', 'element-card-slash', 'element-cards', 'graphql',
+                    'grip-dots', 'image-slash', 'list-flip', 'list-tree-flip', 'share-flip' =>
+                        Craft::getAlias("@app/icons/custom-icons/$icon.svg"),
+                    default => Craft::getAlias("@appicons/$icon.svg"),
+                };
                 if (!file_exists($path)) {
                     throw new InvalidArgumentException("Invalid system icon: $icon");
                 }
