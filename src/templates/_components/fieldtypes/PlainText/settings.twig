@@ -50,16 +50,16 @@
 {% endembed %}
 
 <fieldset>
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
         label: "Use a monospaced font"|t('app'),
         name: 'code',
-        checked: field.code,
+        on: field.code,
     }) }}
 
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
         label: "Allow line breaks"|t('app'),
         name: 'multiline',
-        checked: field.multiline,
+        on: field.multiline,
         toggle: 'initialRowsContainer'
     }) }}
 </fieldset>

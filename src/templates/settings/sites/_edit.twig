@@ -96,11 +96,11 @@
 
         <hr>
 
-        {{ forms.checkboxField({
+        {{ forms.lightswitchField({
             label: "This site has its own base URL"|t('app'),
             id: 'has-urls',
             name: 'hasUrls',
-            checked: site.hasUrls,
+            on: site.hasUrls,
             toggle: 'url-settings'
         }) }}
 

@@ -1724,7 +1724,9 @@ XML;
         $miscItems = [];
 
         if ($edition === Craft::Pro) {
-            switch ($this->getStatus()) {
+            $status = $this->getStatus();
+
+            switch ($status) {
                 case Element::STATUS_ARCHIVED:
                 case Element::STATUS_DISABLED:
                     if (Craft::$app->getElements()->canSave($this)) {
@@ -1814,6 +1816,33 @@ XML;
                         }
                     }
                     break;
+            }
+
+            if (
+                in_array($status, [self::STATUS_PENDING, self::STATUS_ACTIVE]) &&
+                $canAdministrateUsers &&
+                !$isCurrentUser
+            ) {
+                if ($this->passwordResetRequired) {
+                    $statusItems[] = [
+                        'icon' => 'asterisk-slash',
+                        'iconColor' => 'gray',
+                        'label' => Craft::t('app', 'Don’t require a password reset on next login'),
+                        'action' => 'users/remove-password-reset-requirement',
+                        'params' => [
+                            'userId' => $this->id,
+                        ],
+                    ];
+                } else {
+                    $statusItems[] = [
+                        'icon' => 'asterisk',
+                        'label' => Craft::t('app', 'Require a password reset on next login'),
+                        'action' => 'users/require-password-reset',
+                        'params' => [
+                            'userId' => $this->id,
+                        ],
+                    ];
+                }
             }
 
             if (!$isCurrentUser) {
@@ -1909,7 +1938,7 @@ JS, [
                 if (($isCurrentUser || $canAdministrateUsers) && ($this->active || $this->pending)) {
                     $items[] = [
                         'icon' => 'disabled',
-                        'label' => Craft::t('app', 'Deactivate…'),
+                        'label' => Craft::t('app', 'Deactivate'),
                         'action' => 'users/deactivate-user',
                         'params' => [
                             'userId' => $this->id,
