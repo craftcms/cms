@@ -639,31 +639,56 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     showErrors: function (errors) {
       this.clearErrors();
 
+      const tabMenu = this.tabManager.menu;
+      const tabErrorIndicator =
+        '<span data-icon="alert">' +
+        '<span class="visually-hidden">' +
+        Craft.t('app', 'This tab contains errors') +
+        '</span>\n' +
+        '</span>';
+
       Object.entries(errors).forEach(([name, fieldErrors]) => {
         const $field = this.$container.find(`[data-error-key="${name}"]`);
         if ($field) {
           Craft.ui.addErrorsToField($field, fieldErrors);
           this.fieldsWithErrors.push($field);
 
-          // mark the tab as having errors
+          // find tabs that contain fields with errors
           let fieldTabAnchors = Craft.ui.findTabAnchorForField(
             $field,
             this.$container
           );
 
+          // add error indicator to tabs
           if (fieldTabAnchors.length > 0) {
+            // add error indicator to the tabs menuBtn
+            if (this.tabManager.$menuBtn.hasClass('error') == false) {
+              this.tabManager.$menuBtn.addClass('error');
+              this.tabManager.$menuBtn.append(
+                '<span data-icon="alert"></span>'
+              );
+            }
+
             for (let i = 0; i < fieldTabAnchors.length; i++) {
               let $fieldTabAnchor = $(fieldTabAnchors[i]);
 
               if ($fieldTabAnchor.hasClass('error') == false) {
                 $fieldTabAnchor.addClass('error');
-                $fieldTabAnchor
-                  .find('.tab-label')
-                  .append(
-                    '<span data-icon="alert">' +
-                      '<span class="visually-hidden">This tab contains errors</span>\n' +
-                      '</span>'
+                $fieldTabAnchor.find('.tab-label').append(tabErrorIndicator);
+
+                // also add the error indicator to the disclosure menu for the tabs
+                if (tabMenu.length) {
+                  let $tabMenuItem = tabMenu.find(
+                    '[data-id=' + $fieldTabAnchor.data('id') + ']'
                   );
+                  if (
+                    $tabMenuItem.length > 0 &&
+                    $tabMenuItem.hasClass('error') == false
+                  ) {
+                    $tabMenuItem.addClass('error');
+                    $tabMenuItem.append(tabErrorIndicator);
+                  }
+                }
               }
             }
           }
