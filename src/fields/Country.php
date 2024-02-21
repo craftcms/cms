@@ -15,7 +15,7 @@ use craft\fields\conditions\CountryFieldConditionRule;
 use craft\helpers\Cp;
 
 /**
- * Email represents an Email field.
+ * Country represents a Country field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.6.0
