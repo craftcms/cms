@@ -639,7 +639,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     showErrors: function (errors) {
       this.clearErrors();
 
-      const tabMenu = this.tabManager.menu;
+      const tabMenu = this.tabManager?.menu || [];
       const tabErrorIndicator =
         '<span data-icon="alert">' +
         '<span class="visually-hidden">' +
