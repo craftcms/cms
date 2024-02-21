@@ -7,6 +7,7 @@
 - Field Layout Designers now hide the component library sidebar in favor of “Add” disclosure menus, when they’re too narrow to show the sidebar alongside configured tabs. ([#14411](https://github.com/craftcms/cms/pull/14411))
 - Element sources can now override the default badge count label for screen readers, via a `badgeLabel` key. ([#14410](https://github.com/craftcms/cms/pull/14410))
 - Element sources no longer display `0` badges.
+- The view states for nested element sources are now managed independently.
 - Entry chips no longer display their entry type’s icon.
 - Element types can now implement `craft\base\Iconic` to have an icon displayed within their cards.
 - Element queries’ `level` param now supports passing an array which includes `null`. ([#14419](https://github.com/craftcms/cms/issues/14419))
