@@ -15,6 +15,7 @@
 - Matrix fields now include `title` and `slug` keys when serializing their values. ([#14429](https://github.com/craftcms/cms/pull/14429))
 - Added `craft\fieldlayoutelements\BaseField::baseInputName()`.
 - Added `craft\fieldlayoutelements\BaseField::errorKey()`.
+- `craft\base\ElementInterface::modifyCustomSource()` can now set `disabled` to `true` on the source config to hide it.
 - Fixed a bug where it wasn’t possible to clear out users’ full names once they were set. ([#14402](https://github.com/craftcms/cms/pull/14402))
 - Fixed an error that occurred when attempting to add nested elements to Addresses or Matrix fields on element types that don’t support drafts. ([#14396](https://github.com/craftcms/cms/pull/14396))
 - Fixed a bug where double-digit nav item badge counts were overflowing. ([#14406](https://github.com/craftcms/cms/issues/14406))
