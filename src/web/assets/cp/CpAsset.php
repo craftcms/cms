@@ -196,7 +196,7 @@ JS;
             'Enter the name of the folder',
             'Enter your password to log back in.',
             'Error',
-            'Errors found in {num, number} other {num, plural, =1{tab} other{tabs}}.',
+            '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
             'Export Type',
             'Export',
             'Export…',

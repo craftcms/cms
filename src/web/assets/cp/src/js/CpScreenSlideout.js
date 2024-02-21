@@ -565,11 +565,14 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       }
 
       if (data.errorSummary) {
-        this.showErrorSummary(data.errorSummary);
+        this.showErrorSummary(
+          data.errorSummary,
+          Object.keys(data.errors || {}).length
+        );
       }
     },
 
-    showErrorSummary: function (errorSummary) {
+    showErrorSummary: function (errorSummary, errorCount = 0) {
       // start by clearing any error summary that might be left
       Craft.ui.clearErrorSummary(this.$body);
 
@@ -612,11 +615,14 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
             // if there are errors in any other tabs - tell users about it.
             if ($tabsWithErrors.length - 1 > 0) {
               $tabErrorSummary.append(
-                '<p>' +
+                '<p class="visually-hidden">' +
                   Craft.t(
                     'app',
-                    'Errors found in {num, number} other {num, plural, =1{tab} other{tabs}}.',
-                    {num: $tabsWithErrors.length - 1}
+                    '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
+                    {
+                      total: errorCount,
+                      num: $tabsWithErrors.length,
+                    }
                   ) +
                   '</p>'
               );
