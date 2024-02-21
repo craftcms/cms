@@ -206,7 +206,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
     createUploadInputs: function () {
       this.$uploadButton?.remove();
-      this.uploader?.$fileInput.remove();
+      // removing this input via this.uploader?.$fileInput and this.$uploadInput doesn't work;
+      // if the input gets multiplied in the source code, the event's won't fire as expected;
+      let $uploadInput = this.getButtonContainer().find(
+        '[name="assets-upload"]'
+      );
+      if ($uploadInput.length) {
+        $uploadInput.remove();
+      }
 
       this.$uploadButton = $('<button/>', {
         type: 'button',
