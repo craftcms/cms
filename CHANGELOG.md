@@ -11,6 +11,8 @@
 - Element types can now implement `craft\base\Iconic` to have an icon displayed within their cards.
 - Element queries’ `level` param now supports passing an array which includes `null`. ([#14419](https://github.com/craftcms/cms/issues/14419))
 - Admin tables now support appending `bodyHtml` and `headHtml` when running in API mode.
+- Addresses fields now include `title` keys when serializing their values. ([#14429](https://github.com/craftcms/cms/pull/14429))
+- Matrix fields now include `title` and `slug` keys when serializing their values. ([#14429](https://github.com/craftcms/cms/pull/14429))
 - Added `craft\fieldlayoutelements\BaseField::baseInputName()`.
 - Added `craft\fieldlayoutelements\BaseField::errorKey()`.
 - Fixed a bug where it wasn’t possible to clear out users’ full names once they were set. ([#14402](https://github.com/craftcms/cms/pull/14402))
