@@ -2313,15 +2313,25 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 }
             }
 
-            // getPrimaryOwnerId will return null when creating a revision
-            $primaryOwnerId = $this->getPrimaryOwnerId();
-            if (isset($this->fieldId, $primaryOwnerId) && $this->saveOwnership) {
+            // ownerId will be null when creating a revision
+            $ownerId = $this->getOwnerId();
+            if (isset($this->fieldId) && $ownerId && $this->saveOwnership) {
+                if (!isset($this->sortOrder) && !$isNew) {
+                    $this->sortOrder = (new Query())
+                        ->select('sortOrder')
+                        ->from(Table::ELEMENTS_OWNERS)
+                        ->where([
+                            'elementId' => $this->id,
+                            'ownerId' => $ownerId,
+                        ])
+                        ->scalar() ?: null;
+                }
                 if (!isset($this->sortOrder)) {
                     $max = (new Query())
                         ->from(['eo' => Table::ELEMENTS_OWNERS])
                         ->innerJoin(['e' => Table::ENTRIES], '[[e.id]] = [[eo.elementId]]')
                         ->where([
-                            'eo.ownerId' => $primaryOwnerId,
+                            'eo.ownerId' => $ownerId,
                             'e.fieldId' => $this->fieldId,
                         ])
                         ->max('[[eo.sortOrder]]');
@@ -2330,7 +2340,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 if ($isNew) {
                     Db::insert(Table::ELEMENTS_OWNERS, [
                         'elementId' => $this->id,
-                        'ownerId' => $primaryOwnerId,
+                        'ownerId' => $ownerId,
                         'sortOrder' => $this->sortOrder,
                     ]);
                 } else {
@@ -2338,7 +2348,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                         'sortOrder' => $this->sortOrder,
                     ], [
                         'elementId' => $this->id,
-                        'ownerId' => $primaryOwnerId,
+                        'ownerId' => $ownerId,
                     ]);
                 }
             }
