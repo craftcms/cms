@@ -1138,7 +1138,9 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected function uiLabel(): ?string
     {
         if (!$this->fieldId && (!isset($this->title) || trim($this->title) === '')) {
-            return Craft::t('app', 'Untitled entry');
+            return Craft::t('app', 'Untitled {type}', [
+                'type' => self::lowerDisplayName(),
+            ]);
         }
 
         return null;
