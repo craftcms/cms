@@ -5182,6 +5182,11 @@ JS,
             $field->afterElementPropagate($this, $isNew);
         }
 
+        // Delete relations that don’t belong to a relational field on the element's field layout
+        if (!ElementHelper::isDraftOrRevision($this)) {
+            Craft::$app->getRelations()->deleteLeftoverRelations($this);
+        }
+
         // Trigger an 'afterPropagate' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE)) {
             $this->trigger(self::EVENT_AFTER_PROPAGATE, new ModelEvent([

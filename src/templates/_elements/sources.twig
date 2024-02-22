@@ -68,7 +68,7 @@
             {{ '(blank)'|t('app') }}
         {% endif %}
     </span>
-    {% if source.badgeCount is defined %}
+    {% if source.badgeCount ?? false %}
         <span class="badge" aria-hidden="true">{{ source.badgeCount|number(decimals=0) }}</span>
         {{ tag('span', {
             class: 'visually-hidden',

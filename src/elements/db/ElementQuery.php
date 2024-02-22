@@ -2600,7 +2600,17 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->level) {
-            $this->subQuery->andWhere(Db::parseNumericParam('structureelements.level', $this->level));
+            $allowNull = is_array($this->level) && in_array(null, $this->level, true);
+            if ($allowNull) {
+                $levelCondition = [
+                    'or',
+                    Db::parseNumericParam('structureelements.level', array_filter($this->level, fn($v) => $v !== null)),
+                    ['structureelements.level' => null],
+                ];
+            } else {
+                $levelCondition = Db::parseNumericParam('structureelements.level', $this->level);
+            }
+            $this->subQuery->andWhere($levelCondition);
         }
 
         if ($this->leaves) {
@@ -2776,9 +2786,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        if (isset($this->orderBy['score'])) {
+        $searchService = Craft::$app->getSearch();
+
+        if (isset($this->orderBy['score']) || $searchService->shouldCallSearchElements($this)) {
             // Get the scored results up front
-            $searchResults = Craft::$app->getSearch()->searchElements($this);
+            $searchResults = $searchService->searchElements($this);
 
             if ($this->orderBy['score'] === SORT_ASC) {
                 $searchResults = array_reverse($searchResults, true);
@@ -2804,7 +2816,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(['elements.id' => array_keys($searchResults)]);
         } else {
             // Just filter the main query by the search query
-            $searchQuery = Craft::$app->getSearch()->createDbQuery($this->search, $this);
+            $searchQuery = $searchService->createDbQuery($this->search, $this);
 
             if ($searchQuery === false) {
                 throw new QueryAbortedException();
