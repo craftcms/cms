@@ -172,6 +172,8 @@ class VolumesController extends Controller
             'transformSubpath' => $this->request->getBodyParam('transformSubpath', ""),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
+            'altTranslationMethod' => $this->request->getBodyParam('altTranslationMethod', Field::TRANSLATION_METHOD_SITE),
+            'altTranslationKeyFormat' => $this->request->getBodyParam('altTranslationKeyFormat'),
         ]);
 
         // Set the field layout
