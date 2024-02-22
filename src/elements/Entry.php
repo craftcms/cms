@@ -1599,6 +1599,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'sortOrder' => null,
             'typeId' => $this->typeId,
             'siteId' => $this->siteId,
+            'authorIds' => $this->getAuthorIds(),
         ]);
 
         $section = $this->getSection();

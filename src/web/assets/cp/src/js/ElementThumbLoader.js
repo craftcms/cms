@@ -21,33 +21,20 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
       let $thumbs = $elements.find('.thumb[data-sizes]');
       for (let i = 0; i < $thumbs.length; i++) {
         let $thumb = $thumbs.eq(i);
-        let $scrollParent = $thumb.scrollParent();
-        if ($scrollParent.prop('nodeName') === 'FIELDSET') {
-          $scrollParent = $scrollParent.scrollParent();
-        }
-        if ($scrollParent[0] === document.body) {
-          $scrollParent = Garnish.$doc;
-        }
-        if (this.isVisible($thumb, $scrollParent)) {
+        if ($thumb.is(':visible')) {
           this.addToQueue($thumb[0]);
         } else {
           let key = 'thumb' + Math.floor(Math.random() * 1000000);
-          Craft.ElementThumbLoader.invisibleThumbs[key] = [
-            this,
-            $thumb,
-            $scrollParent,
-          ];
-          $scrollParent.on(
+          Craft.ElementThumbLoader.invisibleThumbs[key] = [this, $thumb];
+          Garnish.$doc.on(
             `scroll.${key}`,
             {
               $thumb: $thumb,
-              $scrollParent: $scrollParent,
               key: key,
             },
             (ev) => {
-              if (this.isVisible(ev.data.$thumb, ev.data.$scrollParent)) {
+              if ($thumb) {
                 delete Craft.ElementThumbLoader.invisibleThumbs[ev.data.key];
-                $scrollParent.off(`scroll.${ev.data.key}`);
                 this.addToQueue(ev.data.$thumb[0]);
               }
             }
@@ -67,22 +54,6 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
       }
     },
 
-    isVisible: function ($thumb, $scrollParent) {
-      let thumbOffset = $thumb.offset().top;
-      let scrollParentOffset, scrollParentHeight;
-      if ($scrollParent[0] === document) {
-        scrollParentOffset = $scrollParent.scrollTop();
-        scrollParentHeight = Garnish.$win.height();
-      } else {
-        scrollParentOffset = $scrollParent.offset().top;
-        scrollParentHeight = $scrollParent.height();
-      }
-      return (
-        thumbOffset > scrollParentOffset &&
-        thumbOffset < scrollParentOffset + scrollParentHeight + 1000
-      );
-    },
-
     destroy: function () {
       for (let i = 0; i < this.workers.length; i++) {
         this.workers[i].destroy();
@@ -95,10 +66,8 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
     invisibleThumbs: {},
     retryAll: function () {
       for (let key in Craft.ElementThumbLoader.invisibleThumbs) {
-        let [queue, $thumb, $scrollParent] =
-          Craft.ElementThumbLoader.invisibleThumbs[key];
+        let [queue, $thumb] = Craft.ElementThumbLoader.invisibleThumbs[key];
         delete Craft.ElementThumbLoader.invisibleThumbs[key];
-        $scrollParent.off(`scroll.${key}`);
         queue.load($thumb.parent());
       }
     },
