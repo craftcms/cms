@@ -604,7 +604,6 @@
 - Removed `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
 - Admin tables now support client-side searching when not running in API mode. ([#14126](https://github.com/craftcms/cms/pull/14126))
 - Admin tables now support appending `bodyHtml` and `headHtml` when running in API mode.
-- Admin tables now use `Craft.sendActionRequest()` to request data when running in API mode.
 - Added `Craft.CpModal`.
 - Added `Craft.BaseElementSelectInput::defineElementActions()`.
 - Added `Craft.CP::setSiteCrumbMenuItemStatus()`.
