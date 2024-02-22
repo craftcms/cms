@@ -355,9 +355,6 @@ class ElementsController extends Controller
             $enabledSiteIds = [];
         }
 
-        $editorSidebar = $this->_editorSidebar($element, $mergeCanonicalChanges, $canSave);
-        $hasEditorSidebar = !empty($editorSidebar);
-
         $response = $this->asCpScreen()
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
@@ -386,7 +383,6 @@ class ElementsController extends Controller
                 $isCurrent,
                 $isUnpublishedDraft,
                 $isDraft,
-                $hasEditorSidebar
             ))
             ->actionMenuItems(fn() => $element->id ? array_filter(
                 $element->getActionMenuItems(),
@@ -818,7 +814,6 @@ class ElementsController extends Controller
         bool $isCurrent,
         bool $isUnpublishedDraft,
         bool $isDraft,
-        bool $hasEditorSidebar,
     ): string {
         $components = [
             Html::tag('div', options: [
@@ -826,24 +821,6 @@ class ElementsController extends Controller
             ]),
         ];
 
-        if ($hasEditorSidebar) {
-            $components[] = Cp::renderTemplate('_includes/disclosure-toggle', [
-                'id' => 'details-toggle',
-                'controls' => 'details-container',
-                'content' => implode("\n", [
-                    Html::tag('span', Cp::iconSvg('sidebar-right'), [
-                        'aria-hidden' => true,
-                        'class' => ['cp-icon'],
-                    ]),
-                    Html::tag('span', Craft::t('app', 'Toggle details sidebar'), [
-                        'class' => ['visually-hidden'],
-                    ]),
-                ]),
-                'attributes' => [
-                    'class' => 'btn btn-empty',
-                ],
-            ]);
-        }
 
         // Preview (View will be added later by JS)
         if ($canSave && $previewTargets) {
