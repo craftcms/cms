@@ -9,11 +9,13 @@
 - Element sources no longer display `0` badges.
 - The view states for nested element sources are now managed independently.
 - Entry chips no longer display their entry type’s icon.
+- The Plugin Store now shows “Tested on Cloud” and “Supports GraphQL” labels for plugins when appropriate.
 - Element types can now implement `craft\base\Iconic` to have an icon displayed within their cards.
 - Element queries’ `level` param now supports passing an array which includes `null`. ([#14419](https://github.com/craftcms/cms/issues/14419))
 - Admin tables now support appending `bodyHtml` and `headHtml` when running in API mode.
 - Addresses fields now include `title` keys when serializing their values. ([#14429](https://github.com/craftcms/cms/pull/14429))
 - Matrix fields now include `title` and `slug` keys when serializing their values. ([#14429](https://github.com/craftcms/cms/pull/14429))
+- The Sendmail email transport type now uses the `sendmail_path` PHP ini setting by default. ([#14433](https://github.com/craftcms/cms/pull/14433))
 - Added `craft\fieldlayoutelements\BaseField::baseInputName()`.
 - Added `craft\fieldlayoutelements\BaseField::errorKey()`.
 - `craft\base\ElementInterface::modifyCustomSource()` can now set `disabled` to `true` on the source config to hide it.
