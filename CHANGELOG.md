@@ -12,6 +12,7 @@
 - Fixed a JavaScript error that could occur when previewing an image.
 - Fixed a bug where PHP errors that occurred during bootstrap weren’t getting logged to `stderr` for console requests. ([#14424](https://github.com/craftcms/cms/pull/14424))
 - Fixed a bug where disabled elements and drafts weren’t automatically getting propagated to newly-created sites, when appropriate.
+- Fixed a bug where the selected tab wasn’t being remembered when switching sites on element edit pages. ([#4018](https://github.com/craftcms/cms/issues/4018))
 
 ## 4.7.3 - 2024-02-15
 
