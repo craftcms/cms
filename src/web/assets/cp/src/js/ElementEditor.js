@@ -1897,7 +1897,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     handleSubmit: function (ev) {
       ev.preventDefault();
       ev.stopPropagation();
-      ev.stopImmediatePropagation();
 
       // Prevent the beforeunload listener from getting run
       ev.stopImmediatePropagation();
@@ -1944,7 +1943,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (this.isFullPage) {
         this.stopListeningForChanges();
         const $form = Craft.createForm(data);
-        $form.attr('id', 'element-editor-form');
         $form.appendTo(Garnish.$bod);
         $form.submit();
       } else {
