@@ -1278,11 +1278,22 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return null;
       }
 
-      sourceKey = sourceKey.replace(/\/.*/, '');
+      if (typeof this.sourceStates[sourceKey] === 'undefined') {
+        // If this is a nested source key, see if we have a source state for the parent
+        const lastSlashPos = sourceKey.lastIndexOf('/');
+        if (lastSlashPos !== -1) {
+          return this.getSourceState(
+            sourceKey.substring(0, lastSlashPos),
+            key,
+            defaultValue
+          );
+        }
+      }
+
       const sourceState = this.sourceStates[sourceKey] || {};
 
       if (typeof key === 'undefined') {
-        return sourceState;
+        return Object.assign({}, sourceState);
       }
       if (typeof sourceState[key] !== 'undefined') {
         return sourceState[key];
@@ -1326,18 +1337,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       let sourceKey = '*';
       if (this.instanceState.selectedSource != undefined) {
         // otherwise do what we used to do
-        sourceKey = this.instanceState.selectedSource.replace(/\/.*/, '');
+        sourceKey = this.instanceState.selectedSource;
       }
 
       const sourceStates = this.sourceStates;
       sourceStates[sourceKey] = viewState;
-
-      // Clean up sourceStates while we're at it
-      for (let i in sourceStates) {
-        if (sourceStates.hasOwnProperty(i) && i.includes('/')) {
-          delete sourceStates[i];
-        }
-      }
 
       this.sourceStates = sourceStates;
     },
@@ -1459,12 +1463,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     updateViewMenu: function () {
       if (
         !this.activeViewMenu ||
-        this.activeViewMenu !== this.viewMenus[this.rootSourceKey]
+        this.activeViewMenu !== this.viewMenus[this.sourceKey]
       ) {
         if (this.activeViewMenu) {
           this.activeViewMenu.hideTrigger();
         }
-        if (!this.viewMenus[this.rootSourceKey]) {
+        if (!this.viewMenus[this.sourceKey]) {
           if (
             !this.getViewModesForSource().find(
               (mode) => mode.mode === 'table'
@@ -1473,12 +1477,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           ) {
             return;
           }
-          this.viewMenus[this.rootSourceKey] = new ViewMenu(
-            this,
-            this.$rootSource
-          );
+          this.viewMenus[this.sourceKey] = new ViewMenu(this, this.$source);
         }
-        this.activeViewMenu = this.viewMenus[this.rootSourceKey];
+        this.activeViewMenu = this.viewMenus[this.sourceKey];
         this.activeViewMenu.showTrigger();
       }
     },
@@ -1962,7 +1963,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string}
      */
     getSelectedSortAttribute: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
+      $source = $source || this.$source;
 
       if ($source) {
         const attribute = this.getSourceState($source.data('key'), 'order');
@@ -1983,6 +1984,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      */
     getSelectedSortDirection: function ($source) {
       $source = $source || this.$source;
+
       if ($source) {
         const direction = this.getSourceState($source.data('key'), 'sort');
 
@@ -2316,14 +2318,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
+    getSourceData($source, key) {
+      $source ||= this.$source;
+      if (!$source) {
+        return undefined;
+      }
+      const data = $source.data(key);
+      if (data === undefined) {
+        const $parentSource = this.getParentSource($source);
+        if ($parentSource) {
+          return this.getSourceData($parentSource, key);
+        }
+      }
+      return data;
+    },
+
     /**
      * Returns the available sort attributes for a source (or the selected root source)
      * @param {jQuery} [$source]
      * @returns {Object[]}
      */
     getSortOptions: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
-      const sortOptions = ($source ? $source.data('sort-opts') : null) || [];
+      const sortOptions = this.getSourceData($source, 'sort-opts') || [];
 
       // Make sure there's at least one attribute
       if (!sortOptions.length) {
@@ -2355,24 +2371,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getDefaultSort: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
-      if ($source) {
-        let defaultSort = $source.data('default-sort');
-        if (defaultSort) {
-          if (typeof defaultSort === 'string') {
-            defaultSort = [defaultSort];
+      let defaultSort = this.getSourceData($source, 'default-sort');
+      if (defaultSort) {
+        if (typeof defaultSort === 'string') {
+          defaultSort = [defaultSort];
+        }
+
+        // Make sure it's valid
+        const sortOption = this.getSortOption(defaultSort[0], $source);
+        if (sortOption) {
+          // Fill in the default direction if it's not specified
+          if (!defaultSort[1]) {
+            defaultSort[1] = sortOption.defaultDir;
           }
 
-          // Make sure it's valid
-          const sortOption = this.getSortOption(defaultSort[0], $source);
-          if (sortOption) {
-            // Fill in the default direction if it's not specified
-            if (!defaultSort[1]) {
-              defaultSort[1] = sortOption.defaultDir;
-            }
-
-            return defaultSort;
-          }
+          return defaultSort;
         }
       }
 
@@ -2387,8 +2400,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]}
      */
     getTableColumnOptions: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
-      return ($source ? $source.data('table-col-opts') : null) || [];
+      return this.getSourceData($source, 'table-col-opts') || [];
     },
 
     /**
@@ -2410,8 +2422,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getDefaultTableColumns: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
-      return ($source ? $source.data('default-table-cols') : null) || [];
+      return this.getSourceData($source, 'default-table-cols') || [];
     },
 
     /**
@@ -2420,7 +2431,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getSelectedTableColumns: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
+      $source ||= this.$source;
       if ($source) {
         const attributes = this.getSourceState(
           $source.data('key'),
