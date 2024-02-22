@@ -63,6 +63,9 @@ class PropagateElements extends BaseBatchedJob
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
+            ->status(null)
+            ->drafts(null)
+            ->provisionalDrafts(null)
             ->offset(null)
             ->limit(null)
             ->orderBy(['elements.id' => SORT_ASC]);

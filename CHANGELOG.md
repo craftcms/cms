@@ -1,5 +1,19 @@
 # Release Notes for Craft CMS 4
 
+## 4.7.4 - 2024-02-22
+
+- The Plugin Store now shows “Tested on Cloud” and “Supports GraphQL” labels for plugins when appropriate.
+- Fixed a JavaScript error that could occur when switching between asset sources, if the user had permission to upload assets to some but not others. ([#14403](https://github.com/craftcms/cms/issues/14403))
+- Fixed a bug where setting `showSiteMenu` to `true` on element index templates was being treated as `'auto'`. ([#14404](https://github.com/craftcms/cms/pull/14404))
+- Fixed a SQL error that occurred when setting the Max Length of a URL field beyond what’s allowed by a `varchar` column. ([#14408](https://github.com/craftcms/cms/issues/14408))
+- Fixed a bug where `data-target` and `data-reverse-target` attributes weren’t getting properly namespaced if they included a class name selector.
+- Fixed the type annotation for `craft\behaviors\CustomFieldBehavior::$fieldHandles`. ([#14421](https://github.com/craftcms/cms/issues/14421))
+- Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets was only working for the first selected asset, rather than the focussed one.
+- Fixed a JavaScript error that could occur when previewing an image.
+- Fixed a bug where PHP errors that occurred during bootstrap weren’t getting logged to `stderr` for console requests. ([#14424](https://github.com/craftcms/cms/pull/14424))
+- Fixed a bug where disabled elements and drafts weren’t automatically getting propagated to newly-created sites, when appropriate.
+- Fixed a bug where the selected tab wasn’t being remembered when switching sites on element edit pages. ([#4018](https://github.com/craftcms/cms/issues/4018))
+
 ## 4.7.3 - 2024-02-15
 
 - Updated the bundled `composer.phar` to Composer 2.7.1. ([CVE-2024-24821](https://github.com/advisories/GHSA-7c6p-848j-wh5h))

@@ -787,19 +787,34 @@ class Html extends \yii\helpers\Html
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\"))([^'\"]+)\\3/i",
             function(array $match) use ($namespace, $ids): string {
-                $namespacedIds = array_map(function(string $id) use ($match, $ids, $namespace): string {
+                $matchIds = preg_split('/([,\s+]+)/', $match[4], flags: PREG_SPLIT_DELIM_CAPTURE);
+                $namespacedIds = '';
+                foreach ($matchIds as $i => $id) {
                     if (
-                        isset($ids[$id]) ||
-                        $match[2] === 'data-target-prefix' ||
-                        ($match[2] === 'href' && str_ends_with($match[1], '#'))
+                        $i % 2 === 0 && // not a delimiter
+                        $id[0] !== '.' // not a class name
                     ) {
-                        return sprintf('%s-%s', $namespace, $id);
+                        $isHash = $id[0] === '#';
+                        if ($isHash) {
+                            $id = substr($id, 1);
+                        }
+                        if (
+                            isset($ids[$id]) ||
+                            $match[2] === 'data-target-prefix' ||
+                            ($isHash && $match[2] === 'href')
+                        ) {
+                            $id = sprintf('%s-%s', $namespace, $id);
+                        }
+                        if ($isHash) {
+                            $id = "#$id";
+                        }
                     }
-                    return $id;
-                }, explode(' ', $match[4]));
-                return $match[1] . implode(' ', $namespacedIds) . $match[3];
+
+                    $namespacedIds .= $id;
+                }
+                return sprintf('%s%s%s', $match[1], $namespacedIds, $match[3]);
             }, $html);
 
         // ID references in url() calls

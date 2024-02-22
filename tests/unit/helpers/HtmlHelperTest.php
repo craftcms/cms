@@ -564,6 +564,8 @@ class HtmlHelperTest extends TestCase
             ['<circle id="foo-bar"></circle><use xlink:href="#foo-bar"></use>', '<circle id="bar"></circle><use xlink:href="#bar"></use>', 'foo', false],
             // https://github.com/craftcms/cms/pull/13251
             ['<style>.foo-a, .foo-b:hover</style>', '<style>.a, .b:hover</style>', 'foo', true],
+            ['<div id="foo-bar"></div><div data-reverse-target="#foo-bar, .foo"></div>', '<div id="bar"></div><div data-reverse-target="#bar, .foo"></div>', 'foo', false],
+            ['<div id="foo-bar"></div><div data-reverse-target="#foo-bar, #foo-bar .foo"></div>', '<div id="bar"></div><div data-reverse-target="#bar, #bar .foo"></div>', 'foo', false],
         ];
     }
 

@@ -135,7 +135,7 @@ class EntriesController extends BaseEntriesController
 
         // Make sure the user is allowed to create this entry
         if (!Craft::$app->getElements()->canSave($entry, $user)) {
-            throw new ForbiddenHttpException('User not authorized to save this entry.');
+            throw new ForbiddenHttpException('User not authorized to create this entry.');
         }
 
         // Title & slug
@@ -171,7 +171,7 @@ class EntriesController extends BaseEntriesController
 
         // Save it
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        $success = Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId(), null, null, false);
+        $success = Craft::$app->getDrafts()->saveElementAsDraft($entry, $user->id, markAsSaved: false);
 
         // Resume time
         DateTimeHelper::resume();
@@ -202,7 +202,7 @@ class EntriesController extends BaseEntriesController
         $response = $this->asModelSuccess($entry, Craft::t('app', '{type} created.', [
             'type' => Entry::displayName(),
         ]), 'entry', array_filter([
-            'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
+            'cpEditUrl' => $this->request->getIsCpRequest() ? $editUrl : null,
         ]));
 
         if (!$this->request->getAcceptsJson()) {

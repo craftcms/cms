@@ -103,7 +103,7 @@ class Url extends Field implements PreviewableFieldInterface
         $rules = parent::defineRules();
         $rules[] = [['types'], ArrayValidator::class];
         $rules[] = [['types', 'maxLength'], 'required'];
-        $rules[] = [['maxLength'], 'number', 'integerOnly' => true, 'min' => 10];
+        $rules[] = [['maxLength'], 'number', 'integerOnly' => true, 'min' => 10, 'max' => 16383];
         return $rules;
     }
 
