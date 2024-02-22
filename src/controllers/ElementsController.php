@@ -382,7 +382,7 @@ class ElementsController extends Controller
                 $enablePreview,
                 $isCurrent,
                 $isUnpublishedDraft,
-                $isDraft,
+                $isDraft
             ))
             ->actionMenuItems(fn() => $element->id ? array_filter(
                 $element->getActionMenuItems(),
@@ -820,7 +820,6 @@ class ElementsController extends Controller
                 'class' => ['activity-container'],
             ]),
         ];
-
 
         // Preview (View will be added later by JS)
         if ($canSave && $previewTargets) {
