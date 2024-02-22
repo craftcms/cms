@@ -12,7 +12,6 @@
 - Fixed a JavaScript error that could occur when previewing an image.
 - Fixed a bug where PHP errors that occurred during bootstrap weren’t getting logged to `stderr` for console requests. ([#14424](https://github.com/craftcms/cms/pull/14424))
 - Fixed a bug where disabled elements and drafts weren’t automatically getting propagated to newly-created sites, when appropriate.
-- Fixed a bug where asset select modals’ “Upload files” buttons weren’t working after switching sources. ([#14438](https://github.com/craftcms/cms/issues/14438))
 
 ## 4.7.3 - 2024-02-15
 
