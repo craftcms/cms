@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.7.4 - 2024-02-22
 
 - The Plugin Store now shows “Tested on Cloud” and “Supports GraphQL” labels for plugins when appropriate.
 - Fixed a JavaScript error that could occur when switching between asset sources, if the user had permission to upload assets to some but not others. ([#14403](https://github.com/craftcms/cms/issues/14403))
