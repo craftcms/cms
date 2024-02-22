@@ -27,6 +27,7 @@
 - Fixed a bug where site crumbs didn’t always have a localized Earth icon. ([#14415](https://github.com/craftcms/cms/issues/14415))
 - Fixed a bug where entry types’ “Title Format” setting wasn’t toggling based on the “Show the Title field” setting, from within slideouts.
 - Fixed a bug where newly-created entries didn’t always have the current user assigned as the author by default. ([#14417](https://github.com/craftcms/cms/issues/14417))
+- Fixed a bug where entries created via the “Save and add another” entry action weren’t getting the same authors assigned by default. ([#14417](https://github.com/craftcms/cms/issues/14417))
 - Fixed a bug where some errors that occurred when creating a nested element weren’t getting handled properly.
 - Fixed a bug where users’ addresses weren’t getting deleted immediately when a user was deleted.
 - Fixed a bug where nested addresses and entries would lose their position within the parent Addresses/Entries field if edited directly. ([#14427](https://github.com/craftcms/cms/issues/14427))
