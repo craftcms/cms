@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.7.4 - 2024-02-22
 
 - The Plugin Store now shows “Tested on Cloud” and “Supports GraphQL” labels for plugins when appropriate.
 - Fixed a JavaScript error that could occur when switching between asset sources, if the user had permission to upload assets to some but not others. ([#14403](https://github.com/craftcms/cms/issues/14403))
@@ -12,6 +12,7 @@
 - Fixed a JavaScript error that could occur when previewing an image.
 - Fixed a bug where PHP errors that occurred during bootstrap weren’t getting logged to `stderr` for console requests. ([#14424](https://github.com/craftcms/cms/pull/14424))
 - Fixed a bug where disabled elements and drafts weren’t automatically getting propagated to newly-created sites, when appropriate.
+- Fixed a bug where the selected tab wasn’t being remembered when switching sites on element edit pages. ([#4018](https://github.com/craftcms/cms/issues/4018))
 
 ## 4.7.3 - 2024-02-15
 
