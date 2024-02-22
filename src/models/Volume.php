@@ -480,6 +480,8 @@ class Volume extends Model implements
             'transformSubpath' => $this->transformSubpath,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
+            'altTranslationMethod' => $this->altTranslationMethod,
+            'altTranslationKeyFormat' => $this->altTranslationKeyFormat ?: null,
             'sortOrder' => $this->sortOrder,
         ];
 

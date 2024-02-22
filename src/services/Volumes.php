@@ -341,6 +341,8 @@ class Volumes extends Component
             $volumeRecord->sortOrder = $data['sortOrder'];
             $volumeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
+            $volumeRecord->altTranslationMethod = $data['altTranslationMethod'] ?? Field::TRANSLATION_METHOD_NONE;
+            $volumeRecord->altTranslationKeyFormat = $data['altTranslationKeyFormat'] ?? null;
             $volumeRecord->uid = $volumeUid;
 
             if (!empty($data['fieldLayouts'])) {

@@ -829,7 +829,6 @@ class Sites extends Component
                     'elementType' => $elementType,
                     'criteria' => [
                         'siteId' => $oldPrimarySiteId,
-                        'status' => null,
                     ],
                     'siteId' => $site->id,
                 ]));

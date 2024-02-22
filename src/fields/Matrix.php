@@ -737,6 +737,8 @@ class Matrix extends Field implements
             /** @var Entry $entry */
             $entryId = $entry->id ?? 'new' . ++$new;
             $serialized[$entryId] = [
+                'title' => $entry->title,
+                'slug' => $entry->slug,
                 'type' => $entry->getType()->handle,
                 'enabled' => $entry->enabled,
                 'collapsed' => $entry->collapsed,
@@ -1469,6 +1471,10 @@ JS;
 
             if (isset($entryData['title']) && $entry->getType()->hasTitleField) {
                 $entry->title = $entryData['title'];
+            }
+
+            if (isset($entryData['slug']) && $entry->getType()->showSlugField) {
+                $entry->slug = $entryData['slug'];
             }
 
             // Allow setting the UID for the entry

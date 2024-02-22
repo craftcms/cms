@@ -567,6 +567,7 @@ class Addresses extends Field implements
             /** @var Address $address */
             $addressId = $address->id ?? 'new' . ++$new;
             $serialized[$addressId] = [
+                'title' => $address->title,
                 'countryCode' => $address->countryCode,
                 'administrativeArea' => $address->administrativeArea,
                 'locality' => $address->locality,

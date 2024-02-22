@@ -42,12 +42,12 @@
     {% endblock %}
 
     {% block maintainHierarchy %}
-        {{ forms.checkboxField({
+        {{ forms.lightswitchField({
             label: 'Maintain hierarchy'|t('app'),
             instructions: 'Whether the structure of the related {type} should be maintained.'|t('app', { type: pluralElementType }),
             id: 'maintain-hierarchy',
             name: 'maintainHierarchy',
-            checked: field.maintainHierarchy
+            on: field.maintainHierarchy
         }) }}
     {% endblock %}
 
@@ -122,12 +122,12 @@
     {% endblock %}
 
     {% block validateRelatedElementsField %}
-        {{ forms.checkboxField({
+        {{ forms.lightswitchField({
             label: 'Validate related {type}'|t('app', { type: pluralElementType }),
             instructions: 'Whether validation errors on the related {type} should prevent the source element from being saved.'|t('app', { type: pluralElementType }),
             id: 'validate-related-elements',
             name: 'validateRelatedElements',
-            checked: field.validateRelatedElements
+            on: field.validateRelatedElements
         }) }}
     {% endblock %}
 
@@ -137,12 +137,12 @@
         <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
         <div id="advanced" class="hidden">
 
-            {{ forms.checkboxField({
+            {{ forms.lightswitchField({
                 label: 'Allow self relations'|t('app'),
                 instructions: 'Whether {type} elements should be allowed to relate to themselves.'|t('app', { type: elementType }),
                 id: 'allow-self-relations',
                 name: 'allowSelfRelations',
-                checked: field.allowSelfRelations,
+                on: field.allowSelfRelations,
             }) }}
 
             {% if craft.app.getIsMultiSite() %}
@@ -152,11 +152,11 @@
                 {% endblock %}
 
                 {% block localizeRelationsField %}
-                    {{ forms.checkboxField({
+                    {{ forms.lightswitchField({
                         label: 'Manage relations on a per-site basis'|t('app'),
                         id: 'localize-relations',
                         name: 'localizeRelations',
-                        checked: field.localizeRelations
+                        on: field.localizeRelations
                     }) }}
                 {% endblock %}
             {% endif %}

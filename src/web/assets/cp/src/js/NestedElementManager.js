@@ -331,48 +331,52 @@ Craft.NestedElementManager = Garnish.Base.extend(
         this.$createBtn.addClass('loading');
       }
 
-      await this.markAsDirty();
+      try {
+        await this.markAsDirty();
 
-      attributes = Object.assign(
-        {
-          elementType: this.elementType,
-          ownerId: this.settings.ownerId,
-          siteId: this.settings.ownerSiteId,
-        },
-        attributes
-      );
+        attributes = Object.assign(
+          {
+            elementType: this.elementType,
+            ownerId: this.settings.ownerId,
+            siteId: this.settings.ownerSiteId,
+          },
+          attributes
+        );
 
-      Craft.sendActionRequest('POST', 'elements/create', {
-        data: attributes,
-      })
-        .then(({data}) => {
-          const slideout = Craft.createElementEditor(this.elementType, {
-            siteId: data.element.siteId,
-            elementId: data.element.id,
-            draftId: data.element.draftId,
-            params: {
-              fresh: 1,
-            },
-          });
-          slideout.on('submit', async () => {
-            if (this.settings.mode === 'cards') {
-              this.addElementCard(data.element);
-            } else {
-              this.elementIndex.clearSearch();
-              this.elementIndex.updateElements();
-            }
-
-            await this.markAsDirty();
-          });
-        })
-        .catch((e) => {
-          Craft.cp.displayError(e?.response?.data?.message);
-        })
-        .finally(() => {
-          if (this.$createBtn) {
-            this.$createBtn.removeClass('loading');
+        const {data} = await Craft.sendActionRequest(
+          'POST',
+          'elements/create',
+          {
+            data: attributes,
           }
+        );
+
+        const slideout = Craft.createElementEditor(this.elementType, {
+          siteId: data.element.siteId,
+          elementId: data.element.id,
+          draftId: data.element.draftId,
+          params: {
+            fresh: 1,
+          },
         });
+
+        slideout.on('submit', async () => {
+          if (this.settings.mode === 'cards') {
+            this.addElementCard(data.element);
+          } else {
+            this.elementIndex.clearSearch();
+            this.elementIndex.updateElements();
+          }
+
+          await this.markAsDirty();
+        });
+      } catch (e) {
+        Craft.cp.displayError(e?.response?.data?.message);
+      } finally {
+        if (this.$createBtn) {
+          this.$createBtn.removeClass('loading');
+        }
+      }
     },
 
     initElement($element) {

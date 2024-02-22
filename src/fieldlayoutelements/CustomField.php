@@ -231,7 +231,6 @@ class CustomField extends BaseField
             'id' => "{$this->_field->handle}-field",
             'data' => [
                 'type' => get_class($this->_field),
-                'base-input-name' => Craft::$app->getView()->namespaceInputName($this->_field->handle),
             ],
         ]);
     }

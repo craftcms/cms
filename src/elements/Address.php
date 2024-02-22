@@ -653,14 +653,24 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         $record->save(false);
 
-        // ownerId will be null when creating a revision
-        if (isset($this->fieldId, $this->ownerId) && $this->saveOwnership) {
-            if (($isNew && $this->getIsCanonical()) || !isset($this->sortOrder)) {
+        $ownerId = $this->getOwnerId();
+        if (isset($this->fieldId) && $ownerId && $this->saveOwnership) {
+            if (!isset($this->sortOrder) && !$isNew) {
+                $this->sortOrder = (new Query())
+                    ->select('sortOrder')
+                    ->from(Table::ELEMENTS_OWNERS)
+                    ->where([
+                        'elementId' => $this->id,
+                        'ownerId' => $ownerId,
+                    ])
+                    ->scalar() ?: null;
+            }
+            if (!isset($this->sortOrder)) {
                 $max = (new Query())
                     ->from(['eo' => Table::ELEMENTS_OWNERS])
                     ->innerJoin(['a' => Table::ADDRESSES], '[[a.id]] = [[eo.elementId]]')
                     ->where([
-                        'eo.ownerId' => $this->ownerId,
+                        'eo.ownerId' => $ownerId,
                         'a.fieldId' => $this->fieldId,
                     ])
                     ->max('[[eo.sortOrder]]');
@@ -669,7 +679,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             if ($isNew) {
                 Db::insert(Table::ELEMENTS_OWNERS, [
                     'elementId' => $this->id,
-                    'ownerId' => $this->ownerId,
+                    'ownerId' => $ownerId,
                     'sortOrder' => $this->sortOrder,
                 ]);
             } else {
@@ -677,7 +687,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
                     'sortOrder' => $this->sortOrder,
                 ], [
                     'elementId' => $this->id,
-                    'ownerId' => $this->ownerId,
+                    'ownerId' => $ownerId,
                 ]);
             }
         }

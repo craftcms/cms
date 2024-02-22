@@ -101,6 +101,9 @@ class ElementSources extends Component
                             continue;
                         }
                         $source = $elementType::modifyCustomSource($source);
+                        if (!$withDisabled && ($source['disabled'] ?? false)) {
+                            continue;
+                        }
                     }
                     $sources[] = $source;
                 }
