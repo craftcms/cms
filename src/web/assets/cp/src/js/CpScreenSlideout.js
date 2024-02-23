@@ -602,31 +602,29 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
                 tabErrorCount--;
               }
             });
-            $tabErrorSummary
-              .find('h2')
-              .text(
-                Craft.t(
-                  'app',
-                  'Found {num, number} {num, plural, =1{error} other{errors}}',
-                  {num: tabErrorCount}
-                )
-              );
+
+            let headingText = Craft.t(
+              'app',
+              'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.',
+              {num: tabErrorCount}
+            );
 
             // if there are errors in any other tabs - tell users about it.
             if ($tabsWithErrors.length - 1 > 0) {
-              $tabErrorSummary.append(
-                '<p class="visually-hidden">' +
-                  Craft.t(
-                    'app',
-                    '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
-                    {
-                      total: errorCount,
-                      num: $tabsWithErrors.length,
-                    }
-                  ) +
-                  '</p>'
-              );
+              headingText +=
+                '<span class="visually-hidden">' +
+                Craft.t(
+                  'app',
+                  '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
+                  {
+                    total: errorCount,
+                    num: $tabsWithErrors.length,
+                  }
+                ) +
+                '</span>';
             }
+
+            $tabErrorSummary.find('h2').html(headingText);
 
             $tabErrorSummary.prependTo($tabContainer);
             Craft.ui.setFocusOnErrorSummary($tabContainer); // this also makes the deep linking work
