@@ -41,14 +41,12 @@ class CraftDisclosure extends HTMLElement {
     this.trigger.setAttribute('aria-expanded', 'true');
     this.expanded = true;
     this.target.classList.add('is-open');
-    console.log('opening');
   }
 
   close() {
     this.trigger.setAttribute('aria-expanded', 'false');
     this.expanded = false;
     this.target.classList.remove('is-open');
-    console.log('closing');
   }
 }
 
