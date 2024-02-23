@@ -205,7 +205,6 @@ class Cp extends Component
      */
     public function nav(): array
     {
-        $craftPro = Craft::$app->getEdition() === Craft::Pro;
         $isAdmin = Craft::$app->getUser()->getIsAdmin();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -249,7 +248,10 @@ class Cp extends Component
             ];
         }
 
-        if ($craftPro && Craft::$app->getUser()->checkPermission('editUsers')) {
+        if (
+            Craft::$app->getEdition() === Craft::Pro &&
+            Craft::$app->getUser()->checkPermission('editUsers')
+        ) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
@@ -271,7 +273,7 @@ class Cp extends Component
         }
 
         if ($isAdmin) {
-            if ($craftPro && $generalConfig->enableGql) {
+            if ($generalConfig->enableGql) {
                 $subNavItems = [];
 
                 if ($generalConfig->allowAdminChanges) {
