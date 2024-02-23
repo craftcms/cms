@@ -582,13 +582,14 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         let $tabsWithErrors = $tabs.filter('.error');
         let $content = this.$content;
 
-        $tabsWithErrors.each(function (i, tab) {
+        $tabs.each(function (i, tab) {
           let tabDataId = $(tab).data('id');
           let $tabContainer = $content.find('#' + tabDataId);
           if ($tabContainer.length > 0) {
             let tabUid = $tabContainer.data('layout-tab');
             let $tabErrorSummary = $(errorSummary);
             let tabErrorCount = $tabErrorSummary.find('ul.errors li').length;
+            let headingText = '';
 
             // remove any errors that are not specifically for this tab
             // leave out errors that don't have a tab assignment (e.g. cross-validation errors)
@@ -603,25 +604,29 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
               }
             });
 
-            let headingText = Craft.t(
-              'app',
-              'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.',
-              {num: tabErrorCount}
-            );
+            if (tabErrorCount > 0) {
+              headingText = Craft.t(
+                'app',
+                'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.',
+                {num: tabErrorCount}
+              );
 
-            // if there are errors in any other tabs - tell users about it.
-            if ($tabsWithErrors.length - 1 > 0) {
-              headingText +=
-                '<span class="visually-hidden">' +
-                Craft.t(
-                  'app',
-                  '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
-                  {
-                    total: errorCount,
-                    num: $tabsWithErrors.length,
-                  }
-                ) +
-                '</span>';
+              // if there are errors in any other tabs - tell users about it.
+              if ($tabsWithErrors.length - 1 > 0) {
+                headingText +=
+                  '<span class="visually-hidden">' +
+                  Craft.t(
+                    'app',
+                    '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
+                    {
+                      total: errorCount,
+                      num: $tabsWithErrors.length,
+                    }
+                  ) +
+                  '</span>';
+              }
+            } else {
+              headingText = Craft.t('app', 'Found errors in other tabs.');
             }
 
             $tabErrorSummary.find('h2').html(headingText);
