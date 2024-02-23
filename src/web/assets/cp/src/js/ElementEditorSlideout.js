@@ -98,7 +98,12 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
     },
 
     handleSubmit: function (ev) {
-      this.$container.data('elementEditor').handleSubmit(ev);
+      let elementEditor = this.$container.data('elementEditor');
+      // first, we have to save the draft and then fully save;
+      // otherwise we'll have error indicator issues;
+      elementEditor.saveDraft().then(() => {
+        elementEditor.handleSubmit(ev);
+      });
     },
   },
   {
