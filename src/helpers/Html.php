@@ -656,7 +656,8 @@ class Html extends \yii\helpers\Html
     public static function id(string $id = ''): string
     {
         // Ignore if it looks like a placeholder
-        if (preg_match('/^__[A-Z_]+__$/', $id)) {
+        // or starts with a placeholder (e.g. widgets > __NAMESPACE__-fieldId)
+        if (preg_match('/^__[A-Z_]+__(-)?/', $id)) {
             return $id;
         }
 

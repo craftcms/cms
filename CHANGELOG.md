@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-beta.3 - 2024-02-22
 
 - Added the “Require a password reset on next login” user account action.
 - Slideout sidebars are now always toggleable; not just when the slideout is too narrow to show the sidebar alongside the content. ([#14418](https://github.com/craftcms/cms/pull/14418))

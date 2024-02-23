@@ -520,6 +520,7 @@ class HtmlHelperTest extends TestCase
             ['foo__', '__foo__', null],
             ['__FOO__', '__FOO__', null],
             ['__FOO_BAR__', '__FOO_BAR__', null],
+            ['__FOO_BAR__-baz', '__FOO_BAR__-baz', null],
         ];
     }
 
