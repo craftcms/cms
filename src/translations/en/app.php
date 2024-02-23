@@ -695,6 +695,7 @@ return [
     'Format' => 'Format',
     'Formatting Locale' => 'Formatting Locale',
     'Found {num, number} {num, plural, =1{error} other{errors}}' => 'Found {num, number} {num, plural, =1{error} other{errors}}',
+    'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.' => 'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.',
     'Free' => 'Free',
     'From {date}' => 'From {date}',
     'From' => 'From',
