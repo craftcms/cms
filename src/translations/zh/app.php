@@ -1724,6 +1724,7 @@ return [
     'URL Format' => 'URL 格式',
     'URL type' => 'URL 类型',
     'URL' => 'URL',
+    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
     'Unable to fetch upgrade info at this time.' => '目前无法提取升级信息。',
     'Unable to find the template “{template}”.' => '无法找到模板 “{template}”。',
     'Unauthorized' => '未授权',
