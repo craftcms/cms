@@ -147,26 +147,24 @@
       '--custom-text-color': entryType.color.cssVar(900) ?? null,
     }|filter,
   } %}
-    {% if not singleType %}
-      {% tag 'div' with {
-        class: {
-          blocktype: true,
-          flex: true,
-          'flex-nowrap': true,
-          'flex-gap-xs': true,
-          error: not static and entry.hasErrors(),
-        }|filter|keys,
-      } %}
-        {% if entryType.icon %}
-          {{ tag('div', {
-            class: ['cp-icon', 'small', entryType.color.value ?? null]|filter,
-            html: iconSvg(entryType.icon),
-          }) }}
-        {% endif %}
-        <div>{{ entryTypeName }}</div>
-        {% if not static and entry.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
-      {% endtag %}
-    {% endif %}
+    {% tag 'div' with {
+      class: {
+        blocktype: true,
+        flex: true,
+        'flex-nowrap': true,
+        'flex-gap-xs': true,
+        error: not static and entry.hasErrors(),
+      }|filter|keys,
+    } %}
+      {% if entryType.icon %}
+        {{ tag('div', {
+          class: ['cp-icon', 'small', entryType.color.value ?? null]|filter,
+          html: iconSvg(entryType.icon),
+        }) }}
+      {% endif %}
+      <div>{{ entryTypeName }}</div>
+      {% if not static and entry.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
+    {% endtag %}
     <div class="preview"></div>
     {% tag 'div' with {
       class: ['matrixblock-tabs'],
