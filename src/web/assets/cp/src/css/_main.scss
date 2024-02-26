@@ -3014,6 +3014,7 @@ table {
     flex-direction: column;
     --thumb-size: 120px;
     min-width: calc(var(--s) * 2 + var(--thumb-size));
+    width: 100%;
 
     .chip-content {
       width: 100%;
@@ -3165,9 +3166,8 @@ table {
 }
 
 .inline-chips {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   align-items: center;
   gap: var(--xs);
 
@@ -3704,6 +3704,10 @@ table {
           }
         }
       }
+    }
+
+    .chip.large {
+      width: 100%;
     }
   }
 }
