@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Composer installation commands suggested by the Plugin Store now include a minimum version constraint.
 - Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
 
 ## 4.7.4 - 2024-02-22
