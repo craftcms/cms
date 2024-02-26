@@ -1346,4 +1346,42 @@ class AssetsController extends Controller
                 'inline' => true,
             ]);
     }
+
+    /**
+     * Show in folder action.
+     * Find asset by id and Return source path info for each folder up until the one the asset is in.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws InvalidConfigException
+     * @throws \yii\web\MethodNotAllowedHttpException
+     */
+    public function actionShowInFolder(): Response
+    {
+        $this->requirePostRequest();
+
+        $assetId = Craft::$app->getRequest()->getRequiredParam('assetId');
+
+        $asset = Asset::findOne($assetId);
+        if ($asset === null) {
+            throw new BadRequestHttpException("Invalid asset ID: $assetId");
+        }
+
+        // get the folder for selected asset
+        $folder = $asset->getFolder();
+        $sourcePath[] = $folder->getSourcePathInfo();
+
+        // get all the way up to the root folder, cause we need source path info for each step
+        while (($parent = $folder->getParent()) !== null) {
+            $sourcePath[] = $parent->getSourcePathInfo();
+            $folder = $parent;
+        }
+
+        $data = [
+            'filename' => $asset->filename,
+            'sourcePath' => array_reverse($sourcePath),
+        ];
+
+        return $this->asJson($data);
+    }
 }
