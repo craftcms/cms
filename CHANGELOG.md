@@ -5,6 +5,7 @@
 - Composer installation commands suggested by the Plugin Store now include a minimum version constraint.
 - Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
 - Fixed a PHP warning that could occur when publishing asset bundles on Dev Mode. ([#14455](https://github.com/craftcms/cms/pull/14455))
+- Fixed a bug where the Updates utility and Updates widget weren’t handling update check failures.
 
 ## 5.0.0-beta.3 - 2024-02-22
 
