@@ -44,7 +44,16 @@
       Craft.cp.checkForUpdates(
         forceRefresh,
         false,
-        this.showUpdateInfo.bind(this)
+        this.showUpdateInfo.bind(this),
+        () => {
+          this.dontLookLikeWereChecking();
+          this.$body.empty().append(
+            $('<p/>', {
+              class: 'centeralign error',
+              text: Craft.t('app', 'Unable to fetch updates at this time.'),
+            })
+          );
+        }
       );
     },
 
