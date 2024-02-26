@@ -47,6 +47,32 @@ class Color extends Field implements PreviewableFieldInterface
     public ?string $defaultColor = null;
 
     /**
+     * @var string[] Preset colors
+     * @since 4.8.0
+     */
+    public array $presets = [];
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (isset($config['presets'])) {
+            $config['presets'] = array_values(array_filter(array_map(
+                fn($color) => is_array($color) ? $color['color'] : $color,
+                $config['presets']
+            )));
+            // Normalize afterward so empty strings have been filtered out
+            $config['presets'] = array_map(
+                fn(string $color) => ColorValidator::normalizeColor($color),
+                $config['presets']
+            );
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getContentColumnType(): string
@@ -63,7 +89,29 @@ class Color extends Field implements PreviewableFieldInterface
             'name' => 'defaultColor',
             'value' => $this->defaultColor,
             'errors' => $this->getErrors('defaultColor'),
-        ]);
+        ]) .
+            Cp::editableTableFieldHtml([
+                'label' => Craft::t('app', 'Presets'),
+                'name' => 'presets',
+                'instructions' => Craft::t('app', 'Choose colors which should be recommended by the color picker.'),
+                'cols' => [
+                    'color' => [
+                        'type' => 'color',
+                        'heading' => Craft::t('app', 'Color'),
+                    ],
+                ],
+                'rows' => array_map(fn(string $color) => compact('color'), $this->presets),
+                'allowAdd' => true,
+                'allowReorder' => true,
+                'allowDelete' => true,
+                'addRowLabel' => Craft::t('app', 'Add a color'),
+                'inputContainerAttributes' => [
+                    'style' => [
+                        'max-width' => '15em',
+                    ],
+                ],
+                'errors' => $this->getErrors('presets'),
+            ]);
     }
 
     /**
@@ -73,6 +121,18 @@ class Color extends Field implements PreviewableFieldInterface
     {
         $rules = parent::defineRules();
         $rules[] = [['defaultColor'], ColorValidator::class];
+
+        $rules[] = [['presets'], function() {
+            $validator = new ColorValidator();
+            foreach ($this->presets as $color) {
+                if (!$validator->validate($color, $error)) {
+                    $this->addError('presets', Craft::t('yii', '{attribute} is invalid.', [
+                        'attribute' => "#$color",
+                    ]));
+                }
+            }
+        }];
+
         return $rules;
     }
 
@@ -129,6 +189,7 @@ class Color extends Field implements PreviewableFieldInterface
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value?->getHex(),
+            'presets' => $this->presets,
         ]);
     }
 
