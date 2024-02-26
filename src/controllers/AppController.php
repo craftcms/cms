@@ -413,7 +413,7 @@ class AppController extends Controller
 
         $cookie = $this->request->getCookies()->get(App::licenseShunCookieName());
         $data = $cookie ? Json::decode($cookie->value) : null;
-        if ($data['hash'] !== $hash) {
+        if (($data['hash'] ?? null) !== $hash) {
             $data = null;
         }
 
