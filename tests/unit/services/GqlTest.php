@@ -357,8 +357,10 @@ class GqlTest extends TestCase
         Craft::$app->set('tags', $tagService);
         Craft::$app->set('userGroups', $userGroupService);
 
-
+        $edition = Craft::$app->getEdition();
+        Craft::$app->setEdition(Craft::Pro);
         $allSchemaComponents = Craft::$app->getGql()->getAllSchemaComponents();
+
         self::assertNotEmpty($allSchemaComponents);
         self::assertArrayHasKey('queries', $allSchemaComponents);
         self::assertArrayHasKey('mutations', $allSchemaComponents);
@@ -370,12 +372,13 @@ class GqlTest extends TestCase
         self::assertNotEmpty($allSchemaComponents['queries']['Categories'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Tags'] ?? []);
 
-
         self::assertNotEmpty($allSchemaComponents['mutations']['Entries'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Assets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Global sets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Categories'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Tags'] ?? []);
+
+        Craft::$app->setEdition($edition);
     }
 
     /**
