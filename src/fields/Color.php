@@ -59,9 +59,14 @@ class Color extends Field implements PreviewableFieldInterface
     {
         if (isset($config['presets'])) {
             $config['presets'] = array_values(array_filter(array_map(
-                fn($color) => ColorValidator::normalizeColor(is_array($color) ? $color['color'] : $color),
+                fn($color) => is_array($color) ? $color['color'] : $color,
                 $config['presets']
             )));
+            // Normalize afterward so empty strings have been filtered out
+            $config['presets'] = array_map(
+                fn(string $color) => ColorValidator::normalizeColor($color),
+                $config['presets']
+            );
         }
 
         parent::__construct($config);
