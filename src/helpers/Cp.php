@@ -2854,6 +2854,9 @@ JS;
      */
     public static function iconSvg(string $icon, ?string $fallbackLabel = null): string
     {
+        $locale = Craft::$app->getLocale();
+        $orientation = $locale->getOrientation();
+
         // BC support for some legacy icon names
         $icon = match ($icon) {
             'alert' => 'triangle-exclamation',
@@ -2902,6 +2905,8 @@ JS;
             'shuteye' => 'eye-slash',
             'sidebar-left' => 'sidebar',
             'sidebar-right' => 'sidebar-flip',
+            'sidebar-start' => $orientation === 'ltr' ? 'sidebar' : 'sidebar-flip',
+            'sidebar-end' => $orientation === 'ltr' ? 'sidebar-flip' : 'sidebar',
             'structure' => 'list-tree',
             'structurertl' => 'list-tree-flip',
             'template' => 'file-code',
@@ -2980,6 +2985,18 @@ JS;
             'Europe', 'GMT', 'UTC' => 'earth-europe',
             default => 'earth-americas',
         };
+    }
+
+    public static function sidebarIcon(string $flow): string
+    {
+        $locale = Craft::$app->getLocale();
+        $orientation = $locale->getOrientation();
+
+        if ($flow === 'start') {
+            return $orientation === 'ltr' ? 'sidebar' : 'sidebar-flip';
+        } else {
+            return $orientation === 'ltr' ? 'sidebar-flip' : 'sidebar';
+        }
     }
 
     /**

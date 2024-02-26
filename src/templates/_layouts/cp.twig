@@ -234,7 +234,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
 
                                                 {% if details is not empty %}
                                                     {% set content %}
-                                                        <span aria-hidden="true" class="cp-icon">{{ iconSvg('sidebar-right') }}</span>
+                                                        <span aria-hidden="true" class="cp-icon">{{ iconSvg('sidebar-end') }}</span>
                                                         <span class="visually-hidden">{{ 'Toggle details sidebar'|t('app') }}</span>
                                                     {% endset %}
                                                     {% include '_includes/disclosure-toggle' with {
