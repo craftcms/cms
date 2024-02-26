@@ -945,6 +945,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'fieldId' => $this->id,
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
+                'revisions' => null,
             ],
         ];
     }
