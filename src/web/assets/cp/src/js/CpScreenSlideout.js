@@ -129,7 +129,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       this.$container.data('cpScreen', this);
       this.on('beforeClose', () => {
-        this.hideSidebar();
+        this.hideSidebarIfOverlapping();
       });
 
       // Register shortcuts & events
@@ -159,7 +159,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           !$target.closest(this.$sidebarBtn).length &&
           !$target.closest(this.$sidebar).length
         ) {
-          this.hideSidebar();
+          this.hideSidebarIfOverlapping();
         }
       });
       this.addListener(this.$container, 'submit', 'handleSubmit');
@@ -443,7 +443,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       Garnish.uiLayerManager.addLayer();
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
-        this.hideSidebar();
+        this.hideSidebarIfOverlapping() || this.closeMeMaybe();
       });
 
       this.showingSidebar = true;
@@ -472,6 +472,15 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       Garnish.uiLayerManager.removeLayer();
 
       this.showingSidebar = false;
+    },
+
+    hideSidebarIfOverlapping() {
+      if (this.showingSidebar && this.$sidebar.css('position') === 'absolute') {
+        this.hideSidebar();
+        return true;
+      } else {
+        return false;
+      }
     },
 
     _openedSidebarStyles: function () {
