@@ -6,6 +6,7 @@
 - Color fields now have a “Presets” settings. ([#14463](https://github.com/craftcms/cms/discussions/14463))
 - Inline-editable Matrix blocks now show their entry type icon/name even if the field only has one entry type selected. ([#14458](https://github.com/craftcms/cms/discussions/14458))
 - Composer installation commands suggested by the Plugin Store now include a minimum version constraint.
+- Added `craft\base\ElementInterface::setAttributesFromRequest()`.
 - Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets wasn’t working for assets that were clicked on. ([#14420](https://github.com/craftcms/cms/issues/14420))
 - Fixed a bug where fallback transforms for local assets weren’t working for `original` transforms. ([#14457](https://github.com/craftcms/cms/pull/14457))
 - Fixed a bug where expand/collapse toggles weren’t working within structure element table views. ([#14453](https://github.com/craftcms/cms/issues/14453))
@@ -14,6 +15,7 @@
 - Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
 - Fixed a PHP warning that could occur when publishing asset bundles on Dev Mode. ([#14455](https://github.com/craftcms/cms/pull/14455))
 - Fixed a bug where the Updates utility and Updates widget weren’t handling update check failures.
+- Fixed an error that occurred when calling `craft\elements\User::setAttributes()` from a console request.
 
 ## 5.0.0-beta.3 - 2024-02-22
 

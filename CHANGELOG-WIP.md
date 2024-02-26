@@ -167,6 +167,7 @@
 - Added `craft\base\ElementInterface::getInlineAttributeInputHtml()`.
 - Added `craft\base\ElementInterface::hasDrafts()`.
 - Added `craft\base\ElementInterface::hasThumbs()`.
+- Added `craft\base\ElementInterface::setAttributesFromRequest()`.
 - Added `craft\base\ElementInterface::setLazyEagerLoadedElements()`.
 - Added `craft\base\ElementTrait::$deletedWithOwner`.
 - Added `craft\base\ElementTrait::$eagerLoadInfo`.

@@ -2144,7 +2144,7 @@ JS, [
         if ($this->_siteId) {
             $element->siteId = $this->_siteId;
         }
-        $element->setAttributes($this->_attributes);
+        $element->setAttributesFromRequest($this->_attributes);
 
         if (!Craft::$app->getElements()->canSave($element)) {
             throw new ForbiddenHttpException('User not authorized to create this element.');
@@ -2219,7 +2219,7 @@ JS, [
 
         $scenario = $element->getScenario();
         $element->setScenario(Element::SCENARIO_LIVE);
-        $element->setAttributes($this->_attributes);
+        $element->setAttributesFromRequest($this->_attributes);
 
         if ($this->_slug !== null) {
             $element->slug = $this->_slug;
