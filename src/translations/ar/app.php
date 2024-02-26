@@ -1724,6 +1724,7 @@ return [
     'URL Format' => 'تنسيق عنوان URL',
     'URL type' => 'نوع URL',
     'URL' => 'عنوان URL',
+    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
     'Unable to fetch upgrade info at this time.' => 'يتعذَّر إحضار معلومات الترقية في الوقت الحالي.',
     'Unable to find the template “{template}”.' => 'تعذر العثور على القالب ”{template}“.',
     'Unauthorized' => 'غير مخول',
