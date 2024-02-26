@@ -48,5 +48,7 @@
 {% endapply -%}
 
 {% js %}
-    new Craft.ColorInput('#{{ containerId|namespaceInputId }}');
+    new Craft.ColorInput('#{{ containerId|namespaceInputId }}', {
+        presets: {{ (presets ?? [])|json_encode|raw }},
+    });
 {% endjs -%}

@@ -5,6 +5,7 @@
 - Element sources no longer display `0` badges.
 
 ### Administration
+- Color fields now have a “Presets” settings. ([#14463](https://github.com/craftcms/cms/discussions/14463))
 - The `queue/run` command now supports a `--job-id` option.
 
 ### Development

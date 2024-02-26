@@ -29,7 +29,7 @@ class ColorValidator extends RegularExpressionValidator
         // lowercase
         $color = strtolower($color);
 
-        if ($color === 'transparent') {
+        if ($color === 'transparent' || $color === '') {
             return $color;
         }
 
