@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
+
 ## 4.7.4 - 2024-02-22
 
 - The Plugin Store now shows “Tested on Cloud” and “Supports GraphQL” labels for plugins when appropriate.
