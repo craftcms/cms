@@ -1724,6 +1724,7 @@ return [
     'URL Format' => 'פורמט URL',
     'URL type' => 'סוג URL',
     'URL' => 'URL',
+    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
     'Unable to fetch upgrade info at this time.' => 'לא ניתן לאחזר כעת את פרטי השדרוג.',
     'Unable to find the template “{template}”.' => 'לא ניתן למצוא את התבנית “{template}”',
     'Unauthorized' => 'לא מאושר',
