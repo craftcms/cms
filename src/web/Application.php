@@ -19,8 +19,10 @@ use craft\debug\UserPanel;
 use craft\errors\ExitException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
@@ -264,20 +266,35 @@ class Application extends \yii\web\Application
                 return $this->_processUpdateLogic($request) ?: $this->getResponse();
             }
 
-            // If this is a plugin template request, make sure the user has access to the plugin
-            // If this is a non-login, non-validate, non-setPassword control panel request, make sure the user has access to the control panel
-            if (
-                $request->getIsCpRequest() &&
-                !$request->getIsActionRequest() &&
-                ($firstSeg = $request->getSegment(1)) !== null &&
-                ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
-            ) {
-                $user = $this->getUser();
-                if ($user->getIsGuest()) {
-                    return $user->loginRequired();
+            if ($request->getIsCpRequest() && !$request->getIsActionRequest()) {
+                $userSession = $this->getUser();
+
+                // If this is a plugin template request, make sure the user has access to the plugin
+                // If this is a non-login, non-validate, non-setPassword control panel request, make sure the user has access to the control panel
+                if (
+                    ($firstSeg = $request->getSegment(1)) !== null &&
+                    ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
+                ) {
+                    if ($userSession->getIsGuest()) {
+                        return $userSession->loginRequired();
+                    }
+                    if (!$userSession->checkPermission('accessPlugin-' . $plugin->id)) {
+                        throw new ForbiddenHttpException();
+                    }
                 }
-                if (!$user->checkPermission('accessPlugin-' . $plugin->id)) {
-                    throw new ForbiddenHttpException();
+
+                if (!$userSession->getIsGuest() && !$this->getCanTestEditions()) {
+                    // Are there are any licensing issues cached?
+                    $licenseIssues = App::licensingIssues(false);
+                    if (!empty($licenseIssues)) {
+                        $hash = App::licensingIssuesHash($licenseIssues);
+                        if ($this->_showLicensingIssuesScreen($hash)) {
+                            return $this->runAction('app/licensing-issues', [
+                                'issues' => $licenseIssues,
+                                'hash' => $hash,
+                            ]);
+                        }
+                    }
                 }
             }
         }
@@ -294,6 +311,23 @@ class Application extends \yii\web\Application
             $this->_unregisterDebugModule();
             throw $e;
         }
+    }
+
+    private function _showLicensingIssuesScreen(string $hash = null): bool
+    {
+        $cookie = $this->request->getCookies()->get(App::licenseShunCookieName());
+        if (!$cookie) {
+            return true;
+        }
+
+        // the cookie is only valid if it's for the same set of issues we're currently seeing
+        $data = Json::decode($cookie->value);
+        if ($data['hash'] !== $hash) {
+            return true;
+        }
+
+        // if the cookie was created earlier today, let them pass
+        return !DateTimeHelper::isToday($data['timestamp']);
     }
 
     /**

@@ -61,6 +61,7 @@ Craft.CP = Garnish.Base.extend(
     forcingRefreshOnUpdatesCheck: false,
     includingDetailsOnUpdatesCheck: false,
     checkForUpdatesCallbacks: null,
+    checkForUpdatesFailureCallbacks: null,
 
     resizeTimeout: null,
 
@@ -1093,10 +1094,16 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
-    checkForUpdates: function (forceRefresh, includeDetails, callback) {
+    checkForUpdates: function (
+      forceRefresh,
+      includeDetails,
+      onSuccess,
+      onFailure
+    ) {
       // Make 'includeDetails' optional
       if (typeof includeDetails === 'function') {
-        callback = includeDetails;
+        onFailure = onSuccess;
+        onSuccess = includeDetails;
         includeDetails = false;
       }
 
@@ -1107,19 +1114,30 @@ Craft.CP = Garnish.Base.extend(
         ((forceRefresh === true && !this.forcingRefreshOnUpdatesCheck) ||
           (includeDetails === true && !this.includingDetailsOnUpdatesCheck))
       ) {
-        var realCallback = callback;
-        callback = () => {
-          this.checkForUpdates(forceRefresh, includeDetails, realCallback);
+        const realOnSuccess = onSuccess;
+        const realOnFailure = onFailure;
+        onSuccess = () => {
+          this.checkForUpdates(
+            forceRefresh,
+            includeDetails,
+            realOnSuccess,
+            realOnFailure
+          );
         };
       }
 
-      // Callback function?
-      if (typeof callback === 'function') {
+      // Callback functions?
+      if (typeof onSuccess === 'function') {
         if (!Array.isArray(this.checkForUpdatesCallbacks)) {
           this.checkForUpdatesCallbacks = [];
         }
-
-        this.checkForUpdatesCallbacks.push(callback);
+        this.checkForUpdatesCallbacks.push(onSuccess);
+      }
+      if (typeof onFailure === 'function') {
+        if (!Array.isArray(this.checkForUpdatesFailureCallbacks)) {
+          this.checkForUpdatesFailureCallbacks = [];
+        }
+        this.checkForUpdatesFailureCallbacks.push(onFailure);
       }
 
       if (!this.checkingForUpdates) {
@@ -1127,23 +1145,36 @@ Craft.CP = Garnish.Base.extend(
         this.forcingRefreshOnUpdatesCheck = forceRefresh === true;
         this.includingDetailsOnUpdatesCheck = includeDetails === true;
 
-        this._checkForUpdates(forceRefresh, includeDetails).then((info) => {
-          this.updateUtilitiesBadge();
-          this.checkingForUpdates = false;
+        this._checkForUpdates(forceRefresh, includeDetails)
+          .then((info) => {
+            this.updateUtilitiesBadge();
+            this.checkingForUpdates = false;
 
-          if (Array.isArray(this.checkForUpdatesCallbacks)) {
-            var callbacks = this.checkForUpdatesCallbacks;
-            this.checkForUpdatesCallbacks = null;
+            if (Array.isArray(this.checkForUpdatesCallbacks)) {
+              const callbacks = this.checkForUpdatesCallbacks;
+              this.checkForUpdatesCallbacks = null;
 
-            for (var i = 0; i < callbacks.length; i++) {
-              callbacks[i](info);
+              for (let callback of callbacks) {
+                callback(info);
+              }
             }
-          }
 
-          this.trigger('checkForUpdates', {
-            updateInfo: info,
+            this.trigger('checkForUpdates', {
+              updateInfo: info,
+            });
+          })
+          .catch(() => {
+            this.checkingForUpdates = false;
+
+            if (Array.isArray(this.checkForUpdatesFailureCallbacks)) {
+              const callbacks = this.checkForUpdatesFailureCallbacks;
+              this.checkForUpdatesFailureCallbacks = null;
+
+              for (let callback of callbacks) {
+                callback();
+              }
+            }
           });
-        });
       }
     },
 
@@ -1157,9 +1188,11 @@ Craft.CP = Garnish.Base.extend(
                 return;
               }
 
-              this._getUpdates(includeDetails).then((info) => {
-                resolve(info);
-              });
+              this._getUpdates(includeDetails)
+                .then((info) => {
+                  resolve(info);
+                })
+                .catch(reject);
             })
             .catch(reject);
         } else {
@@ -1189,9 +1222,11 @@ Craft.CP = Garnish.Base.extend(
       return new Promise((resolve, reject) => {
         Craft.sendApiRequest('GET', 'updates')
           .then((updates) => {
-            this._cacheUpdates(updates, includeDetails).then((data) => {
-              resolve(data);
-            });
+            this._cacheUpdates(updates, includeDetails)
+              .then((data) => {
+                resolve(data);
+              })
+              .catch(reject);
           })
           .catch(reject);
       });

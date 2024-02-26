@@ -10,8 +10,6 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
-use craft\enums\LicenseKeyStatus;
-use craft\errors\InvalidPluginException;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -26,6 +24,7 @@ use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Collection;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -33,6 +32,7 @@ use SplFileInfo;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\helpers\Inflector;
 
 /**
  * Control panel functions
@@ -205,7 +205,6 @@ class Cp extends Component
      */
     public function nav(): array
     {
-        $craftPro = Craft::$app->getEdition() === Craft::Pro;
         $isAdmin = Craft::$app->getUser()->getIsAdmin();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -249,7 +248,10 @@ class Cp extends Component
             ];
         }
 
-        if ($craftPro && Craft::$app->getUser()->checkPermission('editUsers')) {
+        if (
+            Craft::$app->getEdition() === Craft::Pro &&
+            Craft::$app->getUser()->checkPermission('editUsers')
+        ) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
@@ -271,7 +273,7 @@ class Cp extends Component
         }
 
         if ($isAdmin) {
-            if ($craftPro && $generalConfig->enableGql) {
+            if ($generalConfig->enableGql) {
                 $subNavItems = [];
 
                 if ($generalConfig->allowAdminChanges) {
@@ -504,98 +506,56 @@ class Cp extends Component
      * Returns info about the active trials.
      *
      * @return array|null
-     * @since 4.4.15
+     * @internal
      */
     public function trialInfo(): ?array
     {
-        $cache = Craft::$app->getCache();
-        $updatesService = Craft::$app->getUpdates();
+        $issues = Collection::make(App::licensingIssues(false));
 
-        if (!$cache->exists('licenseInfo') && $updatesService->getIsUpdateInfoCached()) {
+        if ($issues->isEmpty()) {
             return null;
         }
 
-        $resolvableLicenseItems = [];
-        $hasCraftTrial = false;
-        $trialPluginCount = 0;
-        $trialPluginNames = [];
-        $allLicenseInfo = $cache->get('licenseInfo') ?: [];
-        $pluginsService = Craft::$app->getPlugins();
+        $cmsIssues = $issues->filter(fn($issue) => in_array($issue[2]['type'], ['cms-edition', 'cms-renewal']));
+        $pluginEditionIssues = $issues->filter(fn($issue) => $issue[2]['type'] === 'plugin-edition');
+        $pluginRenewalIssues = $issues->filter(fn($issue) => $issue[2]['type'] === 'plugin-renewal');
 
-        foreach ($allLicenseInfo as $handle => $licenseInfo) {
-            $isCraft = $handle === 'craft';
-
-            if ($isCraft) {
-                $editions = ['solo', 'pro'];
-                $currentEdition = Craft::$app->getEditionHandle();
-            } else {
-                if (!str_starts_with($handle, 'plugin-')) {
-                    continue;
-                }
-                $handle = StringHelper::removeLeft($handle, 'plugin-');
-
-                try {
-                    $pluginInfo = $pluginsService->getPluginInfo($handle);
-                } catch (InvalidPluginException $e) {
-                    continue;
-                }
-
-                $plugin = $pluginsService->getPlugin($handle);
-                if (!$plugin) {
-                    continue;
-                }
-
-                $pluginName = $plugin->name;
-                $editions = $plugin::editions();
-                $currentEdition = $pluginInfo['edition'];
-            }
-
-            $resolvableLicenseItem = null;
-
-            if ($licenseInfo['status'] === LicenseKeyStatus::Trial) {
-                $resolvableLicenseItem = array_filter([
-                    'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
-                    'plugin' => !$isCraft ? $handle : null,
-                    'licenseId' => $licenseInfo['id'],
-                    'edition' => $currentEdition,
-                ]);
-            } elseif ($licenseInfo['edition'] !== $currentEdition) {
-                $currentEditionIdx = array_search($currentEdition, $editions);
-                $licenseEditionIdx = array_search($licenseInfo['edition'], $editions);
-                if ($currentEditionIdx !== false && $licenseEditionIdx !== false && $currentEditionIdx > $licenseEditionIdx) {
-                    $resolvableLicenseItem = [
-                        'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
-                        'edition' => $currentEdition,
-                        'licenseId' => $licenseInfo['id'],
-                    ];
-                }
-            }
-
-            if ($resolvableLicenseItem) {
-                $resolvableLicenseItems[] = $resolvableLicenseItem;
-                if ($isCraft) {
-                    $hasCraftTrial = true;
+        $names = $cmsIssues->map(fn($issue) => $issue[0])->all();
+        foreach ([$pluginEditionIssues, $pluginRenewalIssues] as $group) {
+            /** @var Collection $group */
+            $count = $group->count();
+            if ($count === 1) {
+                $names[] = $group->first()[0];
+            } elseif ($count !== 0) {
+                if ($group->first()[2]['type'] === 'plugin-edition') {
+                    $name = Craft::t('app', '{count, spellout} {count, plural, =1{plugin} other{plugins}}', [
+                        'count' => $count,
+                    ]);
                 } else {
-                    $trialPluginCount++;
-                    /** @phpstan-ignore-next-line */
-                    $trialPluginNames[] = $pluginName;
+                    $name = Craft::t('app', '{count, spellout} plugin {count, plural, =1{update} other{updates}}', [
+                        'count' => $count,
+                    ]);
                 }
+                if (empty($names)) {
+                    $name = ucfirst($name);
+                }
+                $names[] = $name;
             }
         }
 
-        if (empty($resolvableLicenseItems)) {
-            return null;
-        }
+        $message = Craft::t('app', '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.', [
+            'names' => Inflector::sentence($names, lastWordConnector: sprintf(',%s', Craft::t('yii', ' and '))),
+            'total' => $issues->count(),
+        ]);
 
         $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
+            'items' => $issues->map(fn($issue) => $issue[2])->all(),
+        ]);
 
         return [
-            'hasCraftTrial' => $hasCraftTrial,
-            'trialPluginCount' => $trialPluginCount,
-            'trialPluginNames' => $trialPluginNames,
-            'cartUrl' => UrlHelper::urlWithParams("$consoleUrl/cart/new", [
-                'items' => $resolvableLicenseItems,
-            ]),
+            'message' => $message,
+            'cartUrl' => $cartUrl,
         ];
     }
 

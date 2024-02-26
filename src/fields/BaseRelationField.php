@@ -695,7 +695,7 @@ JS, [
             $condition = $parser->parse([
                 'targetElement' => $value,
                 'field' => $this->handle,
-            ]);
+            ], $query->siteId);
             if ($condition !== false) {
                 $conditions[] = $condition;
             }
