@@ -2987,18 +2987,6 @@ JS;
         };
     }
 
-    public static function sidebarIcon(string $flow): string
-    {
-        $locale = Craft::$app->getLocale();
-        $orientation = $locale->getOrientation();
-
-        if ($flow === 'start') {
-            return $orientation === 'ltr' ? 'sidebar' : 'sidebar-flip';
-        } else {
-            return $orientation === 'ltr' ? 'sidebar-flip' : 'sidebar';
-        }
-    }
-
     /**
      * Returns the site the control panel is currently working with, via a `site` query string param if sent.
      *
