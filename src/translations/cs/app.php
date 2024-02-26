@@ -1724,6 +1724,7 @@ return [
     'URL Format' => 'Formát URL',
     'URL type' => 'Typ URL',
     'URL' => 'URL',
+    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
     'Unable to fetch upgrade info at this time.' => 'V tuto chvíli nelze načíst informace o aktualizaci.',
     'Unable to find the template “{template}”.' => 'Nepodařilo se najít šablonu "{template}".',
     'Unauthorized' => 'Neautorizován',
