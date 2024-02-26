@@ -1724,6 +1724,7 @@ return [
     'URL Format' => 'Url-format',
     'URL type' => 'Url-type',
     'URL' => 'URL',
+    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
     'Unable to fetch upgrade info at this time.' => 'Kan ikke hente opgraderingsoplysninger på nuværende tidspunkt.',
     'Unable to find the template “{template}”.' => 'Kan ikke finde skabelonen “{template}”.',
     'Unauthorized' => 'Uautoriseret',
