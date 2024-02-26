@@ -50,6 +50,27 @@ class Color extends Field implements InlineEditableFieldInterface
     }
 
     /**
+     * @var string[] Preset colors
+     * @since 4.8.0
+     */
+    public array $presets = [];
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (isset($config['presets'])) {
+            $config['presets'] = array_values(array_filter(array_map(
+                fn($color) => ColorValidator::normalizeColor(is_array($color) ? $color['color'] : $color),
+                $config['presets']
+            )));
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
      * @inheritdoc
      */
     public static function dbType(): string
@@ -72,7 +93,30 @@ class Color extends Field implements InlineEditableFieldInterface
             'value' => $this->defaultColor,
             'errors' => $this->getErrors('defaultColor'),
             'data' => ['error-key' => 'defaultColor'],
-        ]);
+        ]) .
+            Cp::editableTableFieldHtml([
+                'label' => Craft::t('app', 'Presets'),
+                'name' => 'presets',
+                'instructions' => Craft::t('app', 'Choose colors which should be recommended by the color picker.'),
+                'cols' => [
+                    'color' => [
+                        'type' => 'color',
+                        'heading' => Craft::t('app', 'Color'),
+                    ],
+                ],
+                'rows' => array_map(fn(string $color) => compact('color'), $this->presets),
+                'allowAdd' => true,
+                'allowReorder' => true,
+                'allowDelete' => true,
+                'addRowLabel' => Craft::t('app', 'Add a color'),
+                'inputContainerAttributes' => [
+                    'style' => [
+                        'max-width' => '15em',
+                    ],
+                ],
+                'errors' => $this->getErrors('presets'),
+                'data' => ['error-key' => 'presets'],
+            ]);
     }
 
     /**
@@ -82,6 +126,18 @@ class Color extends Field implements InlineEditableFieldInterface
     {
         $rules = parent::defineRules();
         $rules[] = [['defaultColor'], ColorValidator::class];
+
+        $rules[] = [['presets'], function() {
+            $validator = new ColorValidator();
+            foreach ($this->presets as $color) {
+                if (!$validator->validate($color, $error)) {
+                    $this->addError('presets', Craft::t('yii', '{attribute} is invalid.', [
+                        'attribute' => "#$color",
+                    ]));
+                }
+            }
+        }];
+
         return $rules;
     }
 
@@ -138,6 +194,7 @@ class Color extends Field implements InlineEditableFieldInterface
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value?->getHex(),
+            'presets' => $this->presets,
         ]);
     }
 
