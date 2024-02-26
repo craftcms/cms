@@ -1724,6 +1724,7 @@ return [
     'URL Format' => 'URL-notatie',
     'URL type' => 'URL-type',
     'URL' => 'URL',
+    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
     'Unable to fetch upgrade info at this time.' => 'De upgrade informatie kon niet worden opgehaald.',
     'Unable to find the template “{template}”.' => 'Kon het sjabloon “{template}” niet vinden.',
     'Unauthorized' => 'Onbevoegd',
