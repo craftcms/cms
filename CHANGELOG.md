@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Composer installation commands suggested by the Plugin Store now include a minimum version constraint.
+- Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
+- Fixed a PHP warning that could occur when publishing asset bundles on Dev Mode. ([#14455](https://github.com/craftcms/cms/pull/14455))
+
 ## 5.0.0-beta.3 - 2024-02-22
 
 - Added the “Require a password reset on next login” user account action.
