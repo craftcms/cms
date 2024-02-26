@@ -6,6 +6,7 @@
 - Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets wasn’t working for assets that were clicked on. ([#14420](https://github.com/craftcms/cms/issues/14420))
 - Fixed a bug where fallback transforms for local assets weren’t working for `original` transforms. ([#14457](https://github.com/craftcms/cms/pull/14457))
 - Fixed a bug where expand/collapse toggles weren’t working within structure element table views. ([#14453](https://github.com/craftcms/cms/issues/14453))
+- Fixed a bug where slideout sidebars would close automatically when the content pane was clicked on, even when there was enough room to show both side-by-side. ([#14460](https://github.com/craftcms/cms/issues/14460))
 - Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
 - Fixed a PHP warning that could occur when publishing asset bundles on Dev Mode. ([#14455](https://github.com/craftcms/cms/pull/14455))
 - Fixed a bug where the Updates utility and Updates widget weren’t handling update check failures.
