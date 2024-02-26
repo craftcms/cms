@@ -1725,6 +1725,7 @@ return [
     'URL Format' => 'Format d\'URL',
     'URL type' => 'Type d\'URL',
     'URL' => 'URL',
+    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
     'Unable to fetch upgrade info at this time.' => 'Impossible de récupérer les informations de mise à niveau actuellement.',
     'Unable to find the template “{template}”.' => 'Impossible de trouver le modèle “{template}”.',
     'Unauthorized' => 'Non autorisé',
