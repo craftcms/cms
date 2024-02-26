@@ -1724,6 +1724,7 @@ return [
     'URL Format' => 'Формат URL-адреси',
     'URL type' => 'Тип URL-адреси',
     'URL' => 'URL-адреса',
+    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
     'Unable to fetch upgrade info at this time.' => 'Не вдалося отримати інформацію про оновлення.',
     'Unable to find the template “{template}”.' => 'Не вдалося знайти шаблон «{template}».',
     'Unauthorized' => 'Не авторизовано',
