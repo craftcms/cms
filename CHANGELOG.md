@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Element slideouts now show validation summaries at the top of each tab. ([#14436](https://github.com/craftcms/cms/pull/14436))
 - Composer installation commands suggested by the Plugin Store now include a minimum version constraint.
 - Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets wasn’t working for assets that were clicked on. ([#14420](https://github.com/craftcms/cms/issues/14420))
 - Fixed a bug where fallback transforms for local assets weren’t working for `original` transforms. ([#14457](https://github.com/craftcms/cms/pull/14457))
