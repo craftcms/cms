@@ -443,7 +443,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       Garnish.uiLayerManager.addLayer();
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
-        this.hideSidebarIfOverlapping();
+        this.hideSidebarIfOverlapping() || this.closeMeMaybe();
       });
 
       this.showingSidebar = true;
@@ -477,6 +477,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     hideSidebarIfOverlapping() {
       if (this.showingSidebar && this.$sidebar.css('position') === 'absolute') {
         this.hideSidebar();
+        return true;
+      } else {
+        return false;
       }
     },
 
