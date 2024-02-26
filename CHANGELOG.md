@@ -7,6 +7,7 @@
 - Inline-editable Matrix blocks now show their entry type icon/name even if the field only has one entry type selected. ([#14458](https://github.com/craftcms/cms/discussions/14458))
 - Composer installation commands suggested by the Plugin Store now include a minimum version constraint.
 - Added `craft\base\ElementInterface::setAttributesFromRequest()`.
+- Updated Twig to 3.8.
 - Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets wasn’t working for assets that were clicked on. ([#14420](https://github.com/craftcms/cms/issues/14420))
 - Fixed a bug where fallback transforms for local assets weren’t working for `original` transforms. ([#14457](https://github.com/craftcms/cms/pull/14457))
 - Fixed a bug where expand/collapse toggles weren’t working within structure element table views. ([#14453](https://github.com/craftcms/cms/issues/14453))
