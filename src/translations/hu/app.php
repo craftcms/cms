@@ -1724,6 +1724,7 @@ return [
     'URL Format' => 'URL formátum',
     'URL type' => 'URL-típus',
     'URL' => 'URL',
+    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
     'Unable to fetch upgrade info at this time.' => 'A frissítési információk beolvasása ezúttal sikertelen volt.',
     'Unable to find the template “{template}”.' => '“{template}” sablon nem található',
     'Unauthorized' => 'Engedély nélküli',
