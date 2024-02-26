@@ -1551,12 +1551,9 @@ li.breadcrumb-toggle-wrapper {
 }
 
 .error-summary {
+  @include pane;
   margin-bottom: var(--l);
-  padding: var(--l) var(--xl) var(--xl);
-  box-sizing: border-box;
-  box-shadow:
-    0 0 0 1px #cdd8e4,
-    0 2px 12px rgba(205, 216, 228, 0.5);
+  padding: var(--l) var(--xl);
   border-radius: var(--large-border-radius);
   background-color: var(--gray-050);
 
@@ -1567,7 +1564,7 @@ li.breadcrumb-toggle-wrapper {
   }
 
   h2 {
-    margin-top: var(--xs);
+    margin-top: 0;
   }
 
   & > ul.errors li,
@@ -1581,6 +1578,20 @@ li.breadcrumb-toggle-wrapper {
     &:hover {
       color: var(--link-color);
     }
+  }
+}
+
+.slideout {
+  .error-summary {
+    border: 1px solid var(--error-color);
+    box-shadow: none;
+    background-color: rgba(var(--error-color-rgb), 0.03);
+    padding: var(--m);
+  }
+
+  // Slideouts with tabs need slightly different margins
+  .flex-fields .error-summary {
+    margin: 0 var(--row-gap) var(--row-gap);
   }
 }
 
@@ -1611,7 +1622,7 @@ li.breadcrumb-toggle-wrapper {
   margin: 0 calc(var(--row-gap) * -1) calc(var(--row-gap) * -1);
   width: calc(100% + var(--row-gap) * 2);
 
-  & > * {
+  & > :not(.error-summary) {
     margin: 0 0 var(--row-gap) !important;
     padding: 0 var(--row-gap);
     box-sizing: border-box;

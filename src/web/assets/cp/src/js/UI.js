@@ -1284,7 +1284,7 @@ Craft.ui = {
   },
 
   clearErrorSummary: function ($body) {
-    $body.prev('.error-summary').remove();
+    $body.find('.error-summary').remove();
   },
 
   setFocusOnErrorSummary: function ($body) {
