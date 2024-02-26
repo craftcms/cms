@@ -409,7 +409,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     $toggle.attr('aria-expanded', 'false');
 
     // Find and remove the descendant rows
-    var $row = $toggle.parent().parent(),
+    var $row = $toggle.closest('tr'),
       id = $row.data('id'),
       level = $row.data('level'),
       $nextRow = $row.next();
@@ -461,7 +461,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     // Remove this element from our list of collapsed elements
     if (this.elementIndex.instanceState.collapsedElementIds) {
-      var $row = $toggle.parent().parent(),
+      var $row = $toggle.closest('tr'),
         id = $row.data('id'),
         index = $.inArray(
           id,

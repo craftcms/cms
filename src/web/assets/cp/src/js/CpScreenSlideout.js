@@ -129,7 +129,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       this.$container.data('cpScreen', this);
       this.on('beforeClose', () => {
-        this.hideSidebar();
+        this.hideSidebarIfOverlapping();
       });
 
       // Register shortcuts & events
@@ -159,7 +159,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           !$target.closest(this.$sidebarBtn).length &&
           !$target.closest(this.$sidebar).length
         ) {
-          this.hideSidebar();
+          this.hideSidebarIfOverlapping();
         }
       });
       this.addListener(this.$container, 'submit', 'handleSubmit');
@@ -443,7 +443,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       Garnish.uiLayerManager.addLayer();
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
-        this.hideSidebar();
+        this.hideSidebarIfOverlapping() || this.closeMeMaybe();
       });
 
       this.showingSidebar = true;
@@ -472,6 +472,15 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       Garnish.uiLayerManager.removeLayer();
 
       this.showingSidebar = false;
+    },
+
+    hideSidebarIfOverlapping() {
+      if (this.showingSidebar && this.$sidebar.css('position') === 'absolute') {
+        this.hideSidebar();
+        return true;
+      } else {
+        return false;
+      }
     },
 
     _openedSidebarStyles: function () {
@@ -563,6 +572,83 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       if (data.errors) {
         this.showErrors(data.errors);
       }
+
+      if (data.errorSummary) {
+        this.showErrorSummary(
+          data.errorSummary,
+          Object.keys(data.errors || {}).length
+        );
+      }
+    },
+
+    showErrorSummary: function (errorSummary, errorCount = 0) {
+      // start by clearing any error summary that might be left
+      Craft.ui.clearErrorSummary(this.$body);
+
+      // if we have multiple tabs - split the error summary into them
+      if (this.tabManager !== null) {
+        let $tabs = this.tabManager.$tabs;
+        let $tabsWithErrors = $tabs.filter('.error');
+        let $content = this.$content;
+
+        $tabs.each(function (i, tab) {
+          let tabDataId = $(tab).data('id');
+          let $tabContainer = $content.find('#' + tabDataId);
+          if ($tabContainer.length > 0) {
+            let tabUid = $tabContainer.data('layout-tab');
+            let $tabErrorSummary = $(errorSummary);
+            let tabErrorCount = $tabErrorSummary.find('ul.errors li').length;
+            let headingText = '';
+
+            // remove any errors that are not specifically for this tab
+            // leave out errors that don't have a tab assignment (e.g. cross-validation errors)
+            $tabErrorSummary.find('ul.errors li').each(function (j, error) {
+              let errorTabUid = $(error).find('a').data('layout-tab');
+              if (
+                typeof errorTabUid !== 'undefined' &&
+                errorTabUid !== tabUid
+              ) {
+                $(error).remove();
+                tabErrorCount--;
+              }
+            });
+
+            if (tabErrorCount > 0) {
+              headingText = Craft.t(
+                'app',
+                'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.',
+                {num: tabErrorCount}
+              );
+
+              // if there are errors in any other tabs - tell users about it.
+              if ($tabsWithErrors.length - 1 > 0) {
+                headingText +=
+                  '<span class="visually-hidden">' +
+                  Craft.t(
+                    'app',
+                    '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
+                    {
+                      total: errorCount,
+                      num: $tabsWithErrors.length,
+                    }
+                  ) +
+                  '</span>';
+              }
+            } else {
+              headingText = Craft.t('app', 'Found errors in other tabs.');
+            }
+
+            $tabErrorSummary.find('h2').html(headingText);
+
+            $tabErrorSummary.prependTo($tabContainer);
+            Craft.ui.setFocusOnErrorSummary($tabContainer); // this also makes the deep linking work
+          }
+        });
+      } else {
+        // if we only have one tab - just show the error summary as is
+        $(errorSummary).prependTo(this.$content);
+        Craft.ui.setFocusOnErrorSummary(this.$content);
+      }
     },
 
     /**
@@ -571,31 +657,56 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     showErrors: function (errors) {
       this.clearErrors();
 
+      const tabMenu = this.tabManager?.menu || [];
+      const tabErrorIndicator =
+        '<span data-icon="alert">' +
+        '<span class="visually-hidden">' +
+        Craft.t('app', 'This tab contains errors') +
+        '</span>\n' +
+        '</span>';
+
       Object.entries(errors).forEach(([name, fieldErrors]) => {
         const $field = this.$container.find(`[data-error-key="${name}"]`);
         if ($field) {
           Craft.ui.addErrorsToField($field, fieldErrors);
           this.fieldsWithErrors.push($field);
 
-          // mark the tab as having errors
+          // find tabs that contain fields with errors
           let fieldTabAnchors = Craft.ui.findTabAnchorForField(
             $field,
             this.$container
           );
 
+          // add error indicator to tabs
           if (fieldTabAnchors.length > 0) {
+            // add error indicator to the tabs menuBtn
+            if (this.tabManager.$menuBtn.hasClass('error') == false) {
+              this.tabManager.$menuBtn.addClass('error');
+              this.tabManager.$menuBtn.append(
+                '<span data-icon="alert"></span>'
+              );
+            }
+
             for (let i = 0; i < fieldTabAnchors.length; i++) {
               let $fieldTabAnchor = $(fieldTabAnchors[i]);
 
               if ($fieldTabAnchor.hasClass('error') == false) {
                 $fieldTabAnchor.addClass('error');
-                $fieldTabAnchor
-                  .find('.tab-label')
-                  .append(
-                    '<span data-icon="alert">' +
-                      '<span class="visually-hidden">This tab contains errors</span>\n' +
-                      '</span>'
+                $fieldTabAnchor.find('.tab-label').append(tabErrorIndicator);
+
+                // also add the error indicator to the disclosure menu for the tabs
+                if (tabMenu.length) {
+                  let $tabMenuItem = tabMenu.find(
+                    '[data-id=' + $fieldTabAnchor.data('id') + ']'
                   );
+                  if (
+                    $tabMenuItem.length > 0 &&
+                    $tabMenuItem.hasClass('error') == false
+                  ) {
+                    $tabMenuItem.addClass('error');
+                    $tabMenuItem.append(tabErrorIndicator);
+                  }
+                }
               }
             }
           }
