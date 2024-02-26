@@ -1724,6 +1724,7 @@ return [
     'URL Format' => 'فرمت آدرس ابنترنتی',
     'URL type' => 'نوع URL',
     'URL' => 'آدرس اینترنتی',
+    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
     'Unable to fetch upgrade info at this time.' => 'در حال حاضر دریافت اطلاعات ارتقا مقدور نیست.',
     'Unable to find the template “{template}”.' => 'پیدا کردن قالب "{template}" ممکن نبود.',
     'Unauthorized' => 'غیر مجاز',
