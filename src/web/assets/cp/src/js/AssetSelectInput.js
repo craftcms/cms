@@ -25,6 +25,12 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     this.elementSelect.on('focusItem', this._onElementFocus.bind(this));
   },
 
+  elementSelectSettings() {
+    return Object.assign(this.base(), {
+      makeFocusable: true,
+    });
+  },
+
   /**
    * Handle a keypress
    * @private

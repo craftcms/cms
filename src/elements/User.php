@@ -939,40 +939,46 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function setAttributes($values, $safeOnly = true): void
+    public function setAttributesFromRequest($values): void
     {
-        if ($safeOnly) {
-            unset($values['unverifiedEmail']);
+        unset($values['unverifiedEmail']);
 
-            if (isset($values['email'])) {
-                $values['email'] = trim($values['email']);
-                if ($values['email'] === '' || $values['email'] === $this->email) {
-                    unset($values['email']);
-                }
-            }
-
-            if (isset($values['email'])) {
-                // make sure they have an elevated session
-                $userSession = Craft::$app->getUser();
-                if (!$userSession->getHasElevatedSession()) {
-                    throw new BadRequestHttpException('An elevated session is required to change a user’s email.');
-                }
-
-                // are they allowed to set the email?
-                if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
-                    if (
-                        Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
-                        !$userSession->checkPermission('administrateUsers')
-                    ) {
-                        // set it as the unverified email instead, and
-                        $values['unverifiedEmail'] = ArrayHelper::remove($values, 'email');
-                    }
-                } else {
-                    unset($values['email']);
-                }
+        if (isset($values['email'])) {
+            $values['email'] = trim($values['email']);
+            if ($values['email'] === '' || $values['email'] === $this->email) {
+                unset($values['email']);
             }
         }
 
+        if (isset($values['email'])) {
+            // make sure they have an elevated session
+            $userSession = Craft::$app->getUser();
+            if (!$userSession->getHasElevatedSession()) {
+                throw new BadRequestHttpException('An elevated session is required to change a user’s email.');
+            }
+
+            // are they allowed to set the email?
+            if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
+                if (
+                    Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
+                    !$userSession->checkPermission('administrateUsers')
+                ) {
+                    // set it as the unverified email instead, and
+                    $values['unverifiedEmail'] = ArrayHelper::remove($values, 'email');
+                }
+            } else {
+                unset($values['email']);
+            }
+        }
+
+        parent::setAttributesFromRequest($values);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAttributes($values, $safeOnly = true): void
+    {
         if (array_key_exists('fullName', $values)) {
             // Clear out the first and last names.
             // They'll get reset from prepareNamesForSave() if fullName isn't empty.

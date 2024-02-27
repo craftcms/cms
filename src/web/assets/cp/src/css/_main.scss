@@ -1619,19 +1619,32 @@ ul.icons {
     }
   }
 
-  &.hairline {
+  &.hairline,
+  &.link-btn {
     border: 1px solid var(--medium-hairline-color);
     background-color: transparent;
 
+    &:active,
+    &[aria-expanded='true'] {
+      background-color: var(--ui-control-static-bg-color);
+    }
+  }
+
+  &.hairline {
     &:hover,
     &:active,
     &[aria-expanded='true'] {
       border-color: var(--dark-hairline-color);
     }
+  }
 
+  &.link-btn {
+    color: var(--link-color);
+
+    &:hover,
     &:active,
     &[aria-expanded='true'] {
-      background-color: var(--ui-control-static-bg-color);
+      border-color: var(--link-color);
     }
   }
 
@@ -8104,6 +8117,34 @@ body.setup-2fa {
       display: flex;
       justify-content: center;
     }
+  }
+}
+
+/* licensing issues page */
+body.licensing-issues {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: var(--padding);
+
+  #licensing-issues {
+    display: flex;
+    flex-direction: row;
+    max-width: 50em;
+
+    .buttons {
+      justify-content: space-between;
+      [data-icon] {
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+  }
+
+  #continue {
+    margin: 0;
   }
 }
 

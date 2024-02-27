@@ -17,6 +17,7 @@
 - Entry chips, cards, and blocks are now tinted according to their entry type’s color. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Quick Post widgets now create entries via slideouts. ([#14228](https://github.com/craftcms/cms/pull/14228))
 - Slideout sidebars are now always toggleable; not just when the slideout is too narrow to show the sidebar alongside the content. ([#14418](https://github.com/craftcms/cms/pull/14418))
+- Element slideouts now show validation summaries at the top of each tab. ([#14436](https://github.com/craftcms/cms/pull/14436))
 - The “Save as a new entry” action is now available to all users with the “Create entries” permission, and will create a new unpublished draft rather than a fully-saved entry. ([#9577](https://github.com/craftcms/cms/issues/9577), [#10244](https://github.com/craftcms/cms/discussions/10244))
 - Entry conditions can now have a “Matrix field” rule. ([#13794](https://github.com/craftcms/cms/discussions/13794))
 - Money field condition rules now use money inputs. ([#14148](https://github.com/craftcms/cms/pull/14148))
@@ -166,6 +167,7 @@
 - Added `craft\base\ElementInterface::getInlineAttributeInputHtml()`.
 - Added `craft\base\ElementInterface::hasDrafts()`.
 - Added `craft\base\ElementInterface::hasThumbs()`.
+- Added `craft\base\ElementInterface::setAttributesFromRequest()`.
 - Added `craft\base\ElementInterface::setLazyEagerLoadedElements()`.
 - Added `craft\base\ElementTrait::$deletedWithOwner`.
 - Added `craft\base\ElementTrait::$eagerLoadInfo`.

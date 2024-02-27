@@ -1298,9 +1298,15 @@ class AssetsController extends Controller
         // If we're returning the original asset, and it's in a local FS, just read the file out directly
         $useOriginal = $transformString === 'original';
         if ($useOriginal) {
-            $fs = $asset->getVolume()->getFs();
+            $volume = $asset->getVolume();
+            $fs = $volume->getFs();
             if ($fs instanceof LocalFsInterface) {
-                $path = sprintf('%s/%s', rtrim($fs->getRootPath(), '/'), $asset->getPath());
+                $path = sprintf(
+                    '%s/%s/%s',
+                    rtrim($fs->getRootPath(), '/'),
+                    rtrim($volume->getSubpath(), '/'),
+                    $asset->getPath()
+                );
                 return $this->response->sendFile($path, $asset->getFilename(), [
                     'inline' => true,
                 ]);

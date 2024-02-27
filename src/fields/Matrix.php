@@ -1116,6 +1116,7 @@ JS;
                 'fieldId' => $this->id,
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
+                'revisions' => null,
             ],
         ];
     }

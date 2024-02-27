@@ -1162,6 +1162,13 @@ interface ElementInterface extends
     public function offsetExists($offset): bool;
 
     /**
+     * Sets the element’s attributes from an element editor submission.
+     *
+     * @param array $values The attribute values
+     */
+    public function setAttributesFromRequest(array $values): void;
+
+    /**
      * Returns the status of a given attribute.
      *
      * @param string $attribute

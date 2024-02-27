@@ -57,7 +57,7 @@
     "symfony/var-dumper": "^5.0|^6.0",
     "symfony/yaml": "^5.2.3",
     "theiconic/name-parser": "^1.2",
-    "twig/twig": "~3.4.3",
+    "twig/twig": "~3.8.0",
     "voku/stringy": "^6.4.0",
     "web-auth/webauthn-lib": "^4.7.0",
     "webonyx/graphql-php": "~14.11.5",

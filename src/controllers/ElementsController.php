@@ -20,6 +20,9 @@ use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
 use craft\events\DraftEvent;
+use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\CustomField;
+use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
@@ -1022,25 +1025,55 @@ JS, [
                 }
             }
             $errorsList = [];
+            $tabs = $element->getFieldLayout()->getTabs();
             foreach ($allErrors as $key => $errors) {
                 foreach ($errors as $error) {
-                    $errorItem = Html::beginTag('li');
-
                     // this is true in case of e.g. cross site validation error
                     if (preg_match('/^\s?\<a /', $error)) {
+                        $errorItem = Html::beginTag('li');
                         $errorItem .= $error;
+                        $errorItem .= Html::endTag('li');
                     } else {
-                        $error = Markdown::processParagraph(htmlspecialchars($error));
-                        $errorItem .= Html::a(Craft::t('app', $error), '#', [
-                            'data' => [
-                                'field-error-key' => $key,
-                            ],
-                        ]);
+                        // get tab uid for this error
+                        $tabUid = null;
+                        $bracketPos = strpos($key, '[');
+                        $fieldKey = substr($key, 0, $bracketPos ?: null);
+                        foreach ($tabs as $tab) {
+                            foreach ($tab->getElements() as $layoutElement) {
+                                if ($layoutElement instanceof BaseField && $layoutElement->attribute() === $fieldKey) {
+                                    $tabUid = $tab->uid;
+
+                                    if ($layoutElement instanceof CustomField) {
+                                        $field = $layoutElement->getField();
+                                        // if we're dealing with a Matrix field, we only want to show the errors
+                                        // if that field is set to inline blocks view mode;
+                                        if ($field instanceof Matrix && $field->viewMode !== $field::VIEW_MODE_BLOCKS) {
+                                            $error = null;
+                                        }
+                                    }
+
+                                    continue 2;
+                                }
+                            }
+                        }
+
+                        $errorItem = null;
+                        if ($error !== null) {
+                            $error = Markdown::processParagraph(htmlspecialchars($error));
+                            $errorItem = Html::beginTag('li');
+                            $errorItem .= Html::a(Craft::t('app', $error), '#', [
+                                'data' => [
+                                    'field-error-key' => $key,
+                                    'layout-tab' => $tabUid,
+                                ],
+                            ]);
+                            $errorItem .= Html::endTag('li');
+                        }
                     }
 
-                    $errorItem .= Html::endTag('li');
-
-                    $errorsList[] = $errorItem;
+                    if ($errorItem !== null) {
+                        $errorsList[] = $errorItem;
+                    }
                 }
             }
 
@@ -2111,7 +2144,7 @@ JS, [
         if ($this->_siteId) {
             $element->siteId = $this->_siteId;
         }
-        $element->setAttributes($this->_attributes);
+        $element->setAttributesFromRequest($this->_attributes);
 
         if (!Craft::$app->getElements()->canSave($element)) {
             throw new ForbiddenHttpException('User not authorized to create this element.');
@@ -2186,7 +2219,7 @@ JS, [
 
         $scenario = $element->getScenario();
         $element->setScenario(Element::SCENARIO_LIVE);
-        $element->setAttributes($this->_attributes);
+        $element->setAttributesFromRequest($this->_attributes);
 
         if ($this->_slug !== null) {
             $element->slug = $this->_slug;

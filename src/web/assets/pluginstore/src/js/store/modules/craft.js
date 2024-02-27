@@ -37,6 +37,11 @@ const getters = {
               'Develop custom front-end templates with Twig, or use Craft as a headless CMS.',
           },
           {
+            name: 'GraphQL API',
+            description:
+              'Make your content available to other applications with a self-generating GraphQL API.',
+          },
+          {
             name: 'Multi-Site',
             description:
               'Run multiple related sites from a single installation, with shared content and user accounts.',
@@ -62,11 +67,6 @@ const getters = {
             name: 'Enhanced content previewing',
             description:
               'Preview your content from multiple targets, including single-page applications.',
-          },
-          {
-            name: 'GraphQL API',
-            description:
-              'Make your content available to other applications with a self-generating GraphQL API.',
           },
           {
             name: 'System branding',

@@ -131,13 +131,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     initElementSelect: function () {
       if (this.settings.selectable) {
-        this.elementSelect = new Garnish.Select({
-          multi: this.settings.sortable,
-          filter: ':not(a):not(button)',
-          // prevent keyboard focus since element selection is only needed for drag-n-drop
-          makeFocusable: false,
-        });
+        this.elementSelect = new Garnish.Select(this.elementSelectSettings());
       }
+    },
+
+    elementSelectSettings() {
+      return {
+        multi: this.settings.sortable,
+        filter: ':not(a):not(button)',
+        // prevent keyboard focus since element selection is only needed for drag-n-drop
+        makeFocusable: false,
+      };
     },
 
     initElementSort: function () {
