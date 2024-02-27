@@ -870,7 +870,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         parent::addOrderBy($columns);
 
         // If $this->>orderBy is empty, just set it to null
-        /** @phpstan-ignore-next-line */
         if ($this->orderBy === []) {
             $this->orderBy = null;
         }

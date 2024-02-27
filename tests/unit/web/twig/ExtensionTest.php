@@ -8,7 +8,6 @@
 namespace crafttests\unit\web\twig;
 
 use ArrayObject;
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Address;
 use craft\elements\Entry;
@@ -22,8 +21,8 @@ use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
 use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use TypeError;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -724,7 +723,7 @@ class ExtensionTest extends TestCase
         );
 
         // invalid value
-        self::expectException(TypeError::class);
+        self::expectException(RuntimeError::class);
         $this->view->renderString('{% do "foo"|group("bar") %}');
     }
 
