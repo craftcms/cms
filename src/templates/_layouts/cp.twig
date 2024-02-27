@@ -321,22 +321,8 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                 {% if trialInfo %}
                     <div id="trial-info" class="readable">
                         <span>
-                            {% if trialInfo.hasCraftTrial and trialInfo.trialPluginCount %}
-                                {{ 'Craft Pro and {trialPluginCount, plural, =1{{name}} other{# plugins}} are installed as trials.'|t('app', {
-                                    trialPluginCount: trialInfo.trialPluginCount,
-                                    name: trialInfo.trialPluginNames|first,
-                                }) }}
-                            {% elseif trialInfo.hasCraftTrial %}
-                                {{ 'Craft Pro is installed as a trial.'|t('app') }}
-                            {% else %}
-                                {{ '{trialPluginCount, plural, =1{{name} is installed as a trial} other{# plugins are installed as trials}}.'|t('app', {
-                                    trialPluginCount: trialInfo.trialPluginCount,
-                                    name: trialInfo.trialPluginNames|first,
-                                }) }}
-                            {% endif %}
-                            {% set linkText = 'Purchase {total, plural, =1{license} other{licenses}}'|t('app', {
-                                total: (trialInfo.hasCraftTrial ? 1 : 0) + trialInfo.trialPluginCount,
-                            }) %}
+                            {{ trialInfo.message }}
+                            {% set linkText = 'Buy now'|t('app') %}
                             {{ tag('a', {
                                 class: 'go',
                                 href: trialInfo.cartUrl,

@@ -17,6 +17,8 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
+use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidPluginException;
 use craft\errors\MissingComponentException;
 use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
@@ -1240,5 +1242,221 @@ class App
 
         // Default to the application locale
         return Craft::$app->getLocale();
+    }
+
+    /**
+     * Returns all known licensing issues.
+     *
+     * @param bool $withUnresolvables
+     * @param bool $fetch
+     * @return array{0:string,1:string,2:array|null}[]
+     * @internal
+     */
+    public static function licensingIssues(bool $withUnresolvables = true, bool $fetch = false): array
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        if (!$user) {
+            return [];
+        }
+
+        $updatesService = Craft::$app->getUpdates();
+        $cache = Craft::$app->getCache();
+        $isInfoCached = $cache->exists('licenseInfo') && $updatesService->getIsUpdateInfoCached();
+
+        if (!$isInfoCached) {
+            if (!$fetch) {
+                return [];
+            }
+
+            $updatesService->getUpdates(true);
+        }
+
+        $issues = [];
+
+        $allLicenseInfo = $cache->get('licenseInfo') ?: [];
+        $pluginsService = Craft::$app->getPlugins();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+
+        foreach ($allLicenseInfo as $handle => $licenseInfo) {
+            $isCraft = $handle === 'craft';
+            if ($isCraft) {
+                $name = 'Craft';
+                $editions = ['solo', 'pro'];
+                $currentEdition = Craft::$app->getEditionHandle();
+                $currentEditionName = Craft::$app->getEditionName();
+                $licenseEditionName = App::editionName(App::editionIdByHandle($licenseInfo['edition'] ?? 'solo'));
+                $version = Craft::$app->getVersion();
+            } else {
+                if (!str_starts_with($handle, 'plugin-')) {
+                    continue;
+                }
+                $handle = StringHelper::removeLeft($handle, 'plugin-');
+
+                try {
+                    $pluginInfo = $pluginsService->getPluginInfo($handle);
+                } catch (InvalidPluginException) {
+                    continue;
+                }
+
+                $plugin = $pluginsService->getPlugin($handle);
+                if (!$plugin) {
+                    continue;
+                }
+
+                $name = $plugin->name;
+                $editions = $plugin::editions();
+                $currentEdition = $pluginInfo['edition'];
+                $currentEditionName = ucfirst($currentEdition);
+                $licenseEditionName = ucfirst($licenseInfo['edition'] ?? 'standard');
+                $version = $pluginInfo['version'];
+            }
+
+            $isMultiEdition = count($editions) > 1;
+
+            if ($licenseInfo['status'] === LicenseKeyStatus::Invalid->value) {
+                // invalid license
+                if ($withUnresolvables) {
+                    $issues[] = [
+                        $name,
+                        Craft::t('app', 'The {name} license is invalid.', ['name' => $name]),
+                        null,
+                    ];
+                }
+            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Trial->value) {
+                // trial license
+                $issues[] = [
+                    $isMultiEdition ? sprintf('%s %s', $name, $currentEditionName) : $name,
+                    Craft::t('app', '{name} requires purchase.', ['name' => $name]),
+                    array_filter([
+                        'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                        'plugin' => !$isCraft ? $handle : null,
+                        'licenseId' => $licenseInfo['id'],
+                        'edition' => $currentEdition,
+                    ]),
+                ];
+            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched->value) {
+                if ($withUnresolvables) {
+                    if ($isCraft) {
+                        // wrong domain
+                        $licensedDomain = $cache->get('licensedDomain');
+                        $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
+                            'rel' => 'noopener',
+                            'target' => '_blank',
+                        ]);
+
+                        if (defined('CRAFT_LICENSE_KEY')) {
+                            $message = Craft::t('app', 'The Craft CMS license key in use belongs to {domain}', [
+                                'domain' => $domainLink,
+                            ]);
+                        } else {
+                            $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
+
+                            // If the license key path starts with the root project path, trim the project path off
+                            $rootPath = Craft::getAlias('@root');
+                            if (strpos($keyPath, $rootPath . '/') === 0) {
+                                $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                            }
+
+                            $message = Craft::t('app', 'The Craft CMS license located at {file} belongs to {domain}.', [
+                                'file' => $keyPath,
+                                'domain' => $domainLink,
+                            ]);
+                        }
+
+                        $learnMoreLink = Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/support/resolving-mismatched-licenses', [
+                            'class' => 'go',
+                        ]);
+                        $issues[] = [$name, "$message $learnMoreLink", null];
+                    } else {
+                        // wrong Craft install
+                        $issues[] = [
+                            $name,
+                            Craft::t('app', 'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.', [
+                                'name' => $name,
+                                'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseInfo['id']}",
+                                'buyUrl' => $user->admin && $generalConfig->allowAdminChanges
+                                    ? UrlHelper::cpUrl("plugin-store/buy/$handle/$currentEdition")
+                                    : "https://plugins.craftcms.com/$handle",
+                            ]),
+                            null,
+                        ];
+                    }
+                }
+            } elseif ($licenseInfo['edition'] !== $currentEdition) {
+                // wrong edition
+                $message = Craft::t('app', '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.', [
+                    'name' => $name,
+                    'licenseEdition' => $licenseEditionName,
+                    'currentEdition' => $currentEditionName,
+                ]);
+                $currentEditionIdx = array_search($currentEdition, $editions);
+                $licenseEditionIdx = array_search($licenseInfo['edition'], $editions);
+                if ($currentEditionIdx !== false && $licenseEditionIdx !== false && $currentEditionIdx > $licenseEditionIdx) {
+                    $issues[] = [
+                        $isMultiEdition ? sprintf('%s %s', $name, $currentEditionName) : $name,
+                        $message,
+                        [
+                            'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                            'edition' => $currentEdition,
+                            'licenseId' => $licenseInfo['id'],
+                        ],
+                    ];
+                } elseif ($withUnresolvables) {
+                    if ($user->admin) {
+                        if ($generalConfig->allowAdminChanges) {
+                            $url = UrlHelper::cpUrl(sprintf('plugin-store/%s', $isCraft ? 'upgrade-craft' : $handle));
+                            $cta = Html::a(Craft::t('app', 'Resolve'), $url, ['class' => 'go']);
+                        } else {
+                            $cta = Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
+                        }
+                    } else {
+                        $cta = Craft::t('app', 'Please notify one of your site’s admins.');
+                    }
+                    $issues[] = [$name, "$message $cta", null];
+                }
+            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Astray->value) {
+                // updated too far
+                $issues[] = [
+                    sprintf('%s %s', $name, $version),
+                    Craft::t('app', '{name} isn’t licensed to run version {version}.', [
+                        'name' => $name,
+                        'version' => $version,
+                    ]),
+                    array_filter([
+                        'type' => $isCraft ? 'cms-renewal' : 'plugin-renewal',
+                        'plugin' => !$isCraft ? $handle : null,
+                        'licenseId' => $licenseInfo['id'],
+                    ]),
+                ];
+            }
+        }
+
+        return $issues;
+    }
+
+    /**
+     * Returns the license_shun cookie name.
+     *
+     * @return string
+     * @internal
+     */
+    public static function licenseShunCookieName(): string
+    {
+        return sprintf('%s_license_shun', md5('Craft.' . WebUser::class . '.' . Craft::$app->id));
+    }
+
+    /**
+     * Returns a hash of the given licensing issues.
+     *
+     * @param array $issues
+     * @return string
+     * @internal
+     */
+    public static function licensingIssuesHash(array $issues): string
+    {
+        $resolveItems = array_map(fn($issue) => Json::encode($issue[2]), $issues);
+        sort($resolveItems);
+        return md5(implode('', $resolveItems));
     }
 }

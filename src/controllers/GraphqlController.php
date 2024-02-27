@@ -68,8 +68,6 @@ class GraphqlController extends Controller
             return false;
         }
 
-        Craft::$app->requireEdition(Craft::Pro);
-
         return true;
     }
 
