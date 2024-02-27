@@ -24,6 +24,7 @@ $badgeColor: var(--gray-800);
   --sidebar-width: #{$sidebarWidth};
   --global-sidebar-width: #{$sidebarWidth};
   --header-height: calc(44rem / 16);
+  --details-width: #{$detailsWidth};
 }
 
 html {
@@ -1109,17 +1110,23 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #details-container {
-  flex: 0 0 #{$detailsWidth + 38};
-  width: $detailsWidth + 38;
-  @include margin-right(calc(var(--xl) * -1));
-  box-sizing: border-box;
+  display: none;
+}
+
+#details-container[data-state='expanded'] {
+  display: block;
+  flex: 0 1 auto;
+  width: calc(var(--details-width) + var(--m));
+  @include padding-left(var(--m));
 }
 
 #details {
-  box-sizing: border-box;
-  @include padding-right(var(--xl));
-  @include padding-left(var(--m));
-  width: $detailsWidth + 38;
+  display: none;
+}
+
+#details {
+  display: block;
+  width: $detailsWidth;
   z-index: 1;
 
   &.fixed {
@@ -1262,6 +1269,12 @@ li.breadcrumb-toggle-wrapper {
   #sidebar-container,
   #details-container {
     width: auto !important;
+    padding-left: 0 !important;
+    display: block;
+  }
+
+  #details-toggle {
+    display: none;
   }
 
   #sidebar,
