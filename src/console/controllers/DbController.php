@@ -348,7 +348,7 @@ class DbController extends Controller
 
         if ($charset === null) {
             $charset = $this->prompt('Which character set should be used?', [
-                'default' => $dbConfig->charset ?? 'utf8',
+                'default' => $dbConfig->getCharset(),
             ]);
         }
 
