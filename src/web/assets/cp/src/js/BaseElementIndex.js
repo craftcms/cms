@@ -477,6 +477,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Select the initial source + source path
       // ---------------------------------------------------------------------
 
+      // if path was passed in the query, use it
+      if (queryParams.path && queryParams.path.substring(0, 7) === 'folder:') {
+        this.setSelecetedSourceState('sourcePathStep', queryParams.path);
+      }
+
       // Grab the localStorage step key up front, so we don's lose track of it when the default source's default
       // source path is selected
       let stepKey;
@@ -562,6 +567,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // clears out search params
 
       if (queryParams.search) {
+        // whether we should include subfolders in this query;
+        // used by e.g. ShowInFolder element action
+        if (queryParams.includeSubfolders) {
+          let currentIncludeSubfolders =
+            this.getSelectedSourceState('includeSubfolders');
+          let includeSubfolders = false;
+          switch (queryParams.includeSubfolders.toLowerCase()) {
+            case 'false':
+            case '0':
+              includeSubfolders = false;
+              break;
+            default:
+              includeSubfolders = true;
+          }
+          if (currentIncludeSubfolders !== includeSubfolders) {
+            this.setSelecetedSourceState(
+              'includeSubfolders',
+              includeSubfolders
+            );
+          }
+        }
+
         this.startSearching();
         this.searchText = queryParams.search;
       }

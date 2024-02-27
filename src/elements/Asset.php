@@ -1494,6 +1494,20 @@ JS, [
             $this->id,
         ]);
 
+        // Show in Folder
+        $showInFolderId = sprintf('action-show-in-folder-%s', mt_rand());
+        $viewItems[] = [
+            'type' => MenuItemType::Button,
+            'id' => $showInFolderId,
+            'icon' => 'folder',
+            'label' => Craft::t('app', 'Show in folder'),
+            'action' => 'assets/show-in-folder',
+            'params' => [
+                'assetId' => $this->id,
+                'responseType' => 'redirect',
+            ],
+        ];
+
         $viewIndex = Collection::make($items)->search(fn(array $item) => str_starts_with($item['id'] ?? '', 'action-view-'));
         array_splice($items, $viewIndex !== false ? $viewIndex + 1 : 0, 0, $viewItems);
 
