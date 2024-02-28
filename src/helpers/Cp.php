@@ -32,7 +32,6 @@ use craft\fieldlayoutelements\CustomField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
-use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
@@ -891,7 +890,7 @@ class Cp
             return '';
         }
 
-        return Html::tag('div', $content, [
+        return Html::tag('craft-element-label', $content, [
             'id' => sprintf('%s-label', $config['id']),
             'class' => 'label',
         ]);

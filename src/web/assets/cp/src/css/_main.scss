@@ -3036,6 +3036,10 @@ table {
     .icon {
       margin: -4px -1px 0;
     }
+
+    .chip-actions {
+      margin-left: auto;
+    }
   }
 
   &.sel,
@@ -3867,10 +3871,6 @@ table {
   .flex,
   .btn {
     clear: both;
-  }
-
-  .chip {
-    z-index: 1;
   }
 
   .structure {
