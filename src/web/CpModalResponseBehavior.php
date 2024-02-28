@@ -145,7 +145,6 @@ class CpModalResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
-     * @since 4.5.0
      */
     public function errorSummary(callable|string|null $value): Response
     {
@@ -159,7 +158,6 @@ class CpModalResponseBehavior extends Behavior
      * @param string $template
      * @param array $variables
      * @return Response
-     * @since 4.5.0
      */
     public function errorSummaryTemplate(string $template, array $variables = []): Response
     {
