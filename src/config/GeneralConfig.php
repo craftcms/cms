@@ -2558,6 +2558,24 @@ class GeneralConfig extends BaseConfig
     public bool $sanitizeSvgUploads = true;
 
     /**
+     * @var bool Whether Craft should sanitize uploaded SVG files and delete any remote references.
+     *
+     * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->sanitizeSvgRemoteRefs(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SANITIZE_SVG_REMOTE_REFS=true
+     * ```
+     * :::
+     *
+     * @group Security
+     */
+    public bool $sanitizeSvgRemoteRefs = false;
+
+    /**
      * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
      *
      * This value should be the same across all environments. If this key ever changes, any data that was encrypted with it will be inaccessible.
@@ -5960,6 +5978,27 @@ class GeneralConfig extends BaseConfig
     public function sanitizeSvgUploads(bool $value = true): self
     {
         $this->sanitizeSvgUploads = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should sanitize uploaded SVG files and delete any remote references.
+     *
+     * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
+     *
+     * ```php
+     * ->sanitizeSvgRemoteRefs(true)
+     * ```
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $sanitizeSvgRemoteRefs
+     * @since 4.9.0
+     */
+    public function sanitizeSvgRemoteRefs(bool $value = false): self
+    {
+        $this->sanitizeSvgRemoteRefs = $value;
         return $this;
     }
 
