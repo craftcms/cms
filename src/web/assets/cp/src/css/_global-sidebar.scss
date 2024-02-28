@@ -39,8 +39,7 @@
 
 .global-sidebar__footer {
   margin-block-start: auto;
-  display: grid;
-  gap: var(--s);
+  border-top: 1px solid var(--hairline-color);
 }
 
 .global-nav > ul {
