@@ -10,6 +10,7 @@
 
 - It’s now possible to update expired licenses from the Updates utility, on non-public domains. 
 - The GraphQL API is now available for Craft Solo installs.
+- It’s now possible to toggle the details sidebar on full edit pages. ([#14432](https://github.com/craftcms/cms/pull/14432))
 - Element slideouts now show validation summaries at the top of each tab. ([#14436](https://github.com/craftcms/cms/pull/14436))
 - Color fields now have a “Presets” settings. ([#14463](https://github.com/craftcms/cms/discussions/14463))
 - Inline-editable Matrix blocks now show their entry type icon/name even if the field only has one entry type selected. ([#14458](https://github.com/craftcms/cms/discussions/14458))
@@ -23,6 +24,8 @@
 - Fixed a bug where slideout sidebars would close automatically when the content pane was clicked on, even when there was enough room to show both side-by-side. ([#14460](https://github.com/craftcms/cms/issues/14460))
 - Fixed a bug where it took two <kbd>Esc</kbd> presses to close slideouts with sidebars displayed side-by-side with the content pane. ([#14461](https://github.com/craftcms/cms/issues/14461))
 - Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
+- Fixed a bug where control panel alerts could bleed out of their container.
+- Fixed a SQL error that could occur if the database `driver` config wasn’t explicitly set. ([#14027](https://github.com/craftcms/cms/issues/14027))
 - Fixed a PHP warning that could occur when publishing asset bundles on Dev Mode. ([#14455](https://github.com/craftcms/cms/pull/14455))
 - Fixed a bug where the Updates utility and Updates widget weren’t handling update check failures.
 - Fixed an error that occurred when calling `craft\elements\User::setAttributes()` from a console request.
