@@ -924,7 +924,7 @@ class App
             'dsn' => $dbConfig->dsn,
             'username' => $dbConfig->user,
             'password' => $dbConfig->password,
-            'charset' => $dbConfig->charset,
+            'charset' => $dbConfig->getCharset(),
             'tablePrefix' => $dbConfig->tablePrefix ?? '',
             'enableLogging' => static::devMode(),
             'enableProfiling' => static::devMode(),

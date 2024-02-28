@@ -26,6 +26,9 @@ import './js/Slideout.js';
 import './js/CpScreenSlideout.js';
 import './js/ElementEditorSlideout.js';
 
+// Modals
+import './js/CpModal.js';
+
 // Tabs
 import './js/Tabs.js';
 

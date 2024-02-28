@@ -339,7 +339,6 @@ class DbConfig extends BaseConfig
         $this
             ->url($this->url)
             ->tablePrefix($this->tablePrefix)
-            ->charset($this->charset)
         ;
 
         // If we don't have a DSN yet, create one from the deprecated settings
@@ -401,14 +400,25 @@ class DbConfig extends BaseConfig
      */
     public function charset(string $value): self
     {
-        if ($value === 'utf8' && $this->driver === Connection::DRIVER_MYSQL) {
-            // treat utf8 as an alias for utf8mb4
-            // (MySQL aliases it to utf8mb3, but that's deprecated and likely to change eventually)
-            $value = 'utf8mb4';
-        }
-
         $this->charset = $value;
         return $this;
+    }
+
+    /**
+     * Returns the normalized charset.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getCharset(): string
+    {
+        if ($this->charset === 'utf8' && $this->driver === Connection::DRIVER_MYSQL) {
+            // treat utf8 as an alias for utf8mb4
+            // (MySQL aliases it to utf8mb3, but that's deprecated and likely to change eventually)
+            return 'utf8mb4';
+        }
+
+        return $this->charset;
     }
 
     /**

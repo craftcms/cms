@@ -6262,6 +6262,23 @@ $min2ColWidth: 400px;
   min-height: auto;
 }
 
+.cpmodal {
+  & > .cpmodal-body {
+    padding: var(--padding);
+  }
+
+  & > .cpmodal-footer {
+    position: relative;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    @include pane;
+    padding: var(--s) var(--padding);
+    background-color: var(--gray-050);
+  }
+}
+
 /* delete user modal */
 .deleteusermodal {
   .content-summary {
