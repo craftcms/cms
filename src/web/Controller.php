@@ -283,6 +283,24 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
+     * Sends a control panel modal response.
+     *
+     * @return Response
+     * @since 5.0.0
+     */
+    public function asCpModal(): Response
+    {
+        if ($this->response->getBehavior(CpModalResponseBehavior::NAME)) {
+            return $this->response;
+        }
+
+        $this->response->attachBehavior(CpModalResponseBehavior::NAME, CpModalResponseBehavior::class);
+        $this->response->formatters[CpModalResponseFormatter::FORMAT] = CpModalResponseFormatter::class;
+        $this->response->format = CpModalResponseFormatter::FORMAT;
+        return $this->response;
+    }
+
+    /**
      * Sends a failure response.
      *
      * @param string|null $message

@@ -231,6 +231,21 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                             <div id="action-buttons" class="flex">
                                                 {{ additionalButtons|raw }}
                                                 {{ actionButton|raw }}
+
+                                                {% if details is not empty %}
+                                                    {% set content %}
+                                                        <span aria-hidden="true" class="cp-icon">{{ iconSvg('sidebar-end') }}</span>
+                                                        <span class="visually-hidden">{{ 'Toggle details sidebar'|t('app') }}</span>
+                                                    {% endset %}
+                                                    {% include '_includes/disclosure-toggle' with {
+                                                        id: 'details-toggle',
+                                                        controls: 'details-container',
+                                                        content: content,
+                                                        attributes: {
+                                                            class: 'btn btn-empty'
+                                                        }
+                                                    } %}
+                                                {% endif %}
                                             </div>
                                         {% endif %}
                                     {% endblock %}

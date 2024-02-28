@@ -168,6 +168,7 @@
 - Added `craft\base\ElementInterface::hasDrafts()`.
 - Added `craft\base\ElementInterface::hasThumbs()`.
 - Added `craft\base\ElementInterface::setAttributesFromRequest()`.
+- Added `craft\base\ElementInterface::setAttributesFromRequest()`.
 - Added `craft\base\ElementInterface::setLazyEagerLoadedElements()`.
 - Added `craft\base\ElementTrait::$deletedWithOwner`.
 - Added `craft\base\ElementTrait::$eagerLoadInfo`.
@@ -381,6 +382,9 @@
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
 - Added `craft\services\Sites::$maxSites`. ([#14307](https://github.com/craftcms/cms/pull/14307))
 - Added `craft\services\Sites::getRemainingSites()`. ([#14307](https://github.com/craftcms/cms/pull/14307))
+- Added `craft\web\Controller::asCpModal()`.
+- Added `craft\web\CpModalResponseBehavior`.
+- Added `craft\web\CpModalResponseFormatter`.
 - Added `craft\web\CpScreenResponseBehavior::$actionMenuItems`.
 - Added `craft\web\CpScreenResponseBehavior::$contextMenuItems`.
 - Added `craft\web\CpScreenResponseBehavior::$selectableSites`.
@@ -608,8 +612,9 @@
 - Added `Craft.CP::setSiteCrumbMenuItemStatus()`.
 - Added `Craft.CP::showSiteCrumbMenuItem()`.
 - Added `Craft.CP::updateContext()`.
-- Added `Craft.ElementEditor::setFormValue()`.
+- Added `Craft.CpModal`.
 - Added `Craft.ElementEditor::markDeltaNameAsModified()`.
+- Added `Craft.ElementEditor::setFormValue()`.
 - Added `Garnish.DisclosureMenu::addGroup()`.
 - Added `Garnish.DisclosureMenu::addHr()`.
 - Added `Garnish.DisclosureMenu::addItem()`.
