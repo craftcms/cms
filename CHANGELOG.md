@@ -27,6 +27,7 @@
 - Fixed a bug where expand/collapse toggles weren’t working within structure element table views. ([#14453](https://github.com/craftcms/cms/issues/14453))
 - Fixed a bug where slideout sidebars would close automatically when the content pane was clicked on, even when there was enough room to show both side-by-side. ([#14460](https://github.com/craftcms/cms/issues/14460))
 - Fixed a bug where it took two <kbd>Esc</kbd> presses to close slideouts with sidebars displayed side-by-side with the content pane. ([#14461](https://github.com/craftcms/cms/issues/14461))
+- Fixed a 404 error that occurred when visiting a nested Matrix entry’s URL, if the Template setting was blank. ([#14464](https://github.com/craftcms/cms/issues/14464))
 - Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
 - Fixed a bug where control panel alerts could bleed out of their container.
 - Fixed a SQL error that could occur if the database `driver` config wasn’t explicitly set. ([#14027](https://github.com/craftcms/cms/issues/14027))
