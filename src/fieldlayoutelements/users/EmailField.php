@@ -91,9 +91,11 @@ class EmailField extends TextField
      */
     protected function warning(?ElementInterface $element = null, bool $static = false): ?string
     {
+        /** @var User $element */
         if (
             Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
-            !Craft::$app->getUser()->checkPermission('administrateUsers')
+            !Craft::$app->getUser()->checkPermission('administrateUsers') &&
+            $element->email !== null
         ) {
             return Craft::t('app', 'New email addresses must be verified before taking effect.');
         }
@@ -111,7 +113,7 @@ class EmailField extends TextField
                 throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', __CLASS__));
             }
 
-            if (!$element->getIsCurrent() && !Craft::$app->getUser()->checkPermission('administrateUsers')) {
+            if (!$element->getIsCurrent() && $element->email !== null && !Craft::$app->getUser()->checkPermission('administrateUsers')) {
                 return null;
             }
 

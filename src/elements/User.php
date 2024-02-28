@@ -957,17 +957,19 @@ class User extends Element implements IdentityInterface
                 throw new BadRequestHttpException('An elevated session is required to change a user’s email.');
             }
 
-            // are they allowed to set the email?
-            if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
-                if (
-                    Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
-                    !$userSession->checkPermission('administrateUsers')
-                ) {
-                    // set it as the unverified email instead, and
-                    $values['unverifiedEmail'] = ArrayHelper::remove($values, 'email');
+            if ($this->email !== null) {
+                // are they allowed to set the email?
+                if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
+                    if (
+                        Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
+                        !$userSession->checkPermission('administrateUsers')
+                    ) {
+                        // set it as the unverified email instead, and
+                        $values['unverifiedEmail'] = ArrayHelper::remove($values, 'email');
+                    }
+                } else {
+                    unset($values['email']);
                 }
-            } else {
-                unset($values['email']);
             }
         }
 
@@ -2290,6 +2292,12 @@ JS, [
         }
 
         $this->prepareNamesForSave();
+
+        // If user is reported as not new, we need to check if that's really the case,
+        // since now we save user as soon as New user form is rendered;
+        if (!$isNew) {
+            $isNew = $this->getIsDraft();
+        }
 
         $record->photoId = (int)$this->photoId ?: null;
         $record->admin = $this->admin;
