@@ -45,6 +45,9 @@ import './dashboard.scss';
             this.handleNewWidgetOptionSelect(event);
           }
         });
+
+        // trigger element thumb loader for widgets
+        this.$grid.trigger('scroll');
       });
     },
 
