@@ -14,6 +14,7 @@
 - Element slideouts now show validation summaries at the top of each tab. ([#14436](https://github.com/craftcms/cms/pull/14436))
 - Color fields now have a “Presets” settings. ([#14463](https://github.com/craftcms/cms/discussions/14463))
 - Inline-editable Matrix blocks now show their entry type icon/name even if the field only has one entry type selected. ([#14458](https://github.com/craftcms/cms/discussions/14458))
+- Added support for eager-loading addresses’ and entries’ owner elements via `owner` and `primaryOwner` eager-loading handles.
 - Composer installation commands suggested by the Plugin Store now include a minimum version constraint.
 - `update all` and `update <handle>` commands now support a `--with-expired` option. 
 - Added `craft\base\ElementInterface::setAttributesFromRequest()`.

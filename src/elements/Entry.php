@@ -81,8 +81,10 @@ use yii\db\Expression;
 class Entry extends Element implements NestedElementInterface, ExpirableElementInterface, Iconic, Colorable
 {
     use NestedElementTrait {
+        eagerLoadingMap as traitEagerLoadingMap;
         attributes as traitAttributes;
         extraFields as traitExtraFields;
+        setEagerLoadedElements as traitSetEagerLoadedElements;
     }
 
     public const STATUS_LIVE = 'live';
@@ -657,7 +659,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 ];
 
             default:
-                return parent::eagerLoadingMap($sourceElements, $handle);
+                return self::traitEagerLoadingMap($sourceElements, $handle);
         }
     }
 
@@ -1877,7 +1879,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 $this->setAuthors($elements);
                 break;
             default:
-                parent::setEagerLoadedElements($handle, $elements, $plan);
+                $this->traitSetEagerLoadedElements($handle, $elements, $plan);
         }
     }
 
