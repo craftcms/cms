@@ -1,9 +1,24 @@
 import $ from 'jquery';
 
+/**
+ * Element label
+ *
+ * Displays a tooltip when the label link overflows its container.
+ *
+ * @method update Recalculate overflow and create tooltip if necessary.
+ * @method calculateWidth Calculate the desired width of the label.
+ *
+ * @example <craft-element-label><a href="#" class="label-link">Label</a></craft-element-label>
+ */
 class CraftElementLabel extends HTMLElement {
   connectedCallback() {
     this.labelLink = this.querySelector('.label-link');
     this.tooltip = null;
+
+    if (!this.labelLink) {
+      console.warn('No label link found in craft-element-label.');
+      return;
+    }
 
     /**
      * When the element is inside a tab, we need to listen for tab changes.
@@ -30,6 +45,7 @@ class CraftElementLabel extends HTMLElement {
     }
 
     // Do we already have a tooltip?
+    /** @type {CraftTooltip|null} */
     this.tooltip = this.querySelector('craft-tooltip');
 
     // If not, create one

@@ -1,11 +1,34 @@
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
 
 /**
+ * Tooltip
+ *
  * Renders a tooltip on hover or focus of the parent element.
+ *
+ * Tooltips are used to provide additional or context for an element. By default
+ * the tooltip will be positioned below an element and will avoid the edges
+ * of the browser window.
+ *
+ * @property {'top'|'top-start'|'top-end'|'right'|'right-start'|'right-end'|'bottom'|'bottom-start'|'bottom-end'|'left'|'left-start'|'left-end'} placement - The placement of the tooltip relative to the parent element.
+ * @property {boolean} arrow - Whether the tooltip should have an arrow.
+ * @property {number} offset - The offset of the tooltip from the parent element.
+ * @method show - Show the tooltip.
+ * @method hide - Hide the tooltip.
+ * @method update - Update the position of the tooltip.
+ * @example <craft-tooltip arrow="false" placement="top" offset="10">Tooltip content</craft-tooltip>
  */
-export default class CraftTooltip extends HTMLElement {
+class CraftTooltip extends HTMLElement {
   connectedCallback() {
-    this.renderArrow();
+    this.arrowElement = null;
+
+    this.arrow = this.getAttribute('arrow') !== 'false';
+    this.offset = this.hasAttribute('offset')
+      ? parseInt(this.getAttribute('offset'), 10)
+      : 4;
+
+    if (this.arrow) {
+      this.renderArrow();
+    }
 
     this.listeners = [
       ['mouseenter', this.show],
@@ -66,10 +89,10 @@ export default class CraftTooltip extends HTMLElement {
       strategy: 'fixed',
       placement: this.getAttribute('placement') || 'bottom',
       middleware: [
-        offset(4),
         flip(),
         shift({padding: 10}),
-        arrow({element: this.arrowElement}),
+        offset(this.offset),
+        ...(this.arrow ? [arrow({element: this.arrowElement})] : []),
       ],
     }).then(({x, y, middlewareData, placement}) => {
       Object.assign(this.style, {
@@ -78,6 +101,10 @@ export default class CraftTooltip extends HTMLElement {
         left: `${x}px`,
         top: `${y}px`,
       });
+
+      if (!this.arrowElement) {
+        return;
+      }
 
       const {x: arrowX, y: arrowY} = middlewareData.arrow;
       const staticSide = {
@@ -98,5 +125,7 @@ export default class CraftTooltip extends HTMLElement {
     });
   }
 }
+
+export default CraftTooltip;
 
 customElements.define('craft-tooltip', CraftTooltip);
