@@ -17,6 +17,10 @@
 - Composer installation commands suggested by the Plugin Store now include a minimum version constraint.
 - `update all` and `update <handle>` commands now support a `--with-expired` option. 
 - Added `craft\base\ElementInterface::setAttributesFromRequest()`.
+- Added `craft\web\Controller::asCpModal()`.
+- Added `craft\web\CpModalResponseBehavior`.
+- Added `craft\web\CpModalResponseFormatter`.
+- Added `Craft.CpModal`.
 - Updated Twig to 3.8.
 - Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets wasn’t working for assets that were clicked on. ([#14420](https://github.com/craftcms/cms/issues/14420))
 - Fixed a bug where fallback transforms for local assets weren’t working for `original` transforms. ([#14457](https://github.com/craftcms/cms/pull/14457))
