@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where some characters were getting misinterpreted as elisions when normalizing search keywords.
+
 ## 4.8.0 - 2024-02-26
 
 > [!NOTE]  
