@@ -1359,7 +1359,7 @@ class AssetsController extends Controller
      */
     public function actionShowInFolder(): Response
     {
-        $this->requirePostRequest();
+        $this->requireCpRequest();
 
         $assetId = Craft::$app->getRequest()->getRequiredParam('assetId');
 
