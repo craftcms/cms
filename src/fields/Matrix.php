@@ -499,13 +499,9 @@ class Matrix extends Field implements
     {
         $site = $element->getSite();
 
-        if (!isset($this->siteSettings[$site->uid]['template'])) {
-            return null;
-        }
-
         return [
             'templates/render', [
-                'template' => $this->siteSettings[$site->uid]['template'],
+                'template' => $this->siteSettings[$site->uid]['template'] ?? '',
                 'variables' => [
                     'entry' => $element,
                 ],
