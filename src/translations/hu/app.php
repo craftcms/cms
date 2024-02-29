@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'Mutassa a mezőkezelőket szerkeszthető alakban',
     'Show full exception views when Dev Mode is disabled' => 'Kivétel nézetek teljes megjelenítése kikapcsolt fejlesztői módban',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'A navigáció megjelenítése',
     'Show nested sources' => 'Beágyazott források megjelenítése',
     'Show sidebar' => 'Oldalsáv mutatása',

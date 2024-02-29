@@ -588,6 +588,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    public function __toString()
+    {
+        return __CLASS__;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function offsetExists(mixed $offset): bool
     {
         // Cached?

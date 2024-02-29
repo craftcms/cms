@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'Показувати дескриптори полів у формах редагування',
     'Show full exception views when Dev Mode is disabled' => 'Показувати перегляди винятків повністю, коли режим розробника вимкнено',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'Показати навігацію',
     'Show nested sources' => 'Показати вкладені джерела',
     'Show sidebar' => 'Показати бічну панель',
