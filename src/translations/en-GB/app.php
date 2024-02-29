@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'Show field handles in edit forms',
     'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'Show nav',
     'Show nested sources' => 'Show nested sources',
     'Show sidebar' => 'Show sidebar',

@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'Показывать дескрипторы полей в формах редактирования',
     'Show full exception views when Dev Mode is disabled' => 'Выводить представления исключений полностью при отключенном режиме разработчика',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'Показать навигацию',
     'Show nested sources' => 'Показать вложенные источники',
     'Show sidebar' => 'Показать боковую панель',
