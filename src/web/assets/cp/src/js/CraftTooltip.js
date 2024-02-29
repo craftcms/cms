@@ -74,6 +74,8 @@ class CraftTooltip extends HTMLElement {
     Object.assign(this.style, {
       opacity: 1,
       transform: `translateY(0)`,
+      // Make sure if a user hovers over the label itself, it stays open
+      pointerEvents: 'auto',
     });
   }
 
@@ -96,8 +98,6 @@ class CraftTooltip extends HTMLElement {
       ],
     }).then(({x, y, middlewareData, placement}) => {
       Object.assign(this.style, {
-        opacity: 1,
-        transform: `translateY(0)`,
         left: `${x}px`,
         top: `${y}px`,
       });
