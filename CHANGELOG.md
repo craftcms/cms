@@ -36,6 +36,7 @@
 - Fixed a bug where entry thumbnails weren’t getting loaded initially for the My Drafts widget. ([#14486](https://github.com/craftcms/cms/issues/14486))
 - Fixed a bug where saving a Matrix field using the inline-editable blocks view mode could temporarily lose track of disabled nested entries. ([#14493](https://github.com/craftcms/cms/issues/14493))
 - Fixed an error that occurred when viewing an entry revision with a Matrix field using the inline-editable blocks view mode, which contained soft-deleted nested entries with their own nested entries. ([#14494](https://github.com/craftcms/cms/issues/14494))
+- Fixed a bug where nested addresses and entries could lose their positions in the parent element when edited. ([#14491](https://github.com/craftcms/cms/issues/14491))
 - Fixed a bug where some characters were getting misinterpreted as elisions when normalizing search keywords.
 - Fixed a bug where `craft\helpers\UrlHelper::actionUrl()` was using the site URL rather than the requested URL. ([#14440](https://github.com/craftcms/cms/issues/14440))
 - Fixed a PHP warning that could occur when publishing asset bundles on Dev Mode. ([#14455](https://github.com/craftcms/cms/pull/14455))
