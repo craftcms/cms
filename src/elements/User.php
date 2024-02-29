@@ -2293,12 +2293,6 @@ JS, [
 
         $this->prepareNamesForSave();
 
-        // If user is reported as not new, we need to check if that's really the case,
-        // since now we save user as soon as New user form is rendered;
-        if (!$isNew) {
-            $isNew = $this->getIsDraft();
-        }
-
         $record->photoId = (int)$this->photoId ?: null;
         $record->admin = $this->admin;
         $record->username = $this->username;
