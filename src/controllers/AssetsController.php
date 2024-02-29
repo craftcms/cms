@@ -1375,8 +1375,8 @@ class AssetsController extends Controller
         $uri = StringHelper::ensureLeft(UrlHelper::prependCpTrigger($sourcePath[0]['uri']), '/');
         $url = UrlHelper::urlWithParams($uri, [
             'search' => $asset->filename,
-            'includeSubfolders' => false,
-            'path' => 'folder:' . $folder->uid,
+            'includeSubfolders' => '0',
+            'sourcePathStep' => "folder:$folder->uid",
         ]);
 
         return $this->redirect($url);
