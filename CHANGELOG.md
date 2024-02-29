@@ -8,10 +8,11 @@
 > [!WARNING]  
 > When licensing issues occur on public domains, the control panel will now become temporarily inaccessible for logged-in users, alerting them to the problems and giving them an opportunity to resolve them. (The front end will not be impacted.)
 
-- It’s now possible to update expired licenses from the Updates utility, on non-public domains. 
+- It’s now possible to update expired licenses from the Updates utility, on non-public domains.
 - The GraphQL API is now available for Craft Solo installs.
 - It’s now possible to toggle the details sidebar on full edit pages. ([#14432](https://github.com/craftcms/cms/pull/14432))
 - Element slideouts now show validation summaries at the top of each tab. ([#14436](https://github.com/craftcms/cms/pull/14436))
+- Added the “Show in folder” asset action. ([#14227](https://github.com/craftcms/cms/discussions/14227))
 - Color fields now have a “Presets” settings. ([#14463](https://github.com/craftcms/cms/discussions/14463))
 - Inline-editable Matrix blocks now show their entry type icon/name even if the field only has one entry type selected. ([#14458](https://github.com/craftcms/cms/discussions/14458))
 - Added support for eager-loading addresses’ and entries’ owner elements via `owner` and `primaryOwner` eager-loading handles.

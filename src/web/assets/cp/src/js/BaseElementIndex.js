@@ -481,7 +481,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // source path is selected
       let stepKey;
       if (this.settings.context === 'index') {
-        stepKey = this.getSelectedSourceState('sourcePathStep');
+        if (queryParams.sourcePathStep !== undefined) {
+          stepKey = queryParams.sourcePathStep;
+        } else {
+          stepKey = this.getSelectedSourceState('sourcePathStep');
+        }
       } else {
         stepKey = this.instanceState.sourcePathStep || null;
       }
