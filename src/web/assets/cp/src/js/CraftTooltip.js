@@ -83,6 +83,7 @@ class CraftTooltip extends HTMLElement {
     Object.assign(this.style, {
       opacity: 0,
       transform: `translateY(5px)`,
+      pointerEvents: 'none',
     });
   }
 
