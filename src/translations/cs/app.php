@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'Zobrazit atributy polí ve formulářích pro úpravy',
     'Show full exception views when Dev Mode is disabled' => 'Zobrazit celé náhledy výjimky, když je deaktivován vývojářský režim',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'Zobrazit navigaci',
     'Show nested sources' => 'Zobrazit vnořené zdroje',
     'Show sidebar' => 'Zobrazit postranní lištu',
