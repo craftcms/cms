@@ -22,6 +22,7 @@
 - Added `craft\web\Controller::asCpModal()`.
 - Added `craft\web\CpModalResponseBehavior`.
 - Added `craft\web\CpModalResponseFormatter`.
+- `craft\elements\db\ElementQuery::__toString()` now returns the class name. ([#14498](https://github.com/craftcms/cms/issues/14498))
 - Added `Craft.CpModal`.
 - Updated Twig to 3.8.
 - Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets wasn’t working for assets that were clicked on. ([#14420](https://github.com/craftcms/cms/issues/14420))
