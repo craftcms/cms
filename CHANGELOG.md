@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-beta.4 - 2024-02-29
 
 > [!NOTE]  
 > Trialing Craft and plugin updates with expired licenses is allowed now, on non-public domains.
