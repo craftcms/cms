@@ -1749,7 +1749,7 @@ return [
     'Update YAML files' => 'Uppdatera YAML-filer',
     'Update aborted.' => 'Uppdateringen har avbrutits.',
     'Update all' => 'Uppdatera alla',
-    'Update anyway' => 'Update anyway',
+    'Update anyway' => 'Uppdatera ändå',
     'Update asset indexes' => 'Uppdatera tillgångsindex',
     'Update status for individual sites' => 'Uppdatera status för enskilda webbplatser',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => 'Uppdatera dina YAML-projektkonfigurationsfiler för att reflektera de senaste ändringarna i den inlästa projektkonfigurationen.',
