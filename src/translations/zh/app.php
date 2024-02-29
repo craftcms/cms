@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => '在编辑表单中显示字段句柄',
     'Show full exception views when Dev Mode is disabled' => '在开发者模式禁用时显示完整异常视图',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => '显示导航',
     'Show nested sources' => '显示嵌套源',
     'Show sidebar' => '显示侧边栏',
