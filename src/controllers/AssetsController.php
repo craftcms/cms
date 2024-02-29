@@ -1362,7 +1362,6 @@ class AssetsController extends Controller
         $this->requirePostRequest();
 
         $assetId = Craft::$app->getRequest()->getRequiredParam('assetId');
-        $responseType = Craft::$app->getRequest()->getParam('responseType', 'json');
 
         $asset = Asset::findOne($assetId);
         if ($asset === null) {
@@ -1373,30 +1372,13 @@ class AssetsController extends Controller
         $folder = $asset->getFolder();
         $sourcePath[] = $folder->getSourcePathInfo();
 
-        // for a JSON response (e.g. via element actions)
-        if ($responseType === 'json') {
-            // get all the way up to the root folder, cause we need source path info for each step
-            while (($parent = $folder->getParent()) !== null) {
-                $sourcePath[] = $parent->getSourcePathInfo();
-                $folder = $parent;
-            }
+        $uri = StringHelper::ensureLeft(UrlHelper::prependCpTrigger($sourcePath[0]['uri']), '/');
+        $url = UrlHelper::urlWithParams($uri, [
+            'search' => $asset->filename,
+            'includeSubfolders' => false,
+            'path' => 'folder:' . $folder->uid,
+        ]);
 
-            $data = [
-                'filename' => $asset->filename,
-                'sourcePath' => array_reverse($sourcePath),
-            ];
-
-            return $this->asJson($data);
-        } else {
-            // for a redirect response (e.g. element action menu items)
-            $uri = StringHelper::ensureLeft(UrlHelper::prependCpTrigger($sourcePath[0]['uri']), '/');
-            $url = UrlHelper::urlWithParams($uri, [
-                'search' => $asset->filename,
-                'includeSubfolders' => false,
-                'path' => 'folder:' . $folder->uid,
-            ]);
-
-            return $this->redirect($url);
-        }
+        return $this->redirect($url);
     }
 }
