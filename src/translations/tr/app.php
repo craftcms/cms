@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'Alan tanımlayıcılarını düzenleme formlarında göster',
     'Show full exception views when Dev Mode is disabled' => 'Geliştirici Modu devre dışıyken tüm istisnai görünümleri göster',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'Gezinti menüsünü göster',
     'Show nested sources' => 'İç içe geçmiş kaynakları göster',
     'Show sidebar' => 'Kenar çubuğunu göster',
