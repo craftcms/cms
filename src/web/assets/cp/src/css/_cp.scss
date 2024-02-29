@@ -1109,11 +1109,11 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-#details-container {
+#details-container[data-state='collapsed'] {
   display: none;
 }
 
-#details-container[data-state='expanded'] {
+#details-container {
   display: block;
   flex: 0 1 auto;
   width: calc(var(--details-width) + var(--m));

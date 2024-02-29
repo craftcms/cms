@@ -269,7 +269,7 @@ class UrlHelper
             $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl, $showScriptName);
+        return self::_createUrl($path, $params, $scheme, $cpUrl, showScriptName: $showScriptName);
     }
 
     /**
@@ -379,7 +379,7 @@ class UrlHelper
             $showScriptName = (bool)$generalConfig->pathParam;
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl, $showScriptName, false);
+        return self::_createUrl($path, $params, $scheme, $cpUrl, true, $showScriptName, false);
     }
 
     /**
@@ -579,8 +579,15 @@ class UrlHelper
      * @param bool $addToken
      * @return string
      */
-    private static function _createUrl(string $path, array|string|null $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, bool $addToken = true): string
-    {
+    private static function _createUrl(
+        string $path,
+        array|string|null $params,
+        ?string $scheme,
+        bool $cpUrl,
+        bool $useRequestHostInfo = false,
+        ?bool $showScriptName = null,
+        bool $addToken = true,
+    ): string {
         // Extract any params/fragment from the path
         [$path, $baseParams, $baseFragment] = self::_extractParams($path);
 
@@ -613,20 +620,18 @@ class UrlHelper
             $showScriptName = !$generalConfig->omitScriptNameInUrls;
         }
 
-        // If we must show the script name, then just start with the script URL,
-        // regardless of whether this is a control panel or site request, as we can't assume
-        // that index.php lives within the base URL anymore.
-        if ($showScriptName) {
-            if ($request->getIsConsoleRequest()) {
-                // No way to know for sure, so just guess
-                $baseUrl = '/index.php';
-            } else {
-                $baseUrl = static::host() . $request->getScriptUrl();
-            }
+        if ($useRequestHostInfo) {
+            $baseUrl = Craft::getAlias('@web');
+        } elseif ($showScriptName) {
+            $baseUrl = $request->getIsConsoleRequest() ? '/' : static::host();
         } elseif ($cpUrl) {
             $baseUrl = static::baseCpUrl();
         } else {
             $baseUrl = static::baseSiteUrl();
+        }
+
+        if ($showScriptName) {
+            $baseUrl = rtrim($baseUrl, '/') . '/' . ($request->getIsConsoleRequest() ? 'index.php' : $request->getScriptUrl());
         }
 
         if ($scheme === null && !static::isAbsoluteUrl($baseUrl)) {

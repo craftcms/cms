@@ -24,10 +24,22 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _uploadTotalFiles: 0,
     _uploadFileProgress: {},
     _currentUploaderSettings: {},
+    _includeSubfolders: null,
 
     init: function (elementType, $container, settings) {
       settings = Object.assign({}, Craft.AssetIndex.defaults, settings);
-      this.base(elementType, $container, settings);
+      this.setSettings(settings, Craft.BaseElementIndex.defaults);
+
+      if (this.settings.context === 'index') {
+        // remember whether includeSubfolders was set in the query string,
+        // before the URL is updated
+        const queryParams = Craft.getQueryParams();
+        if (queryParams.includeSubfolders !== undefined) {
+          this._includeSubfolders = !!parseInt(queryParams.includeSubfolders);
+        }
+      }
+
+      this.base(elementType, $container, this.settings);
 
       if (this.settings.context === 'index') {
         this.itemDrag = new Garnish.DragDrop({
@@ -362,7 +374,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             .removeClass('hidden');
         }
 
-        var checked = this.getSelectedSourceState('includeSubfolders', false);
+        let checked;
+        if (this._includeSubfolders !== null) {
+          checked = this._includeSubfolders;
+          this._includeSubfolders = null;
+        } else {
+          checked = this.getSelectedSourceState('includeSubfolders', false);
+        }
         this.$includeSubfoldersCheckbox.prop('checked', checked);
 
         this.$includeSubfoldersContainer.velocity(

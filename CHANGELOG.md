@@ -8,12 +8,14 @@
 > [!WARNING]  
 > When licensing issues occur on public domains, the control panel will now become temporarily inaccessible for logged-in users, alerting them to the problems and giving them an opportunity to resolve them. (The front end will not be impacted.)
 
-- It’s now possible to update expired licenses from the Updates utility, on non-public domains. 
+- It’s now possible to update expired licenses from the Updates utility, on non-public domains.
 - The GraphQL API is now available for Craft Solo installs.
 - It’s now possible to toggle the details sidebar on full edit pages. ([#14432](https://github.com/craftcms/cms/pull/14432))
 - Element slideouts now show validation summaries at the top of each tab. ([#14436](https://github.com/craftcms/cms/pull/14436))
+- Added the “Show in folder” asset action. ([#14227](https://github.com/craftcms/cms/discussions/14227))
 - Color fields now have a “Presets” settings. ([#14463](https://github.com/craftcms/cms/discussions/14463))
 - Inline-editable Matrix blocks now show their entry type icon/name even if the field only has one entry type selected. ([#14458](https://github.com/craftcms/cms/discussions/14458))
+- Added support for eager-loading addresses’ and entries’ owner elements via `owner` and `primaryOwner` eager-loading handles.
 - Composer installation commands suggested by the Plugin Store now include a minimum version constraint.
 - `update all` and `update <handle>` commands now support a `--with-expired` option. 
 - Added `craft\base\ElementInterface::setAttributesFromRequest()`.
@@ -27,9 +29,12 @@
 - Fixed a bug where expand/collapse toggles weren’t working within structure element table views. ([#14453](https://github.com/craftcms/cms/issues/14453))
 - Fixed a bug where slideout sidebars would close automatically when the content pane was clicked on, even when there was enough room to show both side-by-side. ([#14460](https://github.com/craftcms/cms/issues/14460))
 - Fixed a bug where it took two <kbd>Esc</kbd> presses to close slideouts with sidebars displayed side-by-side with the content pane. ([#14461](https://github.com/craftcms/cms/issues/14461))
+- Fixed a 404 error that occurred when visiting a nested Matrix entry’s URL, if the Template setting was blank. ([#14464](https://github.com/craftcms/cms/issues/14464))
 - Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
 - Fixed a bug where control panel alerts could bleed out of their container.
 - Fixed a SQL error that could occur if the database `driver` config wasn’t explicitly set. ([#14027](https://github.com/craftcms/cms/issues/14027))
+- Fixed a bug where some characters were getting misinterpreted as elisions when normalizing search keywords.
+- Fixed a bug where `craft\helpers\UrlHelper::actionUrl()` was using the site URL rather than the requested URL. ([#14440](https://github.com/craftcms/cms/issues/14440))
 - Fixed a PHP warning that could occur when publishing asset bundles on Dev Mode. ([#14455](https://github.com/craftcms/cms/pull/14455))
 - Fixed a bug where the Updates utility and Updates widget weren’t handling update check failures.
 - Fixed an error that occurred when calling `craft\elements\User::setAttributes()` from a console request.
