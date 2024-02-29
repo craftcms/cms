@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'Vis felt-handles i redigeringsformularer',
     'Show full exception views when Dev Mode is disabled' => 'Vis komplet visning af undtagelser, når udviklertilstand er deaktiveret',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'Vis nav',
     'Show nested sources' => 'Vis indlejrede kilder',
     'Show sidebar' => 'Vis sidebjælke',

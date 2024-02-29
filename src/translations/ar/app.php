@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'إظهار مقابض الحقول في نماذج التحرير',
     'Show full exception views when Dev Mode is disabled' => 'إظهار طرق عرض الاستثناءات الكاملة عندما يكون وضع التطوير معطلًا',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'إظهار قائمة التنقل',
     'Show nested sources' => 'إظهار المصادر المتداخلة',
     'Show sidebar' => 'إظهار الشريط الجانبي',

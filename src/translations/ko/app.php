@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => '편집 양식에 필드 핸들 표시',
     'Show full exception views when Dev Mode is disabled' => '전체 예외 보기 표시(개발자 모드가 비활성화 상태인 경우)',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'nav 표시',
     'Show nested sources' => '중첩된 소스 표시',
     'Show sidebar' => '사이드바 표시',
