@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'نمایش شناسه‌های فیلد در فرم‌های ویرایش',
     'Show full exception views when Dev Mode is disabled' => 'نمایش شرح استثناء به صورت کامل در هنگامی که حالت توسعه غیرفعال است',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'نمایش نوار راهبری',
     'Show nested sources' => 'نشان دادن منابع تودرتو',
     'Show sidebar' => 'نمایش نوار کناری',

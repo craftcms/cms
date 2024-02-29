@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'Veldingangen tonen in bewerkingsformulieren',
     'Show full exception views when Dev Mode is disabled' => 'Volledige uitzonderingsweergaven weergeven wanneer ontwikkelmodus is uitgeschakeld',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'Navigatiebalk weergeven',
     'Show nested sources' => 'Geneste bronnen tonen',
     'Show sidebar' => 'Toon zijbalk',

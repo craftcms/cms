@@ -444,6 +444,7 @@
 - `craft\behaviors\SessionBehavior::setSuccess()` and `getSuccess()` use the `success` flash key now, rather than `notice`. ([#14345](https://github.com/craftcms/cms/pull/14345))
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\elemens\db\ElementQueryInterface::collect()` now has an `ElementCollection` return type, rather than `Collection`.
+- `craft\elements\db\ElementQuery::__toString()` now returns the class name. ([#14498](https://github.com/craftcms/cms/issues/14498))
 - `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
 - `craft\elements\User::getAddresses()` now returns a collection.
 - `craft\enums\LicenseKeyStatus` is now an enum.

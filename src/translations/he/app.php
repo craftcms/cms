@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'הצג מזהים ייחודיים בטפסי עריכה',
     'Show full exception views when Dev Mode is disabled' => 'הצג תצוגות חריגה מלאות כאשר מצב Dev מנוטרל',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'הצג nav',
     'Show nested sources' => 'הצג מקורות מקוננים',
     'Show sidebar' => 'הצג תפריט צדדי',

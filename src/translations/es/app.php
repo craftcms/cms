@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => 'Mostrar identificadores de campo en formatos de edición',
     'Show full exception views when Dev Mode is disabled' => 'Mostrar todas las vistas de excepciones cuando el modo Dev está desactivado',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'Mostrar nav.',
     'Show nested sources' => 'Mostrar fuentes anidadas',
     'Show sidebar' => 'Mostrar barra lateral',

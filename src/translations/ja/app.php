@@ -1415,6 +1415,7 @@ return [
     'Show field handles in edit forms' => '編集フォームでフィールドのハンドルを表示する',
     'Show full exception views when Dev Mode is disabled' => '開発モードが無効な場合に完全な例外ビューを表示する',
     'Show in element cards' => 'Show in element cards',
+    'Show in folder' => 'Show in folder',
     'Show nav' => 'ナビゲーションを表示',
     'Show nested sources' => 'ネストされたソースを表示',
     'Show sidebar' => 'サイドバーを表示する',

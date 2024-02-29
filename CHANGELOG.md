@@ -22,6 +22,7 @@
 - Added `craft\web\Controller::asCpModal()`.
 - Added `craft\web\CpModalResponseBehavior`.
 - Added `craft\web\CpModalResponseFormatter`.
+- `craft\elements\db\ElementQuery::__toString()` now returns the class name. ([#14498](https://github.com/craftcms/cms/issues/14498))
 - Added `Craft.CpModal`.
 - Updated Twig to 3.8.
 - Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets wasn’t working for assets that were clicked on. ([#14420](https://github.com/craftcms/cms/issues/14420))
@@ -34,6 +35,9 @@
 - Fixed a bug where control panel alerts could bleed out of their container.
 - Fixed a SQL error that could occur if the database `driver` config wasn’t explicitly set. ([#14027](https://github.com/craftcms/cms/issues/14027))
 - Fixed a bug where entry thumbnails weren’t getting loaded initially for the My Drafts widget. ([#14486](https://github.com/craftcms/cms/issues/14486))
+- Fixed a bug where saving a Matrix field using the inline-editable blocks view mode could temporarily lose track of disabled nested entries. ([#14493](https://github.com/craftcms/cms/issues/14493))
+- Fixed an error that occurred when viewing an entry revision with a Matrix field using the inline-editable blocks view mode, which contained soft-deleted nested entries with their own nested entries. ([#14494](https://github.com/craftcms/cms/issues/14494))
+- Fixed a bug where nested addresses and entries could lose their positions in the parent element when edited. ([#14491](https://github.com/craftcms/cms/issues/14491))
 - Fixed a bug where some characters were getting misinterpreted as elisions when normalizing search keywords.
 - Fixed a bug where `craft\helpers\UrlHelper::actionUrl()` was using the site URL rather than the requested URL. ([#14440](https://github.com/craftcms/cms/issues/14440))
 - Fixed a PHP warning that could occur when publishing asset bundles on Dev Mode. ([#14455](https://github.com/craftcms/cms/pull/14455))

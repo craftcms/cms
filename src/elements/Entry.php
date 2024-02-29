@@ -2319,15 +2319,30 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             // ownerId will be null when creating a revision
             $ownerId = $this->getOwnerId();
             if (isset($this->fieldId) && $ownerId && $this->saveOwnership) {
-                if (!isset($this->sortOrder) && !$isNew) {
-                    $this->sortOrder = (new Query())
-                        ->select('sortOrder')
-                        ->from(Table::ELEMENTS_OWNERS)
-                        ->where([
-                            'elementId' => $this->id,
-                            'ownerId' => $ownerId,
-                        ])
-                        ->scalar() ?: null;
+                if (!isset($this->sortOrder) && (!$isNew || $this->duplicateOf)) {
+                    // figure out if we should proceed this way
+                    // if we're dealing with an element that's being duplicated, and it has a draftId
+                    // it means we're creating a draft of something
+                    // if we're duplicating element via duplicate action - draftId would be empty
+                    $elementId = null;
+                    if ($this->duplicateOf) {
+                        if ($this->draftId) {
+                            $elementId = $this->duplicateOf->id;
+                        }
+                    } else {
+                        // if we're not duplicating - use element's id
+                        $elementId = $this->id;
+                    }
+                    if ($elementId) {
+                        $this->sortOrder = (new Query())
+                            ->select('sortOrder')
+                            ->from(Table::ELEMENTS_OWNERS)
+                            ->where([
+                                'elementId' => $elementId,
+                                'ownerId' => $ownerId,
+                            ])
+                            ->scalar() ?: null;
+                    }
                 }
                 if (!isset($this->sortOrder)) {
                     $max = (new Query())
