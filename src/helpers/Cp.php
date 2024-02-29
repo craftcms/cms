@@ -465,7 +465,6 @@ class Cp
         $attributes = ArrayHelper::merge([
             'id' => $config['id'],
             'class' => ['chip', $config['size']],
-            'title' => $label,
             'style' => array_filter([
                 '--custom-bg-color' => $color?->cssVar(50),
                 '--custom-text-color' => $color?->cssVar(900),
@@ -586,17 +585,9 @@ class Cp
             'sortable' => false,
         ];
 
-        $title = implode('', array_map(fn(string $segment) => "$segment → ", $element->getUiLabelPath())) .
-            $element->getUiLabel();
-
-        if (Craft::$app->getIsMultiSite()) {
-            $title .= sprintf(' - %s', Craft::t('site', $element->getSite()->getName()));
-        }
-
         $config['attributes'] = ArrayHelper::merge(
             self::baseElementAttributes($element, $config),
             [
-                'title' => $title,
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'context' => $config['context'],

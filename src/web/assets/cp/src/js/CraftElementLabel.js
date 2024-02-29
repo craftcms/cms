@@ -33,6 +33,13 @@ class CraftElementLabel extends HTMLElement {
     }
 
     this.update();
+
+    // Update again when the document is ready.
+    // At the moment, this is necessary for this functionality within a dashboard
+    // widget. In that case, this component is rendered too early.
+    $(() => {
+      this.update();
+    });
   }
 
   update() {
@@ -50,10 +57,24 @@ class CraftElementLabel extends HTMLElement {
 
     // If not, create one
     if (!this.tooltip) {
-      this.tooltip = document.createElement('craft-tooltip');
-      this.tooltip.innerText = this.innerText;
-      this.labelLink.appendChild(this.tooltip);
+      this.createTooltip();
     }
+  }
+
+  createTooltip() {
+    this.tooltip = document.createElement('craft-tooltip');
+    this.tooltip.innerText = this.innerText;
+
+    // If there's a context label, make it a little nicer
+    const contextLabel = this.querySelector('.context-label');
+    if (contextLabel) {
+      this.tooltip.innerText = this.tooltip.innerText.replace(
+        contextLabel.innerText,
+        ` (${contextLabel.innerText})`
+      );
+    }
+
+    this.labelLink.appendChild(this.tooltip);
   }
 
   disconnectedCallback() {
