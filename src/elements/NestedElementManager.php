@@ -214,6 +214,20 @@ class NestedElementManager extends Component
     }
 
     /**
+     * @param ElementInterface $owner
+     * @param NestedElementInterface[] $elements
+     */
+    private function setOwnerOnNestedElements(ElementInterface $owner, array $elements): void
+    {
+        foreach ($elements as $element) {
+            $element->setOwner($owner);
+            if ($element->id === $element->getPrimaryOwnerId()) {
+                $element->setPrimaryOwner($owner);
+            }
+        }
+    }
+
+    /**
      * Returns the search keywords for nested elements of the given owner element.
      *
      * @param ElementInterface $owner
@@ -222,8 +236,11 @@ class NestedElementManager extends Component
     public function getSearchKeywords(ElementInterface $owner): string
     {
         $keywords = [];
+        /** @var NestedElementInterface[] $elements */
+        $elements = $this->getValue($owner)->all();
+        $this->setOwnerOnNestedElements($owner, $elements);
 
-        foreach ($this->getValue($owner)->all() as $element) {
+        foreach ($elements as $element) {
             foreach ($element->getFieldLayout()->getCustomFields() as $field) {
                 if ($field->searchable) {
                     $fieldValue = $element->getFieldValue($field->handle);
@@ -364,7 +381,9 @@ class NestedElementManager extends Component
                     'class' => 'nested-element-cards',
                 ]);
 
+                /** @var NestedElementInterface[] $elements */
                 $elements = $this->getValue($owner, true)->all();
+                $this->setOwnerOnNestedElements($owner, $elements);
 
                 if (!empty($elements)) {
                     $html .= Html::ul(array_map(
@@ -653,6 +672,9 @@ JS, [
             }
         }
 
+        /** @var NestedElementInterface[] $elements */
+        $this->setOwnerOnNestedElements($owner, $elements);
+
         $elementIds = [];
         $sortOrder = 0;
 
@@ -849,6 +871,9 @@ JS, [
         } else {
             $elements = $value->getCachedResult() ?? $value->all();
         }
+
+        /** @var NestedElementInterface[] $elements */
+        $this->setOwnerOnNestedElements($source, $elements);
 
         $newElementIds = [];
 
