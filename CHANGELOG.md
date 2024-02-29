@@ -33,6 +33,7 @@
 - Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
 - Fixed a bug where control panel alerts could bleed out of their container.
 - Fixed a SQL error that could occur if the database `driver` config wasn’t explicitly set. ([#14027](https://github.com/craftcms/cms/issues/14027))
+- Fixed a bug where entry thumbnails weren’t getting loaded initially for the My Drafts widget. ([#14486](https://github.com/craftcms/cms/issues/14486))
 - Fixed a bug where some characters were getting misinterpreted as elisions when normalizing search keywords.
 - Fixed a bug where `craft\helpers\UrlHelper::actionUrl()` was using the site URL rather than the requested URL. ([#14440](https://github.com/craftcms/cms/issues/14440))
 - Fixed a PHP warning that could occur when publishing asset bundles on Dev Mode. ([#14455](https://github.com/craftcms/cms/pull/14455))
