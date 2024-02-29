@@ -980,7 +980,7 @@ class Matrix extends Field implements
             $allEntriesValidate = true;
             $scenario = $element->getScenario();
 
-            foreach ($entries as $i => $entry) {
+            foreach ($entries as $entry) {
                 $entry->setOwner($element);
 
                 /** @var Entry $entry */
@@ -1358,9 +1358,10 @@ JS;
                 ->keyBy(fn(Entry $entry) => $entry->getCanonicalId());
 
             if ($derivatives->isNotEmpty()) {
-                $canonicalUids = Entry::find()
+                $canonicalUids = (new Query())
                     ->select(['id', 'uid'])
-                    ->id($derivatives->keys()->all())
+                    ->from(DbTable::ELEMENTS)
+                    ->where(['id' => $derivatives->keys()->all()])
                     ->pairs();
                 $derivativeUidMap = [];
                 $canonicalUidMap = [];

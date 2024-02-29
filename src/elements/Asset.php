@@ -1490,6 +1490,18 @@ JS, [
             $this->id,
         ]);
 
+        // Show in Folder
+        if ($user->can("viewAssets:{$this->getVolume()->uid}")) {
+            $viewItems[] = [
+                'type' => MenuItemType::Link,
+                'icon' => 'magnifying-glass',
+                'label' => Craft::t('app', 'Show in folder'),
+                'url' => UrlHelper::actionUrl('assets/show-in-folder', [
+                    'assetId' => $this->id,
+                ]),
+            ];
+        }
+
         $viewIndex = Collection::make($items)->search(fn(array $item) => str_starts_with($item['id'] ?? '', 'action-view-'));
         array_splice($items, $viewIndex !== false ? $viewIndex + 1 : 0, 0, $viewItems);
 

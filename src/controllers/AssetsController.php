@@ -27,6 +27,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
@@ -1345,5 +1346,39 @@ class AssetsController extends Controller
             ->sendFile($path, $responseFilename, [
                 'inline' => true,
             ]);
+    }
+
+    /**
+     * Show in folder action.
+     * Find asset by id and Return source path info for each folder up until the one the asset is in.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws InvalidConfigException
+     * @throws \yii\web\MethodNotAllowedHttpException
+     */
+    public function actionShowInFolder(): Response
+    {
+        $this->requireCpRequest();
+
+        $assetId = Craft::$app->getRequest()->getRequiredParam('assetId');
+
+        $asset = Asset::findOne($assetId);
+        if ($asset === null) {
+            throw new BadRequestHttpException("Invalid asset ID: $assetId");
+        }
+
+        // get the folder for selected asset
+        $folder = $asset->getFolder();
+        $sourcePath[] = $folder->getSourcePathInfo();
+
+        $uri = StringHelper::ensureLeft(UrlHelper::prependCpTrigger($sourcePath[0]['uri']), '/');
+        $url = UrlHelper::urlWithParams($uri, [
+            'search' => $asset->filename,
+            'includeSubfolders' => '0',
+            'sourcePathStep' => "folder:$folder->uid",
+        ]);
+
+        return $this->redirect($url);
     }
 }
