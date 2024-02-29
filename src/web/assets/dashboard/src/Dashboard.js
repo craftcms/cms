@@ -617,6 +617,8 @@ import './dashboard.scss';
       await Craft.appendHeadHtml(response.headHtml);
       await Craft.appendBodyHtml(response.bodyHtml);
 
+      Craft.cp.elementThumbLoader.load(this.$bodyContainer);
+
       this.setSettingsHtml(response.info.settingsHtml, function () {
         eval(response.info.settingsJs);
       });
