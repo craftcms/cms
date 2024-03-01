@@ -427,6 +427,8 @@ class HtmlHelperTest extends TestCase
             [false, "<div x-foo='>"],
             [false, '<!-- comment -->'],
             [false, '<?xml?>'],
+            // https://github.com/craftcms/cms/issues/14498
+            [['data' => ['label' => "foo\n\nbar"]], "<div data-label=\"foo\n\nbar\">"],
         ];
     }
 
