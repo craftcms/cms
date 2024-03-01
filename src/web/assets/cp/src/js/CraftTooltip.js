@@ -19,14 +19,15 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  */
 class CraftTooltip extends HTMLElement {
   connectedCallback() {
-    this.arrowElement = null;
+    this.arrowElement = this.querySelector('.arrow');
 
     this.arrow = this.getAttribute('arrow') !== 'false';
     this.offset = this.hasAttribute('offset')
       ? parseInt(this.getAttribute('offset'), 10)
-      : 4;
+      : 8;
 
-    if (this.arrow) {
+    if (this.arrow && !this.arrowElement) {
+      this.renderInner();
       this.renderArrow();
     }
 
@@ -63,10 +64,25 @@ class CraftTooltip extends HTMLElement {
     }
   }
 
+  /**
+   * Renders an inner container so we can use padding for the offset and
+   * maintain a better hover experience for users using zoom.
+   */
+  renderInner() {
+    this.inner = document.createElement('span');
+    this.inner.classList.add('inner');
+    this.inner.innerText = this.innerText;
+
+    // Replace the content with the inner container
+    this.innerHTML = '';
+    this.appendChild(this.inner);
+    this.style.paddingTop = `${this.offset}px`;
+  }
+
   renderArrow() {
     this.arrowElement = document.createElement('span');
     this.arrowElement.classList.add('arrow');
-    this.appendChild(this.arrowElement);
+    this.inner.appendChild(this.arrowElement);
   }
 
   show() {
@@ -94,7 +110,7 @@ class CraftTooltip extends HTMLElement {
       middleware: [
         flip(),
         shift({padding: 10}),
-        offset(this.offset),
+        offset(0),
         ...(this.arrow ? [arrow({element: this.arrowElement})] : []),
       ],
     }).then(({x, y, middlewareData, placement}) => {

@@ -2865,6 +2865,7 @@ table {
         padding-top: 7px;
         padding-bottom: 7px;
         background-clip: padding-box;
+        max-width: 33vw;
       }
 
       td {
@@ -3089,7 +3090,7 @@ table {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--thumb-size);
+    min-width: var(--thumb-size);
     height: var(--thumb-size);
 
     &.rounded {

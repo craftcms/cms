@@ -3,26 +3,31 @@ craft-tooltip {
   white-space: normal;
   opacity: 0;
   transform: translateY(-4px);
+  width: max-content;
+  max-width: 240px;
   transition:
     opacity 100ms ease-in-out,
     transform 150ms ease-in-out;
+  top: 0;
+  left: 0;
+  z-index: 99;
+}
+
+craft-tooltip > .inner {
+  position: relative;
+  display: inline-block;
   background-color: var(--white);
   color: var(--gray-700);
   border: 1px solid var(--dark-hairline-color);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   border-radius: var(--medium-border-radius);
-  width: max-content;
-  max-width: 220px;
   padding: var(--xs) var(--s);
   pointer-events: none;
   user-select: none;
-  top: 0;
-  left: 0;
-  z-index: 99;
   font-weight: 400;
 }
 
-craft-tooltip > .arrow {
+craft-tooltip .arrow {
   position: absolute;
   background: var(--white);
   width: 8px;
