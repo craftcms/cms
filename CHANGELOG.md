@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the “Show in folder” asset index action, available when searching across subfolders. ([#14227](https://github.com/craftcms/cms/discussions/14227))
 - Element index “View” menus no longer show the “Table Columns” setting when displaying elements as cards. ([#14503](https://github.com/craftcms/cms/issues/14503))
 - Fixed a bug where generated URLs would get an extra forward slash when the script name was included. ([#14505](https://github.com/craftcms/cms/issues/14505))
 - Fixed a bug where entry thumbnails weren’t getting loaded initially for the My Drafts widget. ([#14486](https://github.com/craftcms/cms/issues/14486))

@@ -8,6 +8,7 @@
 - All elements can now have thumbnails, provided by Assets fields. ([#12484](https://github.com/craftcms/cms/discussions/12484), [#12706](https://github.com/craftcms/cms/discussions/12706))
 - Element indexes and relational fields now have the option to use card views. ([#6024](https://github.com/craftcms/cms/pull/6024))
 - Element indexes now support inline editing for some custom field values.
+- Added the “Show in folder” asset index action, available when searching across subfolders. ([#14227](https://github.com/craftcms/cms/discussions/14227))
 - The view states for nested element sources are now managed independently.
 - Element chips and cards now include quick action menus. ([#13902](https://github.com/craftcms/cms/pull/13902))
 - Entry edit pages now include quick links to other sections’ index sources.

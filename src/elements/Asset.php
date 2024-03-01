@@ -29,6 +29,7 @@ use craft\elements\actions\PreviewAsset;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\Restore;
+use craft\elements\actions\ShowInFolder;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
@@ -483,6 +484,18 @@ class Asset extends Element
             // Copy URL
             if ($fs->hasUrls) {
                 $actions[] = CopyUrl::class;
+            }
+
+            // Show in folder
+            if (Craft::$app->controller instanceof ElementIndexesController) {
+                $query = Craft::$app->controller->getElementQuery();
+                if (
+                    $query instanceof AssetQuery &&
+                    isset($query->search) &&
+                    $query->includeSubfolders
+                ) {
+                    $actions[] = ShowInFolder::class;
+                }
             }
 
             // Copy Reference Tag
