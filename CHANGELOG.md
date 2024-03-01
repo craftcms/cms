@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where generated URLs would get an extra forward slash when the script name was included. ([#14505](https://github.com/craftcms/cms/issues/14505))
+
 ## 5.0.0-beta.4 - 2024-02-29
 
 > [!NOTE]  
