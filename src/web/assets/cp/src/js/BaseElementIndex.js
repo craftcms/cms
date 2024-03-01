@@ -2565,6 +2565,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Update the view menu
       if (this.activeViewMenu) {
         this.activeViewMenu.updateSortField();
+        this.activeViewMenu.updateTableFieldVisibility();
       }
     },
 
@@ -4033,6 +4034,32 @@ const ViewMenu = Garnish.Base.extend({
     this.menu.hide();
   },
 
+  updateTableFieldVisibility: function () {
+    // we only want to show the "Table Columns" checkboxes and "Use defaults" btn in table and structure views
+    if (
+      this.elementIndex.viewMode !== 'table' &&
+      this.elementIndex.viewMode !== 'structure'
+    ) {
+      if (this.$tableColumnsContainer) {
+        this.$tableColumnsContainer
+          .closest('.table-columns-field')
+          .addClass('hidden');
+      }
+      if (this.$revertBtn) {
+        this.$revertBtn.addClass('hidden');
+      }
+    } else {
+      if (this.$tableColumnsContainer) {
+        this.$tableColumnsContainer
+          .closest('.table-columns-field')
+          .removeClass('hidden');
+      }
+      if (this.$revertBtn) {
+        this.$revertBtn.removeClass('hidden');
+      }
+    }
+  },
+
   updateSortField: function () {
     if (this.elementIndex.settings.sortable) {
       return;
@@ -4205,6 +4232,16 @@ const ViewMenu = Garnish.Base.extend({
       this._createRevertBtn();
     }
 
+    // we only want to show the "Use defaults" btn in table and structure views
+    if (
+      this.elementIndex.viewMode !== 'table' &&
+      this.elementIndex.viewMode !== 'structure'
+    ) {
+      if (this.$revertBtn) {
+        this.$revertBtn.addClass('hidden');
+      }
+    }
+
     this.$closeBtn = $('<button/>', {
       type: 'button',
       class: 'btn',
@@ -4346,6 +4383,15 @@ const ViewMenu = Garnish.Base.extend({
       fieldset: true,
     });
     $field.addClass('table-columns-field');
+
+    // we only want to show the "Table Columns" checkboxes in table and structure views
+    if (
+      this.elementIndex.viewMode !== 'table' &&
+      this.elementIndex.viewMode !== 'structure'
+    ) {
+      $field.addClass('hidden');
+    }
+
     return $field;
   },
 

@@ -631,7 +631,7 @@ class UrlHelper
         }
 
         if ($showScriptName) {
-            $baseUrl = rtrim($baseUrl, '/') . '/' . ($request->getIsConsoleRequest() ? 'index.php' : $request->getScriptUrl());
+            $baseUrl = rtrim($baseUrl, '/') . ($request->getIsConsoleRequest() ? '/index.php' : $request->getScriptUrl());
         }
 
         if ($scheme === null && !static::isAbsoluteUrl($baseUrl)) {
