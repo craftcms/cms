@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-beta.5 - 2024-03-01
 
 - Added the “Show in folder” asset index action, available when searching across subfolders. ([#14227](https://github.com/craftcms/cms/discussions/14227))
 - Element index “View” menus no longer show the “Table Columns” setting when displaying elements as cards. ([#14503](https://github.com/craftcms/cms/issues/14503))
