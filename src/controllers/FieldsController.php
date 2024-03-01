@@ -470,6 +470,9 @@ JS, [
 
         if ($element instanceof CustomField) {
             $field = $element->getField();
+            if ($field instanceof Field) {
+                $field->validateHandleUniqueness = false;
+            }
             if (!$field->validate(['name', 'handle', 'instructions'])) {
                 if ($field->hasErrors('name')) {
                     $field->addErrors(['label' => $field->getErrors('name')]);

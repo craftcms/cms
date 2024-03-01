@@ -248,6 +248,12 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
+     * @var bool Whether the field handle’s uniqueness should be validated.
+     * @since 5.0.0
+     */
+    public bool $validateHandleUniqueness = true;
+
+    /**
      * @var bool|null Whether the field is fresh.
      * @see isFresh()
      * @see setIsFresh()
@@ -304,6 +310,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function attributes(): array
     {
         $names = parent::attributes();
+        ArrayHelper::removeValue($names, 'validateHandleUniqueness');
         ArrayHelper::removeValue($names, 'layoutElement');
         return $names;
     }
@@ -426,13 +433,16 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'username', // user-specific
             ],
         ];
-        $rules[] = [
-            ['handle'],
-            UniqueValidator::class,
-            'targetClass' => FieldRecord::class,
-            'targetAttribute' => ['handle', 'context'],
-            'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
-        ];
+
+        if ($this->validateHandleUniqueness) {
+            $rules[] = [
+                ['handle'],
+                UniqueValidator::class,
+                'targetClass' => FieldRecord::class,
+                'targetAttribute' => ['handle', 'context'],
+                'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+            ];
+        }
 
         // Only validate the ID if it’s not a new field
         if (!$this->getIsNew()) {
