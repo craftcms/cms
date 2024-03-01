@@ -778,12 +778,15 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   slideout: null,
   defaultHandle: null,
   fieldId: null,
+  fieldsWithErrors: null,
 
   init: function (tab, $container) {
     this.tab = tab;
     this.$container = $container;
     this.uid = $container.data('uid');
     this.fieldId = $container.data('id');
+
+    this.fieldsWithErrors = [];
 
     // New element?
     const isNew = !this.uid;
@@ -1204,6 +1207,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       return;
     }
 
+    this.fieldsWithErrors.forEach(($field) => {
+      Craft.ui.clearErrorsFromField($field);
+    });
+
     let data;
 
     try {
@@ -1232,6 +1239,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
           );
           if ($field) {
             Craft.ui.addErrorsToField($field, fieldErrors);
+            this.fieldsWithErrors.push($field);
           }
         });
       }
