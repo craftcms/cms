@@ -467,6 +467,14 @@ JS, [
     public function actionApplyLayoutElementSettings(): Response
     {
         $element = Craft::$app->getFields()->createLayoutElement($this->_fldComponentConfig());
+
+        if ($element instanceof CustomField) {
+            $fld = $element->getField();
+            if (!$fld->validate()) {
+                return $this->asModelFailure($fld, Craft::t('app', 'Couldn’t save field.'), 'field');
+            }
+        }
+
         $selectorHtml = Cp::layoutElementSelectorHtml($element);
 
         return $this->asJson([

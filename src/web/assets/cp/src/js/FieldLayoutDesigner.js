@@ -1223,6 +1223,19 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       );
       data = response.data;
     } catch (e) {
+      let errors = e?.response?.data?.errors;
+
+      if (errors) {
+        Object.entries(errors).forEach(([name, fieldErrors]) => {
+          const $field = this.slideout.$container.find(
+            `[data-error-key="${name}"]`
+          );
+          if ($field) {
+            Craft.ui.addErrorsToField($field, fieldErrors);
+          }
+        });
+      }
+
       Craft.cp.displayError(e?.response?.data?.message);
       throw e;
     }
