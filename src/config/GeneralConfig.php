@@ -195,7 +195,6 @@ class GeneralConfig extends BaseObject
         'odt',
         'ogg',
         'ogv',
-        'pdf',
         'png',
         'potx',
         'pps',

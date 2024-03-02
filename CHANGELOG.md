@@ -2,9 +2,15 @@
 
 ## Unreleased
 
+> **Note**
+> This release removes `pdf` from the default [allowedFileExtensions](https://craftcms.com/docs/4.x/config/general.html#allowedfileextensions) config setting list.
+>
+> If you have a site that needs allow PDF uploads, you can add it back via the [extraAllowedFileExtensions](https://craftcms.com/docs/4.x/config/general.html#extraallowedfileextensions) config setting.
+
 - Fixed a bug where `craft\web\Request::getIsPreview()` was returning `true` for requests with expired tokens. ([#14066](https://github.com/craftcms/cms/discussions/14066))
 - Fixed a bug where asset conflict resolution modals were closing prematurely if there were multiple conflicts. ([#14045](https://github.com/craftcms/cms/issues/14045), [#14405](https://github.com/craftcms/cms/issues/14405))
 - Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets was only working for the first selected asset, rather than the focussed one.
+- Removed `pdf` from the default [allowedFileExtensions](https://craftcms.com/docs/4.x/config/general.html#allowedfileextensions) config setting list.
 
 ## 3.9.10 - 2024-01-02
 
