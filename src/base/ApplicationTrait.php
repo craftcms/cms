@@ -1278,17 +1278,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the log dispatcher component.
-     *
-     * @return Dispatcher the log dispatcher application component.
-     */
-    public function getLog(): Dispatcher
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('log');
-    }
-
-    /**
      * Returns the current mailer.
      *
      * @return Mailer The mailer component
