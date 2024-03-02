@@ -263,40 +263,38 @@
         }) }}
     </div>
 
-    {% if CraftEdition == CraftPro %}
-        {{ forms.editableTableField({
-            label: 'Preview Targets'|t('app'),
-            instructions: 'Locations that should be available for previewing entries in this section.'|t('app'),
-            id: 'previewTargets',
-            name: 'previewTargets',
-            cols: {
-                label: {
-                    type: 'singleline',
-                    heading: 'Label'|t('app'),
-                },
-                urlFormat: {
-                    type: 'singleline',
-                    heading: 'URL Format'|t('app'),
-                    info: 'The URL/URI to use for this target.'|t('app'),
-                    code: true,
-                },
-                refresh: {
-                    type: 'checkbox',
-                    heading: 'Auto-refresh'|t('app'),
-                    info: 'Whether preview frames should be automatically refreshed when content changes.'|t('app'),
-                    thin: true,
-                }
+    {{ forms.editableTableField({
+        label: 'Preview Targets'|t('app'),
+        instructions: 'Locations that should be available for previewing entries in this section.'|t('app'),
+        id: 'previewTargets',
+        name: 'previewTargets',
+        cols: {
+            label: {
+                type: 'singleline',
+                heading: 'Label'|t('app'),
             },
-            defaultValues: {
-                refresh: true,
+            urlFormat: {
+                type: 'singleline',
+                heading: 'URL Format'|t('app'),
+                info: 'The URL/URI to use for this target.'|t('app'),
+                code: true,
             },
-            allowAdd: true,
-            allowReorder: true,
-            allowDelete: true,
-            rows: section.previewTargets,
-            errors: section.getErrors('previewTargets')
-        }) }}
-    {% endif %}
+            refresh: {
+                type: 'checkbox',
+                heading: 'Auto-refresh'|t('app'),
+                info: 'Whether preview frames should be automatically refreshed when content changes.'|t('app'),
+                thin: true,
+            }
+        },
+        defaultValues: {
+            refresh: true,
+        },
+        allowAdd: true,
+        allowReorder: true,
+        allowDelete: true,
+        rows: section.previewTargets,
+        errors: section.getErrors('previewTargets')
+    }) }}
 
     {{ forms.textField({
         label: 'Max Authors'|t('app'),

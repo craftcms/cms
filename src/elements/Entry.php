@@ -1181,7 +1181,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function previewTargets(): array
     {
-        if ($this->fieldId || Craft::$app->edition === CmsEdition::Solo) {
+        if ($this->fieldId) {
             return parent::previewTargets();
         }
 
