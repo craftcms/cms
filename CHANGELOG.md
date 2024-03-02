@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The global sidebar background color is now a shade darker than the rest of the page. ([#14515](https://github.com/craftcms/cms/pull/14515))
 - Fixed a bug where `craft\helpers\Html::parseTagAttribute()` wasn’t handling attribute values with newlines. ([#14498](https://github.com/craftcms/cms/issues/14498))
 
 ## 5.0.0-beta.5 - 2024-03-01
