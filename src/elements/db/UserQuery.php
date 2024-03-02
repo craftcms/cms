@@ -16,6 +16,7 @@ use craft\elements\Address;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use yii\db\Connection;
@@ -1069,7 +1070,7 @@ class UserQuery extends ElementQuery
         $elements = parent::afterPopulate($elements);
 
         // Eager-load user groups?
-        if ($this->withGroups && !$this->asArray && Craft::$app->getEdition() === Craft::Pro) {
+        if ($this->withGroups && !$this->asArray && Craft::$app->edition === CmsEdition::Pro) {
             Craft::$app->getUserGroups()->eagerLoadGroups($elements);
         }
 

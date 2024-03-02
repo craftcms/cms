@@ -32,7 +32,7 @@ abstract class Api
         $headers = [
             'Accept' => 'application/json',
             'X-Craft-Env' => Craft::$app->env,
-            'X-Craft-System' => 'craft:' . Craft::$app->getVersion() . ';' . strtolower(Craft::$app->getEditionName()),
+            'X-Craft-System' => sprintf('craft:%s;%s', Craft::$app->getVersion(), Craft::$app->edition->handle()),
         ];
 
         // platform

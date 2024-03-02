@@ -12,6 +12,7 @@ use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
 use craft\base\UtilityInterface;
+use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
@@ -32,6 +33,7 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use DateInterval;
 use Throwable;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\caching\FileDependency;
 use yii\web\BadRequestHttpException;
@@ -458,24 +460,22 @@ class AppController extends Controller
         $this->requireAdmin();
 
         $edition = $this->request->getRequiredBodyParam('edition');
-        $licensedEdition = Craft::$app->getLicensedEdition();
+        $licensedEdition = Craft::$app->getLicensedEdition() ?? CmsEdition::Solo;
 
-        if ($licensedEdition === null) {
-            $licensedEdition = 0;
+        try {
+            $edition = CmsEdition::fromHandle($edition);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }
 
-        $edition = match ($edition) {
-            'solo' => Craft::Solo,
-            'pro' => Craft::Pro,
-            default => throw new BadRequestHttpException('Invalid Craft edition: ' . $edition),
-        };
-
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
-        if ($edition > $licensedEdition && !Craft::$app->getCanTestEditions()) {
+        if ($edition->value > $licensedEdition->value && !Craft::$app->getCanTestEditions()) {
             throw new BadRequestHttpException('Craft is not permitted to test edition upgrades from this server');
         }
 
-        Craft::$app->setEdition($edition);
+        if (!Craft::$app->setEdition($edition)) {
+            return $this->asFailure();
+        }
 
         return $this->asSuccess();
     }

@@ -15,6 +15,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
+use craft\enums\CmsEdition;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -1251,7 +1252,7 @@ class EntryQuery extends ElementQuery
             $this->subQuery->andWhere(['entries.typeId' => $this->typeId]);
         }
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition !== CmsEdition::Solo) {
             if ($this->authorId) {
                 // Checking multiple authors?
                 if (

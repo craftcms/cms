@@ -5,6 +5,22 @@
 - The global sidebar background color is now a shade darker than the rest of the page. ([#14515](https://github.com/craftcms/cms/pull/14515))
 - Slideouts are now slightly wider on desktop browsers.
 - Pane headers/footers and most meta fields now match the height of the global header.
+- Added `craft\base\ApplicationTrait::$edition`.
+- Added `craft\enums\CmsEdition`.
+- `craft\base\ApplicationTrait::getLicensedEdition()` now returns a `craft\enums\CmsEdition` case or `null`.
+- `craft\base\ApplicationTrait::requireEdition()` now accepts a `craft\enums\CmsEdition` case or an integer.
+- `craft\base\ApplicationTrait::setEdition()` now accepts a `craft\enums\CmsEdition` case or an integer.
+- Deprecated `Craft::Pro`. `craft\enums\CmsEdition::Pro` should be used instead.
+- Deprecated `Craft::Solo`. `craft\enums\CmsEdition::Solo` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getEdition()`. `$edition` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getEditionHandle()`. `$edition` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getEditionName()`. `$edition` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getLicensedEditionName()`. `getLicensedEdition()` should be used instead.
+- Deprecated `craft\helpers\App::editionHandle()`. `craft\enums\CmsEdition::handle()` should be used instead.
+- Deprecated `craft\helpers\App::editionIdByHandle()`. `craft\enums\CmsEdition::fromHandle()` should be used instead.
+- Deprecated `craft\helpers\App::editionName()`. `craft\enums\CmsEdition::name` should be used instead.
+- Deprecated `craft\helpers\App::editions()`. `craft\enums\CmsEdition::cases()` should be used instead.
+- Deprecated `craft\helpers\App::isValidEdition()`. `craft\enums\CmsEdition::tryFrom()` should be used instead.
 - Fixed a bug where `craft\helpers\Html::parseTagAttribute()` wasn’t handling attribute values with newlines. ([#14498](https://github.com/craftcms/cms/issues/14498))
 
 ## 5.0.0-beta.5 - 2024-03-01

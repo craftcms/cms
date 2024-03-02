@@ -35,6 +35,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\CmsEdition;
 use craft\enums\MenuItemType;
 use craft\errors\AssetException;
 use craft\errors\FileException;
@@ -613,7 +614,7 @@ class Asset extends Element
         ];
 
         // Hide Author from Craft Solo
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Solo) {
             unset($attributes['uploader']);
         }
 

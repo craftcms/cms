@@ -59,7 +59,7 @@
 {% set hasSystemIcon = CraftEdition == CraftPro and craft.rebrand.isIconUploaded %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
-{% set editionName = craft.app.getEditionName() %}
+{% set editionName = craft.app.edition.name %}
 {% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
 {% set licensedEdition = craft.app.getLicensedEdition() %}
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}

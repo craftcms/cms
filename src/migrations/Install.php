@@ -16,6 +16,7 @@ use craft\db\Migration;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
@@ -1242,7 +1243,7 @@ class Install extends Migration
                 ],
             ],
             'system' => [
-                'edition' => App::editionHandle(Craft::Solo),
+                'edition' => CmsEdition::Solo->handle(),
                 'name' => $this->site->getName(),
                 'live' => true,
                 'schemaVersion' => Craft::$app->schemaVersion,

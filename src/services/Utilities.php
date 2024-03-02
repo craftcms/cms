@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\UtilityInterface;
+use craft\enums\CmsEdition;
 use craft\events\RegisterComponentTypesEvent;
 use craft\queue\QueueInterface;
 use craft\utilities\AssetIndexes;
@@ -72,7 +73,7 @@ class Utilities extends Component
             PhpInfo::class,
         ];
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Pro) {
             $utilityTypes[] = SystemMessagesUtility::class;
         }
 

@@ -10,6 +10,7 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
+use craft\enums\CmsEdition;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -251,7 +252,7 @@ class Cp extends Component
         }
 
         if (
-            Craft::$app->getEdition() === Craft::Pro &&
+            Craft::$app->edition !== CmsEdition::Solo &&
             Craft::$app->getUser()->checkPermission('editUsers')
         ) {
             $navItems[] = [

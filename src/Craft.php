@@ -30,8 +30,9 @@ use function GuzzleHttp\default_user_agent;
  */
 class Craft extends Yii
 {
-    // Edition constants
+    /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Solo]] should be used instead. */
     public const Solo = 0;
+    /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Pro]] should be used instead. */
     public const Pro = 1;
 
     /**

@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\enums\CmsEdition;
 use craft\models\UserGroup;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -36,7 +37,7 @@ class UserSettingsController extends Controller
         $this->requireAdmin();
 
         if ($action->id !== 'save-user-settings') {
-            Craft::$app->requireEdition(Craft::Pro);
+            Craft::$app->requireEdition(CmsEdition::Pro);
         }
 
         return true;
@@ -140,13 +141,16 @@ class UserSettingsController extends Controller
         $settings['photoVolumeUid'] = $photoVolumeId ? Craft::$app->getVolumes()->getVolumeById($photoVolumeId)?->uid : null;
         $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath') ?: null;
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+            $settings['require2fa'] = $this->request->getBodyParam('require2fa') ?: false;
+        }
+
+        if (Craft::$app->edition === CmsEdition::Pro) {
             $settings['requireEmailVerification'] = (bool)$this->request->getBodyParam('requireEmailVerification');
             $settings['validateOnPublicRegistration'] = (bool)$this->request->getBodyParam('validateOnPublicRegistration');
             $settings['allowPublicRegistration'] = (bool)$this->request->getBodyParam('allowPublicRegistration');
             $settings['deactivateByDefault'] = (bool)$this->request->getBodyParam('deactivateByDefault');
             $settings['defaultGroup'] = $this->request->getBodyParam('defaultGroup');
-            $settings['require2fa'] = $this->request->getBodyParam('require2fa') ?: false;
         }
 
         $projectConfig->set('users', $settings, 'Update user settings');

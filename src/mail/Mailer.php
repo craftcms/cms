@@ -9,6 +9,7 @@ namespace craft\mail;
 
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\View;
@@ -133,7 +134,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             $message->setTextBody($textBody);
 
             // Is there a custom HTML template set?
-            if (Craft::$app->getEdition() === Craft::Pro && $this->template) {
+            if (Craft::$app->edition === CmsEdition::Pro && $this->template) {
                 $template = $this->template;
                 $templateMode = View::TEMPLATE_MODE_SITE;
             } else {

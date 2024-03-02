@@ -147,6 +147,7 @@
 - Added `craft\auth\methods\TOTP`.
 - Added `craft\auth\passkeys\CredentialRepository`.
 - Added `craft\base\Actionable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
+- Added `craft\base\ApplicationTrait::$edition`.
 - Added `craft\base\ApplicationTrait::getAuth()`.
 - Added `craft\base\Chippable`. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added `craft\base\Colorable`. ([#14187](https://github.com/craftcms/cms/pull/14187))
@@ -246,6 +247,7 @@
 - Added `craft\elements\db\ElementQueryInterface::wasCountEagerLoaded()`.
 - Added `craft\elements\db\ElementQueryInterface::wasEagerLoaded()`.
 - Added `craft\enums\AttributeStatus`.
+- Added `craft\enums\CmsEdition`.
 - Added `craft\enums\Color`. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Added `craft\enums\ElementIndexViewMode`.
 - Added `craft\enums\PropagationMethod`.
@@ -426,6 +428,9 @@
 - Renamed `craft\web\CpScreenResponseBehavior::$notice()` and `notice()` to `$noticeHtml` and `noticeHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$pageSidebar()` and `pageSidebar()` to `$pageSidebarHtml` and `pageSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
 - Renamed `craft\web\CpScreenResponseBehavior::$sidebar()` and `sidebar()` to `$metaSidebarHtml` and `metaSidebarHtml()`. ([#13037](https://github.com/craftcms/cms/pull/13037))
+- `craft\base\ApplicationTrait::getLicensedEdition()` now returns a `craft\enums\CmsEdition` case or `null`.
+- `craft\base\ApplicationTrait::requireEdition()` now accepts a `craft\enums\CmsEdition` case or an integer.
+- `craft\base\ApplicationTrait::setEdition()` now accepts a `craft\enums\CmsEdition` case or an integer.
 - `craft\base\BaseFsInterface::renameFile()` and `copyFile()` now have a `$config` argument. ([#14147](https://github.com/craftcms/cms/pull/14147))
 - `craft\base\ConfigurableComponent::getSettings()` now converts backed enum cases to their values.
 - `craft\base\Element::getCpEditUrl()` now returns a URL to `edit/<ID>` if `cpEditUrl()` returns `null`.
@@ -445,9 +450,9 @@
 - `craft\behaviors\SessionBehavior::setSuccess()` and `getSuccess()` use the `success` flash key now, rather than `notice`. ([#14345](https://github.com/craftcms/cms/pull/14345))
 - `craft\db\Connection::getSupportsMb4()` is now dynamic for MySQL installs, based on whether the `elements_sites` table has an `mb4` charset.
 - `craft\elemens\db\ElementQueryInterface::collect()` now has an `ElementCollection` return type, rather than `Collection`.
-- `craft\elements\db\ElementQuery::__toString()` now returns the class name. ([#14498](https://github.com/craftcms/cms/issues/14498))
 - `craft\elements\Entry::getSection()` can now return `null`, for nested entries.
 - `craft\elements\User::getAddresses()` now returns a collection.
+- `craft\elements\db\ElementQuery::__toString()` now returns the class name. ([#14498](https://github.com/craftcms/cms/issues/14498))
 - `craft\enums\LicenseKeyStatus` is now an enum.
 - `craft\events\AuthenticateUserEvent::$password` can now be null, if the user is being authenticated with a passkey.
 - `craft\fields\BaseOptionsField::$multi` and `$optgroups` properties are now static.
@@ -486,8 +491,19 @@
 - `craft\web\Controller::asModelSuccess()` now includes a `modelClass` key in the response data (and `modelId` if the model implements `craft\base\Identifiable`).
 - Colors defined by elements’ `statuses()` methods can now be a `craft\enums\Color` instance.
 - Exception response data no longer includes an `error` key with the exception message. `message` should be used instead. ([#14346](https://github.com/craftcms/cms/pull/14346))
+- Deprecated `Craft::Pro`. `craft\enums\CmsEdition::Pro` should be used instead.
+- Deprecated `Craft::Solo`. `craft\enums\CmsEdition::Solo` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getEdition()`. `$edition` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getEditionHandle()`. `$edition` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getEditionName()`. `$edition` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getLicensedEditionName()`. `getLicensedEdition()` should be used instead.
 - Deprecated `craft\events\DefineElementInnerHtmlEvent`.
 - Deprecated `craft\events\SearchEvent::$siteId`.
+- Deprecated `craft\helpers\App::editionHandle()`. `craft\enums\CmsEdition::handle()` should be used instead.
+- Deprecated `craft\helpers\App::editionIdByHandle()`. `craft\enums\CmsEdition::fromHandle()` should be used instead.
+- Deprecated `craft\helpers\App::editionName()`. `craft\enums\CmsEdition::name` should be used instead.
+- Deprecated `craft\helpers\App::editions()`. `craft\enums\CmsEdition::cases()` should be used instead.
+- Deprecated `craft\helpers\App::isValidEdition()`. `craft\enums\CmsEdition::tryFrom()` should be used instead.
 - Deprecated `craft\helpers\Component::iconSvg()`. `craft\helpers\Cp::iconSvg()` and `fallbackIconSvg()` should be used instead. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Deprecated `craft\helpers\Cp::ELEMENT_SIZE_LARGE`. `CHIP_SIZE_LARGE` should be used instead.
 - Deprecated `craft\helpers\Cp::ELEMENT_SIZE_SMALL`. `CHIP_SIZE_SMALL` should be used instead.

@@ -10,6 +10,7 @@ namespace crafttests\functional;
 use Codeception\Example;
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use FunctionalTester;
 
 /**
@@ -43,7 +44,7 @@ class PageRenderChecksCest
         $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
 
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
     }
 
     /**

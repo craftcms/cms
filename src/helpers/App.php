@@ -17,6 +17,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\errors\MissingComponentException;
@@ -325,27 +326,30 @@ class App
     /**
      * Returns an array of all known Craft editions’ IDs.
      *
-     * @return array All the known Craft editions’ IDs.
+     * @return int[] All the known Craft editions’ IDs.
+     * @deprecated in 5.0.0. [[CmsEdition::cases()]] should be used instead.
      */
     public static function editions(): array
     {
-        return [Craft::Solo, Craft::Pro];
+        return array_map(fn(CmsEdition $edition) => $edition->value, CmsEdition::cases());
     }
 
     /**
      * Returns the handle of the given Craft edition.
      *
      * @param int $edition An edition’s ID.
-     * @return string The edition’s name.
+     * @return string The edition’s handle.
+     * @throws InvalidArgumentException if $edition is invalid
      * @since 3.1.0
+     * @deprecated in 5.0.0. [[CmsEdition::handle()]] should be used instead.
      */
     public static function editionHandle(int $edition): string
     {
-        return match ($edition) {
-            Craft::Solo => 'solo',
-            Craft::Pro => 'pro',
-            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
-        };
+        $handle = CmsEdition::tryFrom($edition)?->handle();
+        if ($handle === null) {
+            throw new InvalidArgumentException("Invalid edition ID: $edition");
+        }
+        return $handle;
     }
 
     /**
@@ -353,14 +357,16 @@ class App
      *
      * @param int $edition An edition’s ID.
      * @return string The edition’s name.
+     * @throws InvalidArgumentException if $edition is invalid
+     * @deprecated in 5.0.0. [[CmsEdition::name]] should be used instead.
      */
     public static function editionName(int $edition): string
     {
-        return match ($edition) {
-            Craft::Solo => 'Solo',
-            Craft::Pro => 'Pro',
-            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
-        };
+        $name = CmsEdition::tryFrom($edition)?->name;
+        if ($name === null) {
+            throw new InvalidArgumentException("Invalid edition ID: $edition");
+        }
+        return $name;
     }
 
     /**
@@ -370,14 +376,11 @@ class App
      * @return int The edition’s ID
      * @throws InvalidArgumentException if $handle is invalid
      * @since 3.1.0
+     * @deprecated in 5.0.0. [[CmsEdition::fromHandle()]] should be used instead.
      */
     public static function editionIdByHandle(string $handle): int
     {
-        return match ($handle) {
-            'solo' => Craft::Solo,
-            'pro' => Craft::Pro,
-            default => throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle),
-        };
+        return CmsEdition::fromHandle($handle)->value;
     }
 
     /**
@@ -385,14 +388,14 @@ class App
      *
      * @param mixed $edition An edition’s ID (or is it?)
      * @return bool Whether $edition is a valid edition ID.
+     * @deprecated in 5.0.0. [[CmsEdition::tryFrom()]] should be used instead.
      */
     public static function isValidEdition(mixed $edition): bool
     {
-        if ($edition === false || $edition === null) {
-            return false;
-        }
-
-        return (is_numeric((int)$edition) && in_array((int)$edition, static::editions(), true));
+        return (
+            is_numeric($edition) &&
+            CmsEdition::tryFrom((int)$edition) !== null
+        );
     }
 
     /**
@@ -1283,9 +1286,10 @@ class App
             if ($isCraft) {
                 $name = 'Craft';
                 $editions = ['solo', 'pro'];
-                $currentEdition = Craft::$app->getEditionHandle();
-                $currentEditionName = Craft::$app->getEditionName();
-                $licenseEditionName = App::editionName(App::editionIdByHandle($licenseInfo['edition'] ?? 'solo'));
+                $currentEdition = Craft::$app->edition->handle();
+                $currentEditionName = Craft::$app->edition->name;
+                $licensedEdition = isset($licenseInfo['edition']) ? CmsEdition::fromHandle($licenseInfo['edition']) : CmsEdition::Solo;
+                $licenseEditionName = $licensedEdition->name;
                 $version = Craft::$app->getVersion();
             } else {
                 if (!str_starts_with($handle, 'plugin-')) {

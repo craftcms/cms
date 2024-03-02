@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Craft;
 use craft\config\GeneralConfig;
+use craft\enums\CmsEdition;
 use craft\helpers\App;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
@@ -151,7 +152,10 @@ class AppHelperTest extends TestCase
      */
     public function testEditions(): void
     {
-        self::assertEquals([Craft::Solo, Craft::Pro], App::editions());
+        self::assertEquals([
+            CmsEdition::Solo->value,
+            CmsEdition::Pro->value,
+        ], App::editions());
     }
 
     /**
@@ -455,8 +459,8 @@ class AppHelperTest extends TestCase
     public static function editionHandleDataProvider(): array
     {
         return [
-            ['solo', Craft::Solo],
-            ['pro', Craft::Pro],
+            ['solo', CmsEdition::Solo->value],
+            ['pro', CmsEdition::Pro->value],
             [false, -1],
         ];
     }
@@ -467,8 +471,8 @@ class AppHelperTest extends TestCase
     public static function editionNameDataProvider(): array
     {
         return [
-            ['Solo', Craft::Solo],
-            ['Pro', Craft::Pro],
+            ['Solo', CmsEdition::Solo->value],
+            ['Pro', CmsEdition::Pro->value],
             [false, -1],
         ];
     }
@@ -479,8 +483,8 @@ class AppHelperTest extends TestCase
     public static function editionIdByHandleDataProvider(): array
     {
         return [
-            [Craft::Solo, 'solo'],
-            [Craft::Pro, 'pro'],
+            [CmsEdition::Solo->value, 'solo'],
+            [CmsEdition::Pro->value, 'pro'],
             [false, 'personal'],
             [false, 'client'],
         ];
@@ -492,12 +496,12 @@ class AppHelperTest extends TestCase
     public static function validEditionsDataProvider(): array
     {
         return [
-            [true, Craft::Pro],
-            [true, Craft::Solo],
+            [true, CmsEdition::Pro->value],
+            [true, CmsEdition::Solo->value],
             [true, '1'],
             [true, 0],
             [true, 1],
-            [true, true],
+            [false, true],
             [false, null],
             [false, false],
             [false, 4],

@@ -15,6 +15,7 @@ use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
+use craft\enums\CmsEdition;
 use craft\errors\GqlException;
 use craft\events\ConfigEvent;
 use craft\events\DefineGqlValidationRulesEvent;
@@ -1679,7 +1680,7 @@ class Gql extends Component
      */
     private function userSchemaComponents(): array
     {
-        if (Craft::$app->edition !== Craft::Pro) {
+        if (Craft::$app->edition !== CmsEdition::Pro) {
             return [[], []];
         }
 

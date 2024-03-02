@@ -9,6 +9,7 @@ namespace crafttests\unit\elements\db;
 
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\helpers\Db;
 use craft\services\Users;
 use craft\test\TestCase;
@@ -157,7 +158,7 @@ class UserQueryTest extends TestCase
      */
     public function testCan(): void
     {
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
 
         /** @var User[] $users */
         $users = User::find()->status(null)->all();

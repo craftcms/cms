@@ -8,6 +8,7 @@
 namespace craft\web\twig;
 
 use Craft;
+use craft\enums\CmsEdition;
 use craft\helpers\Cp;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -27,9 +28,9 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         return [
-            'CraftEdition' => Craft::$app->getEdition(),
-            'CraftSolo' => Craft::Solo,
-            'CraftPro' => Craft::Pro,
+            'CraftEdition' => Craft::$app->edition->value,
+            'CraftSolo' => CmsEdition::Solo->value,
+            'CraftPro' => CmsEdition::Pro->value,
             'requestedSite' => Cp::requestedSite(),
         ];
     }

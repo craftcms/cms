@@ -31,6 +31,7 @@ use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
+use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
@@ -3684,7 +3685,7 @@ JS, [
     {
         $previewTargets = $this->previewTargets();
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition !== CmsEdition::Solo) {
             // Give plugins a chance to modify them
             if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
                 $event = new RegisterPreviewTargetsEvent([

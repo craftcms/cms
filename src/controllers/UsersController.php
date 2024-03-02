@@ -16,6 +16,7 @@ use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\InvalidElementException;
 use craft\errors\UploadFailedException;
 use craft\events\DefineUserContentSummaryEvent;
@@ -946,7 +947,7 @@ class UsersController extends Controller
      */
     public function actionCreate(): Response
     {
-        Craft::$app->requireEdition(Craft::Pro);
+        Craft::$app->requireEdition(CmsEdition::Pro);
 
         $user = Craft::createObject(User::class);
 
@@ -1313,7 +1314,7 @@ JS);
             self::SCREEN_PROFILE => true,
             self::SCREEN_ADDRESSES => $user->id,
             self::SCREEN_PERMISSIONS => (
-                Craft::$app->getEdition() === Craft::Pro &&
+                Craft::$app->edition === CmsEdition::Pro &&
                 ($currentUser->can('assignUserPermissions') || $currentUser->canAssignUserGroups())
             ),
             self::SCREEN_PREFERENCES => $user->getIsCurrent(),
@@ -1477,7 +1478,7 @@ JS);
             }
         } else {
             // Make sure this is Craft Pro, since that's required for having multiple user accounts
-            Craft::$app->requireEdition(Craft::Pro);
+            Craft::$app->requireEdition(CmsEdition::Pro);
 
             // Is someone logged in?
             if ($currentUser) {
@@ -1684,7 +1685,7 @@ JS);
         // Save the user’s photo, if it was submitted
         $this->_processUserPhoto($user);
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Pro) {
             // If this is public registration, assign the user to the default user group
             if ($isPublicRegistration) {
                 // Assign them to the default user group

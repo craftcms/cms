@@ -23,6 +23,7 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\MenuItemType;
 use craft\enums\PropagationMethod;
@@ -792,11 +793,14 @@ class User extends Element implements IdentityInterface
      */
     public function getPostEditUrl(): ?string
     {
-        if (Craft::$app->getEdition() === Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
-            return 'users';
+        if (
+            Craft::$app->edition === CmsEdition::Solo ||
+            !Craft::$app->getUser()->checkPermission('editUsers')
+        ) {
+            return null;
         }
 
-        return null;
+        return 'users';
     }
 
     /**
@@ -804,12 +808,15 @@ class User extends Element implements IdentityInterface
      */
     protected function crumbs(): array
     {
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Solo) {
             return [];
         }
 
         return [
-            ['label' => Craft::t('app', 'Users'), 'url' => 'users'],
+            [
+                'label' => Craft::t('app', 'Users'),
+                'url' => 'users',
+            ],
         ];
     }
 
@@ -1286,7 +1293,7 @@ class User extends Element implements IdentityInterface
             return $this->_groups;
         }
 
-        if (Craft::$app->getEdition() !== Craft::Pro || !isset($this->id)) {
+        if (Craft::$app->edition !== CmsEdition::Pro || !isset($this->id)) {
             return [];
         }
 
@@ -1300,7 +1307,7 @@ class User extends Element implements IdentityInterface
      */
     public function setGroups(array $groups): void
     {
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Pro) {
             $this->_groups = $groups;
         }
     }
@@ -1313,7 +1320,7 @@ class User extends Element implements IdentityInterface
      */
     public function isInGroup(UserGroup|int|string $group): bool
     {
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->edition !== CmsEdition::Pro) {
             return false;
         }
 
@@ -1604,19 +1611,19 @@ XML;
      */
     public function can(string $permission): bool
     {
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            if ($this->admin) {
-                return true;
-            }
+        if (Craft::$app->edition !== CmsEdition::Pro) {
+            return true;
+        }
 
-            if (isset($this->id)) {
-                return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
-            }
+        if ($this->admin) {
+            return true;
+        }
 
+        if (!isset($this->id)) {
             return false;
         }
 
-        return true;
+        return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
     }
 
     /**
@@ -1701,11 +1708,11 @@ XML;
             return UrlHelper::cpUrl('myaccount');
         }
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            return UrlHelper::cpUrl('users/' . $this->id);
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            return null;
         }
 
-        return null;
+        return UrlHelper::cpUrl("users/$this->id");
     }
 
     /**
@@ -1717,7 +1724,6 @@ XML;
             return parent::safeActionMenuItems();
         }
 
-        $edition = Craft::$app->getEdition();
         $currentUser = Craft::$app->getUser()->getIdentity();
         $view = Craft::$app->getView();
         $usersService = Craft::$app->getUsers();
@@ -1731,7 +1737,7 @@ XML;
         $sessionItems = [];
         $miscItems = [];
 
-        if ($edition === Craft::Pro) {
+        if (Craft::$app->edition !== CmsEdition::Solo) {
             $status = $this->getStatus();
 
             switch ($status) {
@@ -1917,7 +1923,6 @@ JS, [
         // Intentionally not calling parent::destructiveActionMenuItems() here,
         // because we want to override the user deletion UX.
 
-        $edition = Craft::$app->getEdition();
         $currentUser = Craft::$app->getUser()->getIdentity();
         $usersService = Craft::$app->getUsers();
 
@@ -1927,7 +1932,7 @@ JS, [
 
         $items = [];
 
-        if ($edition === Craft::Pro) {
+        if (Craft::$app->edition !== CmsEdition::Solo) {
             if (!$isCurrentUser) {
                 if ($usersService->canSuspend($currentUser, $this) && $this->active && !$this->suspended) {
                     $items[] = [
@@ -1981,7 +1986,8 @@ JS,
                     [
                         $view->namespaceInputId($deleteId),
                         $this->id,
-                        Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
+                        /** @phpstan-ignore-next-line */
+                        Craft::$app->getSecurity()->hashData(Craft::$app->edition === CmsEdition::Solo ? 'dashboard' : 'users'),
                     ]);
                 }
             }

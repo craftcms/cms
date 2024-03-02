@@ -36,6 +36,7 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
+use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\DefineEntryTypesEvent;
@@ -601,7 +602,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         ];
 
         // Hide Author & Last Edited By from Craft Solo
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Solo) {
             unset($attributes['authors'], $attributes['revisionCreator']);
         }
 
@@ -1180,7 +1181,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function previewTargets(): array
     {
-        if ($this->fieldId || Craft::$app->getEdition() === Craft::Solo) {
+        if ($this->fieldId || Craft::$app->edition === CmsEdition::Solo) {
             return parent::previewTargets();
         }
 
@@ -1997,7 +1998,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if ($section && $section->type !== Section::TYPE_SINGLE) {
             // Author
-            if (Craft::$app->getEdition() === Craft::Pro && $user->can("viewPeerEntries:$section->uid")) {
+            if (Craft::$app->edition !== CmsEdition::Solo && $user->can("viewPeerEntries:$section->uid")) {
                 $fields[] = (function() use ($static, $section) {
                     $authors = $this->getAuthors();
                     $html = Cp::elementSelectFieldHtml([
