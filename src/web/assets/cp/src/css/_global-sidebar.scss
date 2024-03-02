@@ -258,6 +258,7 @@
 }
 
 .sidebar-action__label {
+  display: flex;
   gap: var(--s);
   align-items: center;
   padding: 0 var(--xs);
