@@ -27,6 +27,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
@@ -1345,5 +1346,56 @@ class AssetsController extends Controller
             ->sendFile($path, $responseFilename, [
                 'inline' => true,
             ]);
+    }
+
+    /**
+     * Show in folder action.
+     * Find asset by id and Return source path info for each folder up until the one the asset is in.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws InvalidConfigException
+     * @throws \yii\web\MethodNotAllowedHttpException
+     */
+    public function actionShowInFolder(): Response
+    {
+        $this->requireCpRequest();
+
+        $assetId = Craft::$app->getRequest()->getRequiredParam('assetId');
+
+        $asset = Asset::findOne($assetId);
+        if ($asset === null) {
+            throw new BadRequestHttpException("Invalid asset ID: $assetId");
+        }
+
+        // get the folder for selected asset
+        $folder = $asset->getFolder();
+        $sourcePath[] = $folder->getSourcePathInfo();
+
+        // for a JSON response (e.g. via element actions)
+        if ($this->request->getAcceptsJson()) {
+            // get all the way up to the root folder, cause we need source path info for each step
+            while (($parent = $folder->getParent()) !== null) {
+                $sourcePath[] = $parent->getSourcePathInfo();
+                $folder = $parent;
+            }
+
+            $data = [
+                'filename' => $asset->filename,
+                'sourcePath' => array_reverse($sourcePath),
+            ];
+
+            return $this->asJson($data);
+        }
+
+        // for a redirect response (e.g. element action menu items)
+        $uri = StringHelper::ensureLeft(UrlHelper::prependCpTrigger($sourcePath[0]['uri']), '/');
+        $url = UrlHelper::urlWithParams($uri, [
+            'search' => $asset->filename,
+            'includeSubfolders' => '0',
+            'sourcePathStep' => "folder:$folder->uid",
+        ]);
+
+        return $this->redirect($url);
     }
 }

@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\config\GeneralConfig;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -439,8 +440,8 @@ JS;
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
 
         $data = [
-            'Pro' => Craft::Pro,
-            'Solo' => Craft::Solo,
+            'Pro' => CmsEdition::Pro->value,
+            'Solo' => CmsEdition::Solo->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
@@ -513,7 +514,7 @@ JS;
             'defaultIndexCriteria' => [],
             'disableAutofocus' => (bool)($currentUser->getPreference('disableAutofocus') ?? false),
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
-            'edition' => Craft::$app->getEdition(),
+            'edition' => Craft::$app->edition->value,
             'elementTypeNames' => $elementTypeNames,
             'elevatedSessionDuration' => $generalConfig->elevatedSessionDuration,
             'fieldsWithoutContent' => array_map(fn(FieldInterface $field) => $field->handle, Craft::$app->getFields()->getFieldsWithoutContent(false)),

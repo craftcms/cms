@@ -417,7 +417,7 @@ class Html extends \yii\helpers\Html
             // Wrapped in quotes?
             if (isset($html[$offset]) && in_array($html[$offset], ['\'', '"'])) {
                 $q = preg_quote($html[$offset], '/');
-                if (!preg_match("/$q(.*?)$q/A", $html, $m, 0, $offset)) {
+                if (!preg_match("/$q(.*?)$q/sA", $html, $m, 0, $offset)) {
                     // No matching end quote
                     throw new InvalidArgumentException("Malformed HTML tag attribute in string: $html");
                 }

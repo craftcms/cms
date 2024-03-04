@@ -122,7 +122,7 @@ JS;
                     'labels' => sprintf("bug,craft%s", $cmsMajorVersion),
                     'template' => sprintf("BUG-REPORT-V%s.yml", $cmsMajorVersion),
                     'body' => $body,
-                    'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Craft::$app->getEditionName()),
+                    'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Craft::$app->edition->name),
                     'phpVersion' => App::phpVersion(),
                     'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
                     'db' => sprintf('%s %s', $dbDriver, App::normalizeVersion($db->getSchema()->getServerVersion())),

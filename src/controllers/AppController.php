@@ -12,6 +12,7 @@ use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
 use craft\base\UtilityInterface;
+use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
@@ -32,9 +33,11 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use DateInterval;
 use Throwable;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\caching\FileDependency;
 use yii\web\BadRequestHttpException;
+use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -375,6 +378,76 @@ class AppController extends Controller
     }
 
     /**
+     * Displays a licensing issues takeover page.
+     *
+     * @param array $issues
+     * @param string $hash
+     * @return Response
+     * @internal
+     */
+    public function actionLicensingIssues(array $issues, string $hash): Response
+    {
+        $this->requireCpRequest();
+
+        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
+            'items' => array_map(fn($issue) => $issue[2], $issues),
+        ]);
+
+        $cookie = $this->request->getCookies()->get(App::licenseShunCookieName());
+        $data = $cookie ? Json::decode($cookie->value) : null;
+        if (($data['hash'] ?? null) !== $hash) {
+            $data = null;
+        }
+
+        $duration = match ($data['count'] ?? 0) {
+            0 => 21,
+            1 => 34,
+            2 => 55,
+            3 => 89,
+            4 => 144,
+            5 => 233,
+            6 => 377,
+            7 => 610,
+            8 => 987,
+            default => 1597,
+        };
+
+        return $this->renderTemplate('_special/licensing-issues.twig', [
+            'issues' => $issues,
+            'hash' => $hash,
+            'cartUrl' => $cartUrl,
+            'duration' => $duration,
+        ])->setStatusCode(402);
+    }
+
+    /**
+     * Sets the license shun cookie.
+     *
+     * @return Response
+     * @internal
+     */
+    public function actionSetLicenseShunCookie(): Response
+    {
+        $cookieName = App::licenseShunCookieName();
+        $oldCookie = $this->request->getCookies()->get($cookieName);
+        $data = $oldCookie ? Json::decode($oldCookie->value) : [];
+
+        $newCookie = new Cookie(Craft::cookieConfig([
+            'name' => $cookieName,
+            'value' => Json::encode([
+                'hash' => $this->request->getRequiredBodyParam('hash'),
+                'timestamp' => DateTimeHelper::toIso8601(DateTimeHelper::now()),
+                'count' => ($data['count'] ?? 0) + 1,
+            ]),
+            'expire' => DateTimeHelper::now()->modify('+1 year')->getTimestamp(),
+        ], $this->request));
+
+        $this->response->getCookies()->add($newCookie);
+        return $this->asSuccess();
+    }
+
+    /**
      * Tries a Craft edition on for size.
      *
      * @return Response
@@ -387,24 +460,22 @@ class AppController extends Controller
         $this->requireAdmin();
 
         $edition = $this->request->getRequiredBodyParam('edition');
-        $licensedEdition = Craft::$app->getLicensedEdition();
+        $licensedEdition = Craft::$app->getLicensedEdition() ?? CmsEdition::Solo;
 
-        if ($licensedEdition === null) {
-            $licensedEdition = 0;
+        try {
+            $edition = CmsEdition::fromHandle($edition);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }
 
-        $edition = match ($edition) {
-            'solo' => Craft::Solo,
-            'pro' => Craft::Pro,
-            default => throw new BadRequestHttpException('Invalid Craft edition: ' . $edition),
-        };
-
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
-        if ($edition > $licensedEdition && !Craft::$app->getCanTestEditions()) {
+        if ($edition->value > $licensedEdition->value && !Craft::$app->getCanTestEditions()) {
             throw new BadRequestHttpException('Craft is not permitted to test edition upgrades from this server');
         }
 
-        Craft::$app->setEdition($edition);
+        if (!Craft::$app->setEdition($edition)) {
+            return $this->asFailure();
+        }
 
         return $this->asSuccess();
     }
@@ -506,6 +577,10 @@ class AppController extends Controller
                 'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
             ]);
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
+
+            if ($allowUpdates && Craft::$app->getCanTestEditions()) {
+                $arr['altCtaText'] = Craft::t('app', 'Update anyway');
+            }
         } else {
             // Make sure that the platform & composer.json PHP version are compatible
             $phpConstraintError = null;

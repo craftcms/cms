@@ -14,6 +14,7 @@ use craft\auth\methods\TOTP;
 use craft\auth\passkeys\CredentialRepository;
 use craft\auth\passkeys\WebauthnServer;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
@@ -329,7 +330,7 @@ class Auth extends Component
      */
     public function is2faRequired(User $user): bool
     {
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Solo) {
             return false;
         }
 

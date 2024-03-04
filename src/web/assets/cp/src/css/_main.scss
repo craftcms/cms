@@ -1236,7 +1236,7 @@ td.right {
     padding: 10px 0;
     border: none;
     width: 200px;
-    height: calc(100% - 50px);
+    height: calc(100% - 44px);
     box-sizing: border-box;
     background-color: var(--gray-050);
     overflow: auto;
@@ -1260,7 +1260,7 @@ td.right {
 
   & > .source-settings {
     position: relative;
-    height: calc(100% - 50px);
+    height: calc(100% - 44px);
     box-sizing: border-box;
     padding: 24px;
     overflow: auto;
@@ -1619,19 +1619,32 @@ ul.icons {
     }
   }
 
-  &.hairline {
+  &.hairline,
+  &.link-btn {
     border: 1px solid var(--medium-hairline-color);
     background-color: transparent;
 
+    &:active,
+    &[aria-expanded='true'] {
+      background-color: var(--ui-control-static-bg-color);
+    }
+  }
+
+  &.hairline {
     &:hover,
     &:active,
     &[aria-expanded='true'] {
       border-color: var(--dark-hairline-color);
     }
+  }
 
+  &.link-btn {
+    color: var(--link-color);
+
+    &:hover,
     &:active,
     &[aria-expanded='true'] {
-      background-color: var(--ui-control-static-bg-color);
+      border-color: var(--link-color);
     }
   }
 
@@ -2990,7 +3003,7 @@ table {
   cursor: default;
   user-select: none;
   font-weight: normal;
-  padding: var(--xs) var(--s);
+  padding: 0 var(--s);
   max-width: 100%;
   gap: var(--xs);
   border-radius: var(--large-border-radius);
@@ -3001,11 +3014,9 @@ table {
     --thumb-size: calc(30rem / 16);
 
     & > .thumb {
-      margin: calc(var(--xs) * -1 + 2px) calc(var(--s) * -1 + 2px);
-      @include margin-right(2px);
+      @include margin(0, 2px, 0, -2px);
 
       &.cp-icon {
-        @include margin-left(-2px);
         --thumb-size: 1rem; // 16px
       }
     }
@@ -3016,6 +3027,8 @@ table {
     --thumb-size: 120px;
     min-width: calc(var(--s) * 2 + var(--thumb-size));
     width: 100%;
+    padding-top: var(--xs);
+    padding-bottom: var(--xs);
 
     .chip-content {
       width: 100%;
@@ -4677,8 +4690,8 @@ ul.tree,
 
 .pane-header {
   margin: calc(var(--xl) * -1) var(--neg-padding) var(--xl);
-  padding: var(--s) var(--xl);
-  min-height: 50px;
+  padding: 5px var(--xl) 6px;
+  min-height: 45px;
   box-sizing: border-box;
   box-shadow: inset 0 -1px 0 0 transparentize($grey300, 0.75);
   border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
@@ -4698,7 +4711,7 @@ ul.tree,
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin: calc(var(--s) * -1) calc(var(--padding) * -1);
+  margin: -5px calc(var(--padding) * -1) -6px;
 
   &:first-child {
     border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
@@ -4753,7 +4766,7 @@ ul.tree,
         position: relative;
         padding: 0 var(--padding);
         white-space: nowrap;
-        height: 50px;
+        height: 45px;
       }
 
       &:hover {
@@ -4985,7 +4998,7 @@ $min2ColWidth: 400px;
     & > .field,
     & > .data {
       display: flex;
-      min-height: 50px;
+      min-height: 44px;
       box-sizing: border-box;
       flex-wrap: wrap; // for error lists
       justify-content: space-between;
@@ -5047,7 +5060,7 @@ $min2ColWidth: 400px;
       padding-top: var(--s);
 
       @media screen and (min-width: $min2ColWidth) {
-        padding: 14px 0;
+        padding: 12px 0;
       }
 
       & > .copytextbtn {
@@ -5066,7 +5079,7 @@ $min2ColWidth: 400px;
 
     & > .field > .input,
     & > .data > .value {
-      padding: var(--s) 0;
+      padding: 5px 0;
       width: 100%;
 
       @media screen and (min-width: $min2ColWidth) {
@@ -5125,8 +5138,8 @@ $min2ColWidth: 400px;
         & > .datetimewrapper > .timewrapper {
           & > .text {
             display: block;
-            margin: calc(var(--s) * -1) 0;
-            padding: 14px 0;
+            margin: -5px 0;
+            padding: 12px 0;
             border-radius: 0;
             background-color: transparent;
             border: none !important;
@@ -5336,9 +5349,9 @@ $min2ColWidth: 400px;
   }
 
   &:not(.so-mobile):not(.so-lp) {
-    top: 8px;
-    width: calc(50% - 8px);
-    height: calc(100% - 16px);
+    top: 5px;
+    width: calc(55% - 5px);
+    height: calc(100% - 10px);
 
     @media screen and (prefers-reduced-motion: no-preference) {
       body.ltr & {
@@ -5363,7 +5376,7 @@ $min2ColWidth: 400px;
       flex-direction: row;
       align-items: center;
       gap: var(--xs);
-      min-height: calc(50px - 16px);
+      min-height: calc(44px - 16px);
 
       & > .pane-tabs {
         width: 1px; // give other elements in the header plenty of room before the tabs take up whatever's left
@@ -5461,11 +5474,11 @@ $min2ColWidth: 400px;
   & > .so-footer {
     position: relative;
     display: flex;
-    gap: 8px;
+    gap: var(--s);
     justify-content: space-between;
     flex-wrap: wrap;
     margin: 0 var(--neg-padding) -24px;
-    padding: 8px var(--padding);
+    padding: 5px var(--padding);
     @include pane;
     background-color: var(--gray-050);
     z-index: 3;
@@ -5877,7 +5890,7 @@ $min2ColWidth: 400px;
 /* element selector modals */
 .elementselectormodal {
   --content-padding: 24px;
-  padding-bottom: 50px;
+  padding-bottom: 44px;
   user-select: none;
 
   & > .header {
@@ -6131,7 +6144,7 @@ $min2ColWidth: 400px;
 /* element filter HUD */
 .element-filter-hud {
   &.loading .body {
-    padding: 50px;
+    padding: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6254,6 +6267,23 @@ $min2ColWidth: 400px;
 .prompt {
   height: auto;
   min-height: auto;
+}
+
+.cpmodal {
+  & > .cpmodal-body {
+    padding: var(--padding);
+  }
+
+  & > .cpmodal-footer {
+    position: relative;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    @include pane;
+    padding: var(--s) var(--padding);
+    background-color: var(--gray-050);
+  }
 }
 
 /* delete user modal */
@@ -6893,10 +6923,6 @@ fieldset {
 
   & > .input {
     position: relative;
-
-    &:after {
-      @include clearafter;
-    }
 
     & + .instructions {
       margin: 5px 0 0;
@@ -8094,6 +8120,34 @@ body.setup-2fa {
       display: flex;
       justify-content: center;
     }
+  }
+}
+
+/* licensing issues page */
+body.licensing-issues {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: var(--padding);
+
+  #licensing-issues {
+    display: flex;
+    flex-direction: row;
+    max-width: 50em;
+
+    .buttons {
+      justify-content: space-between;
+      [data-icon] {
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+  }
+
+  #continue {
+    margin: 0;
   }
 }
 

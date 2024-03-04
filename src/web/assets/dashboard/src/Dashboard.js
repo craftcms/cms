@@ -45,6 +45,9 @@ import './dashboard.scss';
             this.handleNewWidgetOptionSelect(event);
           }
         });
+
+        // trigger element thumb loader for widgets
+        this.$grid.trigger('scroll');
       });
     },
 
@@ -616,6 +619,8 @@ import './dashboard.scss';
       Craft.initUiElements(this.$bodyContainer);
       await Craft.appendHeadHtml(response.headHtml);
       await Craft.appendBodyHtml(response.bodyHtml);
+
+      Craft.cp.elementThumbLoader.load(this.$bodyContainer);
 
       this.setSettingsHtml(response.info.settingsHtml, function () {
         eval(response.info.settingsJs);

@@ -142,7 +142,7 @@ class Section extends Model implements CpEditable
             $this->previewTargets = [
                 [
                     'label' => Craft::t('app', 'Primary {type} page', [
-                        'type' => StringHelper::toLowerCase(Entry::displayName()),
+                        'type' => Entry::lowerDisplayName(),
                     ]),
                     'urlFormat' => '{url}',
                 ],

@@ -248,6 +248,7 @@ class Site extends Model
         $attributes = parent::attributes();
         $attributes[] = 'name';
         $attributes[] = 'baseUrl';
+        $attributes[] = 'language';
         return $attributes;
     }
 

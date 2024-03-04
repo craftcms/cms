@@ -179,13 +179,10 @@ class Schema extends \yii\db\mysql\Schema
     {
         $useSingleTransaction = true;
         $serverVersion = App::normalizeVersion($this->getServerVersion());
-
-        $isMySQL5 = version_compare($serverVersion, '8', '<');
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
 
         // https://bugs.mysql.com/bug.php?id=109685
-        if (($isMySQL5 && version_compare($serverVersion, '5.7.41', '>=')) ||
-            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>='))) {
+        if ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>=')) {
             $useSingleTransaction = false;
         }
 
@@ -197,7 +194,7 @@ class Schema extends \yii\db\mysql\Schema
             ' --dump-date' .
             ' --no-autocommit' .
             ' --routines' .
-            ' --default-character-set=' . Craft::$app->getConfig()->getDb()->charset .
+            ' --default-character-set=' . Craft::$app->getConfig()->getDb()->getCharset() .
             ' --set-charset' .
             ' --triggers' .
             ' --no-tablespaces';

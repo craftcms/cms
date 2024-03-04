@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\enums\CmsEdition;
 use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
@@ -63,7 +64,7 @@ class PluginStoreController extends Controller
             'pluginStoreAppBaseUrl' => $this->_getVueAppBaseUrl(),
             'cmsInfo' => [
                 'version' => Craft::$app->getVersion(),
-                'edition' => strtolower(Craft::$app->getEditionName()),
+                'edition' => Craft::$app->edition->handle(),
             ],
             'cmsLicenseKey' => App::licenseKey(),
             'craftIdAccessToken' => $this->getCraftIdAccessToken(),
@@ -99,11 +100,11 @@ class PluginStoreController extends Controller
         $data['currentUser'] = $currentUser->getAttributes(['email']);
 
         // Craft license/edition info
-        $data['licensedEdition'] = Craft::$app->getLicensedEdition();
+        $data['licensedEdition'] = Craft::$app->getLicensedEdition()?->value;
         $data['canTestEditions'] = Craft::$app->getCanTestEditions();
-        $data['CraftEdition'] = Craft::$app->getEdition();
-        $data['CraftSolo'] = Craft::Solo;
-        $data['CraftPro'] = Craft::Pro;
+        $data['CraftEdition'] = Craft::$app->edition->value;
+        $data['CraftSolo'] = CmsEdition::Solo->value;
+        $data['CraftPro'] = CmsEdition::Pro->value;
 
         // Logos
         $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');

@@ -29,11 +29,13 @@ use craft\elements\actions\PreviewAsset;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\Restore;
+use craft\elements\actions\ShowInFolder;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\CmsEdition;
 use craft\enums\MenuItemType;
 use craft\errors\AssetException;
 use craft\errors\FileException;
@@ -485,6 +487,18 @@ class Asset extends Element
                 $actions[] = CopyUrl::class;
             }
 
+            // Show in folder
+            if (Craft::$app->controller instanceof ElementIndexesController) {
+                $query = Craft::$app->controller->getElementQuery();
+                if (
+                    $query instanceof AssetQuery &&
+                    isset($query->search) &&
+                    $query->includeSubfolders
+                ) {
+                    $actions[] = ShowInFolder::class;
+                }
+            }
+
             // Copy Reference Tag
             $actions[] = CopyReferenceTag::class;
 
@@ -600,7 +614,7 @@ class Asset extends Element
         ];
 
         // Hide Author from Craft Solo
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Solo) {
             unset($attributes['uploader']);
         }
 
@@ -1489,6 +1503,18 @@ JS, [
             $view->namespaceInputId($downloadId),
             $this->id,
         ]);
+
+        // Show in Folder
+        if ($user->can("viewAssets:{$this->getVolume()->uid}")) {
+            $viewItems[] = [
+                'type' => MenuItemType::Link,
+                'icon' => 'magnifying-glass',
+                'label' => Craft::t('app', 'Show in folder'),
+                'url' => UrlHelper::actionUrl('assets/show-in-folder', [
+                    'assetId' => $this->id,
+                ]),
+            ];
+        }
 
         $viewIndex = Collection::make($items)->search(fn(array $item) => str_starts_with($item['id'] ?? '', 'action-view-'));
         array_splice($items, $viewIndex !== false ? $viewIndex + 1 : 0, 0, $viewItems);

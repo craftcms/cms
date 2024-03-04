@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\events\UserEvent;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -203,8 +204,7 @@ class UsersTest extends TestCase
      */
     public function testUserGroupAssignment(): void
     {
-        // Need fancy Craft for this.
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
@@ -220,8 +220,7 @@ class UsersTest extends TestCase
      */
     public function testUserGroupAssignmentInvalidation(): void
     {
-        // Need fancy Craft for this.
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
@@ -252,7 +251,7 @@ class UsersTest extends TestCase
      */
     public function testUserAssignmentToDefaultGroup(): void
     {
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
         Craft::$app->getProjectConfig()->set('users.defaultGroup', 'usergroup-1002-------------------uid');
 
         $this->users->assignUserToDefaultGroup($this->activeUser);

@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Table;
 use craft\elements\GlobalSet;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\GqlException;
 use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlDirectivesEvent;
@@ -367,8 +368,10 @@ class GqlTest extends TestCase
         Craft::$app->set('tags', $tagService);
         Craft::$app->set('userGroups', $userGroupService);
 
-
+        $edition = Craft::$app->edition;
+        Craft::$app->edition = CmsEdition::Pro;
         $allSchemaComponents = Craft::$app->getGql()->getAllSchemaComponents();
+
         self::assertNotEmpty($allSchemaComponents);
         self::assertArrayHasKey('queries', $allSchemaComponents);
         self::assertArrayHasKey('mutations', $allSchemaComponents);
@@ -380,12 +383,13 @@ class GqlTest extends TestCase
         self::assertNotEmpty($allSchemaComponents['queries']['Categories'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Tags'] ?? []);
 
-
         self::assertNotEmpty($allSchemaComponents['mutations']['Entries'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Assets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Global Sets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Categories'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Tags'] ?? []);
+
+        Craft::$app->edition = $edition;
     }
 
     /**

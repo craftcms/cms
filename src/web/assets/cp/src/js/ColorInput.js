@@ -43,7 +43,6 @@ Craft.ColorInput = Garnish.Base.extend(
         })
         .appendTo(this.$colorPreview);
 
-      console.log(this.settings.presets);
       if (this.settings.presets?.length) {
         const listId = `listbox-${Math.floor(Math.random() * 1000000)}`;
         this.$colorInput.attr('list', listId);

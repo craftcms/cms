@@ -12,7 +12,7 @@
   height: 100vh;
   padding: 0;
   -webkit-overflow-scrolling: touch;
-  background-color: transparent;
+  background-color: var(--gray-150);
   border-right: 1px solid var(--hairline-color);
   width: var(--global-sidebar-width);
 
@@ -127,7 +127,7 @@
   @include visually-hidden;
   grid-area: subnav;
 
-  &.is-open {
+  &[data-state='expanded'] {
     @include not-visually-hidden;
   }
 }
@@ -257,6 +257,7 @@
 }
 
 .sidebar-action__label {
+  display: flex;
   gap: var(--s);
   align-items: center;
   padding: 0 var(--xs);

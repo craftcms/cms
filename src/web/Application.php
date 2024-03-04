@@ -19,8 +19,10 @@ use craft\debug\UserPanel;
 use craft\errors\ExitException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
@@ -281,12 +283,26 @@ class Application extends \yii\web\Application
                     }
                 }
 
-                // If this is a CP request, see if the user is expected to have 2FA enabled
                 if (!$userSession->getIsGuest()) {
+                    // See if the user is expected to have 2FA enabled
                     $auth = $this->getAuth();
                     $user = $userSession->getIdentity();
                     if ($auth->is2faRequired($user) && !$auth->hasActiveMethod($user)) {
                         return $this->runAction('users/setup-2fa');
+                    }
+
+                    if (!$this->getCanTestEditions()) {
+                        // Are there are any licensing issues cached?
+                        $licenseIssues = App::licensingIssues(false);
+                        if (!empty($licenseIssues)) {
+                            $hash = App::licensingIssuesHash($licenseIssues);
+                            if ($this->_showLicensingIssuesScreen($hash)) {
+                                return $this->runAction('app/licensing-issues', [
+                                    'issues' => $licenseIssues,
+                                    'hash' => $hash,
+                                ]);
+                            }
+                        }
                     }
                 }
             }
@@ -304,6 +320,23 @@ class Application extends \yii\web\Application
             $this->_unregisterDebugModule();
             throw $e;
         }
+    }
+
+    private function _showLicensingIssuesScreen(string $hash = null): bool
+    {
+        $cookie = $this->request->getCookies()->get(App::licenseShunCookieName());
+        if (!$cookie) {
+            return true;
+        }
+
+        // the cookie is only valid if it's for the same set of issues we're currently seeing
+        $data = Json::decode($cookie->value);
+        if ($data['hash'] !== $hash) {
+            return true;
+        }
+
+        // if the cookie was created earlier today, let them pass
+        return !DateTimeHelper::isToday($data['timestamp']);
     }
 
     /**

@@ -21,6 +21,7 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
@@ -131,7 +132,6 @@ use yii\web\ServerErrorHttpException;
  * ApplicationTrait
  *
  * @property bool $isInstalled Whether Craft is installed
- * @property int $edition The active Craft edition
  * @property-read Addresses $addresses The addresses service
  * @property-read Announcements $announcements The announcements service
  * @property-read Api $api The API service
@@ -227,6 +227,12 @@ trait ApplicationTrait
     public ?string $env = null;
 
     /**
+     * @var CmsEdition The installed Craft CMS edition.
+     * @since 5.0.0
+     */
+    public CmsEdition $edition;
+
+    /**
      * @var string The base Craftnet API URL to use.
      * @since 3.3.16
      * @internal
@@ -262,12 +268,6 @@ trait ApplicationTrait
      * @see getIsMultiSite()
      */
     private bool $_isMultiSiteWithTrashed;
-
-    /**
-     * @var int The Craft edition
-     * @see getEdition()
-     */
-    private int $_edition;
 
     /**
      * @var Info|null
@@ -557,27 +557,25 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the Craft edition.
+     * Returns the installed Craft CMS edition’s ID.
      *
      * @return int
+     * @deprecated in 5.0.0. [[$edition]] should be used instead.
      */
     public function getEdition(): int
     {
-        if (!isset($this->_edition)) {
-            $handle = $this->getProjectConfig()->get('system.edition') ?? 'solo';
-            $this->_edition = App::editionIdByHandle($handle);
-        }
-        return $this->_edition;
+        return $this->edition->value;
     }
 
     /**
      * Returns the name of the Craft edition.
      *
      * @return string
+     * @deprecated in 5.0.0. [[$edition]] should be used instead.
      */
     public function getEditionName(): string
     {
-        return App::editionName($this->getEdition());
+        return $this->edition->name;
     }
 
     /**
@@ -585,19 +583,19 @@ trait ApplicationTrait
      *
      * @return string
      * @since 4.4.0
+     * @deprecated in 5.0.0. [[$edition]] should be used instead.
      */
     public function getEditionHandle(): string
     {
-        /** @var WebApplication|ConsoleApplication $this */
-        return App::editionHandle($this->getEdition());
+        return $this->edition->handle();
     }
 
     /**
      * Returns the edition Craft is actually licensed to run in.
      *
-     * @return int|null
+     * @return CmsEdition|null
      */
-    public function getLicensedEdition(): ?int
+    public function getLicensedEdition(): ?CmsEdition
     {
         $licenseInfo = $this->getCache()->get('licenseInfo') ?: [];
 
@@ -605,23 +603,18 @@ trait ApplicationTrait
             return null;
         }
 
-        return App::editionIdByHandle($licenseInfo['craft']['edition']);
+        return CmsEdition::fromHandle($licenseInfo['craft']['edition']);
     }
 
     /**
      * Returns the name of the edition Craft is actually licensed to run in.
      *
      * @return string|null
+     * @deprecated in 5.0.0. [[getLicensedEdition()]] should be used instead.
      */
     public function getLicensedEditionName(): ?string
     {
-        $licensedEdition = $this->getLicensedEdition();
-
-        if ($licensedEdition !== null) {
-            return App::editionName($licensedEdition);
-        }
-
-        return null;
+        return $this->getLicensedEdition()?->name;
     }
 
     /**
@@ -632,29 +625,36 @@ trait ApplicationTrait
     public function getHasWrongEdition(): bool
     {
         $licensedEdition = $this->getLicensedEdition();
-
-        return ($licensedEdition !== null && $licensedEdition !== $this->getEdition() && !$this->getCanTestEditions());
+        return (
+            $licensedEdition !== null &&
+            $licensedEdition !== $this->edition &&
+            !$this->getCanTestEditions()
+        );
     }
 
     /**
-     * Sets the Craft edition.
+     * Sets the installed Craft CMS edition.
      *
-     * @param int $edition The edition to set.
+     * @param CmsEdition|int $edition The edition to set.
      * @return bool
      */
-    public function setEdition(int $edition): bool
+    public function setEdition(CmsEdition|int $edition): bool
     {
-        $oldEdition = $this->getEdition();
-        $this->getProjectConfig()->set('system.edition', App::editionHandle($edition), "Craft CMS edition change");
-        $this->_edition = $edition;
+        if (is_int($edition)) {
+            $edition = CmsEdition::from($edition);
+        }
+
+        $oldEdition = $this->edition ?? CmsEdition::Solo;
+        $this->getProjectConfig()->set('system.edition', $edition->handle(), 'Craft CMS edition change');
+        $this->edition = $edition;
 
         // Fire an 'afterEditionChange' event
         /** @var WebRequest|ConsoleRequest $request */
         $request = $this->getRequest();
         if (!$request->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
             $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
-                'oldEdition' => $oldEdition,
-                'newEdition' => $edition,
+                'oldEdition' => $oldEdition->value,
+                'newEdition' => $edition->value,
             ]));
         }
 
@@ -664,18 +664,22 @@ trait ApplicationTrait
     /**
      * Requires that Craft is running an equal or better edition than what's passed in
      *
-     * @param int $edition The Craft edition to require.
+     * @param CmsEdition|int $edition The Craft edition to require.
      * @param bool $orBetter If true, makes $edition the minimum edition required.
      * @throws WrongEditionException if attempting to do something not allowed by the current Craft edition
      */
-    public function requireEdition(int $edition, bool $orBetter = true): void
+    public function requireEdition(CmsEdition|int $edition, bool $orBetter = true): void
     {
-        if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingExternalChanges()) {
-            $installedEdition = $this->getEdition();
+        if (is_int($edition)) {
+            $edition = CmsEdition::from($edition);
+        }
 
-            if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
-                $editionName = App::editionName($edition);
-                throw new WrongEditionException("Craft $editionName is required for this");
+        if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingExternalChanges()) {
+            if (!match ($orBetter) {
+                true => $this->edition->value >= $edition->value,
+                false => $this->edition === $edition
+            }) {
+                throw new WrongEditionException("Craft $edition->name is required for this.");
             }
         }
     }
@@ -693,12 +697,11 @@ trait ApplicationTrait
             Craft::$app->getConfig()->getGeneral()->allowAdminChanges
         ) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
-            $activeEdition = $this->getEdition();
             $licensedEdition = $this->getLicensedEdition();
 
             return (
-                ($activeEdition < Craft::Pro) ||
-                ($licensedEdition !== null && $licensedEdition < Craft::Pro)
+                ($this->edition->value < CmsEdition::Pro->value) ||
+                ($licensedEdition !== null && $licensedEdition->value < CmsEdition::Pro->value)
             );
         }
 
@@ -706,9 +709,11 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether Craft is running on a domain that is eligible to test out the editions.
+     * Returns whether Craft is running on a domain that is eligible to test
+     * unlicensed Craft and plugin editions/updates.
      *
      * @return bool
+     * @internal
      */
     public function getCanTestEditions(): bool
     {
@@ -722,7 +727,12 @@ trait ApplicationTrait
 
         /** @var Cache $cache */
         $cache = $this->getCache();
-        return $cache->get(sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName()));
+        $cacheKey = sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName());
+        if (!$cache->exists($cacheKey)) {
+            // err on the side of allowing it
+            return true;
+        }
+        return (bool)$cache->get($cacheKey);
     }
 
     /**
@@ -1271,17 +1281,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the log dispatcher component.
-     *
-     * @return Dispatcher the log dispatcher application component.
-     */
-    public function getLog(): Dispatcher
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('log');
-    }
-
-    /**
      * Returns the current mailer.
      *
      * @return Mailer The mailer component
@@ -1581,6 +1580,10 @@ trait ApplicationTrait
         // to avoid possible recursive fatal errors in the request initialization
         $request = $this->getRequest();
         $this->getLog();
+
+        // Set the Craft edition
+        $edition = $this->getProjectConfig()->get('system.edition');
+        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
 
         // Set the timezone
         $this->_setTimeZone();

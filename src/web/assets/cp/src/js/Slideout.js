@@ -246,7 +246,7 @@
         Craft.Slideout.openPanels.forEach((panel, i) => {
           panel.$container.css(
             Garnish.ltr ? 'left' : 'right',
-            `${50 * ((totalPanels - i) / totalPanels)}vw`
+            `${45 * ((totalPanels - i) / totalPanels)}vw`
           );
         });
 

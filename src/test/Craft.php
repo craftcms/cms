@@ -17,6 +17,7 @@ use craft\config\DbConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
 use craft\db\Table;
+use craft\enums\CmsEdition;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
@@ -82,7 +83,7 @@ class Craft extends Yii2
         'dbSetup' => null,
         'projectConfig' => null,
         'fullMock' => false,
-        'edition' => \Craft::Solo,
+        'edition' => CmsEdition::Solo->value,
     ];
 
     /**
@@ -213,9 +214,7 @@ class Craft extends Yii2
             // We also manually set the edition if desired by the current config
             $edition = $this->_getConfig('edition');
             if (is_int($edition)) {
-                \Craft::$app->setEdition(
-                    $edition
-                );
+                \Craft::$app->setEdition($edition);
             }
         }
 

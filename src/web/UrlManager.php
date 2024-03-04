@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\enums\CmsEdition;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -324,7 +325,7 @@ class UrlManager extends \yii\web\UrlManager
             /** @var array $rules */
             $rules = require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'common.php';
 
-            if (Craft::$app->getEdition() === Craft::Pro) {
+            if (Craft::$app->edition === CmsEdition::Pro) {
                 $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'pro.php');
             }
 

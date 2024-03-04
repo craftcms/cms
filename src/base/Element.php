@@ -3684,15 +3684,13 @@ JS, [
     {
         $previewTargets = $this->previewTargets();
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            // Give plugins a chance to modify them
-            if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
-                $event = new RegisterPreviewTargetsEvent([
-                    'previewTargets' => $previewTargets,
-                ]);
-                $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
-                $previewTargets = $event->previewTargets;
-            }
+        // Give plugins a chance to modify them
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
+            $event = new RegisterPreviewTargetsEvent([
+                'previewTargets' => $previewTargets,
+            ]);
+            $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
+            $previewTargets = $event->previewTargets;
         }
 
         // Normalize the targets

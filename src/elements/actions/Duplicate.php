@@ -131,6 +131,7 @@ JS, [static::class]);
             // If the element was loaded for a non-primary owner, set its primary owner to it
             if ($element instanceof NestedElementInterface) {
                 $attributes['primaryOwner'] = $element->getOwner();
+                $attributes['sortOrder'] = null; // clear our sort order too
             }
 
             try {

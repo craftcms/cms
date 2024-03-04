@@ -13,6 +13,9 @@
     {% embed '_includes/forms/field' with {
       id: 'label',
       label: 'Label'|t('app'),
+      data: {
+        'error-key': 'label'
+      },
     } %}
       {% block heading %}
         {{ parent() }}
@@ -47,6 +50,9 @@
       name: 'instructions',
       value: field.instructions,
       placeholder: defaultInstructions,
+      data: {
+        'error-key': 'instructions'
+      },
     }) }}
   {% endblock %}
 {% endblock %}

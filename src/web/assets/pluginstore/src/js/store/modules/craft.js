@@ -32,9 +32,19 @@ const getters = {
               'Define custom content types, fields, and relations needed to perfectly contain your unique content requirements.',
           },
           {
+            name: 'Advanced content previewing',
+            description:
+              'Preview your content from multiple targets, including single-page applications.',
+          },
+          {
             name: 'Powerful front-end tools',
             description:
               'Develop custom front-end templates with Twig, or use Craft as a headless CMS.',
+          },
+          {
+            name: 'GraphQL API',
+            description:
+              'Make your content available to other applications with a self-generating GraphQL API.',
           },
           {
             name: 'Multi-Site',
@@ -56,21 +66,25 @@ const getters = {
           {
             name: 'Unlimited user accounts',
             description:
-              'Create unlimited user accounts, user groups, user permissions, and public user registration.',
+              'Create unlimited user accounts with per-user permissions.',
           },
           {
-            name: 'Enhanced content previewing',
+            name: 'Front-end user registration',
             description:
-              'Preview your content from multiple targets, including single-page applications.',
+              'Create a member site with front-end user account registration.',
           },
           {
-            name: 'GraphQL API',
-            description:
-              'Make your content available to other applications with a self-generating GraphQL API.',
+            name: 'Unlimited user groups',
+            description: 'Manage custom user roles and permissions.',
           },
           {
             name: 'System branding',
             description: 'Personalize the control panel for your brand.',
+          },
+          {
+            name: 'System email customization',
+            description:
+              'Customize system email messages and provide a custom email template.',
           },
           {
             name: 'Basic developer support',

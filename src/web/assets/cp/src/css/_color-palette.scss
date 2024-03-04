@@ -7,6 +7,7 @@
 
   --gray-050-hsl: 212, 60%, 97%;
   --gray-100-hsl: 212, 50%, 93%;
+  --gray-150-hsl: 212, 40%, 89%;
   --gray-200-hsl: 212, 30%, 85%;
   --gray-300-hsl: 211, 13%, 65%;
   --gray-350-hsl: 211, 11%, 59%;
@@ -21,6 +22,7 @@
 
   --gray-050: hsl(var(--gray-050-hsl));
   --gray-100: hsl(var(--gray-100-hsl));
+  --gray-150: hsl(var(--gray-150-hsl));
   --gray-200: hsl(var(--gray-200-hsl));
   --gray-300: hsl(var(--gray-300-hsl));
   --gray-350: hsl(var(--gray-350-hsl));

@@ -36,6 +36,7 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
+use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\DefineEntryTypesEvent;
@@ -81,8 +82,10 @@ use yii\db\Expression;
 class Entry extends Element implements NestedElementInterface, ExpirableElementInterface, Iconic, Colorable
 {
     use NestedElementTrait {
+        eagerLoadingMap as traitEagerLoadingMap;
         attributes as traitAttributes;
         extraFields as traitExtraFields;
+        setEagerLoadedElements as traitSetEagerLoadedElements;
     }
 
     public const STATUS_LIVE = 'live';
@@ -599,7 +602,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         ];
 
         // Hide Author & Last Edited By from Craft Solo
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Solo) {
             unset($attributes['authors'], $attributes['revisionCreator']);
         }
 
@@ -657,7 +660,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 ];
 
             default:
-                return parent::eagerLoadingMap($sourceElements, $handle);
+                return self::traitEagerLoadingMap($sourceElements, $handle);
         }
     }
 
@@ -1178,7 +1181,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function previewTargets(): array
     {
-        if ($this->fieldId || Craft::$app->getEdition() === Craft::Solo) {
+        if ($this->fieldId) {
             return parent::previewTargets();
         }
 
@@ -1877,7 +1880,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 $this->setAuthors($elements);
                 break;
             default:
-                parent::setEagerLoadedElements($handle, $elements, $plan);
+                $this->traitSetEagerLoadedElements($handle, $elements, $plan);
         }
     }
 
@@ -1995,7 +1998,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if ($section && $section->type !== Section::TYPE_SINGLE) {
             // Author
-            if (Craft::$app->getEdition() === Craft::Pro && $user->can("viewPeerEntries:$section->uid")) {
+            if (Craft::$app->edition !== CmsEdition::Solo && $user->can("viewPeerEntries:$section->uid")) {
                 $fields[] = (function() use ($static, $section) {
                     $authors = $this->getAuthors();
                     $html = Cp::elementSelectFieldHtml([
@@ -2317,15 +2320,30 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             // ownerId will be null when creating a revision
             $ownerId = $this->getOwnerId();
             if (isset($this->fieldId) && $ownerId && $this->saveOwnership) {
-                if (!isset($this->sortOrder) && !$isNew) {
-                    $this->sortOrder = (new Query())
-                        ->select('sortOrder')
-                        ->from(Table::ELEMENTS_OWNERS)
-                        ->where([
-                            'elementId' => $this->id,
-                            'ownerId' => $ownerId,
-                        ])
-                        ->scalar() ?: null;
+                if (!isset($this->sortOrder) && (!$isNew || $this->duplicateOf)) {
+                    // figure out if we should proceed this way
+                    // if we're dealing with an element that's being duplicated, and it has a draftId
+                    // it means we're creating a draft of something
+                    // if we're duplicating element via duplicate action - draftId would be empty
+                    $elementId = null;
+                    if ($this->duplicateOf) {
+                        if ($this->draftId) {
+                            $elementId = $this->duplicateOf->id;
+                        }
+                    } else {
+                        // if we're not duplicating - use element's id
+                        $elementId = $this->id;
+                    }
+                    if ($elementId) {
+                        $this->sortOrder = (new Query())
+                            ->select('sortOrder')
+                            ->from(Table::ELEMENTS_OWNERS)
+                            ->where([
+                                'elementId' => $elementId,
+                                'ownerId' => $ownerId,
+                            ])
+                            ->scalar() ?: null;
+                    }
                 }
                 if (!isset($this->sortOrder)) {
                     $max = (new Query())

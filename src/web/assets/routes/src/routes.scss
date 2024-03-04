@@ -95,7 +95,7 @@
   align-items: stretch;
 
   .body {
-    height: calc(100% - 119px);
+    height: calc(100% - 113px);
     overflow: auto;
 
     .uri {
@@ -136,7 +136,6 @@
   .delete {
     display: block;
     @include floatleft;
-    margin-top: 7px;
     color: var(--disabled-color);
   }
 }

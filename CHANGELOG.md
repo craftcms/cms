@@ -2,17 +2,78 @@
 
 ## Unreleased
 
+- It’s now possible to manage custom preview targets on sections with Craft Solo.
+- The global sidebar background color is now a shade darker than the rest of the page. ([#14515](https://github.com/craftcms/cms/pull/14515))
+- Slideouts are now slightly wider on desktop browsers.
+- Pane headers/footers and most meta fields now match the height of the global header.
+- Added `craft\base\ApplicationTrait::$edition`.
+- Added `craft\enums\CmsEdition`.
+- `craft\base\ApplicationTrait::getLicensedEdition()` now returns a `craft\enums\CmsEdition` case or `null`.
+- `craft\base\ApplicationTrait::requireEdition()` now accepts a `craft\enums\CmsEdition` case or an integer.
+- `craft\base\ApplicationTrait::setEdition()` now accepts a `craft\enums\CmsEdition` case or an integer.
+- Deprecated `Craft::Pro`. `craft\enums\CmsEdition::Pro` should be used instead.
+- Deprecated `Craft::Solo`. `craft\enums\CmsEdition::Solo` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getEdition()`. `$edition` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getEditionHandle()`. `$edition` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getEditionName()`. `$edition` should be used instead.
+- Deprecated `craft\base\ApplicationTrait::getLicensedEditionName()`. `getLicensedEdition()` should be used instead.
+- Deprecated `craft\helpers\App::editionHandle()`. `craft\enums\CmsEdition::handle()` should be used instead.
+- Deprecated `craft\helpers\App::editionIdByHandle()`. `craft\enums\CmsEdition::fromHandle()` should be used instead.
+- Deprecated `craft\helpers\App::editionName()`. `craft\enums\CmsEdition::name` should be used instead.
+- Deprecated `craft\helpers\App::editions()`. `craft\enums\CmsEdition::cases()` should be used instead.
+- Deprecated `craft\helpers\App::isValidEdition()`. `craft\enums\CmsEdition::tryFrom()` should be used instead.
+- Fixed a bug where `craft\helpers\Html::parseTagAttribute()` wasn’t handling attribute values with newlines. ([#14498](https://github.com/craftcms/cms/issues/14498))
+
+## 5.0.0-beta.5 - 2024-03-01
+
+- Added the “Show in folder” asset index action, available when searching across subfolders. ([#14227](https://github.com/craftcms/cms/discussions/14227))
+- Element index “View” menus no longer show the “Table Columns” setting when displaying elements as cards. ([#14503](https://github.com/craftcms/cms/issues/14503))
+- Fixed a bug where generated URLs would get an extra forward slash when the script name was included. ([#14505](https://github.com/craftcms/cms/issues/14505))
+- Fixed a bug where entry thumbnails weren’t getting loaded initially for the My Drafts widget. ([#14486](https://github.com/craftcms/cms/issues/14486))
+- Fixed a bug where field layouts weren’t validating overridden field handles. ([#14508](https://github.com/craftcms/cms/issues/14508))
+
+## 5.0.0-beta.4 - 2024-02-29
+
+> [!NOTE]  
+> Trialing Craft and plugin updates with expired licenses is allowed now, on non-public domains.
+
+> [!WARNING]  
+> When licensing issues occur on public domains, the control panel will now become temporarily inaccessible for logged-in users, alerting them to the problems and giving them an opportunity to resolve them. (The front end will not be impacted.)
+
+- It’s now possible to update expired licenses from the Updates utility, on non-public domains.
+- The GraphQL API is now available for Craft Solo installs.
+- It’s now possible to toggle the details sidebar on full edit pages. ([#14432](https://github.com/craftcms/cms/pull/14432))
 - Element slideouts now show validation summaries at the top of each tab. ([#14436](https://github.com/craftcms/cms/pull/14436))
+- Added the “Show in folder” asset action. ([#14227](https://github.com/craftcms/cms/discussions/14227))
 - Color fields now have a “Presets” settings. ([#14463](https://github.com/craftcms/cms/discussions/14463))
 - Inline-editable Matrix blocks now show their entry type icon/name even if the field only has one entry type selected. ([#14458](https://github.com/craftcms/cms/discussions/14458))
+- Added support for eager-loading addresses’ and entries’ owner elements via `owner` and `primaryOwner` eager-loading handles.
 - Composer installation commands suggested by the Plugin Store now include a minimum version constraint.
+- `update all` and `update <handle>` commands now support a `--with-expired` option. 
 - Added `craft\base\ElementInterface::setAttributesFromRequest()`.
+- Added `craft\web\Controller::asCpModal()`.
+- Added `craft\web\CpModalResponseBehavior`.
+- Added `craft\web\CpModalResponseFormatter`.
+- `craft\elements\db\ElementQuery::__toString()` now returns the class name. ([#14498](https://github.com/craftcms/cms/issues/14498))
+- Added `Craft.CpModal`.
+- Updated Twig to 3.8.
 - Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets wasn’t working for assets that were clicked on. ([#14420](https://github.com/craftcms/cms/issues/14420))
 - Fixed a bug where fallback transforms for local assets weren’t working for `original` transforms. ([#14457](https://github.com/craftcms/cms/pull/14457))
 - Fixed a bug where expand/collapse toggles weren’t working within structure element table views. ([#14453](https://github.com/craftcms/cms/issues/14453))
 - Fixed a bug where slideout sidebars would close automatically when the content pane was clicked on, even when there was enough room to show both side-by-side. ([#14460](https://github.com/craftcms/cms/issues/14460))
 - Fixed a bug where it took two <kbd>Esc</kbd> presses to close slideouts with sidebars displayed side-by-side with the content pane. ([#14461](https://github.com/craftcms/cms/issues/14461))
+- Fixed a 404 error that occurred when visiting a nested Matrix entry’s URL, if the Template setting was blank. ([#14464](https://github.com/craftcms/cms/issues/14464))
 - Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
+- Fixed a bug where control panel alerts could bleed out of their container.
+- Fixed a SQL error that could occur if the database `driver` config wasn’t explicitly set. ([#14027](https://github.com/craftcms/cms/issues/14027))
+- Fixed a bug where entry thumbnails weren’t getting loaded initially for the My Drafts widget. ([#14486](https://github.com/craftcms/cms/issues/14486))
+- Fixed a bug where saving a Matrix field using the inline-editable blocks view mode could temporarily lose track of disabled nested entries. ([#14493](https://github.com/craftcms/cms/issues/14493))
+- Fixed an error that occurred when viewing an entry revision with a Matrix field using the inline-editable blocks view mode, which contained soft-deleted nested entries with their own nested entries. ([#14494](https://github.com/craftcms/cms/issues/14494))
+- Fixed a bug where nested addresses and entries could lose their positions in the parent element when edited. ([#14491](https://github.com/craftcms/cms/issues/14491))
+- Fixed a bug where users without “Administrate users” permission couldn’t set the email address on newly-created users. ([#14485](https://github.com/craftcms/cms/issues/14485))
+- Fixed a bug where `craft\models\Site::toArray()` wasn’t including the site’s `language` attribute.
+- Fixed a bug where some characters were getting misinterpreted as elisions when normalizing search keywords.
+- Fixed a bug where `craft\helpers\UrlHelper::actionUrl()` was using the site URL rather than the requested URL. ([#14440](https://github.com/craftcms/cms/issues/14440))
 - Fixed a PHP warning that could occur when publishing asset bundles on Dev Mode. ([#14455](https://github.com/craftcms/cms/pull/14455))
 - Fixed a bug where the Updates utility and Updates widget weren’t handling update check failures.
 - Fixed an error that occurred when calling `craft\elements\User::setAttributes()` from a console request.

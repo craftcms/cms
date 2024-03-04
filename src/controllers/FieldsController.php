@@ -467,6 +467,21 @@ JS, [
     public function actionApplyLayoutElementSettings(): Response
     {
         $element = Craft::$app->getFields()->createLayoutElement($this->_fldComponentConfig());
+
+        if ($element instanceof CustomField) {
+            $field = $element->getField();
+            if ($field instanceof Field) {
+                $field->validateHandleUniqueness = false;
+            }
+            if (!$field->validate(['name', 'handle', 'instructions'])) {
+                if ($field->hasErrors('name')) {
+                    $field->addErrors(['label' => $field->getErrors('name')]);
+                    $field->clearErrors('name');
+                }
+                return $this->asModelFailure($field, Craft::t('app', 'Couldn’t save field.'), 'field');
+            }
+        }
+
         $selectorHtml = Cp::layoutElementSelectorHtml($element);
 
         return $this->asJson([

@@ -8,11 +8,11 @@
 namespace crafttests\unit\web\twig;
 
 use ArrayObject;
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Address;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\test\TestCase;
@@ -22,8 +22,8 @@ use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
 use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use TypeError;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -94,11 +94,11 @@ class ExtensionTest extends TestCase
      */
     public function testCraftSystemGlobals(): void
     {
-        Craft::$app->setEdition(Craft::Pro);
-        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
+        Craft::$app->edition = CmsEdition::Pro;
         $this->testRenderResult(
-            '' . Craft::$app->getEdition() . ' | ' . Craft::Solo . ' | ' . Craft::Pro,
-            Craft::$app->getEdition() . ' | 0 | 1'
+            implode(',', [CmsEdition::Solo->value, CmsEdition::Pro->value]),
+            '{{ [CraftSolo, CraftPro]|join(",") }}',
+            templateMode: View::TEMPLATE_MODE_CP,
         );
     }
 
@@ -139,8 +139,6 @@ class ExtensionTest extends TestCase
      */
     public function testElementGlobals(): void
     {
-        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
-
         $this->testRenderResult(
             'A global set | A different global set',
             '{{ aGlobalSet }} | {{ aDifferentGlobalSet }}'
@@ -724,7 +722,7 @@ class ExtensionTest extends TestCase
         );
 
         // invalid value
-        self::expectException(TypeError::class);
+        self::expectException(RuntimeError::class);
         $this->view->renderString('{% do "foo"|group("bar") %}');
     }
 
@@ -1188,12 +1186,17 @@ class ExtensionTest extends TestCase
      * @param string $expectedString
      * @param string $renderString
      * @param array $variables
+     * @param string $templateMode
      * @throws LoaderError
      * @throws SyntaxError
      */
-    protected function testRenderResult(string $expectedString, string $renderString, array $variables = [])
-    {
-        $result = $this->view->renderString($renderString, $variables);
+    protected function testRenderResult(
+        string $expectedString,
+        string $renderString,
+        array $variables = [],
+        string $templateMode = View::TEMPLATE_MODE_SITE,
+    ) {
+        $result = $this->view->renderString($renderString, $variables, $templateMode);
         self::assertSame(
             $expectedString,
             $result
