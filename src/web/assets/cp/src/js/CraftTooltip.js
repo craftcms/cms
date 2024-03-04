@@ -132,8 +132,7 @@ class CraftTooltip extends HTMLElement {
 
       // Add padding to the static side for accessible hovers
       Object.assign(this.style, {
-        [`padding${staticSide[0].toUpperCase()}${staticSide.slice(1)}`]:
-          `${this.offset}px`,
+        [`padding${Craft.uppercaseFirst(staticSide)}`]: `${this.offset}px`,
       });
 
       this.arrowElement.dataset.placement = placement;
