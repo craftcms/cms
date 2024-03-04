@@ -76,7 +76,6 @@ class CraftTooltip extends HTMLElement {
     // Replace the content with the inner container
     this.innerHTML = '';
     this.appendChild(this.inner);
-    this.style.paddingTop = `${this.offset}px`;
   }
 
   renderArrow() {
@@ -130,6 +129,12 @@ class CraftTooltip extends HTMLElement {
         bottom: 'top',
         left: 'right',
       }[placement.split('-')[0]];
+
+      // Add padding to the static side for accessible hovers
+      Object.assign(this.style, {
+        [`padding${staticSide[0].toUpperCase()}${staticSide.slice(1)}`]:
+          `${this.offset}px`,
+      });
 
       this.arrowElement.dataset.placement = placement;
       Object.assign(this.arrowElement.style, {
