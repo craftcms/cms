@@ -29,7 +29,7 @@
         labelledby: (inputAttributes.aria.label ?? false) ? false : (labelledBy ?? false),
     },
     data: {
-        'target-prefix': (toggle ?? false) ? (targetPrefix ?? '') : false,
+        'target-prefix': (toggle ?? false) ? (targetPrefix ?? '#') : false,
     },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
