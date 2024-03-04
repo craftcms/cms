@@ -4923,6 +4923,18 @@ ul.tree,
     .ui-datepicker {
       @include margin(0, 0, 0, -8px);
     }
+
+    .chip {
+      display: grid;
+      grid-template-columns: auto auto;
+      padding: 0;
+
+      div.chip-content {
+        width: 100%;
+        display: grid;
+        grid-template-columns: auto auto auto;
+      }
+    }
   }
 
   hr {
