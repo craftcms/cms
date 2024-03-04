@@ -82,4 +82,39 @@ class Session extends \yii\web\Session
     {
         return parent::hasFlash($key);
     }
+
+    public function getCount(): int
+    {
+        return $this->getIsActive()
+            ? parent::getCount()
+            : 0;
+    }
+
+    public function get($key, $defaultValue = null)
+    {
+        return $this->getIsActive()
+            ? parent::get($key, $defaultValue)
+            : null;
+    }
+
+    public function remove($key)
+    {
+        return $this->getIsActive()
+            ? parent::remove($key)
+            : null;
+    }
+
+    public function removeAll(): void
+    {
+        if (!$this->getIsActive()) {
+            return;
+        }
+
+        parent::removeAll();
+    }
+
+    public function has($key): bool
+    {
+        return $this->getIsActive() && parent::has($key);
+    }
 }
