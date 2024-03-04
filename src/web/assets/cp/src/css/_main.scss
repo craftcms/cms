@@ -3086,11 +3086,12 @@ table {
   }
 
   & > .thumb {
+    flex: 0 0 auto;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: var(--thumb-size);
+    width: var(--thumb-size);
     height: var(--thumb-size);
 
     &.rounded {
@@ -4168,6 +4169,7 @@ ul.tree,
 
 /* status icons */
 .status {
+  flex: 0 0 auto;
   display: inline-block;
   position: relative;
   @include margin-right(10px);
