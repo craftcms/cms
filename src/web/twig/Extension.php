@@ -1692,6 +1692,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'system',
             'passthru',
             'exec',
+            'file_get_contents',
+            'file_put_contents',
         ])) {
             throw new RuntimeError('Not supported in this filter.');
         }
