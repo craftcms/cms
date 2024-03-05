@@ -25,6 +25,7 @@
 - Deprecated `craft\helpers\App::editions()`. `craft\enums\CmsEdition::cases()` should be used instead.
 - Deprecated `craft\helpers\App::isValidEdition()`. `craft\enums\CmsEdition::tryFrom()` should be used instead.
 - Fixed a bug where `craft\helpers\Html::parseTagAttribute()` wasn’t handling attribute values with newlines. ([#14498](https://github.com/craftcms/cms/issues/14498))
+- Fixed a 403 error that could occur when editing an inline-editable Matrix block. ([#14512](https://github.com/craftcms/cms/issues/14512))
 
 ## 5.0.0-beta.5 - 2024-03-01
 
