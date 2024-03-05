@@ -8521,11 +8521,6 @@ body.sitepicker {
   max-width: calc(100% - 20px) !important;
 
   .body {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: var(--l);
-
     .entry-mover-modal--list {
       flex: 1;
       position: relative;
@@ -8561,8 +8556,9 @@ body.sitepicker {
         a {
           display: inline-block;
           cursor: pointer;
-          width: 100%;
           padding: 7px var(--xl);
+          margin: 3px;
+          width: calc(100% - 6px);
           border-radius: var(--large-border-radius);
 
           &:hover {

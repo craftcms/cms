@@ -453,6 +453,7 @@ class EntriesController extends BaseEntriesController
                 $listHtml .= Html::beginTag('li');
                 $listHtml .= Html::beginTag('a', [
                     'class' => 'entry-mover-modal--item',
+                    'tabindex' => 0,
                     'role' => 'button',
                     'data' => [
                         'uid' => $section->uid,

@@ -71,21 +71,6 @@ Craft.EntryMover = Garnish.Base.extend({
       .text(Craft.t('app', 'Loading'))
       .appendTo($spinner);
 
-    this.addListener(this.$sectionsList, 'click', (ev) => {
-      let $button;
-      if (ev.target.nodeName === 'A') {
-        $button = $(ev.target);
-      } else {
-        $button = $(ev.target).closest('a');
-      }
-
-      if ($button.length) {
-        this.$sectionsList.find('a').removeClass('sel');
-        $button.addClass('sel');
-        this.$selectBtn.removeClass('disabled');
-      }
-    });
-
     this.addListener(this.$cancelBtn, 'activate', 'cancel');
     this.addListener(this.$selectBtn, 'activate', 'selectSection');
 
@@ -96,6 +81,16 @@ Craft.EntryMover = Garnish.Base.extend({
   async getCompatibleSections() {
     const listHtml = await this.loadSections();
     this.$sectionsList.html(listHtml);
+    this.addListener(
+      this.$sectionsList.find('.entry-mover-modal--item'),
+      'activate',
+      (ev) => {
+        let $button = $(ev.target);
+        this.$sectionsList.find('a').removeClass('sel');
+        $button.addClass('sel');
+        this.$selectBtn.removeClass('disabled');
+      }
+    );
   },
 
   async loadSections() {
@@ -139,12 +134,10 @@ Craft.EntryMover = Garnish.Base.extend({
 
     Craft.sendActionRequest('POST', 'entries/move-to-structure', {
       data: data,
-      //cancelToken: this.cancelToken.token,
     })
       .then((response) => {
         Craft.cp.displaySuccess(response.data.message);
         this.elementIndex.updateElements();
-        this.$sectionsListContainer.removeClass('loading');
         this.modal.hide();
       })
       .catch(({e}) => {
