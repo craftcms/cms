@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
+
 ## 4.8.1 - 2024-03-05
 
 - Fixed a bug where some characters were getting misinterpreted as elisions when normalizing search keywords.
