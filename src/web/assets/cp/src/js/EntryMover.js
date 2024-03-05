@@ -94,13 +94,11 @@ Craft.EntryMover = Garnish.Base.extend({
   },
 
   async getCompatibleSections() {
-    console.log('getCompatibleSections');
     const listHtml = await this.loadSections();
     this.$sectionsList.html(listHtml);
   },
 
   async loadSections() {
-    console.log('loadSections');
     if (this.cancelToken) {
       this.cancelToken.cancel();
     }
