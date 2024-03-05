@@ -24,6 +24,7 @@ use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
 use craft\elements\actions\Duplicate;
+use craft\elements\actions\MoveToSection;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\NewSiblingAfter;
 use craft\elements\actions\NewSiblingBefore;
@@ -466,6 +467,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                         'deep' => true,
                     ];
                 }
+
+                $actions[] = MoveToSection::class;
             }
 
             // Delete?

@@ -9,6 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
@@ -17,10 +19,16 @@ use craft\errors\UnsupportedSiteException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
+use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
+use craft\i18n\Translation;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\queue\jobs\ResaveElements;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -381,6 +389,161 @@ class EntriesController extends BaseEntriesController
             Craft::t('app', '{type} saved.', ['type' => Entry::displayName()]),
             data: $data,
         );
+    }
+
+    /**
+     * Get sections that we can move selected entries to and return the list html for the modal.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionMoveToStructureModalData(): Response
+    {
+        $this->requireCpRequest();
+
+        $entryIds = Craft::$app->getRequest()->getRequiredParam('entryIds');
+        $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
+        $currentSectionUid = Craft::$app->getRequest()->getRequiredParam('currentSectionUid');
+
+        // get entry types by entry IDs
+        $entryTypes = (new Query())
+            ->select(['et.id'])
+            ->from(['et' => Table::ENTRYTYPES])
+            ->leftJoin(['e' => Table::ENTRIES], '[[e.typeId]] = [[et.id]]')
+            ->where(['in', 'e.id', $entryIds])
+            ->distinct()
+            ->all();
+        $entryTypes = array_map(fn($item) => $item['id'], $entryTypes);
+
+        // filter all sections to those that have all the entry types we just got
+        $compatibleSections = Collection::make(Craft::$app->getEntries()->getAllSections())
+            ->filter(function(Section $section) use ($entryTypes, $siteId, $currentSectionUid) {
+                // don't allow moving to a single section
+                if ($section->type === Section::TYPE_SINGLE) {
+                    return false;
+                }
+
+                // limit to the sections available for the site we're doing this for
+                // todo: think about this
+                if (!isset($section->getSiteSettings()[$siteId])) {
+                    return false;
+                }
+
+                // exclude section we started this move from
+                if ($currentSectionUid !== null && $section->uid === $currentSectionUid) {
+                    return false;
+                }
+
+                $sectionEntryTypes = array_map(fn($et) => $et->id, $section->entryTypes);
+
+                return !empty(array_intersect($entryTypes, $sectionEntryTypes));
+            })
+            ->values()
+            ->all();
+
+        if (empty($compatibleSections)) {
+            $listHtml = Html::tag(
+                'p',
+                Craft::t('app', 'Couldn’t find any sections that all selected elements could be moved to.'),
+                ['class' => 'zilch']
+            );
+        } else {
+            $listHtml = '';
+            foreach ($compatibleSections as $section) {
+                $listHtml .= Html::beginTag('li');
+                $listHtml .= Html::beginTag('a', [
+                    'class' => 'entry-mover-modal--item',
+                    'role' => 'button',
+                    'data' => [
+                        'uid' => $section->uid,
+                        'label' => $section->name,
+                        'type' => $section->type,
+                        'handle' => $section->handle,
+                        'criteria' => [
+                            'sectionId' => $section->id,
+                        ],
+                    ],
+                ]);
+                $listHtml .= Html::tag('span', $section->name, ['class' => 'label']);
+                $listHtml .= Html::endTag('a');
+                $listHtml .= Html::endTag('li');
+            }
+        }
+
+        return $this->asJson(['listHtml' => $listHtml]);
+    }
+
+    /**
+     * Move entries to a new section.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws \yii\db\Exception
+     */
+    public function actionMoveToStructure(): Response
+    {
+        $this->requireCpRequest();
+
+        $entryIds = Craft::$app->getRequest()->getRequiredParam('entryIds');
+        $sectionUid = Craft::$app->getRequest()->getRequiredParam('sectionUid');
+
+        $section = Craft::$app->getEntries()->getSectionByUid($sectionUid);
+        if (!$section) {
+            throw new BadRequestHttpException('Cannot find the section to move the entries to.');
+        }
+
+        // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
+        $entries = Entry::find()
+            ->where(['in', '[[entries.id]]', $entryIds])
+            ->with(['drafts', 'revisions'])
+            ->all();
+
+        if (!$entries) {
+            throw new BadRequestHttpException('Cannot find the entries to move to the new section.');
+        }
+
+        // IDs of entries we selected for update + its drafts + its revisions
+        $ids = array_map(fn($entry) => $entry->id, $entries);
+
+        foreach ($entries as $entry) {
+            $drafts = $entry->getEagerLoadedElements('drafts');
+            $ids = array_merge($ids, $drafts->map(fn($draft) => $draft->id)->values()->all());
+
+            $revisions = $entry->getEagerLoadedElements('revisions');
+            $ids = array_merge($ids, $revisions->map(fn($revision) => $revision->id)->values()->all());
+        }
+
+        // do the move - move the entry by its id
+        Db::update(
+            Table::ENTRIES,
+            ['sectionId' => $section->id],
+            ['in', 'id', $ids],
+            [],
+            false,
+        );
+
+        // clear the data caches
+        Craft::$app->getCache()->flush();
+
+        // and trigger queue job to re-save them
+        Queue::push(new ResaveElements([
+            'description' => Translation::prep('app', 'Resaving moved entries'),
+            'elementType' => Entry::class,
+            'criteria' => [
+                'id' => $entryIds,
+                'drafts' => null,
+                'provisionalDrafts' => null,
+                'revisions' => null,
+            ],
+            'updateSearchIndex' => true,
+        ]));
+
+
+        return $this->asSuccess(Craft::t(
+            'app',
+            'Entries have been moved to the “{name}” section.',
+            ['name' => $section->name]
+        ));
     }
 
     /**

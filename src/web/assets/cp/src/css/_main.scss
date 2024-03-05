@@ -8514,6 +8514,80 @@ body.sitepicker {
   }
 }
 
+.entry-mover-modal {
+  --width: calc(var(--ui-control-height) * 10 + var(--s) * 9 + var(--xl) * 2);
+  width: var(--width) !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 20px) !important;
+
+  .body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--l);
+
+    .entry-mover-modal--list {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+
+      &:not(.loading) {
+        .spinner {
+          display: none;
+        }
+      }
+
+      &.loading {
+        &:after {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          content: '';
+          background-color: rgba(255, 255, 255, 0.75);
+        }
+
+        .spinner {
+          top: calc(50% - 10px);
+          z-index: 1;
+        }
+      }
+
+      ul {
+        max-height: 100%;
+        overflow: auto;
+
+        a {
+          display: inline-block;
+          cursor: pointer;
+          width: 100%;
+          padding: 7px var(--xl);
+          border-radius: var(--large-border-radius);
+
+          &:hover {
+            background-color: var(--gray-200);
+          }
+
+          &.sel {
+            background-color: var(--gray-500);
+            color: var(--white);
+          }
+        }
+      }
+    }
+  }
+
+  .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+  }
+}
+
 /* ----------------------------------------
 /* IE hacks
 /* ----------------------------------------*/
