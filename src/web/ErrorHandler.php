@@ -129,7 +129,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         // Return JSON for JSON requests
         if ($request && $request->getAcceptsJson()) {
             $response->format = Response::FORMAT_JSON;
-            $includeFullInfo = $this->_showExceptionView();
+            $includeFullInfo = $this->showExceptionDetails();
             $message = ($includeFullInfo || $exception instanceof UserException)
                 ? $exception->getMessage()
                 : Craft::t('app', 'A server error occurred.');
@@ -146,7 +146,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             }
 
             if ($includeFullInfo) {
-                $response->data += $this->_exceptionAsArray($exception, false);
+                $response->data += $this->exceptionAsArray($exception);
             }
 
             // Override the status code and error message if this is a Guzzle client exception
@@ -184,7 +184,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         }
         // Show the full exception view for all exceptions when Dev Mode is enabled (don't skip `UserException`s)
         // or if the user is an admin and has indicated they want to see it
-        elseif ($this->_showExceptionView()) {
+        elseif ($this->showExceptionDetails()) {
             $this->errorAction = null;
             $this->errorView = $this->exceptionView;
         }
@@ -192,25 +192,29 @@ class ErrorHandler extends \yii\web\ErrorHandler
         parent::renderException($exception);
     }
 
-    private function _exceptionAsArray(Throwable $exception, bool $withMessage)
+    /**
+     * Returns an array representation of the given throwable.
+     *
+     * @param Throwable $e
+     * @return array
+     * @since 4.9.0
+     */
+    public function exceptionAsArray(Throwable $e)
     {
         $array = [
-            'exception' => get_class($exception),
-            'file' => $exception->getFile(),
-            'line' => $exception->getLine(),
+            'exception' => get_class($e),
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
             'trace' => array_map(function($step) {
                 unset($step['args']);
                 return $step;
-            }, $exception->getTrace()),
+            }, $e->getTrace()),
         ];
 
-        if ($withMessage) {
-            $array = ['message' => $exception->getMessage()] + $array;
-        }
-
-        $prev = $exception->getPrevious();
+        $prev = $e->getPrevious();
         if ($prev !== null) {
-            $array['previous'] = $this->_exceptionAsArray($prev, true);
+            $array['previous'] = $this->exceptionAsArray($prev);
         }
 
         return $array;
@@ -255,11 +259,12 @@ class ErrorHandler extends \yii\web\ErrorHandler
     }
 
     /**
-     * Returns whether the full exception view should be shown.
+     * Returns whether full exception details should be shown for the current user.
      *
      * @return bool
+     * @since 4.9.0
      */
-    private function _showExceptionView(): bool
+    public function showExceptionDetails(): bool
     {
         if (App::devMode()) {
             return true;

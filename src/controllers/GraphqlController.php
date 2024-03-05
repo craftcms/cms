@@ -22,6 +22,7 @@ use craft\models\Site;
 use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
+use craft\web\ErrorHandler;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -191,15 +192,23 @@ class GraphqlController extends Controller
                     throw new InvalidValueException('No GraphQL query was supplied');
                 }
                 $result[$key] = $gqlService->executeQuery($schema, $query, $variables, $operationName, App::devMode());
-            } catch (Throwable $e) {
-                Craft::$app->getErrorHandler()->logException($e);
+            } catch (InvalidValueException $e) {
                 $result[$key] = [
                     'errors' => [
                         [
-                            'message' => App::devMode() || $e instanceof InvalidValueException
-                                ? $e->getMessage()
-                                : Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
+                            'message' => $e->getMessage(),
                         ],
+                    ],
+                ];
+            } catch (Throwable $e) {
+                /** @var ErrorHandler $errorHandler */
+                $errorHandler = Craft::$app->getErrorHandler();
+                $errorHandler->logException($e);
+                $result[$key] = [
+                    'errors' => [
+                        $errorHandler->showExceptionDetails()
+                            ? $errorHandler->exceptionAsArray($e)
+                            : ['message' => Craft::t('app', 'Something went wrong when processing the GraphQL query.')],
                     ],
                 ];
             }
