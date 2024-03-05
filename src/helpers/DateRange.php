@@ -92,6 +92,7 @@ class DateRange
     /**
      * @param float|int $length
      * @param string $periodType
+     * @phpstan-param DateRange::PERIOD_* $periodType
      * @return DateInterval
      * @since 4.3.0
      */
@@ -113,34 +114,27 @@ class DateRange
             throw new InvalidArgumentException("Invalid period type: $periodType");
         }
 
-        $interval = $length;
         switch ($periodType) {
             case DateRange::PERIOD_WEEKS_AGO:
-                $interval *= -604800;
-                break;
+                return DateInterval::createFromDateString("-$length weeks");
             case DateRange::PERIOD_DAYS_AGO:
-                $interval *= -86400;
-                break;
+                return DateInterval::createFromDateString("-$length days");
             case DateRange::PERIOD_HOURS_AGO:
-                $interval *= -3600;
-                break;
+                return DateInterval::createFromDateString("-$length hours");
             case DateRange::PERIOD_MINUTES_AGO:
-                $interval *= -60;
-                break;
+                return DateInterval::createFromDateString("-$length minutes");
+            case DateRange::PERIOD_SECONDS_AGO:
+                return DateInterval::createFromDateString("-$length seconds");
             case DateRange::PERIOD_WEEKS_FROM_NOW:
-                $interval *= 604800;
-                break;
+                return DateInterval::createFromDateString("+$length weeks");
             case DateRange::PERIOD_DAYS_FROM_NOW:
-                $interval *= 86400;
-                break;
+                return DateInterval::createFromDateString("+$length days");
             case DateRange::PERIOD_HOURS_FROM_NOW:
-                $interval *= 3600;
-                break;
+                return DateInterval::createFromDateString("+$length hours");
             case DateRange::PERIOD_MINUTES_FROM_NOW:
-                $interval *= 60;
-                break;
+                return DateInterval::createFromDateString("+$length minutes");
+            case DateRange::PERIOD_SECONDS_FROM_NOW:
+                return DateInterval::createFromDateString("+$length seconds");
         }
-
-        return DateTimeHelper::toDateInterval($interval);
     }
 }
