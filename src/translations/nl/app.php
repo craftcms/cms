@@ -593,7 +593,7 @@ return [
     'Enable focal point' => 'Focuspunt inschakelen',
     'Enable versioning for entries in this section' => 'Versiebeheer voor inhoud in deze rubriek inschakelen',
     'Enable' => 'Inschakelen',
-    'Enabled for all sites' => 'Ingschakeld voor alle sites',
+    'Enabled for all sites' => 'Ingeschakeld voor alle sites',
     'Enabled' => 'Ingeschakeld',
     'Enabling the plugin…' => 'Invoegtoepassing activeren…',
     'Enlarged' => 'Vergroot',
