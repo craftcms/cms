@@ -9,8 +9,11 @@
 - Slideouts are now slightly wider on desktop browsers.
 - Pane headers/footers and most meta fields now match the height of the global header.
 - It’s now possible to preview revisions. ([#14521](https://github.com/craftcms/cms/discussions/14521))
+- GraphQL responses now include full exception details, when Dev Mode is enabled or an admin is signed in with the “Show full exception views when Dev Mode is disabled” preference enabled. ([#14527](https://github.com/craftcms/cms/issues/14527))
 - Added `craft\base\ApplicationTrait::$edition`.
 - Added `craft\enums\CmsEdition`.
+- Added `craft\web\ErrorHandler::exceptionAsArray()`.
+- Added `craft\web\ErrorHandler::showExceptionDetails()`.
 - `craft\base\ApplicationTrait::getLicensedEdition()` now returns a `craft\enums\CmsEdition` case or `null`.
 - `craft\base\ApplicationTrait::requireEdition()` now accepts a `craft\enums\CmsEdition` case or an integer.
 - `craft\base\ApplicationTrait::setEdition()` now accepts a `craft\enums\CmsEdition` case or an integer.
