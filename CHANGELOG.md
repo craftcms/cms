@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-beta.6 - 2024-03-05
 
 - It’s now possible to manage custom preview targets on sections with Craft Solo.
 - The global sidebar background color is now a shade darker than the rest of the page. ([#14515](https://github.com/craftcms/cms/pull/14515))
