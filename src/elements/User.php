@@ -968,6 +968,7 @@ class User extends Element implements IdentityInterface
                 // are they allowed to set the email?
                 if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
                     if (
+                        Craft::$app->edition === CmsEdition::Pro &&
                         Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
                         !$userSession->checkPermission('administrateUsers')
                     ) {

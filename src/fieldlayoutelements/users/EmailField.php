@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements\users;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\fieldlayoutelements\TextField;
 use yii\base\InvalidArgumentException;
 
@@ -93,6 +94,7 @@ class EmailField extends TextField
     {
         /** @var User $element */
         if (
+            Craft::$app->edition === CmsEdition::Pro &&
             Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
             !$element->getIsDraft() &&
             !Craft::$app->getUser()->checkPermission('administrateUsers')
