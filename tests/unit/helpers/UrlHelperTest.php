@@ -250,10 +250,10 @@ class UrlHelperTest extends TestCase
      */
     public function testActionUrl(): void
     {
-        $expected = str_replace('https', 'http', TestSetup::SITE_URL) . 'index.php?p=actions/endpoint';
+        $expected = Craft::getAlias('@web/index.php?p=actions/endpoint');
         self::assertSame($expected, UrlHelper::actionUrl('endpoint'));
 
-        $expected = TestSetup::SITE_URL . 'actions/endpoint';
+        $expected = Craft::getAlias('@web/actions/endpoint');
         self::assertSame($expected, UrlHelper::actionUrl('endpoint', null, null, false));
     }
 
