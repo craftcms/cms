@@ -309,14 +309,15 @@ class ElementsController extends Controller
         $canDuplicate = !$isRevision && $elementsService->canDuplicateAsDraft($element, $user);
 
         // Preview targets
-        $previewTargets = (
-            $element->id &&
+        $previewTargets = $element->id ? $element->getPreviewTargets() : [];
+        $enablePreview = (
+            !empty($previewTargets) &&
+            !$this->request->isMobileBrowser(true) &&
             (
                 ($isDraft && $canSave) ||
                 ($isCurrent && $canCreateDrafts)
             )
-        ) ? $element->getPreviewTargets() : [];
-        $enablePreview = $previewTargets && !$this->request->isMobileBrowser(true);
+        );
 
         if ($previewTargets) {
             if ($isDraft && !$element->isProvisionalDraft) {
@@ -406,6 +407,7 @@ class ElementsController extends Controller
                         'additionalSites' => $addlEditableSites,
                         'canCreateDrafts' => $canCreateDrafts,
                         'canEditMultipleSites' => $canEditMultipleSites,
+                        'canSave' => $canSave,
                         'canSaveCanonical' => $canSaveCanonical,
                         'elementId' => $element->id,
                         'canonicalId' => $canonical->id,
@@ -825,7 +827,7 @@ class ElementsController extends Controller
         ];
 
         // Preview (View will be added later by JS)
-        if ($canSave && $previewTargets) {
+        if ($previewTargets) {
             $components[] =
                 Html::beginTag('div', [
                     'class' => ['preview-btn-container', 'btngroup'],
@@ -964,13 +966,11 @@ class ElementsController extends Controller
         $behavior->contentHtml($contentHtml);
         $behavior->metaSidebarHtml($sidebarHtml);
 
-        if ($canSave && !$element->getIsRevision()) {
-            $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
+        $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
 new Craft.ElementEditor($('#$containerId'), $settingsJs);
 JS, [
-                $jsSettingsFn($form),
-            ]);
-        }
+            $jsSettingsFn($form),
+        ]);
 
         // Give the element a chance to do things here too
         $element->prepareEditScreen($response, $containerId);

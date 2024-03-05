@@ -8,6 +8,7 @@
 - Table columns now set a max with to force long lines to be truncated or wrap. ([#14514](https://github.com/craftcms/cms/issues/14514))
 - Slideouts are now slightly wider on desktop browsers.
 - Pane headers/footers and most meta fields now match the height of the global header.
+- It’s now possible to preview revisions. ([#14521](https://github.com/craftcms/cms/discussions/14521))
 - Added `craft\base\ApplicationTrait::$edition`.
 - Added `craft\enums\CmsEdition`.
 - `craft\base\ApplicationTrait::getLicensedEdition()` now returns a `craft\enums\CmsEdition` case or `null`.
