@@ -423,6 +423,8 @@ class HtmlHelperTest extends TestCase
             [false, "<div x-foo='>"],
             [false, '<!-- comment -->'],
             [false, '<?xml?>'],
+            // https://github.com/craftcms/cms/issues/14498
+            [['data' => ['label' => "foo\n\nbar"]], "<div data-label=\"foo\n\nbar\">"],
         ];
     }
 
@@ -566,6 +568,8 @@ class HtmlHelperTest extends TestCase
             ['<style>.foo-a, .foo-b:hover</style>', '<style>.a, .b:hover</style>', 'foo', true],
             ['<div id="foo-bar"></div><div data-reverse-target="#foo-bar, .foo"></div>', '<div id="bar"></div><div data-reverse-target="#bar, .foo"></div>', 'foo', false],
             ['<div id="foo-bar"></div><div data-reverse-target="#foo-bar, #foo-bar .foo"></div>', '<div id="bar"></div><div data-reverse-target="#bar, #bar .foo"></div>', 'foo', false],
+            ['<div id="foo-bar"></div><div data-target-prefix="#foo-"></div>', '<div id="bar"></div><div data-target-prefix="#"></div>', 'foo', false],
+            ['<div id="foo-bar"></div><div data-target-prefix></div>', '<div id="bar"></div><div data-target-prefix></div>', 'foo', false],
         ];
     }
 
