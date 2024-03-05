@@ -2878,6 +2878,7 @@ table {
         padding-top: 7px;
         padding-bottom: 7px;
         background-clip: padding-box;
+        max-width: 33vw;
       }
 
       td {
@@ -3025,6 +3026,7 @@ table {
     flex-direction: column;
     --thumb-size: 120px;
     min-width: calc(var(--s) * 2 + var(--thumb-size));
+    width: 100%;
     padding-top: var(--xs);
     padding-bottom: var(--xs);
 
@@ -3047,6 +3049,10 @@ table {
 
     .icon {
       margin: -4px -1px 0;
+    }
+
+    .chip-actions {
+      margin-left: auto;
     }
   }
 
@@ -3093,6 +3099,7 @@ table {
   }
 
   & > .thumb {
+    flex: 0 0 auto;
     position: relative;
     display: flex;
     align-items: center;
@@ -3178,9 +3185,8 @@ table {
 }
 
 .inline-chips {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   align-items: center;
   gap: var(--xs);
 
@@ -3718,6 +3724,10 @@ table {
         }
       }
     }
+
+    .chip.large {
+      width: 100%;
+    }
   }
 }
 
@@ -3876,10 +3886,6 @@ table {
   .flex,
   .btn {
     clear: both;
-  }
-
-  .chip {
-    z-index: 1;
   }
 
   .structure {
@@ -4176,6 +4182,7 @@ ul.tree,
 
 /* status icons */
 .status {
+  flex: 0 0 auto;
   display: inline-block;
   position: relative;
   @include margin-right(10px);
