@@ -1285,7 +1285,7 @@ class App
             $isCraft = $handle === 'craft';
             if ($isCraft) {
                 $name = 'Craft';
-                $editions = ['solo', 'pro'];
+                $editions = array_map(fn(CmsEdition $edition) => $edition->handle(), CmsEdition::cases());
                 $currentEdition = Craft::$app->edition->handle();
                 $currentEditionName = Craft::$app->edition->name;
                 $licensedEdition = isset($licenseInfo['edition']) ? CmsEdition::fromHandle($licenseInfo['edition']) : CmsEdition::Solo;

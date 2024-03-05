@@ -30,7 +30,6 @@ use craft\fieldlayoutelements\CustomField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
-use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
@@ -328,7 +327,6 @@ class Cp
         $attributes = ArrayHelper::merge([
             'id' => $config['id'],
             'class' => ['chip', $config['size']],
-            'title' => $label,
             'style' => array_filter([
                 '--custom-bg-color' => $color?->cssVar(50),
                 '--custom-text-color' => $color?->cssVar(900),
@@ -449,17 +447,9 @@ class Cp
             'sortable' => false,
         ];
 
-        $title = implode('', array_map(fn(string $segment) => "$segment → ", $element->getUiLabelPath())) .
-            $element->getUiLabel();
-
-        if (Craft::$app->getIsMultiSite()) {
-            $title .= sprintf(' - %s', Craft::t('site', $element->getSite()->getName()));
-        }
-
         $config['attributes'] = ArrayHelper::merge(
             self::baseElementAttributes($element, $config),
             [
-                'title' => $title,
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'context' => $config['context'],
@@ -753,7 +743,7 @@ class Cp
             return '';
         }
 
-        return Html::tag('div', $content, [
+        return Html::tag('craft-element-label', $content, [
             'id' => sprintf('%s-label', $config['id']),
             'class' => 'label',
         ]);

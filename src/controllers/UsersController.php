@@ -1444,7 +1444,10 @@ JS);
         $canAdministrateUsers = $currentUser && $currentUser->can('administrateUsers');
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
-        $requireEmailVerification = $userSettings['requireEmailVerification'] ?? true;
+        $requireEmailVerification = (
+            Craft::$app->edition === CmsEdition::Pro &&
+            ($userSettings['requireEmailVerification'] ?? true)
+        );
         $deactivateByDefault = $userSettings['deactivateByDefault'] ?? false;
         $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
         $returnCsrfToken = false;

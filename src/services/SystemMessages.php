@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
+use craft\enums\CmsEdition;
 use craft\events\RegisterEmailMessagesEvent;
 use craft\helpers\ArrayHelper;
 use craft\models\SystemMessage;
@@ -167,6 +168,8 @@ class SystemMessages extends Component
             return null;
         }
 
+        $message = clone $default;
+
         if ($language === null) {
             $language = Craft::$app->getSites()->getPrimarySite()->language;
         }
@@ -177,27 +180,26 @@ class SystemMessages extends Component
             $languageId = $language;
         }
 
-        // Fetch the customization (if there is one)
-        $override = $this->_createMessagesQuery()
-            ->select(['subject', 'body'])
-            ->where(['key' => $key])
-            ->andWhere([
-                'or',
-                ['language' => [$language, $languageId]],
-                ['like', 'language', "$languageId%", false],
-            ])
-            ->orderBy(new Expression('case when ([[language]] = :language) then 0 when ([[language]] = :languageId) then 1 else 2 end', [
-                'language' => $language,
-                'languageId' => $languageId,
-            ]))
-            ->one();
+        if (Craft::$app->edition === CmsEdition::Pro) {
+            // Fetch the customization (if there is one)
+            $override = $this->_createMessagesQuery()
+                ->select(['subject', 'body'])
+                ->where(['key' => $key])
+                ->andWhere([
+                    'or',
+                    ['language' => [$language, $languageId]],
+                    ['like', 'language', "$languageId%", false],
+                ])
+                ->orderBy(new Expression('case when ([[language]] = :language) then 0 when ([[language]] = :languageId) then 1 else 2 end', [
+                    'language' => $language,
+                    'languageId' => $languageId,
+                ]))
+                ->one();
 
-        // Combine them to create the final message
-        $message = clone $default;
-
-        if ($override) {
-            $message->subject = $override['subject'];
-            $message->body = $override['body'];
+            if ($override) {
+                $message->subject = $override['subject'];
+                $message->body = $override['body'];
+            }
         }
 
         return $message;
