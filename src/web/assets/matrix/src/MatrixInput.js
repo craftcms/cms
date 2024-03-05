@@ -958,6 +958,7 @@ import $ from 'jquery';
           [param('fieldId')]: this.matrix.settings.fieldId,
           [param('sortOrder')]: this.$container.index() + 1,
           [param('typeId')]: this.$container.data('type-id'),
+          [param('elementUid')]: this.$container.data('uid'),
         };
 
         const selectedTabId = this.$fieldsContainer
