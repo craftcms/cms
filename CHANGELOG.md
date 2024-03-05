@@ -28,6 +28,7 @@
 - Deprecated `craft\helpers\App::editionName()`. `craft\enums\CmsEdition::name` should be used instead.
 - Deprecated `craft\helpers\App::editions()`. `craft\enums\CmsEdition::cases()` should be used instead.
 - Deprecated `craft\helpers\App::isValidEdition()`. `craft\enums\CmsEdition::tryFrom()` should be used instead.
+- Craft now calls `setlocale()` based on the target language, so that `SORT_LOCALE_STRING` behaves as expected. ([#14509](https://github.com/craftcms/cms/issues/14509), [#14513](https://github.com/craftcms/cms/pull/14513))
 - Fixed a bug where element chips weren’t handling long labels properly. ([#14517](https://github.com/craftcms/cms/issues/14517), [#14502](https://github.com/craftcms/cms/pull/14502))
 - Fixed a bug where `craft\helpers\Html::parseTagAttribute()` wasn’t handling attribute values with newlines. ([#14498](https://github.com/craftcms/cms/issues/14498))
 - Fixed a bug where the “Filesystem Type” setting wasn’t toggling type-specific settings when editing a filesystem via a slideout. ([#14522](https://github.com/craftcms/cms/issues/14522))
