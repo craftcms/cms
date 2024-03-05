@@ -4,6 +4,8 @@
 
 - It’s now possible to manage custom preview targets on sections with Craft Solo.
 - The global sidebar background color is now a shade darker than the rest of the page. ([#14515](https://github.com/craftcms/cms/pull/14515))
+- Asset chips with large thumbnails now truncate long titles, and make the full title visible via a tooltip on hover/focus. ([#14462](https://github.com/craftcms/cms/discussions/14462), [#14502](https://github.com/craftcms/cms/pull/14502))
+- Table columns now set a max with to force long lines to be truncated or wrap. ([#14514](https://github.com/craftcms/cms/issues/14514))
 - Slideouts are now slightly wider on desktop browsers.
 - Pane headers/footers and most meta fields now match the height of the global header.
 - Added `craft\base\ApplicationTrait::$edition`.
