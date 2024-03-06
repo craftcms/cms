@@ -19,15 +19,11 @@ use craft\errors\UnsupportedSiteException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
-use craft\i18n\Translation;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use craft\queue\jobs\ResaveElements;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\web\BadRequestHttpException;
@@ -397,7 +393,7 @@ class EntriesController extends BaseEntriesController
      * @return Response
      * @throws BadRequestHttpException
      */
-    public function actionMoveToStructureModalData(): Response
+    public function actionMoveToSectionModalData(): Response
     {
         $this->requireCpRequest();
 
@@ -481,7 +477,7 @@ class EntriesController extends BaseEntriesController
      * @throws BadRequestHttpException
      * @throws \yii\db\Exception
      */
-    public function actionMoveToStructure(): Response
+    public function actionMoveToSection(): Response
     {
         $this->requireCpRequest();
 
@@ -493,52 +489,15 @@ class EntriesController extends BaseEntriesController
             throw new BadRequestHttpException('Cannot find the section to move the entries to.');
         }
 
-        // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
-        $entries = Entry::find()
-            ->where(['in', '[[entries.id]]', $entryIds])
-            ->with(['drafts', 'revisions'])
-            ->all();
+        $entries = Entry::find()->id($entryIds)->all();
 
         if (!$entries) {
             throw new BadRequestHttpException('Cannot find the entries to move to the new section.');
         }
 
-        // IDs of entries we selected for update + its drafts + its revisions
-        $ids = array_map(fn($entry) => $entry->id, $entries);
-
         foreach ($entries as $entry) {
-            $drafts = $entry->getEagerLoadedElements('drafts');
-            $ids = array_merge($ids, $drafts->map(fn($draft) => $draft->id)->values()->all());
-
-            $revisions = $entry->getEagerLoadedElements('revisions');
-            $ids = array_merge($ids, $revisions->map(fn($revision) => $revision->id)->values()->all());
+            Craft::$app->getElements()->moveEntryToSection($entry, $section);
         }
-
-        // do the move - move the entry by its id
-        Db::update(
-            Table::ENTRIES,
-            ['sectionId' => $section->id],
-            ['in', 'id', $ids],
-            [],
-            false,
-        );
-
-        // clear the data caches
-        Craft::$app->getCache()->flush();
-
-        // and trigger queue job to re-save them
-        Queue::push(new ResaveElements([
-            'description' => Translation::prep('app', 'Resaving moved entries'),
-            'elementType' => Entry::class,
-            'criteria' => [
-                'id' => $entryIds,
-                'drafts' => null,
-                'provisionalDrafts' => null,
-                'revisions' => null,
-            ],
-            'updateSearchIndex' => true,
-        ]));
-
 
         return $this->asSuccess(Craft::t(
             'app',

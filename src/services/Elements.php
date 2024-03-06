@@ -42,6 +42,7 @@ use craft\events\DeleteElementEvent;
 use craft\events\EagerLoadElementsEvent;
 use craft\events\ElementEvent;
 use craft\events\ElementQueryEvent;
+use craft\events\EntryMoveEvent;
 use craft\events\InvalidateElementCachesEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\MultiElementActionEvent;
@@ -58,6 +59,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\models\ElementActivity;
+use craft\models\Section;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\queue\jobs\UpdateSearchIndex;
@@ -488,6 +490,18 @@ class Elements extends Component
      * @since 4.4.0
      */
     public const EVENT_AFTER_DELETE_FOR_SITE = 'afterDeleteForSite';
+
+    /**
+     * @event EntryMoveEvent The event that is triggered before an entry is move to a different section.
+     * @since 5.0.0
+     */
+    public const EVENT_BEFORE_MOVE_TO_SECTION = 'beforeMoveToSection';
+
+    /**
+     * @event EntryMoveEvent The event that is triggered before an entry is move to a different section.
+     * @since 5.0.0
+     */
+    public const EVENT_AFTER_MOVE_TO_SECTION = 'afterMoveToSection';
 
     /**
      * @var array|null
@@ -1940,6 +1954,123 @@ class Elements extends Component
         });
 
         return $mainClone;
+    }
+
+    /**
+     * Move entry to a different section.
+     *
+     * @param Entry $entry
+     * @param Section $section
+     * @return bool
+     * @throws Exception
+     * @throws InvalidElementException
+     * @throws Throwable
+     * @throws UnsupportedSiteException
+     */
+    public function moveEntryToSection(Entry $entry, Section $section): bool
+    {
+        // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_MOVE_TO_SECTION)) {
+            $this->trigger(self::EVENT_BEFORE_MOVE_TO_SECTION, new EntryMoveEvent([
+                'entry' => $entry,
+                'section' => $section,
+            ]));
+        }
+
+        // Make sure the element exists
+        if (!$entry->id) {
+            throw new Exception('Attempting to move an unsaved element.');
+        }
+
+        // and that it's not a nested entry
+        if ($entry->getPrimaryOwnerId() !== null) {
+            throw new Exception('Attempting to move a nested element.');
+        }
+
+        // Ensure all fields have been normalized
+        $entry->getFieldValues();
+
+        // Make sure the element actually supports its own site ID
+        $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($entry), 'siteId');
+        if (!isset($supportedSites[$entry->siteId])) {
+            throw new UnsupportedSiteException($entry, $entry->siteId, 'Attempting to move an element in an unsupported site.');
+        }
+
+        $placeInStructure = false;
+        $oldStructureId = $entry->section->structureId;
+        if ($section->type === Section::TYPE_STRUCTURE) {
+            $placeInStructure = true;
+        }
+
+        // move to new section
+        $entry->sectionId = $section->id;
+
+        // Validate
+        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->validate();
+
+        // If there are any errors on the URI, re-validate as disabled
+        if ($entry->hasErrors('uri') && $entry->enabled) {
+            $entry->enabled = false;
+            $entry->validate();
+        }
+
+        if ($entry->hasErrors()) {
+            throw new InvalidElementException($entry, 'Element ' . $entry->id . ' could not be moved because it doesn\'t validate.');
+        }
+
+        $this->ensureBulkOp(function() use (
+            $entry,
+            $section,
+            $supportedSites,
+            $placeInStructure,
+            $oldStructureId,
+        ) {
+            $transaction = Craft::$app->getDb()->beginTransaction();
+            try {
+                // Start with $entry’s site
+                if (!$this->_saveElementInternal($entry, false, false, null, $supportedSites)) {
+                    throw new InvalidElementException($entry, 'Element ' . $entry->id . ' could not be moved for site ' . $entry->siteId);
+                }
+
+                $structuresService = Craft::$app->getStructures();
+
+                if ($entry->getIsCanonical()) {
+                    $canonical = $entry->getCanonical(true);
+
+                    // if we're moving to a structure - append entry to the root of that structure
+                    if ($placeInStructure && $canonical->structureId) {
+                        $structuresService->appendToRoot($section->structureId, $canonical, Structures::MODE_INSERT);
+                    }
+
+                    // if we're moving element from a structure - ensure we remove the structure info for it
+                    if ($oldStructureId) {
+                        $structuresService->remove($oldStructureId, $canonical);
+                    }
+                }
+
+                $entry->newSiteIds = [];
+
+                $entry->afterPropagate(false);
+
+                $transaction->commit();
+
+                // Invalidate caches
+                $this->invalidateCachesForElementType($entry::class);
+            } catch (Throwable $e) {
+                $transaction->rollBack();
+                throw $e;
+            }
+        });
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_TO_SECTION)) {
+            $this->trigger(self::EVENT_AFTER_MOVE_TO_SECTION, new EntryMoveEvent([
+                'entry' => $entry,
+                'section' => $section,
+            ]));
+        }
+
+        return true;
     }
 
     /**

@@ -26,7 +26,7 @@ class MoveToSection extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Move to section');
+        return Craft::t('app', 'Move to');
     }
 
     /**

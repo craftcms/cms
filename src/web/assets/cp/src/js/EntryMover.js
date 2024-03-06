@@ -104,7 +104,7 @@ Craft.EntryMover = Garnish.Base.extend({
     try {
       const response = await Craft.sendActionRequest(
         'POST',
-        'entries/move-to-structure-modal-data',
+        'entries/move-to-section-modal-data',
         {
           data: {
             entryIds: this.entryIds,
@@ -132,7 +132,7 @@ Craft.EntryMover = Garnish.Base.extend({
       entryIds: this.entryIds,
     };
 
-    Craft.sendActionRequest('POST', 'entries/move-to-structure', {
+    Craft.sendActionRequest('POST', 'entries/move-to-section', {
       data: data,
     })
       .then((response) => {
