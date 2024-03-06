@@ -1916,7 +1916,7 @@ $.extend(Craft, {
       return;
     }
 
-    const scripts = [];
+    const scriptUrls = [];
 
     const nodes = $.parseHTML(html.trim(), true).filter((node) => {
       if (node.nodeName === 'LINK' && node.href) {
@@ -1942,11 +1942,7 @@ $.extend(Craft, {
         }
 
         if (!this._existingJs.includes(node.src)) {
-          scripts.push({
-            type: node.type || 'script',
-            src: node.src,
-          });
-          
+          scriptUrls.push(node.src);
           this._existingJs.push(node.src);
         }
 
@@ -1957,39 +1953,29 @@ $.extend(Craft, {
       return true;
     });
 
-    await this._loadScripts(scripts);
+    await this._loadScripts(scriptUrls);
     $parent.append(nodes);
   },
 
-  _loadScripts: function (scripts) {
+  _loadScripts: function (urls) {
     return new Promise((resolve) => {
-      if (!scripts.length) {
+      if (!urls.length) {
         resolve();
         return;
       }
 
-      const script = scripts.shift();
+      const url = urls.shift();
+      $.ajaxSetup({cache: true});
 
-      const getScript = function(script, callback) {
-        return new Promise((resolve, reject) => {
-          const $script = document.createElement('script');
-          $script.src = script.src;
-          $script.type = script.type;
-      
-          $script.onload = () => resolve();
-          $script.onerror = (error) => reject(error);
-      
-          document.body.appendChild($script);
-        });
-      }
-
-      getScript(script)
-        .then(() => {
-          this._loadScripts(scripts).then(resolve);
+      $.getScript(url)
+        .done(() => {
+          $.ajaxSetup({cache: false});
+          this._loadScripts(urls).then(resolve);
         })
-        .catch((error) => {
-          console.error(`Failed to load ${url}: ${error}`);
-          this._loadScripts(scripts).then(resolve);
+        .fail(() => {
+          console.error(`Failed to load ${url}:`);
+          $.ajaxSetup({cache: false});
+          this._loadScripts(urls).then(resolve);
         });
     });
   },
