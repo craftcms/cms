@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
+- Fixed a bug where programmatically-updated `<textarea>`s weren’t triggering autosaves. ([craftcms/ckeditor#172](https://github.com/craftcms/ckeditor/issues/172))
 
 ## 4.8.1 - 2024-03-05
 
