@@ -2,14 +2,22 @@
 
 ## Unreleased
 
+- Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
+
+## 5.0.0-beta.6 - 2024-03-05
+
 - It’s now possible to manage custom preview targets on sections with Craft Solo.
 - The global sidebar background color is now a shade darker than the rest of the page. ([#14515](https://github.com/craftcms/cms/pull/14515))
 - Asset chips with large thumbnails now truncate long titles, and make the full title visible via a tooltip on hover/focus. ([#14462](https://github.com/craftcms/cms/discussions/14462), [#14502](https://github.com/craftcms/cms/pull/14502))
 - Table columns now set a max with to force long lines to be truncated or wrap. ([#14514](https://github.com/craftcms/cms/issues/14514))
 - Slideouts are now slightly wider on desktop browsers.
 - Pane headers/footers and most meta fields now match the height of the global header.
+- It’s now possible to preview revisions. ([#14521](https://github.com/craftcms/cms/discussions/14521))
+- GraphQL responses now include full exception details, when Dev Mode is enabled or an admin is signed in with the “Show full exception views when Dev Mode is disabled” preference enabled. ([#14527](https://github.com/craftcms/cms/issues/14527))
 - Added `craft\base\ApplicationTrait::$edition`.
 - Added `craft\enums\CmsEdition`.
+- Added `craft\web\ErrorHandler::exceptionAsArray()`.
+- Added `craft\web\ErrorHandler::showExceptionDetails()`.
 - `craft\base\ApplicationTrait::getLicensedEdition()` now returns a `craft\enums\CmsEdition` case or `null`.
 - `craft\base\ApplicationTrait::requireEdition()` now accepts a `craft\enums\CmsEdition` case or an integer.
 - `craft\base\ApplicationTrait::setEdition()` now accepts a `craft\enums\CmsEdition` case or an integer.
@@ -24,6 +32,7 @@
 - Deprecated `craft\helpers\App::editionName()`. `craft\enums\CmsEdition::name` should be used instead.
 - Deprecated `craft\helpers\App::editions()`. `craft\enums\CmsEdition::cases()` should be used instead.
 - Deprecated `craft\helpers\App::isValidEdition()`. `craft\enums\CmsEdition::tryFrom()` should be used instead.
+- Craft now calls `setlocale()` based on the target language, so that `SORT_LOCALE_STRING` behaves as expected. ([#14509](https://github.com/craftcms/cms/issues/14509), [#14513](https://github.com/craftcms/cms/pull/14513))
 - Fixed a bug where element chips weren’t handling long labels properly. ([#14517](https://github.com/craftcms/cms/issues/14517), [#14502](https://github.com/craftcms/cms/pull/14502))
 - Fixed a bug where `craft\helpers\Html::parseTagAttribute()` wasn’t handling attribute values with newlines. ([#14498](https://github.com/craftcms/cms/issues/14498))
 - Fixed a bug where the “Filesystem Type” setting wasn’t toggling type-specific settings when editing a filesystem via a slideout. ([#14522](https://github.com/craftcms/cms/issues/14522))
