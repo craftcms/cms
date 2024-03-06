@@ -206,14 +206,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
     createUploadInputs: function () {
       this.$uploadButton?.remove();
-      // removing this input via this.uploader?.$fileInput and this.$uploadInput doesn't work;
-      // if the input gets multiplied in the source code, the event's won't fire as expected;
-      let $uploadInput = this.getButtonContainer().find(
-        '[name="assets-upload"]'
-      );
-      if ($uploadInput.length) {
-        $uploadInput.remove();
-      }
+      this.$uploadInput?.remove();
 
       this.$uploadButton = $('<button/>', {
         type: 'button',
@@ -257,7 +250,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           Garnish.hasAttr(this.$source, 'data-can-upload')
         ) {
           this.uploader?.destroy();
-          this.$uploadInput.insertBefore(this.$uploadButton);
           this.$uploadButton.removeClass('disabled');
 
           const options = {
