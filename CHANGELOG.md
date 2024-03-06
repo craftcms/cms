@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
+
 ## 5.0.0-beta.6 - 2024-03-05
 
 - It’s now possible to manage custom preview targets on sections with Craft Solo.
