@@ -2015,6 +2015,15 @@ class Elements extends Component
             $entry->validate();
         }
 
+        // todo: is this okay? it's a bit sneaky...
+        // if old section had e.g. maxAuthors set to 3 and our entry had 3 authors,
+        // and we're moving it to a section that only allows one author - how do we want to handle this?
+        if ($entry->hasErrors('authorIds')) {
+            $authors = $entry->getAuthorIds();
+            $entry->setAuthorIds(array_slice($authors, 0, $section->maxAuthors));
+            $entry->validate();
+        }
+
         if ($entry->hasErrors()) {
             throw new InvalidElementException($entry, 'Element ' . $entry->id . ' could not be moved because it doesn\'t validate.');
         }
