@@ -129,12 +129,18 @@ class DateRangeHelperTest extends TestCase
     public static function getDateIntervalByTimePeriodDataProvider(): array
     {
         return [
-            'daysFull' => [DateInterval::createFromDateString('+4 days'), 4, DateRange::PERIOD_DAYS_FROM_NOW],
-            'daysDecimal' => [DateInterval::createFromDateString('+4.5 days'), 4.5, DateRange::PERIOD_DAYS_FROM_NOW],
-            'hoursFull' => [DateInterval::createFromDateString('+4 hours'), 4, DateRange::PERIOD_HOURS_FROM_NOW],
-            'hoursDecimal' => [DateInterval::createFromDateString('+4.5 hours'), 4.5, DateRange::PERIOD_HOURS_FROM_NOW],
-            'minutesFull' => [DateInterval::createFromDateString('+4 minutes'), 4, DateRange::PERIOD_MINUTES_FROM_NOW],
-            'minutesDecimal' => [DateInterval::createFromDateString('+4.5 minutes'), 4.5, DateRange::PERIOD_MINUTES_FROM_NOW],
+            'daysFull' => [DateInterval::createFromDateString('4 days'), 4, DateRange::PERIOD_DAYS_FROM_NOW],
+            'daysDecimal' => [DateInterval::createFromDateString('4 days + 12 hours'), 4.5, DateRange::PERIOD_DAYS_FROM_NOW],
+            'hoursFull' => [DateInterval::createFromDateString('4 hours'), 4, DateRange::PERIOD_HOURS_FROM_NOW],
+            'hoursDecimal' => [DateInterval::createFromDateString('4 hours + 30 minutes'), 4.5, DateRange::PERIOD_HOURS_FROM_NOW],
+            'minutesFull' => [DateInterval::createFromDateString('4 minutes'), 4, DateRange::PERIOD_MINUTES_FROM_NOW],
+            'minutesDecimal' => [DateInterval::createFromDateString('4 minutes + 30 seconds'), 4.5, DateRange::PERIOD_MINUTES_FROM_NOW],
+            'daysFullNeg' => [DateInterval::createFromDateString('-4 days'), -4, DateRange::PERIOD_DAYS_FROM_NOW],
+            'daysDecimalNeg' => [DateInterval::createFromDateString('-4 days - 12 hours'), -4.5, DateRange::PERIOD_DAYS_FROM_NOW],
+            'hoursFullNeg' => [DateInterval::createFromDateString('-4 hours'), -4, DateRange::PERIOD_HOURS_FROM_NOW],
+            'hoursDecimalNeg' => [DateInterval::createFromDateString('-4 hours - 30 minutes'), -4.5, DateRange::PERIOD_HOURS_FROM_NOW],
+            'minutesFullNeg' => [DateInterval::createFromDateString('-4 minutes'), -4, DateRange::PERIOD_MINUTES_FROM_NOW],
+            'minutesDecimalNeg' => [DateInterval::createFromDateString('-4 minutes - 30 seconds'), -4.5, DateRange::PERIOD_MINUTES_FROM_NOW],
         ];
     }
 

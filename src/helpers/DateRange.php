@@ -114,27 +114,40 @@ class DateRange
             throw new InvalidArgumentException("Invalid period type: $periodType");
         }
 
-        switch ($periodType) {
-            case DateRange::PERIOD_WEEKS_AGO:
-                return DateInterval::createFromDateString("-$length weeks");
-            case DateRange::PERIOD_DAYS_AGO:
-                return DateInterval::createFromDateString("-$length days");
-            case DateRange::PERIOD_HOURS_AGO:
-                return DateInterval::createFromDateString("-$length hours");
-            case DateRange::PERIOD_MINUTES_AGO:
-                return DateInterval::createFromDateString("-$length minutes");
-            case DateRange::PERIOD_SECONDS_AGO:
-                return DateInterval::createFromDateString("-$length seconds");
-            case DateRange::PERIOD_WEEKS_FROM_NOW:
-                return DateInterval::createFromDateString("+$length weeks");
-            case DateRange::PERIOD_DAYS_FROM_NOW:
-                return DateInterval::createFromDateString("+$length days");
-            case DateRange::PERIOD_HOURS_FROM_NOW:
-                return DateInterval::createFromDateString("+$length hours");
-            case DateRange::PERIOD_MINUTES_FROM_NOW:
-                return DateInterval::createFromDateString("+$length minutes");
-            case DateRange::PERIOD_SECONDS_FROM_NOW:
-                return DateInterval::createFromDateString("+$length seconds");
+        if (in_array($periodType, [DateRange::PERIOD_SECONDS_AGO, DateRange::PERIOD_SECONDS_FROM_NOW])) {
+            $length = $intLength = round($length);
+        } else {
+            $intLength = floor($length);
         }
+
+        $pos = in_array($periodType, [
+            DateRange::PERIOD_WEEKS_FROM_NOW,
+            DateRange::PERIOD_DAYS_FROM_NOW,
+            DateRange::PERIOD_HOURS_FROM_NOW,
+            DateRange::PERIOD_MINUTES_FROM_NOW,
+            DateRange::PERIOD_SECONDS_FROM_NOW,
+        ]);
+
+        $str = sprintf('%s%s %s', $pos ? '' : '-', $intLength, match ($periodType) {
+            DateRange::PERIOD_WEEKS_AGO, DateRange::PERIOD_WEEKS_FROM_NOW => 'weeks',
+            DateRange::PERIOD_DAYS_AGO, DateRange::PERIOD_DAYS_FROM_NOW => 'days',
+            DateRange::PERIOD_HOURS_AGO, DateRange::PERIOD_HOURS_FROM_NOW => 'hours',
+            DateRange::PERIOD_MINUTES_AGO, DateRange::PERIOD_MINUTES_FROM_NOW => 'minutes',
+            DateRange::PERIOD_SECONDS_AGO, DateRange::PERIOD_SECONDS_FROM_NOW => 'seconds',
+        });
+
+        $rem = $length - $intLength;
+
+        if ($rem) {
+            $str .= sprintf(" %s %s", $pos ? '+' : '-', match ($periodType) {
+                DateRange::PERIOD_WEEKS_AGO, DateRange::PERIOD_WEEKS_FROM_NOW => sprintf('%s days', round($rem * 7)),
+                DateRange::PERIOD_DAYS_AGO, DateRange::PERIOD_DAYS_FROM_NOW => sprintf('%s hours', round($rem * 24)),
+                DateRange::PERIOD_HOURS_AGO, DateRange::PERIOD_HOURS_FROM_NOW => sprintf('%s minutes', round($rem * 60)),
+                DateRange::PERIOD_MINUTES_AGO, DateRange::PERIOD_MINUTES_FROM_NOW => sprintf('%s seconds', round($rem * 60)),
+                DateRange::PERIOD_SECONDS_AGO, DateRange::PERIOD_SECONDS_FROM_NOW => sprintf('%s seconds', round($rem)),
+            });
+        }
+
+        return DateInterval::createFromDateString($str);
     }
 }
