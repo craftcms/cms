@@ -1942,8 +1942,15 @@ $.extend(Craft, {
         }
 
         if (!this._existingJs.includes(node.src)) {
-          scriptUrls.push(node.src);
           this._existingJs.push(node.src);
+
+          // Ignore loading module scripts, as they don't work with `$.getScript()`,
+          // but still need to be appended so return early
+          if (node.type === 'module') {
+            return true;
+          } else {
+            scriptUrls.push(node.src);
+          }
         }
 
         // return false either way since we are going to load it ourselves
