@@ -411,16 +411,17 @@ class EntriesController extends BaseEntriesController
             ->all();
         $entryTypes = array_map(fn($item) => $item['id'], $entryTypes);
 
+        $user = Craft::$app->getUser()->getIdentity();
+
         // filter all sections to those that have all the entry types we just got
-        $compatibleSections = Collection::make(Craft::$app->getEntries()->getAllSections())
-            ->filter(function(Section $section) use ($entryTypes, $siteId, $currentSectionUid) {
+        $compatibleSections = Collection::make(Craft::$app->getEntries()->getEditableSections())
+            ->filter(function(Section $section) use ($entryTypes, $siteId, $currentSectionUid, $user) {
                 // don't allow moving to a single section
                 if ($section->type === Section::TYPE_SINGLE) {
                     return false;
                 }
 
                 // limit to the sections available for the site we're doing this for
-                // todo: think about this
                 if (!isset($section->getSiteSettings()[$siteId])) {
                     return false;
                 }
@@ -429,6 +430,12 @@ class EntriesController extends BaseEntriesController
                 if ($currentSectionUid !== null && $section->uid === $currentSectionUid) {
                     return false;
                 }
+
+                // ensure person can save entries in the section we're moving to
+                if (!$user->can("saveEntries:$section->uid")) {
+                    return false;
+                }
+
 
                 $sectionEntryTypes = array_map(fn($et) => $et->id, $section->entryTypes);
 
