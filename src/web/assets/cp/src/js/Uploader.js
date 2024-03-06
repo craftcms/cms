@@ -40,7 +40,12 @@ Craft.Uploader = Craft.BaseUploader.extend(
      */
     setParams: function (paramObject) {
       this.base(paramObject);
-      this.uploader.fileupload('option', {formData: this.formData});
+
+      // Only set params if the uploader has been initialized
+      // It won't be if the input is disabled
+      if (this.uploader.data('blueimpFileupload')) {
+        this.uploader.fileupload('option', {formData: this.formData});
+      }
     },
 
     /**

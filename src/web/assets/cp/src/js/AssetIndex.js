@@ -301,14 +301,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.currentFolderId = currentFolder?.folderId;
 
       if (!this.settings.foldersOnly && this.currentFolderId) {
-        if (
-          this.uploader &&
-          typeof this.uploader.uploader.fileupload('instance') !== 'undefined'
-        ) {
-          this.uploader.setParams({
-            folderId: this.currentFolderId,
-          });
-        }
+        this.uploader?.setParams({
+          folderId: this.currentFolderId,
+        });
 
         // will the user be allowed to move items in this folder?
         const canMoveSubItems = !!currentFolder.canMoveSubItems;
