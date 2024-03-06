@@ -140,8 +140,8 @@ Craft.EntryMover = Garnish.Base.extend({
         this.elementIndex.updateElements();
         this.modal.hide();
       })
-      .catch(({e}) => {
-        Craft.cp.displayError(e?.response?.data?.error);
+      .catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
       })
       .finally(() => {
         this.$sectionsListContainer.removeClass('loading');

@@ -495,8 +495,30 @@ class EntriesController extends BaseEntriesController
             throw new BadRequestHttpException('Cannot find the entries to move to the new section.');
         }
 
+        $errors = [];
         foreach ($entries as $entry) {
-            Craft::$app->getElements()->moveEntryToSection($entry, $section);
+            try {
+                Craft::$app->getElements()->moveEntryToSection($entry, $section);
+            } catch (\Exception|InvalidElementException|UnsupportedSiteException $e) {
+                Craft::error('Could not delete move entry to a different section: ' . $e->getMessage(), __METHOD__);
+                $errors[] = $e->getMessage();
+            }
+        }
+
+        if (!empty($errors)) {
+            if (count($errors) === count($entries)) {
+                return $this->asFailure(Craft::t(
+                    'app',
+                    'Couldn’t move entries to the “{name}” section.',
+                    ['name' => $section->name]
+                ));
+            }
+
+            return $this->asSuccess(Craft::t(
+                'app',
+                'Some entries have been moved to the “{name}” section.',
+                ['name' => $section->name]
+            ));
         }
 
         return $this->asSuccess(Craft::t(

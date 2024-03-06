@@ -1468,6 +1468,7 @@ return [
     'Skip to {title}' => 'Skip to {title}',
     'Sky' => 'Sky',
     'Slug' => 'Slug',
+    'Some entries have been moved to the “{name}” section.' => 'Some entries have been moved to the “{name}” section.',
     'Some {type} restored.' => 'Some {type} restored.',
     'Something went wrong when processing the GraphQL query.' => 'Something went wrong when processing the GraphQL query.',
     'Sort ascending' => 'Sort ascending',
