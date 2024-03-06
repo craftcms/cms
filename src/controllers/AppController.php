@@ -88,6 +88,26 @@ class AppController extends Controller
     }
 
     /**
+     * Loads the given JavaScript resource URL and returns it.
+     *
+     * @param string $url
+     * @return Response
+     */
+    public function actionResourceJs(string $url): Response
+    {
+        $this->requireCpRequest();
+
+        if (!str_starts_with($url, Craft::$app->getAssetManager()->baseUrl)) {
+            throw new BadRequestHttpException("$url does not appear to be a resource URL");
+        }
+
+        $response = Craft::createGuzzleClient()->get($url);
+        $this->response->setCacheHeaders();
+        $this->response->getHeaders()->set('content-type', 'application/javascript');
+        return $this->asRaw($response->getBody());
+    }
+
+    /**
      * Returns the latest Craftnet API headers.
      *
      * @return Response
