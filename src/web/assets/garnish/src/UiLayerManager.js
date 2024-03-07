@@ -165,11 +165,17 @@ export default Base.extend({
         s.shortcut.alt === ev.altKey
     );
 
+    ev.bubbleShortcut = () => {
+      if (layerIndex > 0) {
+        this.triggerShortcut(ev, layerIndex - 1);
+      }
+    };
+
     if (shortcut) {
       ev.preventDefault();
       shortcut.callback(ev);
-    } else if (layer.options.bubble && layerIndex > 0) {
-      this.triggerShortcut(ev, layerIndex - 1);
+    } else if (layer.options.bubble) {
+      ev.bubbleShortcut();
     }
   },
 });
