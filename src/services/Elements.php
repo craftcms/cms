@@ -2062,6 +2062,14 @@ class Elements extends Component
 
                 $entry->afterPropagate(false);
 
+                // now update drafts & revisions too
+                $ids = array_merge(Entry::find()->draftOf($entry)->ids(), Entry::find()->revisionOf($entry)->ids());
+                Db::update(Table::ENTRIES, [
+                    'sectionId' => $section->id,
+                ], [
+                    'id' => $ids,
+                ]);
+
                 $transaction->commit();
 
                 // Invalidate caches
