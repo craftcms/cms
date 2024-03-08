@@ -98,6 +98,12 @@ body {
   }
 }
 
+#global-header {
+  display: grid;
+  grid-template-columns: 1fr min-content min-content;
+  align-items: center;
+}
+
 /* global sidebar */
 $sidebarLinkStaticColor: var(--gray-100);
 $sidebarLinkSecondaryColor: var(--gray-200);
