@@ -2498,7 +2498,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public function afterRestore(): void
     {
         $section = $this->getSection();
-        if ($section->type === Section::TYPE_STRUCTURE) {
+        if ($section?->type === Section::TYPE_STRUCTURE) {
             // Add the entry back into its structure
             /** @var self|null $parent */
             $parent = self::find()
