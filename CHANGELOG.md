@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `craft\elements\NestedElementManager::saveNestedElements()` now restores any soft-deleted elements that are returned by `getValue()`.
 - Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
 - Fixed a bug where lazy-registered JavaScript modules weren’t getting loaded properly. ([#14526](https://github.com/craftcms/cms/pull/14526))
 - Fixed a bug where related elements displayed in element indexes weren’t getting styled properly. ([#14545](https://github.com/craftcms/cms/pull/14545))
