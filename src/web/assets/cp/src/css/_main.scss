@@ -3185,14 +3185,20 @@ table {
 }
 
 .inline-chips {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--xs);
 
   .chip {
     margin: 0 !important;
   }
+}
+
+.elements.inline-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 }
 
 /** cards */

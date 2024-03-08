@@ -1617,9 +1617,9 @@ li.breadcrumb-toggle-wrapper {
   padding: 0 var(--xl);
 
   &:not(:last-child) {
-    padding-bottom: var(--s);
+    padding-bottom: 5px;
     border-bottom: 1px solid var(--hairline-color);
-    margin-bottom: var(--s);
+    margin-bottom: 5px;
   }
 }
 

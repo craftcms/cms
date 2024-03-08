@@ -441,9 +441,11 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       Garnish.$win.trigger('resize');
       this.$sidebar.trigger('scroll');
 
-      Garnish.uiLayerManager.addLayer();
-      Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
-        this.hideSidebarIfOverlapping() || this.closeMeMaybe();
+      Garnish.uiLayerManager.addLayer({
+        bubble: true,
+      });
+      Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, (ev) => {
+        this.hideSidebarIfOverlapping() || ev.bubbleShortcut();
       });
 
       this.showingSidebar = true;
@@ -751,6 +753,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     close: function () {
+      if (this.showingSidebar) {
+        this.hideSidebar();
+      }
+
       this.base();
 
       if (this.cancelToken) {

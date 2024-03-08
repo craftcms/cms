@@ -682,6 +682,14 @@ JS, [
         try {
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
+                // If it's soft-deleted, restore it.
+                // (This could happen if the element didn't come back in getValue() previously,
+                // but now it's showing up again, e.g. if an entry card was cut from a CKEditor field
+                // and then pasted back in somewhere else.)
+                if (isset($element->dateDeleted)) {
+                    $elementsService->restoreElement($element);
+                }
+
                 $sortOrder++;
                 if ($saveAll || !$element->id || $element->forceSave) {
                     $element->setOwner($owner);
