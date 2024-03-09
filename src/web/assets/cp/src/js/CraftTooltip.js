@@ -12,14 +12,20 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  * @property {'top'|'top-start'|'top-end'|'right'|'right-start'|'right-end'|'bottom'|'bottom-start'|'bottom-end'|'left'|'left-start'|'left-end'} placement - The placement of the tooltip relative to the parent element.
  * @property {boolean} arrow - Whether the tooltip should have an arrow.
  * @property {number} offset - The offset of the tooltip from the parent element.
+ * @property {boolean} self-managed - Whether the tooltip should manage its own state.
+ * @property {string} aria-label - Text content for the tooltip
+ *
  * @method show - Show the tooltip.
  * @method hide - Hide the tooltip.
  * @method update - Update the position of the tooltip.
- * @example <craft-tooltip arrow="false" placement="top" offset="10">Tooltip content</craft-tooltip>
+ *
+ * @example <craft-tooltip aria-label="Tooltip content"><button type="button">Trigger</button></craft-tooltip>
  */
 class CraftTooltip extends HTMLElement {
   connectedCallback() {
     this.arrowElement = this.querySelector('.arrow');
+    this.trigger = this.querySelector('a, button, [role="button"]');
+    this.selfManaged = this.hasAttribute('self-managed');
 
     this.arrow = this.getAttribute('arrow') !== 'false';
     this.offset = this.hasAttribute('offset')
@@ -27,6 +33,7 @@ class CraftTooltip extends HTMLElement {
       : 8;
 
     if (this.arrow && !this.arrowElement) {
+      this.renderTooltip();
       this.renderInner();
       this.renderArrow();
     }
@@ -38,8 +45,20 @@ class CraftTooltip extends HTMLElement {
       ['blur', this.hide],
     ];
 
+    if (this.selfManaged) {
+      this.trigger = this.parentElement;
+    }
+
+    if (!this.trigger) {
+      console.log('No trigger found for tooltip');
+      return false;
+    }
+
+    // Make sure the trigger accepts pointer events
+    this.trigger.style.pointerEvents = 'auto';
+
     this.listeners.forEach(([event, handler]) => {
-      this.parentElement?.addEventListener(event, handler.bind(this));
+      this.trigger?.addEventListener(event, handler.bind(this));
     });
 
     // Close on ESC
@@ -51,7 +70,7 @@ class CraftTooltip extends HTMLElement {
 
     if (this.listeners.length) {
       this.listeners.forEach(([event, handler]) => {
-        this.parentElement?.removeEventListener(event, handler.bind(this));
+        this.trigger?.removeEventListener(event, handler.bind(this));
       });
     }
 
@@ -64,6 +83,12 @@ class CraftTooltip extends HTMLElement {
     }
   }
 
+  renderTooltip() {
+    this.tooltip = document.createElement('span');
+    this.tooltip.classList.add('craft-tooltip');
+    this.appendChild(this.tooltip);
+  }
+
   /**
    * Renders an inner container so we can use padding for the offset and
    * maintain a better hover experience for users using zoom.
@@ -71,11 +96,10 @@ class CraftTooltip extends HTMLElement {
   renderInner() {
     this.inner = document.createElement('span');
     this.inner.classList.add('inner');
-    this.inner.innerText = this.innerText;
+    this.inner.innerText = this.getAttribute('aria-label');
 
     // Replace the content with the inner container
-    this.innerHTML = '';
-    this.appendChild(this.inner);
+    this.tooltip.appendChild(this.inner);
   }
 
   renderArrow() {
@@ -86,7 +110,7 @@ class CraftTooltip extends HTMLElement {
 
   show() {
     this.update();
-    Object.assign(this.style, {
+    Object.assign(this.tooltip.style, {
       opacity: 1,
       transform: `translateY(0)`,
       // Make sure if a user hovers over the label itself, it stays open
@@ -95,7 +119,7 @@ class CraftTooltip extends HTMLElement {
   }
 
   hide() {
-    Object.assign(this.style, {
+    Object.assign(this.tooltip.style, {
       opacity: 0,
       transform: `translateY(5px)`,
       pointerEvents: 'none',
@@ -103,7 +127,7 @@ class CraftTooltip extends HTMLElement {
   }
 
   update() {
-    computePosition(this.parentElement, this, {
+    computePosition(this.trigger, this.tooltip, {
       strategy: 'fixed',
       placement: this.getAttribute('placement') || 'bottom',
       middleware: [
@@ -113,7 +137,7 @@ class CraftTooltip extends HTMLElement {
         ...(this.arrow ? [arrow({element: this.arrowElement})] : []),
       ],
     }).then(({x, y, middlewareData, placement}) => {
-      Object.assign(this.style, {
+      Object.assign(this.tooltip.style, {
         left: `${x}px`,
         top: `${y}px`,
       });
@@ -131,7 +155,7 @@ class CraftTooltip extends HTMLElement {
       }[placement.split('-')[0]];
 
       // Add padding to the static side for accessible hovers
-      Object.assign(this.style, {
+      Object.assign(this.tooltip.style, {
         [`padding${Craft.uppercaseFirst(staticSide)}`]: `${this.offset}px`,
       });
 

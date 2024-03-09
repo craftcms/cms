@@ -886,23 +886,26 @@ class ElementsController extends Controller
         if ($isDraft && !$isCurrent && $canSave && $canSaveCanonical) {
             /** @phpstan-ignore-next-line */
             $disabled = $canonical->hasMethod('isEntryTypeCompatible') && !$element->isEntryTypeCompatible();
-            $btnContent = Craft::t('app', 'Apply draft');
-            if ($disabled) {
-                $btnContent .= ' <craft-tooltip>' .
-                    Craft::t(
-                        'app',
-                        'The Entry Type for this draft is no longer available. You can still view it, but not apply it.'
-                    ) .
-                    '</craft-tooltip>';
-            }
-            $components[] = Html::button($btnContent, [
-                //TODO: uncomment or remove once Brian says if the tooltip can work on disabled elements too
-                'class' => ['btn', 'secondary', 'formsubmit', /*$disabled ? 'disabled' : ''*/],
+
+            $button = Html::button(Craft::t('app', 'Apply draft'), [
+                'class' => ['btn', 'secondary', 'formsubmit', $disabled ? 'disabled' : ''],
+                'disabled' => $disabled,
                 'data' => [
                     'action' => 'elements/apply-draft',
                     'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
                 ],
             ]);
+
+            if ($disabled) {
+                $button = Html::tag('craft-tooltip', $button, [
+                    'aria-label' => Craft::t(
+                        'app',
+                        'The Entry Type for this draft is no longer available. You can still view it, but not apply it.'
+                    ),
+                ]);
+            }
+
+            $components[] = $button;
         }
 
         // Revert content from this revision
