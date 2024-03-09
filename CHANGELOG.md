@@ -9,6 +9,7 @@
 - Fixed a bug where keyboard shortcuts stopped working when slideouts were opened on wide screens.
 - Fixed an error that occurred if a nested, soft-deleted entry was restored.
 - Fixed a bug where breadcrumbs weren’t getting moved into an overflow menu. ([#14549](https://github.com/craftcms/cms/issues/14549))
+- Fixed a bug where translatable field values weren’t getting populated to other sites on freshly-created entries within Matrix fields, if the field was set to inline-editable blocks mode. ([#14540](https://github.com/craftcms/cms/issues/14540))
 
 ## 5.0.0-beta.6 - 2024-03-05
 

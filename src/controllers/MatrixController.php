@@ -134,6 +134,7 @@ class MatrixController extends Controller
             'name' => $field->handle,
             'entryTypes' => $field->getEntryTypesForField($entries, $owner),
             'entry' => $entry,
+            'isFresh' => true,
         ]), $namespace);
 
         return $this->asJson([
