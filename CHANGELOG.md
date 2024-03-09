@@ -8,6 +8,7 @@
 - Fixed a bug where related elements displayed in element indexes weren’t getting styled properly. ([#14545](https://github.com/craftcms/cms/pull/14545))
 - Fixed a bug where keyboard shortcuts stopped working when slideouts were opened on wide screens.
 - Fixed an error that occurred if a nested, soft-deleted entry was restored.
+- Fixed a bug where breadcrumbs weren’t getting moved into an overflow menu. ([#14549](https://github.com/craftcms/cms/issues/14549))
 
 ## 5.0.0-beta.6 - 2024-03-05
 
