@@ -889,7 +889,6 @@ class ElementsController extends Controller
 
             $button = Html::button(Craft::t('app', 'Apply draft'), [
                 'class' => ['btn', 'secondary', 'formsubmit', $disabled ? 'disabled' : ''],
-                'disabled' => $disabled,
                 'data' => [
                     'action' => 'elements/apply-draft',
                     'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
@@ -912,24 +911,25 @@ class ElementsController extends Controller
         if ($isRevision && $canSaveCanonical) {
             /** @phpstan-ignore-next-line */
             $disabled = $element->hasMethod('isEntryTypeCompatible') && !$element->isEntryTypeCompatible();
-            $btnContent = Craft::t('app', 'Revert content from this revision');
+
+            $button = Html::button(Craft::t('app', 'Revert content from this revision'), [
+                'class' => ['btn', 'formsubmit', $disabled ? 'disabled' : ''],
+            ]);
+
             if ($disabled) {
-                $btnContent .= ' <craft-tooltip>' .
-                    Craft::t(
+                $button = Html::tag('craft-tooltip', $button, [
+                    'aria-label' => Craft::t(
                         'app',
                         'The Entry Type for this revision is no longer available. You can still view this revision, but not revert to it.'
-                    ) .
-                    '</craft-tooltip>';
+                    ),
+                ]);
             }
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
                 Html::hiddenInput('elementId', (string)$canonical->id) .
                 Html::hiddenInput('revisionId', (string)$element->revisionId) .
-                Html::button($btnContent, [
-                    //TODO: uncomment or remove once Brian says if the tooltip can work on disabled elements too
-                    'class' => ['btn', 'formsubmit', /*$disabled ? 'disabled' : ''*/],
-                ]) .
+                $button .
                 Html::endForm();
         }
 
