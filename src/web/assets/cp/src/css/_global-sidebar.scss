@@ -175,13 +175,15 @@
 
   &:focus-visible,
   &:hover {
-    background-color: var(--gray-200);
+    color: var(--white);
+    background-color: var(--text-color);
   }
 
   &.sel {
     &:before {
       --indicator-size: 6px;
-      background-color: currentColor;
+      color: var(--white);
+      background-color: var(--text-color);
     }
   }
 }
@@ -191,13 +193,20 @@
   font-size: 0.9em;
   min-height: 26px;
 
+  &:focus-visible,
+  &:hover {
+    &:before {
+      background-color: var(--white);
+    }
+  }
+
   &:before {
     width: var(--indicator-size);
     height: var(--indicator-size);
     border-radius: 100%;
     left: calc((30px / 2) - (var(--indicator-size) / 2));
     top: 50%;
-    background-color: var(--gray-300);
+    background-color: currentColor;
   }
 }
 
