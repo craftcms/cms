@@ -26,7 +26,10 @@
     {% endif %}
     {% if secret is defined and secret is not empty %}
       <div class="mt-m">
-        {{ forms.copytext({
+        {{ forms.copyTextField({
+          label: 'Secret' | t('app'),
+          labelClass: 'visually-hidden',
+          name: 'secret-key',
           class: 'code',
           value: secret,
         }) }}

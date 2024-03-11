@@ -1363,6 +1363,7 @@ return [
     'Search plugins' => 'Search plugins',
     'Search' => 'Search',
     'Seconds' => 'Seconds',
+    'Secret' => 'Secret',
     'Section - {section}' => 'Section - {section}',
     'Section Type' => 'Section Type',
     'Section saved.' => 'Section saved.',
