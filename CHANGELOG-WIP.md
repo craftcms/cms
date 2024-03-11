@@ -125,6 +125,7 @@
 - Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
 - Entries now have `author` and `authorIds` GraphQL field.
 - Matrix fields’ GraphQL mutation types now expect nested entries to be defined by an `entries` field rather than `blocks`.
+- Added the `entryType()` and `fieldValueSql()` Twig functions. ([#14557](https://github.com/craftcms/cms/discussions/14557))
 - Added the `|firstWhere` and `|flatten` Twig filters.
 - Removed the `craft.matrixBlocks()` Twig function. `craft.entries()` should be used instead.
 - Controller actions which require a `POST` request will now respond with a 405 error code if another request method is used. ([#13397](https://github.com/craftcms/cms/discussions/13397))

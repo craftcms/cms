@@ -260,7 +260,7 @@ class Local extends Fs implements LocalFsInterface
 
         $targetStream = @fopen($fullPath, 'w+b');
 
-        if (!@stream_copy_to_stream($stream, $targetStream)) {
+        if (!$targetStream || !@stream_copy_to_stream($stream, $targetStream)) {
             throw new FsException("Unable to copy stream to `$fullPath`");
         }
 
