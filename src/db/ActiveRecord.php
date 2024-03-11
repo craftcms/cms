@@ -20,9 +20,9 @@ use DateTime;
  * @property DateTime|string|null $dateCreated Date created
  * @property DateTime|string|null $dateUpdated Date updated
  * @property string $uid UUID
- * @method ActiveQuery hasMany(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasMany()]] for more info.
- * @method ActiveQuery hasOne(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasOne()]] for more info.
- * @method ActiveQuery findBySql(string $sql, array $params) See [[\yii\db\ActiveRecord::findBySql()]] for more info.
+ * @method static ActiveQuery hasMany(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasMany()]] for more info.
+ * @method static ActiveQuery hasOne(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasOne()]] for more info.
+ * @method static ActiveQuery findBySql(string $sql, array $params) See [[\yii\db\ActiveRecord::findBySql()]] for more info.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
