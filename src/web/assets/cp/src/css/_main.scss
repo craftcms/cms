@@ -6543,7 +6543,7 @@ $min2ColWidth: 400px;
       top: -2px;
       text-align: center;
       font-size: 14px;
-      color: var(--ui-control-color);
+      color: currentColor;
     }
 
     span.icon:not([data-icon]) svg {
