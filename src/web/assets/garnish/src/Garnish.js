@@ -310,14 +310,17 @@ Garnish = $.extend(Garnish, {
   hideModalBackgroundLayers: function () {
     const topmostLayer = Garnish.uiLayerManager.currentLayer.$container.get(0);
 
-    Garnish.$bod.children().each(function () {
-      // If element is modal or already has jsAria class, do nothing
-      if (Garnish.hasJsAriaClass(this) || this === topmostLayer) return;
+    Garnish.$bod
+      .children()
+      .not('#notifications')
+      .each(function () {
+        // If element is modal or already has jsAria class, do nothing
+        if (Garnish.hasJsAriaClass(this) || this === topmostLayer) return;
 
-      if (!Garnish.isScriptOrStyleElement(this)) {
-        Garnish.ariaHide(this);
-      }
-    });
+        if (!Garnish.isScriptOrStyleElement(this)) {
+          Garnish.ariaHide(this);
+        }
+      });
   },
 
   /**
