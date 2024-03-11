@@ -138,6 +138,9 @@
     {% endif %}
     {{ hiddenInput("#{baseInputName}[type]", entryType.handle) }}
     {{ hiddenInput("#{baseInputName}[enabled]", entry.enabled ? '1' : '') }}
+    {% if isFresh ?? false %}
+      {{ hiddenInput("#{baseInputName}[fresh]", '1') }}
+    {% endif %}
   {% endif %}
 
   {% tag 'div' with {

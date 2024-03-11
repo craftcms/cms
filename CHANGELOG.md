@@ -4,10 +4,13 @@
 
 - `craft\elements\NestedElementManager::saveNestedElements()` now restores any soft-deleted elements that are returned by `getValue()`.
 - Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
+- Fixed a bug where programmatically-updated `<textarea>`s weren’t triggering autosaves. ([craftcms/ckeditor#172](https://github.com/craftcms/ckeditor/issues/172))
 - Fixed a bug where lazy-registered JavaScript modules weren’t getting loaded properly. ([#14526](https://github.com/craftcms/cms/pull/14526))
 - Fixed a bug where related elements displayed in element indexes weren’t getting styled properly. ([#14545](https://github.com/craftcms/cms/pull/14545))
 - Fixed a bug where keyboard shortcuts stopped working when slideouts were opened on wide screens.
 - Fixed an error that occurred if a nested, soft-deleted entry was restored.
+- Fixed a bug where breadcrumbs weren’t getting moved into an overflow menu. ([#14549](https://github.com/craftcms/cms/issues/14549))
+- Fixed a bug where translatable field values weren’t getting populated to other sites on freshly-created entries within Matrix fields, if the field was set to inline-editable blocks mode. ([#14540](https://github.com/craftcms/cms/issues/14540))
 
 ## 5.0.0-beta.6 - 2024-03-05
 
@@ -39,6 +42,12 @@
 - Deprecated `craft\helpers\App::isValidEdition()`. `craft\enums\CmsEdition::tryFrom()` should be used instead.
 - Craft now calls `setlocale()` based on the target language, so that `SORT_LOCALE_STRING` behaves as expected. ([#14509](https://github.com/craftcms/cms/issues/14509), [#14513](https://github.com/craftcms/cms/pull/14513))
 - Fixed a bug where element chips weren’t handling long labels properly. ([#14517](https://github.com/craftcms/cms/issues/14517), [#14502](https://github.com/craftcms/cms/pull/14502))
+
+## 4.8.1 - 2024-03-05
+
+- Fixed a bug where some characters were getting misinterpreted as elisions when normalizing search keywords.
+- Fixed a bug where `craft\helpers\UrlHelper::actionUrl()` was using the site URL rather than the requested URL. ([#14440](https://github.com/craftcms/cms/issues/14440))
+>>>>>>> 98b779a6408b230ad8f1711ab3246b7594e519a3
 - Fixed a bug where `craft\helpers\Html::parseTagAttribute()` wasn’t handling attribute values with newlines. ([#14498](https://github.com/craftcms/cms/issues/14498))
 - Fixed a bug where the “Filesystem Type” setting wasn’t toggling type-specific settings when editing a filesystem via a slideout. ([#14522](https://github.com/craftcms/cms/issues/14522))
 - Fixed a 403 error that could occur when editing an inline-editable Matrix block. ([#14512](https://github.com/craftcms/cms/issues/14512))
