@@ -293,6 +293,12 @@ class BaseContentRefactorMigration extends Migration
 
             // if we're still here, go with the first type listed instead
             $dbType = reset($dbType);
+
+            // special case for a datetime that was stored in a single column
+            // we need to do it here, cause if it was stored in 2 cols, the $dbType wouldn't have been an array
+            if ($dbType === Schema::TYPE_DATETIME && is_string($value)) {
+                return ['date' => $value];
+            }
         }
 
         switch ($dbType) {
