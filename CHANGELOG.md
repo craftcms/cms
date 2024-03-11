@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the `entryType()` and `fieldValueSql()` Twig functions. ([#14557](https://github.com/craftcms/cms/discussions/14557))
 - `craft\elements\NestedElementManager::saveNestedElements()` now restores any soft-deleted elements that are returned by `getValue()`.
 - Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
 - Fixed a bug where programmatically-updated `<textarea>`s weren’t triggering autosaves. ([craftcms/ckeditor#172](https://github.com/craftcms/ckeditor/issues/172))

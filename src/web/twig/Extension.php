@@ -11,6 +11,7 @@ use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Countable;
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\MissingComponentInterface;
 use craft\base\PluginInterface;
 use craft\elements\Address;
@@ -31,6 +32,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
+use craft\models\EntryType;
 use craft\web\twig\nodevisitors\EventTagAdder;
 use craft\web\twig\nodevisitors\EventTagFinder;
 use craft\web\twig\nodevisitors\GetAttrAdjuster;
@@ -1352,7 +1354,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('dataUrl', [$this, 'dataUrlFunction']),
             new TwigFunction('date', [$this, 'dateFunction'], ['needs_environment' => true]),
             new TwigFunction('dump', [$this, 'dumpFunction'], ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
+            new TwigFunction('entryType', [$this, 'entryTypeFunction']),
             new TwigFunction('expression', [$this, 'expressionFunction']),
+            new TwigFunction('fieldValueSql', [$this, 'fieldValueSqlFunction']),
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', [App::class, 'env']),
             new TwigFunction('gql', [$this, 'gqlFunction']),
@@ -1484,6 +1488,20 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * @param string $handle
+     * @return EntryType
+     * @since 5.0.0
+     */
+    public function entryTypeFunction(string $handle): EntryType
+    {
+        $entryType = Craft::$app->getEntries()->getEntryTypeByHandle($handle);
+        if ($entryType === null) {
+            throw new InvalidArgumentException("Invalid entry type handle: $handle");
+        }
+        return $entryType;
+    }
+
+    /**
      * @param mixed $expression
      * @param array $params
      * @param array $config
@@ -1493,6 +1511,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function expressionFunction(mixed $expression, array $params = [], array $config = []): Expression
     {
         return new Expression($expression, $params, $config);
+    }
+
+    /**
+     * @param FieldLayoutProviderInterface $provider
+     * @param string $fieldHandle
+     * @param string|null $key
+     * @return string|null
+     * @since 5.0.0
+     */
+    public function fieldValueSqlFunction(FieldLayoutProviderInterface $provider, string $fieldHandle, ?string $key = null): ?string
+    {
+        return $provider->getFieldLayout()->getFieldByHandle($fieldHandle)->getValueSql($key);
     }
 
     /**
