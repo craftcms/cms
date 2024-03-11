@@ -1836,15 +1836,16 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * If no partial template exists for an element, its string representation will be output instead.
      *
+     * @param array $variables
      * @return Markup
      * @throws InvalidConfigException
      * @throws NotSupportedException
      * @see ElementHelper::renderElements()
      * @since 5.0.0
      */
-    public function render(): Markup
+    public function render(array $variables = []): Markup
     {
-        return ElementHelper::renderElements($this->all());
+        return ElementHelper::renderElements($this->all(), $variables);
     }
 
     /**

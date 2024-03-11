@@ -3,7 +3,11 @@
 ## Unreleased
 
 - Added the `entryType()` and `fieldValueSql()` Twig functions. ([#14557](https://github.com/craftcms/cms/discussions/14557))
+- `craft\base\Element::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
+- `craft\elements\db\ElementQuery::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
+- `craft\elements\ElementCollection::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
 - `craft\elements\NestedElementManager::saveNestedElements()` now restores any soft-deleted elements that are returned by `getValue()`.
+- `craft\helpers\ElementHelper::renderElements()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
 - Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
 - Fixed a bug where programmatically-updated `<textarea>`s weren’t triggering autosaves. ([craftcms/ckeditor#172](https://github.com/craftcms/ckeditor/issues/172))
 - Fixed a JavaScript error that could occur when navigating between asset folders, when a JavaScript-based uploader was registered. ([#14542](https://github.com/craftcms/cms/pull/14542))
