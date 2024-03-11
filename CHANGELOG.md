@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added the `entryType()` and `fieldValueSql()` Twig functions. ([#14557](https://github.com/craftcms/cms/discussions/14557))
+- Entry queries are now ordered by `postDate DESC, id DESC` by default, rather than just `postDate DESC`, to ensure their order is consistent when two entries have the same post date.
 - `craft\base\Element::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
 - `craft\elements\db\ElementQuery::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
 - `craft\elements\ElementCollection::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
