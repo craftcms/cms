@@ -20,6 +20,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
@@ -30,6 +31,7 @@ use DateInterval;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
+use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -393,6 +395,76 @@ class AppController extends Controller
     }
 
     /**
+     * Displays a licensing issues takeover page.
+     *
+     * @param array $issues
+     * @param string $hash
+     * @return Response
+     * @internal
+     */
+    public function actionLicensingIssues(array $issues, string $hash): Response
+    {
+        $this->requireCpRequest();
+
+        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
+            'items' => array_map(fn($issue) => $issue[2], $issues),
+        ]);
+
+        $cookie = $this->request->getCookies()->get(App::licenseShunCookieName());
+        $data = $cookie ? Json::decode($cookie->value) : null;
+        if (($data['hash'] ?? null) !== $hash) {
+            $data = null;
+        }
+
+        $duration = match ($data['count'] ?? 0) {
+            0 => 21,
+            1 => 34,
+            2 => 55,
+            3 => 89,
+            4 => 144,
+            5 => 233,
+            6 => 377,
+            7 => 610,
+            8 => 987,
+            default => 1597,
+        };
+
+        return $this->renderTemplate('_special/licensing-issues.twig', [
+            'issues' => $issues,
+            'hash' => $hash,
+            'cartUrl' => $cartUrl,
+            'duration' => $duration,
+        ])->setStatusCode(402);
+    }
+
+    /**
+     * Sets the license shun cookie.
+     *
+     * @return Response
+     * @internal
+     */
+    public function actionSetLicenseShunCookie(): Response
+    {
+        $cookieName = App::licenseShunCookieName();
+        $oldCookie = $this->request->getCookies()->get($cookieName);
+        $data = $oldCookie ? Json::decode($oldCookie->value) : [];
+
+        $newCookie = new Cookie(Craft::cookieConfig([
+            'name' => $cookieName,
+            'value' => Json::encode([
+                'hash' => $this->request->getRequiredBodyParam('hash'),
+                'timestamp' => DateTimeHelper::toIso8601(DateTimeHelper::now()),
+                'count' => ($data['count'] ?? 0) + 1,
+            ]),
+            'expire' => DateTimeHelper::now()->modify('+1 year')->getTimestamp(),
+        ], $this->request));
+
+        $this->response->getCookies()->add($newCookie);
+        return $this->asSuccess();
+    }
+
+    /**
      * Tries a Craft edition on for size.
      *
      * @return Response
@@ -524,6 +596,10 @@ class AppController extends Controller
                 'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
             ]);
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
+
+            if ($allowUpdates && Craft::$app->getCanTestEditions()) {
+                $arr['altCtaText'] = Craft::t('app', 'Update anyway');
+            }
         } else {
             // Make sure that the platform & composer.json PHP version are compatible
             $phpConstraintError = null;

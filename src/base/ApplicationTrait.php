@@ -707,9 +707,11 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether Craft is running on a domain that is eligible to test out the editions.
+     * Returns whether Craft is running on a domain that is eligible to test
+     * unlicensed Craft and plugin editions/updates.
      *
      * @return bool
+     * @internal
      */
     public function getCanTestEditions(): bool
     {
@@ -723,7 +725,12 @@ trait ApplicationTrait
 
         /** @var Cache $cache */
         $cache = $this->getCache();
-        return $cache->get(sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName()));
+        $cacheKey = sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName());
+        if (!$cache->exists($cacheKey)) {
+            // err on the side of allowing it
+            return true;
+        }
+        return (bool)$cache->get($cacheKey);
     }
 
     /**

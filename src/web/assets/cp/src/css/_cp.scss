@@ -1285,6 +1285,7 @@ li.breadcrumb-toggle-wrapper {
 
 // Tighten up the padding at < 768
 @media only screen and (max-width: 767px) {
+  body.licensing-issues,
   #crumbs,
   #header,
   #main-content {

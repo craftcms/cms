@@ -1636,6 +1636,10 @@ class Gql extends Component
      */
     private function _getUserSchemaComponents(): array
     {
+        if (Craft::$app->edition !== Craft::Pro) {
+            return [];
+        }
+
         $queryComponents = [];
         $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 

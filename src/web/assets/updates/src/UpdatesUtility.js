@@ -231,11 +231,24 @@ import './updates.scss';
           class: 'btn submit',
           text: this.updateInfo.ctaText,
           href: this.updateInfo.ctaUrl,
+          target: '_blank',
         }).appendTo($buttonContainer);
       } else {
         this.updatesPage
           .createUpdateForm(this.updateInfo.ctaText, [this])
           .appendTo($buttonContainer);
+      }
+      if (typeof this.updateInfo.altCtaUrl !== 'undefined') {
+        $('<a/>', {
+          class: 'btn hairline',
+          text: this.updateInfo.altCtaText,
+          href: this.updateInfo.altCtaUrl,
+        }).appendTo($buttonContainer);
+      } else if (typeof this.updateInfo.altCtaText !== 'undefined') {
+        const $form = this.updatesPage
+          .createUpdateForm(this.updateInfo.altCtaText, [this])
+          .appendTo($buttonContainer);
+        $form.find('button').removeClass('submit').addClass('hairline');
       }
     },
 

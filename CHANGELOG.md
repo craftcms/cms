@@ -2,9 +2,54 @@
 
 ## Unreleased
 
+- Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
+- Fixed a bug where programmatically-updated `<textarea>`s weren’t triggering autosaves. ([craftcms/ckeditor#172](https://github.com/craftcms/ckeditor/issues/172))
+
+## 4.8.1 - 2024-03-05
+
+- Fixed a bug where some characters were getting misinterpreted as elisions when normalizing search keywords.
+- Fixed a bug where `craft\helpers\UrlHelper::actionUrl()` was using the site URL rather than the requested URL. ([#14440](https://github.com/craftcms/cms/issues/14440))
+- Fixed a bug where `craft\helpers\Html::parseTagAttribute()` wasn’t handling attribute values with newlines. ([#14498](https://github.com/craftcms/cms/issues/14498))
+- Fixed a bug where the “Filesystem Type” setting wasn’t toggling type-specific settings when editing a filesystem via a slideout. ([#14522](https://github.com/craftcms/cms/issues/14522))
+- Fixed a potential SSTI vulnerability.
+
+## 4.8.0 - 2024-02-26
+
+> [!NOTE]  
+> Trialing Craft and plugin updates with expired licenses is allowed now, on non-public domains.
+
+> [!WARNING]  
+> When licensing issues occur on public domains, the control panel will now become temporarily inaccessible for logged-in users, alerting them to the problems and giving them an opportunity to resolve them. (The front end will not be impacted.)
+
+### Content Management
+- Assets fields’ selection modals now open to the last-viewed location by default, if their Default Upload Location doesn’t specify a subpath. ([#14382](https://github.com/craftcms/cms/pull/14382))
+- Element sources no longer display `0` badges.
+
+### Administration
+- Color fields now have a “Presets” settings. ([#14463](https://github.com/craftcms/cms/discussions/14463))
+- It’s now possible to update expired licenses from the Updates utility, on non-public domains. 
+- The `queue/run` command now supports a `--job-id` option.
+- `update all` and `update <handle>` commands now support a `--with-expired` option. 
+
+### Development
+- The GraphQL API is now available for Craft Solo installs.
+- The `{% js %}` and `{% css %}` tags now support `.js.gz` and `.css.gz` URLs. ([#14243](https://github.com/craftcms/cms/issues/14243))
+- Relation fields’ element query params now factor in the element query’s target site(s). ([#14258](https://github.com/craftcms/cms/issues/14258), [#14348](https://github.com/craftcms/cms/issues/14348), [#14304](https://github.com/craftcms/cms/pull/14304))
+- Element queries’ `level` param now supports passing an array which includes `null`. ([#14419](https://github.com/craftcms/cms/issues/14419))
+
+### Extensibility
+- Added `craft\services\ProjectConfig::EVENT_AFTER_WRITE_YAML_FILES`. ([#14365](https://github.com/craftcms/cms/discussions/14365))
+- Added `craft\services\Relations::deleteLeftoverRelations()`. ([#13956](https://github.com/craftcms/cms/issues/13956))
+- Added `craft\services\Search::shouldCallSearchElements()`. ([#14293](https://github.com/craftcms/cms/issues/14293))
+
+### System
+- Relations for fields that are no longer included in an element’s field layout are now deleted after element save. ([#13956](https://github.com/craftcms/cms/issues/13956))
+- The Sendmail email transport type now uses the `sendmail_path` PHP ini setting by default. ([#14433](https://github.com/craftcms/cms/pull/14433))
 - Composer installation commands suggested by the Plugin Store now include a minimum version constraint.
 - Fixed a bug where it wasn’t possible to eager-load Matrix block revisions, or load them via GraphQL. ([#14448](https://github.com/craftcms/cms/issues/14448))
 - Fixed a PHP warning that could occur when publishing asset bundles on Dev Mode. ([#14455](https://github.com/craftcms/cms/pull/14455))
+- Fixed a bug where the Updates utility and Updates widget weren’t handling update check failures.
+- Updated Twig to 3.8.
 
 ## 4.7.4 - 2024-02-22
 
