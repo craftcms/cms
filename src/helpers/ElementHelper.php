@@ -904,8 +904,9 @@ class ElementHelper
                 throw new InvalidConfigException(sprintf('Element “%s” doesn’t have a field layout provider that defines a handle, so it can’t be rendered with a partial template.', $element));
             }
             $template = sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle);
+            $variables[$refHandle] = $element;
             try {
-                $output[] = $view->renderTemplate($template, array_merge($variables, [$refHandle => $element]), View::TEMPLATE_MODE_SITE);
+                $output[] = $view->renderTemplate($template, $variables, View::TEMPLATE_MODE_SITE);
             } catch (TwigLoaderError) {
                 // fallback to the string representation of the element
                 $output[] = Html::tag('p', Html::encode((string)$element));
