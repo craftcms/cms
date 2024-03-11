@@ -7,8 +7,10 @@
   position: sticky;
   top: 0;
   z-index: $sidebarZIndex;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: var(--global-sidebar-width);
+  grid-template-rows: var(--header-height) 1fr auto;
+  grid-auto-flow: row;
   height: 100vh;
   padding: 0;
   -webkit-overflow-scrolling: touch;
@@ -35,6 +37,9 @@
 
 .global-sidebar__nav {
   padding: var(--s) 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .global-sidebar__footer {
