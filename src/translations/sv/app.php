@@ -1487,7 +1487,7 @@ return [
     'Status:' => 'Status:',
     'Statuses updated.' => 'Statusar uppdaterade.',
     'Stay signed in for {duration}' => 'Stay signed in for {duration}',
-    'Step {number}:' => 'Step {number}:',
+    'Step {number}:' => 'Steg {number}:',
     'Stretch to fit' => 'Streck ut så att den passar',
     'Stretch' => 'Dra ut',
     'Structure' => 'Struktur',
