@@ -2513,9 +2513,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
+        // if the query has related to param, we need to expand to all custom fields,
+        // not just ones that match the layout the query is using
+        $customFields = [];
+        foreach (Craft::$app->getFields()->getAllLayouts() as $fieldLayout) {
+            array_push($customFields, ...$fieldLayout->getCustomFields());
+        }
         $parser = new ElementRelationParamParser([
-            'fields' => $this->customFields ? ArrayHelper::index($this->customFields, 'handle') : [],
+            'fields' => $customFields ? ArrayHelper::index($customFields, 'handle') : [],
         ]);
+
         $condition = $parser->parse($this->relatedTo, $this->siteId !== '*' ? $this->siteId : null);
 
         if ($condition === false) {
