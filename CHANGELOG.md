@@ -4,6 +4,7 @@
 
 - Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
 - Fixed a bug where programmatically-updated `<textarea>`s weren’t triggering autosaves. ([craftcms/ckeditor#172](https://github.com/craftcms/ckeditor/issues/172))
+- Fixed a JavaScript error that could occur when navigating between asset folders, when a JavaScript-based uploader was registered. ([#14542](https://github.com/craftcms/cms/pull/14542))
 
 ## 4.8.1 - 2024-03-05
 
