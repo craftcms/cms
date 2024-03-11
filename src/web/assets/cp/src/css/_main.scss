@@ -6568,20 +6568,16 @@ $min2ColWidth: 400px;
   }
 }
 
-.menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
+/* prettier-ignore */
+.menu:not(.menu--disclosure) ul li a:not(.disabled):hover,
 .menu:not(.menu--disclosure) ul li .menu-item:not(.sel):not(.disabled):hover,
 .menu:not(.menu--disclosure) ul li .menu-option:not(.sel):not(.disabled):hover,
-.menu:not(.menu--disclosure):not(:hover) ul li a:not(.sel):not(.disabled).hover,
-.menu:not(.menu--disclosure):not(:hover)
-  ul
-  li
-  .menu-item:not(.sel):not(.disabled).hover,
-.menu:not(.menu--disclosure):not(:hover)
-  ul
-  li
-  .menu-option:not(.sel):not(.disabled).hover {
+.menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover,
+.menu:not(.menu--disclosure):not(:hover) ul li .menu-item:not(.sel):not(.disabled).hover,
+.menu:not(.menu--disclosure):not(:hover) ul li .menu-option:not(.sel):not(.disabled).hover {
   @include menu-item-active-styles;
 }
+
 .menu {
   hr.padded,
   .h6.padded,
