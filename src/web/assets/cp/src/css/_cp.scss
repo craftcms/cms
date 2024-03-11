@@ -98,6 +98,12 @@ body {
   }
 }
 
+#global-header {
+  display: grid;
+  grid-template-columns: 1fr min-content min-content;
+  align-items: center;
+}
+
 /* global sidebar */
 $sidebarLinkStaticColor: var(--gray-100);
 $sidebarLinkSecondaryColor: var(--gray-200);
@@ -786,9 +792,14 @@ li.breadcrumb-toggle-wrapper {
       color: var(--color);
     }
 
+    .notification-main {
+      overflow: hidden;
+    }
+
     .notification-body {
-      display: flex;
-      flex: 1;
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: var(--s);
 
       .notification-message {
         font-weight: bold;

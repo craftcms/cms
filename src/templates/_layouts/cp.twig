@@ -140,7 +140,6 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
             {% include '_layouts/components/alerts' %}
 
             <div id="global-header" role="region" aria-label="{{ 'My Account'|t('app') }}">
-
                 <div class="flex flex-nowrap gap-xs">
                     {% include '_layouts/components/crumbs' %}
                     {% if contextMenu %}
@@ -149,55 +148,54 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                         </div>
                     {% endif %}
                     {{ actionMenu|raw }}
-                    <div class="flex-grow"></div>
-                    <button
-                        type="button"
-                        id="announcements-btn"
-                        class="btn hidden"
-                        title="{{ 'What’s New'|t('app') }}"
-                    >
-                        <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
-                        {{ iconSvg('gift') }}
-                    </button>
+                </div>
+                <button
+                    type="button"
+                    id="announcements-btn"
+                    class="btn hidden"
+                    title="{{ 'What’s New'|t('app') }}"
+                >
+                    <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
+                    {{ iconSvg('gift') }}
+                </button>
 
-                    {# New account dropdown #}
-                    <div class="account-toggle-wrapper">
-                        <button
-                            id="user-info"
-                            aria-controls="account-menu"
-                            class="btn menu-toggle"
-                            aria-label="{{ 'My Account'|t('app') }}"
-                            title="{{ 'My Account'|t('app') }}"
-                            data-disclosure-trigger
-                        >
-                            {{ userPhoto|raw }}
-                        </button>
-                        <div
-                            id="account-menu"
-                            class="menu menu--disclosure"
-                            data-align="right"
-                            data-align-to=".header-photo"
-                        >
-                            <ul>
-                                <li>
-                                    <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
-                                        {% if currentUser.photoId %}
-                                            {{ userPhoto|raw }}
+                {# New account dropdown #}
+                <div class="account-toggle-wrapper">
+                    <button
+                        id="user-info"
+                        aria-controls="account-menu"
+                        class="btn menu-toggle"
+                        aria-label="{{ 'My Account'|t('app') }}"
+                        title="{{ 'My Account'|t('app') }}"
+                        data-disclosure-trigger
+                    >
+                        {{ userPhoto|raw }}
+                    </button>
+                    <div
+                        id="account-menu"
+                        class="menu menu--disclosure"
+                        data-align="right"
+                        data-align-to=".header-photo"
+                    >
+                        <ul>
+                            <li>
+                                <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
+                                    {% if currentUser.photoId %}
+                                        {{ userPhoto|raw }}
+                                    {% endif %}
+                                    <div class="flex-grow">
+                                        <div>{{ currentUser.username }}</div>
+                                        {% if not craft.app.config.general.useEmailAsUsername %}
+                                            <div class="smalltext">{{ currentUser.email }}</div>
                                         {% endif %}
-                                        <div class="flex-grow">
-                                            <div>{{ currentUser.username }}</div>
-                                            {% if not craft.app.config.general.useEmailAsUsername %}
-                                                <div class="smalltext">{{ currentUser.email }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </a>
-                                </li>
-                            </ul>
-                            <hr>
-                            <ul>
-                                <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
-                            </ul>
-                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                        <hr>
+                        <ul>
+                            <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>

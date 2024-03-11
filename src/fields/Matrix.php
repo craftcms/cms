@@ -1467,6 +1467,11 @@ JS;
                 $entry->enabled = (bool)$entryData['enabled'];
             }
 
+            if (isset($entryData['fresh'])) {
+                $entry->setIsFresh();
+                $entry->propagateAll = true;
+            }
+
             if (isset($entryData['title']) && $entry->getType()->hasTitleField) {
                 $entry->title = $entryData['title'];
             }

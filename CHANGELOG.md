@@ -4,10 +4,15 @@
 
 - `craft\elements\NestedElementManager::saveNestedElements()` now restores any soft-deleted elements that are returned by `getValue()`.
 - Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
+- Fixed a bug where programmatically-updated `<textarea>`s weren’t triggering autosaves. ([craftcms/ckeditor#172](https://github.com/craftcms/ckeditor/issues/172))
+- Fixed a JavaScript error that could occur when navigating between asset folders, when a JavaScript-based uploader was registered. ([#14542](https://github.com/craftcms/cms/pull/14542))
 - Fixed a bug where lazy-registered JavaScript modules weren’t getting loaded properly. ([#14526](https://github.com/craftcms/cms/pull/14526))
 - Fixed a bug where related elements displayed in element indexes weren’t getting styled properly. ([#14545](https://github.com/craftcms/cms/pull/14545))
 - Fixed a bug where keyboard shortcuts stopped working when slideouts were opened on wide screens.
 - Fixed an error that occurred if a nested, soft-deleted entry was restored.
+- Fixed a bug where breadcrumbs weren’t getting moved into an overflow menu. ([#14549](https://github.com/craftcms/cms/issues/14549))
+- Fixed a bug where long chip labels weren’t getting styled properly. ([#14563](https://github.com/craftcms/cms/pull/14563))
+- Fixed a bug where translatable field values weren’t getting populated to other sites on freshly-created entries within Matrix fields, if the field was set to inline-editable blocks mode. ([#14540](https://github.com/craftcms/cms/issues/14540))
 
 ## 5.0.0-beta.6 - 2024-03-05
 
