@@ -86,8 +86,11 @@ Craft.FormObserver = Garnish.Base.extend({
   _formChanged(record) {
     switch (record.type) {
       case 'childList':
-        // maybe a `[name]` node was added/removed
         return (
+          // was this for the text node of a <textarea>?
+          (record.target.nodeName === 'TEXTAREA' &&
+            record.target.hasAttribute('name')) ||
+          // maybe a `[name]` node was added/removed
           this._hasNamedNodes(record.addedNodes) ||
           this._hasNamedNodes(record.removedNodes)
         );

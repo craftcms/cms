@@ -455,7 +455,7 @@ interface FieldInterface extends SavableComponentInterface, Chippable
      * @return string|null
      * @since 5.0.0
      */
-    public function getValueSql(string $key = null): ?string;
+    public function getValueSql(?string $key = null): ?string;
 
     /**
      * Modifies an element index query.

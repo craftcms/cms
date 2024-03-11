@@ -3010,7 +3010,7 @@ table {
 
   &.small {
     flex-direction: row;
-    height: calc(26rem / 16 + 8px);
+    min-height: calc(26rem / 16 + 8px);
     --thumb-size: calc(30rem / 16);
 
     & > .thumb {
