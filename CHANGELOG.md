@@ -12,6 +12,7 @@
 - Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
 - Fixed a bug where programmatically-updated `<textarea>`s weren’t triggering autosaves. ([craftcms/ckeditor#172](https://github.com/craftcms/ckeditor/issues/172))
 - Fixed a JavaScript error that could occur when navigating between asset folders, when a JavaScript-based uploader was registered. ([#14542](https://github.com/craftcms/cms/pull/14542))
+- Fixed a bug where action URLs were getting duplicate URI segments if Craft was installed in a subpath within the webroot. ([#14559](https://github.com/craftcms/cms/issues/14559))
 - Fixed a bug where lazy-registered JavaScript modules weren’t getting loaded properly. ([#14526](https://github.com/craftcms/cms/pull/14526))
 - Fixed a bug where related elements displayed in element indexes weren’t getting styled properly. ([#14545](https://github.com/craftcms/cms/pull/14545))
 - Fixed a bug where keyboard shortcuts stopped working when slideouts were opened on wide screens.
