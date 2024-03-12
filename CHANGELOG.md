@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-beta.7 - 2024-03-12
 
 - Matrix fields now have a “‘New’ Button Label” setting. ([#14573](https://github.com/craftcms/cms/issues/14573))
 - Relational fields’ “Selection Label” setting has been relabelled as “‘Add’ Button Label”.
