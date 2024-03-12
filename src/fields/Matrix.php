@@ -236,6 +236,12 @@ class Matrix extends Field implements
     public ?int $pageSize = null;
 
     /**
+     * @var string|null The “Create entry” button label.
+     * @since 5.0.0
+     */
+    public ?string $createButtonLabel = null;
+
+    /**
      * @var PropagationMethod Propagation method
      *
      * This will be set to one of the following:
@@ -296,6 +302,10 @@ class Matrix extends Field implements
         }
         if (array_key_exists('maxBlocks', $config)) {
             $config['maxEntries'] = ArrayHelper::remove($config, 'maxBlocks');
+        }
+
+        if (isset($config['createButtonLabel']) && trim($config['createButtonLabel']) === '') {
+            unset($config['createButtonLabel']);
         }
 
         parent::__construct($config);
@@ -642,6 +652,7 @@ class Matrix extends Field implements
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/settings.twig', [
             'field' => $this,
             'defaultTableColumnOptions' => static::defaultTableColumnOptions($this->getEntryTypes()),
+            'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
         ]);
     }
 
@@ -874,7 +885,7 @@ class Matrix extends Field implements
             'entries' => $value,
             'static' => false,
             'staticEntries' => $staticEntries,
-            'createButtonLabel' => $this->createButtonLabel() ?? Craft::t('app', 'New block'),
+            'createButtonLabel' => $this->createButtonLabel(),
             'labelId' => $this->getLabelId(),
         ]);
     }
@@ -932,17 +943,19 @@ class Matrix extends Field implements
         return $this->entryManager()->getIndexHtml($owner, $config);
     }
 
-    private function createButtonLabel(): ?string
+    private function createButtonLabel(): string
     {
-        $entryTypes = $this->getEntryTypes();
-        if (count($entryTypes) === 1) {
-            $entryType = reset($entryTypes);
-            return Craft::t('app', 'New {type}', [
-                'type' => mb_strtolower(Craft::t('site', $entryType->name)),
-            ]);
+        if (isset($this->createButtonLabel)) {
+            return Craft::t('site', $this->createButtonLabel);
         }
+        return $this->defaultCreateButtonLabel();
+    }
 
-        return null;
+    private function defaultCreateButtonLabel(): string
+    {
+        return Craft::t('app', 'New {type}', [
+            'type' => Entry::lowerDisplayName(),
+        ]);
     }
 
     /**
