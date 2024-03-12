@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.8.2 - 2024-03-12
 
 - Entry queries are now ordered by `postDate DESC, id DESC` by default, rather than just `postDate DESC`, to ensure their order is consistent when two entries have the same post date.
 - Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
