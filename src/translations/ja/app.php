@@ -980,7 +980,6 @@ return [
     'New Issues' => '新しい問題',
     'New Password' => '新しいパスワード',
     'New Tab' => '新規タブ',
-    'New block' => 'New block',
     'New category group' => '新しいカテゴリグループ',
     'New category in the {group} category group' => '{group}カテゴリグループの新しいカテゴリ',
     'New category' => '新しいカテゴリ',
