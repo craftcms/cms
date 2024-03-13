@@ -31,7 +31,15 @@
 
         <span class="sidebar-action__label">
             <span class="label">{{ item.label }}</span>
-            {% if external %}<span class="cp-icon puny" role="img" aria-label="{{ 'External link' | t('app') }}">{{ iconSvg('external') }}</span>{% endif %}
+            {% if external %}
+              <span class="cp-icon puny">
+                {{ iconSvg('external') | attr({
+                  'role': 'img',
+                  'aria-hidden': 'false',
+                  'aria-label': 'External link' | t('app')
+                }) }}
+              </span>
+            {% endif %}
         </span>
 
         {%- if badgeCount -%}
