@@ -490,7 +490,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var array The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
      */
-    protected array $defaultOrderBy = ['elements.dateCreated' => SORT_DESC];
+    protected array $defaultOrderBy = [
+        'elements.dateCreated' => SORT_DESC,
+        'elements.id' => SORT_DESC,
+    ];
 
     // For internal use
     // -------------------------------------------------------------------------

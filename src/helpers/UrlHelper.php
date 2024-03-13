@@ -621,7 +621,7 @@ class UrlHelper
         }
 
         if ($useRequestHostInfo) {
-            $baseUrl = Craft::getAlias('@web');
+            $baseUrl = static::hostInfo(Craft::getAlias('@web'));
         } elseif ($showScriptName) {
             $baseUrl = $request->getIsConsoleRequest() ? '/' : static::host();
         } elseif ($cpUrl) {

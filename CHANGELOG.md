@@ -1,8 +1,11 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-beta.7 - 2024-03-12
 
+- Matrix fields now have a “‘New’ Button Label” setting. ([#14573](https://github.com/craftcms/cms/issues/14573))
+- Relational fields’ “Selection Label” setting has been relabelled as “‘Add’ Button Label”.
 - Added the `entryType()` and `fieldValueSql()` Twig functions. ([#14557](https://github.com/craftcms/cms/discussions/14557))
+- Entry queries are now ordered by `postDate DESC, id DESC` by default, rather than just `postDate DESC`, to ensure their order is consistent when two entries have the same post date.
 - `craft\base\Element::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
 - `craft\elements\db\ElementQuery::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
 - `craft\elements\ElementCollection::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
@@ -11,6 +14,7 @@
 - Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
 - Fixed a bug where programmatically-updated `<textarea>`s weren’t triggering autosaves. ([craftcms/ckeditor#172](https://github.com/craftcms/ckeditor/issues/172))
 - Fixed a JavaScript error that could occur when navigating between asset folders, when a JavaScript-based uploader was registered. ([#14542](https://github.com/craftcms/cms/pull/14542))
+- Fixed a bug where action URLs were getting duplicate URI segments if Craft was installed in a subpath within the webroot. ([#14559](https://github.com/craftcms/cms/issues/14559))
 - Fixed a bug where lazy-registered JavaScript modules weren’t getting loaded properly. ([#14526](https://github.com/craftcms/cms/pull/14526))
 - Fixed a bug where related elements displayed in element indexes weren’t getting styled properly. ([#14545](https://github.com/craftcms/cms/pull/14545))
 - Fixed a bug where keyboard shortcuts stopped working when slideouts were opened on wide screens.
