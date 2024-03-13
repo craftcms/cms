@@ -26,6 +26,22 @@ class CraftTooltip extends HTMLElement {
       ? parseInt(this.getAttribute('offset'), 10)
       : 8;
 
+    this.placement = this.getAttribute('placement') || 'bottom';
+    this.staticSide = {
+      top: 'bottom',
+      right: 'left',
+      bottom: 'top',
+      left: 'right',
+    }[this.placement.split('-')[0]];
+
+    // Make sure the bubble moves in a natural direction
+    this.initialTransform = {
+      top: `translateY(-${this.offset}px)`,
+      right: `translateX(${this.offset}px)`,
+      bottom: `translateY(${this.offset}px)`,
+      left: `translateX(-${this.offset}px)`,
+    }[this.staticSide];
+
     if (this.arrow && !this.arrowElement) {
       this.renderInner();
       this.renderArrow();
@@ -88,7 +104,9 @@ class CraftTooltip extends HTMLElement {
     this.update();
     Object.assign(this.style, {
       opacity: 1,
-      transform: `translateY(0)`,
+      transform: ['left', 'right'].includes(this.staticSide)
+        ? `translateX(0)`
+        : `translateY(0)`,
       // Make sure if a user hovers over the label itself, it stays open
       pointerEvents: 'auto',
     });
@@ -97,7 +115,7 @@ class CraftTooltip extends HTMLElement {
   hide() {
     Object.assign(this.style, {
       opacity: 0,
-      transform: `translateY(5px)`,
+      transform: this.initialTransform,
       pointerEvents: 'none',
     });
   }
@@ -105,7 +123,7 @@ class CraftTooltip extends HTMLElement {
   update() {
     computePosition(this.parentElement, this, {
       strategy: 'fixed',
-      placement: this.getAttribute('placement') || 'bottom',
+      placement: this.placement,
       middleware: [
         flip(),
         shift({padding: 10}),
@@ -123,16 +141,9 @@ class CraftTooltip extends HTMLElement {
       }
 
       const {x: arrowX, y: arrowY} = middlewareData.arrow;
-      const staticSide = {
-        top: 'bottom',
-        right: 'left',
-        bottom: 'top',
-        left: 'right',
-      }[placement.split('-')[0]];
-
       // Add padding to the static side for accessible hovers
       Object.assign(this.style, {
-        [`padding${Craft.uppercaseFirst(staticSide)}`]: `${this.offset}px`,
+        [`padding${Craft.uppercaseFirst(this.staticSide)}`]: `${this.offset}px`,
       });
 
       this.arrowElement.dataset.placement = placement;
@@ -141,7 +152,7 @@ class CraftTooltip extends HTMLElement {
         top: arrowY != null ? `${arrowY}px` : '',
         right: '',
         bottom: '',
-        [staticSide]: '-4px',
+        [this.staticSide]: '-4px',
       });
     });
   }
