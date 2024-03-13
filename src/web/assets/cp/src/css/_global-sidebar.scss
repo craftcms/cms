@@ -281,6 +281,10 @@
   overflow: hidden;
   white-space: nowrap;
   margin-left: 7px; // magic number to align with system name
+
+  .cp-icon svg > path {
+    fill: currentColor;
+  }
 }
 
 .sidebar-action__badge {
