@@ -284,8 +284,8 @@
   white-space: nowrap;
   margin-left: 7px; // magic number to align with system name
 
-  .cp-icon svg > path {
-    fill: currentColor;
+  [data-icon='external'] {
+    display: inline-flex;
   }
 }
 

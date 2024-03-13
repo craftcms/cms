@@ -1,3 +1,5 @@
+{% import "_includes/links" as links %}
+
 {% macro action(item, isSelected, showIcon) %}
     {% set showIcon = showIcon ?? true %}
     {% set selected = item.sel ?? isSelected ?? false %}
@@ -32,13 +34,7 @@
         <span class="sidebar-action__label">
             <span class="label">{{ item.label }}</span>
             {% if external %}
-              <span class="cp-icon puny">
-                {{ iconSvg('external') | attr({
-                  'role': 'img',
-                  'aria-hidden': 'false',
-                  'aria-label': 'External link' | t('app')
-                }) }}
-              </span>
+              {{ links.externalLinkIcon() }}
             {% endif %}
         </span>
 
