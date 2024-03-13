@@ -980,7 +980,6 @@ return [
     'New Issues' => '新问题',
     'New Password' => '新密码',
     'New Tab' => '新建选项卡',
-    'New block' => 'New block',
     'New category group' => '新建分类群组',
     'New category in the {group} category group' => '“{group}”类别组中的新类别',
     'New category' => '新建分类',
