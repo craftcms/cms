@@ -496,7 +496,10 @@ class EntriesController extends BaseEntriesController
             throw new BadRequestHttpException('Cannot find the section to move the entries to.');
         }
 
-        $entries = Entry::find()->id($entryIds)->all();
+        $entries = Entry::find()
+            ->id($entryIds)
+            ->status(null)
+            ->all();
 
         if (!$entries) {
             throw new BadRequestHttpException('Cannot find the entries to move to the new section.');
