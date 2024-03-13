@@ -332,8 +332,9 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin light-focus-ring() {
-  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
-    0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
+  --focus-ring: 0 0 0 1px
+      hsl(#{hue($blue200)}, #{saturation($blue200)}, #{lightness($blue200)}),
+    0 0 0 3px hsla(var(--light-focus-hsl), 0.8);
 }
 
 @mixin custom-color-focus-ring($primary, $secondary: null) {

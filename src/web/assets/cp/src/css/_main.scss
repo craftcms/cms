@@ -1823,6 +1823,7 @@ ul.icons {
     ) {
     background-color: var(--gray-500);
     color: var(--white);
+    @include light-focus-ring;
   }
 }
 
@@ -8574,6 +8575,7 @@ body.sitepicker {
           &.sel {
             background-color: var(--gray-500);
             color: var(--white);
+            @include light-focus-ring;
           }
         }
       }
