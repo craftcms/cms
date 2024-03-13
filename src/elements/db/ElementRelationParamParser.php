@@ -349,8 +349,19 @@ class ElementRelationParamParser extends BaseObject
                 $fields = is_string($fields) ? StringHelper::split($fields) : [$fields];
             }
 
+            $customFields = null;
+            // if we are NOT searching based on the provided targetElements
+            if ($dir !== self::DIR_REVERSE) {
+                $customFields = [];
+                // fetch all matching relation fields by looping over all the possible field layouts
+                foreach (Craft::$app->getFields()->getAllLayouts() as $fieldLayout) {
+                    array_push($customFields, ...$fieldLayout->getCustomFields());
+                }
+                $customFields = ArrayHelper::index($customFields, 'handle');
+            }
+
             foreach ($fields as $field) {
-                if (($fieldModel = $this->_getField($field, $fieldHandleParts)) === null) {
+                if (($fieldModel = $this->_getField($field, $fieldHandleParts, $customFields)) === null) {
                     Craft::warning('Attempting to load relations for an invalid field: ' . $field);
 
                     return false;
@@ -506,7 +517,7 @@ class ElementRelationParamParser extends BaseObject
      * @param array|null $fieldHandleParts
      * @return FieldInterface|null
      */
-    private function _getField(mixed $field, ?array &$fieldHandleParts = null): ?FieldInterface
+    private function _getField(mixed $field, ?array &$fieldHandleParts = null, ?array $customFields = null): ?FieldInterface
     {
         if (is_numeric($field)) {
             $fieldHandleParts = null;
@@ -514,6 +525,11 @@ class ElementRelationParamParser extends BaseObject
         }
 
         $fieldHandleParts = explode('.', $field);
+
+        if (is_array($customFields)) {
+            return $customFields[$fieldHandleParts[0]] ?? null;
+        }
+
         return $this->fields[$fieldHandleParts[0]] ?? null;
     }
 }
