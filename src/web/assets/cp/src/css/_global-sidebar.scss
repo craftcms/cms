@@ -180,15 +180,16 @@
 
   &:focus-visible,
   &:hover {
+    @include light-on-dark-text;
     color: var(--white);
-    background-color: var(--text-color);
+    background-color: var(--medium-text-color);
   }
 
   &.sel {
     &:before {
       --indicator-size: 6px;
       color: var(--white);
-      background-color: var(--text-color);
+      background-color: var(--medium-text-color);
     }
   }
 }
