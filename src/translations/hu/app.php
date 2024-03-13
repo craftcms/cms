@@ -980,7 +980,6 @@ return [
     'New Issues' => 'Új problémák',
     'New Password' => 'Új jelszó',
     'New Tab' => 'Új lap',
-    'New block' => 'New block',
     'New category group' => 'Új kategória csoport',
     'New category in the {group} category group' => 'Új kategória a {group} kategóriacsoportból',
     'New category' => 'Új Kategória',
