@@ -419,7 +419,7 @@ class GeneralConfig extends BaseConfig
     public bool $backupOnUpdate = true;
 
     /**
-     * @var string|null|false The shell command that Craft should execute to create a database backup.
+     * @var string|null|false|array The shell command that Craft should execute to create a database backup.
      *
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
@@ -447,7 +447,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Environment
      */
-    public string|null|false $backupCommand = null;
+    public string|null|false|array $backupCommand = null;
 
     /**
      * @var string|null The base URL Craft should use when generating control panel URLs.
@@ -3531,12 +3531,12 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param string|null|false $value
+     * @param string|null|false|array $value
      * @return self
      * @see $backupCommand
      * @since 4.2.0
      */
-    public function backupCommand(string|null|false $value): self
+    public function backupCommand(string|null|false|array $value): self
     {
         $this->backupCommand = $value;
         return $this;

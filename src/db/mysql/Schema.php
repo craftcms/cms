@@ -52,6 +52,16 @@ class Schema extends \yii\db\mysql\Schema
     public ?string $tempMyCnfPath = null;
 
     /**
+     * @var array
+     */
+    public array $backupCommandOptions = [];
+
+    /**
+     * @var array
+     */
+    public array $restoreCommandOptions = [];
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -143,44 +153,8 @@ class Schema extends \yii\db\mysql\Schema
         return new ColumnSchemaBuilder($type, $length, $this->db);
     }
 
-    /**
-     * Returns the default backup command to execute.
-     *
-     * @param string[]|null $ignoreTables The table names whose data should be excluded from the backup
-     * @return string The command to execute
-     * @throws ErrorException
-     */
-    public function getDefaultBackupCommand(?array $ignoreTables = null): string
+    protected function getSupportsColumnStatistics(): bool
     {
-        $useSingleTransaction = true;
-        $serverVersion = App::normalizeVersion($this->getServerVersion());
-
-        $isMySQL5 = version_compare($serverVersion, '8', '<');
-        $isMySQL8 = version_compare($serverVersion, '8', '>=');
-
-        // https://bugs.mysql.com/bug.php?id=109685
-        if (($isMySQL5 && version_compare($serverVersion, '5.7.41', '>=')) ||
-            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>='))) {
-            $useSingleTransaction = false;
-        }
-
-        $defaultArgs =
-            ' --defaults-file="' . $this->_createDumpConfigFile() . '"' .
-            ' --add-drop-table' .
-            ' --comments' .
-            ' --create-options' .
-            ' --dump-date' .
-            ' --no-autocommit' .
-            ' --routines' .
-            ' --default-character-set=' . Craft::$app->getConfig()->getDb()->charset .
-            ' --set-charset' .
-            ' --triggers' .
-            ' --no-tablespaces';
-
-        if ($useSingleTransaction) {
-            $defaultArgs .= ' --single-transaction';
-        }
-
         // Find out if the db/dump client supports column-statistics
         $shellCommand = new ShellCommand();
 
@@ -198,33 +172,79 @@ class Schema extends \yii\db\mysql\Schema
         $success = $shellCommand->execute();
 
         // if there was output, then column-statistics is supported and we should disable it
-        if ($success && $shellCommand->getOutput()) {
-            $defaultArgs .= ' --column-statistics=0';
+        return $success && $shellCommand->getOutput();
+    }
+
+    /**
+     * Returns the default backup command to execute.
+     *
+     * @param string[]|null $ignoreTables The table names whose data should be excluded from the backup
+     * @return string The command to execute
+     * @throws ErrorException
+     */
+    public function getDefaultBackupCommand(?array $ignoreTables = null): string
+    {
+        $ignoreTables = $ignoreTables
+            ?? $this->backupCommandOptions['ignoreTables']
+            ?? $this->db->getIgnoredBackupTables();
+        $callback = $this->backupCommandOptions['callback'] ?? null;
+        $useSingleTransaction = true;
+        $serverVersion = App::normalizeVersion($this->getServerVersion());
+
+        $isMySQL5 = version_compare($serverVersion, '8', '<');
+        $isMySQL8 = version_compare($serverVersion, '8', '>=');
+
+        // https://bugs.mysql.com/bug.php?id=109685
+        if (($isMySQL5 && version_compare($serverVersion, '5.7.41', '>=')) ||
+            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>='))) {
+            $useSingleTransaction = false;
         }
 
-        if ($ignoreTables === null) {
-            $ignoreTables = $this->db->getIgnoredBackupTables();
+        $shellCommand = new ShellCommand('mysqldump');
+        $shellCommand->addArg('--defaults-file=', $this->_createDumpConfigFile());
+        $shellCommand->addArg('--add-drop-table');
+        $shellCommand->addArg('--comments');
+        $shellCommand->addArg('--create-options');
+        $shellCommand->addArg('--dump-date');
+        $shellCommand->addArg('--no-autocommit');
+        $shellCommand->addArg('--routines');
+        $shellCommand->addArg('--default-character-set=', Craft::$app->getConfig()->getDb()->charset);
+        $shellCommand->addArg('--set-charset');
+        $shellCommand->addArg('--triggers');
+        $shellCommand->addArg('--no-tablespaces');
+
+        if ($useSingleTransaction) {
+            $shellCommand->addArg('--single-transaction');
         }
-        $ignoreTableArgs = [];
+
+        // if there was output, then column-statistics is supported and we should disable it
+        if ($this->getSupportsColumnStatistics()) {
+            $shellCommand->addArg('--column-statistics=', '0');
+        }
+
+        if ($callback) {
+            $shellCommand = $callback($shellCommand);
+        }
+
+        $schemaDump = (clone $shellCommand)
+            ->addArg('--no-data')
+            ->addArg('--result-file=', '{file}')
+            ->addArg('{database}')
+            ->getExecCommand();
+
+        $dataDump = (clone $shellCommand)
+            ->addArg('--no-create-info');
+
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
-            $ignoreTableArgs[] = "--ignore-table={database}.$table";
+            $dataDump->addArg('--ignore-table=', "{database}.$table");
         }
 
-        $schemaDump = 'mysqldump' .
-            $defaultArgs .
-            ' --no-data' .
-            ' --result-file="{file}"' .
-            ' {database}';
+        $dataDump = $dataDump
+            ->addArg('{database}')
+            ->getExecCommand();
 
-        $dataDump = 'mysqldump' .
-            $defaultArgs .
-            ' --no-create-info' .
-            ' ' . implode(' ', $ignoreTableArgs) .
-            ' {database}' .
-            ' >> "{file}"';
-
-        return $schemaDump . ' && ' . $dataDump;
+        return "$schemaDump && $dataDump >> {file}";
     }
 
     /**
@@ -235,10 +255,17 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return 'mysql' .
-            ' --defaults-file="' . $this->_createDumpConfigFile() . '"' .
-            ' {database}' .
-            ' < "{file}"';
+        $shellCommand = new ShellCommand('mysql');
+        $callback = $this->restoreCommandOptions['callback'] ?? null;
+
+        $shellCommand->addArg('--defaults-file=', $this->_createDumpConfigFile());
+        $shellCommand->addArg('{database}');
+
+        if ($callback) {
+            $shellCommand = $callback($shellCommand);
+        }
+
+        return $shellCommand->getExecCommand() . ' < "{file}"';
     }
 
     /**

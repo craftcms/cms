@@ -271,7 +271,13 @@ class Connection extends \yii\db\Connection
         // Determine the command that should be executed
         $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
-        if ($backupCommand === null) {
+        if ($backupCommand === null || is_array($backupCommand)) {
+            /** @var PgsqlSchema|MysqlSchema $schema */
+            $schema = $this->getSchema();
+            $schema->backupCommandOptions = is_array($backupCommand) && $this->getDriverName()
+                ? $backupCommand[$this->getDriverName()]
+                : null;
+
             $backupCommand = $this->getSchema()->getDefaultBackupCommand($event->ignoreTables);
         }
 

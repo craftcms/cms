@@ -11,6 +11,7 @@ use Composer\Util\Platform;
 use Craft;
 use craft\db\Connection;
 use craft\db\TableSchema;
+use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
 /**
@@ -26,6 +27,16 @@ class Schema extends \yii\db\pgsql\Schema
      * @var int The maximum length that objects' names can be.
      */
     public int $maxObjectNameLength = 63;
+
+    /**
+     * @var array
+     */
+    public array $backupCommandOptions = [];
+
+    /**
+     * @var array
+     */
+    public array $restoreCommandOptions = [];
 
     /**
      * Creates a query builder for the database.
@@ -116,29 +127,40 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
-        if ($ignoreTables === null) {
-            $ignoreTables = $this->db->getIgnoredBackupTables();
-        }
-        $ignoredTableArgs = [];
+        $shellCommand = new ShellCommand('pg_dump');
+        $archiveFormat = $this->backupCommandOptions['archiveFormat'] ?? false;
+        $ignoreTables = $ignoreTables
+            ?? $this->backupCommandOptions['ignoreTables']
+            ?? $this->db->getIgnoredBackupTables();
+        $callback = $this->backupCommandOptions['callback'] ?? null;
+
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
-            $ignoredTableArgs[] = "--exclude-table-data '{schema}.$table'";
+            $shellCommand->addArg('--exclude-table-data', "{schema}.$table");
         }
 
-        return $this->_pgpasswordCommand() .
-            'pg_dump' .
-            ' --dbname={database}' .
-            ' --host={server}' .
-            ' --port={port}' .
-            ' --username={user}' .
-            ' --if-exists' .
-            ' --clean' .
-            ' --no-owner' .
-            ' --no-privileges' .
-            ' --no-acl' .
-            ' --file="{file}"' .
-            ' --schema={schema}' .
-            ' ' . implode(' ', $ignoredTableArgs);
+        if ($archiveFormat) {
+            $shellCommand->addArg('--format=', 'custom');
+        }
+
+        $shellCommand
+            ->addArg('--dbname=', '{database}')
+            ->addArg('--host=', '{server}')
+            ->addArg('--port=', '{port}')
+            ->addArg('--username=', '{user}')
+            ->addArg('--if-exists')
+            ->addArg('--clean')
+            ->addArg('--no-owner')
+            ->addArg('--no-privileges')
+            ->addArg('--no-acl')
+            ->addArg('--file=', '{file}')
+            ->addArg('--schema=', '{schema}');
+
+        if ($callback) {
+            $shellCommand = $callback($shellCommand);
+        }
+
+        return $this->_pgpasswordCommand() . $shellCommand->getExecCommand();
     }
 
     /**
@@ -148,14 +170,27 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return $this->_pgpasswordCommand() .
-            'psql' .
-            ' --dbname={database}' .
-            ' --host={server}' .
-            ' --port={port}' .
-            ' --username={user}' .
-            ' --no-password' .
-            ' < "{file}"';
+        $archiveFormat = $this->restoreCommandOptions['archiveFormat'] ?? false;
+        $shellCommand = new ShellCommand($archiveFormat ? 'pg_restore' : 'psql');
+        $callback = $this->backupCommandOptions['callback'] ?? null;
+
+        $shellCommand->addArg('--dbname=', '{database}');
+        $shellCommand->addArg('--host=', '{server}');
+        $shellCommand->addArg('--port=', '{port}');
+        $shellCommand->addArg('--username=', '{user}');
+        $shellCommand->addArg('--no-password');
+
+        if ($archiveFormat) {
+            $shellCommand->addArg('--file=', '{file}');
+        }
+
+        if ($callback) {
+            $shellCommand = $callback($shellCommand);
+        }
+
+        return $this->_pgpasswordCommand()
+            . $shellCommand->getExecCommand()
+            . $archiveFormat ? '' : '< "{file}"';
     }
 
     /**
