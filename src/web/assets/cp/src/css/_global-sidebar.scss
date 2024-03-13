@@ -326,7 +326,7 @@ States
     .nav-item__trigger {
       .menubtn {
         width: 100%;
-        height: auto;
+        height: var(--touch-target-size);
         padding-block: 2px var(--xs);
       }
     }
