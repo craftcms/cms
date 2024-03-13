@@ -9,7 +9,7 @@
   z-index: $sidebarZIndex;
   display: grid;
   grid-template-columns: var(--global-sidebar-width);
-  grid-template-rows: var(--header-height) 1fr auto;
+  grid-template-rows: var(--header-height) minmax(0, 1fr) auto;
   grid-auto-flow: row;
   height: 100vh;
   padding: 0;
@@ -40,6 +40,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 
 .global-sidebar__footer {
