@@ -86,9 +86,19 @@ Craft.EntryMover = Garnish.Base.extend({
       'activate',
       (ev) => {
         let $button = $(ev.target);
-        this.$sectionsList.find('a').removeClass('sel');
-        $button.addClass('sel');
-        this.$selectBtn.removeClass('disabled');
+        // reset all the links
+        this.$sectionsList
+          .find('a')
+          .removeClass('sel')
+          .attr('aria-pressed', 'false');
+        // mark as selected
+        $button.addClass('sel').attr('aria-pressed', 'true');
+        // enable submit btn
+        if (this.$selectBtn.hasClass('disabled')) {
+          this.$selectBtn
+            .removeClass('disabled')
+            .attr('aria-disabled', 'false');
+        }
       }
     );
   },

@@ -467,6 +467,9 @@ class EntriesController extends BaseEntriesController
                             'sectionId' => $section->id,
                         ],
                     ],
+                    'aria' => [
+                        'pressed' => 'false',
+                    ],
                 ]);
                 $listHtml .= Html::tag('span', $section->name, ['class' => 'label']);
                 $listHtml .= Html::endTag('a');
