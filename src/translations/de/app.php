@@ -982,7 +982,7 @@ return [
     'New widget' => 'Neues Widget',
     'New {group} category' => 'Neue {group}-Kategorie',
     'New {section} entry' => 'Neuer Eintrag in „{section}“',
-    'New {type}' => 'Neue {type}',
+    'New {type}' => '{type, select, Eintrag{Neuer} other{Neue}} {type}',
     'New' => 'Neue',
     'Next Page' => 'Nächste Seite',
     'Next' => 'Weiter',
