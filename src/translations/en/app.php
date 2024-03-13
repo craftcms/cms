@@ -648,6 +648,7 @@ return [
     'Export' => 'Export',
     'Export…' => 'Export…',
     'External project config changes discarded.' => 'External project config changes discarded.',
+    'External link' => 'External link',
     'Failed to generate transform with id of {id}.' => 'Failed to generate transform with id of {id}.',
     'Failed to load the SVG string.' => 'Failed to load the SVG string.',
     'Failed to save the image.' => 'Failed to save the image.',
