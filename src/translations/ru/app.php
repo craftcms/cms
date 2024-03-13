@@ -980,7 +980,6 @@ return [
     'New Issues' => 'Новые проблемы',
     'New Password' => 'Новый пароль',
     'New Tab' => 'Новая вкладка',
-    'New block' => 'New block',
     'New category group' => 'Новая группа категорий',
     'New category in the {group} category group' => 'Новая категория в группе категорий «{group}»',
     'New category' => 'Новая категория',

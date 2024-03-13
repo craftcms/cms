@@ -980,7 +980,6 @@ return [
     'New Issues' => 'Nové otázky',
     'New Password' => 'Nové Heslo',
     'New Tab' => 'Nová Karta',
-    'New block' => 'New block',
     'New category group' => 'Nová skupina kategórií',
     'New category in the {group} category group' => 'Nová kategória v skupine kategórií {group}',
     'New category' => 'Nová Kategória',

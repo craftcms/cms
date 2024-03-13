@@ -980,7 +980,6 @@ return [
     'New Issues' => 'Nye problemer',
     'New Password' => 'Nyt Kodeord',
     'New Tab' => 'Ny Fane',
-    'New block' => 'New block',
     'New category group' => 'Ny Gruppe-kategori',
     'New category in the {group} category group' => 'Ny kategori i {group}-kategorigruppen',
     'New category' => 'Ny kategori',
