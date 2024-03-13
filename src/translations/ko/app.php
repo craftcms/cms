@@ -980,7 +980,6 @@ return [
     'New Issues' => '새로운 문제',
     'New Password' => '새로운 비밀번호',
     'New Tab' => '새로운 탭',
-    'New block' => 'New block',
     'New category group' => '새 카테고리 그룹',
     'New category in the {group} category group' => '{group} 카테고리 그룹의 새 카테고리',
     'New category' => '새 카테고리',
