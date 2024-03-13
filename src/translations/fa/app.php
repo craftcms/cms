@@ -980,7 +980,6 @@ return [
     'New Issues' => 'ایرادهای جدید',
     'New Password' => 'رمز عبور جدید',
     'New Tab' => 'تب جدید',
-    'New block' => 'New block',
     'New category group' => 'گروه دسته بندی جدید',
     'New category in the {group} category group' => 'دسته‌بندی جدید در گروه دسته‌بندی {group}',
     'New category' => 'دسته بندی جدید',
