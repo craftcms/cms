@@ -16,6 +16,9 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\events\EntrifyCategoriesEvent;
+use craft\events\EntrifyGlobalSetEvent;
+use craft\events\EntrifyTagsEvent;
 use craft\events\SectionEvent;
 use craft\fields\Categories;
 use craft\fields\Entries;
@@ -39,6 +42,12 @@ use yii\helpers\Console;
  */
 class EntrifyController extends Controller
 {
+    // Events
+    // -------------------------------------------------------------------------
+    public const EVENT_ENTRIFY_CATEGORIES = 'onEntrifyCategories';
+    public const EVENT_ENTRIFY_TAGS = 'onEntrifyTags';
+    public const EVENT_ENTRIFY_GLOBAL_SET = 'onEntrifyGlobalSet';
+
     /**
      * @var string|null The section handle that entries should be saved in
      */
@@ -244,6 +253,7 @@ class EntrifyController extends Controller
             "deletePeerCategoryDrafts:$categoryGroup->uid" => "deletePeerEntryDrafts:$section->uid",
         ], $sectionCreated);
 
+        $fieldsConverted = false;
         if (!$projectConfigService->readOnly) {
             if (!$categoryGroup->dateDeleted && $this->confirm("Delete the “{$categoryGroup}” category group?", true)) {
                 $this->do('Deleting category group', function() use ($categoryGroup) {
@@ -278,12 +288,26 @@ class EntrifyController extends Controller
 
                     $this->success(sprintf('Categories %s converted.', $total === 1 ? 'field' : 'fields'));
                     $projectConfigChanged = true;
+                    $fieldsConverted = true;
                 }
             }
         }
 
         if ($projectConfigChanged) {
             $this->_deployTip('categories', $categoryGroup->handle);
+        }
+
+        // Fire a 'onEntrifyCategories' event
+        if ($this->hasEventHandlers(self::EVENT_ENTRIFY_CATEGORIES)) {
+            $event = new EntrifyCategoriesEvent([
+                'categoryGroup' => $categoryGroup,
+                'section' => $section,
+                'entryType' => $entryType,
+                'fieldsConverted' => $fieldsConverted,
+                'fields' => $fields ?? null,
+            ]);
+
+            $this->trigger(self::EVENT_ENTRIFY_CATEGORIES, $event);
         }
 
         return ExitCode::OK;
@@ -384,6 +408,7 @@ class EntrifyController extends Controller
 
         $this->success('Tags converted.');
 
+        $fieldsConverted = false;
         if (!$projectConfigService->readOnly) {
             if (!$tagGroup->dateDeleted && $this->confirm("Delete the “{$tagGroup}” tag group?", true)) {
                 $this->do('Deleting tag group', function() use ($tagGroup) {
@@ -417,12 +442,26 @@ class EntrifyController extends Controller
 
                     $this->success(sprintf('Tags %s converted.', $total === 1 ? 'field' : 'fields'));
                     $projectConfigChanged = true;
+                    $fieldsConverted = true;
                 }
             }
         }
 
         if ($projectConfigChanged) {
             $this->_deployTip('tags', $tagGroup->handle);
+        }
+
+        // Fire a 'onEntrifyTags' event
+        if ($this->hasEventHandlers(self::EVENT_ENTRIFY_TAGS)) {
+            $event = new EntrifyTagsEvent([
+                'tagGroup' => $tagGroup,
+                'section' => $section,
+                'entryType' => $entryType,
+                'fieldsConverted' => $fieldsConverted,
+                'fields' => $fields ?? null,
+            ]);
+
+            $this->trigger(self::EVENT_ENTRIFY_TAGS, $event);
         }
 
         return ExitCode::OK;
@@ -537,6 +576,17 @@ class EntrifyController extends Controller
 
         if ($projectConfigChanged) {
             $this->_deployTip('global-set', $globalSet->handle);
+        }
+
+        // Fire a 'onEntrifyTags' event
+        if ($this->hasEventHandlers(self::EVENT_ENTRIFY_GLOBAL_SET)) {
+            $event = new EntrifyGlobalSetEvent([
+                'globalSet' => $globalSet,
+                'section' => $section,
+                'entryType' => $entryType,
+            ]);
+
+            $this->trigger(self::EVENT_ENTRIFY_GLOBAL_SET, $event);
         }
 
         return ExitCode::OK;
