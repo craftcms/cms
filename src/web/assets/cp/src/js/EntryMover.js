@@ -138,6 +138,7 @@ Craft.EntryMover = Garnish.Base.extend({
   selectSection() {
     let $button = this.$sectionsList.find('.sel');
     this.$sectionsListContainer.addClass('loading');
+    this.modal.updateLiveRegion(Craft.t('app', 'Loading'));
     const sectionUid = $button.data('uid');
 
     let data = {
@@ -150,11 +151,14 @@ Craft.EntryMover = Garnish.Base.extend({
     })
       .then((response) => {
         Craft.cp.displaySuccess(response.data.message);
+        this.modal.updateLiveRegion(response.data.message);
+
         this.elementIndex.updateElements();
         this.modal.hide();
       })
       .catch((e) => {
         Craft.cp.displayError(e?.response?.data?.message);
+        this.modal.updateLiveRegion(e?.response?.data?.message);
       })
       .finally(() => {
         this.$sectionsListContainer.removeClass('loading');
