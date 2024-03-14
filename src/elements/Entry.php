@@ -2642,9 +2642,17 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function isEntryTypeCompatible(): bool
     {
-        $sectionEntryTypes = Collection::make($this->getSection()?->getEntryTypes())
+        $section = $this->getSection();
+
+        // if entry doesn't belong to a section (is nested) just allow it
+        if (!$section) {
+            return true;
+        }
+
+        $sectionEntryTypes = Collection::make($section->getEntryTypes())
             ->map(fn(EntryType $et) => $et->id)
             ->all();
+
         return in_array($this->getTypeId(), $sectionEntryTypes);
     }
 }
