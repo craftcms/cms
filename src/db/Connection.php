@@ -274,8 +274,8 @@ class Connection extends \yii\db\Connection
         if ($backupCommand === null || is_array($backupCommand)) {
             /** @var PgsqlSchema|MysqlSchema $schema */
             $schema = $this->getSchema();
-            $schema->backupCommandOptions = is_array($backupCommand) && $this->getDriverName()
-                ? $backupCommand[$this->getDriverName()]
+            $schema->backupCommandOptions = is_array($backupCommand)
+                ? $backupCommand
                 : null;
 
             $backupCommand = $this->getSchema()->getDefaultBackupCommand($event->ignoreTables);

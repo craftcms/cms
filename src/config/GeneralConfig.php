@@ -2412,7 +2412,7 @@ class GeneralConfig extends BaseConfig
     public string $resourceBaseUrl = '@web/cpresources';
 
     /**
-     * @var string|null|false The shell command Craft should execute to restore a database backup.
+     * @var string|null|false|array The shell command Craft should execute to restore a database backup.
      *
      * By default Craft will run `mysql` or `psql`, provided those libraries are in the `$PATH` variable for the user the web server is running as.
      *
@@ -2438,7 +2438,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Environment
      */
-    public string|null|false $restoreCommand = null;
+    public string|null|false|array $restoreCommand = null;
 
     /**
      * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
@@ -5825,7 +5825,7 @@ class GeneralConfig extends BaseConfig
      * @see $restoreCommand
      * @since 4.2.0
      */
-    public function restoreCommand(string|null|false $value): self
+    public function restoreCommand(string|null|false|array $value): self
     {
         $this->restoreCommand = $value;
         return $this;
