@@ -236,7 +236,7 @@ class Matrix extends Field implements
     public ?int $pageSize = null;
 
     /**
-     * @var string|null The “Create entry” button label.
+     * @var string|null The “New entry” button label.
      * @since 5.0.0
      */
     public ?string $createButtonLabel = null;
