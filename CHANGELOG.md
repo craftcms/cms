@@ -8,6 +8,7 @@
 - Fixed a bug where <kbd>Return</kbd>/<kbd>Spacebar</kbd> presses would close disclosure menus without activating the focused item. ([#14584](https://github.com/craftcms/cms/issues/14584))
 - Fixed a bug where it wasn’t possible to fetch related elements by their source elements via the `relatedTo` param, if a relational field(s) was specified. ([#14552](https://github.com/craftcms/cms/issues/14552))
 - Fixed a PHP error that occurred if an entry had an invalid `typeId`.
+- Fixed styling issues with right-to-left languages. ([#14589](https://github.com/craftcms/cms/issues/14589))
 
 ## 5.0.0-beta.7 - 2024-03-12
 
