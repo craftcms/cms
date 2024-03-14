@@ -1309,8 +1309,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         $section = Craft::$app->getEntries()->getSectionById($this->sectionId);
-        if ($section === null) {
-            throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
+        if (!$section) {
+            throw new InvalidConfigException("Invalid section ID: $this->sectionId");
         }
         return $section;
     }
