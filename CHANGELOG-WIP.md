@@ -89,6 +89,8 @@
 - Matrix fields now have “Entry URI Format” and “Template” settings for each site.
 - Matrix fields now have a “View Mode” setting, giving admins the choice to display nested entries as cards, inline-editable blocks, or an embedded element index.
 - Matrix fields now require the owner element to be saved before they can be edited.
+- Matrix fields now have a “‘New’ Button Label” setting. ([#14573](https://github.com/craftcms/cms/issues/14573))
+- Relational fields’ “Selection Label” setting has been relabelled as “‘Add’ Button Label”.
 - Added support for inline field creation and editing within field layout designers. ([#14260](https://github.com/craftcms/cms/pull/14260))
 - Layout elements within field layout designers now have action menus. ([#14260](https://github.com/craftcms/cms/pull/14260))
 - The Fields and Entry Types index pages now have a search bar. ([#13961](https://github.com/craftcms/cms/discussions/13961), [#14126](https://github.com/craftcms/cms/pull/14126))
@@ -125,6 +127,7 @@
 - Entries’ GraphQL type names are now formatted as `<entryTypeHandle>_Entry`, and are no longer prefixed with their section’s handle. (That goes for Matrix-nested entries as well.)
 - Entries now have `author` and `authorIds` GraphQL field.
 - Matrix fields’ GraphQL mutation types now expect nested entries to be defined by an `entries` field rather than `blocks`.
+- Added the `entryType()` and `fieldValueSql()` Twig functions. ([#14557](https://github.com/craftcms/cms/discussions/14557))
 - Added the `|firstWhere` and `|flatten` Twig filters.
 - Removed the `craft.matrixBlocks()` Twig function. `craft.entries()` should be used instead.
 - Controller actions which require a `POST` request will now respond with a 405 error code if another request method is used. ([#13397](https://github.com/craftcms/cms/discussions/13397))
