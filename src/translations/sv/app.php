@@ -1589,7 +1589,7 @@ return [
     'The table name prefix' => 'Prefix för tabellnamnet',
     'The template Craft CMS will use for HTML emails' => 'Mallen Craft CMS kommer använda för HTML-e-post.',
     'The template will be rendered with an `element` variable.' => 'Mallen kommer att renderas med en `element`-variabel.',
-    'The text label for entry creation buttons.' => 'The text label for entry creation buttons.',
+    'The text label for the entry creation button.' => 'The text label for the entry creation button.',
     'The text label for {type} selection buttons.' => 'The text label for {type} selection buttons.',
     'The text that will be shown if the field doesn’t have a value.' => 'Den text som visas om fältet inte innehåller något värde.',
     'The total number of {type} to display per page within the element index.' => 'The total number of {type} to display per page within the element index.',

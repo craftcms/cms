@@ -1589,7 +1589,7 @@ return [
     'The table name prefix' => 'Префікс імені таблиці',
     'The template Craft CMS will use for HTML emails' => 'Шаблон, який Craft CMS використовуватиме для повідомлень електронної пошти у форматі HTML',
     'The template will be rendered with an `element` variable.' => 'Шаблон оброблятиметься зі змінною `element`.',
-    'The text label for entry creation buttons.' => 'The text label for entry creation buttons.',
+    'The text label for the entry creation button.' => 'The text label for the entry creation button.',
     'The text label for {type} selection buttons.' => 'The text label for {type} selection buttons.',
     'The text that will be shown if the field doesn’t have a value.' => 'Текст, який показуватиметься, якщо значення поля не встановлено.',
     'The total number of {type} to display per page within the element index.' => 'The total number of {type} to display per page within the element index.',

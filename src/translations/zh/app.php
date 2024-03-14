@@ -1589,7 +1589,7 @@ return [
     'The table name prefix' => '表名称前缀',
     'The template Craft CMS will use for HTML emails' => 'Craft CMS 要使用的 HTML 邮件模版',
     'The template will be rendered with an `element` variable.' => '将使用 `element` 变量渲染模板。',
-    'The text label for entry creation buttons.' => 'The text label for entry creation buttons.',
+    'The text label for the entry creation button.' => 'The text label for the entry creation button.',
     'The text label for {type} selection buttons.' => 'The text label for {type} selection buttons.',
     'The text that will be shown if the field doesn’t have a value.' => '如果此字段没有值',
     'The total number of {type} to display per page within the element index.' => 'The total number of {type} to display per page within the element index.',

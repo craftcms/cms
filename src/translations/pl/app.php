@@ -1589,7 +1589,7 @@ return [
     'The table name prefix' => 'Prefiks nazwy tabeli',
     'The template Craft CMS will use for HTML emails' => 'Szablon, który Craft CMS użyje dla e-maili HTML',
     'The template will be rendered with an `element` variable.' => 'Szablon będzie renderowany za pomocą zmiennej `element`.',
-    'The text label for entry creation buttons.' => 'The text label for entry creation buttons.',
+    'The text label for the entry creation button.' => 'The text label for the entry creation button.',
     'The text label for {type} selection buttons.' => 'The text label for {type} selection buttons.',
     'The text that will be shown if the field doesn’t have a value.' => 'Tekst, który będzie pokazywany, jeżeli pole nie posiada wartości.',
     'The total number of {type} to display per page within the element index.' => 'The total number of {type} to display per page within the element index.',
