@@ -187,6 +187,17 @@ class CustomField extends BaseField
     }
 
     /**
+     * Returns the field’s original handle.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getOriginalHandle(): string
+    {
+        return $this->_originalHandle;
+    }
+
+    /**
      * @inheritdoc
      */
     public function fields(): array

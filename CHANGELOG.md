@@ -2,8 +2,11 @@
 
 ## Unreleased
 
+- The `relatedTo.field` element query param now must be set to the original field’s handle, rather than the overridden instance handle.
+- Added `craft\fieldlayoutelements\CustomField::getOriginalHandle()`.
 - Fixed a bug where navigating back after creating an entry or applying a draft would return a 404 error. ([#14587](https://github.com/craftcms/cms/issues/14587))
 - Fixed a bug where <kbd>Return</kbd>/<kbd>Spacebar</kbd> presses would close disclosure menus without activating the focused item. ([#14584](https://github.com/craftcms/cms/issues/14584))
+- Fixed a bug where it wasn’t possible to fetch related elements by their source elements via the `relatedTo` param, if a relational field(s) was specified. ([#14552](https://github.com/craftcms/cms/issues/14552))
 
 ## 5.0.0-beta.7 - 2024-03-12
 
