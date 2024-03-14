@@ -3519,7 +3519,7 @@ abstract class Element extends Component implements ElementInterface
 
             $view = Craft::$app->getView();
             $view->registerJsWithVars(fn($id, $elementType, $settings) => <<<JS
-$('#' + $id).on('click', () => {
+$('#' + $id).on('activate', () => {
   Craft.createElementEditor($elementType, $settings);
 });
 JS, [

@@ -75,7 +75,9 @@
   {% endtag %}
   {% js %}
     $('#{{ id|namespaceInputId }}').on('activate', () => {
-      $('#{{ menuId|namespaceInputId }}').data('disclosureMenu').hide();
+      setTimeout(() => {
+        $('#{{ menuId|namespaceInputId }}').data('disclosureMenu').hide();
+      }, 1);
     });
   {% endjs %}
 {% endmacro %}
