@@ -1589,7 +1589,7 @@ return [
     'The table name prefix' => 'קידומת שם הטבלה',
     'The template Craft CMS will use for HTML emails' => 'התבנית שבה תשתמש Craft CMS לדואר אלקטרוני HTML.',
     'The template will be rendered with an `element` variable.' => 'התבנית תעובד עם משתנה `element`.',
-    'The text label for entry creation buttons.' => 'The text label for entry creation buttons.',
+    'The text label for the entry creation button.' => 'The text label for the entry creation button.',
     'The text label for {type} selection buttons.' => 'The text label for {type} selection buttons.',
     'The text that will be shown if the field doesn’t have a value.' => 'הטקסט יוצג במידה ולשדה אין ערך.',
     'The total number of {type} to display per page within the element index.' => 'The total number of {type} to display per page within the element index.',
