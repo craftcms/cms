@@ -1589,7 +1589,7 @@ return [
     'The table name prefix' => '테이블 이름 접두사',
     'The template Craft CMS will use for HTML emails' => 'Craft CMS가 HTML 이메일에 대해 사용할 템플릿',
     'The template will be rendered with an `element` variable.' => '템플릿이 `element` 변수로 렌더링됩니다.',
-    'The text label for entry creation buttons.' => 'The text label for entry creation buttons.',
+    'The text label for the entry creation button.' => 'The text label for the entry creation button.',
     'The text label for {type} selection buttons.' => 'The text label for {type} selection buttons.',
     'The text that will be shown if the field doesn’t have a value.' => '필드에 값이 들어 있지 않을 경우 표시되는 텍스트.',
     'The total number of {type} to display per page within the element index.' => 'The total number of {type} to display per page within the element index.',
