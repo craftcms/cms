@@ -304,10 +304,6 @@ class Matrix extends Field implements
             $config['maxEntries'] = ArrayHelper::remove($config, 'maxBlocks');
         }
 
-        if (isset($config['createButtonLabel']) && trim($config['createButtonLabel']) === '') {
-            unset($config['createButtonLabel']);
-        }
-
         parent::__construct($config);
     }
 
