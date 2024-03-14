@@ -1589,7 +1589,7 @@ return [
     'The table name prefix' => 'Predpona názvu tabuľky',
     'The template Craft CMS will use for HTML emails' => 'Šablóna, ktorú bude Craft CMS používať pre HTML emaily.',
     'The template will be rendered with an `element` variable.' => 'Šablóna bude vykreslená s premennou `element`.',
-    'The text label for entry creation buttons.' => 'The text label for entry creation buttons.',
+    'The text label for the entry creation button.' => 'The text label for the entry creation button.',
     'The text label for {type} selection buttons.' => 'The text label for {type} selection buttons.',
     'The text that will be shown if the field doesn’t have a value.' => 'Text, ktorý sa zobrazí v prípade, že pole nemá hodnotu.',
     'The total number of {type} to display per page within the element index.' => 'The total number of {type} to display per page within the element index.',
