@@ -350,7 +350,7 @@ class ElementRelationParamParser extends BaseObject
             }
 
             // We only care about the fields provided by the element query if the target elements were specified,
-            // and the element query is fetching the source elements, where the relational field(s) actualy exist.
+            // and the element query is fetching the source elements where the provided field(s) actually exist.
             $useElementQueryFields = $dir === self::DIR_REVERSE;
 
             foreach ($fields as $field) {
