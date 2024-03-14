@@ -1589,7 +1589,7 @@ return [
     'The table name prefix' => 'پیشوند نام جدول',
     'The template Craft CMS will use for HTML emails' => 'قالبی که Craft CMS برای پست هاس الکترونیکی HTML استفاده خواهد کرد',
     'The template will be rendered with an `element` variable.' => 'قالب با متغیر `element` پردازش خواهد شد.',
-    'The text label for entry creation buttons.' => 'The text label for entry creation buttons.',
+    'The text label for the entry creation button.' => 'The text label for the entry creation button.',
     'The text label for {type} selection buttons.' => 'The text label for {type} selection buttons.',
     'The text that will be shown if the field doesn’t have a value.' => 'متنی که فیلد اگر مقدار نداشت نمایش داده شود.',
     'The total number of {type} to display per page within the element index.' => 'The total number of {type} to display per page within the element index.',
