@@ -78,32 +78,7 @@ Craft.EntryMover = Garnish.Base.extend({
     this.getCompatibleSections();
   },
 
-  async getCompatibleSections() {
-    const listHtml = await this.loadSections();
-    this.$sectionsList.html(listHtml);
-    this.addListener(
-      this.$sectionsList.find('.entry-mover-modal--item'),
-      'activate',
-      (ev) => {
-        let $button = $(ev.target);
-        // reset all the links
-        this.$sectionsList
-          .find('a')
-          .removeClass('sel')
-          .attr('aria-pressed', 'false');
-        // mark as selected
-        $button.addClass('sel').attr('aria-pressed', 'true');
-        // enable submit btn
-        if (this.$selectBtn.hasClass('disabled')) {
-          this.$selectBtn
-            .removeClass('disabled')
-            .attr('aria-disabled', 'false');
-        }
-      }
-    );
-  },
-
-  async loadSections() {
+  getCompatibleSections() {
     if (this.cancelToken) {
       this.cancelToken.cancel();
     }
@@ -111,25 +86,52 @@ Craft.EntryMover = Garnish.Base.extend({
     this.$sectionsListContainer.addClass('loading');
     this.cancelToken = axios.CancelToken.source();
 
-    try {
-      const response = await Craft.sendActionRequest(
-        'POST',
-        'entries/move-to-section-modal-data',
-        {
-          data: {
-            entryIds: this.entryIds,
-            siteId: this.elementIndex.siteId,
-            currentSectionUid: this.currentSectionUid,
-          },
-          cancelToken: this.cancelToken.token,
+    Craft.sendActionRequest('POST', 'entries/move-to-section-modal-data', {
+      data: {
+        entryIds: this.entryIds,
+        siteId: this.elementIndex.siteId,
+        currentSectionUid: this.currentSectionUid,
+      },
+      cancelToken: this.cancelToken.token,
+    })
+      .then(({data}) => {
+        const listHtml = data?.listHtml;
+        if (listHtml) {
+          this.$sectionsList.html(listHtml);
+
+          this.addListener(
+            this.$sectionsList.find('.entry-mover-modal--item'),
+            'activate',
+            (ev) => {
+              let $button = $(ev.target);
+
+              // reset all the links
+              this.$sectionsList
+                .find('a')
+                .removeClass('sel')
+                .attr('aria-pressed', 'false');
+
+              // mark as selected
+              $button.addClass('sel').attr('aria-pressed', 'true');
+
+              // enable submit btn
+              if (this.$selectBtn.hasClass('disabled')) {
+                this.$selectBtn
+                  .removeClass('disabled')
+                  .attr('aria-disabled', 'false');
+              }
+            }
+          );
         }
-      );
-      const listHtml = response.data.listHtml;
-      return listHtml;
-    } finally {
-      this.$sectionsListContainer.removeClass('loading');
-      this.cancelToken = null;
-    }
+      })
+      .catch(({response}) => {
+        Craft.cp.displayError(response?.data?.message);
+        this.modal.hide();
+      })
+      .finally(() => {
+        this.$sectionsListContainer.removeClass('loading');
+        this.cancelToken = null;
+      });
   },
 
   selectSection() {
