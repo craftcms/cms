@@ -9,7 +9,9 @@ namespace craft\db\pgsql;
 
 use Composer\Util\Platform;
 use Craft;
+use craft\db\BackupCommand;
 use craft\db\Connection;
+use craft\db\RestoreCommand;
 use craft\db\TableSchema;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
@@ -29,14 +31,14 @@ class Schema extends \yii\db\pgsql\Schema
     public int $maxObjectNameLength = 63;
 
     /**
-     * @var array
+     * @var BackupCommand|null
      */
-    public array $backupCommandOptions = [];
+    public ?BackupCommand $backupCommand = null;
 
     /**
-     * @var array
+     * @var RestoreCommand|null
      */
-    public array $restoreCommandOptions = [];
+    public ?RestoreCommand $restoreCommand = null;
 
     /**
      * Creates a query builder for the database.
@@ -128,18 +130,16 @@ class Schema extends \yii\db\pgsql\Schema
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         $shellCommand = new ShellCommand('pg_dump');
-        $archiveFormat = $this->backupCommandOptions['archiveFormat'] ?? false;
         $ignoreTables = $ignoreTables
-            ?? $this->backupCommandOptions['ignoreTables']
+            ?? $this->backupCommand->ignoreTables
             ?? $this->db->getIgnoredBackupTables();
-        $callback = $this->backupCommandOptions['callback'] ?? null;
 
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
             $shellCommand->addArg('--exclude-table-data', "{schema}.$table");
         }
 
-        if ($archiveFormat) {
+        if ($this->backupCommand->archiveFormat) {
             $shellCommand->addArg('--format=', 'custom');
         }
 
@@ -156,8 +156,8 @@ class Schema extends \yii\db\pgsql\Schema
             ->addArg('--file=', '{file}')
             ->addArg('--schema=', '{schema}');
 
-        if ($callback) {
-            $shellCommand = $callback($shellCommand);
+        if ($this->backupCommand->callback) {
+            $shellCommand = ($this->backupCommand->callback)($shellCommand);
         }
 
         return $this->_pgpasswordCommand() . $shellCommand->getExecCommand();
@@ -170,9 +170,7 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        $archiveFormat = $this->restoreCommandOptions['archiveFormat'] ?? false;
-        $shellCommand = new ShellCommand($archiveFormat ? 'pg_restore' : 'psql');
-        $callback = $this->backupCommandOptions['callback'] ?? null;
+        $shellCommand = new ShellCommand($this->restoreCommand->archiveFormat ? 'pg_restore' : 'psql');
 
         $shellCommand->addArg('--dbname=', '{database}');
         $shellCommand->addArg('--host=', '{server}');
@@ -180,17 +178,17 @@ class Schema extends \yii\db\pgsql\Schema
         $shellCommand->addArg('--username=', '{user}');
         $shellCommand->addArg('--no-password');
 
-        if ($archiveFormat) {
+        if ($this->restoreCommand->archiveFormat) {
             $shellCommand->addArg('--file=', '{file}');
         }
 
-        if ($callback) {
-            $shellCommand = $callback($shellCommand);
+        if ($this->backupCommand->callback) {
+            $shellCommand = ($this->backupCommand->callback)($shellCommand);
         }
 
         return $this->_pgpasswordCommand()
             . $shellCommand->getExecCommand()
-            . $archiveFormat ? '' : '< "{file}"';
+            . $this->restoreCommand->archiveFormat ? '' : '< "{file}"';
     }
 
     /**

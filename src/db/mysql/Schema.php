@@ -9,7 +9,9 @@ namespace craft\db\mysql;
 
 use Composer\Util\Platform;
 use Craft;
+use craft\db\BackupCommand;
 use craft\db\Connection;
+use craft\db\RestoreCommand;
 use craft\db\TableSchema;
 use craft\helpers\App;
 use craft\helpers\Db;
@@ -52,14 +54,14 @@ class Schema extends \yii\db\mysql\Schema
     public ?string $tempMyCnfPath = null;
 
     /**
-     * @var array
+     * @var BackupCommand|null
      */
-    public array $backupCommandOptions = [];
+    public ?BackupCommand $backupCommand = null;
 
     /**
-     * @var array
+     * @var RestoreCommand|null
      */
-    public array $restoreCommandOptions = [];
+    public ?RestoreCommand $restoreCommand = null;
 
     /**
      * @inheritdoc
@@ -171,7 +173,7 @@ class Schema extends \yii\db\mysql\Schema
 
         $success = $shellCommand->execute();
 
-        // if there was output, then column-statistics is supported and we should disable it
+        // if there was output, then column-statistics is supported
         return $success && $shellCommand->getOutput();
     }
 
@@ -185,9 +187,8 @@ class Schema extends \yii\db\mysql\Schema
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         $ignoreTables = $ignoreTables
-            ?? $this->backupCommandOptions['ignoreTables']
+            ?? $this->backupCommand?->ignoreTables
             ?? $this->db->getIgnoredBackupTables();
-        $callback = $this->backupCommandOptions['callback'] ?? null;
         $useSingleTransaction = true;
         $serverVersion = App::normalizeVersion($this->getServerVersion());
 
@@ -222,8 +223,8 @@ class Schema extends \yii\db\mysql\Schema
             $shellCommand->addArg('--column-statistics=', '0');
         }
 
-        if ($callback) {
-            $shellCommand = $callback($shellCommand);
+        if ($this->backupCommand->callback) {
+            $shellCommand = ($this->backupCommand->callback)($shellCommand);
         }
 
         $schemaDump = (clone $shellCommand)
@@ -256,13 +257,12 @@ class Schema extends \yii\db\mysql\Schema
     public function getDefaultRestoreCommand(): string
     {
         $shellCommand = new ShellCommand('mysql');
-        $callback = $this->restoreCommandOptions['callback'] ?? null;
 
         $shellCommand->addArg('--defaults-file=', $this->_createDumpConfigFile());
         $shellCommand->addArg('{database}');
 
-        if ($callback) {
-            $shellCommand = $callback($shellCommand);
+        if ($this->restoreCommand->callback) {
+            $shellCommand = ($this->restoreCommand->callback)($shellCommand);
         }
 
         return $shellCommand->getExecCommand() . ' < "{file}"';

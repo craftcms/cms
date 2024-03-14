@@ -5820,7 +5820,7 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param string|null|false $value
+     * @param string|null|false|array $value
      * @return self
      * @see $restoreCommand
      * @since 4.2.0
