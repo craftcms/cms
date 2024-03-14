@@ -7,18 +7,9 @@
 
 namespace craft\db\mysql;
 
-use Composer\Util\Platform;
 use Craft;
-use craft\db\BackupCommand;
 use craft\db\Connection;
-use craft\db\RestoreCommand;
 use craft\db\TableSchema;
-use craft\helpers\App;
-use craft\helpers\Db;
-use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
-use mikehaertl\shellcommand\Command as ShellCommand;
-use PDO;
 use PDOException;
 use yii\base\ErrorException;
 use yii\base\NotSupportedException;
@@ -155,28 +146,6 @@ class Schema extends \yii\db\mysql\Schema
         return new ColumnSchemaBuilder($type, $length, $this->db);
     }
 
-    protected function getSupportsColumnStatistics(): bool
-    {
-        // Find out if the db/dump client supports column-statistics
-        $shellCommand = new ShellCommand();
-
-        if (Platform::isWindows()) {
-            $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
-        } else {
-            $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
-        }
-
-        // If we don't have proc_open, maybe we've got exec
-        if (!function_exists('proc_open') && function_exists('exec')) {
-            $shellCommand->useExec = true;
-        }
-
-        $success = $shellCommand->execute();
-
-        // if there was output, then column-statistics is supported
-        return $success && $shellCommand->getOutput();
-    }
-
     /**
      * Returns the default backup command to execute.
      *
@@ -186,66 +155,13 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
-        $ignoreTables = $ignoreTables
-            ?? $this->backupCommand?->ignoreTables
-            ?? $this->db->getIgnoredBackupTables();
-        $useSingleTransaction = true;
-        $serverVersion = App::normalizeVersion($this->getServerVersion());
+        $this->backupCommand = $this->backupCommand ?? new BackupCommand();
 
-        $isMySQL5 = version_compare($serverVersion, '8', '<');
-        $isMySQL8 = version_compare($serverVersion, '8', '>=');
-
-        // https://bugs.mysql.com/bug.php?id=109685
-        if (($isMySQL5 && version_compare($serverVersion, '5.7.41', '>=')) ||
-            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>='))) {
-            $useSingleTransaction = false;
+        if ($ignoreTables) {
+            $this->backupCommand->ignoreTables = $ignoreTables;
         }
 
-        $shellCommand = new ShellCommand('mysqldump');
-        $shellCommand->addArg('--defaults-file=', $this->_createDumpConfigFile());
-        $shellCommand->addArg('--add-drop-table');
-        $shellCommand->addArg('--comments');
-        $shellCommand->addArg('--create-options');
-        $shellCommand->addArg('--dump-date');
-        $shellCommand->addArg('--no-autocommit');
-        $shellCommand->addArg('--routines');
-        $shellCommand->addArg('--default-character-set=', Craft::$app->getConfig()->getDb()->charset);
-        $shellCommand->addArg('--set-charset');
-        $shellCommand->addArg('--triggers');
-        $shellCommand->addArg('--no-tablespaces');
-
-        if ($useSingleTransaction) {
-            $shellCommand->addArg('--single-transaction');
-        }
-
-        // if there was output, then column-statistics is supported and we should disable it
-        if ($this->getSupportsColumnStatistics()) {
-            $shellCommand->addArg('--column-statistics=', '0');
-        }
-
-        if ($this->backupCommand->callback) {
-            $shellCommand = ($this->backupCommand->callback)($shellCommand);
-        }
-
-        $schemaDump = (clone $shellCommand)
-            ->addArg('--no-data')
-            ->addArg('--result-file=', '{file}')
-            ->addArg('{database}')
-            ->getExecCommand();
-
-        $dataDump = (clone $shellCommand)
-            ->addArg('--no-create-info');
-
-        foreach ($ignoreTables as $table) {
-            $table = $this->getRawTableName($table);
-            $dataDump->addArg('--ignore-table=', "{database}.$table");
-        }
-
-        $dataDump = $dataDump
-            ->addArg('{database}')
-            ->getExecCommand();
-
-        return "$schemaDump && $dataDump >> {file}";
+        return $this->backupCommand->getExecCommand();
     }
 
     /**
@@ -256,16 +172,9 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        $shellCommand = new ShellCommand('mysql');
+        $this->restoreCommand = $this->restoreCommand ?? new RestoreCommand();
 
-        $shellCommand->addArg('--defaults-file=', $this->_createDumpConfigFile());
-        $shellCommand->addArg('{database}');
-
-        if ($this->restoreCommand->callback) {
-            $shellCommand = ($this->restoreCommand->callback)($shellCommand);
-        }
-
-        return $shellCommand->getExecCommand() . ' < "{file}"';
+        return $this->restoreCommand->getExecCommand();
     }
 
     /**
@@ -408,48 +317,5 @@ SQL;
                 $table->foreignKeys = array_values($table->foreignKeys);
             }
         }
-    }
-
-    /**
-     * Creates a temporary my.cnf file based on the DB config settings.
-     *
-     * @return string The path to the my.cnf file
-     * @throws ErrorException
-     */
-    private function _createDumpConfigFile(): string
-    {
-        $this->tempMyCnfPath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . StringHelper::randomString(12) . '.cnf';
-
-        $parsed = Db::parseDsn($this->db->dsn);
-        $username = $this->db->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->db->username;
-        $password = $this->db->getIsPgsql() && !empty($parsed['password']) ? $parsed['password'] : $this->db->password;
-        $contents = '[client]' . PHP_EOL .
-            'user=' . $username . PHP_EOL .
-            'password="' . addslashes($password) . '"';
-
-        if (isset($parsed['unix_socket'])) {
-            $contents .= PHP_EOL . 'socket=' . $parsed['unix_socket'];
-        } else {
-            $contents .= PHP_EOL . 'host=' . ($parsed['host'] ?? '') .
-                PHP_EOL . 'port=' . ($parsed['port'] ?? '');
-        }
-
-        // Certificates
-        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CA])) {
-            $contents .= PHP_EOL . 'ssl_ca=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CA];
-        }
-        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT])) {
-            $contents .= PHP_EOL . 'ssl_cert=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT];
-        }
-        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY])) {
-            $contents .= PHP_EOL . 'ssl_key=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY];
-        }
-
-        FileHelper::writeToFile($this->tempMyCnfPath, '');
-        // Avoid a “world-writable config file 'my.cnf' is ignored” warning
-        chmod($this->tempMyCnfPath, 0600);
-        FileHelper::writeToFile($this->tempMyCnfPath, $contents, ['append']);
-
-        return $this->tempMyCnfPath;
     }
 }

@@ -9,11 +9,14 @@ namespace craft\db;
 
 use Composer\Util\Platform;
 use Craft;
+use craft\db\mysql\BackupCommand as MysqlBackupCommand;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
+use craft\db\mysql\RestoreCommand as MysqlRestoreCommand;
 use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\pgsql\BackupCommand as PgsqlBackupCommand;
 use craft\db\pgsql\QueryBuilder as PgsqlQueryBuilder;
+use craft\db\pgsql\RestoreCommand as PgsqlRestoreCommand;
 use craft\db\pgsql\Schema as PgsqlSchema;
-use craft\elements\actions\Restore;
 use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
@@ -275,8 +278,10 @@ class Connection extends \yii\db\Connection
         if ($backupCommand === null || is_array($backupCommand)) {
             /** @var PgsqlSchema|MysqlSchema $schema */
             $schema = $this->getSchema();
-            $schema->backupCommand = Craft::createObject(BackupCommand::class);
-            Craft::configure($schema->backupCommand, $backupCommand ?? []);
+            $schema->backupCommand = $this->getIsPgsql()
+                ? new PgsqlBackupCommand($backupCommand ?? [])
+                : new MysqlBackupCommand($backupCommand ?? []);
+            ;
 
             $backupCommand = $this->getSchema()->getDefaultBackupCommand($event->ignoreTables);
         }
@@ -346,8 +351,10 @@ class Connection extends \yii\db\Connection
         if ($restoreCommand === null || is_array($restoreCommand)) {
             /** @var PgsqlSchema|MysqlSchema $schema */
             $schema = $this->getSchema();
-            $schema->restoreCommand = Craft::createObject(RestoreCommand::class);
-            Craft::configure($schema->restoreCommand, $restoreCommand ?? []);
+            $schema->restoreCommand = $this->getIsPgsql()
+                ? new PgsqlRestoreCommand($restoreCommand ?? [])
+                : new MysqlRestoreCommand($restoreCommand ?? []);
+            ;
 
             $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
         }
