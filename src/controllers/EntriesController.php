@@ -502,6 +502,7 @@ class EntriesController extends BaseEntriesController
         $entries = Entry::find()
             ->id($entryIds)
             ->status(null)
+            ->drafts(null)
             ->all();
 
         if (!$entries) {
