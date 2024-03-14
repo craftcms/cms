@@ -571,7 +571,9 @@ export default Base.extend(
         } else if (item.callback) {
           item.callback();
         }
-        this.hide();
+        setTimeout(() => {
+          this.hide();
+        }, 1);
       });
 
       return li;

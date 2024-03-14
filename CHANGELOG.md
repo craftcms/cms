@@ -2,9 +2,30 @@
 
 ## Unreleased
 
+- The `relatedTo.field` element query param now must be set to the original field’s handle, rather than the overridden instance handle.
+- Added `craft\fieldlayoutelements\CustomField::getOriginalHandle()`.
+- Fixed a bug where navigating back after creating an entry or applying a draft would return a 404 error. ([#14587](https://github.com/craftcms/cms/issues/14587))
+- Fixed a bug where action URLs weren’t respecting the subpath specified by the `@web` alias, if it wasn’t present in the local URL to `index.php`.
+- Fixed a bug where <kbd>Return</kbd>/<kbd>Spacebar</kbd> presses would close disclosure menus without activating the focused item. ([#14584](https://github.com/craftcms/cms/issues/14584))
+- Fixed a bug where it wasn’t possible to fetch related elements by their source elements via the `relatedTo` param, if a relational field(s) was specified. ([#14552](https://github.com/craftcms/cms/issues/14552))
+- Fixed a PHP error that occurred if an entry had an invalid `typeId`.
+- Fixed styling issues with right-to-left languages. ([#14589](https://github.com/craftcms/cms/issues/14589))
+
+## 5.0.0-beta.7 - 2024-03-12
+
+- Matrix fields now have a “‘New’ Button Label” setting. ([#14573](https://github.com/craftcms/cms/issues/14573))
+- Relational fields’ “Selection Label” setting has been relabelled as “‘Add’ Button Label”.
+- Added the `entryType()` and `fieldValueSql()` Twig functions. ([#14557](https://github.com/craftcms/cms/discussions/14557))
+- Entry queries are now ordered by `postDate DESC, id DESC` by default, rather than just `postDate DESC`, to ensure their order is consistent when two entries have the same post date.
+- `craft\base\Element::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
+- `craft\elements\db\ElementQuery::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
+- `craft\elements\ElementCollection::render()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
 - `craft\elements\NestedElementManager::saveNestedElements()` now restores any soft-deleted elements that are returned by `getValue()`.
+- `craft\helpers\ElementHelper::renderElements()` now has a `$variables` argument. ([#14562](https://github.com/craftcms/cms/pull/14562))
 - Fixed a bug where `craft\helpers\DateRange::dateIntervalByTimePeriod()` wasn’t accounting for DST changes.
 - Fixed a bug where programmatically-updated `<textarea>`s weren’t triggering autosaves. ([craftcms/ckeditor#172](https://github.com/craftcms/ckeditor/issues/172))
+- Fixed a JavaScript error that could occur when navigating between asset folders, when a JavaScript-based uploader was registered. ([#14542](https://github.com/craftcms/cms/pull/14542))
+- Fixed a bug where action URLs were getting duplicate URI segments if Craft was installed in a subpath within the webroot. ([#14559](https://github.com/craftcms/cms/issues/14559))
 - Fixed a bug where lazy-registered JavaScript modules weren’t getting loaded properly. ([#14526](https://github.com/craftcms/cms/pull/14526))
 - Fixed a bug where related elements displayed in element indexes weren’t getting styled properly. ([#14545](https://github.com/craftcms/cms/pull/14545))
 - Fixed a bug where keyboard shortcuts stopped working when slideouts were opened on wide screens.
@@ -12,6 +33,7 @@
 - Fixed a bug where breadcrumbs weren’t getting moved into an overflow menu. ([#14549](https://github.com/craftcms/cms/issues/14549))
 - Fixed a bug where long chip labels weren’t getting styled properly. ([#14563](https://github.com/craftcms/cms/pull/14563))
 - Fixed a bug where translatable field values weren’t getting populated to other sites on freshly-created entries within Matrix fields, if the field was set to inline-editable blocks mode. ([#14540](https://github.com/craftcms/cms/issues/14540))
+- Fixed a bug where Date field values weren’t getting migrated to Craft 5 properly. ([#14551](https://github.com/craftcms/cms/pull/14556))
 
 ## 5.0.0-beta.6 - 2024-03-05
 
@@ -43,12 +65,6 @@
 - Deprecated `craft\helpers\App::isValidEdition()`. `craft\enums\CmsEdition::tryFrom()` should be used instead.
 - Craft now calls `setlocale()` based on the target language, so that `SORT_LOCALE_STRING` behaves as expected. ([#14509](https://github.com/craftcms/cms/issues/14509), [#14513](https://github.com/craftcms/cms/pull/14513))
 - Fixed a bug where element chips weren’t handling long labels properly. ([#14517](https://github.com/craftcms/cms/issues/14517), [#14502](https://github.com/craftcms/cms/pull/14502))
-
-## 4.8.1 - 2024-03-05
-
-- Fixed a bug where some characters were getting misinterpreted as elisions when normalizing search keywords.
-- Fixed a bug where `craft\helpers\UrlHelper::actionUrl()` was using the site URL rather than the requested URL. ([#14440](https://github.com/craftcms/cms/issues/14440))
->>>>>>> 98b779a6408b230ad8f1711ab3246b7594e519a3
 - Fixed a bug where `craft\helpers\Html::parseTagAttribute()` wasn’t handling attribute values with newlines. ([#14498](https://github.com/craftcms/cms/issues/14498))
 - Fixed a bug where the “Filesystem Type” setting wasn’t toggling type-specific settings when editing a filesystem via a slideout. ([#14522](https://github.com/craftcms/cms/issues/14522))
 - Fixed a 403 error that could occur when editing an inline-editable Matrix block. ([#14512](https://github.com/craftcms/cms/issues/14512))

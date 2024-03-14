@@ -698,6 +698,7 @@ class Elements extends Component
      *
      * @return array
      * @phpstan-return array{TagDependency|null,int|null}
+     * @since 4.3.0
      */
     public function stopCollectingCacheInfo(): array
     {
