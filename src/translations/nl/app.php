@@ -1589,7 +1589,7 @@ return [
     'The table name prefix' => 'The tabel naam prefix',
     'The template Craft CMS will use for HTML emails' => 'Het sjabloon dat Craft CMS zal gebruiken voor HTML e-mails.',
     'The template will be rendered with an `element` variable.' => 'De sjabloon wordt weergegeven met een `element`-variabele.',
-    'The text label for entry creation buttons.' => 'The text label for entry creation buttons.',
+    'The text label for the entry creation button.' => 'The text label for the entry creation button.',
     'The text label for {type} selection buttons.' => 'The text label for {type} selection buttons.',
     'The text that will be shown if the field doesn’t have a value.' => 'Tekst die wordt weergegeven als het veld leeg is.',
     'The total number of {type} to display per page within the element index.' => 'The total number of {type} to display per page within the element index.',
