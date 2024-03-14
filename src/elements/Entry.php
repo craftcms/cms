@@ -1810,6 +1810,70 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public function canMove(User $user): bool
+    {
+        $section = $this->getSection();
+
+        if (!$section) {
+            return false;
+        }
+
+        // disallow moving singles and trashed entries
+        if ($section->type === Section::TYPE_SINGLE || $this->trashed) {
+            return false;
+        }
+
+        // if there aren't any compatible sections, just don't bother with further checks
+        if (!$this->_moveCompatibleSectionsCount()) {
+            return false;
+        }
+
+        if ($this->getIsDraft()) {
+            /** @var static|DraftBehavior $this */
+            return (
+                $this->creatorId === $user->id ||
+                $user->can("savePeerEntryDrafts:$section->uid")
+            );
+        }
+
+        if (!$user->can("saveEntries:$section->uid")) {
+            return false;
+        }
+
+        return (
+            in_array($user->id, $this->getAuthorIds(), true) ||
+            $user->can("savePeerEntries:$section->uid")
+        );
+    }
+
+    /**
+     * Get sections that this entry could be moved to - sections that use the exact same entry type.
+     *
+     * @return int
+     */
+    private function _moveCompatibleSectionsCount(): int
+    {
+        // get entry type id
+        $entryTypeId = $this->getTypeId();
+
+        // get sections all editable sections without singles and without the section this entry belongs to
+        // get all entry types for them
+        $sections = Collection::make(Craft::$app->getEntries()->getEditableSections())
+            ->filter(fn(Section $s) => $s->type !== Section::TYPE_SINGLE && $s->id !== $this->sectionId)
+            ->map(fn(Section $s) => [
+                'entryTypes' => $s->getEntryTypes(),
+            ]);
+
+        // get sections that use the same entry type as this entry
+        $compatibleSections = $sections
+            ->filter(fn(array $s) => ArrayHelper::contains($s['entryTypes'], 'id', $entryTypeId));
+
+        return $compatibleSections->count();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function canCreateDrafts(User $user): bool
     {
         // Everyone with view permissions can create drafts

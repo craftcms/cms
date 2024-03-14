@@ -674,6 +674,7 @@ class Cp
                     'savable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canSave($element),
                     'duplicatable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDuplicate($element),
                     'deletable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDelete($element),
+                    'movable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canMove($element),
                 ]),
             ],
         );

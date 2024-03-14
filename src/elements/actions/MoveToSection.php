@@ -47,20 +47,14 @@ class MoveToSection extends ElementAction
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: true,
-        // validateSelection: (selectedItems, elementIndex) => {
-        //   return elementIndex.settings.canMoveElements(selectedItems);
-        // },
         validateSelection: (selectedItems, elementIndex) => {
-          let valid = true;
           for (let i = 0; i < selectedItems.length; i++) {
-            const \$element = selectedItems.eq(i).find('.element');
-            if (\$element.data('status') === 'draft' ||
-                \$element.data('status') === 'trashed') {
-              valid = false;
+            if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-movable')) {
+              return false;
             }
           }
           
-          return valid;
+          return true;
         },
         activate: (selectedItems, elementIndex) => {
           let entryIds = [];
