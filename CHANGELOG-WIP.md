@@ -271,6 +271,7 @@
 - Added `craft\fieldlayoutelements\BaseField::thumbHtml()`.
 - Added `craft\fieldlayoutelements\BaseField::thumbable()`.
 - Added `craft\fieldlayoutelements\CustomField::$handle`.
+- Added `craft\fieldlayoutelements\CustomField::getOriginalHandle()`.
 - Added `craft\fieldlayoutelements\TextField::inputAttributes()`.
 - Added `craft\fieldlayoutelements\users\EmailField`.
 - Added `craft\fieldlayoutelements\users\FullNameField`.
