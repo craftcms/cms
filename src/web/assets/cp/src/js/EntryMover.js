@@ -61,19 +61,9 @@ Craft.EntryMover = Garnish.Base.extend({
         class: 'disabled',
         label: Craft.t('app', 'Move'),
         spinner: true,
-        data: {
-          'busy-message': 'Moving entries to a different section.',
-          'failure-message': 'Failed moving entries to a different section.',
-          'retry-message': 'Try again.',
-          'success-message': 'Entries moved to a different section.',
-        },
       })
       .attr('aria-disabled', 'true')
       .appendTo($primaryButtons);
-
-    this.submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn, {
-      changeButtonText: true,
-    });
 
     const $spinner = $('<div class="spinner spinner-absolute"/>').appendTo(
       this.$sectionsListContainer
@@ -95,7 +85,6 @@ Craft.EntryMover = Garnish.Base.extend({
     }
 
     this.$sectionsListContainer.addClass('loading');
-    this.submitBtn.busyEvent();
     this.cancelToken = axios.CancelToken.source();
 
     Craft.sendActionRequest('POST', 'entries/move-to-section-modal-data', {
@@ -110,7 +99,6 @@ Craft.EntryMover = Garnish.Base.extend({
         const listHtml = data?.listHtml;
         if (listHtml) {
           this.$sectionsList.html(listHtml);
-          this.submitBtn.successEvent();
 
           this.addListener(
             this.$sectionsList.find('.entry-mover-modal--item'),
@@ -139,7 +127,6 @@ Craft.EntryMover = Garnish.Base.extend({
       })
       .catch(({response}) => {
         Craft.cp.displayError(response?.data?.message);
-        this.submitBtn.failureEvent();
         this.modal.hide();
       })
       .finally(() => {

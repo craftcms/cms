@@ -33,7 +33,7 @@ Craft.ui = {
     }
     if (config.data) {
       Object.entries(config.data).forEach((item) => {
-        $btn.attr(item[0], item[1]);
+        $btn.attr('data-' + item[0], item[1]);
       });
     }
     if (config.spinner) {
