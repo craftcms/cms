@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where navigating back after creating an entry or applying a draft would return a 404 error. ([#14587](https://github.com/craftcms/cms/issues/14587))
+- Fixed a bug where action URLs weren’t respecting the subpath specified by the `@web` alias, if it wasn’t present in the local URL to `index.php`.
 
 ## 4.8.2 - 2024-03-12
 
