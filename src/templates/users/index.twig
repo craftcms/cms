@@ -12,7 +12,11 @@
 
 {% block actionButton %}
     {% if currentUser.can('registerUsers') %}
-        <a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New user"|t('app') }}</a>
+        <a class="btn submit add icon" href="{{ url('users/new') }}">
+            {{ 'New {type}'|t('app', {
+                type: 'user'|t('app'),
+            }) }}
+        </a>
     {% endif %}
 {% endblock %}
 

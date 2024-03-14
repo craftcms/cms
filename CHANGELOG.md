@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where <kbd>Return</kbd>/<kbd>Spacebar</kbd> presses would close disclosure menus without activating the focused item. ([#14584](https://github.com/craftcms/cms/issues/14584))
+
 ## 5.0.0-beta.7 - 2024-03-12
 
 - Matrix fields now have a “‘New’ Button Label” setting. ([#14573](https://github.com/craftcms/cms/issues/14573))

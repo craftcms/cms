@@ -998,13 +998,21 @@ $.extend($.event.special, {
         'keydown.garnish-activate': function (e) {
           // Ignore if the event was bubbled up, or if it wasn't the Space/Return key
           if (
-            this === $elem[0] &&
-            [Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(e.keyCode)
+            this !== $elem[0] ||
+            ![Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(e.keyCode)
+          ) {
+            return;
+          }
+
+          if (
+            e.currentTarget.nodeName === 'BUTTON' ||
+            e.currentTarget.role === 'button'
           ) {
             e.preventDefault();
-            if (!$elem.hasClass('disabled')) {
-              $elem.trigger('activate');
-            }
+          }
+
+          if (!$elem.hasClass('disabled')) {
+            $elem.trigger('activate');
           }
         },
       });

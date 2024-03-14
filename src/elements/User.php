@@ -1882,7 +1882,7 @@ XML;
                     ];
 
                     $view->registerJsWithVars(fn($id, $userId, $message) => <<<JS
-$('#' + $id).on('click', () => {
+$('#' + $id).on('activate', () => {
   Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
     data: {userId: $userId},
   }).then((response) => {
@@ -1973,7 +1973,7 @@ JS, [
                     ];
 
                     $view->registerJsWithVars(fn($id, $userId, $redirect) => <<<JS
-$('#' + $id).on('click', () => {
+$('#' + $id).on('activate', () => {
   Craft.sendActionRequest('POST', 'users/user-content-summary', {
     data: {userId: $userId}
   }).then((response) => {
@@ -2002,7 +2002,7 @@ JS,
         $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
 
         $view->registerJsWithVars(fn($id, $userId, $message) => <<<JS
-$('#' + $id).on('click', () => {
+$('#' + $id).on('activate', () => {
   Craft.elevatedSessionManager.requireElevatedSession(() => {
     Craft.sendActionRequest('POST', 'users/get-password-reset-url', {
       data: {userId: $userId}

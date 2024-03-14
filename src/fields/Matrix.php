@@ -236,7 +236,7 @@ class Matrix extends Field implements
     public ?int $pageSize = null;
 
     /**
-     * @var string|null The “Create entry” button label.
+     * @var string|null The “New entry” button label.
      * @since 5.0.0
      */
     public ?string $createButtonLabel = null;
@@ -302,10 +302,6 @@ class Matrix extends Field implements
         }
         if (array_key_exists('maxBlocks', $config)) {
             $config['maxEntries'] = ArrayHelper::remove($config, 'maxBlocks');
-        }
-
-        if (isset($config['createButtonLabel']) && trim($config['createButtonLabel']) === '') {
-            unset($config['createButtonLabel']);
         }
 
         parent::__construct($config);
