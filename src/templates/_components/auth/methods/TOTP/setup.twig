@@ -15,21 +15,23 @@
 - [Bitwarden](https://bitwarden.com/) ({{ 'all platforms and browsers'|t('app') }})
 
 ## {{ 'Step {number}:'|t('app', {number: 2}) }} {{ 'Create a one-time password.'|t('app') }}
-{{ 'Within the app, create a new time-based one-time password (TOTP) for this site. Scan the QR code or enter the key below when prompted.'|t('app') }}
+{{ 'Within the app, create a new time-based one-time password (TOTP) for this site. Scan the **QR code** or enter the **setup key** below when prompted.'|t('app') }}
   {% endapply %}
 </div>
 
 <div class="pane">
   {% if (qrCode is defined and qrCode is not empty) or (secret is defined and secret is not empty) %}
     {% if qrCode is defined and qrCode is not empty %}
-      {{ qrCode|raw | attr({'aria-label': 'One-time password QR code' | t('app')}) }}
+      <div class="field">
+        <div class="heading"><strong>{{ 'QR Code' | t('app') }}</strong></div>
+        {{ qrCode|raw }}
+      </div>
     {% endif %}
     {% if secret is defined and secret is not empty %}
       <div class="mt-m">
         {{ forms.copyTextField({
-          label: 'Secret' | t('app'),
-          labelClass: 'visually-hidden',
-          name: 'secret-key',
+          label: 'Setup Key' | t('app'),
+          name: 'setup-key',
           class: 'code',
           value: secret,
         }) }}
