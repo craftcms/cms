@@ -1589,7 +1589,7 @@ return [
     'The table name prefix' => 'テーブル名のプレフィックス',
     'The template Craft CMS will use for HTML emails' => 'HTMLメールに対してCraft CMSが使用するテンプレート',
     'The template will be rendered with an `element` variable.' => 'テンプレートは `element` 変数を使用してレンダリングされます。',
-    'The text label for entry creation buttons.' => 'The text label for entry creation buttons.',
+    'The text label for the entry creation button.' => 'The text label for the entry creation button.',
     'The text label for {type} selection buttons.' => 'The text label for {type} selection buttons.',
     'The text that will be shown if the field doesn’t have a value.' => 'フィールドの値がないとき表示するテキスト',
     'The total number of {type} to display per page within the element index.' => 'The total number of {type} to display per page within the element index.',
