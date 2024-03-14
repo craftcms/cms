@@ -62,10 +62,11 @@ Craft.EntryMover = Garnish.Base.extend({
         label: Craft.t('app', 'Move'),
         spinner: true,
         data: {
-          'busy-message': 'Moving entries to a different section.',
-          'failure-message': 'Failed moving entries to a different section.',
-          'retry-message': 'Try again.',
-          'success-message': 'Entries moved to a different section.',
+          'data-busy-message': 'Moving entries to a different section.',
+          'data-failure-message':
+            'Failed moving entries to a different section.',
+          'data-retry-message': 'Try again.',
+          'data-success-message': 'Entries moved to a different section.',
         },
       })
       .attr('aria-disabled', 'true')
