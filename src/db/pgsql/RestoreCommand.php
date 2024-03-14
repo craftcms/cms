@@ -14,7 +14,8 @@ class RestoreCommand extends DbShellCommand
 
     protected function getCommand(): ShellCommand
     {
-        $command = new ShellCommand($this->archiveFormat ? 'pg_restore' : 'psql');
+        $command = parent::getCommand();
+        $command->setCommand($this->archiveFormat ? 'pg_restore' : 'psql');
         $command->addArg('--dbname=', '{database}');
         $command->addArg('--host=', '{server}');
         $command->addArg('--port=', '{port}');

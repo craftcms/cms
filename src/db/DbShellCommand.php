@@ -24,7 +24,10 @@ abstract class DbShellCommand extends Component
 
     protected function getCommand(): ShellCommand
     {
-        return new ShellCommand();
+        $shellCommand = new ShellCommand();
+        $shellCommand->escapeArgs = false;
+
+        return $shellCommand;
     }
 
     public function getExecCommand(): string

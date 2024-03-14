@@ -23,7 +23,8 @@ class BackupCommand extends DbShellCommand
             ($isMySQL5 && version_compare($serverVersion, '5.7.41', '>=')) ||
             ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>='));
 
-        $command = new ShellCommand('mysqldump');
+        $command = parent::getCommand();
+        $command->setCommand('mysqldump');
         $command->addArg('--defaults-file=', $this->createDumpConfigFile());
         $command->addArg('--add-drop-table');
         $command->addArg('--comments');

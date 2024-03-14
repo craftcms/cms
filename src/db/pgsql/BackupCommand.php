@@ -16,7 +16,9 @@ class BackupCommand extends DbShellCommand
 
     protected function getCommand(): ShellCommand
     {
-        $command = new ShellCommand('pg_dump');
+        $command = parent::getCommand();
+        $command->setCommand('pg_dump');
+
         $db = Craft::$app->getDb();
         $ignoreTables = $this->ignoreTables ?? $db->getIgnoredBackupTables();
 
