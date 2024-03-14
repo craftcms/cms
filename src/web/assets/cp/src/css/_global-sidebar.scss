@@ -124,11 +124,11 @@
 
 .nav-item__subnav {
   --prefix-ratio: 4/3;
-  @include visually-hidden;
+  display: none;
   grid-area: subnav;
 
   &[data-state='expanded'] {
-    @include not-visually-hidden;
+    display: block;
   }
 }
 

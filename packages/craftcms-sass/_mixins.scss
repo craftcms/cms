@@ -635,8 +635,8 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin menu-item-active-styles {
-  color: $menuOptionActiveColor;
-  background-color: $menuOptionActiveBackgroundColor;
+  color: var(--white);
+  background-color: var(--dark-sel-color);
 }
 
 @mixin disclosure-link-hover-styles {
