@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where navigating back after creating an entry or applying a draft would return a 404 error. ([#14587](https://github.com/craftcms/cms/issues/14587))
 - Fixed a bug where <kbd>Return</kbd>/<kbd>Spacebar</kbd> presses would close disclosure menus without activating the focused item. ([#14584](https://github.com/craftcms/cms/issues/14584))
 
 ## 5.0.0-beta.7 - 2024-03-12
