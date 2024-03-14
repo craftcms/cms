@@ -1084,6 +1084,7 @@ return [
     'Offline' => 'Offline',
     'One of {name}’s migrations failed.' => 'One of {name}’s migrations failed.',
     'One update available!' => 'One update available!',
+    'One-time password QR code' => 'One-time password QR code',
     'Online' => 'Online',
     'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only one source is allowed when relating ancestors.' => 'Only one source is allowed when relating ancestors.',

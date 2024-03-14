@@ -22,7 +22,7 @@
 <div class="pane">
   {% if (qrCode is defined and qrCode is not empty) or (secret is defined and secret is not empty) %}
     {% if qrCode is defined and qrCode is not empty %}
-      {{ qrCode|raw }}
+      {{ qrCode|raw | attr({'aria-label': 'One-time password QR code' | t('app')}) }}
     {% endif %}
     {% if secret is defined and secret is not empty %}
       <div class="mt-m">
