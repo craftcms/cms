@@ -565,6 +565,14 @@ export default Base.extend(
         el.append(description);
       }
 
+      if (type === 'link') {
+        this.addListener(el, 'keydown', (ev) => {
+          if (ev.keyCode === Garnish.SPACE_KEY) {
+            el.click();
+          }
+        });
+      }
+
       this.addListener(el, 'activate', () => {
         if (item.onActivate) {
           item.onActivate();
