@@ -12,6 +12,7 @@
 - Fixed a bug where it wasn’t possible to fetch related elements by their source elements via the `relatedTo` param, if a relational field(s) was specified. ([#14552](https://github.com/craftcms/cms/issues/14552))
 - Fixed a PHP error that occurred if an entry had an invalid `typeId`.
 - Fixed styling issues with right-to-left languages. ([#14589](https://github.com/craftcms/cms/issues/14589))
+- Fixed a bug where entry queries that didn’t specify a section were returning nested entries.
 
 ## 5.0.0-beta.7 - 2024-03-12
 
