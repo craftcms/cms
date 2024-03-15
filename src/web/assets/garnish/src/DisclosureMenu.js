@@ -565,13 +565,23 @@ export default Base.extend(
         el.append(description);
       }
 
+      if (type === 'link') {
+        this.addListener(el, 'keydown', (ev) => {
+          if (ev.keyCode === Garnish.SPACE_KEY) {
+            el.click();
+          }
+        });
+      }
+
       this.addListener(el, 'activate', () => {
         if (item.onActivate) {
           item.onActivate();
         } else if (item.callback) {
           item.callback();
         }
-        this.hide();
+        setTimeout(() => {
+          this.hide();
+        }, 1);
       });
 
       return li;

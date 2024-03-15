@@ -111,8 +111,8 @@
 
     {% block selectionLabelField %}
         {{ forms.textField({
-            label: "Selection Label"|t('app'),
-            instructions: "Enter the text you want to appear on the {type} selection input."|t('app', { type: elementType }),
+            label: '“Add” Button Label'|t('app'),
+            instructions: 'The text label for {type} selection buttons.'|t('app', { type: elementType }),
             id: 'selection-label',
             name: 'selectionLabel',
             value: field.selectionLabel,

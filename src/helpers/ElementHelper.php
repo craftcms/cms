@@ -882,12 +882,13 @@ class ElementHelper
      * If no partial template exists for an element, its string representation will be output instead.
      *
      * @param ElementInterface[] $elements
+     * @param array $variables
      * @return Markup
      * @throws InvalidConfigException
      * @throws NotSupportedException
      * @since 5.0.0
      */
-    public static function renderElements(array $elements): Markup
+    public static function renderElements(array $elements, array $variables = []): Markup
     {
         $view = Craft::$app->getView();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -903,8 +904,9 @@ class ElementHelper
                 throw new InvalidConfigException(sprintf('Element “%s” doesn’t have a field layout provider that defines a handle, so it can’t be rendered with a partial template.', $element));
             }
             $template = sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle);
+            $variables[$refHandle] = $element;
             try {
-                $output[] = $view->renderTemplate($template, [$refHandle => $element], View::TEMPLATE_MODE_SITE);
+                $output[] = $view->renderTemplate($template, $variables, View::TEMPLATE_MODE_SITE);
             } catch (TwigLoaderError) {
                 // fallback to the string representation of the element
                 $output[] = Html::tag('p', Html::encode((string)$element));

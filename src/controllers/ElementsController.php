@@ -2059,54 +2059,15 @@ JS, [
                 ->one();
 
             if (!$element) {
+                // check for the canonical element as a fallback
+                $element = $this->_elementById($elementId, $elementUid, false, $elementType, $user, $siteId, $preferSites);
+                if ($element && $elementsService->canView($element, $user)) {
+                    return $this->redirect($element->getCpEditUrl());
+                }
                 throw new BadRequestHttpException($this->_draftId ? "Invalid draft ID: $this->_draftId" : "Invalid revision ID: $this->_revisionId");
             }
         } elseif ($elementId || $elementUid) {
-            if ($elementId) {
-                // First check for a provisional draft, if we're open to it
-                if ($checkForProvisionalDraft) {
-                    $element = $elementType::find()
-                        ->provisionalDrafts()
-                        ->draftOf($elementId)
-                        ->draftCreator($user)
-                        ->siteId($siteId)
-                        ->preferSites($preferSites)
-                        ->unique()
-                        ->status(null)
-                        ->one();
-                }
-
-                if (!isset($element) || !$this->_canSave($element, $user)) {
-                    $element = $elementType::find()
-                        ->id($elementId)
-                        ->siteId($siteId)
-                        ->preferSites($preferSites)
-                        ->unique()
-                        ->status(null)
-                        ->one();
-
-                    if (!$element) {
-                        // maybe an unpublished draft?
-                        $element = $elementType::find()
-                            ->id($elementId)
-                            ->siteId($siteId)
-                            ->preferSites($preferSites)
-                            ->unique()
-                            ->draftOf(false)
-                            ->status(null)
-                            ->one();
-                    }
-                }
-            } else {
-                $element = $elementType::find()
-                    ->uid($elementUid)
-                    ->siteId($siteId)
-                    ->preferSites($preferSites)
-                    ->unique()
-                    ->status(null)
-                    ->one();
-            }
-
+            $element = $this->_elementById($elementId, $elementUid, $checkForProvisionalDraft, $elementType, $user, $siteId, $preferSites);
             if (!$element) {
                 throw new BadRequestHttpException($elementId ? "Invalid element ID: $elementId" : "Invalid element UUID: $elementUid");
             }
@@ -2114,7 +2075,7 @@ JS, [
             return null;
         }
 
-        if (!$elementsService->canView($element, static::currentUser())) {
+        if (!$elementsService->canView($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
@@ -2123,6 +2084,71 @@ JS, [
         }
 
         return $element;
+    }
+
+    private function _elementById(
+        ?int $elementId,
+        ?string $elementUid,
+        bool $checkForProvisionalDraft,
+        string $elementType,
+        User $user,
+        int|array $siteId,
+        ?array $preferSites,
+    ): ?ElementInterface {
+        /** @var string|ElementInterface $elementType */
+        if ($elementId) {
+            // First check for a provisional draft, if we're open to it
+            if ($checkForProvisionalDraft) {
+                $element = $elementType::find()
+                    ->provisionalDrafts()
+                    ->draftOf($elementId)
+                    ->draftCreator($user)
+                    ->siteId($siteId)
+                    ->preferSites($preferSites)
+                    ->unique()
+                    ->status(null)
+                    ->one();
+
+                if ($element && $this->_canSave($element, $user)) {
+                    return $element;
+                }
+            }
+
+            $element = $elementType::find()
+                ->id($elementId)
+                ->siteId($siteId)
+                ->preferSites($preferSites)
+                ->unique()
+                ->status(null)
+                ->one();
+
+            if ($element) {
+                return $element;
+            }
+
+            // finally, check for an unpublished draft
+            // (see https://github.com/craftcms/cms/issues/14199)
+            return $elementType::find()
+                ->id($elementId)
+                ->siteId($siteId)
+                ->preferSites($preferSites)
+                ->unique()
+                ->draftOf(false)
+                ->status(null)
+                ->one();
+        }
+
+        if ($elementUid) {
+            return $elementType::find()
+                ->uid($elementUid)
+                ->siteId($siteId)
+                ->preferSites($preferSites)
+                ->unique()
+                ->status(null)
+                ->one();
+        }
+
+        return null;
     }
 
     /**

@@ -6421,7 +6421,7 @@ $min2ColWidth: 400px;
         a,
         .menu-item,
         .menu-option {
-          @include padding-left(calc(var(--m) + 18rem / 16));
+          padding-inline-start: calc(var(--m) + 18rem / 16);
 
           &.sel {
             &:not([data-icon]):before {
@@ -6430,7 +6430,7 @@ $min2ColWidth: 400px;
               font-size: 14px;
               width: 14px;
               content: 'check';
-              color: var(--ui-control-color);
+              color: currentColor;
               margin-top: 3px !important;
             }
           }
@@ -6539,7 +6539,7 @@ $min2ColWidth: 400px;
       top: -2px;
       text-align: center;
       font-size: 14px;
-      color: var(--ui-control-color);
+      color: currentColor;
     }
 
     span.icon:not([data-icon]) svg {
@@ -6564,20 +6564,31 @@ $min2ColWidth: 400px;
   }
 }
 
-.menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
+/* prettier-ignore */
+.menu:not(.menu--disclosure) ul li a:not(.disabled):hover,
 .menu:not(.menu--disclosure) ul li .menu-item:not(.sel):not(.disabled):hover,
 .menu:not(.menu--disclosure) ul li .menu-option:not(.sel):not(.disabled):hover,
-.menu:not(.menu--disclosure):not(:hover) ul li a:not(.sel):not(.disabled).hover,
-.menu:not(.menu--disclosure):not(:hover)
-  ul
-  li
-  .menu-item:not(.sel):not(.disabled).hover,
-.menu:not(.menu--disclosure):not(:hover)
-  ul
-  li
-  .menu-option:not(.sel):not(.disabled).hover {
+.menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover,
+.menu:not(.menu--disclosure):not(:hover) ul li .menu-item:not(.sel):not(.disabled).hover,
+.menu:not(.menu--disclosure):not(:hover) ul li .menu-option:not(.sel):not(.disabled).hover {
   @include menu-item-active-styles;
+
+  // Pretty gnarly, but needs to override the default hover styles with this selector
+  .status:not(.on):not(.live):not(.active):not(.enabled):not(.all) {
+    &:not(.pending):not(.warning):not(.off):not(.suspended):not(.expired) {
+      &:not(.light):not(.gray):not(.red):not(.orange):not(.amber):not(.yellow) {
+        &:not(.lime):not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky) {
+          &:not(.blue):not(.indigo):not(.violet):not(.purple):not(.fuchsia) {
+            &:not(.pink):not(.rose):not(.grey):not(.black) {
+              border-color: currentColor;
+            }
+          }
+        }
+      }
+    }
+  }
 }
+
 .menu {
   hr.padded,
   .h6.padded,

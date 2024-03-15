@@ -990,6 +990,17 @@ class ExtensionTest extends TestCase
         );
     }
 
+    public function testFieldValueSqlFunction(): void
+    {
+        $entryType = Craft::$app->getEntries()->getEntryTypeByHandle('test1');
+        $field = $entryType->getFieldLayout()->getFieldByHandle('plainTextField');
+        $valueSql = $field->getValueSql();
+        $this->testRenderResult(
+            $valueSql,
+            '{{ fieldValueSql(entryType(\'test1\'), \'plainTextField\') }}'
+        );
+    }
+
     /**
      *
      */

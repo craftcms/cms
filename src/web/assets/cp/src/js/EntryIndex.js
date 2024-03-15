@@ -87,7 +87,9 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       if (selectedSection) {
         const visibleLabel =
           this.settings.context === 'index'
-            ? Craft.t('app', 'New entry')
+            ? Craft.t('app', 'New {type}', {
+                type: Craft.t('app', 'entry'),
+              })
             : Craft.t('app', 'New {section} entry', {
                 section: selectedSection.name,
               });
@@ -144,7 +146,9 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       } else {
         this.$newEntryBtn = $menuBtn = Craft.ui
           .createButton({
-            label: Craft.t('app', 'New entry'),
+            label: Craft.t('app', 'New {type}', {
+              type: Craft.t('app', 'entry'),
+            }),
             ariaLabel: Craft.t('app', 'New entry, choose a section'),
             spinner: true,
           })

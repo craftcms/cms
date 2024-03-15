@@ -490,7 +490,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var array The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
      */
-    protected array $defaultOrderBy = ['elements.dateCreated' => SORT_DESC];
+    protected array $defaultOrderBy = [
+        'elements.dateCreated' => SORT_DESC,
+        'elements.id' => SORT_DESC,
+    ];
 
     // For internal use
     // -------------------------------------------------------------------------
@@ -1836,15 +1839,16 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * If no partial template exists for an element, its string representation will be output instead.
      *
+     * @param array $variables
      * @return Markup
      * @throws InvalidConfigException
      * @throws NotSupportedException
      * @see ElementHelper::renderElements()
      * @since 5.0.0
      */
-    public function render(): Markup
+    public function render(array $variables = []): Markup
     {
-        return ElementHelper::renderElements($this->all());
+        return ElementHelper::renderElements($this->all(), $variables);
     }
 
     /**
@@ -2514,7 +2518,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $parser = new ElementRelationParamParser([
-            'fields' => $this->customFields ? ArrayHelper::index($this->customFields, 'handle') : [],
+            'fields' => $this->customFields ? ArrayHelper::index(
+                $this->customFields,
+                fn(FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
+            ) : [],
         ]);
         $condition = $parser->parse($this->relatedTo, $this->siteId !== '*' ? $this->siteId : null);
 

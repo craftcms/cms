@@ -244,7 +244,10 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['entries.postDate' => SORT_DESC];
+    protected array $defaultOrderBy = [
+        'entries.postDate' => SORT_DESC,
+        'elements.id' => SORT_DESC,
+    ];
 
     /**
      * @inheritdoc

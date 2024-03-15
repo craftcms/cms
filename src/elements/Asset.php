@@ -1467,7 +1467,7 @@ class Asset extends Element
             ];
 
             $view->registerJsWithVars(fn($id, $assetId, $settings) => <<<JS
-$('#' + $id).on('click', () => {
+$('#' + $id).on('activate', () => {
   new Craft.PreviewFileModal($assetId, $settings);
 });
 JS, [
@@ -1490,7 +1490,7 @@ JS, [
         ];
 
         $view->registerJsWithVars(fn($id, $assetId) => <<<JS
-$('#' + $id).on('click', () => {
+$('#' + $id).on('activate', () => {
   const form = Craft.createForm().appendTo(Garnish.\$bod);
   form.append(Craft.getCsrfInput());
   $('<input/>', {type: 'hidden', name: 'action', value: 'assets/download-asset'}).appendTo(form);
@@ -1535,7 +1535,7 @@ JS, [
             ];
 
             $view->registerJsWithVars(fn($id, $namespace, $assetId, $fsType, $dimensionsLabel) => <<<JS
-$('#' + $id).on('click', () => {
+$('#' + $id).on('activate', () => {
   const fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
   const uploader = Craft.createUploader($fsType, fileInput, {
     dropZone: null,
@@ -1633,7 +1633,7 @@ JS, [
             ];
 
             $view->registerJsWithVars(fn($id, $assetId) => <<<JS
-$('#' + $id).on('click', () => {
+$('#' + $id).on('activate', () => {
   new Craft.AssetImageEditor($assetId, {
     allowDegreeFractions: Craft.isImagick,
     onSave: (data) => {
@@ -2670,7 +2670,7 @@ JS,[
                     }
                     $jsSettings = Json::encode($settings);
                     $js = <<<JS
-$('#$previewBtnId').on('click', () => {
+$('#$previewBtnId').on('activate', () => {
     new Craft.PreviewFileModal($this->id, null, $jsSettings);
 });
 JS;
@@ -2686,7 +2686,7 @@ JS;
                     $editBtnId = $view->namespaceInputId('edit-btn');
                     $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
                     $js = <<<JS
-$('#$editBtnId').on('click', () => {
+$('#$editBtnId').on('activate', () => {
     new Craft.AssetImageEditor($this->id, {
         allowDegreeFractions: Craft.isImagick,
         onSave: data => {
