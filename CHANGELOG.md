@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Improved accessibility throughout the control panel. ([#14571](https://github.com/craftcms/cms/pull/14571))
+- Improved accessibility throughout the control panel. ([#14571](https://github.com/craftcms/cms/pull/14571), [#14585](https://github.com/craftcms/cms/pull/14585))
 - The `relatedTo.field` element query param now must be set to the original field’s handle, rather than the overridden instance handle.
 - Added `craft\fieldlayoutelements\CustomField::getOriginalHandle()`.
 - Fixed a bug where navigating back after creating an entry or applying a draft would return a 404 error. ([#14587](https://github.com/craftcms/cms/issues/14587))
