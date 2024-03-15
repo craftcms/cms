@@ -27,20 +27,7 @@ class CraftTooltip extends HTMLElement {
       : 8;
 
     this.placement = this.getAttribute('placement') || 'bottom';
-    this.staticSide = {
-      top: 'bottom',
-      right: 'left',
-      bottom: 'top',
-      left: 'right',
-    }[this.placement.split('-')[0]];
-
-    // Make sure the bubble moves in a natural direction
-    this.initialTransform = {
-      top: `translateY(-${this.offset}px)`,
-      right: `translateX(${this.offset}px)`,
-      bottom: `translateY(${this.offset}px)`,
-      left: `translateX(-${this.offset}px)`,
-    }[this.staticSide];
+    this.direction = getComputedStyle(this).direction;
 
     if (this.arrow && !this.arrowElement) {
       this.renderInner();
@@ -60,6 +47,10 @@ class CraftTooltip extends HTMLElement {
 
     // Close on ESC
     document.addEventListener('keyup', this.handleKeyUp.bind(this));
+
+    // Update & hide to make sure everything is where it needs to be
+    this.update();
+    this.hide();
   }
 
   disconnectedCallback() {
@@ -104,7 +95,7 @@ class CraftTooltip extends HTMLElement {
     this.update();
     Object.assign(this.style, {
       opacity: 1,
-      transform: ['left', 'right'].includes(this.staticSide)
+      transform: ['left', 'right'].includes(this.getStaticSide())
         ? `translateX(0)`
         : `translateY(0)`,
       // Make sure if a user hovers over the label itself, it stays open
@@ -115,9 +106,28 @@ class CraftTooltip extends HTMLElement {
   hide() {
     Object.assign(this.style, {
       opacity: 0,
-      transform: this.initialTransform,
+      transform: this.getInitialTransform(),
       pointerEvents: 'none',
     });
+  }
+
+  getInitialTransform() {
+    // Make sure the bubble moves in a natural direction
+    return {
+      top: `translateY(-${this.offset}px)`,
+      right: `translateX(${this.offset}px)`,
+      bottom: `translateY(${this.offset}px)`,
+      left: `translateX(-${this.offset}px)`,
+    }[this.getStaticSide()];
+  }
+
+  getStaticSide() {
+    return {
+      top: 'bottom',
+      right: 'left',
+      bottom: 'top',
+      left: 'right',
+    }[this.placement.split('-')[0]];
   }
 
   update() {
@@ -131,9 +141,15 @@ class CraftTooltip extends HTMLElement {
         ...(this.arrow ? [arrow({element: this.arrowElement})] : []),
       ],
     }).then(({x, y, middlewareData, placement}) => {
+      // Placement may have changed
+      this.placement = placement;
+
       Object.assign(this.style, {
         left: `${x}px`,
         top: `${y}px`,
+        // Add padding to the static side for accessible hovers
+        [`padding${Craft.uppercaseFirst(this.getStaticSide())}`]:
+          `${this.offset}px`,
       });
 
       if (!this.arrowElement) {
@@ -141,23 +157,16 @@ class CraftTooltip extends HTMLElement {
       }
 
       const {x: arrowX, y: arrowY} = middlewareData.arrow;
-      // Add padding to the static side for accessible hovers
-      Object.assign(this.style, {
-        [`padding${Craft.uppercaseFirst(this.staticSide)}`]: `${this.offset}px`,
-      });
-
       this.arrowElement.dataset.placement = placement;
       Object.assign(this.arrowElement.style, {
         left: arrowX != null ? `${arrowX}px` : '',
         top: arrowY != null ? `${arrowY}px` : '',
         right: '',
         bottom: '',
-        [this.staticSide]: '-4px',
+        [this.getStaticSide()]: '-4px',
       });
     });
   }
 }
-
-export default CraftTooltip;
 
 customElements.define('craft-tooltip', CraftTooltip);
