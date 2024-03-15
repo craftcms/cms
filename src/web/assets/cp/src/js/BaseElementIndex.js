@@ -1990,11 +1990,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.updateFilterBtn();
       }
 
+      this.onSelectSource();
+
       this.sourcePath =
         this.sourcePaths[this.sourceKey] ||
         this.$source.data('default-source-path');
-
-      this.onSelectSource();
 
       if (this.settings.context === 'index') {
         const urlParams = Craft.getQueryParams();
