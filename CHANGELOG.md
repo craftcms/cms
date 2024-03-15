@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-beta.8 - 2024-03-15
 
 - Improved accessibility throughout the control panel. ([#14571](https://github.com/craftcms/cms/pull/14571), [#14585](https://github.com/craftcms/cms/pull/14585))
 - The `relatedTo.field` element query param now must be set to the original field’s handle, rather than the overridden instance handle.
