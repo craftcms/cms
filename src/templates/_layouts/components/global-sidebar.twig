@@ -1,3 +1,5 @@
+{% import "_includes/links" as links %}
+
 {% macro action(item, isSelected, showIcon) %}
     {% set showIcon = showIcon ?? true %}
     {% set selected = item.sel ?? isSelected ?? false %}
@@ -31,7 +33,9 @@
 
         <span class="sidebar-action__label">
             <span class="label">{{ item.label }}</span>
-            {% if external %}<span class="cp-icon puny">{{ iconSvg('external') }}</span>{% endif %}
+            {% if external %}
+              {{ links.externalLinkIcon() }}
+            {% endif %}
         </span>
 
         {%- if badgeCount -%}
@@ -81,11 +85,7 @@
                                 </craft-disclosure>
                                 <ul class="nav-item__subnav {{ item.sel ? 'is-open' : '' -}}" id="{{ item.id }}-subnav">
                                     {% for itemId, item in item.subnav %}
-                                        {% set itemIsSelected = (
-                                            (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
-                                            (selectedSubnavItem is not defined and loop.first)
-                                        ) -%}
-
+                                        {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId -%}
 
                                         <li class="nav-item nav-item--sub">
                                             {{ _self.action(item|merge({
