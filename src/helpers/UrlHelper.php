@@ -621,7 +621,7 @@ class UrlHelper
         }
 
         if ($useRequestHostInfo) {
-            $baseUrl = static::hostInfo(Craft::getAlias('@web'));
+            $baseUrl = Craft::getAlias('@web');
         } elseif ($showScriptName) {
             $baseUrl = $request->getIsConsoleRequest() ? '/' : static::host();
         } elseif ($cpUrl) {
@@ -631,7 +631,10 @@ class UrlHelper
         }
 
         if ($showScriptName) {
-            $baseUrl = rtrim($baseUrl, '/') . ($request->getIsConsoleRequest() ? '/index.php' : $request->getScriptUrl());
+            $baseUrl = sprintf('%s/%s',
+                rtrim($baseUrl, '/'),
+                ($request->getIsConsoleRequest() ? 'index.php' : basename($request->getScriptUrl())),
+            );
         }
 
         if ($scheme === null && !static::isAbsoluteUrl($baseUrl)) {

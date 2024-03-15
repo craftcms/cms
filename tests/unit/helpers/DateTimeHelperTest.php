@@ -611,8 +611,7 @@ class DateTimeHelperTest extends TestCase
                 'now',
             ],
             'no-params' => [false, ['date' => '', 'time' => '']],
-            'invalid-separator' => [false, '2018/08/09 20:00:00'],
-            'invalid-separator-2' => [false, '2018.08.09 20:00:00'],
+            'invalid-separator' => [false, '2018.08.09 20:00:00'],
             'null-type' => [false, null],
             'empty-string' => [false, ''],
             'empty-array' => [false, []],
@@ -631,6 +630,10 @@ class DateTimeHelperTest extends TestCase
             'other-locale' => [
                 new DateTime('2023-09-26 00:00:00', new DateTimeZone('UTC')),
                 ['date' => '26/9/2023', 'locale' => 'en-GB'],
+            ],
+            'constructor' => [
+                new DateTime('2am', new DateTimeZone('America/Los_Angeles')),
+                '2am',
             ],
         ];
     }
