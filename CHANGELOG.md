@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.8.3 - 2024-03-15
 
 - `craft\helpers\DateTime::toDateTime()` now attempts to create a `DateTime` object by passing the passe-in value into its constructor.
 - Fixed a bug where navigating back after creating an entry or applying a draft would return a 404 error. ([#14587](https://github.com/craftcms/cms/issues/14587))
