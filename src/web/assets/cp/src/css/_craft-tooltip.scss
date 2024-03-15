@@ -43,12 +43,12 @@ craft-tooltip .arrow {
   }
 
   &[data-placement^='top'] {
-    border-inline-color: var(--dark-hairline-color) transparent;
+    border-inline-color: transparent var(--dark-hairline-color);
     border-block-color: transparent var(--dark-hairline-color);
   }
 
   &[data-placement^='right'] {
-    border-inline-color: transparent var(--dark-hairline-color);
+    border-inline-color: var(--dark-hairline-color) transparent;
     border-block-color: transparent var(--dark-hairline-color);
   }
   &[data-placement^='left'] {
