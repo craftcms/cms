@@ -96,6 +96,10 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
+
+        // Prevent response from being cached with token
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
     }
 
@@ -1057,7 +1061,7 @@ class Html extends \yii\helpers\Html
             $offset = $tag['end'];
         }
     }
-    
+
     /**
      * Returns the contents of a given SVG file.
      *
