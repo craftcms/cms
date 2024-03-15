@@ -800,6 +800,7 @@ li.breadcrumb-toggle-wrapper {
       display: grid;
       grid-template-columns: 20px 1fr;
       gap: var(--s);
+      width: 100%;
 
       .notification-message {
         font-weight: bold;

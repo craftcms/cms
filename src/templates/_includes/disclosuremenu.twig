@@ -73,6 +73,15 @@
       {% endapply -%}
     {% endtag %}
   {% endtag %}
+  {% if type == 'link' %}
+    {% js %}
+      $('#{{ id|namespaceInputId }}').on('keydown', (ev) => {
+        if (ev.keyCode === Garnish.SPACE_KEY) {
+          ev.currentTarget.click();
+        }
+      });
+    {% endjs %}
+  {% endif %}
   {% js %}
     $('#{{ id|namespaceInputId }}').on('activate', () => {
       setTimeout(() => {

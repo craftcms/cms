@@ -1312,8 +1312,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         $section = Craft::$app->getEntries()->getSectionById($this->sectionId);
-        if ($section === null) {
-            throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
+        if (!$section) {
+            throw new InvalidConfigException("Invalid section ID: $this->sectionId");
         }
         return $section;
     }
@@ -1386,7 +1386,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * ```
      *
      * @return EntryType
-     * @throws InvalidConfigException if the section has no entry types
+     * @throws InvalidConfigException if [[typeId]] is invalid, or the section has no entry types
      */
     public function getType(): EntryType
     {
@@ -1399,7 +1399,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $this->_typeId = $entryTypes[0]->id;
         }
 
-        return Craft::$app->getEntries()->getEntryTypeById($this->_typeId);
+        $entryType = Craft::$app->getEntries()->getEntryTypeById($this->_typeId);
+        if (!$entryType) {
+            throw new InvalidConfigException("Invalid entry type ID: $this->_typeId");
+        }
+        return $entryType;
     }
 
     /**
