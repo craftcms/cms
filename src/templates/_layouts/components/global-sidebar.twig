@@ -85,11 +85,7 @@
                                 </craft-disclosure>
                                 <ul class="nav-item__subnav {{ item.sel ? 'is-open' : '' -}}" id="{{ item.id }}-subnav">
                                     {% for itemId, item in item.subnav %}
-                                        {% set itemIsSelected = (
-                                            (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
-                                            (selectedSubnavItem is not defined and loop.first)
-                                        ) -%}
-
+                                        {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId -%}
 
                                         <li class="nav-item nav-item--sub">
                                             {{ _self.action(item|merge({
