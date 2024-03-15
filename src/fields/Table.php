@@ -12,7 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
+use craft\gql\types\generators\TableRowType;
 use craft\gql\types\TableRow;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -573,7 +573,7 @@ class Table extends Field
      */
     public function getContentGqlType(): Type|array
     {
-        $type = TableRowTypeGenerator::generateType($this);
+        $type = TableRowType::generateType($this);
         return Type::listOf($type);
     }
 

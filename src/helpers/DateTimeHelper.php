@@ -998,7 +998,11 @@ class DateTimeHelper
             return new DateTime("@$value");
         }
 
-        return null;
+        try {
+            return new DateTime($value);
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     /**
