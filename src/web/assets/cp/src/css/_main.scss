@@ -1299,7 +1299,7 @@ td.right {
   }
 
   &.sel {
-    @include light-focus-ring;
+    @include dark-btn-light-bg-focus-ring;
     --ui-control-color: var(--selected-item-color);
     background-color: var(--dark-sel-color);
     color: var(--selected-item-color);
@@ -1823,7 +1823,7 @@ ul.icons {
     ) {
     background-color: var(--gray-500);
     color: var(--white);
-    @include light-focus-ring;
+    @include dark-btn-light-bg-focus-ring;
   }
 }
 
@@ -8575,7 +8575,7 @@ body.sitepicker {
           &.sel {
             background-color: var(--gray-500);
             color: var(--white);
-            @include light-focus-ring;
+            @include dark-btn-light-bg-focus-ring;
           }
         }
       }
