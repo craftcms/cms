@@ -1577,7 +1577,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             return count($cachedResult);
         }
 
-        return $this->prepareSubquery()->count($q, $db) ?: 0;
+        try {
+            return $this->prepareSubquery()->count($q, $db) ?: 0;
+        } catch (QueryAbortedException) {
+            return 0;
+        }
     }
 
     /**
@@ -1585,7 +1589,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function sum($q, $db = null)
     {
-        return $this->prepareSubquery()->sum($q, $db);
+        try {
+            return $this->prepareSubquery()->sum($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
     }
 
     /**
@@ -1593,7 +1601,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function average($q, $db = null)
     {
-        return $this->prepareSubquery()->average($q, $db);
+        try {
+            return $this->prepareSubquery()->average($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
     }
 
     /**
@@ -1601,7 +1613,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function min($q, $db = null)
     {
-        return $this->prepareSubquery()->min($q, $db);
+        try {
+            return $this->prepareSubquery()->min($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
     }
 
     /**
@@ -1609,7 +1625,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function max($q, $db = null)
     {
-        return $this->prepareSubquery()->max($q, $db);
+        try {
+            return $this->prepareSubquery()->max($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
     }
 
     /**
