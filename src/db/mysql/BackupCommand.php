@@ -25,7 +25,7 @@ class BackupCommand extends DbShellCommand
 
         $command = parent::getCommand();
         $command->setCommand('mysqldump');
-        $command->addArg('--defaults-file=', $this->createDumpConfigFile());
+        $command->addArg('--defaults-file=', $this->createMysqlDumpConfigFile());
         $command->addArg('--add-drop-table');
         $command->addArg('--comments');
         $command->addArg('--create-options');

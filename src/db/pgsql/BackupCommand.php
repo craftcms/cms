@@ -54,6 +54,6 @@ class BackupCommand extends DbShellCommand
      */
     public function getExecCommand(): string
     {
-        return $this->pgPasswordCommand() . $this->getCommand()->getExecCommand();
+        return $this->pgsqlPasswordCommand() . $this->getCommand()->getExecCommand();
     }
 }

@@ -41,7 +41,7 @@ abstract class DbShellCommand extends Component
      * @return string The path to the my.cnf file
      * @throws ErrorException
      */
-    protected function createDumpConfigFile(): string
+    protected function createMysqlDumpConfigFile(): string
     {
         if (!Craft::$app->getDb()->getIsMysql()) {
             throw new Exception('This method is only applicable to MySQL.');
@@ -55,11 +55,9 @@ abstract class DbShellCommand extends Component
             = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . StringHelper::randomString(12) . '.cnf';
 
         $parsed = Db::parseDsn($db->dsn);
-        $username = $db->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $db->username;
-        $password = $db->getIsPgsql() && !empty($parsed['password']) ? $parsed['password'] : $db->password;
         $contents = '[client]' . PHP_EOL .
-            'user=' . $username . PHP_EOL .
-            'password="' . addslashes($password) . '"';
+            'user=' . $db->username . PHP_EOL .
+            'password="' . addslashes($db->password) . '"';
 
         if (isset($parsed['unix_socket'])) {
             $contents .= PHP_EOL . 'socket=' . $parsed['unix_socket'];
@@ -92,7 +90,7 @@ abstract class DbShellCommand extends Component
      *
      * @return string
      */
-    protected function pgPasswordCommand(): string
+    protected function pgsqlPasswordCommand(): string
     {
         if (!Craft::$app->getDb()->getIsPgsql()) {
             throw new Exception('This method is only applicable to PostgreSQL.');

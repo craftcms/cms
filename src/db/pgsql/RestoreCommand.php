@@ -36,7 +36,7 @@ class RestoreCommand extends DbShellCommand
      */
     public function getExecCommand(): string
     {
-        return $this->pgPasswordCommand()
+        return $this->pgsqlPasswordCommand()
             . $this->getCommand()->getExecCommand()
             . $this->archiveFormat ? '' : '< "{file}"';
     }

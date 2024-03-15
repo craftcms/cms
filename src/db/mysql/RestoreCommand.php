@@ -11,7 +11,7 @@ class RestoreCommand extends DbShellCommand
     {
         $command = parent::getCommand();
         $command->setCommand('mysql');
-        $command->addArg('--defaults-file=', $this->createDumpConfigFile());
+        $command->addArg('--defaults-file=', $this->createMysqlDumpConfigFile());
         $command->addArg('{database}');
 
         return $this->callback
