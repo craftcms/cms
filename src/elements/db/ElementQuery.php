@@ -1670,8 +1670,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         // Cached?
         if (
-            !$this->offset &
-            !$this->limit &
+            !$this->offset &&
+            !$this->limit &&
             ($cachedResult = $this->getCachedResult()) !== null
         ) {
             return count($cachedResult);
