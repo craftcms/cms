@@ -1569,11 +1569,47 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function count($q = '*', $db = null): bool|int|string|null
     {
         // Cached?
-        if (($cachedResult = $this->getCachedResult()) !== null) {
+        if (
+            !$this->offset &
+            !$this->limit &
+            ($cachedResult = $this->getCachedResult()) !== null
+        ) {
             return count($cachedResult);
         }
 
-        return parent::count($q, $db) ?: 0;
+        return $this->prepareSubquery()->count($q, $db) ?: 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function sum($q, $db = null)
+    {
+        return $this->prepareSubquery()->sum($q, $db);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function average($q, $db = null)
+    {
+        return $this->prepareSubquery()->average($q, $db);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function min($q, $db = null)
+    {
+        return $this->prepareSubquery()->min($q, $db);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function max($q, $db = null)
+    {
+        return $this->prepareSubquery()->max($q, $db);
     }
 
     /**
