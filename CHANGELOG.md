@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-beta.9 - 2024-03-17
 
 - Entry queries that didn’t specify a section once again return nested entries, fixing a bug where it wasn’t possible to query or edit nested entries. ([#14610](https://github.com/craftcms/cms/issues/14610))
 
