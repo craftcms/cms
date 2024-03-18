@@ -2555,6 +2555,16 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
+     * Alternatively, this maybe set to a closure that accepts a [[\enshrined\svgSanitize\Sanitizer]] instance and returns
+     * a [[\enshrined\svgSanitize\Sanitizer]] instance further customization.
+     *
+     * ```php
+     * ->sanitizeSvgUploads(function(\enshrined\svgSanitize\Sanitizer $sanitizer): \enshrined\svgSanitize\Sanitizer {
+     *     $sanitizer->removeRemoteReferences(true);
+     *     return $sanitizer;
+     * })
+     * ```
+     *
      * @group Security
      */
     public bool|Closure $sanitizeSvgUploads = true;
@@ -5952,16 +5962,6 @@ class GeneralConfig extends BaseConfig
      * ```php
      * ->sanitizeSvgUploads(false)
      * ```
-     *
-     * Alternatively, this maybe set to a closure that accepts a [[\enshrined\svgSanitize\Sanitizer]] instance and returns
-     * a [[\enshrined\svgSanitize\Sanitizer]] instance further customization.
-     *
-     *  ```php
-     *  ->sanitizeSvgUploads(function(\enshrined\svgSanitize\Sanitizer $sanitizer): \enshrined\svgSanitize\Sanitizer {
-     *      $sanitizer->removeRemoteReferences(true);
-     *      return $sanitizer;
-     *  })
-     *  ```
      *
      * @group Security
      * @param bool|Closure(Sanitizer):Sanitizer $value
