@@ -93,6 +93,7 @@ class Dispatcher extends \yii\log\Dispatcher
                 'extractExceptionTrace' => !App::devMode(),
                 'allowLineBreaks' => $allowLineBreaks,
                 'level' => App::devMode() ? LogLevel::INFO : LogLevel::WARNING,
+                'logContext' => !Craft::$app->getRequest()->getIsConsoleRequest(),
             ];
 
             return [$name => Craft::createObject($config)];
