@@ -18,6 +18,7 @@ use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use yii\base\Event;
+use yii\base\Model;
 use yii\helpers\Inflector;
 
 /**
@@ -82,10 +83,19 @@ class MailerHelper
      */
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
     {
-        return Component::createComponent([
+        $component = Component::createComponent([
             'type' => $type,
-            'settings' => $settings,
         ], TransportAdapterInterface::class);
+
+        if ($settings) {
+            if ($component instanceof Model) {
+                $component->setAttributes($settings);
+            } else {
+                Craft::configure($component, $settings);
+            }
+        }
+
+        return $component;
     }
 
     /**
