@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use Closure;
 use Craft;
 use craft\base\Image;
 use craft\helpers\App;
@@ -19,7 +20,6 @@ use craft\image\SvgAllowedAttributes;
 use enshrined\svgSanitize\Sanitizer;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\Format;
-use Imagine\Imagick\Imagick;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
 use yii\base\Component;
@@ -320,12 +320,19 @@ class Images extends Component
 
         // Special case for SVG files.
         if (FileHelper::isSvg($filePath)) {
-            if (!Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads) {
+            $sanitizeSvgUploads = Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads;
+
+            if (!$sanitizeSvgUploads) {
                 return;
             }
 
             $sanitizer = new Sanitizer();
             $sanitizer->setAllowedAttrs(new SvgAllowedAttributes());
+
+            if ($sanitizeSvgUploads instanceof Closure) {
+                $sanitizer = ($sanitizeSvgUploads)($sanitizer);
+            }
+
             $svgContents = file_get_contents($filePath);
             $svgContents = $sanitizer->sanitize($svgContents);
 
