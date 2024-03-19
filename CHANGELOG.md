@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Selectize inputs no longer automatically select the hovered option on <kbd>Tab</kbd> press. ([selectize/selectize.js#2085](https://github.com/selectize/selectize.js/issues/2085))
+
 ## 4.8.4 - 2024-03-19
 
 - Craft no longer shows an alert when an installed Craft/plugin edition is a lower tier than the licensed edition.
