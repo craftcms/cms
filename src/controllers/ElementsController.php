@@ -899,7 +899,7 @@ class ElementsController extends Controller
                 $button = Html::tag('craft-tooltip', $button, [
                     'aria-label' => Craft::t(
                         'app',
-                        'The Entry Type for this draft is no longer available. You can still view it, but not apply it.'
+                        'This draft’s entry type is no longer available. You can still view it, but not apply it.'
                     ),
                 ]);
             }
@@ -920,7 +920,7 @@ class ElementsController extends Controller
                 $button = Html::tag('craft-tooltip', $button, [
                     'aria-label' => Craft::t(
                         'app',
-                        'The Entry Type for this revision is no longer available. You can still view this revision, but not revert to it.'
+                        'This revision’s entry type is no longer available. You can still view it, but not revert to it.'
                     ),
                 ]);
             }
