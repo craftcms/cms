@@ -1893,6 +1893,14 @@ var JobProgressIcon = Garnish.Base.extend({
       .appendTo($labelContainer)
       .hide();
 
+    this.$tooltip = $('<craft-tooltip/>', {
+      placement: 'right',
+      'self-managed': true,
+      'aria-label': this.$label.text(),
+    }).appendTo(this.$a);
+
+    console.log(this.$tooltip);
+
     let m = window.devicePixelRatio > 1 ? 2 : 1;
     this._canvasSize = 18 * m;
     this._arcPos = this._canvasSize / 2;
@@ -1919,6 +1927,8 @@ var JobProgressIcon = Garnish.Base.extend({
     } else {
       this.$progressLabel.hide();
     }
+
+    this.$tooltip.attr('aria-label', description);
   },
 
   setProgress: function (progress) {
