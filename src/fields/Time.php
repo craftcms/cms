@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
@@ -217,6 +218,14 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     {
         /** @var DateTime|null $value */
         return $value?->format('H:i:s');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementConditionRuleType(): array|string|null
+    {
+        return EmptyFieldConditionRule::class;
     }
 
     /**
