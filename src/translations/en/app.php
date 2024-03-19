@@ -965,6 +965,7 @@ return [
     'Move to the left' => 'Move to the left',
     'Move to the right' => 'Move to the right',
     'Move to' => 'Move to',
+    'Move to…' => 'Move to…',
     'Move up' => 'Move up',
     'Move' => 'Move',
     'Move…' => 'Move…',
