@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Console requests no longer filter out info logs. ([#14280](https://github.com/craftcms/cms/issues/14280), [#14434](https://github.com/craftcms/cms/pull/14434))
+
+## 5.0.0-beta.9 - 2024-03-17
+
+- Entry queries that didn’t specify a section once again return nested entries, fixing a bug where it wasn’t possible to query or edit nested entries. ([#14610](https://github.com/craftcms/cms/issues/14610))
+
 ## 5.0.0-beta.8 - 2024-03-15
 
 - Improved accessibility throughout the control panel. ([#14571](https://github.com/craftcms/cms/pull/14571), [#14585](https://github.com/craftcms/cms/pull/14585))
@@ -14,7 +22,6 @@
 - Fixed a bug where it wasn’t possible to fetch related elements by their source elements via the `relatedTo` param, if a relational field(s) was specified. ([#14552](https://github.com/craftcms/cms/issues/14552))
 - Fixed a PHP error that occurred if an entry had an invalid `typeId`.
 - Fixed styling issues with right-to-left languages. ([#14589](https://github.com/craftcms/cms/issues/14589))
-- Fixed a bug where entry queries that didn’t specify a section were returning nested entries.
 
 ## 5.0.0-beta.7 - 2024-03-12
 

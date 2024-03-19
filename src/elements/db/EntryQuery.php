@@ -1528,8 +1528,6 @@ class EntryQuery extends ElementQuery
                     $this->withStructure = false;
                 }
             }
-        } else {
-            $this->subQuery->andWhere(['not', ['entries.sectionId' => null]]);
         }
     }
 
