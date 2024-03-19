@@ -1669,11 +1669,72 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function count($q = '*', $db = null): bool|int|string|null
     {
         // Cached?
-        if (($cachedResult = $this->getCachedResult()) !== null) {
+        if (
+            !$this->offset &&
+            !$this->limit &&
+            ($cachedResult = $this->getCachedResult()) !== null
+        ) {
             return count($cachedResult);
         }
 
-        return $this->eagerLoad(true) ?? parent::count($q, $db) ?: 0;
+        $eagerLoadedCount = $this->eagerLoad(true);
+        if ($eagerLoadedCount !== null) {
+            return $eagerLoadedCount;
+        }
+
+        try {
+            return $this->prepareSubquery()->count($q, $db) ?: 0;
+        } catch (QueryAbortedException) {
+            return 0;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function sum($q, $db = null)
+    {
+        try {
+            return $this->prepareSubquery()->sum($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function average($q, $db = null)
+    {
+        try {
+            return $this->prepareSubquery()->average($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function min($q, $db = null)
+    {
+        try {
+            return $this->prepareSubquery()->min($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function max($q, $db = null)
+    {
+        try {
+            return $this->prepareSubquery()->max($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
     }
 
     /**

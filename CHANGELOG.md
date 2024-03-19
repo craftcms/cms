@@ -2,11 +2,25 @@
 
 ## Unreleased
 
-- Improved accessibility throughout the control panel. ([#14571](https://github.com/craftcms/cms/pull/14571))
+- Element conditions can now include condition rules for Time fields. ([#14616](https://github.com/craftcms/cms/discussions/14616))
+- Console requests no longer filter out info logs. ([#14280](https://github.com/craftcms/cms/issues/14280), [#14434](https://github.com/craftcms/cms/pull/14434))
+- Fixed a bug where scrolling the global sidebar would also scroll the rest of the page. ([#14611](https://github.com/craftcms/cms/issues/14611))
+- Fixed an error that could occur if stale settings were set on a mailer transport type. ([#14555](https://github.com/craftcms/cms/issues/14555))
+
+## 5.0.0-beta.9 - 2024-03-17
+
+- Entry queries that didn’t specify a section once again return nested entries, fixing a bug where it wasn’t possible to query or edit nested entries. ([#14610](https://github.com/craftcms/cms/issues/14610))
+
+## 5.0.0-beta.8 - 2024-03-15
+
+- Improved accessibility throughout the control panel. ([#14571](https://github.com/craftcms/cms/pull/14571), [#14585](https://github.com/craftcms/cms/pull/14585))
 - The `relatedTo.field` element query param now must be set to the original field’s handle, rather than the overridden instance handle.
 - Added `craft\fieldlayoutelements\CustomField::getOriginalHandle()`.
+- `craft\helpers\DateTime::toDateTime()` now attempts to create a `DateTime` object by passing the passe-in value into its constructor.
+- Improved the performance of scalar element queries like `count()`.
 - Fixed a bug where navigating back after creating an entry or applying a draft would return a 404 error. ([#14587](https://github.com/craftcms/cms/issues/14587))
 - Fixed a bug where action URLs weren’t respecting the subpath specified by the `@web` alias, if it wasn’t present in the local URL to `index.php`.
+- Fixed a bug where `craft\elements\db\ElementQuery::count()` could return the wrong number if the query had a cached result, with `offset` or `limit` params.
 - Fixed a bug where <kbd>Return</kbd>/<kbd>Spacebar</kbd> presses would close disclosure menus without activating the focused item. ([#14584](https://github.com/craftcms/cms/issues/14584), [#14598](https://github.com/craftcms/cms/issues/14598))
 - Fixed a bug where it wasn’t possible to fetch related elements by their source elements via the `relatedTo` param, if a relational field(s) was specified. ([#14552](https://github.com/craftcms/cms/issues/14552))
 - Fixed a PHP error that occurred if an entry had an invalid `typeId`.

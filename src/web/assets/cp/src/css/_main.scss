@@ -617,10 +617,6 @@ li.sel > a {
   }
 }
 
-a [data-icon='external'] {
-  @include margin-left(var(--xs));
-}
-
 button {
   cursor: pointer;
 }
