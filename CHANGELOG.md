@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## 4.8.4 - 2024-03-19
+
+- Craft no longer shows an alert when an installed Craft/plugin edition is a lower tier than the licensed edition.
+
 ## 4.8.3 - 2024-03-15
 
 - `craft\helpers\DateTime::toDateTime()` now attempts to create a `DateTime` object by passing the passe-in value into its constructor.
