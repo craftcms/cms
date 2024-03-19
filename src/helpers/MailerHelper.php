@@ -89,7 +89,7 @@ class MailerHelper
 
         if ($settings) {
             if ($component instanceof Model) {
-                $component->setAttributes($settings);
+                $component->setAttributes($settings, false);
             } else {
                 Craft::configure($component, $settings);
             }
