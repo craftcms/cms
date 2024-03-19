@@ -22,6 +22,10 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  * @example <craft-tooltip aria-label="Tooltip content"><button type="button">Trigger</button></craft-tooltip>
  */
 class CraftTooltip extends HTMLElement {
+  static get observedAttributes() {
+    return ['aria-label'];
+  }
+
   connectedCallback() {
     this.arrowElement = this.querySelector('.arrow');
     this.trigger = this.querySelector('a, button, [role="button"]');
@@ -35,9 +39,10 @@ class CraftTooltip extends HTMLElement {
     this.placement = this.getAttribute('placement') || 'bottom';
     this.direction = getComputedStyle(this).direction;
 
+    this.renderTooltip();
+    this.renderInner();
+
     if (this.arrow && !this.arrowElement) {
-      this.renderTooltip();
-      this.renderInner();
       this.renderArrow();
     }
 
@@ -82,6 +87,17 @@ class CraftTooltip extends HTMLElement {
     }
 
     document.removeEventListener('keyup', this.handleKeyUp.bind(this));
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'aria-label' && this.inner) {
+      this.inner.innerText = newValue;
+
+      // innerText will remove the arrow, so we have to put it back if we need it.
+      if (this.arrow) {
+        this.renderArrow();
+      }
+    }
   }
 
   handleKeyUp(e) {
