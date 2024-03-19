@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Craft no longer shows an alert when an installed Craft/plugin edition is a lower tier than the licensed edition.
+
 ## 3.9.11 - 2024-03-05
 
 - Fixed a bug where `craft\web\Request::getIsPreview()` was returning `true` for requests with expired tokens. ([#14066](https://github.com/craftcms/cms/discussions/14066))

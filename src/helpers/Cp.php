@@ -196,18 +196,6 @@ class Cp
                             'edition' => $currentEdition,
                             'licenseId' => $licenseInfo['id'],
                         ];
-                    } else {
-                        if ($user->admin) {
-                            if ($generalConfig->allowAdminChanges) {
-                                $url = UrlHelper::cpUrl(sprintf('plugin-store/%s', $isCraft ? 'upgrade-craft' : $handle));
-                                $cta = Html::a(Craft::t('app', 'Resolve'), $url, ['class' => 'go']);
-                            } else {
-                                $cta = Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
-                            }
-                        } else {
-                            $cta = Craft::t('app', 'Please notify one of your site’s admins.');
-                        }
-                        $alerts[] = "$message $cta";
                     }
                 } elseif ($licenseInfo['status'] === LicenseKeyStatus::Astray) {
                     // updated too far
