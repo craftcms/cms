@@ -96,10 +96,9 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
-        $dynamicCsrfInputs = Craft::$app->getConfig()->getGeneral()->dynamicCsrfInputs;
-        $jsEnabled = Craft::$app->getRequest()->getRawCookies()->get('CRAFT_JS');
+        $dynamic = (bool)(ArrayHelper::remove($options, 'dynamic') ?? Craft::$app->getConfig()->getGeneral()->dynamicCsrfInputs);
 
-        if ($dynamicCsrfInputs && $jsEnabled) {
+        if ($dynamic) {
             $url = UrlHelper::actionUrl('users/session-info');
 
             return <<<HTML
@@ -124,22 +123,12 @@ HTML;
         }
 
         Craft::$app->getResponse()->setNoCacheHeaders();
-        $input = static::hiddenInput(
+
+        return static::hiddenInput(
             $request->csrfParam,
             $request->getCsrfToken(),
             $options,
         );
-
-        if (!$dynamicCsrfInputs) {
-            return $input;
-        }
-
-        return <<<HTML
-<script>
-   document.cookie = 'CRAFT_JS=1; path=/';
-</script>
-$input
-HTML;
     }
 
     /**
