@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.8.4 - 2024-03-19
 
 - Craft no longer shows an alert when an installed Craft/plugin edition is a lower tier than the licensed edition.
 
