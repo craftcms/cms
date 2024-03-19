@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-beta.10 - 2024-03-19
 
 - Element conditions can now include condition rules for Time fields. ([#14616](https://github.com/craftcms/cms/discussions/14616))
 - Craft no longer shows an alert when an installed Craft/plugin edition is a lower tier than the licensed edition.
