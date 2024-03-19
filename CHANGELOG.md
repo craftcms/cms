@@ -5,6 +5,7 @@
 - Element conditions can now include condition rules for Time fields. ([#14616](https://github.com/craftcms/cms/discussions/14616))
 - Console requests no longer filter out info logs. ([#14280](https://github.com/craftcms/cms/issues/14280), [#14434](https://github.com/craftcms/cms/pull/14434))
 - Fixed a bug where scrolling the global sidebar would also scroll the rest of the page. ([#14611](https://github.com/craftcms/cms/issues/14611))
+- Fixed an error that could occur if stale settings were set on a mailer transport type. ([#14555](https://github.com/craftcms/cms/issues/14555))
 
 ## 5.0.0-beta.9 - 2024-03-17
 
