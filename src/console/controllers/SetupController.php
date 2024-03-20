@@ -597,6 +597,19 @@ EOD;
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $minPhpVersion = '8.1';
+        $composerService = Craft::$app->getComposer();
+        $composerPhpVersion = $composerService->getConfig()['config']['platform']['php'] ?? null;
+        if ($composerPhpVersion !== null && version_compare($composerPhpVersion, $minPhpVersion, '<')) {
+            $this->failure("Craft Cloud requires PHP $minPhpVersion+, but your `composer.json` file is currently set to `$composerPhpVersion`.");
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+        $installedPhpVersion = App::phpVersion();
+        if (version_compare($installedPhpVersion, $minPhpVersion, '<')) {
+            $this->failure("Craft Cloud requires PHP $minPhpVersion+, but your environment is currently running $installedPhpVersion.");
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         $moduleInstalled = class_exists('craft\cloud\Module');
         $message = $this->markdownToAnsi(sprintf('%s the `craftcms/cloud` extension …',
             $moduleInstalled ? 'Updating' : 'Installing',
@@ -608,7 +621,7 @@ EOD;
         $output = new StreamOutput(fopen('php://output', 'w'));
         $io = new ConsoleIO($input, $output, new HelperSet([new QuestionHelper()]));
 
-        Craft::$app->getComposer()->install([
+        $composerService->install([
             'craftcms/cloud' => '*',
         ], $io);
 
