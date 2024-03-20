@@ -1567,8 +1567,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.afterAction(action, params);
           })
-          .catch(({response}) => {
-            Craft.cp.displayError(response.data.message);
+          .catch((e) => {
+            Craft.cp.displayError(e?.response?.data?.message);
           })
           .finally(() => {
             this.setIndexAvailable();
