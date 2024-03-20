@@ -1997,6 +1997,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $section = $this->getSection();
         $user = Craft::$app->getUser()->getIdentity();
 
+        $this->_applyActionBtnEntryTypeCompatibility();
+
         if ($section?->type !== Section::TYPE_SINGLE) {
             // Type
             $fields[] = (function() use ($static) {
@@ -2126,6 +2128,48 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $fields[] = parent::metaFieldsHtml($static);
 
         return implode("\n", $fields);
+    }
+
+    /**
+     * Checks if the "Apply Draft" and "Revert to a revision" buttons should be disabled and if so
+     * applies the tooltip message.
+     *
+     * @return void
+     * @throws InvalidConfigException
+     */
+    private function _applyActionBtnEntryTypeCompatibility(): void
+    {
+        $draftMessage = Craft::t(
+            'app',
+            'This draft’s entry type is no longer available. You can still view it, but not apply it.'
+        );
+        $revisionMessage = Craft::t(
+            'app',
+            'This revision’s entry type is no longer available. You can still view it, but not revert to it.'
+        );
+
+        if (!$this->isEntryTypeCompatible()) {
+            $js = <<<JS
+let applyDraftBtn = $('#action-buttons .tooltip-draft-btn')
+if (applyDraftBtn.length > 0) {
+  applyDraftBtn.addClass('disabled');
+  let tooltipBtn = `<craft-tooltip aria-label="$draftMessage">` +
+    applyDraftBtn.get(0).outerHTML +
+    `</craft-tooltip>`;
+  applyDraftBtn.replaceWith(tooltipBtn);
+}
+
+let revertRevisionBtn = $('#action-buttons .revision-draft-btn');
+if (revertRevisionBtn.length > 0) {
+  revertRevisionBtn.addClass('disabled');
+  let tooltipBtn = `<craft-tooltip aria-label="$revisionMessage">` +
+    revertRevisionBtn.get(0).outerHTML +
+    `</craft-tooltip>`;
+  revertRevisionBtn.replaceWith(tooltipBtn);
+}
+JS;
+            Craft::$app->getView()->registerJs($js);
+        }
     }
 
     /**

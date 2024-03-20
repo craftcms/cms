@@ -884,52 +884,25 @@ class ElementsController extends Controller
 
         // Apply draft
         if ($isDraft && !$isCurrent && $canSave && $canSaveCanonical) {
-            /** @phpstan-ignore-next-line */
-            $disabled = $canonical->hasMethod('isEntryTypeCompatible') && !$element->isEntryTypeCompatible();
-
-            $button = Html::button(Craft::t('app', 'Apply draft'), [
-                'class' => ['btn', 'secondary', 'formsubmit', $disabled ? 'disabled' : ''],
+            $components[] = Html::button(Craft::t('app', 'Apply draft'), [
+                'class' => ['btn', 'secondary', 'formsubmit', 'tooltip-draft-btn'],
                 'data' => [
                     'action' => 'elements/apply-draft',
                     'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
                 ],
             ]);
-
-            if ($disabled) {
-                $button = Html::tag('craft-tooltip', $button, [
-                    'aria-label' => Craft::t(
-                        'app',
-                        'This draft’s entry type is no longer available. You can still view it, but not apply it.'
-                    ),
-                ]);
-            }
-
-            $components[] = $button;
         }
 
         // Revert content from this revision
         if ($isRevision && $canSaveCanonical) {
-            /** @phpstan-ignore-next-line */
-            $disabled = $element->hasMethod('isEntryTypeCompatible') && !$element->isEntryTypeCompatible();
-
-            $button = Html::button(Craft::t('app', 'Revert content from this revision'), [
-                'class' => ['btn', 'formsubmit', $disabled ? 'disabled' : ''],
-            ]);
-
-            if ($disabled) {
-                $button = Html::tag('craft-tooltip', $button, [
-                    'aria-label' => Craft::t(
-                        'app',
-                        'This revision’s entry type is no longer available. You can still view it, but not revert to it.'
-                    ),
-                ]);
-            }
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
                 Html::hiddenInput('elementId', (string)$canonical->id) .
                 Html::hiddenInput('revisionId', (string)$element->revisionId) .
-                $button .
+                Html::button(Craft::t('app', 'Revert content from this revision'), [
+                    'class' => ['btn', 'formsubmit', 'revision-draft-btn'],
+                ]) .
                 Html::endForm();
         }
 
