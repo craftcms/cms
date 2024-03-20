@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Selectize inputs no longer automatically select the hovered option on <kbd>Tab</kbd> press. ([selectize/selectize.js#2085](https://github.com/selectize/selectize.js/issues/2085))
+- Fixed a JavaScript error that could occur if another error occurred when performing an element action.
 
 ## 4.8.4 - 2024-03-19
 
