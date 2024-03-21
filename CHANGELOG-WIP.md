@@ -5,9 +5,11 @@
 - Element conditions can now include condition rules for Time fields. ([#14616](https://github.com/craftcms/cms/discussions/14616))
 
 ### Development
+- Added the `language` element query param, which filters the resulting elements based on their sites’ languages. ([#14631](https://github.com/craftcms/cms/discussions/14631))
 - GraphQL responses now include full exception details, when Dev Mode is enabled or an admin is signed in with the “Show full exception views when Dev Mode is disabled” preference enabled. ([#14527](https://github.com/craftcms/cms/issues/14527))
 
 ### Extensibility
+- Added `craft\services\Sites::getSitesByLanguage()`.
 - Added `craft\web\ErrorHandler::exceptionAsArray()`.
 - Added `craft\web\ErrorHandler::showExceptionDetails()`.
 
