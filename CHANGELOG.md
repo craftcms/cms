@@ -5,6 +5,7 @@
 - Selectize inputs no longer automatically select the hovered option on <kbd>Tab</kbd> press. ([selectize/selectize.js#2085](https://github.com/selectize/selectize.js/issues/2085))
 - The `setup/cloud` command now ensures that the environment and `composer.json` are configured to use PHP 8.1+.
 - Fixed a JavaScript error that could occur if another error occurred when performing an element action.
+- Fixed a bug where filesystems’ `afterSave()` and `afterDelete()` methods weren’t getting called. ([#14634](https://github.com/craftcms/cms/pull/14634))
 
 ## 4.8.4 - 2024-03-19
 
