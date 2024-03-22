@@ -47,7 +47,7 @@ return [
     'Add Row Label' => 'اضافه کردن برچسب ردیف',
     'Add a block' => 'اضافه کردن یک بلوک',
     'Add a category' => 'اضافه کردن یک دسته بندی',
-    'Add a color' => 'Add a color',
+    'Add a color' => 'افزودن رنگ',
     'Add a column' => 'اضافه کردن یک ستون',
     'Add a filter' => 'اضافه‌کردن یک فیلتر',
     'Add a row' => 'اضافه کردن یک ردیف',
