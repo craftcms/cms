@@ -1944,6 +1944,9 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             // Type
             $fields[] = (function() use ($static) {
                 $entryTypes = $this->getAvailableEntryTypes();
+                if (!ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
+                    $entryTypes[] = $this->getType();
+                }
                 if (count($entryTypes) <= 1 && $this->isEntryTypeAllowed($entryTypes)) {
                     return null;
                 }
