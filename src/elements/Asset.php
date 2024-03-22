@@ -2606,6 +2606,18 @@ JS,[
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getInlineAttributeInputHtml(string $attribute): string
+    {
+        if ($this->isFolder) {
+            return '';
+        }
+
+        return parent::getInlineAttributeInputHtml($attribute);
+    }
+
+    /**
      * Returns the HTML for asset previews.
      *
      * @return string
