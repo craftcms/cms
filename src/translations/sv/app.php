@@ -1199,7 +1199,7 @@ return [
     'Public Schema' => 'Offentligt schema',
     'Purple' => 'Lila',
     'Pushing announcement to control panel users' => 'Skickar meddelande till kontrollpanelanvändare',
-    'QR Code' => 'QR Code',
+    'QR Code' => 'QR-kod',
     'Quality must be a number between 1 and 100 (included).' => 'Kvalitet måste vara ett tal mellan 1 och 100 (inkluderat).',
     'Quality' => 'Kvalitet',
     'Query for assets in the “{name}” volume' => 'Query for assets in the “{name}” volume',
