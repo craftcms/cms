@@ -7,6 +7,7 @@
 - Fixed a bug where filesystems’ `afterSave()` and `afterDelete()` methods weren’t getting called. ([#14634](https://github.com/craftcms/cms/pull/14634))
 - Fixed an error that could occur on `elements/recent-activity` Ajax requests when editing an element. ([#14635](https://github.com/craftcms/cms/issues/14635))
 - Fixed a bug where asset queries’ `hasAlt` param wasn’t working. ([#14642](https://github.com/craftcms/cms/pull/14642))
+- Fixed an error that occurred when inline-editing assets. ([#14646](https://github.com/craftcms/cms/issues/14646))
 
 ## 5.0.0-beta.10 - 2024-03-19
 
