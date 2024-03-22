@@ -1528,6 +1528,7 @@ return [
     'The Craft CMS control panel requires a newer web browser.' => 'The Craft CMS control panel requires a newer web browser.',
     'The Craft CMS license key in use belongs to {domain}' => 'The Craft CMS license key in use belongs to {domain}',
     'The Craft CMS license located at {file} belongs to {domain}.' => 'The Craft CMS license located at {file} belongs to {domain}.',
+    'The Entry Type is no longer available. Please select a different one.' => 'The Entry Type is no longer available. Please select a different one.',
     'The Plugin Store is not available, please try again later.' => 'The Plugin Store is not available, please try again later.',
     'The Reply-To email address Craft CMS should use when sending email.' => 'The Reply-To email address Craft CMS should use when sending email.',
     'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',

@@ -848,6 +848,16 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'required',
             'when' => fn() => !isset($this->fieldId),
         ];
+        $rules[] = [
+            ['typeId'],
+            function(string $attribute) {
+                if (!$this->isEntryTypeAllowed()) {
+                    $this->addError($attribute, Craft::t('app', 'The Entry Type is no longer available. Please select a different one.'));
+                }
+            },
+            'skipOnEmpty' => false,
+            'when' => fn() => !$this->getIsDraft(),
+        ];
         $rules[] = [['fieldId'], function(string $attribute) {
             if (isset($this->sectionId)) {
                 $this->addError($attribute, Craft::t('app', '`sectionId` and `fieldId` cannot both be set on an entry.'));
@@ -1934,7 +1944,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             // Type
             $fields[] = (function() use ($static) {
                 $entryTypes = $this->getAvailableEntryTypes();
-                if (count($entryTypes) <= 1) {
+                if (count($entryTypes) <= 1 && $this->isEntryTypeAllowed($entryTypes)) {
                     return null;
                 }
 
@@ -2569,5 +2579,22 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             !$this->getIsRevision() &&
             $this->getSection()?->enableVersioning
         );
+    }
+
+    /**
+     * Check if current typeId is in the array of passed in entry types.
+     * If no entry types are passed, check get all the available ones.
+     *
+     * @param array|null $entryTypes
+     * @return bool
+     * @throws InvalidConfigException
+     */
+    private function isEntryTypeAllowed(array|null $entryTypes = null): bool
+    {
+        if ($entryTypes === null) {
+            $entryTypes = $this->getAvailableEntryTypes();
+        }
+
+        return in_array($this->typeId, array_map(fn($entryType) => $entryType->id, $entryTypes));
     }
 }
