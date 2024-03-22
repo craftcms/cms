@@ -856,7 +856,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 }
             },
             'skipOnEmpty' => false,
-            'when' => fn() => !$this->getIsDraft(),
+            'when' => fn() => $this->getIsCanonical(),
         ];
         $rules[] = [['fieldId'], function(string $attribute) {
             if (isset($this->sectionId)) {
