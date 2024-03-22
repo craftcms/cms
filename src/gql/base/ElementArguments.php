@@ -135,6 +135,11 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::int(),
                 'description' => 'Sets the offset for paginated results.',
             ],
+            'language' => [
+                'name' => 'language',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'Determines which site(s) the elements should be queried in, based on their language.',
+            ],
             'limit' => [
                 'name' => 'limit',
                 'type' => Type::int(),

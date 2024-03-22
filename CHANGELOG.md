@@ -2,7 +2,15 @@
 
 ## Unreleased
 
+- Selectize inputs no longer automatically select the hovered option on <kbd>Tab</kbd> press. ([selectize/selectize.js#2085](https://github.com/selectize/selectize.js/issues/2085))
+- Fixed a bug where filesystems’ `afterSave()` and `afterDelete()` methods weren’t getting called. ([#14634](https://github.com/craftcms/cms/pull/14634))
+- Fixed an error that could occur on `elements/recent-activity` Ajax requests when editing an element. ([#14635](https://github.com/craftcms/cms/issues/14635))
+- Fixed a bug where asset queries’ `hasAlt` param wasn’t working. ([#14642](https://github.com/craftcms/cms/pull/14642))
+
+## 5.0.0-beta.10 - 2024-03-19
+
 - Element conditions can now include condition rules for Time fields. ([#14616](https://github.com/craftcms/cms/discussions/14616))
+- Craft no longer shows an alert when an installed Craft/plugin edition is a lower tier than the licensed edition.
 - Console requests no longer filter out info logs. ([#14280](https://github.com/craftcms/cms/issues/14280), [#14434](https://github.com/craftcms/cms/pull/14434))
 - Fixed a bug where scrolling the global sidebar would also scroll the rest of the page. ([#14611](https://github.com/craftcms/cms/issues/14611))
 - Fixed an error that could occur if stale settings were set on a mailer transport type. ([#14555](https://github.com/craftcms/cms/issues/14555))
