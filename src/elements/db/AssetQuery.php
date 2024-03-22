@@ -966,21 +966,6 @@ class AssetQuery extends ElementQuery
             $this->subQuery->andWhere($kindCondition);
         }
 
-        if ($this->hasAlt !== null) {
-            $hasAltCondition = [
-                'or',
-                ['assets.alt' => null],
-                ['assets_site.alt' => null],
-            ];
-            $this->subQuery
-                ->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
-                    'and',
-                    '[[assets_sites.assetId]] = [[assets.id]]',
-                    '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
-                ])
-                ->andWhere($this->hasAlt ? ['not', $hasAltCondition] : $hasAltCondition);
-        }
-
         if ($this->width) {
             $this->subQuery->andWhere(Db::parseNumericParam('assets.width', $this->width));
         }
@@ -1001,6 +986,30 @@ class AssetQuery extends ElementQuery
         $this->_applyAuthParam($this->savable, 'saveAssets', 'savePeerAssets');
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function afterPrepare(): bool
+    {
+        if ($this->hasAlt !== null) {
+            $hasAltCondition = [
+                'or',
+                ['assets.alt' => null],
+                ['assets_sites.alt' => null],
+            ];
+
+            $this->subQuery
+                ->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
+                    'and',
+                    '[[assets_sites.assetId]] = [[assets.id]]',
+                    '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
+                ])
+                ->andWhere($this->hasAlt ? ['not', $hasAltCondition] : $hasAltCondition);
+        }
+
+        return parent::afterPrepare();
     }
 
     /**
