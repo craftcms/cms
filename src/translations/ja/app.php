@@ -312,7 +312,7 @@ return [
     'Connect the database' => 'データベースに接続',
     'Connecting to CraftCMS.com…' => 'CraftCMS.com に接続しています…',
     'Constraints' => '制約',
-    'Contact Developer Support' => 'Contact Developer Support',
+    'Contact Developer Support' => '開発者サポートに問い合わせる',
     'Content' => 'コンテンツ',
     'Contents of {path}' => '{path}のコンテンツ',
     'Context' => 'コンテキスト',
