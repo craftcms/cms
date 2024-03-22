@@ -3332,6 +3332,10 @@ table {
         overflow: hidden;
         text-wrap: pretty;
       }
+
+      span.checkbox-icon + span {
+        margin-inline-start: 5px;
+      }
     }
   }
 
