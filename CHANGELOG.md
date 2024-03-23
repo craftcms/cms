@@ -6,7 +6,7 @@
 - Selectize inputs no longer automatically select the hovered option on <kbd>Tab</kbd> press. ([selectize/selectize.js#2085](https://github.com/selectize/selectize.js/issues/2085))
 - Entries now validate that their selected type is allowed by the section. ([#14654](https://github.com/craftcms/cms/pull/14654))
 - Improved the styling of queue jobs in the global sidebar. ([#14656](https://github.com/craftcms/cms/pull/14656))
-- Lightswitch fields now show their field name when included in element cards. ([#14657](https://github.com/craftcms/cms/pull/14657))
+- Lightswitch fields now show their field name when included in element cards. ([#14655](https://github.com/craftcms/cms/pull/14657), [#14657](https://github.com/craftcms/cms/pull/14657))
 - Fixed a bug where filesystems’ `afterSave()` and `afterDelete()` methods weren’t getting called. ([#14634](https://github.com/craftcms/cms/pull/14634))
 - Fixed an error that could occur on `elements/recent-activity` Ajax requests when editing an element. ([#14635](https://github.com/craftcms/cms/issues/14635))
 - Fixed a bug where asset queries’ `hasAlt` param wasn’t working. ([#14642](https://github.com/craftcms/cms/pull/14642))
