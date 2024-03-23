@@ -2116,6 +2116,7 @@ return [
     '{type} deleted for site.' => '{type} נמחק עבור האתר.',
     '{type} deleted.' => '{type} נמחק.',
     '{type} duplicated.' => '{type} שוכפל.',
+    '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type} entries are no longer allowed in this section. Please choose a different entry type.',
     '{type} not restored.' => '{type} לא שוחזרו.',
     '{type} restored.' => '{type} שוחזרו.',
     '{type} reverted to past revision.' => '{type} שוחזר לתיקון הקודם.',
