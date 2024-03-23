@@ -2116,6 +2116,7 @@ return [
     '{type} deleted for site.' => 'تم حذف {type} لهذا الموقع.',
     '{type} deleted.' => 'تم حذف {type}.',
     '{type} duplicated.' => 'تم تكرار {type}.',
+    '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type} entries are no longer allowed in this section. Please choose a different entry type.',
     '{type} not restored.' => 'لم تتم استعادة {type}.',
     '{type} restored.' => 'تمت استعادة {type}.',
     '{type} reverted to past revision.' => 'تمت إعادة {type} إلى النسخة السابقة.',
