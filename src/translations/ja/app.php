@@ -2116,6 +2116,7 @@ return [
     '{type} deleted for site.' => 'サイトの{type}は削除されました。',
     '{type} deleted.' => '{type}を削除しました。',
     '{type} duplicated.' => '{type}を複製しました。',
+    '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type} entries are no longer allowed in this section. Please choose a different entry type.',
     '{type} not restored.' => '{type}は復元されませんでした。',
     '{type} restored.' => '{type}が復元されました。',
     '{type} reverted to past revision.' => '{type}が過去のリビジョンに戻りました。',
