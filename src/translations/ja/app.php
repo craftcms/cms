@@ -1636,7 +1636,7 @@ return [
     'URL Format' => 'URLフォーマット',
     'URL type' => 'URLの種類',
     'URL' => 'URL',
-    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
+    'Unable to fetch updates at this time.' => '現在、アップデートは取得できません。',
     'Unable to fetch upgrade info at this time.' => '現在、アップグレード情報は取得できません。',
     'Unable to find the template “{template}”.' => '「{template}」と言うテンプレートが見つけられません。',
     'Unauthorized' => '不許可',
