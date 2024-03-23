@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-beta.11 - 2024-03-22
 
 - Moved the “Forgot password?” link below the Password input on the control panel login page. ([#14643](https://github.com/craftcms/cms/pull/14643))
 - Selectize inputs no longer automatically select the hovered option on <kbd>Tab</kbd> press. ([selectize/selectize.js#2085](https://github.com/selectize/selectize.js/issues/2085))
