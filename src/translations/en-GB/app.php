@@ -2116,6 +2116,7 @@ return [
     '{type} deleted for site.' => '{type} deleted for site.',
     '{type} deleted.' => '{type} deleted.',
     '{type} duplicated.' => '{type} duplicated.',
+    '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type} entries are no longer allowed in this section. Please choose a different entry type.',
     '{type} not restored.' => '{type} not restored.',
     '{type} restored.' => '{type} restored.',
     '{type} reverted to past revision.' => '{type} reverted to past revision.',
