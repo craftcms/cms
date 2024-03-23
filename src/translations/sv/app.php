@@ -2116,6 +2116,7 @@ return [
     '{type} deleted for site.' => '{type} har tagits bort för webbplatsen.',
     '{type} deleted.' => '{type} har raderats.',
     '{type} duplicated.' => '{type} duplicerad.',
+    '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type} entries are no longer allowed in this section. Please choose a different entry type.',
     '{type} not restored.' => '{type} återställdes ej.',
     '{type} restored.' => '{type} återställdes.',
     '{type} reverted to past revision.' => '{type} återskapades från tidigare revidering.',
