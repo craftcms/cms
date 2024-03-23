@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.8.5 - 2024-03-22
 
 - Selectize inputs no longer automatically select the hovered option on <kbd>Tab</kbd> press. ([selectize/selectize.js#2085](https://github.com/selectize/selectize.js/issues/2085))
 - The `setup/cloud` command now ensures that the environment and `composer.json` are configured to use PHP 8.1+.
