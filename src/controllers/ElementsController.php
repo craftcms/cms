@@ -1787,6 +1787,10 @@ JS, [
     {
         $element = $this->_element();
 
+        if ($element instanceof Response) {
+            return $element;
+        }
+
         if (!$element || $element->getIsRevision()) {
             throw new BadRequestHttpException('No element was identified by the request.');
         }

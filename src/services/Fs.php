@@ -206,6 +206,8 @@ class Fs extends Component
             }
         }
 
+        $fs->afterSave($isNewFs);
+
         // Clear caches
         $this->_filesystems = null;
 
@@ -251,6 +253,8 @@ class Fs extends Component
 
         // Clear caches
         $this->_filesystems = null;
+
+        $fs->afterDelete();
 
         return true;
     }
