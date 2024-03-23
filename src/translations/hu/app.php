@@ -2120,6 +2120,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{type} deleted for site.' => '{type} törölve a webhelynél.',
     '{type} deleted.' => '{type} törölve.',
     '{type} duplicated.' => '{type} duplikálva.',
+    '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type} entries are no longer allowed in this section. Please choose a different entry type.',
     '{type} not restored.' => '{type} nem lett visszaállítva.',
     '{type} restored.' => '{type} visszaállítva.',
     '{type} reverted to past revision.' => '{type} az előző verzióra lépett vissza.',

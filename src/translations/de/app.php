@@ -2118,6 +2118,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{type} deleted for site.' => '{type} für die Seite gelöscht.',
     '{type} deleted.' => '{type} gelöscht.',
     '{type} duplicated.' => '{type} dupliziert.',
+    '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type} entries are no longer allowed in this section. Please choose a different entry type.',
     '{type} not restored.' => '{type} nicht wiederhergestellt.',
     '{type} restored.' => '{type} wiederhergestellt.',
     '{type} reverted to past revision.' => '{type} auf letzte Version zurückgesetzt.',

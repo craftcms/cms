@@ -2116,6 +2116,7 @@ return [
     '{type} deleted for site.' => '已删除站点的{type}。',
     '{type} deleted.' => '已删除{type}。',
     '{type} duplicated.' => '{type}重复。',
+    '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type} entries are no longer allowed in this section. Please choose a different entry type.',
     '{type} not restored.' => '{type}未恢复。',
     '{type} restored.' => '{type}已恢复。',
     '{type} reverted to past revision.' => '{type}已恢复到以前的修订。',
