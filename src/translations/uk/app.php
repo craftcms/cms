@@ -2116,6 +2116,7 @@ return [
     '{type} deleted for site.' => 'Об\'єкт ({type}) видалено для сайту.',
     '{type} deleted.' => 'Об\'єкт ({type}) видалено.',
     '{type} duplicated.' => 'Об\'єкт ({type}) продубльовано.',
+    '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type} entries are no longer allowed in this section. Please choose a different entry type.',
     '{type} not restored.' => 'Не відновлено: {type}.',
     '{type} restored.' => 'Відновлено: {type}.',
     '{type} reverted to past revision.' => 'Об\'єкт «{type}» повернено до попередньої версії.',
