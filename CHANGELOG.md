@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where the `matrixBlockTypes` project config data wasn’t getting deleted when upgrading to Craft 5, which could result in nested Super Table field handles getting modified twice. ([#14624](https://github.com/craftcms/cms/issues/14624))
+
 ## 5.0.0-beta.11 - 2024-03-22
 
 - Moved the “Forgot password?” link below the Password input on the control panel login page. ([#14643](https://github.com/craftcms/cms/pull/14643))

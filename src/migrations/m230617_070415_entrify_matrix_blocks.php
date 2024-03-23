@@ -258,6 +258,12 @@ SQL,
 
         $fieldsService->refreshFields();
 
+        // remove the old Matrix block type configs
+        $muteEvents = $projectConfig->muteEvents;
+        $projectConfig->muteEvents = true;
+        $projectConfig->remove('matrixBlockTypes');
+        $projectConfig->muteEvents = $muteEvents;
+
         return true;
     }
 
