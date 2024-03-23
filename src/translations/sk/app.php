@@ -2116,6 +2116,7 @@ return [
     '{type} deleted for site.' => '{type} pre web zmazaný.',
     '{type} deleted.' => '{type} zmazané.',
     '{type} duplicated.' => '{type} duplikované.',
+    '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type} entries are no longer allowed in this section. Please choose a different entry type.',
     '{type} not restored.' => '{type} neobnovené.',
     '{type} restored.' => '{type} obnovené.',
     '{type} reverted to past revision.' => '{type} obnovený na predošlú revíziu.',
