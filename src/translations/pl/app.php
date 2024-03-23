@@ -3,9 +3,9 @@
 return [
     '(Ungrouped)' => '(Rozgrupowano)',
     '(blank)' => '(pusty)',
-    '(included)' => '(included)',
+    '(included)' => '(w cenie)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
-    '({period} days)' => '({period} days)',
+    '({period} days)' => '({period} dni)',
     '/path/to/folder' => '/ścieżka/do/folderu',
     '1 job' => '1 zadanie',
     '<a>Renew now</a> for another year of updates.' => '<a>Odnów teraz</a>, aby uzyskać następny rok aktualizacji.',
