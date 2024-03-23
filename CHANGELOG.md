@@ -4,9 +4,11 @@
 
 - Moved the “Forgot password?” link below the Password input on the control panel login page. ([#14643](https://github.com/craftcms/cms/pull/14643))
 - Selectize inputs no longer automatically select the hovered option on <kbd>Tab</kbd> press. ([selectize/selectize.js#2085](https://github.com/selectize/selectize.js/issues/2085))
+- Entries now validate that their selected type is allowed by the section. ([#14654](https://github.com/craftcms/cms/pull/14654))
 - Fixed a bug where filesystems’ `afterSave()` and `afterDelete()` methods weren’t getting called. ([#14634](https://github.com/craftcms/cms/pull/14634))
 - Fixed an error that could occur on `elements/recent-activity` Ajax requests when editing an element. ([#14635](https://github.com/craftcms/cms/issues/14635))
 - Fixed a bug where asset queries’ `hasAlt` param wasn’t working. ([#14642](https://github.com/craftcms/cms/pull/14642))
+- Fixed an error that occurred when inline-editing assets. ([#14646](https://github.com/craftcms/cms/issues/14646))
 
 ## 5.0.0-beta.10 - 2024-03-19
 
