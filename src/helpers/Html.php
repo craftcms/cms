@@ -96,7 +96,39 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
-        return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+        $dynamic = (bool)(ArrayHelper::remove($options, 'dynamic') ?? Craft::$app->getConfig()->getGeneral()->dynamicCsrfInputs);
+
+        if ($dynamic) {
+            $url = UrlHelper::actionUrl('users/session-info');
+
+            return <<<HTML
+<script>
+    const currentScript = document.currentScript;
+    
+    fetch('$url', {
+        headers: {
+            'Accept': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = data.csrfTokenName;
+        input.value = data.csrfTokenValue;
+        currentScript.after(input);
+    })
+</script>
+HTML;
+        }
+
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
+        return static::hiddenInput(
+            $request->csrfParam,
+            $request->getCsrfToken(),
+            $options,
+        );
     }
 
     /**
@@ -1057,7 +1089,7 @@ class Html extends \yii\helpers\Html
             $offset = $tag['end'];
         }
     }
-    
+
     /**
      * Returns the contents of a given SVG file.
      *

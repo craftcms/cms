@@ -1013,6 +1013,24 @@ class GeneralConfig extends BaseConfig
      */
     public bool $disableGraphqlTransformDirective = false;
 
+
+    /**
+     * @var bool Whether CSRF inputs should be injected via JavaScript for greater cache-ability.
+     *
+     *  ::: code
+     *  ```php Static Config
+     *  ->dynamicCsrfInputs(true)
+     *  ```
+     *  ```shell Environment Override
+     *  CRAFT_DYNAMIC_CSRF_INPUTS=1
+     *  ```
+     *  :::
+     *
+     * @group Security
+     * @since 4.9.0
+     */
+    public bool $dynamicCsrfInputs = false;
+
     /**
      * @var bool Whether front-end web requests should support basic HTTP authentication.
      *
@@ -4201,6 +4219,24 @@ class GeneralConfig extends BaseConfig
     public function disableGraphqlTransformDirective(bool $value = true): self
     {
         $this->disableGraphqlTransformDirective = $value;
+        return $this;
+    }
+
+    /**
+     * Whether CSRF inputs should be injected via JavaScript for greater cache-ability.
+     *
+     *  ```php
+     *  ->dynamicCsrfInputs(true)
+     *  ```
+     *
+     * @param bool $value
+     * @return self
+     * @see $dynamicCsrfInputs
+     * @since 4.9.0
+     */
+    public function dynamicCsrfInputs(bool $value = true): self
+    {
+        $this->dynamicCsrfInputs = $value;
         return $this;
     }
 
