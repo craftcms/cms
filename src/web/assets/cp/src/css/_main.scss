@@ -3333,7 +3333,9 @@ table {
         text-wrap: pretty;
       }
 
-      span.checkbox-icon + span {
+      .checkbox-preview-label {
+        display: inline;
+        font-style: italic;
         margin-inline-start: 5px;
       }
     }
@@ -7139,6 +7141,10 @@ body.reduce-focus-visibility {
     line-height: var(--checkbox-size);
     font-size: var(--checkbox-size);
   }
+}
+
+.checkbox-preview-label {
+  display: none;
 }
 
 .monaco-mouse-cursor-text {

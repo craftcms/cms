@@ -248,8 +248,8 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
                     'label' => $label,
                 ],
             ]) .
-            Html::beginTag('span') .
-            Html::tag('em', $this->getUiLabel()) .
-            Html::endTag('span');
+            Html::tag('span', $this->getUiLabel(), [
+                'class' => 'checkbox-preview-label',
+            ]);
     }
 }
