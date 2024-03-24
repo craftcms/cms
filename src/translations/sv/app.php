@@ -1427,7 +1427,7 @@ return [
     'Show/hide children' => 'Visa/dölj  children',
     'Showing results for “{searchQuery}”' => 'Visar resultat för “{searchQuery}”',
     'Showing your unsaved changes.' => 'Visar dina icke-sparade ändringar.',
-    'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => 'Showing {first, number}–{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+    'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => 'Visar {first, number}–{last, number} av {total, number} {total, plural, =1{{objekt}} other{{objekt}}}',
     'Showing {total, number} {total, plural, =1{{item}} other{{items}}}' => 'Showing {total, number} {total, plural, =1{{item}} other{{items}}}',
     'Sign In' => 'Logga in',
     'Sign back in to continue.' => 'Logga in igen för att fortsätta.',
