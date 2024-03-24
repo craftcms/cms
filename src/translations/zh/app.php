@@ -1127,7 +1127,7 @@ return [
     'Prefix Text' => '前缀文本',
     'Prefix must be 5 or less characters long.' => '前缀长度不得超过 5 个字符。',
     'Prefix' => '前缀',
-    'Presets' => 'Presets',
+    'Presets' => '预设值',
     'Prettify query' => '美化查询',
     'Prettify' => '美化',
     'Prev' => '上一个',
