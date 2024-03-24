@@ -1127,7 +1127,7 @@ return [
     'Prefix Text' => 'Texto de prefixo',
     'Prefix must be 5 or less characters long.' => 'O prefixo tem de ter 5 ou menos caracteres.',
     'Prefix' => 'Prefixo',
-    'Presets' => 'Presets',
+    'Presets' => 'Predefinições',
     'Prettify query' => 'Embelezar o inquérito',
     'Prettify' => 'Embelezar',
     'Prev' => 'Anterior',
