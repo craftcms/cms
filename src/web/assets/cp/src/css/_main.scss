@@ -683,13 +683,8 @@ button {
   }
 
   .so-notice > & {
-    @include margin(
-      calc(var(--s) * -1),
-      0,
-      calc(var(--s) * -1),
-      calc(var(--xl) * -1)
-    );
-    @include padding(var(--s), 0, var(--s), var(--xl));
+    @include margin(-5px, 0, -5px, calc(var(--xl) * -1));
+    @include padding(5px, 0, 5px, var(--xl));
     @include border-bottom-left-radius(var(--large-border-radius));
 
     body.ltr & {
