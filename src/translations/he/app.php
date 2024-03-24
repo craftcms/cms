@@ -1960,7 +1960,7 @@ return [
     '{name} active, more info' => '{name} פעיל, מידע נוסף',
     '{name} folder' => 'תיקיית {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} נוסף, אך אירעה שגיאה בעת התקנתו.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} מורשה עבור המהדורה {licenseEdition}, אבל מותקנת המהדורה {currentEdition}.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} מורשית עבור המהדורה {licenseEdition}, אבל מותקנת המהדורה {currentEdition}.',
     '{name} isn’t licensed to run version {version}.' => '{name} אינו מורשה להפעיל את הגרסה {version}.',
     '{name} requires purchase.' => '{name} מחייב רכישה.',
     '{name} should be at least {value}.' => '{name} צריך להיות לפחות {value}.',
