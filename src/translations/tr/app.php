@@ -1636,7 +1636,7 @@ return [
     'URL Format' => 'URL Biçimi',
     'URL type' => 'URL türü',
     'URL' => 'URL',
-    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
+    'Unable to fetch updates at this time.' => 'Şu anda güncellemeler alınamıyor.',
     'Unable to fetch upgrade info at this time.' => 'Şu anda yükseltme bilgileri alınamıyor.',
     'Unable to find the template “{template}”.' => '“{template}” isimli şablon bulunamadı.',
     'Unauthorized' => 'Yetki yok',
