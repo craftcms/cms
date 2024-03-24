@@ -319,7 +319,7 @@ return [
     'Continue anyway' => '强制执行',
     'Continue shopping' => '继续购物',
     'Continue to the control panel in {num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, =1{秒} other{秒}}后将继续进入控制面板',
-    'Continue to the control panel' => '继续到控制面板',
+    'Continue to the control panel' => '继续进入控制面板',
     'Continue' => '继续',
     'Control panel resources' => '控制面板资源',
     'Cookies must be enabled to access the Craft CMS control panel.' => '必须启用 Cookie 才能访问 Craft CMS 控制面板。',
