@@ -2980,6 +2980,10 @@ table {
   border-bottom: none !important;
 }
 
+.datatablesorthelper th .toggle {
+  display: none !important;
+}
+
 .chip,
 .card {
   color: var(--custom-text-color, var(--text-color));
