@@ -1149,7 +1149,7 @@ return [
     'Province' => 'Provincia',
     'Pruning extra revisions' => 'Eliminazione revisioni aggiuntive',
     'Public Schema' => 'Schema pubblico',
-    'Purchase {total, plural, =1{license} other{licenses}}' => 'Acquista  {total, plural, one {}=1{licenza} other{licenze}}',
+    'Purchase {total, plural, =1{license} other{licenses}}' => 'Acquista {total, plural, one {}=1{licenza} other{licenze}}',
     'Pushing announcement to control panel users' => 'Annunci push agli utenti del pannello di controllo',
     'Quality must be a number between 1 and 100 (included).' => 'La qualità deve essere un numero tra 1 e 100 (compreso).',
     'Quality' => 'Qualità',
