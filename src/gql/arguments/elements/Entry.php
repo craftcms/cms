@@ -11,7 +11,7 @@ use Craft;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\StructureElementArguments;
 use craft\gql\types\QueryArgument;
-use craft\helpers\Gql as GqlHelper;
+use craft\models\EntryType;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -118,14 +118,12 @@ class Entry extends StructureElementArguments
     {
         $gqlService = Craft::$app->getGql();
         return $gqlService->getOrSetContentArguments(EntryElement::class, function() use ($gqlService): array {
-            $fieldLayouts = [];
-            foreach (Craft::$app->getEntries()->getAllSections() as $section) {
-                if (GqlHelper::isSchemaAwareOf("sections.$section->uid")) {
-                    foreach ($section->getEntryTypes() as $entryType) {
-                        $fieldLayouts[] = $entryType->getFieldLayout();
-                    }
-                }
-            }
+            // include all entry types' field layouts, not just the ones from sections in the schema
+            // because they could be used by Matrix fields
+            $fieldLayouts = array_map(
+                fn(EntryType $entryType) => $entryType->getFieldLayout(),
+                Craft::$app->getEntries()->getAllEntryTypes(),
+            );
             return $gqlService->defineContentArgumentsForFieldLayouts(EntryElement::class, $fieldLayouts);
         });
     }

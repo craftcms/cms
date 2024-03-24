@@ -6,6 +6,7 @@
 - Fixed a bug where the `matrixBlockTypes` project config data wasn’t getting deleted when upgrading to Craft 5, which could result in nested Super Table field handles getting modified twice. ([#14624](https://github.com/craftcms/cms/issues/14624))
 - Fixed the alignment of table rows as they’re being sorted.
 - Fixed a bug where clicking on links and buttons within element index tables could select the element. ([#14669](https://github.com/craftcms/cms/issues/14669))
+- Fixed a bug where it wasn’t possible to set custom field arguments on Matrix field GraphQL queries. ([#14671](https://github.com/craftcms/cms/issues/14671))
 
 ## 5.0.0-beta.11 - 2024-03-22
 
