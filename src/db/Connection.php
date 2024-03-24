@@ -9,9 +9,13 @@ namespace craft\db;
 
 use Composer\Util\Platform;
 use Craft;
+use craft\db\mysql\BackupCommand as MysqlBackupCommand;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
+use craft\db\mysql\RestoreCommand as MysqlRestoreCommand;
 use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\pgsql\BackupCommand as PgsqlBackupCommand;
 use craft\db\pgsql\QueryBuilder as PgsqlQueryBuilder;
+use craft\db\pgsql\RestoreCommand as PgsqlRestoreCommand;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
@@ -271,7 +275,14 @@ class Connection extends \yii\db\Connection
         // Determine the command that should be executed
         $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
-        if ($backupCommand === null) {
+        if ($backupCommand === null || is_array($backupCommand)) {
+            /** @var PgsqlSchema|MysqlSchema $schema */
+            $schema = $this->getSchema();
+            $schema->backupCommand = $this->getIsPgsql()
+                ? new PgsqlBackupCommand($backupCommand ?? [])
+                : new MysqlBackupCommand($backupCommand ?? []);
+            ;
+
             $backupCommand = $this->getSchema()->getDefaultBackupCommand($event->ignoreTables);
         }
 
@@ -337,7 +348,14 @@ class Connection extends \yii\db\Connection
         // Determine the command that should be executed
         $restoreCommand = Craft::$app->getConfig()->getGeneral()->restoreCommand;
 
-        if ($restoreCommand === null) {
+        if ($restoreCommand === null || is_array($restoreCommand)) {
+            /** @var PgsqlSchema|MysqlSchema $schema */
+            $schema = $this->getSchema();
+            $schema->restoreCommand = $this->getIsPgsql()
+                ? new PgsqlRestoreCommand($restoreCommand ?? [])
+                : new MysqlRestoreCommand($restoreCommand ?? []);
+            ;
+
             $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
         }
 

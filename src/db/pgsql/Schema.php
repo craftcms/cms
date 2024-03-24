@@ -7,7 +7,6 @@
 
 namespace craft\db\pgsql;
 
-use Composer\Util\Platform;
 use Craft;
 use craft\db\Connection;
 use craft\db\TableSchema;
@@ -26,6 +25,16 @@ class Schema extends \yii\db\pgsql\Schema
      * @var int The maximum length that objects' names can be.
      */
     public int $maxObjectNameLength = 63;
+
+    /**
+     * @var BackupCommand|null
+     */
+    public ?BackupCommand $backupCommand = null;
+
+    /**
+     * @var RestoreCommand|null
+     */
+    public ?RestoreCommand $restoreCommand = null;
 
     /**
      * Creates a query builder for the database.
@@ -116,29 +125,13 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
-        if ($ignoreTables === null) {
-            $ignoreTables = $this->db->getIgnoredBackupTables();
-        }
-        $ignoredTableArgs = [];
-        foreach ($ignoreTables as $table) {
-            $table = $this->getRawTableName($table);
-            $ignoredTableArgs[] = "--exclude-table-data '{schema}.$table'";
+        $this->backupCommand = $this->backupCommand ?? new BackupCommand();
+
+        if ($ignoreTables) {
+            $this->backupCommand->ignoreTables = $ignoreTables;
         }
 
-        return $this->_pgpasswordCommand() .
-            'pg_dump' .
-            ' --dbname={database}' .
-            ' --host={server}' .
-            ' --port={port}' .
-            ' --username={user}' .
-            ' --if-exists' .
-            ' --clean' .
-            ' --no-owner' .
-            ' --no-privileges' .
-            ' --no-acl' .
-            ' --file="{file}"' .
-            ' --schema={schema}' .
-            ' ' . implode(' ', $ignoredTableArgs);
+        return $this->backupCommand->getExecCommand();
     }
 
     /**
@@ -148,14 +141,9 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return $this->_pgpasswordCommand() .
-            'psql' .
-            ' --dbname={database}' .
-            ' --host={server}' .
-            ' --port={port}' .
-            ' --username={user}' .
-            ' --no-password' .
-            ' < "{file}"';
+        $this->restoreCommand = $this->restoreCommand ?? new RestoreCommand();
+
+        return $this->restoreCommand->getExecCommand();
     }
 
     /**
@@ -311,15 +299,5 @@ ORDER BY i.relname, k';
             ':schemaName' => $table->schemaName,
             ':tableName' => $table->name,
         ])->queryAll();
-    }
-
-    /**
-     * Returns the PGPASSWORD command for backup/restore actions.
-     *
-     * @return string
-     */
-    private function _pgpasswordCommand(): string
-    {
-        return Platform::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
     }
 }
