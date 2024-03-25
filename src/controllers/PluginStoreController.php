@@ -136,7 +136,7 @@ class PluginStoreController extends Controller
             $url = Craft::$app->getPluginStore()->craftIdEndpoint . '/oauth/revoke';
             $options = ['query' => ['accessToken' => $token->accessToken]];
             $client->request('GET', $url, $options);
-            $this->setSuccessFlash('Disconnected from id.craftcms.com.');
+            $this->setSuccessFlash('Disconnected from console.craftcms.com.');
         } catch (Throwable $e) {
             Craft::error('Couldn’t revoke token: ' . $e->getMessage());
             $this->setFailFlash('Disconnected from console.craftcms.com with errors, check the logs.');
