@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
+use samdark\log\PsrMessage;
 use Throwable;
 use yii\base\Application as BaseApplication;
 use yii\web\Cookie;
@@ -209,6 +210,18 @@ class Response extends \yii\web\Response
         }
     }
 
+    protected function sendHeaders()
+    {
+        Craft::warning(new PsrMessage('Sending headers', [
+            'appState' => Craft::$app->state,
+            'headers' => $this->getHeaders()->toArray(),
+            'content' => $this->content,
+            'response' => $this,
+        ]));
+
+        parent::sendHeaders();
+    }
+
     /**
      * @inheritdoc
      */
@@ -222,9 +235,23 @@ class Response extends \yii\web\Response
             $this->format = self::FORMAT_HTML;
         }
 
+        Craft::warning(new PsrMessage('before parent::redirect', [
+            'appState' => Craft::$app->state,
+            'headers' => $this->getHeaders()->toArray(),
+            'content' => $this->content,
+            'method' => __METHOD__,
+            'url' => $url,
+            'statusCode' => $statusCode,
+            'checkAjax' => $checkAjax,
+        ]));
+
+
         parent::redirect($url, $statusCode, $checkAjax);
 
         if (Craft::$app->state === BaseApplication::STATE_SENDING_RESPONSE) {
+            Craft::warning(new PsrMessage('before send() in redirect', [
+                'method' => __METHOD__,
+            ]));
             $this->send();
         }
 
