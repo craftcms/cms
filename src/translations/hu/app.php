@@ -1127,7 +1127,7 @@ return [
     'Prefix Text' => 'Előtag szövege',
     'Prefix must be 5 or less characters long.' => 'Az előtag legfeljebb 5 karakter hosszúságú lehet.',
     'Prefix' => 'Előtag',
-    'Presets' => 'Presets',
+    'Presets' => 'Előbeállítások',
     'Prettify query' => 'Prettify lekérdezés',
     'Prettify' => 'Prettify',
     'Prev' => 'Előző',
