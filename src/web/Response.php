@@ -215,8 +215,6 @@ class Response extends \yii\web\Response
         Craft::warning(new PsrMessage('Sending headers', [
             'appState' => Craft::$app->state,
             'headers' => $this->getHeaders()->toArray(),
-            'content' => $this->content,
-            'response' => $this,
         ]));
 
         parent::sendHeaders();
@@ -238,7 +236,6 @@ class Response extends \yii\web\Response
         Craft::warning(new PsrMessage('before parent::redirect', [
             'appState' => Craft::$app->state,
             'headers' => $this->getHeaders()->toArray(),
-            'content' => $this->content,
             'method' => __METHOD__,
             'url' => $url,
             'statusCode' => $statusCode,
