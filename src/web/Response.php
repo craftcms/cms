@@ -214,7 +214,7 @@ class Response extends \yii\web\Response
     {
         Craft::warning(new PsrMessage(__METHOD__, [
             'url' => Craft::$app->getRequest()->getUrl(),
-            // 'debug_backtrace' => debug_backtrace(limit: 5),
+            'debug_backtrace' => debug_backtrace(limit: 1),
             'headers' => $this->headers->toArray(),
         ]));
 
