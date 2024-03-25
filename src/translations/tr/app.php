@@ -47,7 +47,7 @@ return [
     'Add Row Label' => 'Satır Etiketi Ekle',
     'Add a block' => 'Yeni bir blok ekle',
     'Add a category' => 'Kategori Ekle',
-    'Add a color' => 'Renk ekleyin',
+    'Add a color' => 'Renk ekle',
     'Add a column' => 'Kolon ekle',
     'Add a filter' => 'Filtre ekle',
     'Add a row' => 'Satır ekle',
