@@ -920,6 +920,7 @@ class AssetQuery extends ElementQuery
             'assets.keptFile',
             'assets.dateModified',
             'siteAlt' => 'assets_sites.alt',
+            'isPrimaryAlt' => 'assets_sites.isPrimaryAlt',
             'folderPath' => 'volumeFolders.path',
         ]);
 
@@ -1115,7 +1116,8 @@ class AssetQuery extends ElementQuery
     {
         // Use the site-specific alt text, if set
         $siteAlt = ArrayHelper::remove($row, 'siteAlt');
-        if ($siteAlt !== null && $siteAlt !== '') {
+        $isPrimaryAlt = ArrayHelper::remove($row, 'isPrimaryAlt');
+        if ($isPrimaryAlt) {
             $row['alt'] = $siteAlt;
         }
 

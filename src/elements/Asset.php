@@ -3083,10 +3083,24 @@ JS;
             }
         }
 
+        $isPrimaryAlt = (new Query())
+            ->select('isPrimaryAlt')
+            ->from([Table::ASSETS_SITES])
+            ->where([
+                'assetId' => $this->id,
+                'siteId' => $this->siteId,
+            ])
+            ->scalar();
+
+        if (!$isPrimaryAlt && isset($record) && $record->alt !== null) {
+            $isPrimaryAlt = 1;
+        }
+
         Db::upsert(Table::ASSETS_SITES, [
             'assetId' => $this->id,
             'siteId' => $this->siteId,
             'alt' => $this->alt,
+            'isPrimaryAlt' => $isPrimaryAlt,
         ]);
 
         parent::afterSave($isNew);
