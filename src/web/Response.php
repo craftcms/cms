@@ -215,6 +215,7 @@ class Response extends \yii\web\Response
         Craft::warning(new PsrMessage('Sending headers', [
             'appState' => Craft::$app->state,
             'headers' => $this->getHeaders()->toArray(),
+            'url' => Craft::$app->getRequest()->getUrl(),
         ]));
 
         parent::sendHeaders();
@@ -237,9 +238,10 @@ class Response extends \yii\web\Response
             'appState' => Craft::$app->state,
             'headers' => $this->getHeaders()->toArray(),
             'method' => __METHOD__,
-            'url' => $url,
+            'redirectUrl' => $url,
             'statusCode' => $statusCode,
             'checkAjax' => $checkAjax,
+            'url' => Craft::$app->getRequest()->getUrl(),
         ]));
 
 
@@ -248,8 +250,9 @@ class Response extends \yii\web\Response
         if (Craft::$app->state === BaseApplication::STATE_SENDING_RESPONSE) {
             Craft::warning(new PsrMessage('before send() in redirect', [
                 'method' => __METHOD__,
+                'url' => Craft::$app->getRequest()->getUrl(),
             ]));
-            $this->send();
+            // $this->send();
         }
 
         return $this;
