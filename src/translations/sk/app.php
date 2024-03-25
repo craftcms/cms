@@ -2101,7 +2101,7 @@ return [
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} nie je štruktúrovaný zdroj. Pri prepojení nadradených prvkov sa môžu používať len štruktúrované zdroje.',
     '{step, number} of {total, number}' => '{step, number} z {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.' => '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
+    '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.' => '{total, plural, =1{Našla sa {total, number} chyba} few{Našli sa {total, number} chyby} other{Našlo sa {total, number} chýb}} na {num, number} {num, plural, =1{karte} other{kartách}}.',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}' => '{total, number} {total, plural, =1{rozloženie poľa} few{rozloženia poľa} other{rozložení poľa}} {type}',
     '{totalItems, plural, =1{Item} other{Items}} moved.' => '{totalItems, plural, one {} few {Položky presunuté} many {Položiek presunutých}=1{Položka presunutá} other{Položiek presunutých}}.',
