@@ -1115,7 +1115,7 @@ class AssetQuery extends ElementQuery
     {
         // Use the site-specific alt text, if set
         $siteAlt = ArrayHelper::remove($row, 'siteAlt');
-        if ($siteAlt !== null && $siteAlt !== '') {
+        if ($siteAlt !== null) {
             $row['alt'] = $siteAlt;
         }
 
