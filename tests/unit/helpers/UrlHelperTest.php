@@ -115,10 +115,11 @@ class UrlHelperTest extends TestCase
      * @param string $expected
      * @param string $url
      * @param string $scheme
+     * @param string $cpUrl
      */
-    public function testUrlWithScheme(string $expected, string $url, string $scheme): void
+    public function testUrlWithScheme(string $expected, string $url, string $scheme, bool $cpUrl=false): void
     {
-        self::assertSame($expected, UrlHelper::urlWithScheme($url, $scheme));
+        self::assertSame($expected, UrlHelper::urlWithScheme($url, $scheme, $cpUrl));
     }
 
     /**

@@ -161,7 +161,7 @@ class UrlHelper
     public static function urlWithToken(string $url, string $token, bool $cp = false): string
     {
         $scheme = static::getSchemeForTokenizedUrl($cp);
-        $url = static::urlWithScheme($url, $scheme);
+        $url = static::urlWithScheme($url, $scheme, $cp);
 
         return static::urlWithParams($url, [
             Craft::$app->getConfig()->getGeneral()->tokenParam => $token,
@@ -173,10 +173,11 @@ class UrlHelper
      *
      * @param string $url the URL
      * @param string $scheme the scheme ('http' or 'https')
+     * @param bool $cpUrl if this is a URL for the Control Panel or not
      * @return string
      * @throws SiteNotFoundException
      */
-    public static function urlWithScheme(string $url, string $scheme): string
+    public static function urlWithScheme(string $url, string $scheme, bool $cpUrl = false): string
     {
         if (!$url || !$scheme) {
             return $url;
@@ -188,7 +189,7 @@ class UrlHelper
 
         if (static::isRootRelativeUrl($url)) {
             // Prepend the current request’s scheme and hostname
-            $url = static::siteHost() . $url;
+            $url = ($cpUrl ? static::cpHost() : static::siteHost()) . $url;
         }
 
         return preg_replace('/^https?:/', $scheme . ':', $url);
@@ -643,7 +644,7 @@ class UrlHelper
 
         if ($scheme !== null) {
             // Make sure we're using the right scheme
-            $baseUrl = static::urlWithScheme($baseUrl, $scheme);
+            $baseUrl = static::urlWithScheme($baseUrl, $scheme, $cpUrl);
         }
 
         // Put it all together
