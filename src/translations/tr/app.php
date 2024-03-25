@@ -1962,7 +1962,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{name} active, more info' => '{name} etkin, daha fazla bilgi',
     '{name} folder' => '{name} klasörü',
     '{name} has been added, but an error occurred when installing it.' => '{name} eklendi ancak yüklenirken bir hata oluştu.',
-    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
+    '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name}, {licenseEdition} sürümü için lisanslanmış ancak şu anda {currentEdition} sürümü yüklü.',
     '{name} isn’t licensed to run version {version}.' => '{name}, {version} sürümünü çalıştırmak için lisanslanmamış.',
     '{name} requires purchase.' => '{name} için satın alma gereklidir.',
     '{name} should be at least {value}.' => '{name}, en az {value} değerinde olmalıdır.',
