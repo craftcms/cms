@@ -2095,7 +2095,7 @@ return [
     '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, =1{rok} few {roky} other{rokov}} aktualizácií',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, =1{rok} other{rokov}}',
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, one {} few {záznamy} many {záznamov} =1{záznam} other{záznamov}}',
-    '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.',
+    '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, =1{Povolený je len jeden autor} few{Povolení sú len {num, number} autori} other{Povolených je len {num, number} autorov}}.',
     '{pct} width' => '{pct} šírka',
     '{renewalPrice}/year per site for updates after that.' => 'Potom {renewalPrice}/rok za web za aktualizácie.',
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} nie je štruktúrovaný zdroj. Pri prepojení nadradených prvkov sa môžu používať len štruktúrované zdroje.',
