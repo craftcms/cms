@@ -210,15 +210,15 @@ class Response extends \yii\web\Response
         }
     }
 
-    protected function sendHeaders()
+    public function send()
     {
-        Craft::warning(new PsrMessage('Sending headers', [
-            'appState' => Craft::$app->state,
-            'headers' => $this->getHeaders()->toArray(),
+        Craft::warning(new PsrMessage(__METHOD__, [
             'url' => Craft::$app->getRequest()->getUrl(),
+            'debug_backtrace' => debug_backtrace(),
+            'headers' => $this->headers->toArray(),
         ]));
 
-        parent::sendHeaders();
+        return parent::send();
     }
 
     /**
@@ -234,25 +234,10 @@ class Response extends \yii\web\Response
             $this->format = self::FORMAT_HTML;
         }
 
-        Craft::warning(new PsrMessage('before parent::redirect', [
-            'appState' => Craft::$app->state,
-            'headers' => $this->getHeaders()->toArray(),
-            'method' => __METHOD__,
-            'redirectUrl' => $url,
-            'statusCode' => $statusCode,
-            'checkAjax' => $checkAjax,
-            'url' => Craft::$app->getRequest()->getUrl(),
-        ]));
-
-
         parent::redirect($url, $statusCode, $checkAjax);
 
         if (Craft::$app->state === BaseApplication::STATE_SENDING_RESPONSE) {
-            Craft::warning(new PsrMessage('before send() in redirect', [
-                'method' => __METHOD__,
-                'url' => Craft::$app->getRequest()->getUrl(),
-            ]));
-            // $this->send();
+            $this->send();
         }
 
         return $this;
