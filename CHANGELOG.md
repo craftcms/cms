@@ -9,6 +9,7 @@
 - Fixed a bug where it wasn’t possible to set custom field arguments on Matrix field GraphQL queries. ([#14671](https://github.com/craftcms/cms/issues/14671))
 - Fixed a bug where element statuses weren’t getting updated within chips and cards when the element was saved.
 - Fixed a bug where it wasn’t possible to save empty alt text on an asset, if another site had alt text.
+- Fixed a tooltip styling bug. ([#14672](https://github.com/craftcms/cms/issues/14672))
 
 ## 5.0.0-beta.11 - 2024-03-22
 
