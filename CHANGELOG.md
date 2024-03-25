@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.0-RC1 - 2024-03-25
 
 - Element slideouts’ “Cancel” buttons now get relabelled as “Close” when editing a provisional draft.
 - Fixed a bug where the `matrixBlockTypes` project config data wasn’t getting deleted when upgrading to Craft 5, which could result in nested Super Table field handles getting modified twice. ([#14624](https://github.com/craftcms/cms/issues/14624))
