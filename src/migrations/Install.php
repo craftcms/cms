@@ -180,7 +180,7 @@ class Install extends Migration
             'assetId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
             'alt' => $this->text(),
-            'isPrimaryAlt' => $this->boolean()->defaultValue(0),
+            'isPrimaryAlt' => $this->boolean()->defaultValue(false),
             'PRIMARY KEY([[assetId]], [[siteId]])',
         ]);
         $this->createTable(Table::IMAGETRANSFORMINDEX, [

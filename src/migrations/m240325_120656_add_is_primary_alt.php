@@ -15,7 +15,7 @@ class m240325_120656_add_is_primary_alt extends Migration
      */
     public function safeUp(): bool
     {
-        $this->addColumn(Table::ASSETS_SITES, 'isPrimaryAlt', $this->boolean()->defaultValue(0)->after('alt'));
+        $this->addColumn(Table::ASSETS_SITES, 'isPrimaryAlt', $this->boolean()->defaultValue(false)->after('alt'));
 
         return true;
     }
