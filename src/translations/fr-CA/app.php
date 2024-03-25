@@ -2,9 +2,9 @@
 
 return [
     '(blank)' => '(vide)',
-    '(included)' => '(included)',
+    '(included)' => '(inclus)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
-    '({period} days)' => '({period} days)',
+    '({period} days)' => '({period} jours)',
     '/path/to/folder' => '/chemin/vers/dossier',
     '1 job' => '1 tâche',
     '<a>Renew now</a> for another year of updates.' => '<a>Renouvelez dès maintenant</a> pour une autre année de mises à jour.',
@@ -44,7 +44,7 @@ return [
     'Active Trials' => 'Essais actifs',
     'Active trials added to the cart.' => 'Essais actifs ajoutés au panier.',
     'Active' => 'Actif',
-    'Activity' => 'Activity',
+    'Activity' => 'Activité',
     'Add Row Label' => 'Ajouter une étiquette de ligne',
     'Add a category' => 'Ajouter une catégorie',
     'Add a color' => 'Add a color',
