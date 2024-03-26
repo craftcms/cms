@@ -1587,7 +1587,7 @@ return [
     'The template Craft CMS will use for HTML emails' => 'Het sjabloon dat Craft CMS zal gebruiken voor HTML e-mails.',
     'The template will be rendered with an `element` variable.' => 'De sjabloon wordt weergegeven met een `element`-variabele.',
     'The text label for the entry creation button.' => 'Het tekstlabel voor de knop om inhoud te maken.',
-    'The text label for {type} selection buttons.' => 'Het tekstlabel voor knoppen voor {type}selectie.',
+    'The text label for {type} selection buttons.' => 'Het tekstlabel voor selectieknoppen.',
     'The text that will be shown if the field doesn’t have a value.' => 'Tekst die wordt weergegeven als het veld leeg is.',
     'The total number of {type} to display per page within the element index.' => 'Het totale aantal {type} dat per pagina moet worden weergegeven binnen de elementindex.',
     'The transport type “{type}” could not be found.' => 'Kan het transporttype \'{type}\' niet vinden.',
