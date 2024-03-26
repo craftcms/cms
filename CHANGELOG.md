@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.8.6 - 2024-03-26
 
 - Added the “Craft 5 Upgrade” utility.
 
