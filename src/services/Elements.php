@@ -492,30 +492,6 @@ class Elements extends Component
     public const EVENT_AFTER_DELETE_FOR_SITE = 'afterDeleteForSite';
 
     /**
-     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to move an element.
-     *
-     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
-     *
-     * ```php
-     * use craft\events\AuthorizationCheckEvent;
-     * use craft\services\Elements;
-     * use yii\base\Event;
-     *
-     * Event::on(
-     *     Elements::class,
-     *     Elements::EVENT_AUTHORIZE_MOVE,
-     *     function(AuthorizationCheckEvent $event) {
-     *         $event->authorized = true;
-     *     }
-     * );
-     * ```
-     *
-     * @see canMove()
-     * @since 5.0.0
-     */
-    public const EVENT_AUTHORIZE_MOVE = 'authorizeMove';
-
-    /**
      * @event EntryMoveEvent The event that is triggered before an entry is move to a different section.
      * @since 5.0.0
      */
@@ -4425,26 +4401,6 @@ SQL;
             $element->canDelete($user) &&
             $element->canDeleteForSite($user)
         );
-    }
-
-    /**
-     * Returns whether a user is authorized to move the given element.
-     *
-     * @param ElementInterface $element
-     * @param User|null $user
-     * @return bool
-     * @since 5.0.0
-     */
-    public function canMove(ElementInterface $element, ?User $user = null): bool
-    {
-        if (!$user) {
-            $user = Craft::$app->getUser()->getIdentity();
-            if (!$user) {
-                return false;
-            }
-        }
-
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_MOVE) ?? $element->canMove($user);
     }
 
     /**

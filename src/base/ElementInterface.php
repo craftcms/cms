@@ -882,15 +882,6 @@ interface ElementInterface extends
     public function canDeleteForSite(User $user): bool;
 
     /**
-     * Returns whether the given user is authorized to move this element.
-     *
-     * @param User $user
-     * @return bool
-     * @since 5.0.0
-     */
-    public function canMove(User $user): bool;
-
-    /**
      * Returns whether the given user is authorized to create drafts for this element.
      *
      * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].

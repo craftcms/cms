@@ -3330,14 +3330,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function canMove(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function canDeleteForSite(User $user): bool
     {
         if ($this instanceof NestedElementInterface) {

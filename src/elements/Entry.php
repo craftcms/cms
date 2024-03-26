@@ -1812,7 +1812,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     }
 
     /**
-     * @inheritdoc
+     * Returns whether the given user is authorized to move this entry.
+     *
+     * @param User $user
+     * @return bool
+     * @since 5.0.0
      */
     public function canMove(User $user): bool
     {
