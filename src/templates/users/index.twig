@@ -1,4 +1,4 @@
-{% if CraftEdition != CraftPro %}
+{% if CraftEdition == CraftSolo %}
     {% exit 404 %}
 {% endif %}
 
@@ -11,7 +11,7 @@
 {% set canHaveDrafts = craft.users().drafts().draftOf(false).savedDraftsOnly().exists() %}
 
 {% block actionButton %}
-    {% if currentUser.can('registerUsers') %}
+    {% if currentUser.canRegisterUsers() %}
         <a class="btn submit add icon" href="{{ url('users/new') }}">
             {{ 'New {type}'|t('app', {
                 type: 'user'|t('app'),

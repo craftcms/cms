@@ -154,6 +154,7 @@ class AppHelperTest extends TestCase
     {
         self::assertEquals([
             CmsEdition::Solo->value,
+            CmsEdition::Team->value,
             CmsEdition::Pro->value,
         ], App::editions());
     }
@@ -460,6 +461,7 @@ class AppHelperTest extends TestCase
     {
         return [
             ['solo', CmsEdition::Solo->value],
+            ['team', CmsEdition::Team->value],
             ['pro', CmsEdition::Pro->value],
             [false, -1],
         ];
@@ -472,6 +474,7 @@ class AppHelperTest extends TestCase
     {
         return [
             ['Solo', CmsEdition::Solo->value],
+            ['Team', CmsEdition::Team->value],
             ['Pro', CmsEdition::Pro->value],
             [false, -1],
         ];
@@ -484,6 +487,7 @@ class AppHelperTest extends TestCase
     {
         return [
             [CmsEdition::Solo->value, 'solo'],
+            [CmsEdition::Team->value, 'team'],
             [CmsEdition::Pro->value, 'pro'],
             [false, 'personal'],
             [false, 'client'],
@@ -497,15 +501,16 @@ class AppHelperTest extends TestCase
     {
         return [
             [true, CmsEdition::Pro->value],
+            [true, CmsEdition::Team->value],
             [true, CmsEdition::Solo->value],
             [true, '1'],
             [true, 0],
             [true, 1],
+            [true, 2],
             [false, true],
             [false, null],
             [false, false],
             [false, 4],
-            [false, 2],
             [false, 3],
         ];
     }

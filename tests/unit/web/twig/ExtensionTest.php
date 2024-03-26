@@ -96,8 +96,8 @@ class ExtensionTest extends TestCase
     {
         Craft::$app->edition = CmsEdition::Pro;
         $this->testRenderResult(
-            implode(',', [CmsEdition::Solo->value, CmsEdition::Pro->value]),
-            '{{ [CraftSolo, CraftPro]|join(",") }}',
+            implode(',', [CmsEdition::Solo->value, CmsEdition::Team->value, CmsEdition::Pro->value]),
+            '{{ [CraftSolo, CraftTeam, CraftPro]|join(",") }}',
             templateMode: View::TEMPLATE_MODE_CP,
         );
     }

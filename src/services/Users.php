@@ -12,6 +12,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\ImageException;
 use craft\errors\InvalidElementException;
 use craft\errors\InvalidSubpathException;
@@ -1620,5 +1621,21 @@ class Users extends Component
         }
 
         return $url;
+    }
+
+    /**
+     * Returns whether new users can be added to the system.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    final public function canCreateUsers(): bool
+    {
+        if (Craft::$app->edition === CmsEdition::Pro) {
+            return true;
+        }
+
+        $max = Craft::$app->edition === CmsEdition::Solo ? 1 : 5;
+        return User::find()->status(null)->count() < $max;
     }
 }

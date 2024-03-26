@@ -296,57 +296,62 @@ class User extends Element implements IdentityInterface
                     'slug' => 'all',
                 ],
             ],
-            [
-                'key' => 'admins',
-                'label' => Craft::t('app', 'Admins'),
-                'criteria' => ['admin' => true],
-                'hasThumbs' => true,
-                'data' => [
-                    'slug' => 'admins',
-                ],
-            ],
-            [
-                'heading' => Craft::t('app', 'Account Type'),
-            ],
-            [
-                'key' => 'credentialed',
-                'label' => Craft::t('app', 'Credentialed'),
-                'criteria' => [
-                    'status' => UserQuery::STATUS_CREDENTIALED,
-                ],
-                'hasThumbs' => true,
-                'data' => [
-                    'slug' => 'credentialed',
-                ],
-            ],
-            [
-                'key' => 'inactive',
-                'label' => Craft::t('app', 'Inactive'),
-                'criteria' => [
-                    'status' => self::STATUS_INACTIVE,
-                ],
-                'hasThumbs' => true,
-                'data' => [
-                    'slug' => 'inactive',
-                ],
-            ],
         ];
 
-        $groups = Craft::$app->getUserGroups()->getAllGroups();
-
-        if (!empty($groups)) {
-            $sources[] = ['heading' => Craft::t('app', 'Groups')];
-
-            foreach ($groups as $group) {
-                $sources[] = [
-                    'key' => 'group:' . $group->uid,
-                    'label' => Craft::t('site', $group->name),
-                    'criteria' => ['groupId' => $group->id],
+        if (Craft::$app->edition === CmsEdition::Pro) {
+            $sources = array_merge($sources, [
+                [
+                    'key' => 'admins',
+                    'label' => Craft::t('app', 'Admins'),
+                    'criteria' => ['admin' => true],
                     'hasThumbs' => true,
                     'data' => [
-                        'slug' => $group->handle,
+                        'slug' => 'admins',
                     ],
-                ];
+                ],
+                [
+                    'heading' => Craft::t('app', 'Account Type'),
+                ],
+                [
+                    'key' => 'credentialed',
+                    'label' => Craft::t('app', 'Credentialed'),
+                    'criteria' => [
+                        'status' => UserQuery::STATUS_CREDENTIALED,
+                    ],
+                    'hasThumbs' => true,
+                    'data' => [
+                        'slug' => 'credentialed',
+                    ],
+                ],
+                [
+                    'key' => 'inactive',
+                    'label' => Craft::t('app', 'Inactive'),
+                    'criteria' => [
+                        'status' => self::STATUS_INACTIVE,
+                    ],
+                    'hasThumbs' => true,
+                    'data' => [
+                        'slug' => 'inactive',
+                    ],
+                ],
+            ]);
+
+            $groups = Craft::$app->getUserGroups()->getAllGroups();
+
+            if (!empty($groups)) {
+                $sources[] = ['heading' => Craft::t('app', 'Groups')];
+
+                foreach ($groups as $group) {
+                    $sources[] = [
+                        'key' => 'group:' . $group->uid,
+                        'label' => Craft::t('site', $group->name),
+                        'criteria' => ['groupId' => $group->id],
+                        'hasThumbs' => true,
+                        'data' => [
+                            'slug' => $group->handle,
+                        ],
+                    ];
+                }
             }
         }
 
@@ -1556,7 +1561,7 @@ XML;
     public function canSave(User $user): bool
     {
         if (!$this->id) {
-            return $user->can('registerUsers');
+            return $user->canRegisterUsers();
         }
 
         if ($user->id === $this->id) {
@@ -1625,6 +1630,20 @@ XML;
         }
 
         return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
+    }
+
+    /**
+     * Returns whether the user can register additional users.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    final public function canRegisterUsers(): bool
+    {
+        return (
+            $this->can('registerUsers') &&
+            Craft::$app->getUsers()->canCreateUsers()
+        );
     }
 
     /**
@@ -2257,11 +2276,28 @@ JS, [
 
     /**
      * @inheritdoc
+     */
+    final public function beforeSave(bool $isNew): bool
+    {
+        if ($isNew && !Craft::$app->getUsers()->canCreateUsers()) {
+            return false;
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
      * @throws InvalidConfigException
      * @throws Exception
      */
     public function afterSave(bool $isNew): void
     {
+        // All users should be admins unless this is Craft Pro
+        if ($isNew && Craft::$app->edition !== CmsEdition::Pro) {
+            $this->admin = true;
+        }
+
         // Get the user record
         if (!$isNew) {
             $record = UserRecord::findOne($this->id);

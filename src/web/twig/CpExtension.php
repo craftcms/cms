@@ -30,6 +30,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         return [
             'CraftEdition' => Craft::$app->edition->value,
             'CraftSolo' => CmsEdition::Solo->value,
+            'CraftTeam' => CmsEdition::Team->value,
             'CraftPro' => CmsEdition::Pro->value,
             'requestedSite' => Cp::requestedSite(),
         ];

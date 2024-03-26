@@ -71,6 +71,7 @@
 - Improved the accessibility of the global sidebar. ([#14335](https://github.com/craftcms/cms/pull/14335))
 
 ### Administration
+- Added the Team edition.
 - Added the “Color” entry type setting. ([#14187](https://github.com/craftcms/cms/pull/14187))
 - Added the “Icon” entry type setting. ([#14169](https://github.com/craftcms/cms/pull/14169))
 - Added the “Addresses” field type. ([#11438](https://github.com/craftcms/cms/discussions/11438))
@@ -229,6 +230,7 @@
 - Added `craft\elements\Tag::gqlTypeName()`.
 - Added `craft\elements\User::GQL_TYPE_NAME`.
 - Added `craft\elements\User::authenticateWithPasskey()`.
+- Added `craft\elements\User::canRegisterUsers()`.
 - Added `craft\elements\conditions\ElementConditionInterface::getFieldLayouts()`.
 - Added `craft\elements\conditions\addresses\AddressLine1ConditionRule`.
 - Added `craft\elements\conditions\addresses\AddressLine2ConditionRule`.
@@ -392,6 +394,7 @@
 - Added `craft\services\ProjectConfig::writeYamlFiles()`.
 - Added `craft\services\Sites::$maxSites`. ([#14307](https://github.com/craftcms/cms/pull/14307))
 - Added `craft\services\Sites::getRemainingSites()`. ([#14307](https://github.com/craftcms/cms/pull/14307))
+- Added `craft\servics\Users::canCreateUsers()`.
 - Added `craft\web\Controller::asCpModal()`.
 - Added `craft\web\CpModalResponseBehavior`.
 - Added `craft\web\CpModalResponseFormatter`.
@@ -405,6 +408,7 @@
 - Added `craft\web\CpScreenResponseBehavior::site()`.
 - Added `craft\web\Request::getQueryParamsWithoutPath()`.
 - Added `craft\web\twig\variables\Cp::getEntryTypeOptions()`.
+- Added `craft\base\PluginTrait::$minCmsEdition`.
 - Renamed `craft\base\BlockElementInterface` to `NestedElementInterface`, and added the `getField()`, `getSortOrder()`, and `setOwner()` methods to it.
 - Renamed `craft\base\Element::EVENT_SET_TABLE_ATTRIBUTE_HTML` to `EVENT_DEFINE_ATTRIBUTE_HTML`.
 - Renamed `craft\base\Element::getHasCheckeredThumb()` to `hasCheckeredThumb()` and made it protected.
