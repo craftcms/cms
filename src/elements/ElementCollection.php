@@ -9,14 +9,18 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use Illuminate\Support\Collection;
+use Twig\Markup;
+use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 
 /**
  * ElementCollection represents a collection of elements.
  *
- * @template TKey of array-key
  * @template TValue of ElementInterface
- * @extends Collection<TKey, TValue>
+ * @extends Collection<array-key, TValue>
  *
  * @method TValue one(callable|null $callback, mixed $default)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -27,7 +31,7 @@ class ElementCollection extends Collection
     /**
      * Returns a collection of the elements’ IDs.
      *
-     * @return Collection<TKey,int>
+     * @return Collection<array-key, int>
      */
     public function ids(): Collection
     {
@@ -65,5 +69,22 @@ class ElementCollection extends Collection
             Craft::$app->getElements()->eagerLoadElements(get_class($first), $this->items, $with);
         }
         return $this;
+    }
+
+    /**
+     * Renders the elements using their partial templates.
+     *
+     * If no partial template exists for an element, its string representation will be output instead.
+     *
+     * @param array $variables
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @see ElementHelper::renderElements()
+     * @since 5.0.0
+     */
+    public function render(array $variables = []): Markup
+    {
+        return ElementHelper::renderElements($this->items, $variables);
     }
 }

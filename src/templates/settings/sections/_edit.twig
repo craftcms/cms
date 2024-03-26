@@ -1,4 +1,16 @@
-{% extends 'settings/sections/_layout.twig' %}
+{% extends "_layouts/cp" %}
+
+{% set crumbs = [
+    {
+        label: 'Settings'|t('app'),
+        url: url('settings'),
+    },
+    {
+        label: 'Sections'|t('app'),
+        url: url('settings/sections'),
+    },
+] %}
+
 {% set selectedTab = 'settings' %}
 {% set fullPageForm = true %}
 {% set formActions = [
@@ -15,18 +27,9 @@
 {% set headlessMode = craft.app.config.general.headlessMode %}
 
 
-{% block submitButton %}
-    {% if section.id %}
-        {{ parent() }}
-    {% else %}
-        <button type="submit" class="btn submit">{{ 'Save and edit entry types'|t('app') }}</button>
-    {% endif %}
-{% endblock %}
-
-
 {% block content %}
     {{ actionInput('sections/save-section') }}
-    {{ redirectInput(section.id ? 'settings/sections' : "settings/sections/{id}/entrytypes") }}
+    {{ redirectInput('settings/sections') }}
 
     {% if section.id %}{{ hiddenInput('sectionId', section.id) }}{% endif %}
 
@@ -55,11 +58,11 @@
         required: true
     }) }}
 
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
         label: 'Enable versioning for entries in this section'|t('app'),
         id: 'enableVersioning',
         name: 'enableVersioning',
-        checked: section.enableVersioning
+        on: section.enableVersioning
     }) }}
 
     {{ forms.selectField({
@@ -76,6 +79,42 @@
     }) }}
 
     <hr>
+
+    {% tag 'div' with {
+        class: [
+            'type-single',
+            section.type != 'single' ? 'hidden',
+        ]|filter,
+    } %}
+        {{ forms.entryTypeSelectField({
+            label: 'Entry Type',
+            instructions: 'Choose the type of entry this section will have.'|t('app'),
+            id: 'single-entry-type',
+            name: 'singleEntryType',
+            value: section.getEntryTypes()|first,
+            limit: 1,
+            errors: section.getErrors('entryTypes'),
+            create: true,
+        }, 'template:_includes/forms/entryType.twig') }}
+    {% endtag %}
+
+    {% tag 'div' with {
+        class: [
+            'type-channel',
+            'type-structure',
+            section.type not in ['channel', 'structure'] ? 'hidden',
+        ]|filter,
+    } %}
+        {{ forms.entryTypeSelectField({
+            label: 'Entry Types'|t('app'),
+            instructions: 'Choose the types of entries that can be included in this section.'|t('app'),
+            id: 'entry-types',
+            name: 'entryTypes[]',
+            values: section.getEntryTypes(),
+            errors: section.getErrors('entryTypes'),
+            create: true,
+        }) }}
+    {% endtag %}
 
     {% set siteRows = [] %}
     {% set siteErrors = section.getErrors('siteSettings') %}
@@ -185,7 +224,7 @@
             {{ forms.selectField({
                 label: 'Propagation Method'|t('app'),
                 instructions: 'Of the enabled sites above, which sites should entries in this section be saved to?'|t('app'),
-                warning: section.id and section.propagationMethod != 'none' and section.siteSettings|length > 1 ? 'Changing this may result in data loss.'|t('app'),
+                warning: section.id and section.propagationMethod.value != 'none' and section.siteSettings|length > 1 ? 'Changing this may result in data loss.'|t('app'),
                 id: 'propagationMethod',
                 name: 'propagationMethod',
                 options: [
@@ -195,7 +234,7 @@
                     { value: 'all', label: 'Save entries to all sites enabled for this section'|t('app') },
                     { value: 'custom', label: 'Let each entry choose which sites it should be saved to'|t('app') },
                 ],
-                value: section.propagationMethod
+                value: section.propagationMethod.value
             }) }}
         </div>
     {% endif %}
@@ -224,40 +263,52 @@
         }) }}
     </div>
 
-    {% if CraftEdition == CraftPro %}
-        {{ forms.editableTableField({
-            label: 'Preview Targets'|t('app'),
-            instructions: 'Locations that should be available for previewing entries in this section.'|t('app'),
-            id: 'previewTargets',
-            name: 'previewTargets',
-            cols: {
-                label: {
-                    type: 'singleline',
-                    heading: 'Label'|t('app'),
-                },
-                urlFormat: {
-                    type: 'singleline',
-                    heading: 'URL Format'|t('app'),
-                    info: 'The URL/URI to use for this target.'|t('app'),
-                    code: true,
-                },
-                refresh: {
-                    type: 'checkbox',
-                    heading: 'Auto-refresh'|t('app'),
-                    info: 'Whether preview frames should be automatically refreshed when content changes.'|t('app'),
-                    thin: true,
-                }
+    {{ forms.editableTableField({
+        label: 'Preview Targets'|t('app'),
+        instructions: 'Locations that should be available for previewing entries in this section.'|t('app'),
+        id: 'previewTargets',
+        name: 'previewTargets',
+        cols: {
+            label: {
+                type: 'singleline',
+                heading: 'Label'|t('app'),
             },
-            defaultValues: {
-                refresh: true,
+            urlFormat: {
+                type: 'singleline',
+                heading: 'URL Format'|t('app'),
+                info: 'The URL/URI to use for this target.'|t('app'),
+                code: true,
             },
-            allowAdd: true,
-            allowReorder: true,
-            allowDelete: true,
-            rows: section.previewTargets,
-            errors: section.getErrors('previewTargets')
-        }) }}
-    {% endif %}
+            refresh: {
+                type: 'checkbox',
+                heading: 'Auto-refresh'|t('app'),
+                info: 'Whether preview frames should be automatically refreshed when content changes.'|t('app'),
+                thin: true,
+            }
+        },
+        defaultValues: {
+            refresh: true,
+        },
+        allowAdd: true,
+        allowReorder: true,
+        allowDelete: true,
+        rows: section.previewTargets,
+        errors: section.getErrors('previewTargets')
+    }) }}
+
+    {{ forms.textField({
+        label: 'Max Authors'|t('app'),
+        instructions: 'The maximum number of authors entries in this section can have.'|t('app'),
+        id: 'maxAuthors',
+        name: 'maxAuthors',
+        autocorrect: false,
+        autocapitalize: false,
+        default: 1,
+        value: section.maxAuthors,
+        errors: section.getErrors('maxAuthors'),
+        size: 5,
+        required: true
+    }) }}
 {% endblock %}
 
 {% if brandNewSection %}

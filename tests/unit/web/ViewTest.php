@@ -196,7 +196,7 @@ class ViewTest extends TestCase
             CraftTest::normalizePathSeparators($this->view->templatesPath)
         );
         self::assertSame(
-            ['html', 'twig'],
+            ['twig', 'html'],
             $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
         );
 
@@ -343,22 +343,22 @@ class ViewTest extends TestCase
     {
         $view = Craft::$app->getView();
 
-        $this->assertFalse($view->clearJsBuffer());
+        self::assertFalse($view->clearJsBuffer());
 
         $view->startJsBuffer();
         $view->registerJs('var foo = true;', View::POS_END);
         $view->registerJs('var bar = true', View::POS_BEGIN);
-        $this->assertSame("<script type=\"text/javascript\">var bar = true;\nvar foo = true;\n</script>", $view->clearJsBuffer());
+        self::assertSame("<script type=\"text/javascript\">var bar = true;\nvar foo = true;\n</script>", $view->clearJsBuffer());
 
         $view->startJsBuffer();
         $view->registerJs('var foo = true;', View::POS_END);
         $view->registerJs('var bar = true', View::POS_BEGIN);
-        $this->assertSame("var bar = true;\nvar foo = true;\n", $view->clearJsBuffer(false));
+        self::assertSame("var bar = true;\nvar foo = true;\n", $view->clearJsBuffer(false));
 
         $view->startJsBuffer();
         $view->registerJs('var foo = true;', View::POS_END);
         $view->registerJs('var bar = true', View::POS_BEGIN);
-        $this->assertSame([
+        self::assertSame([
             View::POS_END => "<script type=\"text/javascript\">var foo = true;</script>",
             View::POS_BEGIN => "<script type=\"text/javascript\">var bar = true;</script>",
         ], $view->clearJsBuffer(true, false));
@@ -366,7 +366,7 @@ class ViewTest extends TestCase
         $view->startJsBuffer();
         $view->registerJs('var foo = true;', View::POS_END, 'foo');
         $view->registerJs('var bar = true', View::POS_BEGIN, 'bar');
-        $this->assertSame([
+        self::assertSame([
             View::POS_END => [
                 'foo' => 'var foo = true;',
             ],
@@ -383,11 +383,11 @@ class ViewTest extends TestCase
     {
         $view = Craft::$app->getView();
 
-        $this->assertFalse($view->clearScriptBuffer());
+        self::assertFalse($view->clearScriptBuffer());
 
         $view->startScriptBuffer();
         $view->registerScript('let foo = true', View::POS_END, ['type' => 'module'], 'foo');
-        $this->assertSame([
+        self::assertSame([
             View::POS_END => [
                 'foo' => '<script type="module">let foo = true</script>',
             ],
@@ -401,11 +401,11 @@ class ViewTest extends TestCase
     {
         $view = Craft::$app->getView();
 
-        $this->assertFalse($view->clearCssBuffer());
+        self::assertFalse($view->clearCssBuffer());
 
         $view->startCssBuffer();
         $view->registerCss('#foo { color: red; }', ['type' => 'text/css'], 'foo');
-        $this->assertSame([
+        self::assertSame([
             'foo' => '<style type="text/css">#foo { color: red; }</style>',
         ], $view->clearCssBuffer());
     }
@@ -431,14 +431,14 @@ TWIG;
 
         $view = Craft::$app->getView();
         Craft::$app->set('view', $this->view);
-        $this->assertSame($expected, $this->view->renderPageTemplate('event-tags'));
+        self::assertSame($expected, $this->view->renderPageTemplate('event-tags'));
         Craft::$app->set('view', $view);
     }
 
     /**
      * @return array
      */
-    public function normalizeObjectTemplateDataProvider(): array
+    public static function normalizeObjectTemplateDataProvider(): array
     {
         return [
             ['{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}', '{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}'],
@@ -466,7 +466,7 @@ TWIG;
     /**
      * @return array
      */
-    public function resolveTemplateDataProvider(): array
+    public static function resolveTemplateDataProvider(): array
     {
         return [
             ['@craftunittemplates/index.html', ''],
@@ -478,21 +478,21 @@ TWIG;
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
 
             // Cp Paths
-            ['@craft/templates/index.twig', '', View::TEMPLATE_MODE_CP],
-            ['@craft/templates/index.twig', 'index', View::TEMPLATE_MODE_CP],
-            ['@craft/templates/entries/index.twig', 'entries', View::TEMPLATE_MODE_CP],
+            ['@app/templates/index.twig', '', View::TEMPLATE_MODE_CP],
+            ['@app/templates/index.twig', 'index', View::TEMPLATE_MODE_CP],
+            ['@app/templates/entries/index.twig', 'entries', View::TEMPLATE_MODE_CP],
         ];
     }
 
     /**
      * @return array
      */
-    public function privateResolveTemplateDataProvider(): array
+    public static function privateResolveTemplateDataProvider(): array
     {
         return [
             ['@craftunittemplates/template.twig', '@craftunittemplates', 'template'],
             ['@craftunittemplates/index.html', '@craftunittemplates', 'index'],
-            ['@craftunittemplates/doubleindex/index.html', '@craftunittemplates/doubleindex', 'index'],
+            ['@craftunittemplates/doubleindex/index.twig', '@craftunittemplates/doubleindex', 'index'],
 
             // Index is found by default
             ['@craftunittemplates/index.html', '@craftunittemplates', ''],
@@ -510,7 +510,7 @@ TWIG;
     /**
      * @return array
      */
-    public function renderObjectTemplateDataProvider(): array
+    public static function renderObjectTemplateDataProvider(): array
     {
         $model = new ExampleModel();
         $model->exampleParam = 'Example Param';
@@ -546,7 +546,7 @@ TWIG;
     /**
      * @return array
      */
-    public function namespaceInputsDataProvider(): array
+    public static function namespaceInputsDataProvider(): array
     {
         return [
             ['', ''],
@@ -574,7 +574,7 @@ TWIG;
     /**
      * @return array
      */
-    public function namespaceInputNameDataProvider(): array
+    public static function namespaceInputNameDataProvider(): array
     {
         return [
             ['', ''],
@@ -592,7 +592,7 @@ TWIG;
     /**
      * @return array
      */
-    public function namespaceInputIdDataProvider(): array
+    public static function namespaceInputIdDataProvider(): array
     {
         return [
             ['', ''],
@@ -605,7 +605,7 @@ TWIG;
     /**
      * @return array
      */
-    public function getTemplateRootsDataProvider(): array
+    public static function getTemplateRootsDataProvider(): array
     {
         return [
             [['random-roots' => [null]], 'random-roots', ['random-roots' => [null]]],

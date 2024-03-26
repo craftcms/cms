@@ -26,6 +26,7 @@
             addToCartloading ||
             !plugin.latestCompatibleVersion ||
             !plugin.phpVersionCompatible ||
+            !isCmsEditionCompatible ||
             licenseMismatched ||
             plugin.abandoned
           "
@@ -82,7 +83,9 @@
             type="submit"
             :loading="loading"
             :disabled="
-              !plugin.latestCompatibleVersion || !plugin.phpVersionCompatible
+              !plugin.latestCompatibleVersion ||
+              !plugin.phpVersionCompatible ||
+              !isCmsEditionCompatible
             "
             block
             large
@@ -103,7 +106,9 @@
               type="submit"
               :loading="loading"
               :disabled="
-                !plugin.latestCompatibleVersion || !plugin.phpVersionCompatible
+                !plugin.latestCompatibleVersion ||
+                !plugin.phpVersionCompatible ||
+                !isCmsEditionCompatible
               "
               block
               large
@@ -128,7 +133,8 @@
                   !pluginLicenseInfo
                 ) ||
                 !plugin.latestCompatibleVersion ||
-                !plugin.phpVersionCompatible
+                !plugin.phpVersionCompatible ||
+                !isCmsEditionCompatible
               "
               :loading="loading"
               block
@@ -213,6 +219,18 @@
               | t('app', {
                 v1: plugin.phpConstraint,
                 v2: composerPhpVersion(),
+              })
+          }}
+        </p>
+      </div>
+    </template>
+    <template v-else-if="!isCmsEditionCompatible">
+      <div class="tw-text-gray-600 tw-mt-4">
+        <p>
+          {{
+            'This plugin requires Craft CMS {name} edition.'
+              | t('app', {
+                name: uppercaseFirst(plugin.minCmsEdition),
               })
           }}
         </p>
@@ -317,6 +335,27 @@
         return this.pluginLicenseInfo.edition;
       },
 
+      isCmsEditionCompatible() {
+        if (
+          !this.plugin.minCmsEdition ||
+          this.plugin.minCmsEdition === 'solo'
+        ) {
+          return true;
+        }
+
+        const installedEditionIdx = window.cmsEditions.indexOf(
+          window.cmsInfo.edition
+        );
+        const requiredEditionIdx = window.cmsEditions.indexOf(
+          this.plugin.minCmsEdition
+        );
+        return (
+          installedEditionIdx !== -1 &&
+          requiredEditionIdx !== -1 &&
+          installedEditionIdx >= requiredEditionIdx
+        );
+      },
+
       allowUpdates() {
         return Craft.allowUpdates && Craft.allowAdminChanges;
       },
@@ -383,6 +422,10 @@
 
       composerPhpVersion() {
         return window.composerPhpVersion;
+      },
+
+      uppercaseFirst(str) {
+        return this.$options.filters.uppercaseFirst(str);
       },
     },
   };

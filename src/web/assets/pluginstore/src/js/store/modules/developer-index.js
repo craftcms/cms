@@ -66,7 +66,7 @@ const actions = {
           developerIndexParams,
         })
         .then((response) => {
-          if (response.data && response.data.error) {
+          if (response.data?.error) {
             reject(response.data.error);
           }
 

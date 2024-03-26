@@ -10,6 +10,7 @@ namespace crafttests\functional;
 use Codeception\Example;
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use FunctionalTester;
 
 /**
@@ -43,7 +44,7 @@ class PageRenderChecksCest
         $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
 
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
     }
 
     /**
@@ -140,28 +141,16 @@ class PageRenderChecksCest
                 ['rendered' => 'New field'],
             ],
             ],
-            [
-                'url' => '/settings/fields/1', 'title' => 'Fields', 'extraContent' => [
-                ['rendered' => 'New field'],
-            ],
-            ],
 
             [
                 'url' => '/settings/assets', 'title' => 'Volumes - Asset Settings', 'extraContent' => [
                 ['rendered' => 'New volume'],
                 ['rendered' => 'Image Transforms'],
-                ['rendered' => 'Settings'],
             ],
             ],
             [
                 'url' => '/settings/assets/transforms', 'title' => 'Image Transforms - Asset Settings', 'extraContent' => [
                 ['rendered' => 'New image transform'],
-            ],
-            ],
-            [
-                'url' => '/settings/assets/settings', 'title' => 'Settings - Asset Settings', 'extraContent' => [
-                ['rendered' => 'Temp Uploads Location'],
-                ['rendered' => 'Where do you want to store temporary asset uploads?'],
             ],
             ],
 

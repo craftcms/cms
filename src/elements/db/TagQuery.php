@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
+use craft\elements\ElementCollection;
 use craft\elements\Tag;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -24,6 +25,7 @@ use yii\db\Connection;
  * @method Tag[]|array all($db = null)
  * @method Tag|array|null one($db = null)
  * @method Tag|array|null nth(int $n, ?Connection $db = null)
+ * @method ElementCollection<Tag> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path tags.md
@@ -41,7 +43,7 @@ class TagQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['content.title' => SORT_ASC];
+    protected array $defaultOrderBy = ['elements_sites.title' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -108,10 +110,10 @@ class TagQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function group(mixed $value): self
+    public function group(mixed $value): static
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
@@ -160,10 +162,10 @@ class TagQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function groupId(mixed $value): self
+    public function groupId(mixed $value): static
     {
         $this->groupId = $value;
         return $this;
@@ -174,6 +176,10 @@ class TagQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->_normalizeGroupId();
 
         $this->joinElementTable(Table::TAGS);
@@ -186,7 +192,7 @@ class TagQuery extends ElementQuery
             $this->subQuery->andWhere(['tags.groupId' => $this->groupId]);
         }
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**
@@ -226,5 +232,25 @@ class TagQuery extends ElementQuery
             }
         }
         return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        if ($this->groupId) {
+            $fieldLayouts = [];
+            $tagsService = Craft::$app->getTags();
+            foreach ($this->groupId as $groupId) {
+                $group = $tagsService->getTagGroupById($groupId);
+                if ($group) {
+                    $fieldLayouts[] = $group->getFieldLayout();
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
     }
 }

@@ -7,7 +7,7 @@
     #{lightness($grey100)};
 
   // submit button colors
-  --primary-color: var(--red-500);
+  --primary-color: var(--red-600);
   --secondary-color: var(--gray-500);
 
   --input-color: hsl(212, 25%, 50%);
@@ -22,14 +22,9 @@
   // font styles
   --font-weight-bold: 700;
 
-  // menu colors
-  --menu-option-color: var(--text-color);
-  --menu-option-active-color: var(--white);
-  --menu-option-active-background-color: var(--dark-sel-color);
-
   // hairline colors
   --hairline-color: #{transparentize(hsl(209, 20%, 25%), 0.9)};
-  --medium-hairline-color: #{transparentize(hsl(209, 14%, 37%), 0.75)};
+  --medium-hairline-color: #cfd8e3; // matches shadow below global header;
   --dark-hairline-color: #{transparentize(hsl(210, 10%, 53%), 0.5)};
 
   // focus colors
@@ -50,19 +45,20 @@
   --dark-sel-color: var(--gray-500);
 
   // alert/notice colors
-  --error-color: #d81e23;
-  --warning-color: var(--yellow-800);
+  --error-color-rgb: 216, 31, 35;
+  --error-color: rgba(var(--error-color-rgb), 1);
+  --warning-color: var(--amber-700);
   --success-color: var(--teal-700);
-  --notice-color: var(--blue-800);
+  --notice-color: var(--sky-700);
 
   // status colors
   --enabled-color: var(--teal-550);
-  --pending-color: var(--yellow-700);
+  --pending-color: var(--orange-400);
   --disabled-color: var(--red-600);
 
   // misc colors
-  --indicator-border-color: var(--yellow-700);
-  --indicator-icon-color: var(--yellow-750);
+  --indicator-border-color: var(--amber-600);
+  --indicator-icon-color: var(--amber-700);
 
   // UI element styles
   --small-border-radius: 3px;
@@ -70,6 +66,6 @@
   --large-border-radius: 5px;
 
   --menu-border-radius: var(--medium-border-radius);
-  --checkbox-size: 16px;
-  --radio-size: 16px;
+  --checkbox-size: 1rem;
+  --radio-size: 1rem;
 }

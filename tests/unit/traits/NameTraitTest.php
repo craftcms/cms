@@ -43,14 +43,14 @@ class NameTraitTest extends TestCase
         $this->_class->save();
 
         foreach ($expected as $attr => $val) {
-            $this->assertSame($val, $this->_class->$attr);
+            self::assertSame($val, $this->_class->$attr);
         }
     }
 
     /**
      * @return array
      */
-    public function namesDataProvider(): array
+    public static function namesDataProvider(): array
     {
         return [
             'onlyFullName' => [

@@ -7,7 +7,6 @@
 
 namespace craft\db\mysql;
 
-use Composer\Util\Platform;
 use Craft;
 use craft\db\Connection;
 use craft\db\TableSchema;
@@ -19,6 +18,7 @@ use mikehaertl\shellcommand\Command as ShellCommand;
 use PDO;
 use PDOException;
 use yii\base\ErrorException;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception;
 
@@ -62,6 +62,31 @@ class Schema extends \yii\db\mysql\Schema
         $this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;
         $this->typeMap['longtext'] = self::TYPE_LONGTEXT;
         $this->typeMap['enum'] = self::TYPE_ENUM;
+    }
+
+    /**
+     * Returns whether a table supports 4-byte characters.
+     *
+     * @param string $table The table to check
+     * @return bool
+     * @throws InvalidArgumentException if $table is invalid
+     * @since 5.0.0
+     */
+    public function supportsMb4(string $table): bool
+    {
+        $tableSchema = $this->getTableSchema($table);
+        if (!$tableSchema) {
+            throw new InvalidArgumentException("Invalid table: $table");
+        }
+        foreach ($tableSchema->columns as $column) {
+            // collation names always start with the charset name,
+            // so if a collation includes "mb4" we can safely assume the table has an mb4 charset
+            /** @var ColumnSchema $column */
+            if (isset($column->collation) && str_contains($column->collation, 'mb4')) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -154,13 +179,10 @@ class Schema extends \yii\db\mysql\Schema
     {
         $useSingleTransaction = true;
         $serverVersion = App::normalizeVersion($this->getServerVersion());
-
-        $isMySQL5 = version_compare($serverVersion, '8', '<');
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
 
         // https://bugs.mysql.com/bug.php?id=109685
-        if (($isMySQL5 && version_compare($serverVersion, '5.7.41', '>=')) ||
-            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>='))) {
+        if ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>=')) {
             $useSingleTransaction = false;
         }
 
@@ -172,7 +194,7 @@ class Schema extends \yii\db\mysql\Schema
             ' --dump-date' .
             ' --no-autocommit' .
             ' --routines' .
-            ' --default-character-set=' . Craft::$app->getConfig()->getDb()->charset .
+            ' --default-character-set=' . Craft::$app->getConfig()->getDb()->getCharset() .
             ' --set-charset' .
             ' --triggers' .
             ' --no-tablespaces';
@@ -184,7 +206,7 @@ class Schema extends \yii\db\mysql\Schema
         // Find out if the db/dump client supports column-statistics
         $shellCommand = new ShellCommand();
 
-        if (Platform::isWindows()) {
+        if (App::isWindows()) {
             $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
         } else {
             $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
@@ -298,6 +320,18 @@ class Schema extends \yii\db\mysql\Schema
         }
 
         return null;
+    }
+
+    /**
+     * @param array $info
+     * @return ColumnSchema
+     */
+    protected function loadColumnSchema($info): ColumnSchema
+    {
+        /** @var ColumnSchema $column */
+        $column = parent::loadColumnSchema($info);
+        $column->collation = $info['collation'] ?? null;
+        return $column;
     }
 
     /**

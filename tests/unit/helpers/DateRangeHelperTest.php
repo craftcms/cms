@@ -67,7 +67,7 @@ class DateRangeHelperTest extends TestCase
     /**
      * @return array[]
      */
-    public function dateRangeByTypeDataProvider(): array
+    public static function dateRangeByTypeDataProvider(): array
     {
         return [
             'today' => [
@@ -126,7 +126,7 @@ class DateRangeHelperTest extends TestCase
      * @return array[]
      * @throws Exception
      */
-    public function getDateIntervalByTimePeriodDataProvider(): array
+    public static function getDateIntervalByTimePeriodDataProvider(): array
     {
         return [
             'daysFull' => [DateInterval::createFromDateString('4 days'), 4, DateRange::PERIOD_DAYS_FROM_NOW],

@@ -60,6 +60,12 @@ class ProjectConfig
     private static bool $_processedUserGroups = false;
 
     /**
+     * @var bool Whether we've already processed all entry type configs.
+     * @see ensureAllEntryTypesProcessed()
+     */
+    private static bool $_processedEntryTypes = false;
+
+    /**
      * @var bool Whether we've already processed all section configs.
      * @see ensureAllSectionsProcessed()
      */
@@ -103,13 +109,7 @@ class ProjectConfig
 
         self::$_processedFields = true;
 
-        $allGroups = $projectConfig->get(ProjectConfigService::PATH_FIELD_GROUPS, true) ?? [];
         $allFields = $projectConfig->get(ProjectConfigService::PATH_FIELDS, true) ?? [];
-
-        foreach ($allGroups as $groupUid => $groupData) {
-            // Ensure group is processed
-            $projectConfig->processConfigChanges(ProjectConfigService::PATH_FIELD_GROUPS . '.' . $groupUid);
-        }
 
         foreach ($allFields as $fieldUid => $fieldData) {
             // Ensure field is processed
@@ -167,6 +167,28 @@ class ProjectConfig
                 // Ensure group is processed
                 $projectConfig->processConfigChanges($path . $groupUid);
             }
+        }
+    }
+
+    /**
+     * Ensure all entry type config changes are processed immediately in a safe manner.
+     *
+     * @since 5.0.0
+     */
+    public static function ensureAllEntryTypesProcessed(): void
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (self::$_processedEntryTypes || !$projectConfig->getIsApplyingExternalChanges()) {
+            return;
+        }
+
+        self::$_processedEntryTypes = true;
+
+        $configs = $projectConfig->get(ProjectConfigService::PATH_ENTRY_TYPES, true) ?? [];
+        foreach ($configs as $uid => $config) {
+            $path = sprintf('%s.%s', ProjectConfigService::PATH_ENTRY_TYPES, $uid);
+            $projectConfig->processConfigChanges($path);
         }
     }
 

@@ -3,7 +3,7 @@
 {% set static = static ?? false %}
 {% set element = element ?? null %}
 
-{% set value = (element ? element.getFieldValue(field.handle) : field.normalizeValue(null)) %}
+{% set value = (element ? element.getFieldValue(field.handle) : field.normalizeValue(null, null)) %}
 {% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
 {% set instructions = field.instructions ? field.instructions|t('site') %}
 {% set translatable = field.getIsTranslatable(element) %}

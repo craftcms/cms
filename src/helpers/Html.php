@@ -183,6 +183,22 @@ class Html extends \yii\helpers\Html
 
     /**
      * @inheritdoc
+     */
+    public static function tag($name, $content = '', $options = [])
+    {
+        return parent::tag($name, $content, static::normalizeTagAttributes($options));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function beginTag($name, $options = [])
+    {
+        return parent::beginTag($name, static::normalizeTagAttributes($options));
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public static function a($text, $url = null, $options = []): string
@@ -441,6 +457,7 @@ class Html extends \yii\helpers\Html
 
             switch ($name) {
                 case 'class':
+                case 'removeClass':
                     $normalized[$name] = static::explodeClass($value);
                     break;
                 case 'style':
@@ -457,6 +474,11 @@ class Html extends \yii\helpers\Html
                     }
                     $normalized[$name] = $value;
             }
+        }
+
+        if (isset($normalized['removeClass'])) {
+            $removeClasses = ArrayHelper::remove($normalized, 'removeClass');
+            $normalized['class'] = array_diff($normalized['class'] ?? [], $removeClasses);
         }
 
         return $normalized;
@@ -633,7 +655,15 @@ class Html extends \yii\helpers\Html
      */
     public static function id(string $id = ''): string
     {
-        $id = trim(preg_replace('/[^\w]+/', '-', $id), '-');
+        // Ignore if it looks like a placeholder
+        // or starts with a placeholder (e.g. widgets > __NAMESPACE__-fieldId)
+        if (preg_match('/^__[A-Z_]+__(-)?/', $id)) {
+            return $id;
+        }
+
+        // IDs must begin with a letter
+        $id = preg_replace('/^[^A-Za-z]+/', '', $id);
+        $id = rtrim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
         return $id ?: StringHelper::randomString(10);
     }
 
@@ -1057,7 +1087,7 @@ class Html extends \yii\helpers\Html
             $offset = $tag['end'];
         }
     }
-    
+
     /**
      * Returns the contents of a given SVG file.
      *
@@ -1068,15 +1098,23 @@ class Html extends \yii\helpers\Html
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default, the SVG will only be namespaced if an asset or markup is passed in.
+     * @param bool $throwException Whether to throw an exception on error
      * @return string
      * @since 4.3.0
      */
-    public static function svg(Asset|string $svg, ?bool $sanitize = null, ?bool $namespace = null): string
-    {
+    public static function svg(
+        Asset|string $svg,
+        ?bool $sanitize = null,
+        ?bool $namespace = null,
+        bool $throwException = false,
+    ): string {
         if ($svg instanceof Asset) {
             try {
                 $svg = $svg->getContents();
             } catch (Throwable $e) {
+                if ($throwException) {
+                    throw $e;
+                }
                 Craft::error("Could not get the contents of {$svg->getPath()}: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
@@ -1086,11 +1124,17 @@ class Html extends \yii\helpers\Html
             try {
                 $svg = Craft::getAlias($svg);
             } catch (InvalidArgumentException $e) {
+                if ($throwException) {
+                    throw $e;
+                }
                 Craft::error("Could not get the contents of $svg: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
             }
             if (!is_file($svg) || !FileHelper::isSvg($svg)) {
+                if ($throwException) {
+                    throw new InvalidArgumentException("Invalid SVG path: $svg");
+                }
                 Craft::warning("Could not get the contents of $svg: The file doesn't exist", __METHOD__);
                 return '';
             }

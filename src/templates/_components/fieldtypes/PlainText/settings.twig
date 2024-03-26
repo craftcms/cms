@@ -50,48 +50,27 @@
 {% endembed %}
 
 <fieldset>
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
         label: "Use a monospaced font"|t('app'),
         name: 'code',
-        checked: field.code,
+        on: field.code,
     }) }}
 
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
         label: "Allow line breaks"|t('app'),
         name: 'multiline',
-        checked: field.multiline,
+        on: field.multiline,
         toggle: 'initialRowsContainer'
     }) }}
 </fieldset>
 
-<div id="initialRowsContainer" class="nested-fields{% if not field.multiline %} hidden{% endif %}">
+<div id="initialRowsContainer" class="nested-fields{% if not field.multiline %} hidden{% endif %}" data-error-key="initialRows">
     {{ forms.textField({
         label: "Initial Rows"|t('app'),
         id: 'initialRows',
         name: 'initialRows',
         value: field.initialRows,
         size: 3,
-        errors: field.getErrors('initialRows')
+        errors: field.getErrors('initialRows'),
     }) }}
 </div>
-
-{% if craft.app.db.isMysql %}
-    <hr>
-    <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
-    <div id="advanced" class="hidden">
-        {{ forms.selectField({
-            label: "Column Type"|t('app'),
-            id: 'column-type',
-            name: 'columnType',
-            instructions: "The type of column this field should get in the database."|t('app'),
-            options: [
-                { value: 'auto', label: 'Automatic'|t('app') },
-                { value: 'string', label: 'varchar (255B)' },
-                { value: 'text', label: 'text (~64KB)' },
-                { value: 'mediumtext', label: 'mediumtext (~16MB)' },
-            ],
-            value: field.columnType ?? 'auto',
-            warning: (field.id ? "Changing this may result in data loss."|t('app')),
-        }) }}
-    </div>
-{% endif %}

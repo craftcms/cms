@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\ElementInterface;
+use craft\base\NestedElementInterface;
 use craft\config\GeneralConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
@@ -19,7 +19,6 @@ use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
-use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\FsException;
@@ -104,6 +103,7 @@ class Gc extends Component
         $this->_deleteStaleSessions();
         $this->_deleteStaleAnnouncements();
         $this->_deleteStaleElementActivity();
+        $this->_deleteStaleBulkElementOps();
 
         // elements should always go first
         $this->hardDeleteElements();
@@ -111,7 +111,6 @@ class Gc extends Component
         $this->hardDelete([
             Table::CATEGORYGROUPS,
             Table::ENTRYTYPES,
-            Table::FIELDGROUPS,
             Table::SECTIONS,
             Table::TAGGROUPS,
         ]);
@@ -120,19 +119,12 @@ class Gc extends Component
         $this->deletePartialElements(Category::class, Table::CATEGORIES, 'id');
         $this->deletePartialElements(Entry::class, Table::ENTRIES, 'id');
         $this->deletePartialElements(GlobalSet::class, Table::GLOBALSETS, 'id');
-        $this->deletePartialElements(MatrixBlock::class, Table::MATRIXBLOCKS, 'id');
         $this->deletePartialElements(Tag::class, Table::TAGS, 'id');
         $this->deletePartialElements(User::class, Table::USERS, 'id');
 
-        $this->deletePartialElements(Asset::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(Category::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(Entry::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(GlobalSet::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(Tag::class, Table::CONTENT, 'elementId');
-        $this->deletePartialElements(User::class, Table::CONTENT, 'elementId');
-
         $this->_deleteUnsupportedSiteEntries();
 
+        $this->_deleteOrphanedNestedEntries();
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
         $this->_deleteOrphanedRelations();
@@ -206,7 +198,7 @@ class Gc extends Component
         $blockElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            if (is_subclass_of($elementType, BlockElementInterface::class)) {
+            if (is_subclass_of($elementType, NestedElementInterface::class)) {
                 $blockElementTypes[] = $elementType;
             } else {
                 $normalElementTypes[] = $elementType;
@@ -429,6 +421,16 @@ SQL;
     }
 
     /**
+     * Deletes any stale bulk element operation records.
+     */
+    private function _deleteStaleBulkElementOps(): void
+    {
+        $this->_stdout('    > deleting stale bulk element operation records ... ');
+        Db::delete(Table::ELEMENTS_BULKOPS, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('2 weeks ago'))]);
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
      * Deletes entries for sites that aren’t enabled by their section.
      *
      * This can happen if you entrify a category group, disable one of the sites in the newly-created section’s
@@ -443,7 +445,7 @@ SQL;
         $siteIds = Craft::$app->getSites()->getAllSiteIds(true);
 
         // get sections that are not enabled for given site
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             $sectionSettings = $section->getSiteSettings();
             foreach ($siteIds as $siteId) {
                 if (!isset($sectionSettings[$siteId])) {
@@ -480,6 +482,40 @@ SQL;
                 $this->db->createCommand($sql, $params)->execute();
             }
         }
+
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Deletes any orphaned nested entries.
+     */
+    private function _deleteOrphanedNestedEntries(): void
+    {
+        $this->_stdout('    > deleting orphaned nested entries ... ');
+
+        $now = Db::prepareDateForDb(new DateTime());
+        $elementsTable = Table::ELEMENTS;
+        $entriesTable = Table::ENTRIES;
+        $elementsOwnersTable = Table::ELEMENTS_OWNERS;
+
+        if ($this->db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[el]].* FROM $elementsTable [[el]]
+INNER JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = [[el.id]]
+WHERE [[en.fieldId]] IS NOT NULL AND [[eo.elementId]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $elementsTable
+USING $elementsTable [[el]]
+INNER JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = [[el.id]]
+WHERE [[en.fieldId]] IS NOT NULL AND [[eo.elementId]] IS NULL
+SQL;
+        }
+
+        $this->db->createCommand($sql)->execute();
 
         $this->_stdout("done\n", Console::FG_GREEN);
     }

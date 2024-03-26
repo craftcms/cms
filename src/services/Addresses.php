@@ -18,6 +18,7 @@ use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
 use craft\addresses\SubdivisionRepository;
+use craft\base\FieldLayoutProviderInterface;
 use craft\elements\Address;
 use craft\events\ConfigEvent;
 use craft\events\DefineAddressFieldLabelEvent;
@@ -38,7 +39,7 @@ use yii\base\Component;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Addresses extends Component
+class Addresses extends Component implements FieldLayoutProviderInterface
 {
     /**
      * @event DefineAddressFieldsEvent The event that is triggered when defining the address fields that are used by a given country code.
@@ -222,6 +223,7 @@ class Addresses extends Component
             AddressField::SORTING_CODE => Craft::t('app', 'Sorting Code'),
             AddressField::ADDRESS_LINE1 => Craft::t('app', 'Address Line 1'),
             AddressField::ADDRESS_LINE2 => Craft::t('app', 'Address Line 2'),
+            AddressField::ADDRESS_LINE3 => Craft::t('app', 'Address Line 3'),
             AddressField::ORGANIZATION => Craft::t('app', 'Organization'),
             AddressField::GIVEN_NAME => Craft::t('app', 'First Name'),
             AddressField::ADDITIONAL_NAME => 'Additional Name', // Unused in Craft
@@ -320,20 +322,27 @@ class Addresses extends Component
             AdministrativeAreaType::DO_SI => Craft::t('app', 'Do Si'),
             AdministrativeAreaType::EMIRATE => Craft::t('app', 'Emirate'),
             AdministrativeAreaType::ISLAND => Craft::t('app', 'Island'),
-            AdministrativeAreaType::OBLAST => Craft::t('app', 'Oblast'),
             AdministrativeAreaType::PARISH => Craft::t('app', 'Parish'),
             AdministrativeAreaType::PREFECTURE => Craft::t('app', 'Prefecture'),
+            AdministrativeAreaType::REGION => Craft::t('app', 'Region'),
             AdministrativeAreaType::STATE => Craft::t('app', 'State'),
             default => Craft::t('app', 'Province'),
         };
     }
 
     /**
-     * Returns the address field layout.
-     *
-     * @return FieldLayout
+     * @inheritdoc
      */
-    public function getLayout(): FieldLayout
+    public function getHandle(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.0.0
+     */
+    public function getFieldLayout(): FieldLayout
     {
         $fieldLayout = Craft::$app->getFields()->getLayoutByType(Address::class);
 
@@ -359,7 +368,7 @@ class Addresses extends Component
      * @param bool $runValidation Whether the layout should be validated
      * @return bool
      */
-    public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
+    public function saveFieldLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
         if ($runValidation && !$layout->validate()) {
             Craft::info('Field layout not saved due to validation error.', __METHOD__);
@@ -394,7 +403,7 @@ class Addresses extends Component
 
         // Save the field layout
         $layout = FieldLayout::createFromConfig($config);
-        $layout->id = $this->getLayout()->id;
+        $layout->id = $this->getFieldLayout()->id;
         $layout->type = Address::class;
         $layout->uid = key($data);
         $fieldsService->saveLayout($layout);

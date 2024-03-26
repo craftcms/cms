@@ -36,7 +36,7 @@ class UsernameValidatorTest extends TestCase
         self::assertSame($expected, $this->usernameValidator->validateValue($value));
     }
 
-    public function validateValueDataProvider(): array
+    public static function validateValueDataProvider(): array
     {
         return [
             [null, 'asdfghjkl1234567890'],

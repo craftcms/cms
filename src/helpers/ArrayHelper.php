@@ -373,6 +373,18 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
+     * Returns the last value in a given array.
+     *
+     * @param array $array
+     * @return mixed The last value, or null if $array isn’t an array, or is empty.
+     * @since 5.0.0
+     */
+    public static function lastValue(array $array): mixed
+    {
+        return !empty($array) ? end($array) : null;
+    }
+
+    /**
      * Renames an item in an array. If the new key already exists in the array and the old key doesn’t,
      * the array will be left unchanged.
      *

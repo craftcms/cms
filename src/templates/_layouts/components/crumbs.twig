@@ -1,12 +1,66 @@
 <div id="crumbs"{% if not crumbs %} class="empty"{% endif %}>
-    <button id="primary-nav-toggle" class="nav-toggle" title="{{ 'Show nav'|t('app') }}" aria-label="{{ 'Show nav'|t('app') }}" aria-expanded="false" aria-controls="global-sidebar" aria-haspopup="true"></button>
-    {% if crumbs %}
-        <nav aria-label="{{ 'Breadcrumbs'|t('app') }}">
-            <ul class="breadcrumb-list">
-                {% for crumb in crumbs %}
-                    <li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
-                {% endfor %}
-            </ul>
-        </nav>
-    {% endif %}
+  <button id="primary-nav-toggle" class="nav-toggle" title="{{ 'Show nav'|t('app') }}" aria-label="{{ 'Show nav'|t('app') }}" aria-expanded="false" aria-controls="global-sidebar" aria-haspopup="true"></button>
+  {% if crumbs %}
+    <nav aria-label="{{ 'Breadcrumbs'|t('app') }}">
+      <ul id="crumb-list">
+        {% for crumb in crumbs %}
+          {% set hasMenuItems = crumb.menu is defined and crumb.menu.items is defined %}
+          {% if hasMenuItems %}
+            {% set crumb = (
+              crumb.menu.items|map(o => (o.group ?? false) ? (o.options ?? []) : [o])|flatten(1)|firstWhere(o => o.selected ?? false) ?: {}
+              )|merge(crumb) %}
+          {% endif %}
+
+          {% tag 'li' with {
+            class: {
+              crumb: true,
+              current: crumb.current ?? false,
+            }|filter|keys,
+          } %}
+            {% if crumb.html is defined %}
+              {{ crumb.html|raw }}
+            {% else %}
+              {% set labelId = "crumb-label#{random()}" %}
+
+              {% tag 'a' with {
+                class: 'crumb-link',
+                id: crumb.id ?? null,
+                href: crumb.url is defined ? url(crumb.url) : null,
+              } %}
+                {% if crumb.icon is defined %}
+                  <span class="cp-icon puny" aria-hidden="true">{{ iconSvg(crumb.icon) }}</span>
+                {% endif %}
+
+                <span>{{ crumb.label ?? crumb.html|raw }}</span>
+              {% endtag %}
+
+              {% if crumb.menu is defined and crumb.menu.items is defined %}
+                {% set menuId = crumb.id is defined ? "#{crumb.id}-menu" : "crumb-menu#{random()}" %}
+                {% set menuLabel = crumb.menu.label ?? null %}
+                {{ tag('button', {
+                  class: ['btn', 'menubtn'],
+                  type: 'button',
+                  aria: {
+                    label: menuLabel,
+                    controls: menuId,
+                    describedby: menuLabel ? null : labelId,
+                  },
+                  data: {
+                    'disclosure-trigger': true,
+                  },
+                }) }}
+              {% endif %}
+
+              {% if hasMenuItems %}
+                {{ disclosureMenu(crumb.menu.items, {
+                  id: menuId,
+                  withButton: false,
+                }) }}
+              {% endif %}
+            {% endif %}
+          {% endtag %}
+        {% endfor %}
+      </ul>
+    </nav>
+  {% endif %}
 </div>

@@ -24,10 +24,22 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _uploadTotalFiles: 0,
     _uploadFileProgress: {},
     _currentUploaderSettings: {},
+    _includeSubfolders: null,
 
     init: function (elementType, $container, settings) {
       settings = Object.assign({}, Craft.AssetIndex.defaults, settings);
-      this.base(elementType, $container, settings);
+      this.setSettings(settings, Craft.BaseElementIndex.defaults);
+
+      if (this.settings.context === 'index') {
+        // remember whether includeSubfolders was set in the query string,
+        // before the URL is updated
+        const queryParams = Craft.getQueryParams();
+        if (queryParams.includeSubfolders !== undefined) {
+          this._includeSubfolders = !!parseInt(queryParams.includeSubfolders);
+        }
+      }
+
+      this.base(elementType, $container, this.settings);
 
       if (this.settings.context === 'index') {
         this.itemDrag = new Garnish.DragDrop({
@@ -298,7 +310,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         });
 
         // will the user be allowed to move items in this folder?
-        const canMoveSubItems = !!currentFolder.canMoveSubItems;
+        const canMoveSubItems =
+          this.context === 'index' && !!currentFolder.canMoveSubItems;
         this.settings.selectable = this.settings.selectable || canMoveSubItems;
         this.settings.multiSelect =
           this.settings.multiSelect || canMoveSubItems;
@@ -348,7 +361,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             .removeClass('hidden');
         }
 
-        var checked = this.getSelectedSourceState('includeSubfolders', false);
+        let checked;
+        if (this._includeSubfolders !== null) {
+          checked = this._includeSubfolders;
+          this._includeSubfolders = null;
+        } else {
+          checked = this.getSelectedSourceState('includeSubfolders', false);
+        }
         this.$includeSubfoldersCheckbox.prop('checked', checked);
 
         this.$includeSubfoldersContainer.velocity(
@@ -497,14 +516,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       const response =
         event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
-      let {message, filename} = response || {};
-
+      let {message, filename, errors} = response || {};
       filename = filename || data?.files?.[0].name;
+      let errorMessages = errors ? Object.values(errors).flat() : [];
 
       if (!message) {
-        message = filename
-          ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
-          : Craft.t('app', 'Upload failed.');
+        if (errorMessages.length) {
+          message = errorMessages.join('\n');
+        } else if (filename) {
+          message = Craft.t('app', 'Upload failed for “{filename}”.', {
+            filename,
+          });
+        } else {
+          message = Craft.t('app', 'Upload failed.');
+        }
       }
 
       Craft.cp.displayError(message);
@@ -621,7 +646,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _onUpdateElements: function (append, $newElements) {
       this.removeListener(this.$elements, 'keydown');
       this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
-      this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
+      if (this.view.elementSelect) {
+        this.view.elementSelect.on(
+          'focusItem',
+          this._onElementFocus.bind(this)
+        );
+      }
 
       this.$listedFolders = $newElements.find(
         '.element[data-is-folder][data-folder-name]'
@@ -629,7 +659,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       for (let i = 0; i < this.$listedFolders.length; i++) {
         const $folder = this.$listedFolders.eq(i);
         const $label = $folder.find('.label');
-        const $title = $label.find('.title');
+        const $link = $label.find('.label-link');
         const folderId = parseInt($folder.data('folder-id'));
         const folderName = $folder.data('folder-name');
         const label = Craft.t('app', '{name} folder', {
@@ -642,14 +672,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         }
         const sourcePath = $folder.data('source-path');
         if (sourcePath) {
-          const $a = $('<a/>', {
+          $link.attr({
             href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
-            html: $title.html(),
             role: 'button',
             'aria-label': label,
           });
-          $label.empty().append($a);
-          this.addListener($a, 'activate', (ev) => {
+          this.addListener($link, 'activate', (ev) => {
             this.sourcePath = sourcePath;
             this.clearSearch(false);
             this.updateElements().then(() => {
@@ -688,7 +716,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
         if (Craft.PreviewFileModal.openInstance) {
           Craft.PreviewFileModal.openInstance.selfDestruct();
-        } else {
+        } else if (this.view.elementSelect) {
           var $element = this.view.elementSelect.$focusedItem.find('.element');
 
           if ($element.length) {

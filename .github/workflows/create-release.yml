@@ -32,7 +32,15 @@ jobs:
         if: ${{ startsWith(github.event.client_payload.version, '4.') }}
         with:
           extensions: bcmath, curl, dom, json, intl, mbstring, mcrypt, openssl, pcre, pdo, zip
-          php-version: 8.0.2
+          php-version: 8.2.0
+          tools: composer:v2
+
+      - name: 'Set up PHP for Craft 5'
+        uses: shivammathur/setup-php@2.23.0
+        if: ${{ startsWith(github.event.client_payload.version, '5.') }}
+        with:
+          extensions: bcmath, curl, dom, json, intl, mbstring, mcrypt, openssl, pcre, pdo, zip
+          php-version: 8.2.0
           tools: composer:v2
 
       - name: 'Set up PHP for Craft 5'

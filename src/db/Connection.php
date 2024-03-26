@@ -7,7 +7,6 @@
 
 namespace craft\db;
 
-use Composer\Util\Platform;
 use Craft;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
 use craft\db\mysql\Schema as MysqlSchema;
@@ -75,6 +74,12 @@ class Connection extends \yii\db\Connection
     private array $afterTransactionCallbacks = [];
 
     /**
+     * @var bool|null whether this is MariaDB.
+     * @see getIsMaria()
+     */
+    private ?bool $_isMaria = null;
+
+    /**
      * @var bool|null whether the database supports 4+ byte characters
      * @see getSupportsMb4()
      * @see setSupportsMb4()
@@ -82,13 +87,27 @@ class Connection extends \yii\db\Connection
     private ?bool $_supportsMb4 = null;
 
     /**
-     * Returns whether this is a MySQL connection.
+     * Returns whether this is a MySQL (or MySQL-like) connection.
      *
      * @return bool
      */
     public function getIsMysql(): bool
     {
         return $this->getDriverName() === Connection::DRIVER_MYSQL;
+    }
+
+    /**
+     * Returns whether this is a MariaDB connection.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function getIsMaria(): bool
+    {
+        if (!isset($this->_isMaria)) {
+            $this->_isMaria = $this->getIsMysql() && str_contains(strtolower($this->getSchema()->getServerVersion()), 'mariadb');
+        }
+        return $this->_isMaria;
     }
 
     /**
@@ -109,16 +128,11 @@ class Connection extends \yii\db\Connection
      */
     public function getDriverLabel(): string
     {
-        if ($this->getIsMysql()) {
-            // Actually MariaDB though?
-            if (StringHelper::contains($this->getSchema()->getServerVersion(), 'mariadb', false)) {
-                return 'MariaDB';
-            }
-
-            return 'MySQL';
-        }
-
-        return 'PostgreSQL';
+        return match (true) {
+            $this->getIsMaria() => 'MariaDB',
+            $this->getIsMysql() => 'MySQL',
+            default => 'PostgreSQL',
+        };
     }
 
     /**
@@ -128,10 +142,15 @@ class Connection extends \yii\db\Connection
      */
     public function getSupportsMb4(): bool
     {
-        if (isset($this->_supportsMb4)) {
-            return $this->_supportsMb4;
+        if (!isset($this->_supportsMb4)) {
+            if (!Craft::$app->getIsInstalled()) {
+                return false;
+            }
+
+            // if elements_sites supports mb4, pretty good chance everything else does too
+            $this->_supportsMb4 = $this->getSchema()->supportsMb4(Table::ELEMENTS_SITES);
         }
-        return $this->_supportsMb4 = $this->getIsPgsql();
+        return $this->_supportsMb4;
     }
 
     /**
@@ -546,7 +565,7 @@ class Connection extends \yii\db\Connection
 
         // PostgreSQL specific cleanup.
         if ($this->getIsPgsql()) {
-            if (Platform::isWindows()) {
+            if (App::isWindows()) {
                 $envCommand = 'set PGPASSWORD=';
             } else {
                 $envCommand = 'unset PGPASSWORD';

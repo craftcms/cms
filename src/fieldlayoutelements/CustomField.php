@@ -10,8 +10,11 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\PreviewableFieldInterface;
+use craft\base\ThumbableFieldInterface;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\StringHelper;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.
@@ -25,9 +28,15 @@ use craft\helpers\ArrayHelper;
 class CustomField extends BaseField
 {
     /**
-     * @var FieldInterface|null The custom field this layout field is based on.
+     * @var string|null The field handle override.
+     * @since 5.0.0
      */
+    public ?string $handle = null;
+
     private ?FieldInterface $_field = null;
+    private ?string $_originalName = null;
+    private ?string $_originalHandle = null;
+    private ?string $_originalInstructions = null;
 
     /**
      * @inheritdoc
@@ -35,8 +44,19 @@ class CustomField extends BaseField
      */
     public function __construct(?FieldInterface $field = null, $config = [])
     {
-        $this->_field = $field;
         parent::__construct($config);
+
+        if ($field) {
+            $this->setField($field);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isMultiInstance(): bool
+    {
+        return $this->_field::isMultiInstance();
     }
 
     /**
@@ -44,7 +64,7 @@ class CustomField extends BaseField
      */
     public function attribute(): string
     {
-        return $this->_field->handle;
+        return $this->handle ?? $this->_field->handle;
     }
 
     /**
@@ -73,6 +93,46 @@ class CustomField extends BaseField
     }
 
     /**
+     * @inheritdoc
+     */
+    public function thumbable(): bool
+    {
+        return $this->_field instanceof ThumbableFieldInterface;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewable(): bool
+    {
+        return $this->_field instanceof PreviewableFieldInterface;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function thumbHtml(ElementInterface $element, int $size): ?string
+    {
+        $field = $this->getField();
+        if (!$field instanceof ThumbableFieldInterface) {
+            return null;
+        }
+        return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewHtml(ElementInterface $element): string
+    {
+        $field = $this->getField();
+        if (!$field instanceof PreviewableFieldInterface) {
+            return '';
+        }
+        return $field->getPreviewHtml($element->getFieldValue($field->handle), $element);
+    }
+
+    /**
      * Returns the custom field this layout field is based on.
      *
      * @return FieldInterface
@@ -89,7 +149,17 @@ class CustomField extends BaseField
      */
     public function setField(FieldInterface $field): void
     {
-        $this->_field = $field;
+        $this->_field = clone $field;
+        $this->_field->layoutElement = $this;
+        $this->_originalName = $this->_field->name;
+        $this->_originalHandle = $this->_field->handle;
+        $this->_originalInstructions = $this->_field->instructions;
+
+        // Set the instance overrides
+        $this->_field->name = $this->label ?? $this->_field->name;
+        $this->_field->handle = $this->handle ?? $this->_field->handle;
+        $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
+        $this->_field->required = $this->required;
     }
 
     /**
@@ -113,7 +183,18 @@ class CustomField extends BaseField
         if (($field = Craft::$app->getFields()->getFieldByUid($uid)) === null) {
             throw new FieldNotFoundException($uid);
         }
-        $this->_field = $field;
+        $this->setField($field);
+    }
+
+    /**
+     * Returns the field’s original handle.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    public function getOriginalHandle(): string
+    {
+        return $this->_originalHandle;
     }
 
     /**
@@ -141,12 +222,28 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
+    protected function settingsHtml(): ?string
+    {
+        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/custom-field-settings.twig', [
+            'field' => $this,
+            'defaultLabel' => $this->defaultLabel(),
+            'defaultHandle' => $this->_originalHandle,
+            'defaultInstructions' => $this->defaultInstructions(),
+            'labelHidden' => !$this->showLabel(),
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
-        $attributes = parent::containerAttributes($element, $static);
-        $attributes['id'] = "{$this->_field->handle}-field";
-        $attributes['data']['type'] = get_class($this->_field);
-        return $attributes;
+        return ArrayHelper::merge(parent::containerAttributes($element, $static), [
+            'id' => "{$this->_field->handle}-field",
+            'data' => [
+                'type' => get_class($this->_field),
+            ],
+        ]);
     }
 
     /**
@@ -154,17 +251,14 @@ class CustomField extends BaseField
      */
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        if ($this->_field->name !== '' && $this->_field->name !== null && $this->_field->name !== '__blank__') {
-            return Craft::t('site', $this->_field->name);
+        if ($this->_originalName !== '' && $this->_originalName !== null && $this->_originalName !== '__blank__') {
+            return Craft::t('site', $this->_originalName);
         }
         return null;
     }
 
     /**
-     * Returns whether the label should be shown in form inputs.
-     *
-     * @return bool
-     * @since 3.5.6
+     * @inheritdoc
      */
     protected function showLabel(): bool
     {
@@ -179,10 +273,18 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
+    protected function selectorIcon(): ?string
+    {
+        return $this->_field::icon();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $this->_field->getStatus($element))) {
-            return $status[0];
+            return StringHelper::toString($status[0]);
         }
         return null;
     }
@@ -203,7 +305,7 @@ class CustomField extends BaseField
      */
     protected function defaultInstructions(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->_field->instructions ? Craft::t('site', $this->_field->instructions) : null;
+        return $this->_originalInstructions ? Craft::t('site', $this->_originalInstructions) : null;
     }
 
     /**
@@ -255,7 +357,7 @@ class CustomField extends BaseField
      */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $value = $element ? $element->getFieldValue($this->_field->handle) : $this->_field->normalizeValue(null);
+        $value = $element ? $element->getFieldValue($this->_field->handle) : $this->_field->normalizeValue(null, null);
 
         if ($static) {
             return $this->_field->getStaticHtml($value, $element);
@@ -264,15 +366,11 @@ class CustomField extends BaseField
         $view = Craft::$app->getView();
         $view->registerDeltaName($this->_field->handle);
 
-        $required = $this->_field->required;
         $describedBy = $this->_field->describedBy;
-
-        $this->_field->required = $this->required;
         $this->_field->describedBy = $this->describedBy($element, $static);
 
         $html = $this->_field->getInputHtml($value, $element);
 
-        $this->_field->required = $required;
         $this->_field->describedBy = $describedBy;
 
         return $html;

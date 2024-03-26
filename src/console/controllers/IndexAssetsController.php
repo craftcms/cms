@@ -166,6 +166,7 @@ class IndexAssetsController extends Controller
             $this->stdout($volume->name, Console::FG_CYAN);
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
             $fileList = $assetIndexer->getIndexListOnVolume($volume, $path);
+            $fsSubpath = $volume->getSubpath();
 
             $index = 0;
             /** @var MissingAssetException[] $missingRecords */
@@ -176,7 +177,7 @@ class IndexAssetsController extends Controller
             foreach ($fileList as $item) {
                 $count = $index;
                 $this->stdout('    > #' . $count . ': ');
-                $this->stdout($item->getUri() . ($item->getIsDir() ? '/' : ''), Console::FG_CYAN);
+                $this->stdout($item->getAdjustedUri($fsSubpath) . ($item->getIsDir() ? '/' : ''), Console::FG_CYAN);
                 $this->stdout(' ... ');
                 if ($index++ < $startAt) {
                     $this->stdout('skipped' . PHP_EOL, Console::FG_YELLOW);
@@ -185,9 +186,9 @@ class IndexAssetsController extends Controller
 
                 try {
                     if ($item->getIsDir()) {
-                        $assetIndexer->indexFolderByListing((int)$volume->id, $item, $session->id, $this->createMissingAssets);
+                        $assetIndexer->indexFolderByListing($volume, $item, $session->id, $this->createMissingAssets);
                     } else {
-                        $assetIndexer->indexFileByListing((int)$volume->id, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
+                        $assetIndexer->indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
                     }
                 } catch (MissingAssetException $e) {
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);

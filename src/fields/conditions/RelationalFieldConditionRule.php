@@ -7,8 +7,8 @@ use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
 use craft\fields\BaseRelationField;
-use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 
 /**
@@ -125,7 +125,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function matchFieldValue($value): bool
     {
-        /** @var ElementQueryInterface|Collection $value */
+        /** @var ElementQueryInterface|ElementCollection $value */
         if ($this->operator === self::OPERATOR_RELATED_TO) {
             $elementIds = $value->collect()->map(fn(ElementInterface $element) => $element->id)->all();
             return $this->matchValue($elementIds);

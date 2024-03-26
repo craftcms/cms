@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
+use craft\elements\ElementCollection;
 use craft\elements\GlobalSet;
 use craft\helpers\Db;
 use yii\db\Connection;
@@ -20,6 +21,7 @@ use yii\db\Connection;
  * @method GlobalSet[]|array all($db = null)
  * @method GlobalSet|array|null one($db = null)
  * @method GlobalSet|array|null nth(int $n, ?Connection $db = null)
+ * @method ElementCollection<GlobalSet> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path globals.md
@@ -56,10 +58,10 @@ class GlobalSetQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $editable
      */
-    public function editable(bool $value = true): self
+    public function editable(bool $value = true): static
     {
         $this->editable = $value;
         return $this;
@@ -94,10 +96,10 @@ class GlobalSetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $handle
      */
-    public function handle(mixed $value): self
+    public function handle(mixed $value): static
     {
         $this->handle = $value;
         return $this;
@@ -108,6 +110,10 @@ class GlobalSetQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->joinElementTable(Table::GLOBALSETS);
 
         $this->query->select([
@@ -124,7 +130,7 @@ class GlobalSetQuery extends ElementQuery
         $this->_applyEditableParam();
         $this->_applyRefParam();
 
-        return parent::beforePrepare();
+        return true;
     }
 
 

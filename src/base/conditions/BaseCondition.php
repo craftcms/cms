@@ -4,13 +4,14 @@ namespace craft\base\conditions;
 
 use Craft;
 use craft\base\Component;
-use craft\events\RegisterConditionRuleTypesEvent;
+use craft\events\RegisterConditionRulesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
 use Illuminate\Support\Collection;
+use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -28,10 +29,10 @@ use yii\base\InvalidConfigException;
 abstract class BaseCondition extends Component implements ConditionInterface
 {
     /**
-     * @event RegisterConditionRuleTypesEvent The event that is triggered when defining the condition rule types.
-     * @see getConditionRuleTypes()
+     * @event RegisterConditionRulesEvent The event that is triggered when defining the selectable condition rules.
+     * @see getSelectableConditionRules()
      */
-    public const EVENT_REGISTER_CONDITION_RULE_TYPES = 'registerConditionRuleTypes';
+    public const EVENT_REGISTER_CONDITION_RULES = 'registerConditionRules';
 
     /**
      * @var string The condition builder container tag name
@@ -71,13 +72,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
     private Collection $_conditionRules;
 
     /**
-     * @var string[]|array[] The available rule types for this condition.
-     * @phpstan-var string[]|array{class:string}[]|array{type:string}[]
-     * @see getConditionRuleTypes()
-     */
-    private array $_conditionRuleTypes;
-
-    /**
      * @var ConditionRuleInterface[]|null The selectable condition rules for this condition.
      * @see getSelectableConditionRules()
      */
@@ -106,35 +100,17 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @inheritdoc
      */
-    public function getConditionRuleTypes(): array
+    public function createConditionRule(array|string $config): ConditionRuleInterface
     {
-        if (!isset($this->_conditionRuleTypes)) {
-            $conditionRuleTypes = $this->conditionRuleTypes();
-
-            // Give plugins a chance to modify them
-            $event = new RegisterConditionRuleTypesEvent([
-                'conditionRuleTypes' => $conditionRuleTypes,
-            ]);
-
-            $this->trigger(self::EVENT_REGISTER_CONDITION_RULE_TYPES, $event);
-            $this->_conditionRuleTypes = $event->conditionRuleTypes;
+        if (is_string($config)) {
+            $config = ['class' => $config];
         }
 
-        return $this->_conditionRuleTypes;
-    }
+        // Set the condition before anything else
+        $config = ['condition' => $this] + $config;
 
-    /**
-     * Returns the rule types for this condition.
-     *
-     * Conditions should override this method instead of [[getConditionRuleTypes()]]
-     * so [[EVENT_REGISTER_CONDITION_RULE_TYPES]] handlers can modify the class-defined rule types.
-     *
-     * Rule types should be defined as either the class name or an array with a `class` key set to the class name.
-     *
-     * @return string[]|array[]
-     * @phpstan-return string[]|array{class:string}[]
-     */
-    abstract protected function conditionRuleTypes(): array;
+        return Craft::$app->getConditions()->createConditionRule($config);
+    }
 
     /**
      * @inheritdoc
@@ -142,15 +118,33 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function getSelectableConditionRules(): array
     {
         if (!isset($this->_selectableConditionRules)) {
-            $conditionsService = Craft::$app->getConditions();
-            $this->_selectableConditionRules = Collection::make($this->getConditionRuleTypes())
+            $event = new RegisterConditionRulesEvent([
+                'conditionRules' => $this->selectableConditionRules(),
+            ]);
+            $this->trigger(self::EVENT_REGISTER_CONDITION_RULES, $event);
+
+            $this->_selectableConditionRules = Collection::make($event->conditionRules)
                 ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
-                ->map(fn($type) => $conditionsService->createConditionRule($type))
+                ->map(fn($type) => $this->createConditionRule($type))
                 ->filter(fn(ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
                 ->all();
         }
+
         return $this->_selectableConditionRules;
     }
+
+    /**
+     * Returns the selectable rules for this condition.
+     *
+     * Conditions should override this method instead of [[getSelectableConditionRules()]]
+     * so [[EVENT_REGISTER_CONDITION_RULES]] handlers can modify the class-defined rules.
+     *
+     * Rules should be defined as either the class name or an array with a `class` key set to the class name.
+     *
+     * @return string[]|array[]
+     * @phpstan-return string[]|array{class:string}[]
+     */
+    abstract protected function selectableConditionRules(): array;
 
     /**
      * Returns whether the given rule should be selectable by the condition builder.
@@ -183,21 +177,23 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function setConditionRules(array $rules): void
     {
-        $conditionsService = Craft::$app->getConditions();
-        $this->_conditionRules = Collection::make($rules)
-            ->map(function($rule) use ($conditionsService) {
-                if ($rule instanceof ConditionRuleInterface) {
-                    return $rule;
-                }
+        $this->_conditionRules = Collection::make();
+
+        foreach ($rules as $rule) {
+            if (!$rule instanceof ConditionRuleInterface) {
                 try {
-                    return $conditionsService->createConditionRule($rule);
+                    $rule = $this->createConditionRule($rule);
                 } catch (InvalidArgumentException $e) {
                     Craft::warning("Invalid condition rule: {$e->getMessage()}");
-                    return null;
+                    continue;
                 }
-            })
-            ->filter(fn(?ConditionRuleInterface $rule) => $rule && $this->validateConditionRule($rule))
-            ->each(fn(ConditionRuleInterface $rule) => $rule->setCondition($this));
+            }
+
+            if ($this->validateConditionRule($rule)) {
+                $this->_conditionRules->add($rule);
+                $rule->setCondition($this);
+            }
+        }
     }
 
     /**
@@ -228,11 +224,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
             return false;
         }
 
-        foreach ($this->getConditionRuleTypes() as $type) {
-            if (is_array($type)) {
-                $type = $type['class'];
-            }
-            if ($type === get_class($rule)) {
+        $ruleClass = get_class($rule);
+
+        foreach ($this->getSelectableConditionRules() as $selectableRule) {
+            if ($ruleClass === get_class($selectableRule)) {
                 return true;
             }
         }
@@ -475,7 +470,11 @@ JS,
         }
 
         foreach ($selectableRules as $value => $selectableRule) {
-            $label = $selectableRule->getLabel();
+            try {
+                $label = $selectableRule->getLabel();
+            } catch (Throwable) {
+                continue;
+            }
             $hint = $selectableRule->getLabelHint();
             $key = $label . ($hint !== null ? " - $hint" : '');
             $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';

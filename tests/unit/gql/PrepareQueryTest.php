@@ -8,13 +8,15 @@
 namespace crafttests\unit\gql;
 
 use Craft;
+use craft\db\Table;
+use craft\enums\PropagationMethod;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
-use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\records\CategoryGroup;
@@ -26,6 +28,7 @@ use craft\records\Structure;
 use craft\records\TagGroup;
 use craft\records\UserGroup;
 use craft\records\Volume;
+use craft\services\Entries;
 use craft\test\TestCase;
 use UnitTester;
 
@@ -62,7 +65,6 @@ class PrepareQueryTest extends TestCase
                         'volumes.' . self::VOLUME_UID . ':read',
                         'categorygroups.' . self::CATEGORY_GROUP_UID . ':read',
                         'sections.' . self::SECTION_UID . ':read',
-                        'entrytypes.' . self::ENTRY_TYPE_UID . ':read',
                         'globalsets.' . self::GLOBAL_SET_UID . ':read',
                         'taggroups.' . self::TAG_GROUP_UID . ':read',
                         'usergroups.' . self::USER_GROUP_UID . ':read',
@@ -93,15 +95,17 @@ class PrepareQueryTest extends TestCase
         $this->_globalSet->delete();
         $this->_tagGroup->delete();
         $this->_userGroup->delete();
+
+        Craft::$app->set('entries', new Entries());
     }
 
-    public const VOLUME_UID = 'volume-uid';
-    public const CATEGORY_GROUP_UID = 'categoryGroup-uid';
-    public const SECTION_UID = 'section-uid';
-    public const ENTRY_TYPE_UID = 'entryType-uid';
-    public const GLOBAL_SET_UID = 'globalSet-uid';
-    public const TAG_GROUP_UID = 'tagGroup-uid';
-    public const USER_GROUP_UID = 'userGroup-uid';
+    public const VOLUME_UID = 'volume-uid--------------------------';
+    public const CATEGORY_GROUP_UID = 'categoryGroup-uid-------------------';
+    public const SECTION_UID = 'section-uid-------------------------';
+    public const ENTRY_TYPE_UID = 'entryType-uid-----------------------';
+    public const GLOBAL_SET_UID = 'globalSet-uid-----------------------';
+    public const TAG_GROUP_UID = 'tagGroup-uid------------------------';
+    public const USER_GROUP_UID = 'userGroup-uid-----------------------';
 
     /**
      * Test relational field query preparation
@@ -184,12 +188,8 @@ class PrepareQueryTest extends TestCase
             ],
             [
                 EntryResolver::class, [null, []], function($result) {
-                    $expected = [
-                        'and',
-                        ['in', 'entries.sectionId', []],
-                        ['in', 'entries.typeId', []],
-                    ];
-                    return $result->where === $expected;
+                    $section = Craft::$app->getEntries()->getSectionByUid(self::SECTION_UID);
+                    return $result->where === ['or', ['in', 'entries.sectionId', [$section->id]]];
                 },
             ],
 
@@ -233,19 +233,6 @@ class PrepareQueryTest extends TestCase
                     return !empty($result->groupId);
                 },
             ],
-
-            // Matrix Blocks
-            [
-                MatrixBlockResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                    return $result === ['foo', 'bar'];
-                },
-            ],
-            [
-                MatrixBlockResolver::class, [null, ['fieldId' => 2, 'typeId' => 5]], function($result) {
-                    return $result->fieldId == 2 && $result->typeId == 5;
-                },
-            ],
-
         ];
     }
 
@@ -311,24 +298,30 @@ class PrepareQueryTest extends TestCase
 
     private function _setupEntries()
     {
+        $this->_entryType = new EntryType([
+            'uid' => self::ENTRY_TYPE_UID,
+            'name' => StringHelper::randomString(),
+            'handle' => StringHelper::randomString(),
+            'hasTitleField' => false,
+        ]);
+        $this->_entryType->save();
+
         $this->_section = new Section([
             'uid' => self::SECTION_UID,
             'name' => StringHelper::randomString(),
             'handle' => StringHelper::randomString(),
             'type' => 'channel',
             'enableVersioning' => true,
-            'propagationMethod' => StringHelper::randomString(),
+            'propagationMethod' => PropagationMethod::All->value,
         ]);
         $this->_section->save();
+        Craft::$app->set('entries', new Entries());
 
-        $this->_entryType = new EntryType([
-            'uid' => self::ENTRY_TYPE_UID,
-            'name' => StringHelper::randomString(),
-            'handle' => StringHelper::randomString(),
+        Db::insert(Table::SECTIONS_ENTRYTYPES, [
             'sectionId' => $this->_section->id,
-            'hasTitleField' => false,
+            'typeId' => $this->_entryType->id,
+            'sortOrder' => 1,
         ]);
-        $this->_entryType->save();
     }
 
     private function _setupGlobals()

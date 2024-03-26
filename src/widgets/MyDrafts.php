@@ -47,7 +47,7 @@ class MyDrafts extends Widget
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/draft.svg');
+        return 'scribble';
     }
 
     /**
@@ -98,12 +98,12 @@ class MyDrafts extends Widget
         }
 
         $html = Html::beginTag('ul', [
-            'class' => 'widget__list',
+            'class' => 'widget__list chips',
             'role' => 'list',
         ]);
 
         foreach ($drafts as $draft) {
-            $html .= Html::tag('li', Cp::elementHtml($draft), [
+            $html .= Html::tag('li', Cp::elementChipHtml($draft), [
                 'class' => 'widget__list-item',
             ]);
         }

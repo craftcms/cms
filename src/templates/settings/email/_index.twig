@@ -115,7 +115,7 @@
     {% for _adapter in allTransportAdapters %}
         {% set isCurrent = (className(_adapter) == className(adapter)) %}
         <div id="{{ className(_adapter)|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-            {% namespace 'transportTypes['~className(_adapter)~']' %}
+            {% namespace 'transportTypes['~className(_adapter)|id~']' %}
                 {{ (isCurrent ? adapter : _adapter).getSettingsHtml()|raw }}
             {% endnamespace %}
         </div>

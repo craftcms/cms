@@ -144,7 +144,13 @@ export default Base.extend(
         this.searchStr += ev.key.toLowerCase();
         for (let i = 0; i < this.menu.$options.length; i++) {
           const $o = this.menu.$options.eq(i);
-          if ($o.text().toLowerCase().trimStart().startsWith(this.searchStr)) {
+          if (typeof $o.data('searchText') === 'undefined') {
+            // clone without nested SVGs
+            const $clone = $o.clone();
+            $clone.find('svg').remove();
+            $o.data('searchText', $clone.text().toLowerCase().trimStart());
+          }
+          if ($o.data('searchText').startsWith(this.searchStr)) {
             $option = $o;
             break;
           }

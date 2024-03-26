@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\db\Table;
 use craft\elements\User;
+use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\Db;
@@ -474,10 +475,12 @@ class UsersController extends Controller
         }
 
         $this->stdout('Unlocking the user ...' . PHP_EOL);
-        if (!Craft::$app->getUsers()->unlockUser($user)) {
-            $this->stderr("Failed to unlock user “{$user->username}”." . PHP_EOL, Console::FG_RED);
+        try {
+            Craft::$app->getUsers()->unlockUser($user);
+        } catch (InvalidElementException $e) {
+            $this->stderr("Failed to unlock user “{$user->username}”: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
-        };
+        }
 
         $this->stdout("User “{$user->username}” unlocked." . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;

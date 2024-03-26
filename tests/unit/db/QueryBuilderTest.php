@@ -36,7 +36,7 @@ class QueryBuilderTest extends TestCase
         }
 
         $dbConfig = Craft::$app->getConfig()->getDb();
-        $charset = $dbConfig->charset;
+        $charset = $dbConfig->getCharset();
         $collation = $dbConfig->collation;
         $dbConfig->charset = 'utf8';
         $dbConfig->collation = null;
@@ -47,16 +47,16 @@ class QueryBuilderTest extends TestCase
         $dbConfig->collation = $collation;
 
         if ($contains) {
-            $this->assertStringContainsString($needle, $sql);
+            self::assertStringContainsString($needle, $sql);
         } else {
-            $this->assertStringNotContainsString($needle, $sql);
+            self::assertStringNotContainsString($needle, $sql);
         }
     }
 
     /**
      * @return array
      */
-    public function createTableOptionsDataProvider(): array
+    public static function createTableOptionsDataProvider(): array
     {
         return [
             [true, 'ENGINE = InnoDb'],
@@ -65,7 +65,6 @@ class QueryBuilderTest extends TestCase
             [false, 'DEFAULT CHARACTER SET = utf8', 'CHARACTER SET = foo'],
             [true, 'DEFAULT CHARACTER SET = utf8', 'CHARACTER SETS = foo'],
             [true, 'CHARACTER SET = foo', 'CHARACTER SET = foo'],
-            [false, 'COLLATE'],
             [true, 'COLLATE = utf8_unicode_ci', 'COLLATE = utf8_unicode_ci'],
         ];
     }

@@ -12,7 +12,7 @@
 
 {% set containerAttributes = {
     id: containerId,
-    class: ['flex', 'color-container'],
+    class: ['flex', 'flex-nowrap', 'color-container'],
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}

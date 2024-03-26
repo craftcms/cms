@@ -11,7 +11,7 @@ use Craft;
 use craft\base\WidgetInterface;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Component;
+use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -505,7 +505,9 @@ class DashboardController extends Controller
      */
     private function _getWidgetIconSvg(WidgetInterface $widget): string
     {
-        return Component::iconSvg($widget::icon(), $widget::displayName());
+        $icon = $widget::icon();
+        $label = $widget::displayName();
+        return $icon ? Cp::iconSvg($icon, $label) : Cp::fallbackIconSvg($label);
     }
 
     /**

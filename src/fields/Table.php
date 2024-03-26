@@ -48,9 +48,25 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function icon(): string
+    {
+        return 'table';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function phpType(): string
     {
         return 'array|null';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): array|string|null
+    {
+        return Schema::TYPE_JSON;
     }
 
     /**
@@ -89,12 +105,6 @@ class Table extends Field
      * @var array|null The default row values that new elements should have
      */
     public ?array $defaults = [[]];
-
-    /**
-     * @var string The type of database column the field should have in the content table
-     * @phpstan-var 'auto'|Schema::TYPE_STRING|Schema::TYPE_TEXT|'mediumtext'
-     */
-    public string $columnType = Schema::TYPE_TEXT;
 
     /**
      * @inheritdoc
@@ -148,6 +158,9 @@ class Table extends Field
                 }
             }
         }
+
+        // remove unused settings
+        unset($config['columnType']);
 
         parent::__construct($config);
     }
@@ -226,14 +239,6 @@ class Table extends Field
     public function hasMaxRows(): bool
     {
         return (bool)$this->maxRows;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentColumnType(): string
-    {
-        return $this->columnType;
     }
 
     /**
@@ -377,7 +382,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
         return $this->_getInputHtml($value, $element, false);
@@ -419,7 +424,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
@@ -427,7 +432,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
     }
@@ -502,7 +507,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (!is_array($value) || empty($this->columns)) {
             return null;
@@ -524,7 +529,7 @@ class Table extends Field
                     $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
                 }
 
-                $serializedRow[$colId] = parent::serializeValue($value ?? null);
+                $serializedRow[$colId] = parent::serializeValue($value ?? null, null);
             }
             $serialized[] = $serializedRow;
         }

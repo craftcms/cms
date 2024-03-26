@@ -7,10 +7,10 @@
 
 namespace craft\db\pgsql;
 
-use Composer\Util\Platform;
 use Craft;
 use craft\db\Connection;
 use craft\db\TableSchema;
+use craft\helpers\App;
 use yii\db\Exception;
 
 /**
@@ -26,6 +26,18 @@ class Schema extends \yii\db\pgsql\Schema
      * @var int The maximum length that objects' names can be.
      */
     public int $maxObjectNameLength = 63;
+
+    /**
+     * Returns whether a table supports 4-byte characters.
+     *
+     * @param string $table The table to check
+     * @return bool
+     * @since 5.0.0
+     */
+    public function supportsMb4(string $table): bool
+    {
+        return true;
+    }
 
     /**
      * Creates a query builder for the database.
@@ -320,6 +332,6 @@ ORDER BY i.relname, k';
      */
     private function _pgpasswordCommand(): string
     {
-        return Platform::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
+        return App::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
     }
 }

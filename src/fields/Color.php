@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -23,7 +23,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Color extends Field implements PreviewableFieldInterface
+class Color extends Field implements InlineEditableFieldInterface
 {
     /**
      * @inheritdoc
@@ -36,15 +36,18 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function icon(): string
     {
-        return sprintf('\\%s|null', ColorData::class);
+        return 'palette';
     }
 
     /**
-     * @var string|null The default color hex
+     * @inheritdoc
      */
-    public ?string $defaultColor = null;
+    public static function phpType(): string
+    {
+        return sprintf('\\%s|null', ColorData::class);
+    }
 
     /**
      * @var string[] Preset colors
@@ -75,10 +78,15 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
+    public static function dbType(): string
     {
         return sprintf('%s(7)', Schema::TYPE_CHAR);
     }
+
+    /**
+     * @var string|null The default color hex
+     */
+    public ?string $defaultColor = null;
 
     /** @inheritdoc */
     public function getSettingsHtml(): ?string
@@ -89,6 +97,7 @@ class Color extends Field implements PreviewableFieldInterface
             'name' => 'defaultColor',
             'value' => $this->defaultColor,
             'errors' => $this->getErrors('defaultColor'),
+            'data' => ['error-key' => 'defaultColor'],
         ]) .
             Cp::editableTableFieldHtml([
                 'label' => Craft::t('app', 'Presets'),
@@ -111,6 +120,7 @@ class Color extends Field implements PreviewableFieldInterface
                     ],
                 ],
                 'errors' => $this->getErrors('presets'),
+                'data' => ['error-key' => 'presets'],
             ]);
     }
 
@@ -147,7 +157,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof ColorData) {
             return $value;
@@ -181,7 +191,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var ColorData|null $value */
         return Craft::$app->getView()->renderTemplate('_includes/forms/color.twig', [
@@ -213,7 +223,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ColorData|null $value */
         if (!$value) {

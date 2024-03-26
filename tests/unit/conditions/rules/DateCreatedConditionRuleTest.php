@@ -36,17 +36,17 @@ class DateCreatedConditionRuleTest extends TestCase
     public function testSetAttributes(array $config, ?array $expected = null): void
     {
         $expected = $expected ?? $config;
-        $ruleConfig = array_merge([
+        $rule = Craft::$app->getConditions()->createConditionRule(array_merge([
+            'condition' => Entry::createCondition(),
             'class' => DateCreatedConditionRule::class,
-        ], $config);
-        $rule = Craft::$app->getConditions()->createConditionRule($ruleConfig);
+        ], $config));
 
         foreach ($expected as $attribute => $value) {
             self::assertEquals($value, $rule->$attribute);
         }
     }
 
-    public function setAttributesDataProvider(): array
+    public static function setAttributesDataProvider(): array
     {
         return [
             [
@@ -69,6 +69,7 @@ class DateCreatedConditionRuleTest extends TestCase
     {
         /** @var DateCreatedConditionRule $rule */
         $rule = Craft::$app->getConditions()->createConditionRule(array_merge([
+            'condition' => Entry::createCondition(),
             'class' => DateCreatedConditionRule::class,
         ], $config));
 
@@ -95,7 +96,7 @@ class DateCreatedConditionRuleTest extends TestCase
     /**
      * @return array
      */
-    public function queryParamValueDataProvider(): array
+    public static function queryParamValueDataProvider(): array
     {
         $startDate = DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->sub(new DateInterval('P1D'));
         $endDate = DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->add(new DateInterval('P1D'));

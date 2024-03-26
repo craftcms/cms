@@ -16,6 +16,7 @@ use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\models\FieldLayout;
 use yii\base\Component;
 
@@ -100,6 +101,9 @@ class ElementSources extends Component
                             continue;
                         }
                         $source = $elementType::modifyCustomSource($source);
+                        if (!$withDisabled && ($source['disabled'] ?? false)) {
+                            continue;
+                        }
                     }
                     $sources[] = $source;
                 }
@@ -184,6 +188,10 @@ class ElementSources extends Component
             } elseif (!isset($info['label'])) {
                 $attributes[$key]['label'] = '';
             }
+
+            if (isset($attributes[$key]['icon']) && in_array($attributes[$key]['icon'], ['world', 'earth'])) {
+                $attributes[$key]['icon'] = Cp::earthIcon();
+            }
         }
 
         return $attributes;
@@ -206,9 +214,15 @@ class ElementSources extends Component
             $sourceKey = substr($sourceKey, 0, $slash);
         }
 
+        if ($sourceKey === '__IMP__') {
+            $sourceAttributes = $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null));
+        } else {
+            $sourceAttributes = $this->getSourceTableAttributes($elementType, $sourceKey);
+        }
+
         $availableAttributes = array_merge(
             $this->getAvailableTableAttributes($elementType),
-            $this->getSourceTableAttributes($elementType, $sourceKey)
+            $sourceAttributes,
         );
 
         $attributeKeys = $customAttributes
@@ -275,9 +289,27 @@ class ElementSources extends Component
             'source' => $sourceKey,
         ]);
 
-        $processedFieldIds = [];
+        $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
+        $event->sortOptions = array_merge($event->sortOptions, $this->getSortOptionsForFieldLayouts($fieldLayouts));
 
-        foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
+        $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
+        return $event->sortOptions;
+    }
+
+    /**
+     * Returns additional sort options that should be available for an element index source that includes the given
+     * field layouts.
+     *
+     * @param FieldLayout[] $fieldLayouts
+     * @return array[]
+     * @since 5.0.0
+     */
+    public function getSortOptionsForFieldLayouts(array $fieldLayouts): array
+    {
+        $processedFieldIds = [];
+        $sortOptions = [];
+
+        foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
                 if (
@@ -288,14 +320,16 @@ class ElementSources extends Component
                     if (!isset($sortOption['attribute'])) {
                         $sortOption['attribute'] = $sortOption['orderBy'];
                     }
-                    $event->sortOptions[] = $sortOption;
+                    if (!isset($sortOption['defaultDir'])) {
+                        $sortOption['defaultDir'] = 'asc';
+                    }
+                    $sortOptions[] = $sortOption;
                     $processedFieldIds[$field->id] = true;
                 }
             }
         }
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
-        return $event->sortOptions;
+        return $sortOptions;
     }
 
     /**
@@ -313,8 +347,25 @@ class ElementSources extends Component
             'source' => $sourceKey,
         ]);
 
-        $user = Craft::$app->getUser()->getIdentity();
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
+        $event->attributes = array_merge($event->attributes, $this->getTableAttributesForFieldLayouts($fieldLayouts));
+
+        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
+        return $event->attributes;
+    }
+
+    /**
+     * Returns any table attributes that should be available for an element index source that includes the given
+     * field layouts.
+     *
+     * @param FieldLayout[] $fieldLayouts
+     * @return array[]
+     * @since 5.0.0
+     */
+    public function getTableAttributesForFieldLayouts(array $fieldLayouts): array
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */
         $groupedFieldElements = [];
 
@@ -335,7 +386,16 @@ class ElementSources extends Component
                         $field instanceof PreviewableFieldInterface &&
                         (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
-                        $groupedFieldElements[$field->id][] = $layoutElement;
+                        if ($layoutElement->handle === null) {
+                            // The handle wasn't overridden, so combine it with any other instances (from other layouts)
+                            // where the handle also wasn't overridden
+                            $groupedFieldElements[$field->id][] = $layoutElement;
+                        } else {
+                            // The handle was overridden, so it gets its own table attribute
+                            $attributes["fieldInstance:$layoutElement->uid"] = [
+                                'label' => Craft::t('site', $field->name),
+                            ];
+                        }
                     }
                 }
             }
@@ -344,13 +404,12 @@ class ElementSources extends Component
         foreach ($groupedFieldElements as $fieldElements) {
             $field = $fieldElements[0]->getField();
             $labels = array_unique(array_map(fn(CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
-            $event->attributes["field:$field->uid"] = [
+            $attributes["field:$field->uid"] = [
                 'label' => count($labels) === 1 ? $labels[0] : Craft::t('site', $field->name),
             ];
         }
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
-        return $event->attributes;
+        return $attributes;
     }
 
     /**

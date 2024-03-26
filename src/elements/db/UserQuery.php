@@ -10,8 +10,13 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\QueryParam;
 use craft\db\Table;
+use craft\elements\Address;
+use craft\elements\ElementCollection;
+use craft\elements\Entry;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use yii\db\Connection;
@@ -24,6 +29,7 @@ use yii\db\Expression;
  * @method User[]|array all($db = null)
  * @method User|array|null one($db = null)
  * @method User|array|null nth(int $n, ?Connection $db = null)
+ * @method ElementCollection<User> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path users.md
@@ -201,6 +207,13 @@ class UserQuery extends ElementQuery
     public mixed $lastLoginDate = null;
 
     /**
+     * @var Entry|null The entry that the resulting users must be the author of.
+     * @used-by authorOf()
+     * @since 5.0.0
+     */
+    public ?Entry $authorOf = null;
+
+    /**
      * @var bool Whether the users’ groups should be eager-loaded.
      * ---
      * ```php
@@ -252,10 +265,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $admin
      */
-    public function admin(bool $value = true): self
+    public function admin(bool $value = true): static
     {
         $this->admin = $value;
         return $this;
@@ -281,11 +294,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool|null $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $authors
      * @since 4.0.0
      */
-    public function authors(?bool $value = true): self
+    public function authors(?bool $value = true): static
     {
         $this->authors = $value;
         return $this;
@@ -311,11 +324,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool|null $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $assetUploaders
      * @since 4.0.0
      */
-    public function assetUploaders(?bool $value = true): self
+    public function assetUploaders(?bool $value = true): static
     {
         $this->assetUploaders = $value;
         return $this;
@@ -341,10 +354,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $hasPhoto
      */
-    public function hasPhoto(bool $value = true): self
+    public function hasPhoto(bool $value = true): static
     {
         $this->hasPhoto = $value;
         return $this;
@@ -372,10 +385,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $can
      */
-    public function can(mixed $value): self
+    public function can(mixed $value): static
     {
         $this->can = $value;
         return $this;
@@ -412,10 +425,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function group(mixed $value): self
+    public function group(mixed $value): static
     {
         // If the value is a group handle, swap it with the user group
         if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
@@ -427,14 +440,14 @@ class UserQuery extends ElementQuery
         })) {
             $this->groupId = $value;
         } else {
-            $glue = Db::extractGlue($value);
+            $operator = QueryParam::extractOperator($value);
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-            if ($this->groupId && $glue !== null) {
-                array_unshift($this->groupId, $glue);
+            if ($this->groupId && $operator !== null) {
+                array_unshift($this->groupId, $operator);
             }
         }
 
@@ -471,10 +484,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function groupId(mixed $value): self
+    public function groupId(mixed $value): static
     {
         $this->groupId = $value;
         return $this;
@@ -508,10 +521,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $email
      */
-    public function email(mixed $value): self
+    public function email(mixed $value): static
     {
         $this->email = $value;
         return $this;
@@ -550,10 +563,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $username
      */
-    public function username(mixed $value): self
+    public function username(mixed $value): static
     {
         $this->username = $value;
         return $this;
@@ -586,11 +599,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $fullName
      * @since 4.0.0
      */
-    public function fullName(mixed $value): self
+    public function fullName(mixed $value): static
     {
         $this->fullName = $value;
         return $this;
@@ -623,10 +636,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $firstName
      */
-    public function firstName(mixed $value): self
+    public function firstName(mixed $value): static
     {
         $this->firstName = $value;
         return $this;
@@ -659,10 +672,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $lastName
      */
-    public function lastName(mixed $value): self
+    public function lastName(mixed $value): static
     {
         $this->lastName = $value;
         return $this;
@@ -701,12 +714,26 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $lastLoginDate
      */
-    public function lastLoginDate(mixed $value): self
+    public function lastLoginDate(mixed $value): static
     {
         $this->lastLoginDate = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results to users who are the author of the given entry.
+     *
+     * @param Entry|null $value
+     * @return static self reference
+     * @uses $authorOf
+     * @since 5.0.0
+     */
+    public function authorOf(?Entry $value): static
+    {
+        $this->authorOf = $value;
         return $this;
     }
 
@@ -742,9 +769,9 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status(array|string|null $value): self
+    public function status(array|string|null $value): static
     {
-        /** @var self */
+        /** @var static */
         return parent::status($value);
     }
 
@@ -776,11 +803,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $withGroups
      * @since 3.6.0
      */
-    public function withGroups(bool $value = true): self
+    public function withGroups(bool $value = true): static
     {
         $this->withGroups = $value;
         return $this;
@@ -791,6 +818,10 @@ class UserQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         // See if 'group' was set to an invalid handle
         if ($this->groupId === []) {
             return false;
@@ -835,7 +866,7 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere([
                 $this->authors ? 'exists' : 'not exists',
                 (new Query())
-                    ->from(Table::ENTRIES)
+                    ->from(Table::ENTRIES_AUTHORS)
                     ->where(['authorId' => new Expression('[[elements.id]]')]),
             ]);
         }
@@ -931,7 +962,18 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseDateParam('users.lastLoginDate', $this->lastLoginDate));
         }
 
-        return parent::beforePrepare();
+        if ($this->authorOf) {
+            if (!$this->authorOf->id) {
+                throw new QueryAbortedException();
+            }
+            $this->subQuery->andWhere(['exists', (new Query())
+                ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
+                ->where(['entryId' => $this->authorOf->id])
+                ->andWhere('[[entries_authors.authorId]] = [[users.id]]'),
+            ]);
+        }
+
+        return true;
     }
 
     /**
@@ -1028,7 +1070,7 @@ class UserQuery extends ElementQuery
         $elements = parent::afterPopulate($elements);
 
         // Eager-load user groups?
-        if ($this->withGroups && !$this->asArray && Craft::$app->getEdition() === Craft::Pro) {
+        if ($this->withGroups && !$this->asArray && Craft::$app->edition === CmsEdition::Pro) {
             Craft::$app->getUserGroups()->eagerLoadGroups($elements);
         }
 

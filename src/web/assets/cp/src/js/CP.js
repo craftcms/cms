@@ -15,10 +15,15 @@ Craft.CP = Garnish.Base.extend(
     $globalSidebar: null,
     $globalContainer: null,
     $mainContainer: null,
+    $pageContainer: null,
     $alerts: null,
     $crumbs: null,
-    $breadcrumbList: null,
-    $breadcrumbItems: null,
+    $crumbList: null,
+    $crumbItems: null,
+    $crumbMenuTriggerItem: null,
+    $crumbMenu: null,
+    $crumbMenuList: null,
+    $crumbMenuItems: null,
     $notificationContainer: null,
     $main: null,
     $primaryForm: null,
@@ -38,12 +43,6 @@ Craft.CP = Garnish.Base.extend(
 
     isMobile: null,
     fixedHeader: false,
-
-    breadcrumbListWidth: 0,
-    breadcrumbDisclosureItem: `<li class="breadcrumb-toggle-wrapper" data-disclosure-item><button data-disclosure-trigger aria-controls="breadcrumb-disclosure" aria-haspopup="true">${Craft.t(
-      'app',
-      'More…'
-    )}</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>`,
 
     tabManager: null,
 
@@ -79,10 +78,11 @@ Craft.CP = Garnish.Base.extend(
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
       this.$mainContainer = $('#main-container');
+      this.$pageContainer = $('#page-container');
       this.$alerts = $('#alerts');
       this.$crumbs = $('#crumbs');
-      this.$breadcrumbList = $('.breadcrumb-list');
-      this.$breadcrumbItems = $('.breadcrumb-list li');
+      this.$crumbList = $('#crumb-list');
+      this.$crumbItems = this.$crumbList.children('li');
       this.$notificationContainer = $('#notifications');
       this.$main = $('#main');
       this.$primaryForm = $('#main-form');
@@ -338,8 +338,7 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Load any element thumbs
-      this.elementThumbLoader.load($('#user-info'));
-      this.elementThumbLoader.load(this.$mainContent);
+      this.elementThumbLoader.load(this.$pageContainer);
     },
 
     get $contentHeader() {
@@ -497,32 +496,32 @@ Craft.CP = Garnish.Base.extend(
       if (isExpanded === null) return;
 
       if (isExpanded) {
-        this.disableGlobalSidebarLinks();
+        this.disableGlobalSidebar();
         this.$navToggle.focus();
         this.$navToggle.attr('aria-expanded', 'false');
         Garnish.$bod.removeClass('showing-nav');
       } else {
-        this.enableGlobalSidebarLinks();
+        this.enableGlobalSidebar();
         this.$globalSidebar.find(':focusable')[0].focus();
         this.$navToggle.attr('aria-expanded', 'true');
         Garnish.$bod.addClass('showing-nav');
       }
     },
 
-    enableGlobalSidebarLinks: function () {
-      const focusableItems = this.$globalSidebar.find(':focusable');
-
-      $(focusableItems).each(function () {
-        $(this).attr('tabindex', '0');
-      });
+    /**
+     * Makes the global sidebar navigable by screen reader and keyboard users
+     **/
+    enableGlobalSidebar: function () {
+      this.$globalSidebar.attr('aria-hidden', 'false');
+      this.$globalSidebar.find(':focusable').attr('tabindex', '0');
     },
 
-    disableGlobalSidebarLinks: function () {
-      const focusableItems = this.$globalSidebar.find(':focusable');
-
-      $(focusableItems).each(function () {
-        $(this).attr('tabindex', '-1');
-      });
+    /**
+     * Hides the global sidebar from screen reader and keyboard users
+     **/
+    disableGlobalSidebar: function () {
+      this.$globalSidebar.attr('aria-hidden', 'true');
+      this.$globalSidebar.find(':focusable').attr('tabindex', '-1');
     },
 
     setSidebarNavAttributes: function () {
@@ -531,9 +530,9 @@ Craft.CP = Garnish.Base.extend(
       if (isExpanded === null) return;
 
       if (!isExpanded) {
-        this.disableGlobalSidebarLinks();
+        this.disableGlobalSidebar();
       } else {
-        this.enableGlobalSidebarLinks();
+        this.enableGlobalSidebar();
       }
     },
 
@@ -584,16 +583,13 @@ Craft.CP = Garnish.Base.extend(
         // Fixes Redactor fixed toolbars on previously hidden panes
         Garnish.$doc.trigger('scroll');
 
-        // If there is a revision menu, set its links to this tab ID
+        // If there is a site crumb menu or context menu, set their links to this tab ID
         if (href && href.charAt(0) === '#') {
-          const menuBtn = $('#context-btn').menubtn().data('menubtn');
-          if (menuBtn) {
-            for (let i = 0; i < menuBtn.menu.$options.length; i++) {
-              let a = menuBtn.menu.$options[i];
-              if (a.href) {
-                a.href = a.href.match(/^[^#]*/)[0] + href;
-              }
-            }
+          const contextLinks = document.querySelectorAll(
+            '#site-crumb-menu a[href], #context-menu a[href]'
+          );
+          for (const link of contextLinks) {
+            link.href = link.href.match(/^[^#]*/)[0] + href;
           }
         }
 
@@ -690,87 +686,82 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
+    handleBreadcrumbVisibility: function () {
+      if (!this.$crumbItems.length) {
+        return;
+      }
+
+      if (this.$crumbMenuItems) {
+        // put everything back
+        this.$crumbItems.css('max-width', '');
+        this.$crumbMenuItems.insertAfter(this.$crumbMenuTriggerItem);
+        this.$crumbMenuTriggerItem.detach();
+        this.$crumbMenuItems = null;
+      }
+
+      const maxWidth = Math.ceil(
+        this.$crumbs[0].getBoundingClientRect().width -
+          this.$navToggle[0].getBoundingClientRect().width
+      );
+      const itemWidths = [];
+
+      for (let i = 0; i < this.$crumbItems.length; i++) {
+        const $crumb = this.$crumbItems.eq(i);
+        itemWidths[i] = $crumb[0].getBoundingClientRect().width;
+      }
+
+      const totalWidth = itemWidths.reduce((sum, width) => sum + width, 0);
+
+      if (totalWidth > maxWidth) {
+        // add the menu trigger
+        if (!this.$crumbMenuTriggerItem) {
+          this.$crumbMenuTriggerItem = $('<li/>', {
+            class: 'crumb',
+          }).prependTo(this.$crumbList);
+          const $labelContainer = $('<div/>', {
+            class: 'crumb-label',
+          }).appendTo(this.$crumbMenuTriggerItem);
+          const $trigger = $('<button/>', {
+            id: 'crumb-menu-trigger',
+            'data-icon': 'ellipsis',
+            'data-disclosure-trigger': 'true',
+            'aria-controls': 'crumb-menu',
+            'aria-haspopup': 'true',
+            'aria-label': Craft.t('app', 'More…'),
+            title: Craft.t('app', 'More…'),
+          }).appendTo($labelContainer);
+
+          this.$crumbMenu = $('<div/>', {
+            id: 'crumb-menu',
+            class: 'menu menu--disclosure',
+            'data-disclosure-menu': 'true',
+          }).appendTo($labelContainer);
+          this.$crumbMenuList = $('<ul/>').appendTo(this.$crumbMenu);
+
+          $trigger.disclosureMenu();
+        } else {
+          this.$crumbMenuTriggerItem.prependTo(this.$crumbList);
+        }
+
+        // see how many crumbs we can include, starting at the end
+        let visibleTotalWidth =
+          this.$crumbMenuTriggerItem[0].getBoundingClientRect().width;
+
+        for (let i = this.$crumbItems.length - 1; i >= 0; i--) {
+          if (visibleTotalWidth + itemWidths[i] > maxWidth) {
+            this.$crumbMenuItems = this.$crumbItems.slice(0, i + 1);
+            this.$crumbMenuItems.appendTo(this.$crumbMenuList);
+            break;
+          }
+
+          visibleTotalWidth += itemWidths[i];
+        }
+      }
+    },
+
     handleWindowResize: function () {
       this.updateResponsiveTables();
       this.handleBreadcrumbVisibility();
-    },
-
-    breadcrumbItemsWrap: function () {
-      if (!this.$breadcrumbItems[0]) return;
-
-      this.$breadcrumbList.css(
-        Craft.orientation === 'ltr' ? 'margin-right' : 'margin-left',
-        ''
-      );
-      const listWidth = this.$breadcrumbList[0].getBoundingClientRect().width;
-      let totalItemWidth = 0;
-
-      // Iterate through all list items (inclusive of more button)
-      const $items = this.$breadcrumbList.find('li');
-      for (let i = 0; i < $items.length; i++) {
-        totalItemWidth += $items.get(i).getBoundingClientRect().width;
-      }
-
-      this.breadcrumbListWidth = listWidth;
-
-      if (totalItemWidth <= listWidth) {
-        return false;
-      }
-
-      // If it's less than a pixel off, it's probably just a rounding error.
-      // Give the container an extra pixel to be safe, though
-      if (totalItemWidth < listWidth + 1) {
-        this.$breadcrumbList.css(
-          Craft.orientation === 'ltr' ? 'margin-right' : 'margin-left',
-          '-1px'
-        );
-        return false;
-      }
-
-      return true;
-    },
-
-    handleBreadcrumbVisibility: function () {
-      if (!this.breadcrumbItemsWrap()) return;
-
-      if (this.$breadcrumbList.find('[data-disclosure-item]').length === 0) {
-        this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
-      }
-
-      const triggerWidth = this.$breadcrumbList.find(
-        '[data-disclosure-item]'
-      )[0].offsetWidth;
-      let visibleItemWidth = triggerWidth;
-      let finalIndex;
-      let newWidth;
-      const listWidth = this.breadcrumbListWidth;
-
-      // Find breadcrumbs that should remain visible without overflowing
-      this.$breadcrumbItems.each(function (index) {
-        newWidth = visibleItemWidth + this.offsetWidth;
-
-        if (newWidth < listWidth) {
-          finalIndex = index;
-          visibleItemWidth += this.offsetWidth;
-        } else {
-          return false;
-        }
-      });
-
-      // Separate breadcrums that should remain visible vs. hidden
-      const shownItems = this.$breadcrumbItems.slice(0, finalIndex + 1);
-      const hiddenItems = this.$breadcrumbItems.slice(finalIndex + 1);
-
-      // Empty list DOM and add shown items and trigger item
-      this.$breadcrumbList.html('');
-      this.$breadcrumbList.append(shownItems);
-      this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
-
-      // Add hidden items to disclosure menu and initialize
-      this.$breadcrumbList
-        .find('[data-disclosure-menu] ul')
-        .append(hiddenItems);
-      this.$breadcrumbList.find('[data-disclosure-trigger]').disclosureMenu();
     },
 
     updateResponsiveTables: function () {
@@ -842,6 +833,7 @@ Craft.CP = Garnish.Base.extend(
         this.$headerContainer[0].getBoundingClientRect().top < 0
       ) {
         const headerHeight = this.$headerContainer.height();
+        const headerWidth = this.$header.width();
         if (!this.fixedHeader) {
           // Hard-set the minimum content container height
           this.$contentContainer.css(
@@ -851,6 +843,7 @@ Craft.CP = Garnish.Base.extend(
 
           // Hard-set the header container height
           this.$headerContainer.height(headerHeight);
+          this.$header.width(headerWidth);
           Garnish.$bod.addClass('fixed-header');
 
           this.fixedHeader = true;
@@ -860,6 +853,7 @@ Craft.CP = Garnish.Base.extend(
         this._setFixedTopPos(this.$details, headerHeight);
       } else if (this.fixedHeader) {
         this.$headerContainer.height('auto');
+        this.$header.width('auto');
         Garnish.$bod.removeClass('fixed-header');
         this.$contentContainer.css('min-height', '');
         this.$sidebar.removeClass('fixed').css('top', '');
@@ -1012,7 +1006,7 @@ Craft.CP = Garnish.Base.extend(
       this.$alerts.remove();
 
       if (Array.isArray(alerts) && alerts.length) {
-        this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
+        this.$alerts = $('<ul id="alerts"/>').prependTo(this.$pageContainer);
 
         for (let alert of alerts) {
           if (!$.isPlainObject(alert)) {
@@ -1091,6 +1085,66 @@ Craft.CP = Garnish.Base.extend(
             $refreshBtn.removeClass('loading');
           }
         });
+      }
+    },
+
+    updateContext: function (label, description) {
+      const contextBtnLabel = document.querySelector(
+        '#context-menu-container > span'
+      );
+      if (contextBtnLabel) {
+        contextBtnLabel.textContent = label;
+      }
+
+      const menuItem = document.querySelector('#context-menu a.sel');
+      if (menuItem) {
+        const labelEl = menuItem.querySelector('.menu-item-label');
+        labelEl.textContent = label;
+
+        let descriptionEl = menuItem.querySelector('.menu-item-description');
+        if (description) {
+          if (!descriptionEl) {
+            descriptionEl = document.createElement('div');
+            descriptionEl.className = 'menu-item-description smalltext light';
+            menuItem.append(descriptionEl);
+          }
+          descriptionEl.textContent = description;
+        } else if (descriptionEl) {
+          descriptionEl.remove();
+        }
+      }
+    },
+
+    showSiteCrumbMenuItem: function (siteId) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        const li = menuItem.closest('li');
+        li.classList.remove('hidden');
+        const group = li.closest('.menu-group');
+        if (group) {
+          group.classList.remove('hidden');
+        }
+      }
+    },
+
+    setSiteCrumbMenuItemStatus: function (siteId, status) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        let statusEl = menuItem.querySelector('.status');
+
+        if (status) {
+          if (!statusEl) {
+            statusEl = document.createElement('div');
+            menuItem.prepend(statusEl);
+          }
+          statusEl.className = `status ${status}`;
+        } else if (statusEl) {
+          statusEl.remove();
+        }
       }
     },
 
@@ -1816,16 +1870,25 @@ var JobProgressIcon = Garnish.Base.extend({
   _progressBar: null,
 
   init: function () {
-    this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
+    this.$li = $('<li/>', {
+      class: 'nav-item nav-item--job',
+    }).appendTo(Craft.cp.$nav.children('ul'));
     this.$a = $('<a/>', {
       id: 'job-icon',
+      class: 'sidebar-action sidebar-action--job',
       href: Craft.canAccessQueueManager
         ? Craft.getUrl('utilities/queue-manager')
         : null,
     }).appendTo(this.$li);
-    this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
-    var $labelContainer = $('<span class="label"/>').appendTo(this.$a);
-    this.$label = $('<span/>').appendTo($labelContainer);
+    const $prefixContainer = $('<span class="sidebar-action__prefix"/>');
+    this.$canvasContainer = $('<span class="nav-icon"/>').appendTo(
+      $prefixContainer
+    );
+    $prefixContainer.appendTo(this.$a);
+
+    const $labelContainer = $('<span class="sidebar-action__label">');
+    $labelContainer.appendTo(this.$a);
+    this.$label = $('<span class="label"/>').appendTo($labelContainer);
     this.$progressLabel = $('<span class="progress-label"/>')
       .appendTo($labelContainer)
       .hide();
@@ -1836,8 +1899,11 @@ var JobProgressIcon = Garnish.Base.extend({
     this._arcRadius = 7 * m;
     this._lineWidth = 3 * m;
 
-    this._$bgCanvas = this._createCanvas('bg', '#61666b');
-    this._$staticCanvas = this._createCanvas('static', '#d7d9db');
+    this._$bgCanvas = this._createCanvas(
+      'bg',
+      this.$li.css('background-color')
+    );
+    this._$staticCanvas = this._createCanvas('static', this.$li.css('color'));
     this._$hoverCanvas = this._createCanvas('hover', '#fff');
     this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
 

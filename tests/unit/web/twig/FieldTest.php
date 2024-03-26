@@ -47,13 +47,13 @@ class FieldTest extends TestCase
 TWIG;
 
         $html = $this->view->renderString($template, [], View::TEMPLATE_MODE_CP);
-        $this->assertStringContainsString('<div id="foo-field" class="field" data-attribute="foo" data-foo="test">', $html);
-        $this->assertStringContainsString('TEST HEADING', $html);
-        $this->assertStringContainsString('<label id="label" for="foo">TEST LABEL</label>', $html);
-        $this->assertStringContainsString('<div id="foo-instructions" class="instructions"><p>TEST INSTRUCTIONS</p>', $html);
-        $this->assertStringContainsString('<p id="foo-tip" class="notice has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span><span>TEST TIP</span></p>', $html);
-        $this->assertStringContainsString('<p id="foo-warning" class="warning has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span><span>TEST WARNING</span></p>', $html);
-        $this->assertStringContainsString('<input name="foo">', $html);
+        self::assertStringContainsString('<div id="foo-field" class="field" data-attribute="foo" data-foo="test">', $html);
+        self::assertStringContainsString('TEST HEADING', $html);
+        self::assertStringContainsString('<label id="label" for="foo">TEST LABEL</label>', $html);
+        self::assertStringContainsString('<div id="foo-instructions" class="instructions"><p>TEST INSTRUCTIONS</p>', $html);
+        self::assertStringContainsString('<p id="foo-tip" class="notice has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span><span>TEST TIP</span></p>', $html);
+        self::assertStringContainsString('<p id="foo-warning" class="warning has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span><span>TEST WARNING</span></p>', $html);
+        self::assertStringContainsString('<input name="foo">', $html);
     }
 
     /**

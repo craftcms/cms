@@ -11,6 +11,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\TitleField;
+use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
@@ -26,11 +27,16 @@ class EntryTitleField extends TitleField
     /**
      * @inheritdoc
      */
+    public bool $required = false;
+
+    /**
+     * @inheritdoc
+     */
     protected function selectorInnerHtml(): string
     {
         return
-            Html::tag('span', '', [
-                'class' => ['fld-title-field-icon', 'fld-field-hidden', 'hidden'],
+            Html::tag('div', Cp::iconSvg('shuteye'), [
+                'class' => ['cp-icon', 'medium', 'gray', 'fld-title-field-icon', 'fld-field-hidden', 'hidden'],
             ]) .
             parent::selectorInnerHtml();
     }
@@ -41,7 +47,7 @@ class EntryTitleField extends TitleField
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         if (!$element instanceof Entry) {
-            throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', __CLASS__));
         }
 
         return $element->getType()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
@@ -53,7 +59,7 @@ class EntryTitleField extends TitleField
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Entry) {
-            throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', __CLASS__));
         }
 
         return ElementHelper::translationDescription($element->getType()->titleTranslationMethod);
@@ -65,7 +71,7 @@ class EntryTitleField extends TitleField
     public function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Entry) {
-            throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', __CLASS__));
         }
 
         if (!$element->getType()->hasTitleField) {

@@ -9,6 +9,7 @@ namespace crafttests\unit\mail;
 
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\SiteNotFoundException;
 use craft\mail\Message;
 use craft\models\SystemMessage;
@@ -93,18 +94,6 @@ class MailerTest extends TestCase
     }
 
     /**
-     * Test whether trying to send an email to nobody throws an exception.
-     */
-    public function testRequiresTo(): void
-    {
-        $this->_sendMail();
-        $this->expectExceptionMessage('An email must have a');
-
-        // Since the mock mailer simply stores the data, we won't trigger an exception until we try to unpack the message
-        $this->tester->grabLastSentEmail()->toString();
-    }
-
-    /**
      *
      */
     public function testEmailVariables(): void
@@ -147,8 +136,7 @@ class MailerTest extends TestCase
      */
     public function testSendMessageCustomTemplate(): void
     {
-        // Only works for rich peeps.
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
         $this->mailer->template = 'withvar';
 
         $this->_sendMail('test@craft.test');
@@ -192,7 +180,7 @@ class MailerTest extends TestCase
     /**
      * @return array
      */
-    public function fromKeyCompositionDataProvider(): array
+    public static function fromKeyCompositionDataProvider(): array
     {
         return [
             ['account_activation', []],

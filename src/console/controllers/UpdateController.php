@@ -7,7 +7,6 @@
 
 namespace craft\console\controllers;
 
-use Composer\IO\BufferIO;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
@@ -206,14 +205,18 @@ class UpdateController extends Controller
     public function actionComposerInstall(): int
     {
         $this->stdout('Performing Composer install ... ', Console::FG_YELLOW);
-        $io = new BufferIO();
+        $output = '';
 
         try {
-            Craft::$app->getComposer()->install(null, $io);
+            Craft::$app->getComposer()->install(null, function($type, $buffer) use (&$output) {
+                if ($type === Process::OUT) {
+                    $output .= $buffer;
+                }
+            });
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
-            $this->stdout('Output:' . PHP_EOL . PHP_EOL . $io->getOutput() . PHP_EOL . PHP_EOL);
+            $this->stdout('Output:' . PHP_EOL . PHP_EOL . $output . PHP_EOL . PHP_EOL);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -385,16 +388,19 @@ class UpdateController extends Controller
     private function _performUpdate(array $requirements): bool
     {
         $this->stdout('Performing update with Composer ... ', Console::FG_YELLOW);
-        $io = new BufferIO();
-
         $composerService = Craft::$app->getComposer();
+        $output = '';
 
         try {
-            $composerService->install($requirements, $io);
+            $composerService->install($requirements, function($type, $buffer) use (&$output) {
+                if ($type === Process::OUT) {
+                    $output .= $buffer;
+                }
+            });
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
-            $this->stdout('Output:' . PHP_EOL . PHP_EOL . $io->getOutput() . PHP_EOL . PHP_EOL);
+            $this->stdout('Output:' . PHP_EOL . PHP_EOL . $output . PHP_EOL . PHP_EOL);
             return false;
         }
 

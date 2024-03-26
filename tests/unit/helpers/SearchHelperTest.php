@@ -36,7 +36,7 @@ class SearchHelperTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeKeywordsDataProviders(): array
+    public static function normalizeKeywordsDataProviders(): array
     {
         return [
             ['test', 'test'],

@@ -4,6 +4,8 @@
         {% for action in actions %}
             <li>
                 {% set linkAttributes = {
+                    tabindex: '0',
+                    role: 'button',
                     class: [
                         'formsubmit',
                         (destructive ?? false) ? 'error',
@@ -30,7 +32,7 @@
 {% set safeActions = formActions|filter(a => not (a.destructive ?? false)) %}
 {% set destructiveActions = formActions|filter(a => a.destructive ?? false) %}
 
-<div class="menu" data-align="right">
+<div id="form-action-menu" class="menu menu--disclosure" data-align="right">
     {% if safeActions %}
         {{ _self.actionList(safeActions, false) }}
     {% endif %}

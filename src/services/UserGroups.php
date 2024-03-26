@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
@@ -63,7 +64,7 @@ class UserGroups extends Component
      */
     public function getAllGroups(): array
     {
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->edition !== CmsEdition::Pro) {
             return [];
         }
 
@@ -240,7 +241,7 @@ class UserGroups extends Component
      */
     public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
-        Craft::$app->requireEdition(Craft::Pro);
+        Craft::$app->requireEdition(CmsEdition::Pro);
 
         $isNewGroup = !$group->id;
 
@@ -353,7 +354,7 @@ class UserGroups extends Component
      */
     public function deleteGroupById(int $groupId): bool
     {
-        Craft::$app->requireEdition(Craft::Pro);
+        Craft::$app->requireEdition(CmsEdition::Pro);
 
         $group = $this->getGroupById($groupId);
 
@@ -374,7 +375,7 @@ class UserGroups extends Component
      */
     public function deleteGroup(UserGroup $group): bool
     {
-        Craft::$app->requireEdition(Craft::Pro);
+        Craft::$app->requireEdition(CmsEdition::Pro);
 
         // Fire a 'beforeDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_GROUP)) {

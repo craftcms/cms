@@ -310,14 +310,17 @@ Garnish = $.extend(Garnish, {
   hideModalBackgroundLayers: function () {
     const topmostLayer = Garnish.uiLayerManager.currentLayer.$container.get(0);
 
-    Garnish.$bod.children().each(function () {
-      // If element is modal or already has jsAria class, do nothing
-      if (Garnish.hasJsAriaClass(this) || this === topmostLayer) return;
+    Garnish.$bod
+      .children()
+      .not('#notifications')
+      .each(function () {
+        // If element is modal or already has jsAria class, do nothing
+        if (Garnish.hasJsAriaClass(this) || this === topmostLayer) return;
 
-      if (!Garnish.isScriptOrStyleElement(this)) {
-        Garnish.ariaHide(this);
-      }
-    });
+        if (!Garnish.isScriptOrStyleElement(this)) {
+          Garnish.ariaHide(this);
+        }
+      });
   },
 
   /**
@@ -963,7 +966,12 @@ $.extend($.event.special, {
       $elem.on({
         'mousedown.garnish-activate': function (e) {
           // Prevent buttons from getting focus on click
-          e.preventDefault();
+          if (
+            e.currentTarget.nodeName === 'BUTTON' ||
+            e.currentTarget.role === 'button'
+          ) {
+            e.preventDefault();
+          }
         },
         'click.garnish-activate': function (e) {
           const disabled = $elem.hasClass('disabled');
@@ -979,7 +987,12 @@ $.extend($.event.special, {
             return;
           }
 
-          e.preventDefault();
+          if (
+            e.currentTarget.nodeName === 'BUTTON' ||
+            e.currentTarget.role === 'button'
+          ) {
+            e.preventDefault();
+          }
 
           if (!disabled) {
             $elem.trigger('activate');
@@ -988,13 +1001,21 @@ $.extend($.event.special, {
         'keydown.garnish-activate': function (e) {
           // Ignore if the event was bubbled up, or if it wasn't the Space/Return key
           if (
-            this === $elem[0] &&
-            [Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(e.keyCode)
+            this !== $elem[0] ||
+            ![Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(e.keyCode)
+          ) {
+            return;
+          }
+
+          if (
+            e.currentTarget.nodeName === 'BUTTON' ||
+            e.currentTarget.role === 'button'
           ) {
             e.preventDefault();
-            if (!$elem.hasClass('disabled')) {
-              $elem.trigger('activate');
-            }
+          }
+
+          if (!$elem.hasClass('disabled')) {
+            $elem.trigger('activate');
           }
         },
       });
@@ -1031,12 +1052,7 @@ $.extend($.event.special, {
     handle: function (ev, data) {
       var el = this;
       var args = arguments;
-      var delay =
-        data && typeof data.delay !== 'undefined'
-          ? data.delay
-          : ev.data && ev.data.delay !== undefined
-          ? ev.data.delay
-          : null;
+      var delay = data?.delay ?? ev?.data?.delay ?? null;
       var handleObj = ev.handleObj;
       var targetData = $.data(ev.target);
 

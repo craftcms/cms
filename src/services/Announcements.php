@@ -102,7 +102,7 @@ class Announcements extends Component
                 $icon = $pluginsService->getPluginIconSvg($plugin->getHandle());
                 $label = $plugin->name;
             } else {
-                $icon = file_get_contents(Craft::getAlias('@app/icons/craft-cms.svg'));
+                $icon = file_get_contents(Craft::getAlias('@appicons/craft-cms.svg'));
                 $label = 'Craft CMS';
             }
             return [

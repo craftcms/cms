@@ -13,6 +13,7 @@ use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
+use craft\helpers\Html;
 use craft\helpers\MailerHelper;
 use craft\helpers\UrlHelper;
 use craft\mail\Mailer;
@@ -300,7 +301,7 @@ class SystemSettingsController extends Controller
         $settings->fromName = $this->request->getBodyParam('fromName');
         $settings->template = $this->request->getBodyParam('template');
         $settings->transportType = $this->request->getBodyParam('transportType');
-        $settings->transportSettings = Component::cleanseConfig($this->request->getBodyParam('transportTypes.' . $settings->transportType) ?? []);
+        $settings->transportSettings = Component::cleanseConfig($this->request->getBodyParam(sprintf('transportTypes.%s', Html::id($settings->transportType))) ?? []);
 
         return $settings;
     }

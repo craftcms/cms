@@ -56,7 +56,7 @@ class RepairController extends Controller
      */
     public function actionSectionStructure(string $handle): int
     {
-        $section = Craft::$app->getSections()->getSectionByHandle($handle);
+        $section = Craft::$app->getEntries()->getSectionByHandle($handle);
 
         if (!$section) {
             $this->stderr("Invalid section handle: $handle" . PHP_EOL, Console::FG_RED);

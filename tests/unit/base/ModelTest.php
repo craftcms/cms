@@ -216,7 +216,7 @@ class ModelTest extends TestCase
     /**
      * @return array
      */
-    public function dateTimeAttributesDataProvider(): array
+    public static function dateTimeAttributesDataProvider(): array
     {
         return [
             // Craft defaults
@@ -231,7 +231,7 @@ class ModelTest extends TestCase
     /**
      * @return array
      */
-    public function hasErrorsDataProvider(): array
+    public static function hasErrorsDataProvider(): array
     {
         return [
             [true, 'fields[body]', 'error', 'fields.*'],

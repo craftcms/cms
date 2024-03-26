@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 (function ($) {
   /** global: Craft */
   /** global: Garnish */
@@ -7,74 +9,75 @@
   Craft.MatrixInput = Garnish.Base.extend(
     {
       id: null,
-      blockTypes: null,
-      blockTypesByHandle: null,
+      entryTypes: null,
+      entryTypesByHandle: null,
       inputNamePrefix: null,
       inputIdPrefix: null,
 
-      showingAddBlockMenu: false,
-      addBlockBtnGroupWidth: null,
-      addBlockBtnContainerWidth: null,
+      showingAddEntryMenu: false,
+      addEntryBtnGroupWidth: null,
+      addEntryBtnContainerWidth: null,
 
       $container: null,
       $form: null,
-      $blockContainer: null,
-      $addBlockBtnContainer: null,
-      $addBlockBtnGroup: null,
-      $addBlockBtnGroupBtns: null,
+      $entriesContainer: null,
+      $addEntryBtnContainer: null,
+      $addEntryBtn: null,
+      $addEntryMenuBtn: null,
       $statusMessage: null,
 
-      blockSort: null,
-      blockSelect: null,
-      totalNewBlocks: 0,
+      entrySort: null,
+      entrySelect: null,
 
-      init: function (id, blockTypes, inputNamePrefix, settings) {
+      /**
+       * @type {Craft.ElementEditor|null}
+       */
+      elementEditor: null,
+
+      addingEntry: false,
+
+      init: function (id, entryTypes, inputNamePrefix, settings) {
         this.id = id;
-        this.blockTypes = blockTypes;
+        this.entryTypes = entryTypes;
         this.inputNamePrefix = inputNamePrefix;
         this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
 
-        // see if settings was actually set to the maxBlocks value
+        // see if settings was actually set to the maxEntries value
         if (typeof settings === 'number') {
-          settings = {maxBlocks: settings};
+          settings = {maxEntries: settings};
         }
         this.setSettings(settings, Craft.MatrixInput.defaults);
 
         this.$container = $('#' + this.id);
         this.$form = this.$container.closest('form');
-        this.$blockContainer = this.$container.children('.blocks');
-        this.$addBlockBtnContainer = this.$container.children('.buttons');
-        this.$addBlockBtnGroup =
-          this.$addBlockBtnContainer.children('.btngroup');
-        this.$addBlockBtnGroupBtns = this.$addBlockBtnGroup.children('.btn');
-        this.$addBlockMenuBtn = this.$addBlockBtnContainer.children('.menubtn');
+        this.$entriesContainer = this.$container.children('.blocks');
+        this.$addEntryBtnContainer = this.$container.children('.buttons');
+        this.$addEntryBtn =
+          this.$addEntryBtnContainer.children('.btn:not(.menubtn)');
+        this.$addEntryMenuBtn = this.$addEntryBtnContainer.children('.menubtn');
         this.$statusMessage = this.$container.find('[data-status-message]');
 
         this.$container.data('matrix', this);
 
-        this.setNewBlockBtn();
+        this.entryTypesByHandle = {};
 
-        this.blockTypesByHandle = {};
-
-        var i;
-
-        for (i = 0; i < this.blockTypes.length; i++) {
-          var blockType = this.blockTypes[i];
-          this.blockTypesByHandle[blockType.handle] = blockType;
+        for (let i = 0; i < this.entryTypes.length; i++) {
+          const entryType = this.entryTypes[i];
+          this.entryTypesByHandle[entryType.handle] = entryType;
         }
 
-        var $blocks = this.$blockContainer.children(),
-          collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds();
+        const $entries = this.$entriesContainer.children('.matrixblock');
+        const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
 
-        this.blockSort = new Garnish.DragSort($blocks, {
+        this.entrySort = new Garnish.DragSort($entries, {
           handle: '> .actions > .move',
           axis: 'y',
           filter: () => {
             // Only return all the selected items if the target item is selected
-            if (this.blockSort.$targetItem.hasClass('sel')) {
-              return this.blockSelect.getSelectedItems();
+            if (this.entrySort.$targetItem.hasClass('sel')) {
+              return this.entrySelect.getSelectedItems();
             } else {
-              return this.blockSort.$targetItem;
+              return this.entrySort.$targetItem;
             }
           },
           collapseDraggees: true,
@@ -82,150 +85,118 @@
           helperLagBase: 1.5,
           helperOpacity: 0.9,
           onDragStop: () => {
-            this.trigger('blockSortDragStop');
+            this.trigger('entrySortDragStop');
           },
           onSortChange: () => {
-            this.blockSelect.resetItemOrder();
+            this.entrySelect.resetItemOrder();
           },
         });
 
-        this.blockSelect = new Garnish.Select(this.$blockContainer, $blocks, {
-          multi: true,
-          vertical: true,
-          handle: '> .checkbox, > .titlebar',
-          checkboxMode: true,
+        this.entrySelect = new Garnish.Select(
+          this.$entriesContainer,
+          $entries,
+          {
+            multi: true,
+            vertical: true,
+            handle: '> .actions > .checkbox, > .titlebar',
+            filter: (target) => {
+              return !$(target).closest('.tab-label').length;
+            },
+            checkboxMode: true,
+          }
+        );
+
+        for (let i = 0; i < $entries.length; i++) {
+          const $entry = $($entries[i]);
+          const entry = new Entry(this, $entry);
+
+          if (entry.id && $.inArray('' + entry.id, collapsedEntries) !== -1) {
+            entry.collapse();
+          }
+        }
+
+        this.addListener(this.$addEntryBtn, 'activate', async function () {
+          this.$addEntryBtn.addClass('loading');
+          try {
+            await this.addEntry(this.$addEntryBtn.data('type'));
+          } finally {
+            this.$addEntryBtn.removeClass('loading');
+          }
         });
 
-        for (i = 0; i < $blocks.length; i++) {
-          var $block = $($blocks[i]),
-            blockId = $block.data('id');
-
-          // Is this a new block?
-          var newMatch =
-            typeof blockId === 'string' && blockId.match(/new(\d+)/);
-
-          if (newMatch && newMatch[1] > this.totalNewBlocks) {
-            this.totalNewBlocks = parseInt(newMatch[1]);
-          }
-
-          var block = new MatrixBlock(this, $block);
-
-          if (block.id && $.inArray('' + block.id, collapsedBlocks) !== -1) {
-            block.collapse();
-          }
-        }
-
-        this.addListener(this.$addBlockBtnGroupBtns, 'click', function (ev) {
-          var type = $(ev.target).data('type');
-          this.addBlock(type);
-        });
-
-        if (this.$addBlockMenuBtn.length) {
-          this.$addBlockMenuBtn.menubtn();
-          this.$addBlockMenuBtn.data('menubtn').on('optionSelect', (ev) => {
-            this.addBlock($(ev.option).data('type'));
-          });
-        }
-
-        this.updateAddBlockBtn();
-
-        this.addListener(this.$container, 'resize', 'setNewBlockBtn');
-        Garnish.$doc.ready(this.setNewBlockBtn.bind(this));
-
-        this.trigger('afterInit');
-      },
-
-      setNewBlockBtn: function () {
-        // Do we know what the button group width is yet?
-        if (!this.addBlockBtnGroupWidth) {
-          this.addBlockBtnGroupWidth = this.$addBlockBtnGroup.width();
-
-          if (!this.addBlockBtnGroupWidth) {
-            return;
-          }
-        }
-
-        // Only check if the container width has resized
-        if (
-          this.addBlockBtnContainerWidth !==
-          (this.addBlockBtnContainerWidth = this.$addBlockBtnContainer.width())
-        ) {
-          if (this.addBlockBtnGroupWidth > this.addBlockBtnContainerWidth) {
-            if (!this.showingAddBlockMenu) {
-              this.$addBlockBtnGroup.addClass('hidden');
-              this.$addBlockMenuBtn.removeClass('hidden');
-              this.showingAddBlockMenu = true;
-            }
-          } else {
-            if (this.showingAddBlockMenu) {
-              this.$addBlockMenuBtn.addClass('hidden');
-              this.$addBlockBtnGroup.removeClass('hidden');
-              this.showingAddBlockMenu = false;
-
-              // Because Safari is awesome
-              if (navigator.userAgent.indexOf('Safari') !== -1) {
-                Garnish.requestAnimationFrame(() => {
-                  this.$addBlockBtnGroup.css('opacity', 0.99);
-
-                  Garnish.requestAnimationFrame(() => {
-                    this.$addBlockBtnGroup.css('opacity', '');
-                  });
-                });
+        if (this.$addEntryMenuBtn.length) {
+          this.$addEntryMenuBtn
+            .disclosureMenu()
+            .data('disclosureMenu')
+            .$container.find('button')
+            .on('activate', async (ev) => {
+              this.$addEntryMenuBtn.addClass('loading');
+              try {
+                await this.addEntry($(ev.currentTarget).data('type'));
+              } finally {
+                this.$addEntryMenuBtn.removeClass('loading');
               }
-            }
-          }
+            });
         }
+
+        this.updateAddEntryBtn();
+
+        setTimeout(() => {
+          this.elementEditor = this.$container
+            .closest('form')
+            .data('elementEditor');
+
+          if (this.elementEditor) {
+            this.elementEditor.on('update', () => {
+              this.settings.ownerId = this.elementEditor.getDraftElementId(
+                this.settings.ownerId
+              );
+            });
+          }
+
+          this.trigger('afterInit');
+        }, 100);
       },
 
-      canAddMoreBlocks: function () {
+      canAddMoreEntries: function () {
         return (
-          !this.maxBlocks ||
-          this.$blockContainer.children().length < this.maxBlocks
+          !this.maxEntries ||
+          this.$entriesContainer.children().length < this.maxEntries
         );
       },
 
-      updateAddBlockBtn: function () {
-        var i, block;
+      updateAddEntryBtn: function () {
+        if (this.canAddMoreEntries()) {
+          this.$addEntryBtn.removeClass('disabled').removeAttr('aria-disabled');
+          this.$addEntryMenuBtn.removeClass('disabled');
 
-        if (this.canAddMoreBlocks()) {
-          this.$addBlockBtnGroup.removeClass('disabled');
-          this.$addBlockMenuBtn.removeClass('disabled');
+          for (let i = 0; i < this.entrySelect.$items.length; i++) {
+            const entry = this.entrySelect.$items.eq(i).data('entry');
 
-          this.$addBlockBtnGroupBtns.each(function () {
-            $(this).removeAttr('aria-disabled');
-          });
-
-          for (i = 0; i < this.blockSelect.$items.length; i++) {
-            block = this.blockSelect.$items.eq(i).data('block');
-
-            if (block) {
-              block.$actionMenu
-                .find('a[data-action=add]')
+            if (entry) {
+              entry.$actionMenu
+                .find('button[data-action=add]')
                 .parent()
                 .removeClass('disabled');
-              block.$actionMenu
-                .find('a[data-action=add]')
+              entry.$actionMenu
+                .find('button[data-action=add]')
                 .removeAttr('aria-disabled');
             }
           }
         } else {
-          this.$addBlockBtnGroup.addClass('disabled');
-          this.$addBlockMenuBtn.addClass('disabled');
+          this.$addEntryBtn.addClass('disabled').attr('aria-disabled', 'true');
+          this.$addEntryMenuBtn.addClass('disabled');
 
-          this.$addBlockBtnGroupBtns.each(function () {
-            $(this).attr('aria-disabled', 'true');
-          });
+          for (let i = 0; i < this.entrySelect.$items.length; i++) {
+            const entry = this.entrySelect.$items.eq(i).data('entry');
 
-          for (i = 0; i < this.blockSelect.$items.length; i++) {
-            block = this.blockSelect.$items.eq(i).data('block');
-
-            if (block) {
-              block.$actionMenu
-                .find('a[data-action=add]')
+            if (entry) {
+              entry.$actionMenu
+                .find('button[data-action=add]')
                 .parent()
                 .addClass('disabled');
-              block.$actionMenu
-                .find('a[data-action=add]')
+              entry.$actionMenu
+                .find('button[data-action=add]')
                 .attr('aria-disabled', 'true');
             }
           }
@@ -236,10 +207,10 @@
         this.$statusMessage.empty();
         let message;
 
-        if (!this.canAddMoreBlocks()) {
+        if (!this.canAddMoreEntries()) {
           message = Craft.t(
             'app',
-            'Matrix block could not be added. Maximum number of blocks reached.'
+            'Entry could not be added. Maximum number of entries reached.'
           );
         }
 
@@ -248,319 +219,257 @@
         }, 250);
       },
 
-      addBlock: function (type, $insertBefore, autofocus) {
-        if (!this.canAddMoreBlocks()) {
+      async addEntry(type, $insertBefore, autofocus) {
+        if (this.addingEntry) {
+          // only one new entry at a time
+          return;
+        }
+
+        if (!this.canAddMoreEntries()) {
           this.updateStatusMessage();
           return;
         }
 
-        this.totalNewBlocks++;
+        this.addingEntry = true;
 
-        const id = `new${this.totalNewBlocks}`;
-        const typeName = this.blockTypesByHandle[type].name;
-        const actionMenuId = `matrixblock-action-menu-${id}`;
+        if (this.elementEditor) {
+          // First ensure we're working with drafts for all elements leading up
+          // to this field’s element
+          await this.elementEditor.setFormValue(
+            this.settings.baseInputName,
+            '*'
+          );
+        }
 
-        var html = `
-                <div class="matrixblock" data-id="${id}" data-type="${type}" data-type-name="${typeName}" role="listitem">
-                  <input type="hidden" name="${
-                    this.inputNamePrefix
-                  }[sortOrder][]" value="${id}"/>
-                  <input type="hidden" name="${
-                    this.inputNamePrefix
-                  }[blocks][${id}][type]" value="${type}"/>
-                  <input type="hidden" name="${
-                    this.inputNamePrefix
-                  }[blocks][${id}][enabled]" value="1"/>
-                  <div class="titlebar">
-                    <div class="blocktype">${
-                      this.getBlockTypeByHandle(type).name
-                    }</div>
-                    <div class="preview"></div>
-                  </div>
-                  <div class="checkbox" title="${Craft.t(
-                    'app',
-                    'Select'
-                  )}"></div>
-                  <div class="actions">
-                    <div class="status off" title="${Craft.t(
-                      'app',
-                      'Disabled'
-                    )}"></div>
-                    <div>
-                      <button type="button" class="btn settings icon menubtn" title="${Craft.t(
-                        'app',
-                        'Actions'
-                      )}" aria-controls="${actionMenuId}" data-disclosure-trigger></button>
-                        <div id="${actionMenuId}" class="menu menu--disclosure">
-                         <ul class="padded">
-                            <li><a data-icon="collapse" data-action="collapse" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Collapse'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Collapse'
-        )}</a></li>
-                            <li class="hidden"><a data-icon="expand" data-action="expand" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Expand'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Expand'
-        )}</a></li>
-                            <li><a data-icon="disabled" data-action="disable" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Disable'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Disable'
-        )}</a></li>
-                            <li class="hidden"><a data-icon="enabled" data-action="enable" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Enable'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Enable'
-        )}</a></li>
-                            <li><a data-icon="uarr" data-action="moveUp" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Move up'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Move up'
-        )}</a></li>
-                            <li><a data-icon="darr" data-action="moveDown" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Move down'
-                            )}" type="button" role="button">${Craft.t(
-          'app',
-          'Move down'
-        )}</a></li>
-                          </ul>`;
-
-        if (!this.settings.staticBlocks) {
-          html += `
-                          <hr class="padded"/>
-                          <ul class="padded">
-                            <li><a class="error" data-icon="remove" data-action="delete" href="#" aria-label="${Craft.t(
-                              'app',
-                              'Delete'
-                            )}" type="button" role="button">${Craft.t(
-            'app',
-            'Delete'
-          )}</a></li>
-                          </ul>
-                          <hr class="padded"/>
-                          <ul class="padded">`;
-
-          for (var i = 0; i < this.blockTypes.length; i++) {
-            var blockType = this.blockTypes[i];
-            html += `
-                            <li><a data-icon="plus" data-action="add" data-type="${
-                              blockType.handle
-                            }" href="#" aria-label="${Craft.t(
-              'app',
-              'Add {type} above',
-              {type: blockType.name}
-            )}" type="button" role="button">${Craft.t(
-              'app',
-              'Add {type} above',
-              {type: blockType.name}
-            )}</a></li>`;
+        const {data} = await Craft.sendActionRequest(
+          'POST',
+          'matrix/create-entry',
+          {
+            data: {
+              fieldId: this.settings.fieldId,
+              entryTypeId: this.entryTypesByHandle[type].id,
+              ownerId: this.settings.ownerId,
+              ownerElementType: this.settings.ownerElementType,
+              siteId: this.settings.siteId,
+              namespace: this.settings.namespace,
+            },
           }
+        );
 
-          html += `
-                          </ul>`;
-        }
+        const $entry = $(data.blockHtml);
 
-        html += `
-                        </div>
-                      </div>
-                    <a class="move icon" title="${Craft.t(
-                      'app',
-                      'Reorder'
-                    )}" role="button"></a>
-                  </div>
-                </div>`;
-
-        var $block = $(html);
-
-        // Pause the draft editor
-        const elementEditor = this.$form.data('elementEditor');
-        if (elementEditor) {
-          elementEditor.pause();
-        }
+        // Pause the element editor
+        this.elementEditor?.pause();
 
         if ($insertBefore) {
-          $block.insertBefore($insertBefore);
+          $entry.insertBefore($insertBefore);
         } else {
-          $block.appendTo(this.$blockContainer);
+          $entry.appendTo(this.$entriesContainer);
         }
 
-        var $fieldsContainer = $('<div class="fields"/>').appendTo($block),
-          bodyHtml = this.getParsedBlockHtml(
-            this.blockTypesByHandle[type].bodyHtml,
-            id
-          ),
-          js = this.getParsedBlockHtml(this.blockTypesByHandle[type].js, id);
-
-        $(bodyHtml).appendTo($fieldsContainer);
-
-        this.trigger('blockAdded', {
-          $block: $block,
+        this.trigger('entryAdded', {
+          $entry: $entry,
         });
 
-        // Animate the block into position
-        $block.css(this.getHiddenBlockCss($block)).velocity(
+        // Animate the entry into position
+        $entry.css(this.getHiddenEntryCss($entry)).velocity(
           {
             opacity: 1,
             'margin-bottom': 10,
           },
           'fast',
-          () => {
-            $block.css('margin-bottom', '');
-            Garnish.$bod.append(js);
-            Craft.initUiElements($fieldsContainer);
-            new MatrixBlock(this, $block);
-            this.blockSort.addItems($block);
-            this.blockSelect.addItems($block);
-            this.updateAddBlockBtn();
+          async () => {
+            $entry.css('margin-bottom', '');
+            Craft.initUiElements($entry.children('.fields'));
+            await Craft.appendHeadHtml(data.headHtml);
+            await Craft.appendBodyHtml(data.bodyHtml);
+            new Entry(this, $entry);
+            this.entrySort.addItems($entry);
+            this.entrySelect.addItems($entry);
+            this.updateAddEntryBtn();
 
             Garnish.requestAnimationFrame(() => {
               if (typeof autofocus === 'undefined' || autofocus) {
-                // Scroll to the block
-                Garnish.scrollContainerToElement($block);
+                // Scroll to the entry
+                Garnish.scrollContainerToElement($entry);
                 // Focus on the first focusable element
-                $block.find('.flex-fields :focusable').first().trigger('focus');
+                $entry.find('.flex-fields :focusable').first().trigger('focus');
               }
 
-              // Resume the draft editor
-              if (elementEditor) {
-                elementEditor.resume();
-              }
+              // Resume the element editor
+              this.elementEditor?.resume();
             });
           }
         );
+
+        this.addingEntry = false;
       },
 
-      getBlockTypeByHandle: function (handle) {
-        for (var i = 0; i < this.blockTypes.length; i++) {
-          if (this.blockTypes[i].handle === handle) {
-            return this.blockTypes[i];
+      getEntryTypeByHandle: function (handle) {
+        for (let i = 0; i < this.entryTypes.length; i++) {
+          if (this.entryTypes[i].handle === handle) {
+            return this.entryTypes[i];
           }
         }
       },
 
-      collapseSelectedBlocks: function () {
-        this.callOnSelectedBlocks('collapse');
+      collapseSelectedEntries: function () {
+        this.callOnSelectedEntries('collapse');
       },
 
-      expandSelectedBlocks: function () {
-        this.callOnSelectedBlocks('expand');
+      expandSelectedEntries: function () {
+        this.callOnSelectedEntries('expand');
       },
 
-      disableSelectedBlocks: function () {
-        this.callOnSelectedBlocks('disable');
+      disableSelectedEntries: function () {
+        this.callOnSelectedEntries('disable');
       },
 
-      enableSelectedBlocks: function () {
-        this.callOnSelectedBlocks('enable');
+      enableSelectedEntries: function () {
+        this.callOnSelectedEntries('enable');
       },
 
-      deleteSelectedBlocks: function () {
-        this.callOnSelectedBlocks('selfDestruct');
+      deleteSelectedEntries: function () {
+        this.callOnSelectedEntries('selfDestruct');
       },
 
-      callOnSelectedBlocks: function (fn) {
-        for (var i = 0; i < this.blockSelect.$selectedItems.length; i++) {
-          this.blockSelect.$selectedItems.eq(i).data('block')[fn]();
+      callOnSelectedEntries: function (fn) {
+        for (let i = 0; i < this.entrySelect.$selectedItems.length; i++) {
+          this.entrySelect.$selectedItems.eq(i).data('entry')[fn]();
         }
       },
 
-      getHiddenBlockCss: function ($block) {
+      getHiddenEntryCss: function ($entry) {
         return {
           opacity: 0,
-          marginBottom: -$block.outerHeight(),
+          marginBottom: -$entry.outerHeight(),
         };
       },
 
-      getParsedBlockHtml: function (html, id) {
-        if (typeof html === 'string') {
-          return html.replace(
-            new RegExp(`__BLOCK_${this.settings.placeholderKey}__`, 'g'),
-            id
-          );
-        } else {
-          return '';
-        }
-      },
-
-      get maxBlocks() {
-        return this.settings.maxBlocks;
+      get maxEntries() {
+        return this.settings.maxEntries;
       },
     },
     {
       defaults: {
-        placeholderKey: null,
-        maxBlocks: null,
-        staticBlocks: false,
+        fieldId: null,
+        maxEntries: null,
+        namespace: null,
+        baseInputName: null,
+        ownerElementType: null,
+        ownerId: null,
+        siteId: null,
+        staticEntries: false,
       },
 
-      collapsedBlockStorageKey:
-        'Craft-' + Craft.systemUid + '.MatrixInput.collapsedBlocks',
+      collapsedEntryStorageKey:
+        'Craft-' + Craft.systemUid + '.MatrixInput.collapsedEntries',
 
-      getCollapsedBlockIds: function () {
+      getCollapsedEntryIds: function () {
         if (
-          typeof localStorage[Craft.MatrixInput.collapsedBlockStorageKey] ===
+          typeof localStorage[Craft.MatrixInput.collapsedEntryStorageKey] ===
           'string'
         ) {
           return Craft.filterArray(
-            localStorage[Craft.MatrixInput.collapsedBlockStorageKey].split(',')
+            localStorage[Craft.MatrixInput.collapsedEntryStorageKey].split(',')
           );
         } else {
           return [];
         }
       },
 
-      setCollapsedBlockIds: function (ids) {
-        localStorage[Craft.MatrixInput.collapsedBlockStorageKey] =
+      setCollapsedEntryIds: function (ids) {
+        localStorage[Craft.MatrixInput.collapsedEntryStorageKey] =
           ids.join(',');
       },
 
-      rememberCollapsedBlockId: function (id) {
+      rememberCollapsedEntryId: function (id) {
         if (typeof Storage !== 'undefined') {
-          var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds();
+          const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
 
-          if ($.inArray('' + id, collapsedBlocks) === -1) {
-            collapsedBlocks.push(id);
-            Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
+          if ($.inArray('' + id, collapsedEntries) === -1) {
+            collapsedEntries.push(id);
+            Craft.MatrixInput.setCollapsedEntryIds(collapsedEntries);
           }
         }
       },
 
-      forgetCollapsedBlockId: function (id) {
+      forgetCollapsedEntryId: function (id) {
         if (typeof Storage !== 'undefined') {
-          var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds(),
-            collapsedBlocksIndex = $.inArray('' + id, collapsedBlocks);
+          const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
+          const collapsedEntriesIndex = $.inArray('' + id, collapsedEntries);
 
-          if (collapsedBlocksIndex !== -1) {
-            collapsedBlocks.splice(collapsedBlocksIndex, 1);
-            Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
+          if (collapsedEntriesIndex !== -1) {
+            collapsedEntries.splice(collapsedEntriesIndex, 1);
+            Craft.MatrixInput.setCollapsedEntryIds(collapsedEntries);
           }
         }
+      },
+
+      initTabs(container) {
+        const $tabs = $(container).children('.pane-tabs');
+        if (!$tabs.length) {
+          return;
+        }
+
+        // init tab manager
+        let tabManager = new Craft.Tabs($tabs);
+
+        // prevent items in the disclosure menu from changing the URL
+        let disclosureMenu = tabManager.$menuBtn.data('trigger');
+        $(disclosureMenu.$container)
+          .find('li, a')
+          .on('click', function (ev) {
+            ev.preventDefault();
+          });
+
+        tabManager.on('selectTab', (ev) => {
+          const href = ev.$tab.attr('href');
+
+          // Show its content area
+          if (href && href.charAt(0) === '#') {
+            $(href).removeClass('hidden');
+          }
+
+          // Trigger a resize event to update any UI components that are listening for it
+          Garnish.$win.trigger('resize');
+
+          // Fixes Redactor fixed toolbars on previously hidden panes
+          Garnish.$doc.trigger('scroll');
+        });
+
+        tabManager.on('deselectTab', (ev) => {
+          const href = ev.$tab.attr('href');
+          if (href && href.charAt(0) === '#') {
+            // Hide its content area
+            $(ev.$tab.attr('href')).addClass('hidden');
+          }
+        });
+
+        return tabManager;
       },
     }
   );
 
-  var MatrixBlock = Garnish.Base.extend({
+  const Entry = Garnish.Base.extend({
+    /**
+     * @type {Craft.MatrixInput}
+     */
     matrix: null,
     $container: null,
     $titlebar: null,
+    $tabContainer: null,
     $fieldsContainer: null,
     $previewContainer: null,
     $actionMenu: null,
     $collapsedInput: null,
 
+    tabManager: null,
     actionDisclosure: null,
+    formObserver: null,
+    visibleLayoutElements: null,
+    cancelToken: null,
+    ignoreFailedRequest: false,
 
     isNew: null,
     id: null,
@@ -571,19 +480,22 @@
       this.matrix = matrix;
       this.$container = $container;
       this.$titlebar = $container.children('.titlebar');
+      this.$tabContainer = this.$titlebar.children('.matrixblock-tabs');
       this.$previewContainer = this.$titlebar.children('.preview');
       this.$fieldsContainer = $container.children('.fields');
 
-      this.$container.data('block', this);
+      this.$container.data('entry', this);
 
       this.id = this.$container.data('id');
       this.isNew =
         !this.id ||
         (typeof this.id === 'string' && this.id.substring(0, 3) === 'new');
 
-      const $actionMenuBtn = this.$container.find(
-        '> .actions [data-disclosure-trigger]'
-      );
+      if (this.$tabContainer.length) {
+        this.tabManager = Craft.MatrixInput.initTabs(this.$tabContainer);
+      }
+
+      const $actionMenuBtn = this.$container.find('> .actions .action-btn');
       const actionDisclosure =
         $actionMenuBtn.data('trigger') ||
         new Garnish.DisclosureMenu($actionMenuBtn);
@@ -595,23 +507,23 @@
         this.$container.addClass('active');
         if (this.$container.prev('.matrixblock').length) {
           this.$actionMenu
-            .find('a[data-action=moveUp]:first')
+            .find('button[data-action=moveUp]:first')
             .parent()
             .removeClass('hidden');
         } else {
           this.$actionMenu
-            .find('a[data-action=moveUp]:first')
+            .find('button[data-action=moveUp]:first')
             .parent()
             .addClass('hidden');
         }
         if (this.$container.next('.matrixblock').length) {
           this.$actionMenu
-            .find('a[data-action=moveDown]:first')
+            .find('button[data-action=moveDown]:first')
             .parent()
             .removeClass('hidden');
         } else {
           this.$actionMenu
-            .find('a[data-action=moveDown]:first')
+            .find('button[data-action=moveDown]:first')
             .parent()
             .addClass('hidden');
         }
@@ -621,20 +533,15 @@
         this.$container.removeClass('active');
       });
 
-      this.$actionMenuOptions = this.$actionMenu.find('a[data-action]');
+      this.$actionMenuOptions = this.$actionMenu.find('button[data-action]');
 
       this.addListener(
         this.$actionMenuOptions,
-        'click',
+        'activate',
         this.handleActionClick
       );
-      this.addListener(
-        this.$actionMenuOptions,
-        'keydown',
-        this.handleActionKeydown
-      );
 
-      // Was this block already collapsed?
+      // Was this entry already collapsed?
       if (Garnish.hasAttr(this.$container, 'data-collapsed')) {
         this.collapse();
       }
@@ -645,6 +552,13 @@
       };
 
       this.addListener(this.$titlebar, 'doubletap', this._handleTitleBarClick);
+
+      this.visibleLayoutElements = this.$container.data(
+        'visible-layout-elements'
+      );
+      this.formObserver = new Craft.FormObserver(this.$container, (data) => {
+        this.updateFieldLayout(data);
+      });
     },
 
     toggle: function () {
@@ -662,22 +576,22 @@
 
       this.$container.addClass('collapsed');
 
-      var previewHtml = '',
-        $fields = this.$fieldsContainer.children().children();
+      let previewHtml = '';
+      const $fields = this.$fieldsContainer.children().children();
 
-      for (var i = 0; i < $fields.length; i++) {
-        var $field = $($fields[i]),
-          $inputs = $field
-            .children('.input')
-            .find('select,input[type!="hidden"],textarea,.label'),
-          inputPreviewText = '';
+      for (let i = 0; i < $fields.length; i++) {
+        const $field = $($fields[i]);
+        const $inputs = $field
+          .children('.input')
+          .find('select,input[type!="hidden"],textarea,.label');
+        let inputPreviewText = '';
 
-        for (var j = 0; j < $inputs.length; j++) {
-          var $input = $($inputs[j]),
-            value;
+        for (let j = 0; j < $inputs.length; j++) {
+          const $input = $($inputs[j]);
+          let value;
 
           if ($input.hasClass('label')) {
-            var $maybeLightswitchContainer = $input.parent().parent();
+            const $maybeLightswitchContainer = $input.parent().parent();
 
             if (
               $maybeLightswitchContainer.hasClass('lightswitch') &&
@@ -724,33 +638,35 @@
 
       if (animate && !Garnish.prefersReducedMotion()) {
         this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-        this.$container.velocity({height: 32}, 'fast');
+        this.$container.velocity({height: 34}, 'fast');
       } else {
         this.$previewContainer.show();
         this.$fieldsContainer.hide();
-        this.$container.css({height: 32});
+        this.$container.css({height: 34});
       }
+
+      this.$tabContainer.hide();
 
       setTimeout(() => {
         this.$actionMenu
-          .find('a[data-action=collapse]:first')
+          .find('button[data-action=collapse]:first')
           .parent()
           .addClass('hidden');
         this.$actionMenu
-          .find('a[data-action=expand]:first')
+          .find('button[data-action=expand]:first')
           .parent()
           .removeClass('hidden');
       }, 200);
 
       // Remember that?
       if (!this.isNew) {
-        Craft.MatrixInput.rememberCollapsedBlockId(this.id);
+        Craft.MatrixInput.rememberCollapsedEntryId(this.id);
       } else {
         if (!this.$collapsedInput) {
           this.$collapsedInput = $(
             '<input type="hidden" name="' +
               this.matrix.inputNamePrefix +
-              '[blocks][' +
+              '[entries][' +
               this.id +
               '][collapsed]" value="1"/>'
           ).appendTo(this.$container);
@@ -795,11 +711,11 @@
       this.$fieldsContainer.velocity('stop');
       this.$container.velocity('stop');
 
-      var collapsedContainerHeight = this.$container.height();
+      const collapsedContainerHeight = this.$container.height();
       this.$container.height('auto');
       this.$fieldsContainer.show();
-      var expandedContainerHeight = this.$container.height();
-      var displayValue = this.$fieldsContainer.css('display') || 'block';
+      const expandedContainerHeight = this.$container.height();
+      const displayValue = this.$fieldsContainer.css('display') || 'block';
       this.$container.height(collapsedContainerHeight);
       this.$fieldsContainer
         .hide()
@@ -813,33 +729,34 @@
           this.$previewContainer.html('');
           this.$container.height('auto');
           this.$container.trigger('scroll');
+          this.$tabContainer.show();
         }
       );
 
       setTimeout(() => {
         this.$actionMenu
-          .find('a[data-action=collapse]:first')
+          .find('button[data-action=collapse]:first')
           .parent()
           .removeClass('hidden');
         this.$actionMenu
-          .find('a[data-action=expand]:first')
+          .find('button[data-action=expand]:first')
           .parent()
           .addClass('hidden');
       }, 200);
 
       // Remember that?
       if (!this.isNew && typeof Storage !== 'undefined') {
-        var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds(),
-          collapsedBlocksIndex = $.inArray('' + this.id, collapsedBlocks);
+        const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
+        const collapsedEntriesIndex = $.inArray('' + this.id, collapsedEntries);
 
-        if (collapsedBlocksIndex !== -1) {
-          collapsedBlocks.splice(collapsedBlocksIndex, 1);
-          Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
+        if (collapsedEntriesIndex !== -1) {
+          collapsedEntries.splice(collapsedEntriesIndex, 1);
+          Craft.MatrixInput.setCollapsedEntryIds(collapsedEntries);
         }
       }
 
       if (!this.isNew) {
-        Craft.MatrixInput.forgetCollapsedBlockId(this.id);
+        Craft.MatrixInput.forgetCollapsedEntryId(this.id);
       } else if (this.$collapsedInput) {
         this.$collapsedInput.val('');
       }
@@ -849,15 +766,15 @@
 
     disable: function () {
       this.$container.children('input[name$="[enabled]"]:first').val('');
-      this.$container.addClass('disabled');
+      this.$container.addClass('disabled-entry');
 
       setTimeout(() => {
         this.$actionMenu
-          .find('a[data-action=disable]:first')
+          .find('button[data-action=disable]:first')
           .parent()
           .addClass('hidden');
         this.$actionMenu
-          .find('a[data-action=enable]:first')
+          .find('button[data-action=enable]:first')
           .parent()
           .removeClass('hidden');
       }, 200);
@@ -867,45 +784,45 @@
 
     enable: function () {
       this.$container.children('input[name$="[enabled]"]:first').val('1');
-      this.$container.removeClass('disabled');
+      this.$container.removeClass('disabled-entry');
 
       setTimeout(() => {
         this.$actionMenu
-          .find('a[data-action=disable]:first')
+          .find('button[data-action=disable]:first')
           .parent()
           .removeClass('hidden');
         this.$actionMenu
-          .find('a[data-action=enable]:first')
+          .find('button[data-action=enable]:first')
           .parent()
           .addClass('hidden');
       }, 200);
     },
 
     moveUp: function () {
-      this.matrix.trigger('beforeMoveBlockUp', {
-        block: this,
+      this.matrix.trigger('beforeMoveEntryUp', {
+        entry: this,
       });
       let $prev = this.$container.prev('.matrixblock');
       if ($prev.length) {
         this.$container.insertBefore($prev);
-        this.matrix.blockSelect.resetItemOrder();
+        this.matrix.entrySelect.resetItemOrder();
       }
-      this.matrix.trigger('moveBlockUp', {
-        block: this,
+      this.matrix.trigger('moveEntryUp', {
+        entry: this,
       });
     },
 
     moveDown: function () {
-      this.matrix.trigger('beforeMoveBlockDown', {
-        block: this,
+      this.matrix.trigger('beforeMoveEntryDown', {
+        entry: this,
       });
       let $next = this.$container.next('.matrixblock');
       if ($next.length) {
         this.$container.insertAfter($next);
-        this.matrix.blockSelect.resetItemOrder();
+        this.matrix.entrySelect.resetItemOrder();
       }
-      this.matrix.trigger('moveBlockDown', {
-        block: this,
+      this.matrix.trigger('moveEntryDown', {
+        entry: this,
       });
     },
 
@@ -914,25 +831,16 @@
       this.onActionSelect(event.target);
     },
 
-    handleActionKeydown: function (event) {
-      const keyCode = event.keyCode;
-
-      if (keyCode !== Garnish.SPACE_KEY) return;
-
-      event.preventDefault();
-      this.onActionSelect(event.target);
-    },
-
     onActionSelect: function (option) {
       const batchAction =
-          this.matrix.blockSelect.totalSelected > 1 &&
-          this.matrix.blockSelect.isSelected(this.$container),
+          this.matrix.entrySelect.totalSelected > 1 &&
+          this.matrix.entrySelect.isSelected(this.$container),
         $option = $(option);
 
       switch ($option.data('action')) {
         case 'collapse': {
           if (batchAction) {
-            this.matrix.collapseSelectedBlocks();
+            this.matrix.collapseSelectedEntries();
           } else {
             this.collapse(true);
           }
@@ -942,7 +850,7 @@
 
         case 'expand': {
           if (batchAction) {
-            this.matrix.expandSelectedBlocks();
+            this.matrix.expandSelectedEntries();
           } else {
             this.expand();
           }
@@ -952,7 +860,7 @@
 
         case 'disable': {
           if (batchAction) {
-            this.matrix.disableSelectedBlocks();
+            this.matrix.disableSelectedEntries();
           } else {
             this.disable();
           }
@@ -962,7 +870,7 @@
 
         case 'enable': {
           if (batchAction) {
-            this.matrix.enableSelectedBlocks();
+            this.matrix.enableSelectedEntries();
           } else {
             this.enable();
             this.expand();
@@ -982,8 +890,8 @@
         }
 
         case 'add': {
-          var type = $option.data('type');
-          this.matrix.addBlock(type, this.$container);
+          const type = $option.data('type');
+          this.matrix.addEntry(type, this.$container);
           break;
         }
 
@@ -993,11 +901,11 @@
               confirm(
                 Craft.t(
                   'app',
-                  'Are you sure you want to delete the selected blocks?'
+                  'Are you sure you want to delete the selected entries?'
                 )
               )
             ) {
-              this.matrix.deleteSelectedBlocks();
+              this.matrix.deleteSelectedEntries();
             }
           } else {
             this.selfDestruct();
@@ -1015,17 +923,224 @@
       $('[name]', this.$container).removeAttr('name');
 
       this.$container.velocity(
-        this.matrix.getHiddenBlockCss(this.$container),
+        this.matrix.getHiddenEntryCss(this.$container),
         'fast',
         () => {
           this.$container.remove();
-          this.matrix.updateAddBlockBtn();
+          this.matrix.updateAddEntryBtn();
 
-          this.matrix.trigger('blockDeleted', {
-            $block: this.$container,
+          this.matrix.trigger('entryDeleted', {
+            $entry: this.$container,
           });
         }
       );
+    },
+
+    updateFieldLayout(data) {
+      return new Promise((resolve, reject) => {
+        const elementEditor = this.matrix.elementEditor;
+        const baseInputName = this.$container.data('base-input-name');
+
+        // Ignore if we're already submitting the main form
+        if (elementEditor?.submittingForm) {
+          reject('Form already being submitted.');
+          return;
+        }
+
+        if (this.cancelToken) {
+          this.ignoreFailedRequest = true;
+          this.cancelToken.cancel();
+        }
+
+        const param = (n) => Craft.namespaceInputName(n, baseInputName);
+        const extraData = {
+          [param('visibleLayoutElements')]: this.visibleLayoutElements,
+          [param('elementType')]: 'craft\\elements\\Entry',
+          [param('ownerId')]: this.matrix.settings.ownerId,
+          [param('fieldId')]: this.matrix.settings.fieldId,
+          [param('sortOrder')]: this.$container.index() + 1,
+          [param('typeId')]: this.$container.data('type-id'),
+          [param('elementUid')]: this.$container.data('uid'),
+        };
+
+        const selectedTabId = this.$fieldsContainer
+          .children('[data-layout-tab]:not(.hidden)')
+          .data('id');
+        if (selectedTabId) {
+          extraData[param('selectedTab')] = selectedTabId;
+        }
+
+        data += `&${$.param(extraData)}`;
+
+        this.cancelToken = axios.CancelToken.source();
+
+        Craft.sendActionRequest('POST', 'elements/update-field-layout', {
+          cancelToken: this.cancelToken.token,
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+            'X-Craft-Namespace': baseInputName,
+          },
+          data,
+        })
+          .then((response) => {
+            this._afterUpdateFieldLayout(
+              data,
+              selectedTabId,
+              baseInputName,
+              response
+            );
+            resolve();
+          })
+          .catch((e) => {
+            if (!this.ignoreFailedRequest) {
+              reject(e);
+            }
+            this.ignoreFailedRequest = false;
+          })
+          .finally(() => {
+            this.cancelToken = null;
+          });
+      });
+    },
+
+    async _afterUpdateFieldLayout(
+      data,
+      selectedTabId,
+      baseInputName,
+      response
+    ) {
+      // capture the new selected tab ID, in case it just changed
+      const newSelectedTabId = this.$fieldsContainer
+        .children('[data-layout-tab]:not(.hidden)')
+        .data('id');
+
+      // Update the visible elements
+      let $allTabContainers = $();
+      const visibleLayoutElements = {};
+      let changedElements = false;
+
+      for (const tabInfo of response.data.missingElements) {
+        let $tabContainer = this.$fieldsContainer.children(
+          `[data-layout-tab="${tabInfo.uid}"]`
+        );
+
+        if (!$tabContainer.length) {
+          $tabContainer = $('<div/>', {
+            id: Craft.namespaceId(tabInfo.id, baseInputName),
+            class: 'flex-fields',
+            'data-id': tabInfo.id,
+            'data-layout-tab': tabInfo.uid,
+          });
+          if (tabInfo.id !== selectedTabId) {
+            $tabContainer.addClass('hidden');
+          }
+          $tabContainer.appendTo(this.$fieldsContainer);
+        }
+
+        $allTabContainers = $allTabContainers.add($tabContainer);
+
+        for (const elementInfo of tabInfo.elements) {
+          if (elementInfo.html !== false) {
+            if (!visibleLayoutElements[tabInfo.uid]) {
+              visibleLayoutElements[tabInfo.uid] = [];
+            }
+            visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
+
+            if (typeof elementInfo.html === 'string') {
+              const $oldElement = $tabContainer.children(
+                `[data-layout-element="${elementInfo.uid}"]`
+              );
+              const $newElement = $(elementInfo.html);
+              if ($oldElement.length) {
+                $oldElement.replaceWith($newElement);
+              } else {
+                $newElement.appendTo($tabContainer);
+              }
+              Craft.initUiElements($newElement);
+              changedElements = true;
+            }
+          } else {
+            const $oldElement = $tabContainer.children(
+              `[data-layout-element="${elementInfo.uid}"]`
+            );
+            if (
+              !$oldElement.length ||
+              !Garnish.hasAttr($oldElement, 'data-layout-element-placeholder')
+            ) {
+              const $placeholder = $('<div/>', {
+                class: 'hidden',
+                'data-layout-element': elementInfo.uid,
+                'data-layout-element-placeholder': '',
+              });
+
+              if ($oldElement.length) {
+                $oldElement.replaceWith($placeholder);
+              } else {
+                $placeholder.appendTo($tabContainer);
+              }
+
+              changedElements = true;
+            }
+          }
+        }
+      }
+
+      // Remove any unused tab content containers
+      // (`[data-layout-tab=""]` == unconditional containers, so ignore those)
+      const $unusedTabContainers = this.$fieldsContainer
+        .children('[data-layout-tab]')
+        .not($allTabContainers)
+        .not('[data-layout-tab=""]');
+      if ($unusedTabContainers.length) {
+        $unusedTabContainers.remove();
+        changedElements = true;
+      }
+
+      // Make the first tab visible if no others are
+      if (!$allTabContainers.filter(':not(.hidden)').length) {
+        $allTabContainers.first().removeClass('hidden');
+      }
+
+      this.visibleLayoutElements = visibleLayoutElements;
+
+      // Update the tabs
+      if (this.tabManager) {
+        this.tabManager.destroy();
+        this.tabManager = null;
+        this.$tabContainer.html('');
+      }
+
+      this.hasTabs = !!response.data.tabs;
+
+      if (this.hasTabs) {
+        this.$tabContainer.append(response.data.tabs);
+        this.tabManager = Craft.MatrixInput.initTabs(this.$tabContainer);
+
+        // was a new tab selected after the request was kicked off?
+        if (
+          selectedTabId &&
+          newSelectedTabId &&
+          selectedTabId !== newSelectedTabId
+        ) {
+          const $newSelectedTab = this.tabManager.$tabs.filter(
+            `[data-id="${newSelectedTabId}"]`
+          );
+          if ($newSelectedTab.length) {
+            // if the new tab is visible - switch to it
+            this.tabManager.selectTab($newSelectedTab);
+          } else {
+            // if the new tab is not visible (e.g. hidden by a condition)
+            // switch to the first tab
+            this.tabManager.selectTab(this.tabManager.$tabs.first());
+          }
+        }
+      }
+
+      await Craft.appendHeadHtml(response.data.headHtml);
+      await Craft.appendBodyHtml(response.data.bodyHtml);
+
+      // re-grab dismissible tips, re-attach listener, hide on re-load
+      this.matrix.elementEditor?.handleDismissibleTips();
     },
   });
 })(jQuery);

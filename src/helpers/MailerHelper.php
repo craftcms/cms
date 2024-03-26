@@ -18,6 +18,7 @@ use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use yii\base\Event;
+use yii\base\Model;
 use yii\helpers\Inflector;
 
 /**
@@ -39,14 +40,14 @@ class MailerHelper
      * use yii\base\Event;
      *
      * Event::on(MailerHelper::class,
-     *     MailerHelper::EVENT_REGISTER_MAILER_TRANSPORT_TYPES,
+     *     MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS,
      *     function(RegisterComponentTypesEvent $event) {
      *         $event->types[] = MyTransportType::class;
      *     }
      * );
      * ```
      */
-    public const EVENT_REGISTER_MAILER_TRANSPORT_TYPES = 'registerMailerTransportTypes';
+    public const EVENT_REGISTER_MAILER_TRANSPORTS = 'registerMailerTransports';
 
     /**
      * Returns all available mailer transport adapter classes.
@@ -65,7 +66,7 @@ class MailerHelper
         $event = new RegisterComponentTypesEvent([
             'types' => $transportTypes,
         ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_MAILER_TRANSPORT_TYPES, $event);
+        Event::trigger(static::class, self::EVENT_REGISTER_MAILER_TRANSPORTS, $event);
 
         return $event->types;
     }
@@ -82,10 +83,19 @@ class MailerHelper
      */
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
     {
-        return Component::createComponent([
+        $component = Component::createComponent([
             'type' => $type,
-            'settings' => $settings,
         ], TransportAdapterInterface::class);
+
+        if ($settings) {
+            if ($component instanceof Model) {
+                $component->setAttributes($settings, false);
+            } else {
+                Craft::configure($component, $settings);
+            }
+        }
+
+        return $component;
     }
 
     /**
@@ -134,12 +144,12 @@ class MailerHelper
      */
     public static function settingsReport(Mailer $mailer, ?TransportAdapterInterface $transportAdapter = null): string
     {
-        $transport = $mailer->getTransport();
+        $transportType = $transportAdapter ? get_class($transportAdapter) : App::mailSettings()->transportType;
         $settings = [
             Craft::t('app', 'From') => self::_emailList($mailer->from),
             Craft::t('app', 'Reply To') => self::_emailList($mailer->replyTo),
             Craft::t('app', 'Template') => $mailer->template,
-            Craft::t('app', 'Transport Type') => get_class($transport),
+            Craft::t('app', 'Transport Type') => $transportType,
         ];
 
         $transportSettings = [];

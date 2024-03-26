@@ -12,6 +12,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\ImageException;
 use craft\errors\InvalidElementException;
 use craft\errors\InvalidSubpathException;
@@ -371,7 +372,15 @@ class Users extends Component
                 ->where(['userId' => $userId])
                 ->scalar();
 
-            $this->_userPreferences[$userId] = $preferences ? Json::decode($preferences) : [];
+            if ($preferences) {
+                if (is_string($preferences)) {
+                    $preferences = Json::decode($preferences);
+                }
+            } else {
+                $preferences = [];
+            }
+
+            $this->_userPreferences[$userId] = $preferences;
         }
 
         return $this->_userPreferences[$userId];
@@ -387,10 +396,11 @@ class Users extends Component
     {
         // Merge in any other saved preferences
         $preferences += $this->getUserPreferences($user->id);
+        $tableSchema = Craft::$app->getDb()->getSchema()->getTableSchema(Table::USERPREFERENCES);
 
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
-            'preferences' => Json::encode($preferences),
+            'preferences' => Db::prepareValueForDb($preferences, $tableSchema->columns['preferences']->dbType),
         ]);
 
         $this->_userPreferences[$user->id] = $preferences;
@@ -514,11 +524,10 @@ class Users extends Component
      * Removes credentials for a user.
      *
      * @param User $user The user that should have credentials removed.
-     * @return bool Whether the user’s credentials were successfully removed.
-     * @throws UserNotFoundException
+     * @throws InvalidElementException
      * @since 4.0.0
      */
-    public function removeCredentials(User $user): bool
+    public function removeCredentials(User $user): void
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $userRecord->active = false;
@@ -527,14 +536,14 @@ class Users extends Component
         $userRecord->verificationCode = null;
 
         if (!$userRecord->save()) {
-            return false;
+            $user->addErrors($userRecord->getErrors());
+            throw new InvalidElementException($user);
         }
 
         $user->active = false;
         $user->pending = false;
         $user->password = null;
         $user->verificationCode = null;
-        return true;
     }
 
     /**
@@ -792,10 +801,9 @@ class Users extends Component
      * Activates a user, bypassing email verification.
      *
      * @param User $user The user.
-     * @return bool Whether the user was activated successfully.
-     * @throws Throwable if reasons
+     * @throws InvalidElementException
      */
-    public function activateUser(User $user): bool
+    public function activateUser(User $user): void
     {
         // Fire a 'beforeActivateUser' event
         $event = new UserEvent([
@@ -804,7 +812,7 @@ class Users extends Component
         $this->trigger(self::EVENT_BEFORE_ACTIVATE_USER, $event);
 
         if (!$event->isValid) {
-            return false;
+            throw new InvalidElementException($user);
         }
 
         $originalUser = clone $user;
@@ -829,8 +837,7 @@ class Users extends Component
             $user->invalidLoginCount = $originalUser->invalidLoginCount;
             $user->lastInvalidLoginDate = $originalUser->lastInvalidLoginDate;
             $user->lockoutDate = $originalUser->lockoutDate;
-
-            return false;
+            throw new InvalidElementException($user);
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -866,19 +873,17 @@ class Users extends Component
 
         // Invalidate caches
         Craft::$app->getElements()->invalidateCachesForElement($user);
-
-        return true;
     }
 
     /**
      * Deactivates a user.
      *
      * @param User $user The user.
-     * @return bool Whether the user was deactivated successfully.
      * @throws Throwable if reasons
      * @since 4.0.0
+     * @throws InvalidElementException
      */
-    public function deactivateUser(User $user): bool
+    public function deactivateUser(User $user): void
     {
         // Fire a 'beforeActivateUser' event
         $event = new UserEvent([
@@ -887,7 +892,7 @@ class Users extends Component
         $this->trigger(self::EVENT_BEFORE_DEACTIVATE_USER, $event);
 
         if (!$event->isValid) {
-            return false;
+            throw new InvalidElementException($user);
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -930,8 +935,6 @@ class Users extends Component
 
         // Invalidate caches
         Craft::$app->getElements()->invalidateCachesForElement($user);
-
-        return true;
     }
 
     /**
@@ -939,13 +942,13 @@ class Users extends Component
      * and clear the unverified one.
      *
      * @param User $user
-     * @return bool
+     * @throws InvalidElementException
      */
-    public function verifyEmailForUser(User $user): bool
+    public function verifyEmailForUser(User $user): void
     {
         // Bail if they don't have an unverified email to begin with
         if (!$user->unverifiedEmail) {
-            return true;
+            return;
         }
 
         $userRecord = $this->_getUserRecordById($user->id);
@@ -958,25 +961,22 @@ class Users extends Component
 
         if (!$userRecord->save()) {
             $user->addErrors($userRecord->getErrors());
-            return false;
+            throw new InvalidElementException($user);
         }
 
         // If the user status is pending, let's activate them.
         if ($userRecord->pending) {
             $this->activateUser($user);
         }
-
-        return true;
     }
 
     /**
      * Unlocks a user, bypassing the cooldown phase.
      *
      * @param User $user The user.
-     * @return bool Whether the user was unlocked successfully.
-     * @throws Throwable if reasons
+     * @throws InvalidElementException
      */
-    public function unlockUser(User $user): bool
+    public function unlockUser(User $user): void
     {
         // Fire a 'beforeUnlockUser' event
         $event = new UserEvent([
@@ -985,7 +985,7 @@ class Users extends Component
         $this->trigger(self::EVENT_BEFORE_UNLOCK_USER, $event);
 
         if (!$event->isValid) {
-            return false;
+            throw new InvalidElementException($user);
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -1017,18 +1017,15 @@ class Users extends Component
 
         // Invalidate caches
         Craft::$app->getElements()->invalidateCachesForElement($user);
-
-        return true;
     }
 
     /**
      * Suspends a user.
      *
      * @param User $user The user.
-     * @return bool Whether the user was suspended successfully.
-     * @throws Throwable if reasons
+     * @throws InvalidElementException
      */
-    public function suspendUser(User $user): bool
+    public function suspendUser(User $user): void
     {
         // Fire a 'beforeSuspendUser' event
         $event = new UserEvent([
@@ -1037,7 +1034,7 @@ class Users extends Component
         $this->trigger(self::EVENT_BEFORE_SUSPEND_USER, $event);
 
         if (!$event->isValid) {
-            return false;
+            throw new InvalidElementException($user);
         }
 
         $userRecord = $this->_getUserRecordById($user->id);
@@ -1057,18 +1054,15 @@ class Users extends Component
 
         // Invalidate caches
         Craft::$app->getElements()->invalidateCachesForElement($user);
-
-        return true;
     }
 
     /**
      * Unsuspends a user.
      *
      * @param User $user The user.
-     * @return bool Whether the user was unsuspended successfully.
-     * @throws Throwable if reasons
+     * @throws InvalidElementException
      */
-    public function unsuspendUser(User $user): bool
+    public function unsuspendUser(User $user): void
     {
         // Fire a 'beforeUnsuspendUser' event
         $event = new UserEvent([
@@ -1077,7 +1071,7 @@ class Users extends Component
         $this->trigger(self::EVENT_BEFORE_UNSUSPEND_USER, $event);
 
         if (!$event->isValid) {
-            return false;
+            throw new InvalidElementException($user);
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -1106,8 +1100,6 @@ class Users extends Component
 
         // Invalidate caches
         Craft::$app->getElements()->invalidateCachesForElement($user);
-
-        return true;
     }
 
     /**
@@ -1116,11 +1108,10 @@ class Users extends Component
      * @param int $userId The user’s ID.
      * @param string $message The message to be shunned.
      * @param DateTime|null $expiryDate When the message should be un-shunned. Defaults to `null` (never un-shun).
-     * @return bool Whether the message was shunned successfully.
      */
-    public function shunMessageForUser(int $userId, string $message, ?DateTime $expiryDate = null): bool
+    public function shunMessageForUser(int $userId, string $message, ?DateTime $expiryDate = null): void
     {
-        return (bool)Db::upsert(Table::SHUNNEDMESSAGES, [
+        Db::upsert(Table::SHUNNEDMESSAGES, [
             'userId' => $userId,
             'message' => $message,
             'expiryDate' => Db::prepareDateForDb($expiryDate),
@@ -1132,11 +1123,10 @@ class Users extends Component
      *
      * @param int $userId The user’s ID.
      * @param string $message The message to un-shun.
-     * @return bool Whether the message was un-shunned successfully.
      */
-    public function unshunMessageForUser(int $userId, string $message): bool
+    public function unshunMessageForUser(int $userId, string $message): void
     {
-        return (bool)Db::delete(Table::SHUNNEDMESSAGES, [
+        Db::delete(Table::SHUNNEDMESSAGES, [
             'userId' => $userId,
             'message' => $message,
         ]);
@@ -1209,7 +1199,7 @@ class Users extends Component
             $user->pending = $originalUser->pending;
             $user->verificationCode = $originalUser->verificationCode;
             $user->verificationCodeIssuedDate = $originalUser->verificationCodeIssuedDate;
-            throw new InvalidElementException($user, 'Unable to set verification code on user: ' . implode(', ', $user->getFirstErrors()));
+            throw new InvalidElementException($user);
         }
 
         $transaction->commit();
@@ -1631,5 +1621,21 @@ class Users extends Component
         }
 
         return $url;
+    }
+
+    /**
+     * Returns whether new users can be added to the system.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    final public function canCreateUsers(): bool
+    {
+        if (Craft::$app->edition === CmsEdition::Pro) {
+            return true;
+        }
+
+        $max = Craft::$app->edition === CmsEdition::Solo ? 1 : 5;
+        return User::find()->status(null)->count() < $max;
     }
 }

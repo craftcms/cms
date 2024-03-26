@@ -8,20 +8,18 @@
 namespace craft\base;
 
 use Craft;
-use craft\db\QueryAbortedException;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\enums\AttributeStatus;
 use craft\events\DefineFieldHtmlEvent;
 use craft\events\DefineFieldKeywordsEvent;
 use craft\events\FieldElementEvent;
 use craft\gql\types\QueryArgument;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use craft\helpers\FieldHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
-use craft\models\FieldGroup;
 use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
@@ -31,7 +29,9 @@ use Exception;
 use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
+use yii\db\ExpressionInterface;
 use yii\db\Schema;
 
 /**
@@ -138,15 +138,32 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public static function isRequirable(): bool
+    public static function get(int|string $id): ?static
     {
-        return true;
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getFields()->getFieldById($id);
     }
 
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn(): bool
+    public static function icon(): string
+    {
+        return 'i-cursor';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function isMultiInstance(): bool
+    {
+        return static::dbType() !== null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function isRequirable(): bool
     {
         return true;
     }
@@ -156,7 +173,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public static function supportedTranslationMethods(): array
     {
-        if (!static::hasContentColumn()) {
+        if (static::dbType() === null) {
             return [
                 self::TRANSLATION_METHOD_NONE,
             ];
@@ -174,10 +191,67 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'mixed';
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): array|string|null
+    {
+        return Schema::TYPE_TEXT;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function queryCondition(
+        array $instances,
+        mixed $value,
+        array &$params,
+    ): array|string|ExpressionInterface|false|null {
+        $valueSql = static::valueSql($instances);
+
+        if ($valueSql === null) {
+            return false;
+        }
+
+        return Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
+    }
+
+    /**
+     * Returns a coalescing value SQL expression for the given field instances.
+     *
+     * @param static[] $instances
+     * @param string|null $key The data key to fetch, if this field stores multiple values
+     * @return string|null
+     * @since 5.0.0
+     */
+    protected static function valueSql(array $instances, string $key = null): ?string
+    {
+        $valuesSql = array_filter(
+            array_map(fn(self $field) => $field->getValueSql($key), $instances),
+            fn(?string $valueSql) => $valueSql !== null,
+        );
+
+        if (empty($valuesSql)) {
+            return null;
+        }
+
+        if (count($valuesSql) === 1) {
+            return reset($valuesSql);
+        }
+
+        return sprintf('COALESCE(%s)', implode(',', $valuesSql));
+    }
+
+    /**
+     * @var bool Whether the field handle’s uniqueness should be validated.
+     * @since 5.0.0
+     */
+    public bool $validateHandleUniqueness = true;
 
     /**
      * @var bool|null Whether the field is fresh.
@@ -185,6 +259,17 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @see setIsFresh()
      */
     private ?bool $_isFresh = null;
+
+    /**
+     * Constructor
+     */
+    public function __construct($config = [])
+    {
+        // remove unused settings
+        unset($config['columnPrefix']);
+
+        parent::__construct($config);
+    }
 
     /**
      * Use the translated field name as the string representation.
@@ -222,10 +307,20 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function attributes(): array
+    {
+        $names = parent::attributes();
+        ArrayHelper::removeValue($names, 'validateHandleUniqueness');
+        ArrayHelper::removeValue($names, 'layoutElement');
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels(): array
     {
         return [
-            'groupId' => Craft::t('app', 'Group'),
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
         ];
@@ -238,28 +333,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $rules = parent::defineRules();
 
-        // Make sure the column name is under the database’s maximum allowed column length, including the column prefix/suffix lengths
-        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength;
-
-        if (static::hasContentColumn()) {
-            $maxHandleLength -= strlen(Craft::$app->getContent()->fieldColumnPrefix);
-
-            FieldHelper::ensureColumnSuffix($this);
-            if ($this->columnSuffix) {
-                $maxHandleLength -= strlen($this->columnSuffix) + 1;
-            }
-        }
-
-        $rules[] = [['name'], 'string', 'max' => 255];
-        $rules[] = [['handle'], 'string', 'max' => $maxHandleLength];
         $rules[] = [['name', 'handle', 'translationMethod'], 'required'];
-        $rules[] = [['groupId'], 'number', 'integerOnly' => true];
-
-        $rules[] = [
-            ['groupId'],
-            'required',
-            'when' => fn() => $this->context === 'global',
-        ];
 
         $rules[] = [
             ['translationMethod'],
@@ -287,7 +361,6 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'canSetProperties',
                 'canonical',
                 'children',
-                'contentId',
                 'contentTable',
                 'dateCreated',
                 'dateDeleted',
@@ -360,13 +433,16 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'username', // user-specific
             ],
         ];
-        $rules[] = [
-            ['handle'],
-            UniqueValidator::class,
-            'targetClass' => FieldRecord::class,
-            'targetAttribute' => ['handle', 'context'],
-            'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
-        ];
+
+        if ($this->validateHandleUniqueness) {
+            $rules[] = [
+                ['handle'],
+                UniqueValidator::class,
+                'targetClass' => FieldRecord::class,
+                'targetAttribute' => ['handle', 'context'],
+                'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+            ];
+        }
 
         // Only validate the ID if it’s not a new field
         if (!$this->getIsNew()) {
@@ -383,9 +459,17 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): array|string
+    public function getId(): ?int
     {
-        return Schema::TYPE_STRING;
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
     }
 
     /**
@@ -410,7 +494,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(?ElementInterface $element = null): bool
+    public function getIsTranslatable(?ElementInterface $element): bool
     {
         if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
             return $element === null || $this->getTranslationKey($element) !== '';
@@ -421,7 +505,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(?ElementInterface $element = null): ?string
+    public function getTranslationDescription(?ElementInterface $element): ?string
     {
         if (!$this->getIsTranslatable($element)) {
             return null;
@@ -445,14 +529,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         if ($element->isFieldModified($this->handle)) {
             return [
-                Element::ATTR_STATUS_MODIFIED,
+                AttributeStatus::Modified,
                 Craft::t('app', 'This field has been modified.'),
             ];
         }
 
         if ($element->isFieldOutdated($this->handle)) {
             return [
-                Element::ATTR_STATUS_OUTDATED,
+                AttributeStatus::Outdated,
                 Craft::t('app', 'This field was updated in the Current revision.'),
             ];
         }
@@ -487,7 +571,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $value;
     }
@@ -495,7 +579,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->normalizeValue($value, $element);
     }
@@ -503,14 +587,39 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml(mixed $value, ?ElementInterface $element = null): string
+    public function getInputHtml(mixed $value, ?ElementInterface $element): string
     {
-        $html = $this->inputHtml($value, $element);
+        $html = $this->inputHtml($value, $element, false);
 
         // Give plugins a chance to modify it
         $event = new DefineFieldHtmlEvent([
             'value' => $value,
             'element' => $element,
+            'inline' => false,
+            'html' => $html,
+        ]);
+
+        $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
+        return $event->html;
+    }
+
+    /**
+     * Returns the HTML that should be shown for this field’s inline inputs.
+     *
+     * @param mixed $value The field’s value
+     * @param ElementInterface|null $element The element the field is associated with
+     * @return string The HTML that should be shown for this field’s inline input
+     * @since 5.0.0
+     */
+    public function getInlineInputHtml(mixed $value, ?ElementInterface $element): string
+    {
+        $html = $this->inputHtml($value, $element, true);
+
+        // Give plugins a chance to modify it
+        $event = new DefineFieldHtmlEvent([
+            'value' => $value,
+            'element' => $element,
+            'inline' => true,
             'html' => $html,
         ]);
 
@@ -524,11 +633,12 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param mixed $value The field’s value. This will either be the [[normalizeValue()|normalized value]],
      * raw POST data (i.e. if there was a validation error), or null
      * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @param bool $inline Whether this is for an inline edit form.
      * @return string The input HTML.
      * @see getInputHtml()
      * @since 3.5.0
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Html::textarea($this->handle, $value);
     }
@@ -600,13 +710,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the HTML that should be shown for this field in Table View.
+     * Returns the HTML that should be shown for this field in table and card views.
      *
      * @param mixed $value The field’s value
      * @param ElementInterface $element The element the field is associated with
-     * @return string The HTML that should be shown for this field in Table View
+     * @return string The HTML that should be shown for this field in table and card views
+     * @since 5.0.0
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         return ElementHelper::attributeHtml($value);
     }
@@ -621,23 +732,21 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getSortOption(): array
     {
-        $column = ElementHelper::fieldColumnFromField($this);
-
-        if ($column === null) {
+        if (static::dbType() === null || !isset($this->layoutElement)) {
             throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
         }
 
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => [$column, 'id'],
-            'attribute' => "field:$this->uid",
+            'orderBy' => [$this->getValueSql(), 'id'],
+            'attribute' => "field:{$this->layoutElement->uid}",
         ];
     }
 
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If the object explicitly defines its savable value, use that
         if ($value instanceof Serializable) {
@@ -677,20 +786,66 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
+    public function getValueSql(?string $key = null): ?string
     {
-        /** @var ElementQuery $query */
-        if ($value !== null) {
-            $column = ElementHelper::fieldColumnFromField($this);
-
-            // If the field type doesn't have a content column, it *must* override this method
-            // if it wants to support a custom query criteria attribute
-            if ($column === null) {
-                throw new QueryAbortedException();
-            }
-
-            $query->subQuery->andWhere(Db::parseParam("content.$column", $value, '=', false, $this->getContentColumnType()));
+        if (!isset($this->layoutElement)) {
+            return null;
         }
+
+        $dbType = static::dbType();
+
+        if ($dbType === null) {
+            return null;
+        }
+
+        if ($key !== null && (!is_array($dbType) || !isset($dbType[$key]))) {
+            throw new InvalidArgumentException(sprintf('%s doesn’t store values under the key “%s”.', __CLASS__, $key));
+        }
+
+        $jsonPath = [$this->layoutElement->uid];
+
+        if (is_array($dbType)) {
+            // Get the primary value by default
+            $key ??= array_key_first($dbType);
+            $jsonPath[] = $key;
+            $dbType = $dbType[$key];
+        }
+
+        $db = Craft::$app->getDb();
+        $qb = $db->getQueryBuilder();
+        $sql = $qb->jsonExtract('elements_sites.content', $jsonPath);
+
+        if ($db->getIsMysql()) {
+            // If the field uses an optimized DB type, cast it so its values can be indexed
+            // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
+            $castType = match (Db::parseColumnType($dbType)) {
+                Schema::TYPE_CHAR,
+                Schema::TYPE_STRING,
+                'varchar' => 'CHAR(255)',
+                // only reliable way to compare booleans is as 'true'/'false' strings :(
+                Schema::TYPE_BOOLEAN => 'CHAR(5)',
+                Schema::TYPE_DATE => 'DATE',
+                Schema::TYPE_DATETIME => 'DATETIME',
+                Schema::TYPE_DECIMAL => 'DECIMAL',
+                Schema::TYPE_DOUBLE => 'DOUBLE',
+                Schema::TYPE_FLOAT => 'FLOAT',
+                Schema::TYPE_TINYINT,
+                Schema::TYPE_SMALLINT,
+                Schema::TYPE_INTEGER,
+                Schema::TYPE_BIGINT => 'SIGNED',
+                SCHEMA::TYPE_TIME => 'TIME',
+                default => null,
+            };
+            if ($castType !== null) {
+                // if a length was specified, replace the default with that
+                if ($length = Db::parseColumnLength($dbType)) {
+                    $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
+                }
+                $sql = "CAST($sql AS $castType)";
+            }
+        }
+
+        return $sql;
     }
 
     /**
@@ -709,18 +864,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function setIsFresh(?bool $isFresh = null): void
     {
         $this->_isFresh = $isFresh;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getGroup(): ?FieldGroup
-    {
-        if (!$this->groupId) {
-            return null;
-        }
-
-        return Craft::$app->getFields()->getGroupById($this->groupId);
     }
 
     /**
@@ -774,7 +917,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         // Set the field context if it’s not set
         if (!$this->context) {
-            $this->context = Craft::$app->getContent()->fieldContext;
+            $this->context = Craft::$app->getFields()->fieldContext;
         }
 
         return parent::beforeSave($isNew);

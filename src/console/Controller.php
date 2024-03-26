@@ -505,7 +505,10 @@ class Controller extends YiiController
      */
     public function writeJson(string $file, mixed $value): void
     {
-        $json = Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
-        $this->writeToFile($file, "$json\n");
+        $file = FileHelper::relativePath($file);
+        $description = file_exists($file) ? "Updating `$file`" : "Creating `$file`";
+        $this->do($description, function() use ($file, $value) {
+            Json::encodeToFile($file, $value);
+        });
     }
 }

@@ -11,6 +11,7 @@
 
 {% set elementInstance = craft.app.elements.createElement(elementType) %}
 {% set context = context is defined ? context : 'index' %}
+{% set isAdministrative = context in ['index', 'embedded-index'] %}
 {% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementInstance.hasStatuses()) %}
 {% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
 {% if showSiteMenu is same as ('auto') %}
@@ -18,7 +19,7 @@
 {% endif %}
 {% set idPrefix = "elementtoolbar#{random()}-" %}
 
-{% if showStatusMenu or context == 'index' %}
+{% if showStatusMenu or isAdministrative %}
     <div>
         <label id="{{ idPrefix }}status-label" class="visually-hidden">{{ "Status"|t('app') }}</label>
         <button id="{{ idPrefix }}status-button" aria-labelledby="{{ idPrefix }}status-label" type="button" class="btn menubtn statusmenubtn"><span class="status all"></span>{{ "All"|t('app') }}</button>
@@ -29,12 +30,13 @@
                     {% for status, info in elementInstance.statuses() %}
                         {% set label = info.label ?? info %}
                         {% set color = info.color ?? '' %}
+                        {% set color = color is instance of ('craft\\enums\\Color') ? color.value : color %}
                         <li><a data-status="{{ status }}"><span class="status {{ status }} {{ color }}"></span>{{ label }}</a></li>
                     {% endfor %}
                 {% endif %}
             </ul>
-            {% if context == 'index' %}
-                {% if showStatusMenu %}<hr class="padded">{% endif %}
+            {% if isAdministrative %}
+                {% if showStatusMenu %}<hr class="padded" role="presentation">{% endif %}
                 <ul class="padded">
                     {% if canHaveDrafts ?? false %}
                         <li><a data-drafts><span class="icon" data-icon="draft" aria-hidden="true"></span>{{ 'Drafts'|t('app') }}</a></li>

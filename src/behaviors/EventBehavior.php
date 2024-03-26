@@ -26,8 +26,8 @@ class EventBehavior extends Behavior
      * @param array $config
      */
     public function __construct(
-        private array $events,
-        private bool $once = false,
+        private readonly array $events,
+        private readonly bool $once = false,
         array $config = [],
     ) {
         if ($this->once) {

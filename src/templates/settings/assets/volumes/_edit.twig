@@ -9,9 +9,10 @@
     id: 'name',
     name: 'name',
     value: volume.name,
-    errors: volume.getErrors('name'),
     autofocus: true,
     required: true,
+    errors: volume.getErrors('name'),
+    data: {'error-key': 'name'},
 }) }}
 
 {{ forms.textField({
@@ -22,8 +23,9 @@
     autocorrect: false,
     autocapitalize: false,
     value: volume.handle,
-    errors: volume.getErrors('handle'),
     required: true,
+    errors: volume.getErrors('handle'),
+    data: {'error-key': 'handle'},
 }) }}
 
 <hr>
@@ -37,6 +39,17 @@
     value: volume.getFsHandle(false),
     options: fsOptions,
     errors: volume.getErrors('fsHandle'),
+    data: {'error-key': 'fsHandle'},
+}) }}
+
+{{ forms.textField({
+    label: 'Subpath'|t('app'),
+    instructions: 'Where assets should be stored on the filesystem.'|t('app'),
+    id: 'subpath',
+    name: 'subpath',
+    value: volume.getSubpath(false),
+    errors: volume.getErrors('subpath'),
+    data: {'error-key': 'subpath'},
 }) }}
 
 {{ forms.fsField({
@@ -48,6 +61,7 @@
     value: volume.transformFsHandle(false),
     options: [{label: 'Same as asset filesystem'|t('app'), value: null}]|merge(craft.cp.getFsOptions()),
     errors: volume.getErrors('transformFsHandle'),
+    data: {'error-key': 'transformFsHandle'},
 }) }}
 
 {{ forms.textField({
@@ -57,17 +71,20 @@
     name: 'transformSubpath',
     value: volume.transformSubpath,
     errors: volume.getErrors('transformSubpath'),
+    data: {'error-key': 'transformSubpath'},
 }) }}
 
 {% if craft.app.getIsMultiSite() %}
     <hr>
 
     {{ forms.selectField({
-        label: 'Title Translation Method'|t('app'),
-        instructions: 'How should {type} titles be translated?'|t('app', {
-            type: lowerTypeName,
+        label: '{name} Translation Method'|t('app', {
+            name: 'Title'|t('app'),
         }),
-        id: 'translation-method',
+        instructions: 'How should {name} values be translated?'|t('app', {
+            name: 'Title'|t('app'),
+        }),
+        id: 'title-translation-method',
         name: 'titleTranslationMethod',
         options: [
             { value: 'none', label: 'Not translatable'|t('app') },
@@ -78,19 +95,59 @@
         ]|filter,
         value: volume.titleTranslationMethod,
         toggle: true,
-        targetPrefix: 'translation-method-'
+        targetPrefix: 'title-translation-method-'
     }) }}
 
-    <div id="translation-method-custom" {% if volume.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+    <div id="title-translation-method-custom" {% if volume.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
         {{ forms.textField({
-            label: 'Title Translation Key Format'|t('app'),
-            instructions: 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'|t('app', {
-                type: typeName,
+            label: '{name} Translation Key Format'|t('app', {
+                name: 'Title'|t('app'),
             }),
-            id: 'translation-key-format',
+            instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+                name: 'Title'|t('app'),
+            }),
+            id: 'title-translation-key-format',
             name: 'titleTranslationKeyFormat',
             value: volume.titleTranslationKeyFormat,
-            errors: volume.getErrors('titleTranslationKeyFormat')
+            errors: volume.getErrors('titleTranslationKeyFormat'),
+            data: {'error-key': 'titleTranslationKeyFormat'},
+        }) }}
+    </div>
+
+    {{ forms.selectField({
+        label: '{name} Translation Method'|t('app', {
+            name: 'Alternative Text'|t('app'),
+        }),
+        instructions: 'How should {name} values be translated?'|t('app', {
+            name: 'Alternative Text'|t('app'),
+        }),
+        id: 'alt-translation-method',
+        name: 'altTranslationMethod',
+        options: [
+            { value: 'none', label: 'Not translatable'|t('app') },
+            { value: 'site', label: 'Translate for each site'|t('app') },
+            { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
+            { value: 'language', label: 'Translate for each language'|t('app') },
+            { value: 'custom', label: 'Custom…'|t('app') },
+        ]|filter,
+        value: volume.altTranslationMethod,
+        toggle: true,
+        targetPrefix: 'alt-translation-method-'
+    }) }}
+
+    <div id="alt-translation-method-custom" {% if volume.altTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+        {{ forms.textField({
+            label: '{name} Translation Key Format'|t('app', {
+                name: 'Alternative Text'|t('app'),
+            }),
+            instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+                name: 'Alternative Text'|t('app'),
+            }),
+            id: 'alt-translation-key-format',
+            name: 'altTranslationKeyFormat',
+            value: volume.altTranslationKeyFormat,
+            errors: volume.getErrors('altTranslationKeyFormat'),
+            data: {'error-key': 'altTranslationKeyFormat'},
         }) }}
     </div>
 {% endif %}

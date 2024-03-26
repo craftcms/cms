@@ -38,6 +38,17 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
     }
 
     /**
+     * Returns whether the element can be included multiple times.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function isMultiInstance(): bool
+    {
+        return false;
+    }
+
+    /**
      * Returns whether the element can have a custom width.
      *
      * @return bool

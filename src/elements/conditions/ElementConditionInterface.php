@@ -10,18 +10,28 @@ namespace craft\elements\conditions;
 use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\models\FieldLayout;
 
 /**
  * ElementConditionInterface defines the common interface to be implemented by element conditions.
  *
  * A base implementation is provided by [[ElementCondition]].
  *
+ * @mixin ElementCondition
+ * @phpstan-require-extends ElementCondition
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @mixin ElementCondition
  */
 interface ElementConditionInterface extends ConditionInterface
 {
+    /**
+     * Returns the possible field layouts that the condition could be working with.
+     *
+     * @return FieldLayout[]
+     * @since 5.0.0
+     */
+    public function getFieldLayouts(): array;
+
     /**
      * Modifies a given query based on the configured condition rules.
      *

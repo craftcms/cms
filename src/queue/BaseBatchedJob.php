@@ -120,6 +120,12 @@ abstract class BaseBatchedJob extends BaseJob
         $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
         $startMemory = $memoryLimit != -1 ? memory_get_usage() : null;
 
+        if ($this->itemOffset === 0) {
+            $this->before();
+        }
+
+        $this->beforeBatch();
+
         $i = 0;
 
         foreach ($items as $item) {
@@ -141,11 +147,15 @@ abstract class BaseBatchedJob extends BaseJob
             }
         }
 
+        $this->afterBatch();
+
         // Spawn another job if there are more items
         if ($this->itemOffset < $this->totalItems()) {
             $nextJob = clone $this;
             $nextJob->batchIndex++;
             QueueHelper::push($nextJob, $this->priority, 0, $this->ttr, $queue);
+        } else {
+            $this->after();
         }
     }
 
@@ -155,6 +165,42 @@ abstract class BaseBatchedJob extends BaseJob
      * @param mixed $item
      */
     abstract protected function processItem(mixed $item): void;
+
+    /**
+     * Does things before the first item of the first batch.
+     *
+     * @since 5.0.0
+     */
+    protected function before(): void
+    {
+    }
+
+    /**
+     * Does things after the last item of the last batch.
+     *
+     * @since 5.0.0
+     */
+    protected function after(): void
+    {
+    }
+
+    /**
+     * Does things before the first item of the current batch.
+     *
+     * @since 5.0.0
+     */
+    protected function beforeBatch(): void
+    {
+    }
+
+    /**
+     * Does things after the last item of the current batch.
+     *
+     * @since 5.0.0
+     */
+    protected function afterBatch(): void
+    {
+    }
 
     /**
      * @inheritdoc

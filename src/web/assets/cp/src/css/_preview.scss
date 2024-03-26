@@ -10,7 +10,7 @@
   z-index: 100;
 
   & > header {
-    padding: 8px 24px;
+    padding: 5px 24px;
     background-color: var(--gray-100);
     box-shadow: 0 1px 0 transparentize($grey700, 0.8);
     box-sizing: border-box;
@@ -28,7 +28,7 @@
         backdrop-filter: blur(10px);
 
         & + .lp-editor {
-          padding-top: #{10 + 34 + 10 + 24}px;
+          padding-top: #{44 + 24}px;
         }
       }
     }
@@ -111,7 +111,7 @@
       padding-top: 0;
 
       @supports (backdrop-filter: blur(10px)) {
-        padding-top: 50px;
+        padding-top: 44px;
       }
     }
 
@@ -200,12 +200,12 @@
       padding-top: 0 !important;
       position: relative;
       top: 0;
-      height: calc(100% - 50px);
+      height: calc(100% - 44px);
       width: 100%;
       background-color: var(--gray-100);
 
       @supports (backdrop-filter: blur(10px)) {
-        top: 50px;
+        top: 44px;
       }
 
       // Preview container
@@ -228,7 +228,9 @@
         z-index: 1;
         background-image: url(../images/preview/chrome-phone-top.svg),
           url(../images/preview/chrome-phone-bottom.svg);
-        background-position: top center, bottom center;
+        background-position:
+          top center,
+          bottom center;
         background-repeat: no-repeat;
         background-size: contain;
         background-color: #fff;

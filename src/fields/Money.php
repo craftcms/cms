@@ -10,34 +10,32 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\fields\conditions\NumberFieldConditionRule;
+use craft\fields\conditions\MoneyFieldConditionRule;
 use craft\gql\types\Money as MoneyType;
+use craft\helpers\Cp;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\MoneyHelper;
 use craft\validators\MoneyValidator;
 use GraphQL\Type\Definition\Type;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
+use yii\db\Schema;
 
 /**
  * Money field type
  *
  * @property-read array $contentGqlMutationArgumentType
  * @property-read array[] $elementValidationRules
- * @property-read string[] $contentColumnType
  * @property-read null|string $settingsHtml
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Money extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Money extends Field implements InlineEditableFieldInterface, SortableFieldInterface
 {
     /**
      * @inheritdoc
@@ -50,7 +48,15 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function icon(): string
+    {
+        return 'dollar-sign';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function phpType(): string
     {
         return sprintf('\\%s', MoneyLibrary::class);
     }
@@ -146,22 +152,31 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings.twig', [
             'field' => $this,
             'currencies' => $this->_isoCurrencies,
-            'subUnits' => $this->_isoCurrencies->subunitFor(new Currency($this->currency)),
+            'subUnits' => $this->subunits(),
         ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
+    public static function dbType(): string
     {
-        return Db::getNumericalColumnType($this->min, $this->max, 0);
+        return Schema::TYPE_DECIMAL;
     }
 
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    {
+        $valueSql = static::valueSql($instances);
+        return Db::parseMoneyParam($valueSql, $instances[0]->currency, $value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof MoneyLibrary) {
             return $value;
@@ -235,7 +250,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
 
@@ -250,28 +265,23 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
         $decimals = null;
 
         if ($value instanceof MoneyLibrary) {
-            $decimals = $this->_isoCurrencies->subunitFor($value->getCurrency());
+            $decimals = $this->subunits($value->getCurrency());
             $value = MoneyHelper::toNumber($value);
         }
 
-        if ($decimals === null) {
-            $decimals = $this->_isoCurrencies->subunitFor(new Currency($this->currency));
-        }
+        $decimals = $decimals ?? $this->subunits();
 
         $defaultValue = null;
         if (isset($this->defaultValue)) {
             $defaultValue = MoneyHelper::toNumber(new MoneyLibrary($this->defaultValue, new Currency($this->currency)));
         }
 
-        $currencyLabel = Craft::t('app', '({currencyCode}) {currencySymbol}', [
-            'currencyCode' => $this->currency,
-            'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
-        ]);
-
-        return $view->renderTemplate('_components/fieldtypes/Money/input.twig', [
+        return Cp::moneyInputHtml([
             'id' => $this->getInputId(),
+            'name' => $this->handle,
+            'size' => $this->size,
             'currency' => $this->currency,
-            'currencyLabel' => $currencyLabel,
+            'currencyLabel' => $this->currencyLabel(),
             'showCurrency' => $this->showCurrency,
             'decimals' => $decimals,
             'defaultValue' => $defaultValue,
@@ -279,6 +289,29 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             'field' => $this,
             'value' => $value,
         ]);
+    }
+
+    /**
+     * @return string
+     * @since 5.0.0
+     */
+    public function currencyLabel(): string
+    {
+        return Craft::t('app', '({currencyCode}) {currencySymbol}', [
+            'currencyCode' => $this->currency,
+            'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
+        ]);
+    }
+
+    /**
+     * @param Currency|null $currency
+     * @return int
+     * @since 5.0.0
+     */
+    public function subunits(?Currency $currency = null): int
+    {
+        $currency = $currency ?? new Currency($this->currency);
+        return $this->_isoCurrencies->subunitFor($currency);
     }
 
     /**
@@ -296,29 +329,15 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      */
     public function getElementConditionRuleType(): array|string|null
     {
-        return NumberFieldConditionRule::class;
+        return MoneyFieldConditionRule::class;
     }
 
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         return MoneyHelper::toString($value) ?: '';
-    }
-
-    /**
-     * @param ElementQueryInterface $query
-     * @param mixed $value
-     * @return void
-     */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
-    {
-        /** @var ElementQuery $query */
-        if ($value !== null) {
-            $column = ElementHelper::fieldColumnFromField($this);
-            $query->subQuery->andWhere(Db::parseMoneyParam("content.$column", $this->currency, $value));
-        }
     }
 
     /**

@@ -19,6 +19,14 @@ use craft\models\FieldLayout;
 interface FieldLayoutProviderInterface
 {
     /**
+     * Returns the provider’s handle, which could be used to identify custom fields with ambiguous handles.
+     *
+     * @return string|null
+     * @since 5.0.0
+     */
+    public function getHandle(): ?string;
+
+    /**
      * Returns the field layout defined by this component.
      *
      * @return FieldLayout

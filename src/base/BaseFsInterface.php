@@ -104,18 +104,20 @@ interface BaseFsInterface
      *
      * @param string $path The old path of the file, relative to the source’s root
      * @param string $newPath The new path of the file, relative to the source’s root
+     * @param array $config Additional config options to pass on
      * @throws FsException
      */
-    public function renameFile(string $path, string $newPath): void;
+    public function renameFile(string $path, string $newPath, array $config = []): void;
 
     /**
      * Copies a file.
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param string $newPath The path of the new file, relative to the source’s root
+     * @param array $config Additional config options to pass on
      * @throws FsException
      */
-    public function copyFile(string $path, string $newPath): void;
+    public function copyFile(string $path, string $newPath, array $config = []): void;
 
     /**
      * Gets a stream ready for reading by a file's URI.

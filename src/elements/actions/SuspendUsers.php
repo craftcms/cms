@@ -42,9 +42,9 @@ class SuspendUsers extends ElementAction
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: true,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                const \$element = \$selectedItems.eq(i).find('.element');
+        validateSelection: (selectedItems, elementIndex) => {
+            for (let i = 0; i < selectedItems.length; i++) {
+                const \$element = selectedItems.eq(i).find('.element');
                 if (
                     !Garnish.hasAttr(\$element, 'data-can-suspend') ||
                     Garnish.hasAttr(\$element, 'data-suspended') ||
@@ -83,7 +83,11 @@ JS;
 
         $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
             try {
-                return $usersService->canSuspend($currentUser, $user) && $usersService->suspendUser($user);
+                if (!$usersService->canSuspend($currentUser, $user)) {
+                    return false;
+                }
+                $usersService->suspendUser($user);
+                return true;
             } catch (Throwable) {
                 return false;
             }

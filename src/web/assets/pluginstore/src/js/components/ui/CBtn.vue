@@ -203,8 +203,8 @@
         return this.kind === 'secondary'
           ? 'interactive'
           : !this.outline
-          ? 'text-inverse'
-          : 'interactive-' + this.kind;
+            ? 'text-inverse'
+            : 'interactive-' + this.kind;
       },
 
       animationColorHover() {

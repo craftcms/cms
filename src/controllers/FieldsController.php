@@ -8,13 +8,23 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Chippable;
+use craft\base\Colorable;
+use craft\base\CpEditable;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\base\FieldLayoutProviderInterface;
+use craft\base\Iconic;
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
+use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\models\FieldGroup;
+use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
@@ -24,8 +34,7 @@ use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
 /**
- * The FieldsController class is a controller that handles various field and field group related tasks such as saving
- * and deleting both fields and field groups.
+ * The FieldsController class is a controller that handles various field-related tasks.
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -48,59 +57,6 @@ class FieldsController extends Controller
         return true;
     }
 
-    // Groups
-    // -------------------------------------------------------------------------
-
-    /**
-     * Saves a field group.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     */
-    public function actionSaveGroup(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $fieldsService = Craft::$app->getFields();
-        $groupId = $this->request->getBodyParam('id');
-
-        if ($groupId) {
-            $group = $fieldsService->getGroupById($groupId);
-            if (!$group) {
-                throw new BadRequestHttpException("Invalid field group ID: $groupId");
-            }
-        } else {
-            $group = new FieldGroup();
-        }
-
-        $group->name = $this->request->getRequiredBodyParam('name');
-
-        if (!$fieldsService->saveGroup($group)) {
-            return $this->asModelFailure($group);
-        }
-
-        return $this->asModelSuccess($group, modelName: 'group');
-    }
-
-    /**
-     * Deletes a field group.
-     *
-     * @return Response
-     */
-    public function actionDeleteGroup(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $groupId = $this->request->getRequiredBodyParam('id');
-        $success = Craft::$app->getFields()->deleteGroupById($groupId);
-
-        return $success ?
-            $this->asSuccess(Craft::t('app', 'Group deleted.')) :
-            $this->asFailure();
-    }
-
     // Fields
     // -------------------------------------------------------------------------
 
@@ -109,18 +65,11 @@ class FieldsController extends Controller
      *
      * @param int|null $fieldId The field’s ID, if editing an existing field
      * @param FieldInterface|null $field The field being edited, if there were any validation errors
-     * @param int|null $groupId The default group ID that the field should be saved in
      * @param string|null $type The field type to use by default
      * @return Response
-     * @throws NotFoundHttpException if the requested field/field group cannot be found
-     * @throws ServerErrorHttpException if no field groups exist
      */
-    public function actionEditField(
-        ?int $fieldId = null,
-        ?FieldInterface $field = null,
-        ?int $groupId = null,
-        ?string $type = null,
-    ): Response {
+    public function actionEditField(?int $fieldId = null, ?FieldInterface $field = null, ?string $type = null): Response
+    {
         $this->requireAdmin();
 
         $fieldsService = Craft::$app->getFields();
@@ -166,17 +115,33 @@ class FieldsController extends Controller
         $fieldTypeOptions = [];
         $foundCurrent = false;
         $missingFieldPlaceholder = null;
+        $multiInstanceTypesOnly = (bool)$this->request->getParam('multiInstanceTypesOnly');
 
         foreach ($allFieldTypes as $class) {
             $isCurrent = $class === ($field instanceof MissingField ? $field->expectedType : get_class($field));
             $foundCurrent = $foundCurrent || $isCurrent;
 
-            if ($isCurrent || $class::isSelectable()) {
+            if (
+                $isCurrent ||
+                (
+                    $class::isSelectable() &&
+                    (!$multiInstanceTypesOnly || $class::isMultiInstance())
+                )
+            ) {
                 $compatible = $isCurrent || in_array($class, $compatibleFieldTypes, true);
-                $fieldTypeOptions[] = [
+                $option = [
+                    'icon' => $class::icon(),
                     'value' => $class,
-                    'label' => $class::displayName() . ($compatible ? '' : ' ⚠️'),
                 ];
+                if ($compatible) {
+                    $option['label'] = $class::displayName();
+                } else {
+                    $option['labelHtml'] = Html::beginTag('div', ['class' => 'inline-flex']) .
+                        Html::tag('span', Html::encode($class::displayName())) .
+                        Html::tag('span', Cp::iconSvg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]) .
+                        Html::endTag('div');
+                }
+                $fieldTypeOptions[] = $option;
             }
         }
 
@@ -192,63 +157,8 @@ class FieldsController extends Controller
             }
         }
 
-        // Groups
-        // ---------------------------------------------------------------------
-
-        $allGroups = $fieldsService->getAllGroups();
-
-        if (empty($allGroups)) {
-            throw new ServerErrorHttpException('No field groups exist');
-        }
-
-        if ($groupId === null && isset($field->groupId)) {
-            $groupId = $field->groupId;
-        }
-
-        if ($groupId) {
-            $fieldGroup = $fieldsService->getGroupById($groupId);
-            if ($fieldGroup === null) {
-                throw new NotFoundHttpException('Field group not found');
-            }
-        } elseif (!$field->id && !$field->hasErrors()) {
-            $fieldGroup = reset($allGroups);
-        } else {
-            $fieldGroup = null;
-        }
-
-        $groupOptions = [];
-
-        if (!$fieldGroup) {
-            $groupOptions[] = ['value' => '', 'label' => ''];
-        }
-
-        foreach ($allGroups as $group) {
-            $groupOptions[] = [
-                'value' => $group->id,
-                'label' => $group->name,
-            ];
-        }
-
         // Page setup + render
         // ---------------------------------------------------------------------
-
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings'),
-            ],
-            [
-                'label' => Craft::t('app', 'Fields'),
-                'url' => UrlHelper::url('settings/fields'),
-            ],
-        ];
-
-        if ($fieldGroup) {
-            $crumbs[] = [
-                'label' => Craft::t('site', $fieldGroup->name),
-                'url' => UrlHelper::url('settings/fields/' . $groupId),
-            ];
-        }
 
         if ($fieldId !== null) {
             $title = trim($field->name) ?: Craft::t('app', 'Edit Field');
@@ -256,29 +166,141 @@ class FieldsController extends Controller
             $title = Craft::t('app', 'Create a new field');
         }
 
-        $js = <<<JS
-new Craft.FieldSettingsToggle('#type', '#settings', 'types[__TYPE__]', {
-    wrapWithTypeClassDiv: true
+        $response = $this->asCpScreen()
+            ->title($title)
+            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
+            ->addCrumb(Craft::t('app', 'Fields'), 'settings/fields')
+            ->action('fields/save-field')
+            ->redirectUrl('settings/fields')
+            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => 'settings/fields/edit/{id}',
+                'shortcut' => true,
+                'retainScroll' => true,
+            ])
+            ->addAltAction(Craft::t('app', 'Save and add another'), [
+                'shortcut' => true,
+                'shift' => true,
+                'params' => ['addAnother' => 1],
+            ])
+            ->editUrl($field->id ? "settings/fields/edit/$field->id" : null)
+            ->contentTemplate('settings/fields/_edit.twig', compact(
+                'fieldId',
+                'field',
+                'fieldTypeOptions',
+                'missingFieldPlaceholder',
+                'supportedTranslationMethods',
+            ))
+            ->prepareScreen(function() {
+                $view = Craft::$app->getView();
+                $view->registerAssetBundle(FieldSettingsAsset::class);
+                $view->registerJsWithVars(fn($typeId, $settingsId, $namespace) => <<<JS
+new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
+  wrapWithTypeClassDiv: true
 });
-JS;
+JS, [
+                    $view->namespaceInputId('type'),
+                    $view->namespaceInputId('settings'),
+                    $view->namespaceInputName('types[__TYPE__]'),
+                ]);
+            });
 
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(FieldSettingsAsset::class);
-        $view->registerJs($js);
+        if ($field->id) {
+            $response
+                ->addAltAction(Craft::t('app', 'Delete'), [
+                    'action' => 'fields/delete-field',
+                    'redirect' => 'settings/fields',
+                    'destructive' => true,
+                    'confirm' => Craft::t('app', 'Are you sure you want to delete “{name}”?', [
+                        'name' => $field->name,
+                    ]),
+                ])
+                ->metaSidebarHtml(Cp::metadataHtml([
+                    Craft::t('app', 'ID') => $field->id,
+                    Craft::t('app', 'Used by') => function() use ($fieldsService, $field) {
+                        $layouts = $fieldsService->findFieldUsages($field);
+                        if (empty($layouts)) {
+                            return Html::tag('i', Craft::t('app', 'No usages'));
+                        }
 
-        return $this->renderTemplate('settings/fields/_edit.twig', compact(
-            'fieldId',
-            'field',
-            'allFieldTypes',
-            'fieldTypeOptions',
-            'missingFieldPlaceholder',
-            'supportedTranslationMethods',
-            'compatibleFieldTypes',
-            'groupId',
-            'groupOptions',
-            'crumbs',
-            'title'
-        ));
+                        /** @var FieldLayout[][] $layoutsByType */
+                        $layoutsByType = ArrayHelper::index($layouts,
+                            fn(FieldLayout $layout) => $layout->uid,
+                            [fn(FieldLayout $layout) => $layout->type ?? '__UNKNOWN__'],
+                        );
+                        /** @var FieldLayout[] $unknownLayouts */
+                        $unknownLayouts = ArrayHelper::remove($layoutsByType, '__UNKNOWN__');
+                        /** @var FieldLayout[] $layoutsWithProviders */
+                        $layoutsWithProviders = [];
+
+                        // re-fetch as many of these as we can from the element types,
+                        // so they have a chance to supply the layout providers
+                        foreach ($layoutsByType as $type => &$typeLayouts) {
+                            /** @var string|ElementInterface $type */
+                            /** @phpstan-ignore-next-line */
+                            foreach ($type::fieldLayouts(null) as $layout) {
+                                if (isset($typeLayouts[$layout->uid]) && $layout->provider instanceof Chippable) {
+                                    $layoutsWithProviders[] = $layout;
+                                    unset($typeLayouts[$layout->uid]);
+                                }
+                            }
+                        }
+                        unset($typeLayouts);
+
+                        $labels = [];
+                        $items = array_map(function(FieldLayout $layout) use (&$labels) {
+                            /** @var FieldLayoutProviderInterface&Chippable $provider */
+                            $provider = $layout->provider;
+                            $label = $labels[] = $provider->getUiLabel();
+                            $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
+                            $icon = $provider instanceof Iconic ? $provider->getIcon() : null;
+
+                            $labelHtml = Html::beginTag('span', [
+                                'class' => ['flex', 'flex-nowrap', 'gap-s'],
+                            ]);
+                            if ($icon) {
+                                $labelHtml .= Html::tag('div', Cp::iconSvg($icon), [
+                                    'class' => array_filter([
+                                        'cp-icon',
+                                        'small',
+                                        $provider instanceof Colorable ? $provider->getColor()?->value : null,
+                                    ]),
+                                ]);
+                            }
+                            $labelHtml .= Html::tag('span', Html::encode($label)) .
+                                Html::endTag('span');
+
+                            return $url ? Html::a($labelHtml, $url) : $labelHtml;
+                        }, $layoutsWithProviders);
+
+                        // sort by label
+                        array_multisort($labels, SORT_ASC, $items);
+
+                        foreach ($layoutsByType as $type => $typeLayouts) {
+                            // any remaining layouts for this type?
+                            if (!empty($typeLayouts)) {
+                                /** @var string|ElementInterface $type */
+                                $items[] = Craft::t('app', '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
+                                    'total' => count($typeLayouts),
+                                    'type' => $type::lowerDisplayName(),
+                                ]);
+                            }
+                        }
+
+                        if (!empty($unknownLayouts)) {
+                            $items[] = Craft::t('app', '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
+                                'total' => count($unknownLayouts),
+                                'type' => Craft::t('app', 'unknown'),
+                            ]);
+                        }
+
+                        return Html::ul($items, [
+                            'encode' => false,
+                        ]);
+                    },
+                ]));
+        }
+
+        return $response;
     }
 
     /**
@@ -336,7 +358,6 @@ JS;
             'type' => $type,
             'id' => $fieldId,
             'uid' => $fieldUid,
-            'groupId' => $this->request->getRequiredBodyParam('group'),
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'columnSuffix' => $oldField->columnSuffix ?? null,
@@ -344,30 +365,24 @@ JS;
             'searchable' => (bool)$this->request->getBodyParam('searchable', true),
             'translationMethod' => $this->request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->request->getBodyParam('translationKeyFormat'),
-            'settings' => $this->request->getBodyParam('types.' . $type),
+            'settings' => $this->request->getBodyParam(sprintf('types.%s', Html::id($type))),
         ]);
 
         if (!$fieldsService->saveField($field)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save field.'));
-
-            // Send the field back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'field' => $field,
-            ]);
-
-            return null;
+            return $this->asModelFailure($field, Craft::t('app', 'Couldn’t save field.'), 'field');
         }
-
-        $this->setSuccessFlash(Craft::t('app', 'Field saved.'));
 
         if ($this->request->getParam('addAnother')) {
-            return $this->redirect(UrlHelper::cpUrl('settings/fields/new', [
-                'groupId' => $field->groupId,
+            $redirect = UrlHelper::cpUrl('settings/fields/new', [
                 'type' => $field::class,
-            ]));
+            ]);
+        } else {
+            $redirect = null;
         }
 
-        return $this->redirectToPostedUrl($field);
+        return $this->asModelSuccess($field, Craft::t('app', 'Field saved.'), 'field', [
+            'selectorHtml' => Cp::layoutElementSelectorHtml(new CustomField($field), true),
+        ], $redirect);
     }
 
     /**
@@ -422,6 +437,27 @@ JS;
     }
 
     /**
+     * Renders a field layout element’s settings.
+     *
+     * @since 5.0.0
+     */
+    public function actionRenderLayoutElementSettings(): Response
+    {
+        $element = Craft::$app->getFields()->createLayoutElement($this->_fldComponentConfig());
+        $namespace = StringHelper::randomString(10);
+
+        $view = Craft::$app->getView();
+        $html = $view->namespaceInputs(fn() => $element->getSettingsHtml(), $namespace);
+
+        return $this->asJson([
+            'settingsHtml' => $html,
+            'namespace' => $namespace,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
+    }
+
+    /**
      * Applies a field layout element’s settings.
      *
      * @return Response
@@ -432,10 +468,50 @@ JS;
     {
         $element = Craft::$app->getFields()->createLayoutElement($this->_fldComponentConfig());
 
+        if ($element instanceof CustomField) {
+            $field = $element->getField();
+            if ($field instanceof Field) {
+                $field->validateHandleUniqueness = false;
+            }
+            if (!$field->validate(['name', 'handle', 'instructions'])) {
+                if ($field->hasErrors('name')) {
+                    $field->addErrors(['label' => $field->getErrors('name')]);
+                    $field->clearErrors('name');
+                }
+                return $this->asModelFailure($field, Craft::t('app', 'Couldn’t save field.'), 'field');
+            }
+        }
+
+        $selectorHtml = Cp::layoutElementSelectorHtml($element);
+
         return $this->asJson([
             'config' => ['type' => get_class($element)] + $element->toArray(),
-            'selectorHtml' => $element->selectorHtml(),
+            'selectorHtml' => $selectorHtml,
             'hasConditions' => $element->hasConditions(),
+        ]);
+    }
+
+    /**
+     * Returns data formatted for AdminTable vue component
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionTableData(): Response
+    {
+        $this->requireAcceptsJson();
+
+        $fieldsService = Craft::$app->getFields();
+
+        $page = (int)$this->request->getParam('page', 1);
+        $limit = (int)$this->request->getParam('per_page', 100);
+        $searchTerm = $this->request->getParam('search');
+
+        [$pagination, $tableData] = $fieldsService->getTableData($page, $limit, $searchTerm);
+
+        return $this->asSuccess(data: [
+            'pagination' => $pagination,
+            'data' => $tableData,
         ]);
     }
 
@@ -447,9 +523,15 @@ JS;
     private function _fldComponentConfig(): array
     {
         $config = $this->request->getRequiredBodyParam('config');
-        $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
-        $settingsStr = $this->request->getRequiredBodyParam('settings');
-        parse_str($settingsStr, $settings);
-        return array_merge($config, ArrayHelper::getValue($settings, $settingsNamespace, []));
+        $config['elementType'] = $this->request->getRequiredBodyParam('elementType');
+        $settingsStr = $this->request->getBodyParam('settings');
+
+        if ($settingsStr !== null) {
+            parse_str($settingsStr, $settings);
+            $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
+            $config = array_merge($config, ArrayHelper::getValue($settings, $settingsNamespace, []));
+        }
+
+        return $config;
     }
 }

@@ -3,8 +3,6 @@ import ReactDOM from 'react-dom';
 import 'graphiql/graphiql.css';
 import './graphiql.scss';
 
-require('whatwg-fetch');
-
 function initGraphiQl(domTarget) {
   let attributes = domTarget.attributes;
   let schemas = JSON.parse(attributes.schemas.nodeValue);

@@ -12,9 +12,9 @@ use craft\base\Fs;
 use craft\elements\Asset;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Category as CategoryElement;
+use craft\elements\Entry;
 use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
-use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\User as UserElement;
 use craft\errors\GqlException;
 use craft\gql\base\ObjectType;
@@ -22,7 +22,6 @@ use craft\gql\types\elements\Asset as AssetGqlType;
 use craft\gql\types\elements\Category as CategoryGqlType;
 use craft\gql\types\elements\Entry as EntryGqlType;
 use craft\gql\types\elements\GlobalSet as GlobalSetGqlType;
-use craft\gql\types\elements\MatrixBlock as MatrixBlockGqlType;
 use craft\gql\types\elements\Tag as TagGqlType;
 use craft\gql\types\elements\User as UserGqlType;
 use craft\helpers\Json;
@@ -32,11 +31,9 @@ use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\models\ImageTransform;
-use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\UserGroup;
 use craft\models\Volume;
-use craft\services\Assets;
 use craft\services\ImageTransforms;
 use craft\test\TestCase;
 use DateTime;
@@ -208,29 +205,35 @@ class ElementFieldResolverTest extends TestCase
     }
 
     /**
-     * Test resolving fields on matrix blocks.
+     * Test resolving fields on Matrix entries.
      *
-     * @dataProvider matrixBlockFieldTestDataProvider
+     * @dataProvider matrixEntryFieldTestDataProvider
      * @param string $gqlTypeClass The Gql type class
      * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
+    public function testMatrixEntryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $typeHandle = StringHelper::UUID();
 
         $mockElement = $this->make(
-            MatrixBlockElement::class, [
+            Entry::class, [
                 '__get' => function($property) {
-                    // Assume a content field named 'plainTextField'
-                    return $property == 'firstSubfield' ? 'ok' : $this->$property;
+                    // Assume a content field named 'firstSubfield'
+                    return match ($property) {
+                        'firstSubfield' => 'ok',
+                        'ownerId' => 80,
+                        'typeId' => 99,
+                        default => $this->$property,
+                    };
                 },
                 'fieldId' => 1000,
                 'ownerId' => 80,
                 'typeId' => 99,
+                'getTypeId' => 99,
                 'getType' => function() use ($typeHandle) {
-                    return $this->make(MatrixBlockType::class, ['handle' => $typeHandle]);
+                    return $this->make(EntryType::class, ['handle' => $typeHandle]);
                 },
             ]
         );
@@ -344,7 +347,7 @@ class ElementFieldResolverTest extends TestCase
         }
     }
 
-    public function entryFieldTestDataProvider(): array
+    public static function entryFieldTestDataProvider(): array
     {
         return [
             // Entries
@@ -366,7 +369,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function assetFieldTestDataProvider(): array
+    public static function assetFieldTestDataProvider(): array
     {
         return [
             [AssetGqlType::class, 'missingProperty', false],
@@ -375,7 +378,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function globalSetFieldTestDataProvider(): array
+    public static function globalSetFieldTestDataProvider(): array
     {
         return [
             [GlobalSetGqlType::class, 'missingProperty', false],
@@ -384,7 +387,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function categoryFieldTestDataProvider(): array
+    public static function categoryFieldTestDataProvider(): array
     {
         return [
             [CategoryGqlType::class, 'missingProperty', false],
@@ -397,7 +400,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function tagFieldTestDataProvider(): array
+    public static function tagFieldTestDataProvider(): array
     {
         return [
             [TagGqlType::class, 'missingProperty', false],
@@ -410,24 +413,24 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function matrixBlockFieldTestDataProvider(): array
+    public static function matrixEntryFieldTestDataProvider(): array
     {
         return [
-            [MatrixBlockGqlType::class, 'missingProperty', false],
-            [MatrixBlockGqlType::class, 'firstSubfield', true],
-            [MatrixBlockGqlType::class, 'fieldId', true],
-            [MatrixBlockGqlType::class, 'typeInvalid', false],
-            [MatrixBlockGqlType::class, 'ownerId', true],
-            [MatrixBlockGqlType::class, 'typeId', true],
+            [EntryGqlType::class, 'missingProperty', false],
+            [EntryGqlType::class, 'firstSubfield', true],
+            [EntryGqlType::class, 'fieldId', true],
+            [EntryGqlType::class, 'typeInvalid', false],
+            [EntryGqlType::class, 'ownerId', true],
+            [EntryGqlType::class, 'typeId', true],
             [
-                MatrixBlockGqlType::class, 'typeHandle', function($source) {
+                EntryGqlType::class, 'typeHandle', function($source) {
                     return $source->getType()->handle;
                 },
             ],
         ];
     }
 
-    public function userFieldTestDataProvider(): array
+    public static function userFieldTestDataProvider(): array
     {
         return [
             [UserGqlType::class, 'missingProperty', false],
@@ -441,7 +444,7 @@ class ElementFieldResolverTest extends TestCase
         ];
     }
 
-    public function assetTransformDataProvider(): array
+    public static function assetTransformDataProvider(): array
     {
         return [
             [['width' => 200, 'height' => 200], ['width' => 200, 'height' => 200]],

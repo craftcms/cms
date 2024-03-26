@@ -26,6 +26,9 @@ import './js/Slideout.js';
 import './js/CpScreenSlideout.js';
 import './js/ElementEditorSlideout.js';
 
+// Modals
+import './js/CpModal.js';
+
 // Tabs
 import './js/Tabs.js';
 
@@ -34,7 +37,6 @@ import './js/ElementThumbLoader.js';
 
 // Finally load the remaining files
 import './js/Accordion';
-import './js/AddressesInput.js';
 import './js/AdminTable.js';
 import './js/AssetImageEditor.js';
 import './js/AssetIndex.js';
@@ -44,10 +46,12 @@ import './js/AssetSelectorModal.js';
 import './js/AssetsFieldSettings';
 import './js/AuthManager.js';
 import './js/CP.js';
+import './js/CardsElementIndexView.js';
 import './js/CategoryIndex.js';
 import './js/CategorySelectInput.js';
 import './js/Chart.js';
 import './js/ColorInput.js';
+import './js/ComponentSelectInput.js';
 import './js/CustomizeSourcesModal.js';
 import './js/DataTableSorter.js';
 import './js/DeleteUserModal.js';
@@ -56,6 +60,7 @@ import './js/EditableTable.js';
 import './js/ElementActionTrigger.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
+import './js/ElementTableSorter.js';
 import './js/ElevatedSessionForm.js';
 import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';
@@ -65,11 +70,14 @@ import './js/VolumeFolderSelectorModal.js';
 import './js/FieldToggle.js';
 import './js/Grid.js';
 import './js/HandleGenerator.js';
+import './js/IconPicker.js';
 import './js/ImageUpload.js';
 import './js/InfoIcon.js';
 import './js/LightSwitch.js';
 import './js/Listbox.js';
 import './js/LivePreview.js';
+import './js/LoginForm.js';
+import './js/NestedElementManager.js';
 import './js/PasswordInput.js';
 import './js/Preview.js';
 import './js/PreviewFileModal.js';
@@ -80,7 +88,6 @@ import './js/SlideRuleInput.js';
 import './js/SlugGenerator.js';
 import './js/Structure.js';
 import './js/StructureDrag.js';
-import './js/StructureTableSorter.js';
 import './js/TableElementIndexView.js';
 import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
@@ -88,3 +95,9 @@ import './js/Tooltip.js';
 import './js/Uploader.js';
 import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
+
+// Custom elements
+import './js/CraftGlobalSidebar.js';
+import './js/CraftDisclosure.js';
+import './js/CraftTooltip.js';
+import './js/CraftElementLabel';

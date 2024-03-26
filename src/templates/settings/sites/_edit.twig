@@ -57,14 +57,15 @@
             required: true
         }) }}
 
-        {{ forms.selectizeField({
+        {{ forms.languageMenuField({
             label: "Language"|t('app'),
             instructions: "The language content in this site will use."|t('app'),
             id: 'language',
             name: 'language',
-            value: site.language,
-            options: languageOptions,
+            value: site.getLanguage(false),
+            options: craft.cp.getLanguageOptions(true),
             errors: site.getErrors('language'),
+            includeEnvVars: true,
         }) }}
 
         {% if (craft.app.isMultiSite or not site.id) %}
@@ -95,11 +96,11 @@
 
         <hr>
 
-        {{ forms.checkboxField({
+        {{ forms.lightswitchField({
             label: "This site has its own base URL"|t('app'),
             id: 'has-urls',
             name: 'hasUrls',
-            checked: site.hasUrls,
+            on: site.hasUrls,
             toggle: 'url-settings'
         }) }}
 

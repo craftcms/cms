@@ -72,14 +72,6 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function hasTitles(): bool
     {
         return true;
@@ -138,13 +130,13 @@ class Tag extends Element
     }
 
     /**
-     * @inheritdoc
-     * @since 3.3.0
+     * Returns the GraphQL type name that tags should use, based on their tag group.
+     *
+     * @since 5.0.0
      */
-    public static function gqlTypeNameByContext(mixed $context): string
+    public static function gqlTypeName(TagGroup $tagGroup): string
     {
-        /** @var TagGroup $context */
-        return $context->handle . '_Tag';
+        return sprintf('%s_Tag', $tagGroup->handle);
     }
 
     /**
@@ -159,12 +151,22 @@ class Tag extends Element
 
     /**
      * @inheritdoc
-     * @since 3.5.0
      */
-    public static function gqlMutationNameByContext(mixed $context): string
+    protected static function defineFieldLayouts(?string $source): array
     {
-        /** @var TagGroup $context */
-        return 'save_' . $context->handle . '_Tag';
+        if ($source !== null) {
+            $groups = [];
+            if (preg_match('/^taggroup:(.+)$/', $source, $matches)) {
+                $group = Craft::$app->getTags()->getTagGroupByUid($matches[1]);
+                if ($group) {
+                    $groups[] = $group;
+                }
+            }
+        } else {
+            $groups = Craft::$app->getTags()->getAllTagGroups();
+        }
+
+        return array_map(fn(TagGroup $group) => $group->getFieldLayout(), $groups);
     }
 
     /**
@@ -306,7 +308,7 @@ class Tag extends Element
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this->getGroup());
+        return static::gqlTypeName($this->getGroup());
     }
 
     // Events

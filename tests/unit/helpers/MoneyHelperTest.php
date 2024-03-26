@@ -79,7 +79,7 @@ class MoneyHelperTest extends TestCase
     /**
      * @return array[]
      */
-    public function toStringDataProvider(): array
+    public static function toStringDataProvider(): array
     {
         return [
             [null, false, null],
@@ -92,7 +92,7 @@ class MoneyHelperTest extends TestCase
     /**
      * @return array[]
      */
-    public function toNumberDataProvider(): array
+    public static function toNumberDataProvider(): array
     {
         return [
             [null, false, null],
@@ -105,7 +105,7 @@ class MoneyHelperTest extends TestCase
     /**
      * @return array[]
      */
-    public function toDecimalDataProvider(): array
+    public static function toDecimalDataProvider(): array
     {
         return [
             [Money::USD('123456'), '1234.56'],
@@ -118,7 +118,7 @@ class MoneyHelperTest extends TestCase
     /**
      * @return array
      */
-    public function toMoneyDataProvider(): array
+    public static function toMoneyDataProvider(): array
     {
         return [
             [null, false],

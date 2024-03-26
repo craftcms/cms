@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\elements\db\EagerLoadInfo;
 use DateTime;
 
 /**
@@ -17,6 +18,18 @@ use DateTime;
  */
 trait ElementTrait
 {
+    /**
+     * @var ElementInterface[]|null All elements that the element was queried with.
+     * @since 5.0.0
+     */
+    public ?array $elementQueryResult = null;
+
+    /**
+     * @var EagerLoadInfo|null Info about the eager loading setup used to query this element.
+     * @since 5.0.0
+     */
+    public ?EagerLoadInfo $eagerLoadInfo = null;
+
     /**
      * @var int|null The element’s ID
      */
@@ -65,11 +78,6 @@ trait ElementTrait
      * @var int|null The element’s structure ID
      */
     public ?int $structureId = null;
-
-    /**
-     * @var int|null The element’s content row ID
-     */
-    public ?int $contentId = null;
 
     /**
      * @var bool Whether the element is enabled
@@ -124,6 +132,12 @@ trait ElementTrait
     public ?DateTime $dateDeleted = null;
 
     /**
+     * @var bool|null Whether the element was deleted along with its owner
+     * @since 5.0.0
+     */
+    public ?bool $deletedWithOwner = null;
+
+    /**
      * @var int|null The element’s structure’s root ID
      */
     public ?int $root = null;
@@ -164,11 +178,10 @@ trait ElementTrait
     public bool $propagating = false;
 
     /**
-     * @var bool Whether the element is currently being validated via BaseRelationField::validateRelatedElements()
-     * @since 4.5.10
-     * @deprecated in 4.5.13
+     * @var ElementInterface|null The element that this element is being propagated from.
+     * @since 5.0.0
      */
-    public bool $validatingRelatedElement = false;
+    public ?ElementInterface $propagatingFrom = null;
 
     /**
      * @var bool Whether all element attributes should be propagated across all its supported sites, even if that means
@@ -226,6 +239,13 @@ trait ElementTrait
      * @since 3.2.0
      */
     public bool $previewing = false;
+
+    /**
+     * @var bool Whether the element should definitely be saved, if it’s a nested element being considered
+     * for saving by [[NestedElementManager]].
+     * @since 5.0.0
+     */
+    public bool $forceSave = false;
 
     /**
      * @var bool Whether the element is being hard-deleted.

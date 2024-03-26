@@ -1,13 +1,13 @@
 {% set tableName = tableName ?? '' %}
 {% set instructionId = instructionId ?? "sort-instructions-#{random()}" %}
 
-<div class="tableview{% if context == 'index' %} tablepane{% endif %}">
-    <span class="visually-hidden" data-status-message aria-live="assertive"></span>
+<div class="tableview{% if context in ['index', 'embedded-index'] %} tablepane{% endif %}">
+    <span class="visually-hidden" data-status-message role="status"></span>
     <table class="data fullwidth"{% if structureEditable is defined and structureEditable %} data-structure-id="{{ structure.id }}" data-max-levels="{{ structure.maxLevels }}"{% endif %} data-name="{{ tableName }}">
         <caption class="visually-hidden">{{ tableName }}<span id="{{ instructionId }}" data-sort-instructions>, {{ 'Column headers with buttons are sortable'|t('app') }}</span></caption>
         <thead>
         <tr>
-            {% if showCheckboxes %}
+            {% if selectable %}
                 <th class="checkbox-cell selectallcontainer"></th>
             {% endif %}
             {% for attribute in attributes %}
@@ -18,11 +18,12 @@
                     data: {
                         attribute: attribute[0],
                     },
+                    class: loop.first and not (showHeaderColumn ?? true) ? 'thin' : null,
                 } %}
                     {% if icon %}
                         <span data-icon="{{ icon }}" aria-hidden="true"></span>
                         <span class="visually-hidden">{{ attribute[1].label }}</span>
-                    {% else %}
+                    {% elseif not loop.first or showHeaderColumn ?? true %}
                         {{ attribute[1].label|t('site') }}
                     {% endif %}
                     <div class="spinner"></div>

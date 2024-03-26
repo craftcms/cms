@@ -74,7 +74,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 let $nextOption = $hoverOption
                   .parent()
                   .nextAll()
-                  .find('a:not(.disabled)')
+                  .find('button:not(.disabled)')
                   .first();
                 if ($nextOption.length) {
                   this.focusOption($nextOption);
@@ -94,7 +94,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 let $prevOption = $hoverOption
                   .parent()
                   .prevAll()
-                  .find('a:not(.disabled)')
+                  .find('button:not(.disabled)')
                   .last();
                 if ($prevOption.length) {
                   this.focusOption($prevOption);
@@ -142,10 +142,12 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
     },
 
     // No "add" button
-    getAddElementsBtn: $.noop,
+    getAddElementsBtn: function () {
+      return [];
+    },
 
     getElementSortAxis: function () {
-      return null;
+      return 'x';
     },
 
     searchForTags: function () {
@@ -196,7 +198,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             for (var i = 0; i < response.data.tags.length; i++) {
               $li = $('<li/>').appendTo($ul);
 
-              $('<a data-icon="tag"/>')
+              $('<button class="menu-item" data-icon="tag"/>')
                 .appendTo($li)
                 .text(response.data.tags[i].title)
                 .data('id', response.data.tags[i].id)
@@ -205,10 +207,12 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
             if (!response.data.exactMatch) {
               $li = $('<li/>').appendTo($ul);
-              $('<a data-icon="plus"/>').appendTo($li).text(data.search);
+              $('<button class="menu-item" data-icon="plus"/>')
+                .appendTo($li)
+                .text(data.search);
             }
 
-            $ul.find('a:not(.disabled):first').addClass('hover');
+            $ul.find('button:not(.disabled):first').addClass('hover');
 
             this.searchMenu = new Garnish.Menu($menu, {
               attachToElement: this.$addTagInput,
@@ -244,37 +248,43 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
       var id = $option.data('id');
       var title = $option.text();
 
-      var $element = $('<div/>', {
-        class: 'element small removable',
+      const $element = $('<div/>', {
+        class: 'chip element small removable',
         'data-id': id,
         'data-site-id': this.settings.targetSiteId,
         'data-label': title,
         'data-editable': '1',
-      }).appendTo(this.$elementsContainer);
+      });
+
+      const $li = $('<li/>').appendTo(this.$elementsContainer);
+      $element.appendTo($li);
+
+      var $chipContent = $('<div/>', {
+        class: 'chip-content',
+      }).appendTo($element);
+
+      var $titleContainer = $('<div/>', {
+        class: 'label',
+      }).appendTo($chipContent);
+
+      var $labelLinkContainer = $('<a/>', {
+        class: 'label-link',
+      }).appendTo($titleContainer);
+
+      $('<span/>', {
+        class: 'title',
+        text: title,
+      }).appendTo($labelLinkContainer);
+
+      var $chipActions = $('<div/>', {
+        class: 'chip-actions',
+      }).appendTo($chipContent);
 
       var $input = $('<input/>', {
         type: 'hidden',
         name: this.settings.name + '[]',
         value: id,
-      }).appendTo($element);
-
-      $('<button/>', {
-        class: 'delete icon',
-        title: Craft.t('app', 'Remove'),
-        type: 'button',
-        'aria-label': Craft.t('app', 'Remove {label}', {
-          label: title,
-        }),
-      }).appendTo($element);
-
-      var $titleContainer = $('<div/>', {
-        class: 'label',
-      }).appendTo($element);
-
-      $('<span/>', {
-        class: 'title',
-        text: title,
-      }).appendTo($titleContainer);
+      }).appendTo($chipContent);
 
       this.$elements = this.$elements.add($element);
 

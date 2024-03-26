@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\enums\CmsEdition;
 use craft\errors\WrongEditionException;
 use craft\helpers\Image as ImageHelper;
 use yii\base\Exception;
@@ -35,7 +36,7 @@ class Rebrand
      */
     public function __construct()
     {
-        Craft::$app->requireEdition(Craft::Pro);
+        Craft::$app->requireEdition(CmsEdition::Pro);
     }
 
     /**
@@ -70,7 +71,7 @@ class Rebrand
     }
 
     /**
-     * Returns the logo'sw Image variable, or null if a logo hasn't been uploaded.
+     * Returns the logo variable, or null if a logo hasn't been uploaded.
      *
      * @return Image|null
      */
@@ -80,7 +81,7 @@ class Rebrand
     }
 
     /**
-     * Returns the icons variable, or null if a site icon hasn't been uploaded.
+     * Returns the icon variable, or null if a site icon hasn't been uploaded.
      *
      * @return Image|null
      */
@@ -116,7 +117,7 @@ class Rebrand
     }
 
     /**
-     * Returns the path to a rebrand image by type or false if it hasn't ben uploaded.
+     * Returns the path to a rebrand image by type or false if it hasn't been uploaded.
      *
      * @param string $type logo or image.
      * @return string|false

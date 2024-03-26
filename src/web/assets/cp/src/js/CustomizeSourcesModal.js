@@ -109,7 +109,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.addListener(this.$container, 'submit', 'save');
   },
 
-  buildModal: function (response) {
+  buildModal: async function (response) {
     this.baseSortOptions = response.baseSortOptions;
     this.defaultSortOptions = response.defaultSortOptions;
     this.availableTableAttributes = response.availableTableAttributes;
@@ -121,10 +121,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.userGroups = response.userGroups;
 
     if (response.headHtml) {
-      Craft.appendHeadHtml(response.headHtml);
+      await Craft.appendHeadHtml(response.headHtml);
     }
     if (response.bodyHtml) {
-      Craft.appendBodyHtml(response.bodyHtml);
+      await Craft.appendBodyHtml(response.bodyHtml);
     }
 
     // Create the source item sorter
@@ -170,7 +170,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     const $newHeadingBtn = $('<button/>', {
       type: 'button',
-      class: 'menu-option',
+      class: 'menu-item',
       text: Craft.t('app', 'New heading'),
     }).on('click', () => {
       addSource({
@@ -181,7 +181,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     const $newCustomSourceBtn = $('<button/>', {
       type: 'button',
-      class: 'menu-option',
+      class: 'menu-item',
       text: Craft.t('app', 'New custom source'),
       'data-type': 'custom',
     }).on('click', () => {
@@ -560,7 +560,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     this.modal.$sourceSettingsContainer.scrollTop(0);
   },
 
-  createSettings: function () {},
+  createSettings: async function () {},
 
   getIndexSourceItem: function () {},
 
@@ -617,7 +617,7 @@ Craft.CustomizeSourcesModal.Source =
       return true;
     },
 
-    createSettings: function ($container) {
+    createSettings: async function ($container) {
       Craft.ui
         .createLightswitchField({
           label: Craft.t('app', 'Enabled'),
@@ -732,44 +732,28 @@ Craft.CustomizeSourcesModal.Source =
         return;
       }
 
-      const $columnCheckboxes = $('<div/>');
-      const selectedAttributes = [];
+      const name = `sources[${this.sourceData.key}][tableAttributes][]`;
 
-      $(
-        `<input type="hidden" name="sources[${this.sourceData.key}][tableAttributes][]" value=""/>`
-      ).appendTo($columnCheckboxes);
-
-      // Add the selected columns, in the selected order
-      for (let i = 0; i < this.sourceData.tableAttributes.length; i++) {
-        let [key, label] = this.sourceData.tableAttributes[i];
-        $columnCheckboxes.append(
-          this.createTableColumnOption(key, label, true)
-        );
-        selectedAttributes.push(key);
-      }
-
-      // Add the rest
-      for (let i = 0; i < availableTableAttributes.length; i++) {
-        const [key, label] = availableTableAttributes[i];
-        if (!Craft.inArray(key, selectedAttributes)) {
-          $columnCheckboxes.append(
-            this.createTableColumnOption(key, label, false)
-          );
-        }
-      }
-
-      new Garnish.DragSort($columnCheckboxes.children(), {
-        handle: '.move',
-        axis: 'y',
-      });
+      $('<input/>', {
+        type: 'hidden',
+        name,
+        value: '',
+      }).appendTo($container);
 
       Craft.ui
-        .createField($columnCheckboxes, {
+        .createCheckboxSelectField({
           label: Craft.t('app', 'Default Table Columns'),
           instructions: Craft.t(
             'app',
             'Choose which table columns should be visible for this source by default.'
           ),
+          name,
+          options: availableTableAttributes.map(([key, label]) => ({
+            label,
+            value: key,
+          })),
+          values: this.sourceData.tableAttributes.map(([key]) => key),
+          sortable: true,
         })
         .appendTo($container);
     },
@@ -778,19 +762,6 @@ Craft.CustomizeSourcesModal.Source =
       const attributes = this.modal.availableTableAttributes.slice(0);
       attributes.push(...this.sourceData.availableTableAttributes);
       return attributes;
-    },
-
-    createTableColumnOption: function (key, label, checked) {
-      return $('<div class="customize-sources-table-column"/>')
-        .append('<div class="icon move"/>')
-        .append(
-          Craft.ui.createCheckbox({
-            label: Craft.escapeHtml(label),
-            name: `sources[${this.sourceData.key}][tableAttributes][]`,
-            value: key,
-            checked: checked,
-          })
-        );
     },
 
     getIndexSourceItem: function () {
@@ -808,7 +779,7 @@ Craft.CustomizeSourcesModal.CustomSource =
   Craft.CustomizeSourcesModal.Source.extend({
     $labelInput: null,
 
-    createSettings: function ($container) {
+    createSettings: async function ($container) {
       const $labelField = Craft.ui
         .createTextField({
           label: Craft.t('app', 'Label'),
@@ -843,7 +814,10 @@ Craft.CustomizeSourcesModal.CustomSource =
           }),
         })
         .appendTo($container);
-      Craft.appendBodyHtml(conditionBuilderJs);
+
+      if (conditionBuilderJs) {
+        await Craft.appendBodyHtml(conditionBuilderJs);
+      }
 
       this.createSortField($container);
       this.createTableAttributesField($container);
@@ -945,7 +919,7 @@ Craft.CustomizeSourcesModal.Heading =
       return true;
     },
 
-    createSettings: function ($container) {
+    createSettings: async function ($container) {
       const $labelField = Craft.ui
         .createTextField({
           label: Craft.t('app', 'Heading'),

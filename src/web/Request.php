@@ -837,7 +837,7 @@ class Request extends \yii\web\Request
             // Was a namespace passed?
             $namespace = $this->getHeaders()->get('X-Craft-Namespace');
             if ($namespace) {
-                $params = $params[$namespace] ?? [];
+                $params = ArrayHelper::getValue($params, $namespace, []);
             }
 
             $this->setBodyParams($this->_utf8AllTheThings($params));
@@ -845,6 +845,15 @@ class Request extends \yii\web\Request
         }
 
         return parent::getBodyParams();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setBodyParams($values)
+    {
+        parent::setBodyParams($values);
+        $this->_setBodyParams = false;
     }
 
     /**
@@ -969,6 +978,23 @@ class Request extends \yii\web\Request
         }
 
         return parent::getQueryParams();
+    }
+
+    /**
+     * Returns the named GET parameters, without the path parameter.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getQueryParamsWithoutPath(): array
+    {
+        $params = $this->getQueryParams();
+
+        if ($this->generalConfig->pathParam) {
+            unset($params[$this->generalConfig->pathParam]);
+        }
+
+        return $params;
     }
 
     /**

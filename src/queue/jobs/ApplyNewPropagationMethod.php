@@ -17,7 +17,7 @@ use craft\errors\UnsupportedSiteException;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
-use craft\queue\BaseBatchedJob;
+use craft\queue\BaseBatchedElementJob;
 use craft\services\Structures;
 use Throwable;
 
@@ -29,7 +29,7 @@ use Throwable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.8
  */
-class ApplyNewPropagationMethod extends BaseBatchedJob
+class ApplyNewPropagationMethod extends BaseBatchedElementJob
 {
     /**
      * @var string The element type to use

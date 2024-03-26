@@ -10,9 +10,10 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\fields\conditions\CountryFieldConditionRule;
 use craft\helpers\Cp;
+use yii\db\Schema;
 
 /**
  * Country represents a Country field.
@@ -20,7 +21,7 @@ use craft\helpers\Cp;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.6.0
  */
-class Country extends Field implements PreviewableFieldInterface
+class Country extends Field implements InlineEditableFieldInterface
 {
     /**
      * @inheritdoc
@@ -33,9 +34,25 @@ class Country extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function icon(): string
+    {
+        return 'flag';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function phpType(): string
     {
         return 'string|null';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return Schema::TYPE_STRING;
     }
 
     /**
@@ -49,7 +66,7 @@ class Country extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $options = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
         array_unshift($options, ['label' => ' ', 'value' => '__blank__']);

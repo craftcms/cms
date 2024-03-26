@@ -3,7 +3,7 @@
 namespace craft\base\conditions;
 
 use Craft;
-use craft\enums\PeriodType;
+use craft\enums\TimePeriod;
 use craft\fields\Date;
 use craft\helpers\Cp;
 use craft\helpers\DateRange;
@@ -68,9 +68,9 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
         if (isset($config['attributes']['periodType'])) {
             // Maintain BC with older periodType values
             $config['attributes']['periodType'] = match ($config['attributes']['periodType']) {
-                PeriodType::Minutes => DateRange::PERIOD_MINUTES_AGO,
-                PeriodType::Hours => DateRange::PERIOD_HOURS_AGO,
-                PeriodType::Days => DateRange::PERIOD_DAYS_AGO,
+                TimePeriod::Minutes->value => DateRange::PERIOD_MINUTES_AGO,
+                TimePeriod::Hours->value => DateRange::PERIOD_HOURS_AGO,
+                TimePeriod::Days->value => DateRange::PERIOD_DAYS_AGO,
                 default => $config['attributes']['periodType'],
             };
         }

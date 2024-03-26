@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\UtilityInterface;
 use craft\errors\MigrationException;
+use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
@@ -303,7 +304,7 @@ class UtilitiesController extends Controller
                 'id' => $class::id(),
                 'iconSvg' => $this->_getUtilityIconSvg($class),
                 'displayName' => $class::displayName(),
-                'iconPath' => $class::iconPath(),
+                'iconPath' => $class::icon(),
                 'badgeCount' => $class::badgeCount(),
             ];
         }
@@ -321,23 +322,21 @@ class UtilitiesController extends Controller
     private function _getUtilityIconSvg(string $class): string
     {
         /** @var UtilityInterface|string $class */
-        $iconPath = $class::iconPath();
+        $icon = $class::icon();
 
-        if ($iconPath === null) {
+        if ($icon === null) {
             return $this->_getDefaultUtilityIconSvg($class);
         }
 
-        if (!is_file($iconPath)) {
-            Craft::warning("Utility icon file doesn't exist: $iconPath", __METHOD__);
-            return $this->_getDefaultUtilityIconSvg($class);
+        try {
+            $svg = Cp::iconSvg($icon);
+            if ($svg !== '') {
+                return $svg;
+            }
+        } catch (InvalidArgumentException) {
         }
 
-        if (!FileHelper::isSvg($iconPath)) {
-            Craft::warning("Utility icon file is not an SVG: $iconPath", __METHOD__);
-            return $this->_getDefaultUtilityIconSvg($class);
-        }
-
-        return file_get_contents($iconPath);
+        return $this->_getDefaultUtilityIconSvg($class);
     }
 
     /**
@@ -351,7 +350,7 @@ class UtilitiesController extends Controller
     {
         /** @var string|UtilityInterface $class */
         /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
-        return $this->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
+        return $this->getView()->renderTemplate('_includes/fallback-icon.svg.twig', [
             'label' => $class::displayName(),
         ]);
     }

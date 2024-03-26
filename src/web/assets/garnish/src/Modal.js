@@ -151,10 +151,10 @@ export default Base.extend(
         Garnish.hideModalBackgroundLayers();
 
         if (this.settings.hideOnEsc) {
-          Garnish.uiLayerManager.registerShortcut(
-            Garnish.ESC_KEY,
-            this.hide.bind(this)
-          );
+          Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+            this.trigger('escape');
+            this.hide();
+          });
         }
 
         this.onShow();
@@ -374,6 +374,10 @@ export default Base.extend(
         this.resizeDragger.destroy();
       }
 
+      Garnish.Modal.instances = Craft.Preview.instances.filter(
+        (o) => o !== this
+      );
+
       this.base();
     },
   },
@@ -395,7 +399,15 @@ export default Base.extend(
       triggerElement: null,
       shadeClass: 'modal-shade',
     },
+
+    /**
+     * @type {Garnish.Modal[]}
+     */
     instances: [],
+
+    /**
+     * @type {?Garnish.Modal}
+     */
     visibleModal: null,
   }
 );

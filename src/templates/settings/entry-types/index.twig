@@ -1,0 +1,47 @@
+{% extends '_layouts/cp' %}
+{% set selectedTab = 'entryTypes' %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    'Are you sure you want to delete “{name}” and all entries of that type?',
+    'Entry Type',
+    'Handle',
+    'No entry types exist yet.',
+    'No results.',
+    'Used by',
+]) %}
+
+{% set title = 'Entry Types'|t('app') %}
+
+{% set crumbs = [
+    {
+        label: 'Settings'|t('app'),
+        url: url('settings'),
+    },
+] %}
+
+{% block actionButton %}
+    <a href="{{ url('settings/entry-types/new') }}" class="btn submit add icon">{{ "New entry type"|t('app') }}</a>
+{% endblock %}
+
+{% block content %}
+    <div id="entrytypes-vue-admin-table"></div>
+{% endblock %}
+
+{% js %}
+var columns = [
+    { name: '__slot:title', title: Craft.t('app', 'Entry Type') },
+    { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#entrytypes-vue-admin-table',
+    deleteAction: 'entry-types/delete',
+    deleteConfirmationMessage: Craft.t('app', 'Are you sure you want to delete “{name}” and all entries of that type?'),
+    emptyMessage: Craft.t('app', 'No entry types exist yet.'),
+    tableDataEndpoint: 'entry-types/table-data',
+    search: true,
+});
+{% endjs %}

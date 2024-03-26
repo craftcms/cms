@@ -1,0 +1,12 @@
+<a id="system-info" href="{{ siteUrl }}" rel="noopener" target="_blank" title="{{ 'View site'|t('app') }}">
+    <div id="site-icon">
+        {% if hasSystemIcon %}
+            <img src="{{ craft.rebrand.icon.url }}" alt="">
+        {% else %}
+            {{ iconSvg('c-outline') }}
+        {% endif %}
+    </div>
+    <div id="system-name">
+        <span class="h2">{{ systemName }}</span>
+    </div>
+</a>

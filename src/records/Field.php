@@ -9,13 +9,11 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
-use yii\db\ActiveQueryInterface;
 
 /**
  * Class Field record.
  *
  * @property int $id ID
- * @property int $groupId Group ID
  * @property string $name Name
  * @property string $handle Handle
  * @property string $context Context
@@ -26,7 +24,6 @@ use yii\db\ActiveQueryInterface;
  * @property string $translationKeyFormat Translation key format
  * @property string $type Type
  * @property array $settings Settings
- * @property FieldGroup $group Group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -36,11 +33,6 @@ class Field extends ActiveRecord
      * @var string|null
      */
     private ?string $_oldHandle = null;
-
-    /**
-     * @var string|null
-     */
-    private ?string $_oldColumnSuffix = null;
 
     /**
      * @inheritdoc
@@ -59,7 +51,6 @@ class Field extends ActiveRecord
     public function storeOldData(): void
     {
         $this->_oldHandle = $this->handle;
-        $this->_oldColumnSuffix = $this->columnSuffix;
     }
 
     /**
@@ -73,32 +64,11 @@ class Field extends ActiveRecord
     }
 
     /**
-     * Returns the old column suffix.
-     *
-     * @return string|null
-     * @since 3.7.0
-     */
-    public function getOldColumnSuffix(): ?string
-    {
-        return $this->_oldColumnSuffix;
-    }
-
-    /**
      * @inheritdoc
      * @return string
      */
     public static function tableName(): string
     {
         return Table::FIELDS;
-    }
-
-    /**
-     * Returns the field’s group.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getGroup(): ActiveQueryInterface
-    {
-        return $this->hasOne(FieldGroup::class, ['id' => 'groupId']);
     }
 }

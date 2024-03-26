@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use Closure;
 use Craft;
 use craft\behaviors\SessionBehavior;
 use craft\cache\FileCache;
@@ -16,6 +17,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\errors\MissingComponentException;
@@ -35,6 +37,8 @@ use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
 use ReflectionClass;
+use ReflectionFunction;
+use ReflectionNamedType;
 use ReflectionProperty;
 use Symfony\Component\Process\PhpExecutableFinder;
 use yii\base\Event;
@@ -176,6 +180,9 @@ class App
      * If the string references an environment variable with a value of `true`
      * or `false`, a boolean value will be returned.
      *
+     * If the string references an environment variable that’s not defined,
+     * `null` will be returned.
+     *
      * ---
      *
      * ```php
@@ -198,8 +205,8 @@ class App
             $env = static::env($matches[1]);
 
             if ($env === null) {
-                // starts with $ but not an environment variable/constant, so just give up, it's hopeless!
-                return $value;
+                // No env var or constant is defined here by that name
+                return null;
             }
 
             $value = $env;
@@ -240,7 +247,11 @@ class App
             return null;
         }
 
-        return filter_var(static::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        $value = static::parseEnv($value);
+        if ($value === null) {
+            return null;
+        }
+        return filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
     }
 
     /**
@@ -313,42 +324,32 @@ class App
     }
 
     /**
-     * Returns whether Craft is running within [Nitro](https://getnitro.sh) v1.
-     *
-     * @return bool
-     * @since 3.4.19
-     * @deprecated in 3.7.9.
-     */
-    public static function isNitro(): bool
-    {
-        return static::env('CRAFT_NITRO') === '1';
-    }
-
-
-    /**
      * Returns an array of all known Craft editions’ IDs.
      *
-     * @return array All the known Craft editions’ IDs.
+     * @return int[] All the known Craft editions’ IDs.
+     * @deprecated in 5.0.0. [[CmsEdition::cases()]] should be used instead.
      */
     public static function editions(): array
     {
-        return [Craft::Solo, Craft::Pro];
+        return array_map(fn(CmsEdition $edition) => $edition->value, CmsEdition::cases());
     }
 
     /**
      * Returns the handle of the given Craft edition.
      *
      * @param int $edition An edition’s ID.
-     * @return string The edition’s name.
+     * @return string The edition’s handle.
+     * @throws InvalidArgumentException if $edition is invalid
      * @since 3.1.0
+     * @deprecated in 5.0.0. [[CmsEdition::handle()]] should be used instead.
      */
     public static function editionHandle(int $edition): string
     {
-        return match ($edition) {
-            Craft::Solo => 'solo',
-            Craft::Pro => 'pro',
-            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
-        };
+        $handle = CmsEdition::tryFrom($edition)?->handle();
+        if ($handle === null) {
+            throw new InvalidArgumentException("Invalid edition ID: $edition");
+        }
+        return $handle;
     }
 
     /**
@@ -356,14 +357,16 @@ class App
      *
      * @param int $edition An edition’s ID.
      * @return string The edition’s name.
+     * @throws InvalidArgumentException if $edition is invalid
+     * @deprecated in 5.0.0. [[CmsEdition::name]] should be used instead.
      */
     public static function editionName(int $edition): string
     {
-        return match ($edition) {
-            Craft::Solo => 'Solo',
-            Craft::Pro => 'Pro',
-            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
-        };
+        $name = CmsEdition::tryFrom($edition)?->name;
+        if ($name === null) {
+            throw new InvalidArgumentException("Invalid edition ID: $edition");
+        }
+        return $name;
     }
 
     /**
@@ -373,14 +376,11 @@ class App
      * @return int The edition’s ID
      * @throws InvalidArgumentException if $handle is invalid
      * @since 3.1.0
+     * @deprecated in 5.0.0. [[CmsEdition::fromHandle()]] should be used instead.
      */
     public static function editionIdByHandle(string $handle): int
     {
-        return match ($handle) {
-            'solo' => Craft::Solo,
-            'pro' => Craft::Pro,
-            default => throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle),
-        };
+        return CmsEdition::fromHandle($handle)->value;
     }
 
     /**
@@ -388,14 +388,14 @@ class App
      *
      * @param mixed $edition An edition’s ID (or is it?)
      * @return bool Whether $edition is a valid edition ID.
+     * @deprecated in 5.0.0. [[CmsEdition::tryFrom()]] should be used instead.
      */
     public static function isValidEdition(mixed $edition): bool
     {
-        if ($edition === false || $edition === null) {
-            return false;
-        }
-
-        return (is_numeric((int)$edition) && in_array((int)$edition, static::editions(), true));
+        return (
+            is_numeric($edition) &&
+            CmsEdition::tryFrom((int)$edition) !== null
+        );
     }
 
     /**
@@ -720,7 +720,6 @@ class App
      * Sets PHP’s memory limit to the maximum specified by the
      * <config4:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
-     *
      */
     public static function maxPowerCaptain(): void
     {
@@ -734,6 +733,37 @@ class App
         // Try to reset time limit
         if (!function_exists('set_time_limit') || !@set_time_limit(0)) {
             Craft::warning('set_time_limit() is not available', __METHOD__);
+        }
+    }
+
+    /**
+     * Calls the given closure with all error reporting silenced, and returns its response.
+     *
+     * @param Closure|string $callable
+     * @param int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
+     * @return mixed
+     * @since 5.0.0
+     */
+    public static function silence(Closure|string $callable, ?int $mask = null): mixed
+    {
+        // loosely based on Composer\Util\Silencer
+        if (!isset($mask)) {
+            $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT;
+        }
+
+        $old = error_reporting();
+        error_reporting($old & ~$mask);
+
+        try {
+            $returnType = (new ReflectionFunction($callable))->getReturnType();
+            if ($returnType instanceof ReflectionNamedType && $returnType->getName() === 'void') {
+                $callable();
+                return null;
+            } else {
+                return $callable();
+            }
+        } finally {
+            error_reporting($old);
         }
     }
 
@@ -799,6 +829,16 @@ class App
     public static function isEphemeral(): bool
     {
         return self::parseBooleanEnv('$CRAFT_EPHEMERAL') === true;
+    }
+
+    /**
+     * Returns whether Craft is running on a Windows environment
+     *
+     * @since 5.0.0
+     */
+    public static function isWindows(): bool
+    {
+        return defined('PHP_WINDOWS_VERSION_BUILD');
     }
 
     /**
@@ -887,7 +927,7 @@ class App
             'dsn' => $dbConfig->dsn,
             'username' => $dbConfig->user,
             'password' => $dbConfig->password,
-            'charset' => $dbConfig->charset,
+            'charset' => $dbConfig->getCharset(),
             'tablePrefix' => $dbConfig->tablePrefix ?? '',
             'enableLogging' => static::devMode(),
             'enableProfiling' => static::devMode(),
@@ -1245,10 +1285,11 @@ class App
             $isCraft = $handle === 'craft';
             if ($isCraft) {
                 $name = 'Craft';
-                $editions = ['solo', 'pro'];
-                $currentEdition = Craft::$app->getEditionHandle();
-                $currentEditionName = Craft::$app->getEditionName();
-                $licenseEditionName = App::editionName(App::editionIdByHandle($licenseInfo['edition'] ?? 'solo'));
+                $editions = array_map(fn(CmsEdition $edition) => $edition->handle(), CmsEdition::cases());
+                $currentEdition = Craft::$app->edition->handle();
+                $currentEditionName = Craft::$app->edition->name;
+                $licensedEdition = isset($licenseInfo['edition']) ? CmsEdition::fromHandle($licenseInfo['edition']) : CmsEdition::Solo;
+                $licenseEditionName = $licensedEdition->name;
                 $version = Craft::$app->getVersion();
             } else {
                 if (!str_starts_with($handle, 'plugin-')) {
@@ -1277,7 +1318,7 @@ class App
 
             $isMultiEdition = count($editions) > 1;
 
-            if ($licenseInfo['status'] === LicenseKeyStatus::Invalid) {
+            if ($licenseInfo['status'] === LicenseKeyStatus::Invalid->value) {
                 // invalid license
                 if ($withUnresolvables) {
                     $issues[] = [
@@ -1286,7 +1327,7 @@ class App
                         null,
                     ];
                 }
-            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Trial) {
+            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Trial->value) {
                 // trial license
                 $issues[] = [
                     $isMultiEdition ? sprintf('%s %s', $name, $currentEditionName) : $name,
@@ -1298,7 +1339,7 @@ class App
                         'edition' => $currentEdition,
                     ]),
                 ];
-            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched) {
+            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched->value) {
                 if ($withUnresolvables) {
                     if ($isCraft) {
                         // wrong domain
@@ -1366,7 +1407,7 @@ class App
                         ],
                     ];
                 }
-            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Astray) {
+            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Astray->value) {
                 // updated too far
                 $issues[] = [
                     sprintf('%s %s', $name, $version),

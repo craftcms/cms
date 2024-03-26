@@ -115,7 +115,7 @@ class PasswordValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function passwordValidationDataProvider(): array
+    public static function passwordValidationDataProvider(): array
     {
         return [
             ['22', false],
@@ -128,7 +128,7 @@ class PasswordValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function customConfigDataProvider(): array
+    public static function customConfigDataProvider(): array
     {
         return [
             ['password', false, 0, 0],
@@ -144,7 +144,7 @@ class PasswordValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function forceDiffValidationDataProvider(): array
+    public static function forceDiffValidationDataProvider(): array
     {
         return [
             [false, 'test', 'test'],

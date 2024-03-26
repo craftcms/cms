@@ -10,14 +10,15 @@ namespace craft\fields\conditions;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\errors\InvalidFieldException;
+use craft\elements\conditions\ElementConditionInterface;
 use yii\base\InvalidConfigException;
 use yii\db\QueryInterface;
 
 /**
  * FieldConditionRuleTrait implements the common methods and properties for custom fields’ query condition rule classes.
  *
+ * @property ElementConditionInterface $condition
+ * @method ElementConditionInterface getCondition()
  * @property-write string $fieldUid The UUID of the custom field associated with this rule
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -30,9 +31,14 @@ trait FieldConditionRuleTrait
     private string $_fieldUid;
 
     /**
-     * @var FieldInterface The custom field associated with this rule
+     * @var string|null The UUID of the custom field layout element associated with this rule
      */
-    private FieldInterface $_field;
+    private ?string $_layoutElementUid = null;
+
+    /**
+     * @var FieldInterface[] The custom field instances associated with this rule
+     */
+    private array $_fieldInstances;
 
     /**
      * @inheritdoc
@@ -48,30 +54,104 @@ trait FieldConditionRuleTrait
     public function setFieldUid(string $uid): void
     {
         $this->_fieldUid = $uid;
-        if (isset($this->_field) && $this->_field->uid !== $uid) {
-            unset($this->_field);
-        }
     }
 
     /**
-     * Returns the custom field associated with this rule.
-     *
-     * @return FieldInterface
-     * @throws InvalidConfigException if [[fieldUid]] is invalid
+     * @inheritdoc
      */
-    protected function field(): FieldInterface
+    public function setLayoutElementUid(?string $uid): void
     {
-        if (!isset($this->_field)) {
+        $this->_layoutElementUid = $uid;
+    }
+
+    /**
+     * Returns the custom field instances associated with this rule, if known.
+     *
+     * @return FieldInterface[]
+     * @throws InvalidConfigException if [[fieldUid]] or [[layoutElementUid]] are invalid
+     * @since 5.0.0
+     */
+    protected function fieldInstances(): array
+    {
+        if (!isset($this->_fieldInstances)) {
             if (!isset($this->_fieldUid)) {
                 throw new InvalidConfigException('No field UUID set on the field condition rule yet.');
             }
-            $field = Craft::$app->getFields()->getFieldByUid($this->_fieldUid);
-            if (!$field) {
-                throw new InvalidConfigException("Invalid field UUID: $this->_fieldUid");
+
+            // Loop through all the layout's fields, and look for the selected field instance
+            // and any other instances with the same label and handle
+            $this->_fieldInstances = [];
+            /** @var FieldInterface[] $potentialInstances */
+            $potentialInstances = [];
+            $selectedInstance = null;
+            $selectedInstanceLabel = null;
+
+            foreach ($this->getCondition()->getFieldLayouts() as $fieldLayout) {
+                foreach ($fieldLayout->getCustomFields() as $field) {
+                    if ($field->uid === $this->_fieldUid) {
+                        // skip if it doesn't have a label
+                        $label = $field->layoutElement->label();
+                        if ($label === null) {
+                            continue;
+                        }
+
+                        // is this the selected field instance?
+                        // (if we aren't looking for a specific instance, include it if the handle isn't overridden)
+                        if (
+                            (isset($this->_layoutElementUid) && $field->layoutElement->uid === $this->_layoutElementUid) ||
+                            (!isset($this->_layoutElementUid) && !isset($field->layoutElement->handle))
+                        ) {
+                            $this->_fieldInstances[] = $field;
+
+                            if (isset($this->_layoutElementUid)) {
+                                $selectedInstance = $field;
+                                $selectedInstanceLabel = $label;
+                            }
+                        } elseif (isset($this->_layoutElementUid)) {
+                            $potentialInstances[] = $field;
+                        }
+                    }
+                }
             }
-            $this->_field = $field;
+
+            if (empty($this->_fieldInstances)) {
+                if (!isset($this->_layoutElementUid)) {
+                    throw new InvalidConfigException("Field $this->_fieldUid is not included in the available field layouts.");
+                }
+
+                if (!empty($potentialInstances)) {
+                    // Just go with the first one
+                    $this->_fieldInstances[] = $first = array_shift($potentialInstances);
+                    $selectedInstance = $first;
+                    $selectedInstanceLabel = $first->layoutElement->label();
+                } else {
+                    throw new InvalidConfigException("Invalid field layout element UUID: $this->_layoutElementUid");
+                }
+            }
+
+            // Add any potential fields to the mix if they have a matching label and handle
+            foreach ($potentialInstances as $field) {
+                if (
+                    $field->handle === $selectedInstance->handle &&
+                    $field->layoutElement->label() === $selectedInstanceLabel
+                ) {
+                    $this->_fieldInstances[] = $field;
+                }
+            }
         }
-        return $this->_field;
+
+        return $this->_fieldInstances;
+    }
+
+    /**
+     * Returns the first custom field instance associated with this rule.
+     *
+     * @return FieldInterface
+     * @throws InvalidConfigException if [[fieldUid]] or [[layoutElementUid]] are invalid
+     */
+    protected function field(): FieldInterface
+    {
+        return $this->fieldInstances()[0];
     }
 
     /**
@@ -79,9 +159,10 @@ trait FieldConditionRuleTrait
      */
     public function getConfig(): array
     {
-        return array_merge(parent::getConfig(), [
-            'fieldUid' => $this->field()->uid,
-        ]);
+        return array_merge(parent::getConfig(), array_filter([
+            'fieldUid' => $this->_fieldUid,
+            'layoutElementUid' => $this->_layoutElementUid,
+        ]));
     }
 
     /**
@@ -89,7 +170,7 @@ trait FieldConditionRuleTrait
      */
     public function getLabel(): string
     {
-        return $this->field()->name;
+        return $this->fieldInstances()[0]->layoutElement->label();
     }
 
     /**
@@ -107,14 +188,7 @@ trait FieldConditionRuleTrait
      */
     public function getExclusiveQueryParams(): array
     {
-        try {
-            $field = $this->field();
-        } catch (InvalidConfigException) {
-            // The field doesn't exist
-            return [];
-        }
-
-        return [$field->handle];
+        return [];
     }
 
     /**
@@ -122,10 +196,20 @@ trait FieldConditionRuleTrait
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        $param = $this->elementQueryParam();
-        if ($param !== null) {
-            /** @var ElementQueryInterface $query */
-            $query->{$this->field()->handle}($param);
+        $value = $this->elementQueryParam();
+        if ($value !== null) {
+            $instances = $this->fieldInstances();
+            $firstInstance = $instances[0];
+            $params = [];
+            $condition = $firstInstance::queryCondition($instances, $value, $params);
+
+            if ($condition === false) {
+                /** @phpstan-ignore-next-line */
+                $query->andWhere('0=1');
+            } elseif ($condition !== null) {
+                /** @phpstan-ignore-next-line */
+                $query->andWhere($condition, $params);
+            }
         }
     }
 
@@ -134,21 +218,21 @@ trait FieldConditionRuleTrait
      */
     public function matchElement(ElementInterface $element): bool
     {
-        try {
-            $field = $this->field();
-        } catch (InvalidConfigException) {
-            // The field doesn't exist
-            return true;
+        // index the field instance UUIDs
+        $instanceUids = array_flip(
+            array_map(fn(FieldInterface $field) => $field->layoutElement->uid, $this->fieldInstances()),
+        );
+
+        foreach ($element->getFieldLayout()->getCustomFields() as $field) {
+            if (isset($instanceUids[$field->layoutElement->uid])) {
+                $value = $element->getFieldValue($field->handle);
+                if ($this->matchFieldValue($value)) {
+                    return true;
+                }
+            }
         }
 
-        try {
-            $value = $element->getFieldValue($field->handle);
-        } catch (InvalidFieldException) {
-            // The field doesn't belong to the element's field layout
-            return false;
-        }
-
-        return $this->matchFieldValue($value);
+        return false;
     }
 
     /**
@@ -167,7 +251,7 @@ trait FieldConditionRuleTrait
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['fieldUid'], 'safe'],
+            [['fieldUid', 'layoutElementUid'], 'safe'],
         ]);
     }
 }

@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use BackedEnum;
 use Craft;
 use HTMLPurifier_Config;
 use IteratorAggregate;
@@ -1707,6 +1708,10 @@ class StringHelper extends \yii\helpers\StringHelper
             return implode($glue, $stringValues);
         }
 
+        if ($object instanceof BackedEnum) {
+            return $object->value;
+        }
+
         return '';
     }
 
@@ -1807,10 +1812,10 @@ class StringHelper extends \yii\helpers\StringHelper
 
         // Remove inner-word punctuation
         $handle = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/', '', $handle);
-    
+
         // Make it lowercase
         $handle = static::toLowerCase($handle);
-    
+
         // Convert extended ASCII characters to basic ASCII
         $handle = static::toAscii($handle);
 

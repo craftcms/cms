@@ -14,6 +14,7 @@ return [
         'enableVersioning' => false,
         'propagationMethod' => 'all',
         'uid' => 'section-1000---------------------uid',
+        'entryTypes' => ['1000'],
     ],
     [
         'id' => '1001',
@@ -24,6 +25,7 @@ return [
         'propagationMethod' => 'all',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d'),
         'uid' => 'section-1001---------------------uid',
+        'entryTypes' => ['1001'],
     ],
     [
         'id' => '1002',
@@ -34,6 +36,7 @@ return [
         'propagationMethod' => 'all',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d'),
         'uid' => 'section-1002---------------------uid',
+        'entryTypes' => ['1002'],
     ],
     [
         'id' => '1003',
@@ -43,6 +46,7 @@ return [
         'enableVersioning' => false,
         'propagationMethod' => 'all',
         'uid' => 'section-1003---------------------uid',
+        'entryTypes' => ['1003'],
     ],
     [
         'id' => '1004',
@@ -52,6 +56,7 @@ return [
         'enableVersioning' => true,
         'propagationMethod' => 'all',
         'uid' => 'section-1004---------------------uid',
+        'entryTypes' => ['1004'],
     ],
     [
         'id' => '1005',
@@ -61,6 +66,7 @@ return [
         'enableVersioning' => true,
         'propagationMethod' => 'all',
         'uid' => 'section-1005---------------------uid',
+        'entryTypes' => ['1005'],
     ],
     [
         'id' => '1006',
@@ -70,5 +76,17 @@ return [
         'enableVersioning' => false,
         'propagationMethod' => 'all',
         'uid' => 'section-1006---------------------uid',
+        'entryTypes' => ['1006'],
+    ],
+    [
+        'id' => '1011',
+        'name' => 'Test Multi Author',
+        'handle' => 'testMultiAuthor',
+        'type' => 'channel',
+        'enableVersioning' => false,
+        'propagationMethod' => 'all',
+        'maxAuthors' => 3,
+        'uid' => 'section-1006---------------------uid',
+        'entryTypes' => ['1011'],
     ],
 ];

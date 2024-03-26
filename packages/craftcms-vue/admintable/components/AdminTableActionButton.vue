@@ -43,7 +43,7 @@
                 ...{
                   error: act.error,
                   disabled:
-                    act.allowMultiple !== undefined &&
+                    typeof act.allowMultiple !== 'undefined' &&
                     !act.allowMultiple &&
                     hasMultipleSelected,
                 },

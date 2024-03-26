@@ -15,16 +15,46 @@
     {% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
 
-
-{% block contextMenu %}
-    {% if showSiteMenu %}
-        {% include "_elements/sitemenu" %}
+{% if showSiteMenu %}
+    {% if selectableSites is not defined %}
+        {% if siteIds is defined %}
+            {% set selectableSites = craft.app.sites.getEditableSites()|filter(s => s.id in siteIds) %}
+        {% else %}
+            {% set selectableSites = craft.app.sites.getEditableSites() %}
+        {% endif %}
     {% endif %}
-{% endblock %}
 
+    {% if selectedSite is not defined %}
+        {% if selectedSiteId is defined %}
+            {% set selectedSite = craft.app.sites.getSiteById(selectedSiteId) %}
+        {% elseif requestedSite and requestedSite in selectableSites %}
+            {% set selectedSite = requestedSite %}
+        {% else %}
+            {% set selectedSite = selectableSites|length ? selectableSites|first : craft.app.sites.getPrimarySite() %}
+        {% endif %}
+    {% endif %}
+
+    {% set crumbs = (crumbs ?? [])|unshift({
+        id: 'site-crumb',
+        icon: 'world',
+        label: selectedSite.name|t('site'),
+        menu: {
+            items: siteMenuItems(selectableSites, selectedSite),
+            label: 'Select site'|t('site')
+        }
+    }) %}
+{% endif %}
+
+{% set canHaveDrafts = canHaveDrafts ?? elementInstance.hasDrafts() %}
 
 {% block sidebar %}
     {% if sources is not empty %}
+        {{ tag('a', {
+            class: 'btn skip-link',
+            href: '#elements',
+            html: 'Skip to {title}'|t('app', {title: title}),
+        }) }}
+
         <nav aria-labelledby="source-heading">
             <h2 id="source-heading" class="visually-hidden">{{ 'Sources'|t('app') }}</h2>
             {% include "_elements/sources" %}
@@ -44,8 +74,9 @@
 
 {% block content %}
     <div class="main element-index">
+        <span class="visually-hidden" role="status" data-status-message></span>
         <a class="skip-link btn" href="#footer">{{ 'Skip to {title}'|t('app', { title: 'Footer'|t }) }}</a>
-        <div class="elements busy">
+        <div id="elements" class="elements busy">
             <div class="update-spinner spinner spinner-absolute"></div>
         </div>
     </div>
@@ -53,12 +84,7 @@
 
 
 {% block footer %}
-    <div id="count-spinner" class="spinner small hidden"></div>
-    <div id="count-container" class="light">&nbsp;</div>
-    <div id="actions-container" class="flex"></div>
-    <div id="export-container">
-        <button type="button" id="export-btn" class="btn hidden" aria-expanded="false">{{ 'Export…'|t('app') }}</button>
-    </div>
+    {% include '_elements/footer' %}
 {% endblock %}
 
 
@@ -72,7 +98,7 @@
         toolbarSelector: '#toolbar',
         defaultSource: {{ (defaultSource ?? null)|json_encode|raw }},
         defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
-        canHaveDrafts: {{ (canHaveDrafts ?? false) ? 'true' : 'false' }},
+        canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},
     });
 {% endblock %}
 

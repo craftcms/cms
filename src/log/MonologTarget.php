@@ -86,6 +86,8 @@ class MonologTarget extends PsrTarget
      */
     public function init(): void
     {
+        parent::init();
+
         $this->formatter = $this->formatter ?? new LineFormatter(
             format: "%datetime% [%channel%.%level_name%] [%extra.yii_category%] %message% %context% %extra%\n",
             dateFormat: 'Y-m-d H:i:s',
@@ -191,14 +193,11 @@ class MonologTarget extends PsrTarget
                 bubble: false,
             ))->setFormatter($this->formatter));
 
-            // Don't pollute console request output
-            if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
-                $logger->pushHandler((new StreamHandler(
-                    'php://stdout',
-                    $this->level,
-                    bubble: false,
-                ))->setFormatter($this->formatter));
-            }
+            $logger->pushHandler((new StreamHandler(
+                'php://stdout',
+                $this->level,
+                bubble: false,
+            ))->setFormatter($this->formatter));
         } else {
             $logger->pushHandler((new RotatingFileHandler(
                 App::parseEnv(sprintf('@storage/logs/%s.log', $name)),

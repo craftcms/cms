@@ -29,20 +29,20 @@ class DeleteAssets extends Delete
   const trigger = new Craft.ElementActionTrigger({
     type: $type,
     requireId: false,
-    validateSelection: \$selectedItems => {
-      for (let i = 0; i < \$selectedItems.length; i++) {
-        const \$element = \$selectedItems.eq(i).find('.element');
-        if (Garnish.hasAttr(\$element, 'data-is-folder')) {
-          if (\$selectedItems.length !== 1) {
+    validateSelection: (selectedItems, elementIndex) => {
+      for (let i = 0; i < selectedItems.length; i++) {
+        const element = selectedItems.eq(i).find('.element');
+        if (Garnish.hasAttr(element, 'data-is-folder')) {
+          if (selectedItems.length !== 1) {
             // only one folder at a time
             return false;
           }
-          const sourcePath = \$element.data('source-path') || [];
+          const sourcePath = element.data('source-path') || [];
           if (!sourcePath.length || !sourcePath[sourcePath.length - 1].canDelete) {
             return false;
           }
         } else {
-          if (!Garnish.hasAttr(\$element, 'data-deletable')) {
+          if (!Garnish.hasAttr(element, 'data-deletable')) {
             return false;
           }
         }
@@ -50,17 +50,17 @@ class DeleteAssets extends Delete
 
       return true;
     },
-    
-    activate: function(\$selectedItems) {
-      const \$element = \$selectedItems.find('.element:first');
-      if (Garnish.hasAttr(\$element, 'data-is-folder')) {
-        const sourcePath = \$element.data('source-path');
-        Craft.elementIndex.deleteFolder(sourcePath[sourcePath.length - 1])
+
+    activate: (selectedItems, elementIndex) => {
+      const element = selectedItems.find('.element:first');
+      if (Garnish.hasAttr(element, 'data-is-folder')) {
+        const sourcePath = element.data('source-path');
+        elementIndex.deleteFolder(sourcePath[sourcePath.length - 1])
           .then(() => {
-            Craft.elementIndex.updateElements();
+            elementIndex.updateElements();
           });
       } else {
-        Craft.elementIndex.submitAction(trigger.\$trigger.data('action'), Garnish.getPostData(trigger.\$trigger));
+        elementIndex.submitAction(trigger.\$trigger.data('action'), Garnish.getPostData(trigger.\$trigger));
       }
     },
   });

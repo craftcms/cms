@@ -35,7 +35,7 @@ class SecurityTest extends TestCase
     /**
      * @return array
      */
-    public function redactIfSensitiveDataProvider(): array
+    public static function redactIfSensitiveDataProvider(): array
     {
         return [
             ['••••••••••••••••••••', 'Name', 'test stuff craft cms', []],

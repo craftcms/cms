@@ -1,12 +1,10 @@
 {% apply spaceless %}
 
 {% set structure = structure is defined ? structure : null -%}
-{% set structureEditable = structureEditable is defined ? structureEditable : false -%}
+{% set structureEditable = structureEditable is defined and not inlineEditing ? structureEditable : false -%}
+{% set padding = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
+{% set elementsService = craft.app.elements %}
 
-{% if structure -%}
-    {% set basePadding = (showCheckboxes ? 14 : 24) + (structureEditable ? 34 : 0) %}
-    {% set padding = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
-{% endif -%}
 {% for element in elements %}
     {% set totalDescendants = structure
         ? element.getDescendants()
@@ -17,50 +15,80 @@
             .count()
         : 0 %}
     {% set elementTitle = element.title ?: element.id %}
+    {% set showInputs = (inlineEditing ?? false) and elementsService.canSave(element, currentUser) %}
     <tr data-id="{{ element.id }}"{% if structure %} data-title="{{ elementTitle }}" data-level="{{ element.level }}" data-descendants="{{ totalDescendants ?? 0 }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
-        {% if showCheckboxes %}
+        {% if selectable %}
             <td class="checkbox-cell">
                 {{ tag('div', {
                     class: 'checkbox',
                     title: 'Select'|t('app'),
                     role: 'checkbox',
+                    tabindex: '0',
                     aria: {
-                        label: 'Select'|t('app'),
                         checked: 'false',
+                        label: elementTitle,
                     },
                 }) }}
             </td>
         {% endif %}
         {% for attribute in attributes %}
             {% if loop.first %}
-                <th data-title="{{ attribute[1].label }}"{% if structure %} style="padding-{{ padding }}: {{ basePadding * element.level }}px;"{% endif %} data-titlecell="" scope="row">
-                    {%- if structureEditable %}<a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button">&nbsp;</a>{% endif %}
-                    {%- if structure and totalDescendants %}
-                        {% set toggleLabel = 'Show {title} children'|t('app', {title: elementTitle}) %}
-                        <button type="button" class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif
-                        %}" title="{{ 'Show/hide children'|t('app') }}" aria-label="{{ toggleLabel }}"
-                        aria-expanded="{{  element.id not in collapsedElementIds ? 'true' : 'false' }}"></button>
-                    {% endif %}
-                    {%- include '_elements/element' with {
-                        autoReload: false,
-                    } -%}
-
-                    {%- if structure %}
-                        {% set textAlternative = 'Level {num}'|t('app', {
-                            num: element.level,
+                {% tag 'th' with {
+                    data: {
+                        title: attribute[1].label,
+                        titlecell: '',
+                    },
+                    scope: 'row',
+                } %}
+                    {% tag 'div' with {
+                        style: {
+                            ("padding-#{padding}"): structure or sortable ? "#{(inlineEditing ? 0 : 24) + 44 * ((element.level ?: 1) - 1)}px" : null,
+                        }|filter,
+                    } %}
+                        {%- if (sortable or structureEditable) and not inlineEditing %}
+                            <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button">&nbsp;</a>
+                        {% endif %}
+                        {%- if structure and totalDescendants %}
+                            {% set toggleLabel = 'Show {title} children'|t('app', {title: elementTitle}) %}
+                            <button type="button" class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif
+                            %}" title="{{ 'Show/hide children'|t('app') }}" aria-label="{{ toggleLabel }}"
+                            aria-expanded="{{  element.id not in collapsedElementIds ? 'true' : 'false' }}"></button>
+                        {% endif %}
+                        {% set chip = elementChip(element, {
+                          context: context ?? 'index',
                         }) %}
-                        {{ tag('span', {
-                            class: 'visually-hidden',
-                            data: {
-                                'text-alternative': true,
-                            },
-                            text: textAlternative,
-                        }) }}
-                    {% endif  %}
-                </th>
+                        {% if not (showHeaderColumn ?? false) %}
+                            {% set chip = chip|attr({class: 'hidden'}) %}
+                        {% endif %}
+                        {{ chip|raw }}
+
+                        {%- if structure %}
+                            {% set textAlternative = 'Level {num}'|t('app', {
+                                num: element.level,
+                            }) %}
+                            {{ tag('span', {
+                                class: 'visually-hidden',
+                                data: {
+                                    'text-alternative': true,
+                                },
+                                text: textAlternative,
+                            }) }}
+                        {% endif  %}
+                    {% endtag %}
+                {% endtag %}
             {% else %}
                 <td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">
-                    {{- element.getTableAttributeHtml(attribute[0])|raw -}}
+                    {% if showInputs %}
+                        {% set namespace = "#{nestedInputNamespace}[element-#{element.id}]" %}
+                        {% if attribute[0] starts with 'field:' %}
+                            {% set namespace = "#{namespace}[fields]" %}
+                        {% endif %}
+                        {% namespace namespace %}
+                            {{- element.getInlineAttributeInputHtml(attribute[0])|raw -}}
+                        {% endnamespace %}
+                    {% else %}
+                        {{- element.getAttributeHtml(attribute[0])|raw -}}
+                    {% endif %}
                 </td>
             {% endif %}
         {% endfor %}

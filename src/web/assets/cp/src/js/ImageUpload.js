@@ -12,11 +12,11 @@ Craft.ImageUpload = Garnish.Base.extend(
 
     init: function (settings) {
       this.setSettings(settings, Craft.ImageUpload.defaults);
+      this.$container = $(this.settings.containerSelector);
       this.initImageUpload();
     },
 
     initImageUpload: function () {
-      this.$container = $(this.settings.containerSelector);
       this.progressBar = new Craft.ProgressBar(
         $('<div class="progress-shade"></div>').appendTo(this.$container)
       );
@@ -79,8 +79,9 @@ Craft.ImageUpload = Garnish.Base.extend(
     },
 
     refreshImage: function (response) {
-      $(this.settings.containerSelector).replaceWith(response.html);
+      this.$container.replaceWith((this.$container = $(response.html)));
       this.settings.onAfterRefreshImage(response);
+      Craft.cp.elementThumbLoader.load(this.$container);
       this.initImageUpload();
     },
 
@@ -109,12 +110,7 @@ Craft.ImageUpload = Garnish.Base.extend(
      * On a file being uploaded.
      */
     _onUploadComplete: function (event, data = null) {
-      if (data.result.error) {
-        Craft.cp.displayError(data.result.error);
-      } else {
-        var html = $(data.result.html);
-        this.refreshImage(data.result);
-      }
+      this.refreshImage(data.result);
 
       // Last file
       if (this.uploader.isLastUpload()) {
@@ -128,14 +124,24 @@ Craft.ImageUpload = Garnish.Base.extend(
      */
     _onUploadFailure: function (event, data = null) {
       const response = data.response();
-      let {message, filename} = response?.jqXHR?.responseJSON || {};
-
+      let {
+        message,
+        filename,
+        errors = {},
+      } = response?.jqXHR?.responseJSON || {};
       filename = filename || data?.files?.[0].name;
+      let errorMessages = errors ? Object.values(errors).flat() : [];
 
       if (!message) {
-        message = filename
-          ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
-          : Craft.t('app', 'Upload failed.');
+        if (errorMessages.length) {
+          message = errorMessages.join('\n');
+        } else if (filename) {
+          message = Craft.t('app', 'Upload failed for “{filename}”.', {
+            filename,
+          });
+        } else {
+          message = Craft.t('app', 'Upload failed.');
+        }
       }
 
       Craft.cp.displayError(message);

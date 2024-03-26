@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use craft\fieldlayoutelements\CustomField;
+
 /**
  * FieldTrait implements the common methods and properties for field classes.
  *
@@ -15,11 +17,6 @@ namespace craft\base;
  */
 trait FieldTrait
 {
-    /**
-     * @var int|null The field’s group’s ID
-     */
-    public ?int $groupId = null;
-
     /**
      * @var string|null The field’s name
      */
@@ -54,6 +51,7 @@ trait FieldTrait
 
     /**
      * @var string The field’s translation method
+     * @phpstan-var Field::TRANSLATION_METHOD_*
      */
     public string $translationMethod = Field::TRANSLATION_METHOD_NONE;
 
@@ -74,13 +72,9 @@ trait FieldTrait
     public ?array $oldSettings = null;
 
     /**
-     * @var string|null The field’s content column prefix
-     */
-    public ?string $columnPrefix = null;
-
-    /**
      * @var string|null The field’s content column suffix
      * @since 3.7.0
+     * @deprecated in 5.0.0
      */
     public ?string $columnSuffix = null;
 
@@ -89,19 +83,6 @@ trait FieldTrait
      */
     public ?string $uid = null;
 
-    // These properties are only populated if the field was fetched via a Field Layout
-    // -------------------------------------------------------------------------
-
-    /**
-     * @var int|null The ID of the field layout that the field was fetched from
-     */
-    public ?int $layoutId = null;
-
-    /**
-     * @var int|null The tab ID of the field layout that the field was fetched from
-     */
-    public ?int $tabId = null;
-
     /**
      * @var bool|null Whether the field is required in the field layout it was fetched from
      * @deprecated in 4.1.4. [[\craft\fieldlayoutelements\BaseField::$required]] should be used instead
@@ -109,7 +90,8 @@ trait FieldTrait
     public ?bool $required = null;
 
     /**
-     * @var int|null The field’s sort position in the field layout it was fetched from
+     * @var CustomField|null The field layout element
+     * @since 5.0.0
      */
-    public ?int $sortOrder = null;
+    public ?CustomField $layoutElement = null;
 }
