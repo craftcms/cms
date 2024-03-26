@@ -1427,7 +1427,7 @@ return [
     'Show/hide children' => '子を表示／非表示します',
     'Showing results for “{searchQuery}”' => '「{searchQuery}」の結果を表示しています',
     'Showing your unsaved changes.' => '保存されていない変更を表示しています。',
-    'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number}件の{total, plural, =1{{アイテム}} other{{アイテム}}}中、{first, number}から{last, number} までを表示中',
+    'Showing {first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number}件の{total, plural, =1{{item}} other{{items}}}中、{first, number}から{last, number} までを表示中',
     'Showing {total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number}件の{total, plural, =1{{アイテム}} other{{アイテム}}}を表示中',
     'Sign In' => 'サインイン',
     'Sign back in to continue.' => 'もう一度サインインして続けます。',
