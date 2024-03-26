@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a z-index issue with the element index spinner. ([#14692](https://github.com/craftcms/cms/pull/14692))
+
 ## 5.0.0-RC1 - 2024-03-25
 
 - Element slideouts’ “Cancel” buttons now get relabelled as “Close” when editing a provisional draft.

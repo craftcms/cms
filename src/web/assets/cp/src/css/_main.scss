@@ -3631,10 +3631,6 @@ table {
       background: transparentize($white, 0.25);
       border-radius: var(--large-border-radius);
     }
-
-    .update-spinner {
-      z-index: 101;
-    }
   }
 
   .header {
@@ -5944,6 +5940,10 @@ $min2ColWidth: 400px;
         .elements {
           &.busy {
             min-height: calc(100% - 48px);
+
+            .update-spinner {
+              z-index: 101;
+            }
           }
 
           .header {
