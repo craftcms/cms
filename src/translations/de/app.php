@@ -2009,7 +2009,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{user}’s Account' => 'Benutzerkonto von {user}',
     '{value} is not a valid language.' => '{value} ist keine gültige Sprache.',
     '{value} is not a valid site language.' => '{value} ist keine gültige Website-Sprache.',
-    '{volume} root' => '{volume} Basis',
+    '{volume} root' => '{volume} Basisverzeichnis',
     '“{extension}” is not an allowed file extension.' => '„{extension}“ ist keine zulässige Dateierweiterung.',
     '“{filename}” is not allowed in this field.' => '„{filename}“ ist in diesem Feld nicht gestattet.',
     '“{filename}” is too large.' => '"{filename}" ist zu groß.',
