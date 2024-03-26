@@ -1467,6 +1467,7 @@ li.breadcrumb-toggle-wrapper {
         &.active-drop-target {
           cursor: default;
           background-color: var(--gray-500);
+          @include dark-btn-light-bg-focus-ring;
 
           &,
           & + .toggle {

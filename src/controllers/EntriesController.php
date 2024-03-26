@@ -9,6 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
@@ -18,9 +20,11 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -381,6 +385,161 @@ class EntriesController extends BaseEntriesController
             Craft::t('app', '{type} saved.', ['type' => Entry::displayName()]),
             data: $data,
         );
+    }
+
+    /**
+     * Get sections that we can move selected entries to and return the list html for the modal.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionMoveToSectionModalData(): Response
+    {
+        $this->requireCpRequest();
+
+        $entryIds = Craft::$app->getRequest()->getRequiredParam('entryIds');
+        $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
+        $currentSectionUid = Craft::$app->getRequest()->getRequiredParam('currentSectionUid');
+
+        // get entry types by entry IDs
+        $entryTypes = (new Query())
+            ->select(['et.id'])
+            ->from(['et' => Table::ENTRYTYPES])
+            ->leftJoin(['e' => Table::ENTRIES], '[[e.typeId]] = [[et.id]]')
+            ->where(['in', 'e.id', $entryIds])
+            ->distinct()
+            ->all();
+        $entryTypes = array_map(fn($item) => $item['id'], $entryTypes);
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        // filter all sections to those that have all the entry types we just got
+        $compatibleSections = Collection::make(Craft::$app->getEntries()->getEditableSections())
+            ->filter(function(Section $section) use ($entryTypes, $siteId, $currentSectionUid, $user) {
+                // don't allow moving to a single section
+                if ($section->type === Section::TYPE_SINGLE) {
+                    return false;
+                }
+
+                // limit to the sections available for the site we're doing this for
+                if (!isset($section->getSiteSettings()[$siteId])) {
+                    return false;
+                }
+
+                // exclude section we started this move from
+                if ($currentSectionUid !== null && $section->uid === $currentSectionUid) {
+                    return false;
+                }
+
+                // ensure person can save entries in the section we're moving to
+                if (!$user->can("saveEntries:$section->uid")) {
+                    return false;
+                }
+
+
+                $sectionEntryTypes = array_map(fn($et) => $et->id, $section->entryTypes);
+
+                return !empty(array_intersect($entryTypes, $sectionEntryTypes));
+            })
+            ->values()
+            ->all();
+
+        if (empty($compatibleSections)) {
+            $listHtml = Html::tag(
+                'p',
+                Craft::t('app', 'Couldn’t find any sections that all selected elements could be moved to.'),
+                ['class' => 'zilch']
+            );
+        } else {
+            $listHtml = '';
+            foreach ($compatibleSections as $section) {
+                $listHtml .= Html::beginTag('li');
+                $listHtml .= Html::beginTag('a', [
+                    'class' => 'entry-mover-modal--item',
+                    'tabindex' => 0,
+                    'role' => 'button',
+                    'data' => [
+                        'uid' => $section->uid,
+                        'label' => $section->name,
+                        'type' => $section->type,
+                        'handle' => $section->handle,
+                        'criteria' => [
+                            'sectionId' => $section->id,
+                        ],
+                    ],
+                    'aria' => [
+                        'pressed' => 'false',
+                    ],
+                ]);
+                $listHtml .= Html::tag('span', $section->name, ['class' => 'label']);
+                $listHtml .= Html::endTag('a');
+                $listHtml .= Html::endTag('li');
+            }
+        }
+
+        return $this->asJson(['listHtml' => $listHtml]);
+    }
+
+    /**
+     * Move entries to a new section.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws \yii\db\Exception
+     */
+    public function actionMoveToSection(): Response
+    {
+        $this->requireCpRequest();
+
+        $entryIds = Craft::$app->getRequest()->getRequiredParam('entryIds');
+        $sectionUid = Craft::$app->getRequest()->getRequiredParam('sectionUid');
+
+        $section = Craft::$app->getEntries()->getSectionByUid($sectionUid);
+        if (!$section) {
+            throw new BadRequestHttpException('Cannot find the section to move the entries to.');
+        }
+
+        $entries = Entry::find()
+            ->id($entryIds)
+            ->status(null)
+            ->drafts(null)
+            ->all();
+
+        if (!$entries) {
+            throw new BadRequestHttpException('Cannot find the entries to move to the new section.');
+        }
+
+        $errors = [];
+        foreach ($entries as $entry) {
+            try {
+                Craft::$app->getElements()->moveEntryToSection($entry, $section);
+            } catch (\Exception|InvalidElementException|UnsupportedSiteException $e) {
+                Craft::error('Could not delete move entry to a different section: ' . $e->getMessage(), __METHOD__);
+                $errors[] = $e->getMessage();
+            }
+        }
+
+        if (!empty($errors)) {
+            if (count($errors) === count($entries)) {
+                return $this->asFailure(Craft::t(
+                    'app',
+                    'Couldn’t move entries to the “{name}” section.',
+                    ['name' => $section->name]
+                ));
+            }
+
+            return $this->asSuccess(Craft::t(
+                'app',
+                'Some entries have been moved to the “{name}” section.',
+                ['name' => $section->name]
+            ));
+        }
+
+        return $this->asSuccess(Craft::t(
+            'app',
+            'Entries have been moved to the “{name}” section.',
+            ['name' => $section->name]
+        ));
     }
 
     /**

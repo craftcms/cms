@@ -1,4 +1,4 @@
-craft-tooltip {
+.craft-tooltip {
   position: fixed;
   white-space: normal;
   opacity: 0;
@@ -13,7 +13,7 @@ craft-tooltip {
   z-index: 99;
 }
 
-craft-tooltip > .inner {
+.craft-tooltip > .inner {
   position: relative;
   display: inline-block;
   background-color: var(--white);
@@ -27,7 +27,7 @@ craft-tooltip > .inner {
   font-weight: 400;
 }
 
-craft-tooltip .arrow {
+.craft-tooltip .arrow {
   position: absolute;
   background: var(--white);
   width: 8px;
