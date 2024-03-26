@@ -234,6 +234,8 @@ class Response extends \yii\web\Response
             $this->format = self::FORMAT_HTML;
         }
 
+        Craft::warning("redirect URL: $url");
+
         parent::redirect($url, $statusCode, $checkAjax);
 
         if (Craft::$app->state === BaseApplication::STATE_SENDING_RESPONSE) {
