@@ -388,7 +388,7 @@ return [
     'Couldn’t uninstall plugin.' => 'Kunde inte avinstallera plugin:en.',
     'Couldn’t unsuspend all users.' => 'Det gick inte att upphäva avstängningen av alla användare.',
     'Couldn’t unsuspend user.' => 'Det gick inte att ta bort uppehållet för användaren.',
-    'Couldn’t update cart’s email.' => 'Det gick inte att uppdatera kundvagnens e-post.',
+    'Couldn’t update cart’s email.' => 'Det gick inte att uppdatera e-post för kundvagnen.',
     'Couldn’t update item in cart.' => 'Det gick inte att uppdatera artikeln i kundvagnen.',
     'Couldn’t update password.' => 'Kunde inte uppdatera lösenord.',
     'Country' => 'Land',
