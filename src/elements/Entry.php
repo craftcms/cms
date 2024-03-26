@@ -1182,6 +1182,30 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public function getAdditionalChipAttributes(): array
+    {
+        return [
+            'data' => [
+                'movable' => $this->canMove(),
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAdditionalCardAttributes(): array
+    {
+        return [
+            'data' => [
+                'movable' => $this->canMove(),
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function previewTargets(): array
     {
         if ($this->fieldId) {
@@ -1814,12 +1838,19 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * Returns whether the given user is authorized to move this entry.
      *
-     * @param User $user
+     * @param User|null $user
      * @return bool
      * @since 5.0.0
      */
-    public function canMove(User $user): bool
+    public function canMove(?User $user = null): bool
     {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
         $section = $this->getSection();
 
         if (!$section) {

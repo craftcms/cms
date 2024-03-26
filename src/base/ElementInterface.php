@@ -799,6 +799,20 @@ interface ElementInterface extends
     public function getCardBodyHtml(): ?string;
 
     /**
+     * Returns additional attributes for the element chip.
+     *
+     * @return array
+     */
+    public function getAdditionalChipAttributes(): array;
+
+    /**
+     * Returns additional attributes for the element card.
+     *
+     * @return array
+     */
+    public function getAdditionalCardAttributes(): array;
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null

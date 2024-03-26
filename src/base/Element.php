@@ -3221,6 +3221,22 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getAdditionalChipAttributes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAdditionalCardAttributes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getRef(): ?string
     {
         return null;
