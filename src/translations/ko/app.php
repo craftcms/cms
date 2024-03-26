@@ -1636,7 +1636,7 @@ return [
     'URL Format' => 'URL 형식',
     'URL type' => 'URL 유형',
     'URL' => 'URL',
-    'Unable to fetch updates at this time.' => 'Unable to fetch updates at this time.',
+    'Unable to fetch updates at this time.' => '현재는 업데이트를 가져올 수 없습니다.',
     'Unable to fetch upgrade info at this time.' => '현재는 업그레이드 정보를 가져올 수 없습니다.',
     'Unable to find the template “{template}”.' => '“{template}” 템플릿을 찾을 수 없음.',
     'Unauthorized' => '승인되지 않음',
