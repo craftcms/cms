@@ -268,7 +268,7 @@ Craft.AuthManager = Garnish.Base.extend(
           await Craft.appendBodyHtml(data.bodyHtml);
         },
         onFadeOut: () => {
-          this.loginModal.destroy();
+          this.loginModal?.destroy();
           this.loginModal = null;
         },
         onHide: () => {

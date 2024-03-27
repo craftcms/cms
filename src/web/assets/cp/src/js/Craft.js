@@ -2410,7 +2410,19 @@ $.extend(Craft, {
             .detach();
           const $inputs = $element.find('input,button').detach();
           $element.html($replacement.html());
+
           if ($actions.length) {
+            const $oldStatus = $actions.find('span.status');
+            const $newStatus = $replacement.find('span.status');
+
+            if (
+              $oldStatus.length &&
+              $newStatus.length &&
+              $oldStatus[0].classList !== $newStatus[0].classList
+            ) {
+              $actions.find('span.status').replaceWith($newStatus);
+            }
+
             $element
               .find(
                 '> .chip-content .chip-actions,> .card-actions-container .card-actions'

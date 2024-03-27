@@ -947,7 +947,7 @@ class UsersController extends Controller
      */
     public function actionCreate(): Response
     {
-        Craft::$app->requireEdition(CmsEdition::Pro);
+        Craft::$app->requireEdition(CmsEdition::Team);
 
         $user = Craft::createObject(User::class);
 
@@ -1481,7 +1481,7 @@ JS);
             }
         } else {
             // Make sure this is Craft Pro, since that's required for having multiple user accounts
-            Craft::$app->requireEdition(CmsEdition::Pro);
+            Craft::$app->requireEdition(CmsEdition::Team);
 
             // Is someone logged in?
             if ($currentUser) {

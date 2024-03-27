@@ -99,7 +99,9 @@ import $ from 'jquery';
             multi: true,
             vertical: true,
             handle: '> .actions > .checkbox, > .titlebar',
-            filter: ':not(.tab-label)',
+            filter: (target) => {
+              return !$(target).closest('.tab-label').length;
+            },
             checkboxMode: true,
           }
         );

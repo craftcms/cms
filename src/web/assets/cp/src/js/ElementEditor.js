@@ -414,6 +414,10 @@ Craft.ElementEditor = Garnish.Base.extend(
           );
         }
       });
+
+      if (!this.isFullPage) {
+        this.slideout.$cancelBtn.text(Craft.t('app', 'Close'));
+      }
     },
 
     initForDraft: function () {

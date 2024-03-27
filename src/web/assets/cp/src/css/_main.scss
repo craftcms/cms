@@ -683,13 +683,8 @@ button {
   }
 
   .so-notice > & {
-    @include margin(
-      calc(var(--s) * -1),
-      0,
-      calc(var(--s) * -1),
-      calc(var(--xl) * -1)
-    );
-    @include padding(var(--s), 0, var(--s), var(--xl));
+    @include margin(-5px, 0, -5px, calc(var(--xl) * -1));
+    @include padding(5px, 0, 5px, var(--xl));
     @include border-bottom-left-radius(var(--large-border-radius));
 
     body.ltr & {
@@ -2985,6 +2980,10 @@ table {
   border-bottom: none !important;
 }
 
+.datatablesorthelper th .toggle {
+  display: none !important;
+}
+
 .chip,
 .card {
   color: var(--custom-text-color, var(--text-color));
@@ -3332,6 +3331,12 @@ table {
         overflow: hidden;
         text-wrap: pretty;
       }
+
+      .checkbox-preview-label {
+        display: inline;
+        font-style: italic;
+        margin-inline-start: 5px;
+      }
     }
   }
 
@@ -3625,10 +3630,6 @@ table {
       height: 100%;
       background: transparentize($white, 0.25);
       border-radius: var(--large-border-radius);
-    }
-
-    .update-spinner {
-      z-index: 101;
     }
   }
 
@@ -5939,6 +5940,10 @@ $min2ColWidth: 400px;
         .elements {
           &.busy {
             min-height: calc(100% - 48px);
+
+            .update-spinner {
+              z-index: 101;
+            }
           }
 
           .header {
@@ -7135,6 +7140,10 @@ body.reduce-focus-visibility {
     line-height: var(--checkbox-size);
     font-size: var(--checkbox-size);
   }
+}
+
+.checkbox-preview-label {
+  display: none;
 }
 
 .monaco-mouse-cursor-text {

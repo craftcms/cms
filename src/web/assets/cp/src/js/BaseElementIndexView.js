@@ -58,7 +58,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           {
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
-            filter: ':not(a[href]):not(.toggle):not(.btn)',
+            filter: (target) => {
+              return !$(target).closest('a,.toggle,.btn').length;
+            },
             checkboxMode: this.settings.checkboxMode,
             onSelectionChange: this.onSelectionChange.bind(this),
           }

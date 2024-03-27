@@ -37,7 +37,7 @@ class UserSettingsController extends Controller
         $this->requireAdmin();
 
         if ($action->id !== 'save-user-settings') {
-            Craft::$app->requireEdition(CmsEdition::Pro);
+            Craft::$app->requireEdition(CmsEdition::Team);
         }
 
         return true;
@@ -141,7 +141,7 @@ class UserSettingsController extends Controller
         $settings['photoVolumeUid'] = $photoVolumeId ? Craft::$app->getVolumes()->getVolumeById($photoVolumeId)?->uid : null;
         $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath') ?: null;
 
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value >= CmsEdition::Team->value) {
             $settings['require2fa'] = $this->request->getBodyParam('require2fa') ?: false;
         }
 

@@ -3,7 +3,7 @@
 Craft.ElementFieldSettings = Garnish.Base.extend({
   allowMultipleSources: null,
   $maintainHierarchyField: null,
-  $maintainHierarchyInput: null,
+  $maintainHierarchyButton: null,
   $sourcesField: null,
   $sourceSelect: null,
   $branchLimitField: null,
@@ -20,9 +20,7 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
   ) {
     this.allowMultipleSources = allowMultipleSources;
     this.$maintainHierarchyField = $(`#${maintainHierarchyFieldId}`);
-    this.$maintainHierarchyInput = this.$maintainHierarchyField.find(
-      'input[type="checkbox"]'
-    );
+    this.$maintainHierarchyButton = this.$maintainHierarchyField.find('button');
     this.$sourcesField = $(`#${sourcesFieldId}`);
     if (!this.allowMultipleSources) {
       this.$sourceSelect = this.$sourcesField.find('select');
@@ -33,7 +31,7 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
 
     this.updateLimitFields();
     this.addListener(
-      this.$maintainHierarchyInput,
+      this.$maintainHierarchyButton,
       'change',
       'updateLimitFields'
     );
@@ -61,7 +59,7 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
   updateLimitFields: function () {
     if (
       !this.$maintainHierarchyField.hasClass('hidden') &&
-      this.$maintainHierarchyInput.is(':checked')
+      this.$maintainHierarchyButton.hasClass('on')
     ) {
       this.$minRelationsField.addClass('hidden');
       this.$maxRelationsField.addClass('hidden');

@@ -328,7 +328,6 @@ $menuBorderRadius: $mediumBorderRadius;
   // (sub-pixel antialiasing looks too bold/blurry with light text on dark background)
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
-  font-weight: 500;
 }
 
 @mixin light-focus-ring() {

@@ -645,7 +645,7 @@ JS, [
                 }
             }
 
-            // Make our query customizations via EVENT_AFTER_PREPARE/EVENT_AFTER_PREPARE,
+            // Make our query customizations via EVENT_BEFORE_PREPARE/EVENT_AFTER_PREPARE,
             // so they get applied for cloned queries as well
 
             $query->attachBehavior(sprintf('%s-once', self::class), new EventBehavior([
@@ -987,7 +987,12 @@ JS, [
             ) {
                 $targetIds = $value->id ?: [];
             } else {
-                $targetIds = $this->_all($value, $element)->ids();
+                // just running $this->_all()->ids() will cause the query to get adjusted
+                // see https://github.com/craftcms/cms/issues/14674 for details
+                $targetIds = $this->_all($value, $element)
+                    ->collect()
+                    ->map(fn(ElementInterface $element) => $element->id)
+                    ->all();
             }
 
             if ($this->maintainHierarchy) {

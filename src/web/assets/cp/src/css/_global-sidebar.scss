@@ -171,6 +171,8 @@
   color: currentColor;
   cursor: pointer;
   min-height: 30px;
+  padding-inline: var(--xs);
+  font-weight: 500;
 
   &:before {
     content: '';
@@ -221,18 +223,13 @@
 }
 
 .sidebar-action--job {
+  grid-column: 2/4 !important;
   align-items: flex-start;
 
   .sidebar-action__label {
+    flex-wrap: wrap;
     padding-block: var(--xs);
-  }
-
-  &[href]:hover {
-    background-color: transparent;
-
-    .icon > span.icon > canvas#job-icon-hover {
-      opacity: 1;
-    }
+    gap: var(--xs);
   }
 
   .label {
@@ -240,6 +237,7 @@
   }
 
   .progress-label {
+    width: 100%;
     display: block;
     color: var(--gray-300);
     font-size: 11px;
@@ -257,10 +255,20 @@
       position: absolute;
       width: 16px;
       height: 16px;
+    }
+  }
 
-      &#job-icon-hover {
-        opacity: 0;
-      }
+  #job-icon-hover {
+    opacity: 0;
+  }
+
+  &:hover {
+    #job-icon-hover {
+      opacity: 1;
+    }
+
+    #job-icon-static {
+      opacity: 0;
     }
   }
 }
@@ -321,6 +329,7 @@ States
 
     .sidebar-action {
       width: var(--prefix-width);
+      padding-inline: 0;
       min-height: var(--prefix-width);
 
       &:focus-visible,

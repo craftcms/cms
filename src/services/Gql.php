@@ -1583,19 +1583,19 @@ class Gql extends Component
                 'nested' => [
                     "$prefix:create" => [
                         'label' => Craft::t('app', 'Create entries in the “{section}” {type} field', [
-                            'name' => $name,
+                            'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
                     ],
                     "$prefix:save" => [
                         'label' => Craft::t('app', 'Save entries in the “{section}” {type} field', [
-                            'name' => $name,
+                            'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
                     ],
                     "$prefix:delete" => [
                         'label' => Craft::t('app', 'Delete entries in the “{section}” {type} field', [
-                            'name' => $name,
+                            'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
                     ],

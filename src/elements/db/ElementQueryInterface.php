@@ -729,6 +729,44 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function siteId(mixed $value): static;
 
     /**
+     * Determines which site(s) the {elements} should be queried in, based on their language.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'en'` | from sites with a language of `en`.
+     * | `['en-GB', 'en-US']` | from sites with a language of `en-GB` or `en-US`.
+     * | `['not', 'en-GB', 'en-US']` | not in sites with a language of `en-GB` or `en-US`.
+     *
+     * ::: tip
+     * Elements that belong to multiple sites will be returned multiple times by default. If you
+     * only want unique elements to be returned, use [[unique()]] in conjunction with this.
+     * :::
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} from English sites #}
+     * {% set {elements-var} = {twig-method}
+     *   .language('en')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} from English sites
+     * ${elements-var} = {php-method}
+     *     ->language('en')
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static
+     * @since 4.9.0
+     */
+    public function language(mixed $value): self;
+
+    /**
      * Determines whether only elements with unique IDs should be returned by the query.
      *
      * This should be used when querying elements from multiple sites at the same time, if “duplicate” results is not

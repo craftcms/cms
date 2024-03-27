@@ -35,7 +35,8 @@ enum CmsEdition: int
     }
 
     case Solo = 0;
-    case Pro = 1;
+    case Team = 1;
+    case Pro = 2;
 
     /**
      * Returns the integer value of the edition.

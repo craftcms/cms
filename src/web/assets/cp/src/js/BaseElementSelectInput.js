@@ -138,7 +138,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     elementSelectSettings() {
       return {
         multi: this.settings.sortable,
-        filter: ':not(a):not(button)',
+        filter: (target) => {
+          return !$(target).closest('a,button').length;
+        },
         // prevent keyboard focus since element selection is only needed for drag-n-drop
         makeFocusable: false,
       };
