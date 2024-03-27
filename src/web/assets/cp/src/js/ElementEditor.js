@@ -100,6 +100,21 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.enableAutosave = Craft.autosaveDrafts;
       this.previewLinks = [];
 
+      const $actionBtn = this.isFullPage
+        ? $('#action-btn')
+        : this.slideout.$actionBtn;
+      const idPrefix = this.namespaceId('action-view');
+      const $viewAction = $actionBtn
+        ?.data('disclosureMenu')
+        ?.$container.find(`a[id^="${idPrefix}-"]`);
+      if ($viewAction?.length) {
+        const href = $viewAction.attr('href');
+        $viewAction
+          .data('targetUrl', href)
+          .attr('href', this.getTokenizedPreviewUrl(href, null, false));
+        this.previewLinks.push($viewAction);
+      }
+
       this.siteIds = Object.keys(this.settings.siteStatuses).map((siteId) => {
         return parseInt(siteId);
       });
