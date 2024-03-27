@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+- Fixed a bug where “Admin” rules were available to user conditions in Solo and Team editions.
+
 ## 5.0.0 - 2024-03-26
 
 ### Content Management
