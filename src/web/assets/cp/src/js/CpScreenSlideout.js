@@ -18,6 +18,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     $toolbar: null,
     $tabContainer: null,
     $loadSpinner: null,
+    $actionBtn: null,
     $editLink: null,
     $sidebarBtn: null,
 
@@ -312,7 +313,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
             class: 'visually-hidden',
             text: Craft.t('app', 'Actions'),
           }).insertBefore(this.$editLink);
-          const $trigger = $('<button/>', {
+          this.$actionBtn = $('<button/>', {
             class: 'btn action-btn header-btn',
             type: 'button',
             title: Craft.t('app', 'Actions'),
@@ -321,7 +322,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
             'data-disclosure-trigger': 'true',
           }).insertBefore(this.$editLink);
           $(data.actionMenu).insertBefore(this.$editLink);
-          $trigger.disclosureMenu();
+          this.$actionBtn.disclosureMenu();
+        } else {
+          this.$actionBtn = null;
         }
 
         if (data.sidebar) {

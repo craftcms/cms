@@ -1,7 +1,9 @@
 # Release Notes for Craft CMS 5
 
 ## Unreleased
+
 - Fixed a bug where “Admin” rules were available to user conditions in Solo and Team editions.
+- Fixed a bug where entries’ “View in a new tab” breadcrumb actions were linking to the canonical entry URL when editing a draft or viewing a revision. ([#14705](https://github.com/craftcms/cms/issues/14705))
 
 ## 5.0.0 - 2024-03-26
 
