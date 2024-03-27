@@ -8258,6 +8258,11 @@ body.licensing-issues {
     --row-gap: var(--m) !important;
   }
 
+  // no margin when a .field comes after a hidden item.
+  .hidden + .field {
+    margin-top: 0;
+  }
+
   & > .titlebar {
     display: grid;
     grid-template-columns: auto 1fr;
