@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a “Double-instantiating a checkbox select on an element” JavaScript warning. ([#14707](https://github.com/craftcms/cms/issues/14707))
+
 ## 4.8.6 - 2024-03-26
 
 - Added the “Craft 5 Upgrade” utility.
