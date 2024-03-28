@@ -1,3 +1,5 @@
+import './queue-manager.scss';
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.

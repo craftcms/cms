@@ -1,0 +1,1 @@
+{"version":3,"file":"css/queue-manager.css","mappings":"AAIE,yBACE,wBACA","sources":["webpack:///./queue-manager.scss"],"sourcesContent":["@charset \"UTF-8\";\n@import '@craftcms/sass/mixins';\n\n#queue-manager-utility {\n  a {\n    color: var(--link-color);\n    cursor: pointer;\n  }\n}\n"],"names":[],"sourceRoot":""}
