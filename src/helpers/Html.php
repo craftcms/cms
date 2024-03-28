@@ -96,9 +96,9 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
-        $dynamic = (bool)(ArrayHelper::remove($options, 'dynamic') ?? Craft::$app->getConfig()->getGeneral()->dynamicCsrfInputs);
+        $async = (bool)(ArrayHelper::remove($options, 'async') ?? Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
 
-        if ($dynamic) {
+        if ($async) {
             $url = UrlHelper::actionUrl('users/session-info');
 
             return <<<HTML

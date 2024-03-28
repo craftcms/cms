@@ -1019,17 +1019,17 @@ class GeneralConfig extends BaseConfig
      *
      *  ::: code
      *  ```php Static Config
-     *  ->dynamicCsrfInputs(true)
+     *  ->asyncCsrfInputs(true)
      *  ```
      *  ```shell Environment Override
-     *  CRAFT_DYNAMIC_CSRF_INPUTS=1
+     *  CRAFT_ASYNC_CSRF_INPUTS=1
      *  ```
      *  :::
      *
      * @group Security
      * @since 4.9.0
      */
-    public bool $dynamicCsrfInputs = false;
+    public bool $asyncCsrfInputs = false;
 
     /**
      * @var bool Whether front-end web requests should support basic HTTP authentication.
@@ -4226,17 +4226,17 @@ class GeneralConfig extends BaseConfig
      * Whether CSRF inputs should be injected via JavaScript for greater cache-ability.
      *
      *  ```php
-     *  ->dynamicCsrfInputs(true)
+     *  ->asyncCsrfInputs(true)
      *  ```
      *
      * @param bool $value
      * @return self
-     * @see $dynamicCsrfInputs
+     * @see $asyncCsrfInputs
      * @since 4.9.0
      */
-    public function dynamicCsrfInputs(bool $value = true): self
+    public function asyncCsrfInputs(bool $value = true): self
     {
-        $this->dynamicCsrfInputs = $value;
+        $this->asyncCsrfInputs = $value;
         return $this;
     }
 
