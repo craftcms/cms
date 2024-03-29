@@ -412,7 +412,11 @@ class DbConfig extends BaseConfig
      */
     public function getCharset(): string
     {
-        if ($this->charset === 'utf8' && $this->driver === Connection::DRIVER_MYSQL) {
+        if (
+            $this->driver === Connection::DRIVER_MYSQL &&
+            $this->charset === 'utf8' &&
+            (!isset($this->collation) || str_starts_with($this->collation, 'utf8mb4_'))
+        ) {
             // treat utf8 as an alias for utf8mb4
             // (MySQL aliases it to utf8mb3, but that's deprecated and likely to change eventually)
             return 'utf8mb4';
