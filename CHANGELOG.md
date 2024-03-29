@@ -9,6 +9,7 @@
 - Fixed an error that occurred if the `collation` database connection setting was set to `utf8_*` on MySQL. ([#14332](https://github.com/craftcms/cms/issues/14332))
 - Fixed a bug where element cards could overflow their containers within Live Preview. ([#14710](https://github.com/craftcms/cms/issues/14710))
 - Fixed a bug where links within the Queue Manager utility weren’t styled like links. ([#14716](https://github.com/craftcms/cms/issues/14716))
+- Fixed a bug where tooltips within element labels caused the element title to be read twice by screen readers.
 
 ## 5.0.0 - 2024-03-26
 
