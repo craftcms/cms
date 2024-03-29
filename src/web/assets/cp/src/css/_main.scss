@@ -3362,6 +3362,11 @@ table {
   }
 }
 
+// Adjust the columns when in live preview
+.lp-editor-container .card-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .context-label,
 .context-menu-container {
   display: inline-flex;
