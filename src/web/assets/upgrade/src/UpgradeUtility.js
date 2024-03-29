@@ -111,25 +111,10 @@ import './upgrade.scss';
             $devContainer.text(plugin.developerName);
           }
 
-          const $tdStatus = $('<td/>').appendTo($tr);
+          const $tdStatus = $('<td/>').addClass('plugin-badges').appendTo($tr);
           let noteHtml = '';
 
-          if (plugin.abandoned) {
-            $('<div/>', {
-              class: 'plugin-status plugin-abandoned',
-              text: Craft.t('app', 'Abandoned'),
-            }).appendTo($tdStatus);
-            if (plugin.replacement) {
-              noteHtml = Craft.t(
-                'app',
-                'The developer recommends using <a href="{url}">{name}</a> instead.',
-                {
-                  url: `https://plugins.craftcms.com/${plugin.replacement.handle}`,
-                  name: plugin.replacement.name,
-                }
-              );
-            }
-          } else if (plugin.latestVersion) {
+          if (plugin.latestVersion) {
             $('<div/>', {
               class: 'plugin-status plugin-ready',
               text: Craft.t('app', 'Ready'),
@@ -158,6 +143,23 @@ import './upgrade.scss';
               class: 'plugin-status plugin-not-ready',
               text: Craft.t('app', 'Not ready'),
             }).appendTo($tdStatus);
+          }
+
+          if (plugin.abandoned) {
+            $('<div/>', {
+              class: 'plugin-status plugin-abandoned',
+              text: Craft.t('app', 'Abandoned'),
+            }).appendTo($tdStatus);
+            if (plugin.replacement) {
+              noteHtml = Craft.t(
+                'app',
+                'The developer recommends using <a href="{url}">{name}</a> instead.',
+                {
+                  url: `https://plugins.craftcms.com/${plugin.replacement.handle}`,
+                  name: plugin.replacement.name,
+                }
+              );
+            }
           }
 
           if (plugin.note) {
