@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- The Craft 4 Upgrade utility now shows the upgrade status and latest compatible version for abandoned plugins.
+
 ## 3.9.12 - 2024-03-19
 
 - Craft no longer shows an alert when an installed Craft/plugin edition is a lower tier than the licensed edition.
