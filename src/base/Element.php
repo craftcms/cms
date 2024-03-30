@@ -5365,7 +5365,7 @@ JS, [
     {
         $components = [];
 
-        $metaFieldsHtml = $this->metaFieldsHtml($static);
+        $metaFieldsHtml = trim($this->metaFieldsHtml($static));
         if ($metaFieldsHtml !== '') {
             $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']) .
                 Html::tag('h2', Craft::t('app', 'Metadata'), ['class' => 'visually-hidden']);
