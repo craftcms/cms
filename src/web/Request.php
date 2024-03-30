@@ -36,7 +36,7 @@ use yii\web\NotFoundHttpException;
  * @property bool $isCpRequest Whether the control panel was requested.
  * @property bool $isSiteRequest Whether the front end site was requested.
  * @property bool $isActionRequest Whether a specific controller action was requested.
- * @property array $actionSegments The segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
+ * @property array $actionSegments The segments of the requested controller action path, if this is an action request.
  * @property bool $isLivePreview Whether this is a Live Preview request.
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
  * @property-read bool $isPreview Whether this is an element preview request.
@@ -665,7 +665,7 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns the segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
+     * Returns the segments of the requested controller action path, if this is an action request.
      *
      * @return array|null The action path segments, or `null` if this isn’t an action request.
      */
