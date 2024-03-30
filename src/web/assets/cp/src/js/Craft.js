@@ -2861,7 +2861,7 @@ $.extend($.fn, {
    */
   checkboxselect: function () {
     return this.each(function () {
-      if (!$.data(this, 'checkboxselect')) {
+      if (!$.data(this, 'checkboxSelect')) {
         new Garnish.CheckboxSelect(this);
       }
     });
