@@ -23,6 +23,7 @@ use craft\utilities\QueueManager;
 use craft\utilities\SystemMessages as SystemMessagesUtility;
 use craft\utilities\SystemReport;
 use craft\utilities\Updates as UpdatesUtility;
+use craft\utilities\Upgrade;
 use yii\base\Component;
 
 /**
@@ -66,6 +67,7 @@ class Utilities extends Component
     public function getAllUtilityTypes(): array
     {
         $utilityTypes = [
+            Upgrade::class,
             UpdatesUtility::class,
             SystemReport::class,
             ProjectConfigUtility::class,
