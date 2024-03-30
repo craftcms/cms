@@ -632,14 +632,38 @@ Craft.CustomizeSourcesModal.Source =
     createSortField: function ($container) {
       const $inputContainer = $('<div class="flex"/>');
 
+      const options = this.sourceData.sortOptions.sort((a, b) => {
+        return a.label === b.label ? 0 : a.label < b.label ? -1 : 1;
+      });
+      const groups = options.reduce(
+        (groups, o) => {
+          let index;
+          if (o.attr === 'structure') {
+            index = 0;
+          } else {
+            index = o.attr.startsWith('field:') ? 2 : 1;
+          }
+          groups[index].push(o);
+          return groups;
+        },
+        [[], [], []]
+      );
+      if (groups[2].length) {
+        groups[2].unshift({
+          optgroup: Craft.t('app', 'Fields'),
+        });
+      }
+
       const $sortAttributeSelectContainer = Craft.ui
         .createSelect({
           name: `sources[${this.sourceData.key}][defaultSort][0]`,
-          options: this.sourceData.sortOptions.map((o) => {
-            return {
-              label: Craft.escapeHtml(o.label),
-              value: o.attr,
-            };
+          options: groups.flat().map((o) => {
+            return o.optgroup
+              ? o
+              : {
+                  label: Craft.escapeHtml(o.label),
+                  value: o.attr,
+                };
           }),
           value: this.sourceData.defaultSort[0],
         })
@@ -723,7 +747,11 @@ Craft.CustomizeSourcesModal.Source =
     },
 
     createTableAttributesField: function ($container) {
-      const availableTableAttributes = this.availableTableAttributes();
+      const availableTableAttributes = this.availableTableAttributes().sort(
+        (a, b) => {
+          return a[1] === b[1] ? 0 : a[1] < b[1] ? -1 : 1;
+        }
+      );
 
       if (
         !this.sourceData.tableAttributes.length &&

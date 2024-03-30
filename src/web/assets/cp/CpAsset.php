@@ -191,6 +191,7 @@ JS;
             'Export',
             'Export…',
             'Failed',
+            'Fields',
             'Folder actions',
             'Folder created.',
             'Folder created.',

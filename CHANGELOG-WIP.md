@@ -3,6 +3,8 @@
 ### Content Management
 - It’s now possible to preview revisions. ([#14521](https://github.com/craftcms/cms/discussions/14521))
 - Element conditions can now include condition rules for Time fields. ([#14616](https://github.com/craftcms/cms/discussions/14616))
+- Sort options are now sorted alphabetically within element indexes, and custom fields’ options are now listed in a “Fields” group. ([#14725](https://github.com/craftcms/cms/issues/14725))
+- Unselected table column options are now sorted alphabetically within element indexes. 
 
 ### Development
 - Added the `language` element query param, which filters the resulting elements based on their sites’ languages. ([#14631](https://github.com/craftcms/cms/discussions/14631))
