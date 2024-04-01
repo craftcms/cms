@@ -236,10 +236,16 @@ $config = ArrayHelper::merge(
         'components' => $components,
     ],
     require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'app.php',
-    require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . "app.{$appType}.php",
-    $configService->getConfigFromFile('app'),
-    $configService->getConfigFromFile("app.{$appType}")
+    require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . "app.{$appType}.php"
 );
+
+if (App::parseBooleanEnv('$CRAFT_DISABLE_APP_CONFIG') !== true) {
+    $config = ArrayHelper::merge(
+        $config,
+        $configService->getConfigFromFile('app'),
+        $configService->getConfigFromFile("app.{$appType}")
+    );
+}
 
 if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);
