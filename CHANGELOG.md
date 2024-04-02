@@ -15,6 +15,7 @@
 - Fixed a bug where the `_includes/nav.twig` template wasn’t marking nested nav items as selected. ([#14735](https://github.com/craftcms/cms/pull/14735))
 - Fixed issues with menu options’ hover styles.
 - Fixed a bug where double-clicking on an element’s linked label or action button would cause its slideout to open, in addition to the link/button being activated. ([#14736](https://github.com/craftcms/cms/issues/14736))
+- Fixed a bug where system icons whose names ended in numbers weren’t displaying. ([#14740](https://github.com/craftcms/cms/issues/14740))
 
 ## 5.0.0 - 2024-03-26
 
