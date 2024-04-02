@@ -60,7 +60,8 @@
       {% include '_includes/permissions' with {
         subject: user.admin ? null : user,
         permissions: craft.app.userPermissions.getAssignablePermissions(user),
-        groupPermissions: user.id ? craft.app.userPermissions.getGroupPermissionsByUserId(user.id) : []
+        groupPermissions: user.id ? craft.app.userPermissions.getGroupPermissionsByUserId(user.id) : [],
+        disabled: CraftEdition != CraftPro,
       } only %}
     </div>
   </div>

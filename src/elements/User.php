@@ -1617,11 +1617,10 @@ XML;
      */
     public function can(string $permission): bool
     {
-        if (Craft::$app->edition !== CmsEdition::Pro) {
-            return true;
-        }
-
-        if ($this->admin) {
+        if (
+            $this->admin ||
+            Craft::$app->edition === CmsEdition::Solo
+        ) {
             return true;
         }
 
@@ -1654,9 +1653,11 @@ XML;
      */
     public function canAssignUserGroups(): bool
     {
-        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
-            if ($this->can("assignUserGroup:$group->uid")) {
-                return true;
+        if (Craft::$app->edition === CmsEdition::Pro) {
+            foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+                if ($this->can("assignUserGroup:$group->uid")) {
+                    return true;
+                }
             }
         }
 
@@ -2293,8 +2294,8 @@ JS, [
      */
     public function afterSave(bool $isNew): void
     {
-        // All users should be admins unless this is Craft Pro
-        if ($isNew && Craft::$app->edition !== CmsEdition::Pro) {
+        if ($isNew && Craft::$app->edition === CmsEdition::Solo) {
+            // Make sure they're an admin
             $this->admin = true;
         }
 
@@ -2378,6 +2379,14 @@ JS, [
         $this->setDirtyAttributes($dirtyAttributes);
 
         parent::afterSave($isNew);
+
+        if (Craft::$app->edition === CmsEdition::Team) {
+            // Make sure they're in the Team group
+            $group = Craft::$app->getUserGroups()->getTeamGroup();
+            if (!$this->isInGroup($group)) {
+                Craft::$app->getUsers()->assignUserToGroups($this->id, [$group->id]);
+            }
+        }
 
         if (!$isNew && $changePassword) {
             // Destroy all other sessions for this user

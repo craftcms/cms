@@ -1086,22 +1086,24 @@ class UsersController extends Controller
             }
         }
 
-        // Fire an 'beforeAssignGroupsAndPermissions' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-            $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                'user' => $user,
-            ]));
-        }
+        if (Craft::$app->edition === CmsEdition::Pro) {
+            // Fire an 'beforeAssignGroupsAndPermissions' event
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                    'user' => $user,
+                ]));
+            }
 
-        // Assign user groups and permissions if the current user is allowed to do that
-        $this->_saveUserGroups($user, $currentUser);
-        $this->_saveUserPermissions($user, $currentUser);
+            // Assign user groups and permissions if the current user is allowed to do that
+            $this->_saveUserGroups($user, $currentUser);
+            $this->_saveUserPermissions($user, $currentUser);
 
-        // Fire an 'afterAssignGroupsAndPermissions' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-            $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                'user' => $user,
-            ]));
+            // Fire an 'afterAssignGroupsAndPermissions' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                    'user' => $user,
+                ]));
+            }
         }
 
         return $this->asSuccess(Craft::t('app', 'Permissions saved.'));
@@ -1314,8 +1316,12 @@ JS);
             self::SCREEN_PROFILE => true,
             self::SCREEN_ADDRESSES => $user->id,
             self::SCREEN_PERMISSIONS => (
-                Craft::$app->edition === CmsEdition::Pro &&
-                ($currentUser->can('assignUserPermissions') || $currentUser->canAssignUserGroups())
+                Craft::$app->edition->value >= CmsEdition::Team->value &&
+                (
+                    (Craft::$app->edition === CmsEdition::Team && $currentUser->admin) ||
+                    (Craft::$app->edition === CmsEdition::Pro && $currentUser->can('assignUserPermissions')) ||
+                    $currentUser->canAssignUserGroups()
+                )
             ),
             self::SCREEN_PREFERENCES => $user->getIsCurrent(),
             self::SCREEN_PASSWORD => $user->getIsCurrent(),
