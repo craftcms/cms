@@ -12,6 +12,7 @@
 - Fixed a bug where links within the Queue Manager utility weren’t styled like links. ([#14716](https://github.com/craftcms/cms/issues/14716))
 - Fixed a bug where tooltips within element labels caused the element title to be read twice by screen readers.
 - Fixed a styling issue when editing an entry without any meta fields. ([#14721](https://github.com/craftcms/cms/issues/14721))
+- Fixed a bug where the `_includes/nav.twig` template wasn’t marking nested nav items as selected. ([#14735](https://github.com/craftcms/cms/pull/14735))
 
 ## 5.0.0 - 2024-03-26
 
