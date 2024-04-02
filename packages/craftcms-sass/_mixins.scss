@@ -634,8 +634,12 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin menu-item-active-styles {
-  color: var(--white);
+  color: var(--white) !important;
   background-color: var(--dark-sel-color);
+
+  svg {
+    @include svg-mask(var(--white));
+  }
 }
 
 @mixin disclosure-link-hover-styles {
