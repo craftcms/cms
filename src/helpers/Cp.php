@@ -2787,7 +2787,7 @@ JS;
 
         try {
             // system icon name?
-            if (preg_match('/^[a-z\-]+$/', $icon)) {
+            if (preg_match('/^[a-z\-]+(\d?)$/', $icon)) {
                 $path = match ($icon) {
                     'asterisk-slash', 'diamond-slash', 'element-card', 'element-card-slash', 'element-cards', 'graphql',
                     'grip-dots', 'image-slash', 'list-flip', 'list-tree-flip', 'share-flip' =>
