@@ -50,7 +50,7 @@
                 {% endif %}
 
                 {% if props.nested ?? false %}
-                    {{ permissionList(subject, groupPermissions, props.nested, permissionName~'-nested', not checked) }}
+                    {{ permissionList(subject, groupPermissions, props.nested, permissionName~'-nested', disabled or not checked) }}
                 {% endif %}
             </li>
         {% endfor %}
