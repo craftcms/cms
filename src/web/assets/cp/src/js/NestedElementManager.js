@@ -382,10 +382,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
     initElement($element) {
       if (Garnish.hasAttr($element, 'data-editable')) {
         this.addListener($element, 'dblclick,taphold', (ev) => {
-          if (
-            ['A', 'BUTTON'].includes(ev.target.nodeName) ||
-            ['A', 'BUTTON'].includes(ev.target.parentNode.nodeName)
-          ) {
+          if ($(ev.target).closest('a,button').length) {
             // Let the link/button do its thing
             return;
           }
