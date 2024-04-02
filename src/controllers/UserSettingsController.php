@@ -61,22 +61,8 @@ class UserSettingsController extends Controller
                 $group = Craft::$app->getUserGroups()->getTeamGroup();
             }
 
-            $crumbs = [
-                ['label' => Craft::t('app', 'Settings'), 'url' => 'settings'],
-                ['label' => Craft::t('app', 'Users'), 'url' => 'settings/users'],
-                ['label' => Craft::t('app', 'User Group'), 'url' => 'settings/users'],
-            ];
-
-            if ($group->id) {
-                $title = Craft::t('app', 'Edit User Group');
-            } else {
-                $title = Craft::t('app', 'Create a new user group');
-            }
-
             return $this->renderTemplate('settings/users/groups/_team.twig', compact(
                 'group',
-                'crumbs',
-                'title',
             ));
         }
 
