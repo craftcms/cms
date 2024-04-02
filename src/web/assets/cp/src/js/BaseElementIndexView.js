@@ -83,7 +83,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       // Enable inline element editing if this is an index page
       if (this.elementIndex.isAdministrative) {
         this._handleElementEditing = (ev) => {
-          if (['A', 'BUTTON'].includes(ev.target.nodeName)) {
+          if (
+            ['A', 'BUTTON'].includes(ev.target.nodeName) ||
+            ['A', 'BUTTON'].includes(ev.target.parentNode.nodeName)
+          ) {
             // Let the link do its thing
             return;
           }
