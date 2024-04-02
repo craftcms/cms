@@ -1205,6 +1205,9 @@ $.extend(Craft, {
       grouped.__root__ = [];
     }
 
+    // we have to reverse the order as need to go from most to least specific names
+    let reversedDeltaNames = deltaNames.reverse();
+
     for (let name of deltaNames) {
       grouped[name] = [];
     }
@@ -1216,7 +1219,7 @@ $.extend(Craft, {
 
     paramLoop: for (let param of params) {
       // loop through the delta names from most -> least specific
-      for (let name of deltaNames) {
+      for (let name of reversedDeltaNames) {
         const paramName = param.substring(0, name.length + 1);
         if ([`${name}=`, `${name}[`].includes(paramName)) {
           if (typeof grouped[name] === 'undefined') {
