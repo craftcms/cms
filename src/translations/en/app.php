@@ -1512,6 +1512,8 @@ return [
     'Tag' => 'Tag',
     'Tags' => 'Tags',
     'Teal' => 'Teal',
+    'Team permissions can be managed from {link}.' => 'Team permissions can be managed from {link}.',
+    'Team permissions can be managed from {path} on a development environment.' => 'Team permissions can be managed from {path} on a development environment.',
     'Telephone' => 'Telephone',
     'Temp files' => 'Temp files',
     'Template caches' => 'Template caches',
