@@ -20,6 +20,7 @@
 - Fixed a bug where the “Utilities” global nav item could get two badge counts.
 - Fixed a bug where custom fields whose previous types were missing would lose their values when updating to Craft 5.
 - Fixed a bug where Dropdown fields could be marked as invalid on save, if the saved value was invalid and they were initially marked as changed (to the default value) on page load. ([#14738](https://github.com/craftcms/cms/pull/14738))
+- Fixed a bug where double-clicking on an element’s label within an element selection modal wasn’t selecting the element. ([#14751](https://github.com/craftcms/cms/issues/14751))
 
 ## 5.0.0 - 2024-03-26
 

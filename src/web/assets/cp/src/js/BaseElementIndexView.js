@@ -59,7 +59,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
             filter: (target) => {
-              return !$(target).closest('a,.toggle,.btn').length;
+              return !$(target).closest('a[href],.toggle,.btn').length;
             },
             checkboxMode: this.settings.checkboxMode,
             onSelectionChange: this.onSelectionChange.bind(this),
@@ -83,7 +83,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       // Enable inline element editing if this is an index page
       if (this.elementIndex.isAdministrative) {
         this._handleElementEditing = (ev) => {
-          if ($(ev.target).closest('a,button').length) {
+          if ($(ev.target).closest('a[href],button').length) {
             // Let the link/button do its thing
             return;
           }
