@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.8.7 - 2024-04-03
 
 - The Craft 5 Upgrade utility now shows the upgrade status and latest compatible version for abandoned plugins.
 - Fixed a “Double-instantiating a checkbox select on an element” JavaScript warning. ([#14707](https://github.com/craftcms/cms/issues/14707))
