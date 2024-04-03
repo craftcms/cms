@@ -1205,8 +1205,8 @@ $.extend(Craft, {
       grouped.__root__ = [];
     }
 
-    // we have to reverse the order as need to go from most to least specific names
-    let reversedDeltaNames = deltaNames.reverse();
+    // sort delta names from most to least specific
+    deltaNames = deltaNames.sort((a, b) => b.length - a.length);
 
     for (let name of deltaNames) {
       grouped[name] = [];
@@ -1218,8 +1218,7 @@ $.extend(Craft, {
     params = params.map((p) => decodeURIComponent(p));
 
     paramLoop: for (let param of params) {
-      // loop through the delta names from most -> least specific
-      for (let name of reversedDeltaNames) {
+      for (let name of deltaNames) {
         const paramName = param.substring(0, name.length + 1);
         if ([`${name}=`, `${name}[`].includes(paramName)) {
           if (typeof grouped[name] === 'undefined') {
