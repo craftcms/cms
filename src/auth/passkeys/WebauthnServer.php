@@ -94,6 +94,12 @@ class WebauthnServer
         );
     }
 
+    /**
+     * Return the Symphony Serializer that will deal with serialization/deserialization of data.
+     *
+     * @return SerializerInterface
+     * @see https://webauthn-doc.spomky-labs.com/v/v4.8/pure-php/input-loading#the-serializer
+     */
     public function getSerializer(): SerializerInterface
     {
         $attestationStatementSupportManager = AttestationStatementSupportManager::create();
