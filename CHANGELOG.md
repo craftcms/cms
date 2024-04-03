@@ -3,6 +3,7 @@
 ## Unreleased
 
 - The Craft 4 Upgrade utility now shows the upgrade status and latest compatible version for abandoned plugins.
+- Fixed a bug where the Updates utility could include submit buttons without labels for abandoned plugins.
 
 ## 3.9.12 - 2024-03-19
 
