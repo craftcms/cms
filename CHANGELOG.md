@@ -18,6 +18,7 @@
 - Fixed a bug where system icons whose names ended in numbers weren’t displaying. ([#14740](https://github.com/craftcms/cms/issues/14740))
 - Fixed an error that could occur when creating a passkey. ([#14745](https://github.com/craftcms/cms/issues/14745))
 - Fixed a bug where the “Utilities” global nav item could get two badge counts.
+- Fixed a bug where custom fields whose previous types were missing would lose their values when updating to Craft 5.
 
 ## 5.0.0 - 2024-03-26
 
