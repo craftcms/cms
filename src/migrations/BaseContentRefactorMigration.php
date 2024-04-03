@@ -234,10 +234,13 @@ class BaseContentRefactorMigration extends Migration
         array &$fieldColumns,
         array &$flatFieldColumns,
     ): bool {
-        $dbType = $field::dbType();
-
-        if ($dbType === null) {
-            return false;
+        if ($field instanceof MissingField) {
+            $dbType = Schema::TYPE_TEXT;
+        } else {
+            $dbType = $field::dbType();
+            if ($dbType === null) {
+                return false;
+            }
         }
 
         $primaryColumn = sprintf(
