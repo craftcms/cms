@@ -16,6 +16,7 @@ use Cose\Algorithm\Signature\RSA\RS256;
 use Cose\Algorithm\Signature\RSA\RS384;
 use Cose\Algorithm\Signature\RSA\RS512;
 use Cose\Algorithms;
+use Symfony\Component\Serializer\SerializerInterface;
 use Webauthn\AttestationStatement\AttestationObjectLoader;
 use Webauthn\AttestationStatement\AttestationStatementSupportManager;
 use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
@@ -23,7 +24,7 @@ use Webauthn\AuthenticationExtensions\ExtensionOutputCheckerHandler;
 use Webauthn\AuthenticatorAssertionResponseValidator;
 use Webauthn\AuthenticatorAttestationResponseValidator;
 use Webauthn\AuthenticatorSelectionCriteria;
-use Webauthn\PublicKeyCredentialLoader;
+use Webauthn\Denormalizer\WebauthnSerializerFactory;
 use Webauthn\PublicKeyCredentialParameters;
 use Webauthn\TokenBinding\IgnoreTokenBindingHandler;
 
@@ -43,6 +44,7 @@ class WebauthnServer
      *
      * @return IgnoreTokenBindingHandler
      * @see https://webauthn-doc.spomky-labs.com/v/v4.5/pure-php/the-hard-way#token-binding-handler
+     * todo: remove when updating to web-auth 5.0
      */
     public function getTokenBindingHandler(): IgnoreTokenBindingHandler
     {
@@ -80,16 +82,18 @@ class WebauthnServer
     }
 
     /**
-     * Returns the object that will load the Public Key.
+     * Return the Symphony Serializer that will deal with serialization/deserialization of data.
      *
-     * @return PublicKeyCredentialLoader
-     * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#public-key-credential-loader
+     * @return SerializerInterface
+     * @see https://webauthn-doc.spomky-labs.com/v/v4.8/pure-php/input-loading#the-serializer
      */
-    public function getPublicKeyCredentialLoader(): PublicKeyCredentialLoader
+    public function getSerializer(): SerializerInterface
     {
-        return PublicKeyCredentialLoader::create(
-            $this->getAttestationObjectLoader()
-        );
+        $attestationStatementSupportManager = AttestationStatementSupportManager::create();
+        $attestationStatementSupportManager->add(NoneAttestationStatementSupport::create());
+        $factory = new WebauthnSerializerFactory($attestationStatementSupportManager);
+
+        return $factory->create();
     }
 
     /**
@@ -141,8 +145,8 @@ class WebauthnServer
     {
         return AuthenticatorAttestationResponseValidator::create(
             $this->getAttestationStatementManager(),
-            new CredentialRepository(),
-            $this->getTokenBindingHandler(),
+            new CredentialRepository(), // todo: set to null when updating to web-auth 5.0
+            $this->getTokenBindingHandler(), // todo: set to null when updating to web-auth 5.0
             $this->getExtensionOutputCheckerHandler(),
         );
     }
@@ -157,8 +161,8 @@ class WebauthnServer
     {
         return AuthenticatorAssertionResponseValidator::create(
             new CredentialRepository(),
-            $this->getTokenBindingHandler(),
-            $this->getExtensionOutputCheckerHandler(),
+            $this->getTokenBindingHandler(), // todo: set to null when updating to web-auth 5.0
+            $this->getExtensionOutputCheckerHandler(), // todo: set to null when updating to web-auth 5.0
             $this->getAlgorithmManager(),
         );
     }

@@ -29,6 +29,7 @@ use ParagonIE\ConstantTime\Base64UrlSafe;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
+use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
@@ -445,8 +446,19 @@ class Auth extends Component
             return false;
         }
 
-        $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::createFromArray(Json::decode($optionsJson));
-        $publicKeyCredential = $this->webauthnServer()->getPublicKeyCredentialLoader()->load($credentials);
+        $serializer = $this->webauthnServer()->getSerializer();
+
+        $publicKeyCredentialCreationOptions = $serializer->deserialize(
+            $optionsJson,
+            PublicKeyCredentialCreationOptions::class,
+            'json',
+        );
+
+        $publicKeyCredential = $serializer->deserialize(
+            $credentials,
+            PublicKeyCredential::class,
+            'json',
+        );
         $authenticatorAttestationResponse = $publicKeyCredential->response;
 
         if (!$authenticatorAttestationResponse instanceof AuthenticatorAttestationResponse) {
@@ -497,14 +509,20 @@ class Auth extends Component
         PublicKeyCredentialRequestOptions|array|string $requestOptions,
         string $response,
     ): bool {
-        if (is_array($requestOptions)) {
-            $requestOptions = PublicKeyCredentialRequestOptions::createFromArray($requestOptions);
-        } elseif (is_string($requestOptions)) {
-            $requestOptions = PublicKeyCredentialRequestOptions::createFromString($requestOptions);
-        }
+        $serializer = $this->webauthnServer()->getSerializer();
+
+        $requestOptions = $serializer->deserialize(
+            $requestOptions,
+            PublicKeyCredentialRequestOptions::class,
+            'json',
+        );
 
         $userEntity = $this->passkeyUserEntity($user);
-        $publicKeyCredential = $this->webauthnServer()->getPublicKeyCredentialLoader()->load($response);
+        $publicKeyCredential = $serializer->deserialize(
+            $response,
+            PublicKeyCredential::class,
+            'json',
+        );
         $authenticatorAssertionResponse = $publicKeyCredential->response;
 
         if (!$authenticatorAssertionResponse instanceof AuthenticatorAssertionResponse) {
@@ -562,13 +580,11 @@ class Auth extends Component
      */
     private function passkeyUserEntity(User $user): PublicKeyCredentialUserEntity
     {
-        $data = [
-            'name' => $user->email,
-            'id' => Base64UrlSafe::encodeUnpadded($user->uid),
-            'displayName' => $user->getName(),
-        ];
-
-        return PublicKeyCredentialUserEntity::createFromArray($data);
+        return PublicKeyCredentialUserEntity::create(
+            $user->email,
+            Base64UrlSafe::encodeUnpadded($user->uid),
+            $user->getName(),
+        );
     }
 
     /**
@@ -578,9 +594,9 @@ class Auth extends Component
      */
     private function passkeyRpEntity(): PublicKeyCredentialRpEntity
     {
-        return PublicKeyCredentialRpEntity::createFromArray([
-            'name' => Craft::$app->getSystemName(),
-            'id' => Craft::$app->getRequest()->getHostName(),
-        ]);
+        return PublicKeyCredentialRpEntity::create(
+            Craft::$app->getSystemName(),
+            Craft::$app->getRequest()->getHostName(),
+        );
     }
 }
