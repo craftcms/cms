@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.1 - 2024-04-03
 
 - Fixed a “Double-instantiating a checkbox select on an element” JavaScript warning. ([#14707](https://github.com/craftcms/cms/issues/14707))
 - Fixed a bug where `craft\cache\DbCache` was attempting to store values beyond the `cache.data` column’s storage capacity.
