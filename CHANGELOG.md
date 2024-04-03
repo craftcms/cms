@@ -5,6 +5,7 @@
 - The Craft 5 Upgrade utility now shows the upgrade status and latest compatible version for abandoned plugins.
 - Fixed a “Double-instantiating a checkbox select on an element” JavaScript warning. ([#14707](https://github.com/craftcms/cms/issues/14707))
 - Fixed a bug where `craft\cache\DbCache` was attempting to store values beyond the `cache.data` column’s storage capacity.
+- Fixed a bug where the Updates utility could include submit buttons without labels for abandoned plugins.
 
 ## 4.8.6 - 2024-03-26
 
