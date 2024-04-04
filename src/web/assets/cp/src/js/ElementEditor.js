@@ -107,7 +107,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       const $viewAction = $actionBtn
         ?.data('disclosureMenu')
         ?.$container.find(`a[id^="${idPrefix}-"]`);
-      if ($viewAction?.length) {
+      if ($viewAction?.length && this.settings.previewTargets.length === 1) {
         const href = $viewAction.attr('href');
         $viewAction
           .data('targetUrl', href)
