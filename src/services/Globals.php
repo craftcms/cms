@@ -506,11 +506,11 @@ class Globals extends Component
                 ->where(['id' => $globalSetRecord->id])
                 ->scalar();
 
+            Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
+
             if ($fieldLayoutId) {
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
-
-            Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
 
             $transaction->commit();
         } catch (Throwable $e) {
