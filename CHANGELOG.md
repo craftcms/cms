@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where `craft\helpers\ElementHelper::siteStatusesForElement()` wasn’t working for soft-deleted elements. ([#14753](https://github.com/craftcms/cms/issues/14753))
+
 ## 4.8.7 - 2024-04-03
 
 - The Craft 5 Upgrade utility now shows the upgrade status and latest compatible version for abandoned plugins.
