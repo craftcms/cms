@@ -5,6 +5,7 @@
 - Fixed a bug where `craft\helpers\ElementHelper::siteStatusesForElement()` wasn’t working for soft-deleted elements. ([#14753](https://github.com/craftcms/cms/issues/14753))
 - Fixed a bug where the Queue Manager was listing delayed jobs before others. ([#14755](https://github.com/craftcms/cms/discussions/14755))
 - Fixed an error that occurred when editing elements without any preview targets. ([#14754](https://github.com/craftcms/cms/issues/14754))
+- Fixed a bug where it wasn’t possible to delete global sets when the CKEditor plugin was installed. ([#14757](https://github.com/craftcms/cms/issues/14757))
 
 ## 5.0.1 - 2024-04-03
 
