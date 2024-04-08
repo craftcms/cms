@@ -6,6 +6,9 @@
 - Sort options are now sorted alphabetically within element indexes, and custom fields’ options are now listed in a “Fields” group. ([#14725](https://github.com/craftcms/cms/issues/14725))
 - Unselected table column options are now sorted alphabetically within element indexes. 
 
+### Administration
+- `resave` commands now support an `--if-invalid` option. ([#14731](https://github.com/craftcms/cms/issues/14731))
+
 ### Development
 - Added the `language` element query param, which filters the resulting elements based on their sites’ languages. ([#14631](https://github.com/craftcms/cms/discussions/14631))
 - GraphQL responses now include full exception details, when Dev Mode is enabled or an admin is signed in with the “Show full exception views when Dev Mode is disabled” preference enabled. ([#14527](https://github.com/craftcms/cms/issues/14527))
