@@ -5331,10 +5331,19 @@ JS, [
     protected function inlineAttributeInputHtml(string $attribute): string
     {
         // Is this a custom field?
+        $field = null;
         if (preg_match('/^field:(.+)/', $attribute, $matches)) {
             $fieldUid = $matches[1];
             $field = Craft::$app->getFields()->getFieldByUid($fieldUid);
+        } elseif (preg_match('/^fieldInstance:(.+)/', $attribute, $matches)) {
+            $instanceUid = $matches[1];
+            $layoutElement = $this->getFieldLayout()?->getElementByUid($instanceUid);
+            if ($layoutElement instanceof CustomField) {
+                $field = $layoutElement->getField();
+            }
+        }
 
+        if ($field !== null) {
             if ($field instanceof InlineEditableFieldInterface) {
                 // Was this field value eager-loaded?
                 if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {

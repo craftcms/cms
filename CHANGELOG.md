@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where LTR and RTL characters weren’t getting stripped from sanitized asset filenames. ([#14711](https://github.com/craftcms/cms/issues/14711))
+- Fixed a bug where fields with overridden handles weren’t editable from element indexes. ([#14767](https://github.com/craftcms/cms/issues/14767))
 
 ## 5.0.2 - 2024-04-05
 
