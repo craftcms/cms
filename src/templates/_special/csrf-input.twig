@@ -1,0 +1,21 @@
+{{ hiddenInput(input.name, input.value, input.options) }}
+
+{% if async %}
+    <script>
+      (function() {
+        const currentScript = document.currentScript;
+
+        fetch('{{ url }}', {
+          headers: {
+            'Accept': 'application/json',
+          }
+        }).then(response => response.json())
+          .then(data => {
+            const input = currentScript.previousElementSibling;
+
+            input.name = data.csrfTokenName;
+            input.value = data.csrfTokenValue;
+          });
+      })();
+    </script>
+{% endif %}

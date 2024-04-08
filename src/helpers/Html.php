@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\Asset;
 use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;
+use craft\web\View;
 use enshrined\svgSanitize\Sanitizer;
 use Throwable;
 use yii\base\Exception;
@@ -98,36 +99,22 @@ class Html extends \yii\helpers\Html
         $request = Craft::$app->getRequest();
         $async = (bool)(ArrayHelper::remove($options, 'async') ?? Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
 
-        if ($async) {
-            $url = UrlHelper::actionUrl('users/session-info');
-
-            return <<<HTML
-<script>
-    const currentScript = document.currentScript;
-    
-    fetch('$url', {
-        headers: {
-            'Accept': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = data.csrfTokenName;
-        input.value = data.csrfTokenValue;
-        currentScript.after(input);
-    })
-</script>
-HTML;
+        if (!$async) {
+            Craft::$app->getResponse()->setNoCacheHeaders();
         }
 
-        Craft::$app->getResponse()->setNoCacheHeaders();
-
-        return static::hiddenInput(
-            $request->csrfParam,
-            $request->getCsrfToken(),
-            $options,
+        return Craft::$app->getView()->renderTemplate(
+            '_special/csrf-input',
+            [
+                'async' => $async,
+                'url' => UrlHelper::actionUrl('users/session-info'),
+                'input' => [
+                    'name' => $request->csrfParam,
+                    'value' => $request->getCsrfToken(),
+                    'options' => $options,
+                ],
+            ],
+            View::TEMPLATE_MODE_CP,
         );
     }
 
