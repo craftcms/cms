@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where LTR and RTL characters weren’t getting stripped from sanitized asset filenames. ([#14711](https://github.com/craftcms/cms/issues/14711))
+
 ## 5.0.2 - 2024-04-05
 
 - Fixed a bug where `craft\helpers\ElementHelper::siteStatusesForElement()` wasn’t working for soft-deleted elements. ([#14753](https://github.com/craftcms/cms/issues/14753))
