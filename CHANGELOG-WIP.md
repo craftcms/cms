@@ -14,6 +14,7 @@
 - Added `craft\services\Sites::getSitesByLanguage()`.
 - Added `craft\web\ErrorHandler::exceptionAsArray()`.
 - Added `craft\web\ErrorHandler::showExceptionDetails()`.
+- `craft\base\NameTrait::prepareNamesForSave()` no longer updates the name properties if `fullName`, `firstName`, and `lastName` are already set. ([#14665](https://github.com/craftcms/cms/issues/14665))
 
 ### System
 - Craft now calls `setlocale()` based on the target language, so that `SORT_LOCALE_STRING` behaves as expected. ([#14509](https://github.com/craftcms/cms/issues/14509), [#14513](https://github.com/craftcms/cms/pull/14513))
