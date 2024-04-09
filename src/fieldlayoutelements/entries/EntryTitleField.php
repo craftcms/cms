@@ -74,13 +74,11 @@ class EntryTitleField extends TitleField
             throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', __CLASS__));
         }
 
-        $type = $element->getType();
-
-        if (!$type->hasTitleField) {
+        if (!$element->getType()->hasTitleField) {
             return null;
-        } else {
-            $this->required = true;
         }
+
+        $this->required = true;
 
         return parent::inputHtml($element, $static);
     }
