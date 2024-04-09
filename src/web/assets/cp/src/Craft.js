@@ -100,4 +100,5 @@ import './js/UserIndex.js';
 import './js/CraftGlobalSidebar.js';
 import './js/CraftDisclosure.js';
 import './js/CraftTooltip.js';
-import './js/CraftElementLabel';
+import './js/CraftElementLabel.js';
+import './js/CraftScrollContainer.js';
