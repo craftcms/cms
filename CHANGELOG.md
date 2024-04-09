@@ -3,7 +3,12 @@
 ## Unreleased
 
 - Fixed a bug where LTR and RTL characters weren’t getting stripped from sanitized asset filenames. ([#14711](https://github.com/craftcms/cms/issues/14711))
+- Fixed a bug where admin table row reordering wasn’t working in Safari. ([#14752](https://github.com/craftcms/cms/issues/14752))
+- Fixed a bug where the `utils/fix-field-layout-uids` command wasn’t looking at field layouts defined with a `fieldLayout` key in the project config.
+- Fixed a bug where element indexes’ View menus could show the “Sort by” field when the structure view was selected. ([#14780](https://github.com/craftcms/cms/issues/14780))
 - Fixed a bug where fields with overridden handles weren’t editable from element indexes. ([#14767](https://github.com/craftcms/cms/issues/14767))
+- Fixed a bug where element chips within element cards were getting action menus and drag handles within relation fields. ([#14778](https://github.com/craftcms/cms/issues/14778))
+- Fixed a bug where elements could display the wrong nested field value, if the field’s handle was overridden. ([#14767](https://github.com/craftcms/cms/issues/14767))
 
 ## 5.0.2 - 2024-04-05
 

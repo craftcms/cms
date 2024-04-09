@@ -1,7 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
-
-import $ from 'jquery';
+/** global: $ */
+/** global: jQuery */
 
 /**
  * Base component select input

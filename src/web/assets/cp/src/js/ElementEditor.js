@@ -1,7 +1,7 @@
-import $ from 'jquery';
-
 /** global: Craft */
 /** global: Garnish */
+/** global: $ */
+/** global: jQuery */
 
 /**
  * Element Editor
