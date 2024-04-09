@@ -1047,10 +1047,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$clearSearchBtn.removeClass('hidden');
       this.searching = true;
       this.sortByScore = true;
-
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
     },
 
     clearSearch: function (updateElements) {
@@ -1078,10 +1074,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$clearSearchBtn.addClass('hidden');
       this.searching = false;
       this.sortByScore = false;
-
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
     },
 
     setInstanceState: function (key, value) {
@@ -1705,9 +1697,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // If score, keep track of that separately
       if (attr === 'score') {
         this.sortByScore = true;
-        if (this.activeViewMenu) {
-          this.activeViewMenu.updateSortField();
-        }
         return;
       }
 
@@ -1752,11 +1741,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         sort: dir,
         orderHistory: history,
       });
-
-      // Update the view menu
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
 
       if (this.settings.context === 'index') {
         // Update the query string
@@ -2215,11 +2199,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           .addClass('active')
           .attr('aria-pressed', 'true');
       }
-
-      // Update the view menu
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
     },
 
     createView: function (mode, settings) {
@@ -2540,10 +2519,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         queryParam = 'drafts';
       } else {
         this.status = queryParam = $option.data('status') || null;
-      }
-
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
       }
 
       if (this.settings.context === 'index') {
@@ -3417,6 +3392,7 @@ const ViewMenu = Garnish.Base.extend({
 
     this.menu.on('show', () => {
       this.$trigger.addClass('active');
+      this.updateSortField();
     });
 
     this.menu.on('hide', () => {

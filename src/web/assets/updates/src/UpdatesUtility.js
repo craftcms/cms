@@ -161,7 +161,9 @@ import './updates.scss';
       this.updatesPage = updatesPage;
       this.updateInfo = updateInfo;
       this.isPlugin = isPlugin;
-      this.installable = this.available = !!this.updateInfo.releases.length;
+      this.installable = this.available =
+        this.updateInfo.status !== 'phpIssue' &&
+        !!this.updateInfo.releases.length;
 
       this.createPane();
       this.initReleases();
