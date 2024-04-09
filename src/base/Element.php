@@ -5291,7 +5291,7 @@ JS, [
                 if (preg_match('/^(field|fieldInstance):(.+)/', $attribute, $matches)) {
                     $uid = $matches[2];
                     if ($matches[1] === 'field') {
-                        $field = $this->getFieldLayout()?->getFieldByUid($uid);
+                        $field = Craft::$app->getFields()->getFieldByUid($uid);
                     } else {
                         $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
                         $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
