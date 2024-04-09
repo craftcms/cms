@@ -8,6 +8,7 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\MissingField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
@@ -118,7 +119,13 @@ class BaseContentRefactorMigration extends Migration
 
             foreach ($fieldColumns as $layoutElementUid => $column) {
                 $field = $fieldsByUid[$layoutElementUid];
-                $dbType = $field::dbType();
+
+                if ($field instanceof MissingField) {
+                    // Figure it out from the actual DB column
+                    $dbType = $contentTableSchema->getColumn($column)?->dbType;
+                } else {
+                    $dbType = $field::dbType();
+                }
 
                 if (is_array($column)) {
                     /** @var array $dbType */
@@ -227,10 +234,13 @@ class BaseContentRefactorMigration extends Migration
         array &$fieldColumns,
         array &$flatFieldColumns,
     ): bool {
-        $dbType = $field::dbType();
-
-        if ($dbType === null) {
-            return false;
+        if ($field instanceof MissingField) {
+            $dbType = Schema::TYPE_TEXT;
+        } else {
+            $dbType = $field::dbType();
+            if ($dbType === null) {
+                return false;
+            }
         }
 
         $primaryColumn = sprintf(
