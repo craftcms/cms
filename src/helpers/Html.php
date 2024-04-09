@@ -101,18 +101,13 @@ class Html extends \yii\helpers\Html
 
         if (!$async) {
             Craft::$app->getResponse()->setNoCacheHeaders();
+            return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
         }
 
         return Craft::$app->getView()->renderTemplate(
-            '_special/csrf-input',
+            '_special/async-csrf-input',
             [
-                'async' => $async,
                 'url' => UrlHelper::actionUrl('users/session-info'),
-                'input' => [
-                    'name' => $request->csrfParam,
-                    'value' => $request->getCsrfToken(),
-                    'options' => $options,
-                ],
             ],
             View::TEMPLATE_MODE_CP,
         );
