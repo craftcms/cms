@@ -7,6 +7,7 @@
 - Fixed a bug where the `utils/fix-field-layout-uids` command wasn’t looking at field layouts defined with a `fieldLayout` key in the project config.
 - Fixed a bug where element indexes’ View menus could show the “Sort by” field when the structure view was selected. ([#14780](https://github.com/craftcms/cms/issues/14780))
 - Fixed a bug where fields with overridden handles weren’t editable from element indexes. ([#14767](https://github.com/craftcms/cms/issues/14767))
+- Fixed a bug where element chips within element cards were getting action menus and drag handles within relation fields. ([#14778](https://github.com/craftcms/cms/issues/14778))
 
 ## 5.0.2 - 2024-04-05
 

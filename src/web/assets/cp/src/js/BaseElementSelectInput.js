@@ -118,7 +118,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getElements: function () {
-      return this.$elementsContainer.find('.element');
+      return this.$elementsContainer.find('> li > .element');
     },
 
     getAddElementsBtn: function () {
@@ -327,7 +327,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             title: Craft.t('app', 'Reorder'),
             'aria-label': Craft.t('app', 'Reorder'),
             'aria-describedby': $element.find('.label').attr('id'),
-          }).appendTo($element.find('.chip-actions,.card-actions'));
+          }).appendTo(
+            $element.find(
+              '> .chip-content > .chip-actions, > .card-actions-container > .card-actions'
+            )
+          );
         }
       }
 
