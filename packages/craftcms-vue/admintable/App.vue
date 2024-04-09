@@ -1150,7 +1150,7 @@
   }
 
   .vue-admin-table-drag {
-    background: #f3f7fc;
+    opacity: 0;
   }
 
   table thead th.sortable:hover {
