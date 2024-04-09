@@ -9,6 +9,7 @@
 - Fixed a bug where fields with overridden handles weren’t editable from element indexes. ([#14767](https://github.com/craftcms/cms/issues/14767))
 - Fixed a bug where element chips within element cards were getting action menus and drag handles within relation fields. ([#14778](https://github.com/craftcms/cms/issues/14778))
 - Fixed a bug where elements could display the wrong nested field value, if the field’s handle was overridden. ([#14767](https://github.com/craftcms/cms/issues/14767))
+- Fixed a bug where entries’ Title fields weren’t showing a required indicator. ([#14773](https://github.com/craftcms/cms/issues/14773))
 
 ## 5.0.2 - 2024-04-05
 
