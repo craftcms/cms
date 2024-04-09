@@ -1,8 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
-
-import $ from 'jquery';
-import Garnish from '../../../garnish/src';
+/** global: $ */
+/** global: jQuery */
 
 /**
  * Element index class
