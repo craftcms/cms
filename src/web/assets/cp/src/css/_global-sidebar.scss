@@ -213,7 +213,10 @@
   }
 
   &:before {
-    @include left(calc((30px / 2) - (var(--indicator-size) / 2)));
+    // magic number 19 = prefix-width (30) / 2 + inline-start-padding  (4)
+    inset-inline-start: calc(
+      var(--prefix-width) / 2 + var(--xs) - (var(--indicator-size) / 2)
+    );
     width: var(--indicator-size);
     height: var(--indicator-size);
     border-radius: 100%;
