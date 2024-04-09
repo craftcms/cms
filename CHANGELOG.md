@@ -5,6 +5,7 @@
 - Fixed a bug where `craft\helpers\ElementHelper::siteStatusesForElement()` wasn’t working for soft-deleted elements. ([#14753](https://github.com/craftcms/cms/issues/14753))
 - Fixed a bug where the Queue Manager was listing delayed jobs before others. ([#14755](https://github.com/craftcms/cms/discussions/14755))
 - Fixed a bug where LTR and RTL characters weren’t getting stripped from sanitized asset filenames. ([#14711](https://github.com/craftcms/cms/issues/14711))
+- Fixed a bug where reordering wasn’t working for admin tables in Safari. ([#14752](https://github.com/craftcms/cms/issues/14752))
 
 ## 4.8.7 - 2024-04-03
 
