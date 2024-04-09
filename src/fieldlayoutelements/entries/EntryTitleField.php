@@ -78,6 +78,8 @@ class EntryTitleField extends TitleField
             return null;
         }
 
+        $this->required = true;
+
         return parent::inputHtml($element, $static);
     }
 }
