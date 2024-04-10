@@ -418,7 +418,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       const containerHeight =
         window.innerHeight - $tablePane.offset().top - footerHeight - margin;
 
-      $tablePane.outerHeight(containerHeight);
+      $tablePane.css('max-height', containerHeight);
     });
   },
 
