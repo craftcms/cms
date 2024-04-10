@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Fixed a bug where element queries with the `relatedTo` param set to a list of element IDs were overly complex.
+- Fixed a bug where redundant Matrix block revisions were getting created.
+- Fixed a bug where Twig’s spread operator (`...`) wasn’t working when the `preloadSingles` config setting was enabled. ([#14783](https://github.com/craftcms/cms/issues/14783))
 
 ## 5.0.3 - 2024-04-09
 
