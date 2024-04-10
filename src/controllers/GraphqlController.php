@@ -273,9 +273,11 @@ class GraphqlController extends Controller
             try {
                 $token = $gqlService->getTokenByAccessToken($bearerToken);
 
-                if ($token->getIsValid()) {
-                    return $token;
+                if (!$token->getIsValid()) {
+                    throw new BadRequestHttpException('Invalid Authorization header');
                 }
+
+                return $token;
             } catch (InvalidArgumentException) {
             }
         }
