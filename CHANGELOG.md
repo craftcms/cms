@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where element queries with the `relatedTo` param set to a list of element IDs were overly complex.
+- Fixed a bug where redundant Matrix block revisions were getting created.
 
 ## 4.8.8 - 2024-04-09
 
