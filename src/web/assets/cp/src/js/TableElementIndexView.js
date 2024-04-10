@@ -34,6 +34,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // Set the sort header
     this.initTableHeaders();
 
+    this.addListener(Garnish.$win, 'resize', this.setContainerHeight);
+    this.setContainerHeight();
+
     // Create the table sorter
     if (
       (this.settings.sortable ||
@@ -398,6 +401,25 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     Craft.cp.updateResponsiveTables();
+  },
+
+  setContainerHeight: function (event) {
+    window.requestAnimationFrame(() => {
+      const $tablePane = this.$container.find('.tablepane');
+      if (!$tablePane.length) {
+        return;
+      }
+
+      const footerHeight = $('#content > #footer').outerHeight(true) || 0;
+      const margin = parseInt(
+        getComputedStyle($tablePane[0]).getPropertyValue('--padding'),
+        10
+      );
+      const containerHeight =
+        window.innerHeight - $tablePane.offset().top - footerHeight - margin;
+
+      $tablePane.outerHeight(containerHeight);
+    });
   },
 
   _collapseElement: function ($toggle, force) {

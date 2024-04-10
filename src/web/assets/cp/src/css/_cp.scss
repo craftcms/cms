@@ -1057,6 +1057,18 @@ li.breadcrumb-toggle-wrapper {
   padding: var(--xl) var(--padding);
   word-wrap: break-word;
 
+  &:has(.tablepane) {
+    border: 2px solid white;
+    overflow: hidden;
+    padding: 0;
+
+    .tablepane,
+    .source-path,
+    #footer {
+      margin: 0;
+    }
+  }
+
   & > hr {
     margin-left: calc(var(--xl) * -1);
     margin-right: calc(var(--xl) * -1);
