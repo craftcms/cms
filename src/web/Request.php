@@ -1212,6 +1212,23 @@ class Request extends \yii\web\Request
         return $this->_rawCookies;
     }
 
+    public function getBearerToken(): ?string
+    {
+        $authHeaders = $this->getHeaders()->get('X-Craft-Authorization', null, false) ?? $this->getHeaders()->get('Authorization', null, false) ?? [];
+
+        foreach ($authHeaders as $authHeader) {
+            $authValues = array_map('trim', explode(',', $authHeader));
+
+            foreach ($authValues as $authValue) {
+                if (preg_match('/^Bearer\s+(.+)$/i', $authValue, $matches)) {
+                    return $matches[1];
+                }
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Converts any invalid cookies in `$_COOKIE` into an array of [[Cookie]] objects.
      *
