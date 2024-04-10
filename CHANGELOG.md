@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.4 - 2024-04-10
 
 - Fixed a bug where element queries with the `relatedTo` param set to a list of element IDs were overly complex.
 - Fixed a bug where redundant Matrix block revisions were getting created.
