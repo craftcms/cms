@@ -547,8 +547,11 @@ import $ from 'jquery';
       }
 
       this._handleTitleBarClick = function (ev) {
-        ev.preventDefault();
-        this.toggle();
+        // don't expand/collapse the matrix "block" if double tapping the tabs
+        if (!$(ev.target).hasClass('tab-label')) {
+          ev.preventDefault();
+          this.toggle();
+        }
       };
 
       this.addListener(this.$titlebar, 'doubletap', this._handleTitleBarClick);
