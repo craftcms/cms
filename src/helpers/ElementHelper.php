@@ -354,6 +354,7 @@ class ElementHelper
             ->id($element->id)
             ->siteId($propagatedSiteIds)
             ->status(null)
+            ->trashed(null)
             ->asArray()
             ->select(['elements_sites.siteId', 'elements_sites.enabled']);
 

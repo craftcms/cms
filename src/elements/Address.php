@@ -264,7 +264,11 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         }
 
         if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            // Unset fullName so NameTrait::prepareNamesForSave() can set it
             $this->fullName = null;
+        } elseif (array_key_exists('fullName', $values)) {
+            // Unset firstName and lastName so NameTrait::prepareNamesForSave() can set them
+            $this->firstName = $this->lastName = null;
         }
 
         parent::setAttributes($values, $safeOnly);

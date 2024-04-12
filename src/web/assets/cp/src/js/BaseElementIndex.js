@@ -1047,10 +1047,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$clearSearchBtn.removeClass('hidden');
       this.searching = true;
       this.sortByScore = true;
-
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
     },
 
     clearSearch: function (updateElements) {
@@ -1078,10 +1074,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$clearSearchBtn.addClass('hidden');
       this.searching = false;
       this.sortByScore = false;
-
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
     },
 
     setInstanceState: function (key, value) {
@@ -1567,8 +1559,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.afterAction(action, params);
           })
-          .catch(({response}) => {
-            Craft.cp.displayError(response.data.message);
+          .catch((e) => {
+            Craft.cp.displayError(e?.response?.data?.message);
           })
           .finally(() => {
             this.setIndexAvailable();
@@ -1705,9 +1697,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // If score, keep track of that separately
       if (attr === 'score') {
         this.sortByScore = true;
-        if (this.activeViewMenu) {
-          this.activeViewMenu.updateSortField();
-        }
         return;
       }
 
@@ -1752,11 +1741,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         sort: dir,
         orderHistory: history,
       });
-
-      // Update the view menu
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
 
       if (this.settings.context === 'index') {
         // Update the query string
@@ -2215,11 +2199,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           .addClass('active')
           .attr('aria-pressed', 'true');
       }
-
-      // Update the view menu
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
     },
 
     createView: function (mode, settings) {
@@ -2540,10 +2519,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         queryParam = 'drafts';
       } else {
         this.status = queryParam = $option.data('status') || null;
-      }
-
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
       }
 
       if (this.settings.context === 'index') {
@@ -3417,6 +3392,7 @@ const ViewMenu = Garnish.Base.extend({
 
     this.menu.on('show', () => {
       this.$trigger.addClass('active');
+      this.updateSortField();
     });
 
     this.menu.on('hide', () => {
@@ -3600,13 +3576,34 @@ const ViewMenu = Garnish.Base.extend({
   _createSortField: function () {
     const $container = $('<div class="flex"/>');
 
+    const options = this.elementIndex
+      .getSortOptions(this.$source)
+      .sort((a, b) => {
+        return a.label === b.label ? 0 : a.label < b.label ? -1 : 1;
+      });
+    const groups = options.reduce(
+      (groups, o) => {
+        const index = o.attr.startsWith('field:') ? 1 : 0;
+        groups[index].push(o);
+        return groups;
+      },
+      [[], []]
+    );
+    if (groups[1].length) {
+      groups[1].unshift({
+        optgroup: Craft.t('app', 'Fields'),
+      });
+    }
+
     const $sortAttributeSelectContainer = Craft.ui
       .createSelect({
-        options: this.elementIndex.getSortOptions(this.$source).map((o) => {
-          return {
-            label: Craft.escapeHtml(o.label),
-            value: o.attr,
-          };
+        options: groups.flat().map((o) => {
+          return o.optgroup
+            ? o
+            : {
+                label: Craft.escapeHtml(o.label),
+                value: o.attr,
+              };
         }),
       })
       .addClass('fullwidth')
@@ -3693,7 +3690,11 @@ const ViewMenu = Garnish.Base.extend({
   },
 
   _createTableColumnsField: function () {
-    const columns = this.elementIndex.getTableColumnOptions(this.$source);
+    const columns = this.elementIndex
+      .getTableColumnOptions(this.$source)
+      .sort((a, b) => {
+        return a.label === b.label ? 0 : a.label < b.label ? -1 : 1;
+      });
 
     if (!columns.length) {
       return $();
