@@ -695,17 +695,10 @@ Craft.Preview = Garnish.Base.extend(
             $iframe.on('load', () => {
               this.iframeLoaded = true;
               if (!resetScroll && sameHost) {
-                if (this.scrollTop !== null) {
-                  $($iframe[0].contentWindow.document).scrollTop(
-                    this.scrollTop
-                  );
-                }
-
-                if (this.scrollLeft !== null) {
-                  $($iframe[0].contentWindow.document).scrollLeft(
-                    this.scrollLeft
-                  );
-                }
+                $iframe[0].contentWindow.scrollTo(
+                  this.scrollLeft || 0,
+                  this.scrollTop || 0
+                );
               }
             });
           }
