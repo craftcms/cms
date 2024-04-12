@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where element selection modals were only showing the first 100 elements. ([#14790](https://github.com/craftcms/cms/issues/14790))
+- Fixed a PHP error that could occur on the Dashboard if any Quick Post widgets hadn’t been saved since before Craft 1.2. ([#14794](https://github.com/craftcms/cms/issues/14794))
+
 ## 5.0.4 - 2024-04-10
 
 - Fixed a bug where element queries with the `relatedTo` param set to a list of element IDs were overly complex.
