@@ -1728,8 +1728,12 @@ class Fields extends Component
             try {
                 $command = $db->createCommand()->alterColumn($table, $oldName, $type);
 
-                if ($db->getIsPgsql() && $type === Schema::TYPE_BOOLEAN) {
-                    $replacement = sprintf(' TYPE boolean USING CASE WHEN "%s" IS NULL THEN NULL WHEN length("%s") = 0 THEN FALSE ELSE TRUE END"', $oldName, $oldName);
+                if (
+                    $db->getIsPgsql() &&
+                    $type === Schema::TYPE_BOOLEAN &&
+                    Db::isTextualColumnType($db->getTableSchema($table)->getColumn($oldName)->dbType)
+                ) {
+                    $replacement = sprintf(' TYPE boolean USING CASE WHEN "%s" IS NULL THEN NULL WHEN length("%s") = 0 THEN FALSE ELSE TRUE END', $oldName, $oldName);
                     $sql = preg_replace('/\s+TYPE\s+boolean/i', $replacement, $command->getRawSql());
                     $command->setSql($sql);
                 }
