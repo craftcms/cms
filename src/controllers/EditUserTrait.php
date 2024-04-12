@@ -88,8 +88,12 @@ trait EditUserTrait
         ];
 
         if (
-            Craft::$app->edition === CmsEdition::Pro &&
-            ($currentUser->can('assignUserPermissions') || $currentUser->canAssignUserGroups())
+            Craft::$app->edition->value >= CmsEdition::Team->value &&
+            (
+                (Craft::$app->edition === CmsEdition::Team && $currentUser->admin) ||
+                (Craft::$app->edition === CmsEdition::Pro && $currentUser->can('assignUserPermissions')) ||
+                $currentUser->canAssignUserGroups()
+            )
         ) {
             $screens[self::SCREEN_PERMISSIONS] = ['label' => Craft::t('app', 'Permissions')];
         }
