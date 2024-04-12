@@ -104,13 +104,17 @@ class Html extends \yii\helpers\Html
             return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
         }
 
-        return Craft::$app->getView()->renderTemplate(
-            '_special/async-csrf-input',
-            [
-                'url' => UrlHelper::actionUrl('users/session-info'),
-            ],
-            View::TEMPLATE_MODE_CP,
+        Craft::$app->getView()->registerHtml(
+            Craft::$app->getView()->renderTemplate(
+                '_special/async-csrf-input',
+                [
+                    'url' => UrlHelper::actionUrl('users/session-info'),
+                ],
+                View::TEMPLATE_MODE_CP,
+            )
         );
+
+        return static::tag('craft-csrf-input');
     }
 
     /**

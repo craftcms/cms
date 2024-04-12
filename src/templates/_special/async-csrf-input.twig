@@ -1,18 +1,20 @@
 <script>
   (function() {
-    const currentScript = document.currentScript;
-
     fetch('{{ url }}', {
       headers: {
         'Accept': 'application/json',
       }
     }).then(response => response.json())
       .then(data => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = data.csrfTokenName;
-        input.value = data.csrfTokenValue;
-        currentScript.after(input);
+        document.querySelectorAll('craft-csrf-input')
+          .forEach(element => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = data.csrfTokenName;
+            input.value = data.csrfTokenValue;
+            element.replaceWith(input);
+          });
       });
   })();
+
 </script>
