@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a SQL error that could occur when converting a field to a Lightswitch field on PostgreSQL. ([#14792](https://github.com/craftcms/cms/issues/14792))
+
 ## 4.8.9 - 2024-04-10
 
 - Fixed a bug where element queries with the `relatedTo` param set to a list of element IDs were overly complex.
