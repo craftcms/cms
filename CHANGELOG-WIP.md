@@ -17,6 +17,7 @@
 - Added `craft\services\Sites::getSitesByLanguage()`.
 - Added `craft\web\ErrorHandler::exceptionAsArray()`.
 - Added `craft\web\ErrorHandler::showExceptionDetails()`.
+- Added `craft\web\Request::getBearerToken()`. ([#14784](https://github.com/craftcms/cms/pull/14784))
 - `craft\base\NameTrait::prepareNamesForSave()` no longer updates the name properties if `fullName`, `firstName`, and `lastName` are already set. ([#14665](https://github.com/craftcms/cms/issues/14665))
 
 ### System
