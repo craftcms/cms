@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\Console;
+use craft\helpers\Docs;
 use craft\helpers\Json;
 use ReflectionFunctionAbstract;
 use Throwable;
@@ -100,6 +101,59 @@ class HelpController extends BaseHelpController
         // Send the commands encoded as JSON to stdout
         $jsonOptions = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | (App::devMode() ? JSON_PRETTY_PRINT : 0);
         $this->stdout(Json::encode($data, $jsonOptions) . PHP_EOL);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Opens the official, version-specific documentation page in the system’s default browser, or displays a URL.
+     */
+    public function actionDocs(): int
+    {
+        $this->stdout('Official documentation: ', Console::BOLD);
+        $this->stdout(Craft::$app->getDocs()->docsUrl('/'), Console::FG_BLUE);
+        // Force newline so it's outside of the formatting tag:
+        $this->stdout("\n");
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Performs a search against the documentation and knowledge base, and displays a compact view of the results.
+     * 
+     * @param string[] $query Search term(s)
+     */
+    public function actionSearch(...$query): int
+    {
+        $docs = Craft::$app->getDocs();
+
+        // Normalize multi-term queries into a string:
+        $query = join(' ', $query);
+
+        $this->stdout("Querying the knowledge base for “{$query}”... ");
+        $results = $docs->makeApiRequest('search-kb', ['query' => $query]);
+        $this->stdout('done!', Console::FG_GREEN);
+        $this->stdout("\n");
+
+        if (count($results) === 0) {
+            $this->stdout('No results were found.', Console::FG_YELLOW);
+
+            return ExitCode::OK;
+        }
+
+        $this->stdout('Found ');
+        $this->stdout(count($results), Console::BOLD);
+        $this->stdout(" result(s).\n");
+
+        foreach ($results as $result) {
+            $this->stdout("\n");
+            $this->stdout($result['title'], Console::BOLD);
+            $this->stdout("\n");
+            $this->stdout('  ' . $result['summary'], Console::FG_GREY);
+            $this->stdout("\n");
+            $this->stdout('  ' . $result['url'], Console::FG_BLUE);
+            $this->stdout("\n");
+        }
+
         return ExitCode::OK;
     }
 

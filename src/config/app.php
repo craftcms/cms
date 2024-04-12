@@ -44,6 +44,9 @@ return [
         'deprecator' => [
             'class' => craft\services\Deprecator::class,
         ],
+        'docs' => [
+            'class' => craft\services\Docs::class,
+        ],
         'drafts' => [
             'class' => craft\services\Drafts::class,
         ],

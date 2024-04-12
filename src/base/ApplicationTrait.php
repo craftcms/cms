@@ -70,6 +70,7 @@ use craft\services\Conditions;
 use craft\services\Config;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
+use craft\services\Docs;
 use craft\services\Drafts;
 use craft\services\Elements;
 use craft\services\ElementSources;
@@ -1125,6 +1126,17 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('deprecator');
+    }
+
+    /**
+     * Returns the documentation service.
+     * 
+     * @return Docs Documentation service singleton
+     */
+    public function getDocs(): Docs
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('docs');
     }
 
     /**
