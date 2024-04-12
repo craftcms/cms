@@ -7,11 +7,13 @@
 - Unselected table column options are now sorted alphabetically within element indexes. 
 
 ### Administration
+- Added the `asyncCsrfInputs` config setting. ([#14625](https://github.com/craftcms/cms/pull/14625))
 - `resave` commands now support an `--if-invalid` option. ([#14731](https://github.com/craftcms/cms/issues/14731))
 
 ### Development
 - Added the `language` element query param, which filters the resulting elements based on their sites’ languages. ([#14631](https://github.com/craftcms/cms/discussions/14631))
 - GraphQL responses now include full exception details, when Dev Mode is enabled or an admin is signed in with the “Show full exception views when Dev Mode is disabled” preference enabled. ([#14527](https://github.com/craftcms/cms/issues/14527))
+- `craft\helpers\Html::csrfInput()` and the `csrfInput` Twig function now support passing an `async` key to the `options` array, overriding the default behavior per the `asyncCsrfInputs` config setting. ([#14625](https://github.com/craftcms/cms/pull/14625))
 
 ### Extensibility
 - Added `craft\services\Sites::getSitesByLanguage()`.
