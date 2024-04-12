@@ -100,7 +100,7 @@ class Revisions extends Component
                 $lastRevisionInfo &&
                 DateTimeHelper::toDateTime($lastRevisionInfo['dateCreated'])->getTimestamp() === $canonical->dateUpdated->getTimestamp() &&
                 // Make sure all its data is in-tact
-                $canonical::find()->revisionId($lastRevisionInfo['id'])->status(null)->exists()
+                $canonical::find()->id($lastRevisionInfo['id'])->revisions()->status(null)->siteId($canonical->siteId)->exists()
             ) {
                 // The canonical element hasn't been updated since the last revision's creation date,
                 // so there's no need to create a new one

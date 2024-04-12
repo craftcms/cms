@@ -1,6 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
-import $ from 'jquery';
+/** global: $ */
+/** global: jQuery */
 
 /**
  * CP class
@@ -1315,25 +1316,24 @@ Craft.CP = Garnish.Base.extend(
             Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
               .then(({data}) => {
                 // Get the existing utility nav badge and screen reader text, if any
-                let $badge = $utilitiesLink.children('.badge');
-                let $screenReaderText = $utilitiesLink.children(
+                let $badge = $utilitiesLink.children('.sidebar-action__badge');
+
+                if (data.badgeCount && !$badge.length) {
+                  $badge = $(
+                    '<span class="sidebar-action__badge">' +
+                      '<span class="badge" aria-hidden="true"></span>' +
+                      '<span class="visually-hidden" data-notification></span>' +
+                      '</span>'
+                  ).appendTo($utilitiesLink);
+                }
+
+                const $badgeLabel = $badge.children('.badge');
+                const $screenReaderText = $badge.children(
                   '[data-notification]'
                 );
 
                 if (data.badgeCount) {
-                  if (!$badge.length) {
-                    $badge = $(
-                      '<span class="badge" aria-hidden="true"/>'
-                    ).appendTo($utilitiesLink);
-                  }
-
-                  if (!$screenReaderText.length) {
-                    $screenReaderText = $(
-                      '<span class="visually-hidden" data-notification/>'
-                    ).appendTo($utilitiesLink);
-                  }
-
-                  $badge.text(data.badgeCount);
+                  $badgeLabel.text(data.badgeCount);
                   $screenReaderText.text(
                     Craft.t(
                       'app',
@@ -1343,10 +1343,10 @@ Craft.CP = Garnish.Base.extend(
                       }
                     )
                   );
-                } else if ($badge.length && $screenReaderText.length) {
+                } else if ($badge.length) {
                   $badge.remove();
-                  $screenReaderText.remove();
                 }
+
                 resolve();
               })
               .catch(reject);

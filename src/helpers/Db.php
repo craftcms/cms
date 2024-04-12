@@ -313,22 +313,16 @@ class Db
         }
 
         if ($db->getIsMysql()) {
-            if (isset(self::$_mysqlTextSizes[$shortColumnType])) {
-                return self::$_mysqlTextSizes[$shortColumnType];
-            }
-
-            // ENUM depends on the options
-            if ($shortColumnType === MysqlSchema::TYPE_ENUM) {
-                return null;
-            }
-
-            // ¯\_(ツ)_/¯
-            return false;
+            return match ($shortColumnType) {
+                MysqlSchema::TYPE_ENUM => null, // ENUM depends on the options
+                'blob' => self::$_mysqlTextSizes[Schema::TYPE_TEXT],
+                'longblob' => self::$_mysqlTextSizes[MysqlSchema::TYPE_LONGTEXT],
+                default => self::$_mysqlTextSizes[$shortColumnType] ?? false,
+            };
         }
 
-        // PostgreSQL doesn't impose a limit for text fields
-        if ($shortColumnType === Schema::TYPE_TEXT) {
-            // TEXT columns are variable-length in 'grez
+        // Postgres doesn't impose a limit for text/binary fields
+        if (in_array($shortColumnType, [Schema::TYPE_TEXT, Schema::TYPE_BINARY])) {
             return null;
         }
 

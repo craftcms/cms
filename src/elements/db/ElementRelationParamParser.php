@@ -109,7 +109,7 @@ class ElementRelationParamParser extends BaseObject
                     isset($relCriteria['element']) &&
                     $relCriteria['element'][0] === 'or'
                     && $relCriteria['field'] === null &&
-                    $relCriteria['sourceSite'] === null
+                    $relCriteria['sourceSite'] === $siteId
                 ) {
                     array_push($orElements, ...array_slice($relCriteria['element'], 1));
                     unset($relatedToParam[$i]);

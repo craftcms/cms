@@ -29,6 +29,7 @@ use ParagonIE\ConstantTime\Base64UrlSafe;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
+use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
@@ -445,8 +446,14 @@ class Auth extends Component
             return false;
         }
 
+        $serializer = $this->webauthnServer()->getSerializer();
+
         $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::createFromArray(Json::decode($optionsJson));
-        $publicKeyCredential = $this->webauthnServer()->getPublicKeyCredentialLoader()->load($credentials);
+        $publicKeyCredential = $serializer->deserialize(
+            $credentials,
+            PublicKeyCredential::class,
+            'json',
+        );
         $authenticatorAttestationResponse = $publicKeyCredential->response;
 
         if (!$authenticatorAttestationResponse instanceof AuthenticatorAttestationResponse) {

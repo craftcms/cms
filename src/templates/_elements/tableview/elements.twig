@@ -80,7 +80,7 @@
                 <td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">
                     {% if showInputs %}
                         {% set namespace = "#{nestedInputNamespace}[element-#{element.id}]" %}
-                        {% if attribute[0] starts with 'field:' %}
+                        {% if attribute[0] starts with 'field:' or attribute[0] starts with 'fieldInstance:' %}
                             {% set namespace = "#{namespace}[fields]" %}
                         {% endif %}
                         {% namespace namespace %}

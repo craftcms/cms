@@ -50,9 +50,9 @@ class QuickPost extends Widget
     public int $section;
 
     /**
-     * @var int The ID of the entry type that the widget should create entries with.
+     * @var int|null The ID of the entry type that the widget should create entries with.
      */
-    public int $entryType;
+    public ?int $entryType = null;
 
     /**
      * @var Section|false

@@ -108,7 +108,7 @@ import $ from 'jquery';
 
         for (let i = 0; i < $entries.length; i++) {
           const $entry = $($entries[i]);
-          const entry = new Entry(this, $entry);
+          const entry = new Craft.MatrixInput.Entry(this, $entry);
 
           if (entry.id && $.inArray('' + entry.id, collapsedEntries) !== -1) {
             entry.collapse();
@@ -283,7 +283,7 @@ import $ from 'jquery';
             Craft.initUiElements($entry.children('.fields'));
             await Craft.appendHeadHtml(data.headHtml);
             await Craft.appendBodyHtml(data.bodyHtml);
-            new Entry(this, $entry);
+            new Craft.MatrixInput.Entry(this, $entry);
             this.entrySort.addItems($entry);
             this.entrySelect.addItems($entry);
             this.updateAddEntryBtn();
@@ -451,7 +451,7 @@ import $ from 'jquery';
     }
   );
 
-  const Entry = Garnish.Base.extend({
+  Craft.MatrixInput.Entry = Garnish.Base.extend({
     /**
      * @type {Craft.MatrixInput}
      */
@@ -547,8 +547,11 @@ import $ from 'jquery';
       }
 
       this._handleTitleBarClick = function (ev) {
-        ev.preventDefault();
-        this.toggle();
+        // don't expand/collapse the matrix "block" if double tapping the tabs
+        if (!$(ev.target).closest('.tab-label').length) {
+          ev.preventDefault();
+          this.toggle();
+        }
       };
 
       this.addListener(this.$titlebar, 'doubletap', this._handleTitleBarClick);

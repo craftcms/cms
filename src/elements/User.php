@@ -994,15 +994,12 @@ class User extends Element implements IdentityInterface
      */
     public function setAttributes($values, $safeOnly = true): void
     {
-        if (array_key_exists('fullName', $values)) {
-            // Clear out the first and last names.
-            // They'll get reset from prepareNamesForSave() if fullName isn't empty.
-            $this->firstName = null;
-            $this->lastName = null;
-        } elseif (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
-            // Clear out the full name.
-            // It'll get reset from prepareNamesForSave() if the first/last names aren't empty.
+        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            // Unset fullName so NameTrait::prepareNamesForSave() can set it
             $this->fullName = null;
+        } elseif (array_key_exists('fullName', $values)) {
+            // Unset firstName and lastName so NameTrait::prepareNamesForSave() can set them
+            $this->firstName = $this->lastName = null;
         }
 
         parent::setAttributes($values, $safeOnly);

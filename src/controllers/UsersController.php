@@ -27,7 +27,6 @@ use craft\events\UserEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
-use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -76,6 +75,8 @@ use yii\web\ServerErrorHttpException;
  */
 class UsersController extends Controller
 {
+    use EditUserTrait;
+
     /**
      * @event FindLoginUserEvent The event that is triggered before attempting to find a user to sign in
      *
@@ -114,6 +115,13 @@ class UsersController extends Controller
     public const EVENT_LOGIN_FAILURE = 'loginFailure';
 
     /**
+     * @event DefineEditUserScreensEvent The event that is triggered when defining the screens that should be
+     * shown for the user being edited.
+     * @since 5.1.0
+     */
+    public const EVENT_DEFINE_EDIT_SCREENS = 'defineEditScreens';
+
+    /**
      * @event UserEvent The event that is triggered BEFORE user groups and permissions ARE assigned to the user getting saved
      * @since 3.5.13
      */
@@ -148,13 +156,6 @@ class UsersController extends Controller
      * @since 3.6.5
      */
     public const EVENT_INVALID_USER_TOKEN = 'invalidUserToken';
-
-    private const SCREEN_PROFILE = 'profile';
-    private const SCREEN_ADDRESSES = 'addresses';
-    private const SCREEN_PERMISSIONS = 'permissions';
-    private const SCREEN_PREFERENCES = 'preferences';
-    private const SCREEN_PASSWORD = 'password';
-    private const SCREEN_PASSKEYS = 'passkeys';
 
     /**
      * @inheritdoc
@@ -992,14 +993,14 @@ class UsersController extends Controller
     {
         $this->requireCpRequest();
 
-        $element ??= $this->editScreenUser($userId);
+        $element ??= $this->editedUser($userId);
 
         // let the elements/edit action do most of the work
         Craft::$app->runAction('elements/edit', [
             'element' => $element,
         ]);
 
-        return $this->asEditScreen($element, self::SCREEN_PROFILE);
+        return $this->asEditUserScreen($element, self::SCREEN_PROFILE);
     }
 
     /**
@@ -1012,10 +1013,9 @@ class UsersController extends Controller
     public function actionAddresses(?int $userId = null): Response
     {
         $this->requireCpRequest();
-
-        $user = $this->editScreenUser($userId);
+        $user = $this->editedUser($userId);
         /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditScreen($user, self::SCREEN_ADDRESSES);
+        $response = $this->asEditUserScreen($user, self::SCREEN_ADDRESSES);
 
         $response->contentHtml(function() use ($user) {
             $config = [
@@ -1046,10 +1046,9 @@ class UsersController extends Controller
     public function actionPermissions(?int $userId = null): Response
     {
         $this->requireCpRequest();
-
-        $user = $this->editScreenUser($userId);
+        $user = $this->editedUser($userId);
         /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditScreen($user, self::SCREEN_PERMISSIONS);
+        $response = $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS);
 
         $response->action('users/save-permissions');
         $response->contentTemplate('users/_permissions', [
@@ -1071,7 +1070,7 @@ class UsersController extends Controller
         $this->requireCpRequest();
 
         $currentUser = static::currentUser();
-        $user = $this->editScreenUser((int)$this->request->getRequiredBodyParam('userId'));
+        $user = $this->editedUser((int)$this->request->getRequiredBodyParam('userId'));
 
         // Is their admin status changing?
         if ($currentUser->admin) {
@@ -1118,10 +1117,9 @@ class UsersController extends Controller
     public function actionPreferences(): Response
     {
         $this->requireCpRequest();
-
         $user = static::currentUser();
         /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditScreen($user, self::SCREEN_PREFERENCES);
+        $response = $this->asEditUserScreen($user, self::SCREEN_PREFERENCES);
 
         $i18n = Craft::$app->getI18n();
 
@@ -1206,12 +1204,12 @@ class UsersController extends Controller
     public function actionPassword(?User $user = null): Response
     {
         $this->requireCpRequest();
+        $user ??= static::currentUser();
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response = $this->asEditUserScreen($user, self::SCREEN_PASSWORD);
 
         $this->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
 
-        $user ??= static::currentUser();
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditScreen($user, self::SCREEN_PASSWORD);
         $response->action('users/save-password');
         $response->contentTemplate('users/_password', compact('user'));
 
@@ -1262,6 +1260,9 @@ class UsersController extends Controller
     public function actionPasskeys(): Response
     {
         $this->requireCpRequest();
+        $user = static::currentUser();
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response = $this->asEditUserScreen($user, self::SCREEN_PASSKEYS);
 
         $view = $this->getView();
         $view->registerAssetBundle(PasskeySetupAsset::class);
@@ -1269,117 +1270,11 @@ class UsersController extends Controller
 new Craft.PasskeySetup();
 JS);
 
-        $user = static::currentUser();
         $passkeys = Craft::$app->getAuth()->getPasskeys($user);
-
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditScreen($user, self::SCREEN_PASSKEYS);
-
         $response->contentTemplate('users/_passkeys', [
             'user' => $user,
             'passkeys' => $passkeys,
         ]);
-
-        return $response;
-    }
-
-    private function editScreenUser(?int $userId): User
-    {
-        if ($userId === null) {
-            return static::currentUser();
-        }
-
-        /** @var User|null $user */
-        $user = User::find()
-            ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->id($userId)
-            ->drafts(null)
-            ->status(null)
-            ->one();
-
-        if (!$user) {
-            throw new BadRequestHttpException('No user was identified by the request.');
-        }
-
-        if (!$user->getIsCurrent()) {
-            // Make sure they have permission to edit other users
-            $this->requirePermission('editUsers');
-        }
-
-        return $user;
-    }
-
-    private function asEditScreen(User $user, string $currentScreen): Response
-    {
-        $currentUser = static::currentUser();
-        $includeScreens = array_keys(array_filter([
-            self::SCREEN_PROFILE => true,
-            self::SCREEN_ADDRESSES => $user->id,
-            self::SCREEN_PERMISSIONS => (
-                Craft::$app->edition->value >= CmsEdition::Team->value &&
-                (
-                    (Craft::$app->edition === CmsEdition::Team && $currentUser->admin) ||
-                    (Craft::$app->edition === CmsEdition::Pro && $currentUser->can('assignUserPermissions')) ||
-                    $currentUser->canAssignUserGroups()
-                )
-            ),
-            self::SCREEN_PREFERENCES => $user->getIsCurrent(),
-            self::SCREEN_PASSWORD => $user->getIsCurrent(),
-            self::SCREEN_PASSKEYS => $user->getIsCurrent(),
-        ]));
-
-        if (!in_array($currentScreen, $includeScreens)) {
-            throw new ForbiddenHttpException('User not authorized to perform this action.');
-        }
-
-        $response = $this->asCpScreen();
-        if ($user->getIsCurrent()) {
-            $response->title(Craft::t('app', 'My Account'));
-        } else {
-            $response->title($user->getUiLabel());
-        }
-
-        $navItems = [];
-        $currentNavItems = &$navItems;
-
-        foreach ($includeScreens as $screen) {
-            if ($screen === self::SCREEN_PASSWORD) {
-                $navItem = [
-                    'heading' => Craft::t('app', 'Account Security'),
-                    'nested' => [],
-                ];
-                $navItems[] = &$navItem;
-                $currentNavItems = &$navItem['nested'];
-            }
-
-            $currentNavItems[] = [
-                'label' => $this->editScreenTitle($screen),
-                'url' => $this->editScreenUrl($user, $screen),
-                'selected' => $screen === $currentScreen,
-            ];
-        }
-
-        $response->pageSidebarTemplate('_includes/nav', [
-            'label' => Craft::t('app', 'Account'),
-            'items' => $navItems,
-        ]);
-
-        if ($currentScreen !== self::SCREEN_PROFILE) {
-            $response->crumbs([
-                ...$user->getCrumbs(),
-                [
-                    'html' => Cp::elementChipHtml($user, ['showDraftName' => false]),
-                    'current' => true,
-                ],
-            ]);
-
-            $response->actionMenuItems(fn() => array_filter(
-                $user->getActionMenuItems(),
-                fn(array $item) => !str_starts_with($item['id'] ?? '', 'action-edit-'),
-            ));
-
-            $response->metaSidebarHtml($user->getSidebarHtml(false) . Cp::metadataHtml($user->getMetadata()));
-        }
 
         return $response;
     }
@@ -1397,32 +1292,6 @@ JS);
         $this->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
 
         return $this->renderTemplate('_special/setup-2fa.twig');
-    }
-
-    /**
-     * @param self::SCREEN_* $screen
-     * @return string
-     */
-    private function editScreenTitle(string $screen): string
-    {
-        return match ($screen) {
-            self::SCREEN_PROFILE => Craft::t('app', 'Profile'),
-            self::SCREEN_ADDRESSES => Craft::t('app', 'Addresses'),
-            self::SCREEN_PERMISSIONS => Craft::t('app', 'Permissions'),
-            self::SCREEN_PREFERENCES => Craft::t('app', 'Preferences'),
-            self::SCREEN_PASSWORD => Craft::t('app', 'Password & Verification'),
-            self::SCREEN_PASSKEYS => Craft::t('app', 'Passkeys'),
-        };
-    }
-
-    private function editScreenUrl(User $user, string $screen): string
-    {
-        $basePath = $user->getIsCurrent() ? 'myaccount' : "users/$user->id";
-        $path = match ($screen) {
-            self::SCREEN_PROFILE => $basePath,
-            default => "$basePath/$screen",
-        };
-        return UrlHelper::cpUrl($path);
     }
 
     /**
@@ -2926,15 +2795,20 @@ JS);
 
         if ($fullName !== null) {
             $model->fullName = $fullName;
+
+            // Unset firstName and lastName so NameTrait::prepareNamesForSave() can set them
+            $model->firstName = $model->lastName = null;
         } else {
             // Still check for firstName/lastName in case a front-end form is still posting them
             $firstName = $this->request->getBodyParam('firstName');
             $lastName = $this->request->getBodyParam('lastName');
 
             if ($firstName !== null || $lastName !== null) {
-                $model->fullName = null;
                 $model->firstName = $firstName ?? $model->firstName;
                 $model->lastName = $lastName ?? $model->lastName;
+
+                // Unset fullName so NameTrait::prepareNamesForSave() can set it
+                $model->fullName = null;
             }
         }
     }

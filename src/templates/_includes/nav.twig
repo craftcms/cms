@@ -9,7 +9,7 @@
         } %}
           {% if item.heading is defined %}
             <span>{{ item.heading }}</span>
-            {{ _self.list(item.nested) }}
+            {{ _self.list(item.nested, selectedItem) }}
           {% else %}
             {{ tag('a', {
               class: {

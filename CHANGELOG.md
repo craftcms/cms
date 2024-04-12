@@ -2,7 +2,41 @@
 
 ## Unreleased
 
+- Fixed a bug where element selection modals were only showing the first 100 elements. ([#14790](https://github.com/craftcms/cms/issues/14790))
+- Fixed a PHP error that could occur on the Dashboard if any Quick Post widgets hadn’t been saved since before Craft 1.2. ([#14794](https://github.com/craftcms/cms/issues/14794))
+- Fixed a bug where double-clicking on an inline Matrix block tab would cause it to expand/collapse. ([#14791](https://github.com/craftcms/cms/issues/14791))
+
+## 5.0.4 - 2024-04-10
+
+- Fixed a bug where element queries with the `relatedTo` param set to a list of element IDs were overly complex.
+- Fixed a bug where redundant Matrix block revisions were getting created.
+- Fixed a bug where Twig’s spread operator (`...`) wasn’t working when the `preloadSingles` config setting was enabled. ([#14783](https://github.com/craftcms/cms/issues/14783))
+- Fixed a bug where Live Preview wasn’t retaining the scroll position properly. ([#14218](https://github.com/craftcms/cms/issues/14218))
+
+## 5.0.3 - 2024-04-09
+
+- Fixed a bug where LTR and RTL characters weren’t getting stripped from sanitized asset filenames. ([#14711](https://github.com/craftcms/cms/issues/14711))
+- Fixed a bug where admin table row reordering wasn’t working in Safari. ([#14752](https://github.com/craftcms/cms/issues/14752))
+- Fixed a bug where the `utils/fix-field-layout-uids` command wasn’t looking at field layouts defined with a `fieldLayout` key in the project config.
+- Fixed a bug where element indexes’ View menus could show the “Sort by” field when the structure view was selected. ([#14780](https://github.com/craftcms/cms/issues/14780))
+- Fixed a bug where fields with overridden handles weren’t editable from element indexes. ([#14767](https://github.com/craftcms/cms/issues/14767))
+- Fixed a bug where element chips within element cards were getting action menus and drag handles within relation fields. ([#14778](https://github.com/craftcms/cms/issues/14778))
+- Fixed a bug where elements could display the wrong nested field value, if the field’s handle was overridden. ([#14767](https://github.com/craftcms/cms/issues/14767))
+- Fixed a bug where entries’ Title fields weren’t showing a required indicator. ([#14773](https://github.com/craftcms/cms/issues/14773))
+
+## 5.0.2 - 2024-04-05
+
+- Fixed a bug where `craft\helpers\ElementHelper::siteStatusesForElement()` wasn’t working for soft-deleted elements. ([#14753](https://github.com/craftcms/cms/issues/14753))
+- Fixed a bug where the Queue Manager was listing delayed jobs before others. ([#14755](https://github.com/craftcms/cms/discussions/14755))
+- Fixed an error that occurred when editing elements without any preview targets. ([#14754](https://github.com/craftcms/cms/issues/14754))
+- Fixed a bug where it wasn’t possible to delete global sets when the CKEditor plugin was installed. ([#14757](https://github.com/craftcms/cms/issues/14757))
+- Fixed a SQL error that occurred when querying for elements ordered by search score on PostgreSQL. ([#14761](https://github.com/craftcms/cms/issues/14761))
+
+## 5.0.1 - 2024-04-03
+
 - Fixed a “Double-instantiating a checkbox select on an element” JavaScript warning. ([#14707](https://github.com/craftcms/cms/issues/14707))
+- Fixed a bug where `craft\cache\DbCache` was attempting to store values beyond the `cache.data` column’s storage capacity.
+- Fixed a bug where the Updates utility could include submit buttons without labels for abandoned plugins.
 - Fixed a bug where “Admin” rules were available to user conditions in Solo and Team editions.
 - Fixed a bug where entries’ “View in a new tab” breadcrumb actions were linking to the canonical entry URL when editing a draft or viewing a revision. ([#14705](https://github.com/craftcms/cms/issues/14705))
 - Fixed a bug where Matrix blocks without labels had extra spacing above them in Live Preview. ([#14703](https://github.com/craftcms/cms/issues/14703))
@@ -11,6 +45,15 @@
 - Fixed a bug where links within the Queue Manager utility weren’t styled like links. ([#14716](https://github.com/craftcms/cms/issues/14716))
 - Fixed a bug where tooltips within element labels caused the element title to be read twice by screen readers.
 - Fixed a styling issue when editing an entry without any meta fields. ([#14721](https://github.com/craftcms/cms/issues/14721))
+- Fixed a bug where the `_includes/nav.twig` template wasn’t marking nested nav items as selected. ([#14735](https://github.com/craftcms/cms/pull/14735))
+- Fixed issues with menu options’ hover styles.
+- Fixed a bug where double-clicking on an element’s linked label or action button would cause its slideout to open, in addition to the link/button being activated. ([#14736](https://github.com/craftcms/cms/issues/14736))
+- Fixed a bug where system icons whose names ended in numbers weren’t displaying. ([#14740](https://github.com/craftcms/cms/issues/14740))
+- Fixed an error that could occur when creating a passkey. ([#14745](https://github.com/craftcms/cms/issues/14745))
+- Fixed a bug where the “Utilities” global nav item could get two badge counts.
+- Fixed a bug where custom fields whose previous types were missing would lose their values when updating to Craft 5.
+- Fixed a bug where Dropdown fields could be marked as invalid on save, if the saved value was invalid and they were initially marked as changed (to the default value) on page load. ([#14738](https://github.com/craftcms/cms/pull/14738))
+- Fixed a bug where double-clicking on an element’s label within an element selection modal wasn’t selecting the element. ([#14751](https://github.com/craftcms/cms/issues/14751))
 
 ## 5.0.0 - 2024-03-26
 

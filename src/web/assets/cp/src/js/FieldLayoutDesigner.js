@@ -1,8 +1,8 @@
 /** global: Craft */
-import $ from 'jquery';
-import disclosureMenu from '../../../garnish/src/DisclosureMenu';
-
 /** global: Garnish */
+/** global: $ */
+/** global: jQuery */
+
 Craft.FieldLayoutDesigner = Garnish.Base.extend(
   {
     $container: null,
