@@ -1726,9 +1726,19 @@ class Fields extends Component
         if ($existingColumn) {
             // Alter it first, in case that results in an error due to incompatible column data
             try {
-                $db->createCommand()
-                    ->alterColumn($table, $oldName, $type)
-                    ->execute();
+                $command = $db->createCommand()->alterColumn($table, $oldName, $type);
+
+                if (
+                    $db->getIsPgsql() &&
+                    $type === Schema::TYPE_BOOLEAN &&
+                    Db::isTextualColumnType($db->getTableSchema($table)->getColumn($oldName)->dbType)
+                ) {
+                    $replacement = sprintf(' TYPE boolean USING CASE WHEN "%s" IS NULL THEN NULL WHEN length("%s") = 0 THEN FALSE ELSE TRUE END', $oldName, $oldName);
+                    $sql = preg_replace('/\s+TYPE\s+boolean/i', $replacement, $command->getRawSql());
+                    $command->setSql($sql);
+                }
+
+                $command->execute();
             } catch (DbException $e) {
                 // Restart the transaction
                 $transaction->rollBack();
