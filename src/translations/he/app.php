@@ -2100,6 +2100,7 @@ return [
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{entry} other{entries}}',
     '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, =1{יוצר אחד בלבד} other{עד {num, number} יוצרים}} מותר/ים.',
     '{pct} width' => '{pct} רוחב',
+    '{plugin} requires Craft CMS {edition} edition.' => '{plugin} requires Craft CMS {edition} edition.',
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} אינו מקור מובנה. ניתן להשתמש במקורות מובנים בלבד בעת קישור אבות השושלת.',
     '{step, number} of {total, number}' => '{step, number} מה-{total, number}',
     '{title} ({site})' => '{title} ({site})',
