@@ -2102,6 +2102,7 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{záznam} few {záznamy} other{záznamů}}',
     '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, =1{Je povolen pouze jeden autor} few{Jsou povoleni až {num, number} autoři} other{Je povoleno až {num, number} autorů}}.',
     '{pct} width' => 'šířka {pct}',
+    '{plugin} requires Craft CMS {edition} edition.' => '{plugin} requires Craft CMS {edition} edition.',
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} není strukturovaný zdroj. V souvislosti s předky lze používat pouze strukturované zdroje.',
     '{step, number} of {total, number}' => '{step, number} z {total, number}',
     '{title} ({site})' => '{title} ({site})',
