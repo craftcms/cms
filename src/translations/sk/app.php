@@ -1982,7 +1982,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, =1{hodina} other{hodín}}',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{minúta} other{minút}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{mesiac} other{mesiacov}}',
-    '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{oznámenie} =2{oznámenia} =3{oznámenia} =4{oznámenia} 0{oznámení} other{oznámení}}',
+    '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{notification} other{notifications}}',
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, =1{sekunda} other{sekúnd}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{týždeň} other{týždňov}}',
     '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, =1{rok} few {roky} other{rokov}} aktualizácií',
