@@ -2102,6 +2102,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, one {} =1{kayıt} other{kayıt}}',
     '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, =1{Sadece bir yazar} other{En fazla {num, number} yazara izin verilir}}.',
     '{pct} width' => '{pct} genişlik',
+    '{plugin} requires Craft CMS {edition} edition.' => '{plugin} requires Craft CMS {edition} edition.',
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} yapılandırılmış bir kaynak değil. Orijinal kaynakları ilişkilendirirken yalnızca yapılandırılmış kaynaklar kullanılabilir.',
     '{step, number} of {total, number}' => '{step, number} / {total, number}',
     '{title} ({site})' => '{title} ({site})',
