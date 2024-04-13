@@ -2100,6 +2100,7 @@ return [
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{post} other{poster}}',
     '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, one {}=1{Bara en författare} other{Upp till {num, number} författare}} tillåts.',
     '{pct} width' => '{pct} bredd',
+    '{plugin} requires Craft CMS {edition} edition.' => '{plugin} requires Craft CMS {edition} edition.',
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} är ingen strukturerad källa. Endast strukturerade källor kan användas för att anknyta överordnade objekt.',
     '{step, number} of {total, number}' => '{step, number} av {total, number}',
     '{title} ({site})' => '{title} ({site})',
