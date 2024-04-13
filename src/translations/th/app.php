@@ -2100,6 +2100,7 @@ return [
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{entry} other{entries}}',
     '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => 'อนุญาตให้มี{num, plural, =1{ผู้สร้างคนเดียว} other{ผู้สร้างสูงสุด {num, number} คน}}',
     '{pct} width' => '{pct} width',
+    '{plugin} requires Craft CMS {edition} edition.' => '{plugin} requires Craft CMS {edition} edition.',
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} ไม่ได้เป็นแหล่งข้อมูลที่มีโครงสร้าง สามารถใช้แหล่งที่มาที่มีโครงสร้างได้เท่านั้น เมื่อกล่าวถึงต้นกำเนิด',
     '{step, number} of {total, number}' => '{step, number} of {total, number}',
     '{title} ({site})' => '{title} ({site})',
