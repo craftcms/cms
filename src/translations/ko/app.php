@@ -2100,6 +2100,7 @@ return [
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{항목} other{항목}}',
     '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, =1{한 명의 작성자만} other{최대 {num, number}명의 작성자가}} 허용됩니다.',
     '{pct} width' => '{pct} 너비',
+    '{plugin} requires Craft CMS {edition} edition.' => '{plugin} requires Craft CMS {edition} edition.',
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source}은(는) 구조화된 소스가 아닙니다. 상위 항목을 연결할 때 구조화된 소스만 사용할 수 있습니다.',
     '{step, number} of {total, number}' => '{step, number} / {total, number}',
     '{title} ({site})' => '{title} ({site})',
