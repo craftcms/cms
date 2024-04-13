@@ -2100,6 +2100,7 @@ return [
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} 个“{section}”{num, plural, =1{条目} other{条目}}',
     '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, =1{只允许一位作者} other{最多允许 {num, number} 位作者}}。',
     '{pct} width' => '{pct} 宽度',
+    '{plugin} requires Craft CMS {edition} edition.' => '{plugin} requires Craft CMS {edition} edition.',
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source}不是结构化源。关联上级时，仅可使用结构化源。',
     '{step, number} of {total, number}' => '第 {step, number} 步，共 {total, number} 步',
     '{title} ({site})' => '{title} ({site})',
