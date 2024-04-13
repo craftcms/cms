@@ -1989,7 +1989,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{tydzień} other{tyg.}}',
     '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, =1{rok} other{lata}} aktualizacji',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, =1{rok} other{lat(a)}}',
-    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {num, plural, =1{wpis} few{wpisy} many{wpisów} other{wpisu}} {sekcji}',
+    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{entry} other{entries}}',
     '{pct} width' => 'Szerokość {pct}',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/rok na każdą witrynę za późniejsze aktualizacje.',
     '{section} Entry Types' => 'Rodzaje wpisów "{section}"',
