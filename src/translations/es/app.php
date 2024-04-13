@@ -2100,6 +2100,7 @@ return [
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {num, plural, =1{entrada} other{entradas}} de {section}',
     '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, one {}=1{Solo se permite un autor} other{Se permiten hasta {num, number} autores}}.',
     '{pct} width' => '{pct} ancho',
+    '{plugin} requires Craft CMS {edition} edition.' => '{plugin} requires Craft CMS {edition} edition.',
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} no es una fuente estructurada. Solo se pueden utilizar fuentes estructuras para relacionar antecesores.',
     '{step, number} of {total, number}' => '{step, number} de {total, number}',
     '{title} ({site})' => '{title} ({site})',
