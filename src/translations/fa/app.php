@@ -1994,7 +1994,7 @@ return [
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} یک منبع ساختاریافته نیست. فقط منابع ساختاریافته می توانند در هنگام ارتباط با اجداد استفاده شوند.',
     '{step, number} of {total, number}' => '{step, number} از {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {item}',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{totalItems, plural, =1{Item} other{Items}} moved.' => '{totalItems, plural, one {}=1{Item} other{Items}} انتقال داده شد.',
     '{total} jobs' => '{total} کار',
     '{total} updates available!' => '{total} بروزرسانی در دسترس!',
