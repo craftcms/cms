@@ -2102,6 +2102,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, one {} =1{post} other{poster}}',
     '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, =1{Bare én forfatter er} other{Opptil {num, number} forfattere er}} tillatt.',
     '{pct} width' => '{pct} bredde',
+    '{plugin} requires Craft CMS {edition} edition.' => '{plugin} requires Craft CMS {edition} edition.',
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} er ikke strukturert. Bare strukturerte kilder kan brukes ved tilknytning av overordnede elementer.',
     '{step, number} of {total, number}' => '{step, number} av {total, number}',
     '{title} ({site})' => '{title} ({site})',
