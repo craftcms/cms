@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a SQL error that could occur when converting a field to a Lightswitch field on PostgreSQL. ([#14792](https://github.com/craftcms/cms/issues/14792))
+- Fixed a bug where the Database Backup utility was present when the `backupCommand` config setting was set to `false`.
 
 ## 4.8.9 - 2024-04-10
 

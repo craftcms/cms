@@ -89,7 +89,12 @@ class Utilities extends Component
 
         $utilityTypes[] = ClearCaches::class;
         $utilityTypes[] = DeprecationErrors::class;
-        $utilityTypes[] = DbBackup::class;
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->backupCommand !== false) {
+            $utilityTypes[] = DbBackup::class;
+        }
+
         $utilityTypes[] = FindAndReplace::class;
         $utilityTypes[] = Migrations::class;
 
@@ -98,7 +103,7 @@ class Utilities extends Component
         ]);
         $this->trigger(self::EVENT_REGISTER_UTILITY_TYPES, $event);
 
-        $disabledUtilities = array_flip(Craft::$app->getConfig()->getGeneral()->disabledUtilities);
+        $disabledUtilities = array_flip($generalConfig->disabledUtilities);
 
         return array_values(array_filter($event->types, function(string $class) use ($disabledUtilities) {
             /** @var string|UtilityInterface $class */
