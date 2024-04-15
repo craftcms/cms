@@ -7,6 +7,7 @@
 - Fixed a PHP error that could occur on the Dashboard if any Quick Post widgets hadn’t been saved since before Craft 1.2. ([#14794](https://github.com/craftcms/cms/issues/14794))
 - Fixed a bug where double-clicking on an inline Matrix block tab would cause it to expand/collapse. ([#14791](https://github.com/craftcms/cms/issues/14791))
 - Fixed a bug where site breadcrumbs weren’t getting hyperlinked for installs with multiple site groups. ([#14802](https://github.com/craftcms/cms/issues/14802))
+- Fixed a bug where element conditions were allowing custom field condition rules to be selected multiple times. ([#14809](https://github.com/craftcms/cms/issues/14809))
 
 ## 5.0.4 - 2024-04-10
 
