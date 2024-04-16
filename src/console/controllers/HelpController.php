@@ -154,6 +154,31 @@ class HelpController extends BaseHelpController
             $this->stdout("\n");
         }
 
+        $this->stdout("\n");
+
+        // Now on to the documentation!
+
+        $this->stdout("Querying the developer documentation for “{$query}”... ");
+        $results = $docs->searchDocs($query);
+        $this->stdout('done!', Console::FG_GREEN);
+        $this->stdout("\n");
+
+        if (count($results) === 0) {
+            $this->stdout('No results were found.', Console::FG_YELLOW);
+
+            return ExitCode::OK;
+        }
+
+        foreach ($results as $result) {
+            $this->stdout("\n");
+            $this->stdout($result['title'], Console::BOLD);
+            $this->stdout("\n");
+            $this->stdout('  ' . strip_tags($result['summary']), Console::FG_GREY);
+            $this->stdout("\n");
+            $this->stdout('  ' . $docs->docsUrl($result['path']), Console::FG_BLUE);
+            $this->stdout("\n");
+        }
+
         return ExitCode::OK;
     }
 
