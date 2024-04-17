@@ -194,6 +194,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 $rule->setCondition($this);
             }
         }
+
+        // Clear out our cache of selectable condition rules, in case any additional rules will depend on which
+        // rules are already configured.
+        $this->_selectableConditionRules = null;
     }
 
     /**
