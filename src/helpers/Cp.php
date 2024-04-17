@@ -2185,6 +2185,10 @@ JS;
             $fieldLayoutConfig['id'] = $fieldLayout->id;
         }
 
+        if ($fieldLayout->type) {
+            $fieldLayoutConfig['type'] = $fieldLayout->type;
+        }
+
         $newTabSettingsData = self::_fldTabSettingsData(new FieldLayoutTab([
             'uid' => 'TAB_UID',
             'name' => 'TAB_NAME',
