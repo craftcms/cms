@@ -1965,7 +1965,7 @@ return [
     '{edition} edition' => '{edition} 版本',
     '{element} pagination' => '{element}分页',
     '{filename} isn’t selectable for this field.' => '此字段不可选择 {filename}。',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '第 {first, number}–{last, number} 个，共 {total, number} 个{total, plural, =1{{条目}} other{{条目}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '第 {first, number}–{last, number} 个，共 {total, number} 个{total, plural, =1{{item}} other{{item}}}',
     '{first}-{last} of {total}' => '第 {first}–{last} 个，共 {total} 个',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, =1{作为试用版安装} other{作为试用版安装}}。',
     '{name} active, more info' => '{name} 处于活动状态，更多信息',

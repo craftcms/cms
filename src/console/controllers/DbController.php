@@ -358,6 +358,10 @@ class DbController extends Controller
             ]);
         }
 
+        // Disable FK checks
+        $queryBuilder = $db->getSchema()->getQueryBuilder();
+        $db->createCommand($queryBuilder->checkIntegrity(false))->execute();
+
         foreach ($tableNames as $tableName) {
             $tableName = $schema->getRawTableName($tableName);
             $this->stdout('Converting ');
@@ -366,6 +370,8 @@ class DbController extends Controller
             $db->createCommand("ALTER TABLE `$tableName` CONVERT TO CHARACTER SET $charset COLLATE $collation")->execute();
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
+
+        $db->createCommand()->checkIntegrity(true)->execute();
 
         $this->stdout("Finished converting tables to $charset/$collation." . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
