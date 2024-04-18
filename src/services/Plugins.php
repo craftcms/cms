@@ -1353,7 +1353,8 @@ class Plugins extends Component
         // Force disable it?
         if (
             $this->_forceDisabledPlugins === '*' ||
-            (is_array($this->_forceDisabledPlugins) && isset($this->_forceDisabledPlugins[$handle]))
+            (is_array($this->_forceDisabledPlugins) && isset($this->_forceDisabledPlugins[$handle])) ||
+            App::isSafeMode()
         ) {
             $data['enabled'] = false;
         }
