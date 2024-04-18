@@ -9,6 +9,7 @@
 - Fixed a bug where double-clicking on an inline Matrix block tab would cause it to expand/collapse. ([#14791](https://github.com/craftcms/cms/issues/14791))
 - Fixed a bug where site breadcrumbs weren’t getting hyperlinked for installs with multiple site groups. ([#14802](https://github.com/craftcms/cms/issues/14802))
 - Fixed a bug where element conditions were allowing custom field condition rules to be selected multiple times. ([#14809](https://github.com/craftcms/cms/issues/14809))
+- Fixed a bug where relational fields within nested Matrix entries weren’t getting loaded via GraphQL. ([#14819](https://github.com/craftcms/cms/issues/14819))
 
 ## 5.0.4 - 2024-04-10
 
