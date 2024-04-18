@@ -239,13 +239,17 @@ $config = ArrayHelper::merge(
     require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . "app.{$appType}.php"
 );
 
-if (App::parseBooleanEnv('$CRAFT_DISABLE_APP_CONFIG') !== true) {
-    $config = ArrayHelper::merge(
-        $config,
-        $configService->getConfigFromFile('app'),
-        $configService->getConfigFromFile("app.{$appType}")
-    );
+$localConfig = $config = ArrayHelper::merge(
+    $configService->getConfigFromFile('app'),
+    $configService->getConfigFromFile("app.{$appType}")
+);
+
+if (App::parseBooleanEnv('$CRAFT_SAFE_MODE') === true) {
+    ArrayHelper::remove($localConfig, 'bootstrap');
+    ArrayHelper::remove($localConfig, 'components');
 }
+
+$config = ArrayHelper::merge($config, $localConfig);
 
 if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);
