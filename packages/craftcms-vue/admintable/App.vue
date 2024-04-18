@@ -562,9 +562,7 @@
           ? this.paginatedReorderAction
           : this.reorderAction;
 
-        let elements = [
-          ...ev.target.querySelectorAll('.vue-table-move-handle'),
-        ];
+        let elements = [...ev.to.querySelectorAll('.vue-table-move-handle')];
 
         if (elements.length) {
           let ids = map(elements, (element) => {
@@ -1037,7 +1035,7 @@
   }
 
   .vue-admin-table-drag {
-    background: #f3f7fc;
+    opacity: 0;
   }
 
   table thead th.sortable:hover {

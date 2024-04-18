@@ -342,6 +342,12 @@ trait ApplicationTrait
         }
 
         $this->language = $this->getTargetLanguage($useUserLanguage);
+        setlocale(
+            LC_COLLATE,
+            str_replace('-', '_', $this->language), // target language
+            'C.UTF-8',  // libc >= 2.13
+            'C.utf8' // different spelling
+        );
         $this->_gettingLanguage = false;
     }
 
