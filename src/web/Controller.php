@@ -195,7 +195,7 @@ abstract class Controller extends \yii\web\Controller
             $allowAnonymous = $this->allowAnonymous[$action->id] ?? self::ALLOW_ANONYMOUS_NEVER;
         }
 
-        if (!($test && $allowAnonymous)) {
+        if (!($test & $allowAnonymous)) {
             // If this is a control panel request, make sure they have access to the control panel
             if ($isCpRequest) {
                 $this->requireLogin();
