@@ -247,6 +247,8 @@ $localConfig = $config = ArrayHelper::merge(
 if (App::parseBooleanEnv('$CRAFT_SAFE_MODE') === true) {
     ArrayHelper::remove($localConfig, 'bootstrap');
     ArrayHelper::remove($localConfig, 'components');
+    ArrayHelper::remove($localConfig, 'extensions');
+    ArrayHelper::remove($localConfig, 'container');
 }
 
 $config = ArrayHelper::merge($config, $localConfig);
