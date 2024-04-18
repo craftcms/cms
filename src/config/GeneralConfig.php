@@ -2521,6 +2521,24 @@ class GeneralConfig extends BaseConfig
     public bool $runQueueAutomatically = true;
 
     /**
+     * @var bool Whether the system should run in Safe Mode.
+     *
+     * Safe Mode disables all plugins and application config that can alter Craft's expected default behavior.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->safeMode(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SAFE_MODE=true
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public bool $safeMode = false;
+
+    /**
      * @var bool Whether images uploaded via the control panel should be sanitized.
      *
      * ::: code
@@ -5934,6 +5952,27 @@ class GeneralConfig extends BaseConfig
     public function runQueueAutomatically(bool $value = true): self
     {
         $this->runQueueAutomatically = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the system should run in Safe Mode.
+     *
+     * Safe Mode disables all plugins and application config that can alter Craft's expected default behavior.
+     *
+     * ```php
+     * ->safeMode(true)
+     * ```
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $safeMode
+     * @since 4.9.0
+     */
+    public function safeMode(bool $value = false): self
+    {
+        $this->safeMode = $value;
         return $this;
     }
 

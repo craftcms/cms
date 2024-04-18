@@ -151,6 +151,10 @@ class Plugins extends Component
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $this->_forceDisabledPlugins = is_array($generalConfig->disabledPlugins) ? array_flip($generalConfig->disabledPlugins) : $generalConfig->disabledPlugins;
 
+        if ($generalConfig->safeMode) {
+            $this->_forceDisabledPlugins = '*';
+        }
+
         $this->_composerPluginInfo = [];
 
         $path = Craft::$app->getVendorPath() . DIRECTORY_SEPARATOR . 'craftcms' . DIRECTORY_SEPARATOR . 'plugins.php';
@@ -1353,8 +1357,7 @@ class Plugins extends Component
         // Force disable it?
         if (
             $this->_forceDisabledPlugins === '*' ||
-            (is_array($this->_forceDisabledPlugins) && isset($this->_forceDisabledPlugins[$handle])) ||
-            App::isSafeMode()
+            (is_array($this->_forceDisabledPlugins) && isset($this->_forceDisabledPlugins[$handle]))
         ) {
             $data['enabled'] = false;
         }

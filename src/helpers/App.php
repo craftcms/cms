@@ -812,17 +812,6 @@ class App
         return self::parseBooleanEnv('$CRAFT_STREAM_LOG') === true;
     }
 
-    /**
-     * Returns whether Craft is in safe mode.
-     *
-     * @return bool
-     * @since 4.9.0
-     */
-    public static function isSafeMode(): bool
-    {
-        return self::parseBooleanEnv('$CRAFT_SAFE_MODE') === true;
-    }
-
     // App component configs
     // -------------------------------------------------------------------------
 

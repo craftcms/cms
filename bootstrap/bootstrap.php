@@ -244,7 +244,9 @@ $localConfig = $config = ArrayHelper::merge(
     $configService->getConfigFromFile("app.{$appType}")
 );
 
-if (App::isSafeMode()) {
+$safeMode = App::env('CRAFT_SAFE_MODE') ?? $generalConfig['safeMode'] ?? false;
+
+if ($safeMode) {
     ArrayHelper::remove($localConfig, 'bootstrap');
     ArrayHelper::remove($localConfig, 'components');
     ArrayHelper::remove($localConfig, 'extensions');
