@@ -7,6 +7,7 @@
 
 ### Administration
 - Added the `asyncCsrfInputs` config setting. ([#14625](https://github.com/craftcms/cms/pull/14625))
+- Added the `safeMode` config setting. ([#14734](https://github.com/craftcms/cms/pull/14734))
 - `resave` commands now support an `--if-invalid` option. ([#14731](https://github.com/craftcms/cms/issues/14731))
 
 ### Extensibility
