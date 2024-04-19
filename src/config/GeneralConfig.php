@@ -2580,6 +2580,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
+     * @since 4.9.0
      */
     public bool $safeMode = false;
 
