@@ -6,6 +6,7 @@
 - Fixed a bug where the Database Backup utility was present when the `backupCommand` config setting was set to `false`.
 - Fixed an error that occurred when running the `db/convert-charset` command, if any tables contained `char` or `varchar` foreign key columns. ([#14815](https://github.com/craftcms/cms/issues/14815))
 - Fixed a bug where parsed first/last names could have different casing than the full name that was submitted. ([#14723](https://github.com/craftcms/cms/issues/14723))
+- Fixed a bug where `craft\helpers\UrlHelper::isAbsoluteUrl()` was returning `false` for URLs with schemes other than `http` or `https`, such as `mailto` and `tel`. ([#14830](https://github.com/craftcms/cms/issues/14830))
 
 ## 4.8.9 - 2024-04-10
 
