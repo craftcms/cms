@@ -239,7 +239,7 @@ $config = ArrayHelper::merge(
     require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . "app.{$appType}.php"
 );
 
-$localConfig = $config = ArrayHelper::merge(
+$localConfig = ArrayHelper::merge(
     $configService->getConfigFromFile('app'),
     $configService->getConfigFromFile("app.{$appType}")
 );
