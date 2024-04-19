@@ -31,6 +31,8 @@ class UrlHelperTest extends TestCase
     public const NON_ABSOLUTE_URL = 'craftcms.com/';
     public const NON_ABSOLUTE_URL_WWW = 'www.craftcms.com/';
     public const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
+    public const EMAIL_URL = 'mailto:test@abc.com';
+    public const TEL_URL = 'tel:+10123456789';
 
     /**
      * @var UnitTester
@@ -303,6 +305,8 @@ class UrlHelperTest extends TestCase
             'absolute-url-www' => [true, self::ABSOLUTE_URL_WWW],
             'non-url' => [false, self::NON_ABSOLUTE_URL],
             'non-absolute-url-www' => [false, self::NON_ABSOLUTE_URL_WWW],
+            'email-url' => [true, self::EMAIL_URL],
+            'tel-url' => [true, self::TEL_URL],
         ];
     }
 
