@@ -27,7 +27,10 @@ class UrlHelper
      */
     public static function isAbsoluteUrl(string $url): bool
     {
-        return (str_starts_with($url, 'http://') || str_starts_with($url, 'https://'));
+        // From https://developer.apple.com/documentation/webkit/wkwebviewconfiguration/2875766-seturlschemehandler:
+        // > Scheme names are case sensitive, must start with an ASCII letter, and may contain only ASCII letters,
+        // > numbers, the “+” character, the “-” character, and the “.” character.
+        return (bool)preg_match('/^[a-z][a-z0-9+-.]*:/i', $url);
     }
 
     /**
