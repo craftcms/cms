@@ -1574,7 +1574,7 @@ interface ElementInterface extends
     // -------------------------------------------------------------------------
 
     /**
-     * Returns any attributes that should be included in the element’s DOM representation in the control panel.
+     * Returns any attributes that should be included in the element’s chips and cards.
      *
      * The attribute HTML will be rendered with [[\yii\helpers\BaseHtml::renderTagAttributes()]].
      *
