@@ -6,9 +6,7 @@
         {% for crumb in crumbs %}
           {% set hasMenuItems = crumb.menu is defined and crumb.menu.items is defined %}
           {% if hasMenuItems %}
-            {% set crumb = (
-              crumb.menu.items|map(o => (o.group ?? false) ? (o.options ?? []) : [o])|flatten(1)|firstWhere(o => o.selected ?? false) ?: {}
-              )|merge(crumb) %}
+            {% set crumb = findCrumb(crumb.menu.items)|merge(crumb) %}
           {% endif %}
 
           {% tag 'li' with {

@@ -30,7 +30,7 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
     init: function (tableView, $elements, settings) {
       this.tableView = tableView;
 
-      this._helperMargin = this.tableView.elementIndex.actions ? 52 : 0;
+      this._helperMargin = this.tableView.elementIndex.actions ? 40 : 0;
 
       settings = $.extend({}, Craft.ElementTableSorter.defaults, settings, {
         handle: '.move',

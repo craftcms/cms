@@ -443,6 +443,7 @@ JS;
 
         $data = [
             'Pro' => CmsEdition::Pro->value,
+            'Team' => CmsEdition::Team->value,
             'Solo' => CmsEdition::Solo->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),

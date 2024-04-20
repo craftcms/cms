@@ -63,7 +63,7 @@
   {{ actionInput('user-settings/save-user-settings') }}
   {{ csrfInput() }}
 
-  {% if CraftEdition == CraftPro %}
+  {% if CraftEdition >= CraftTeam %}
     <h2 class="first">{{ 'User Photos'|t('app') }}</h2>
   {% endif %}
 
@@ -85,7 +85,33 @@
     }, '<p class="error">' ~ "No volumes exist yet."|t('app') ~ '</p>') }}
   {% endif %}
 
+  {% if CraftEdition >= CraftTeam %}
+    <hr>
+    <h2>{{ 'Security'|t('app') }}</h2>
+
+    {{ forms.checkboxSelectField({
+      label: 'Require two-step verification'|t('app'),
+      instructions: 'Choose which users must use two-step verification when accessing the control panel.'|t('app'),
+      name: 'require2fa',
+      options: craft.app.userGroups.getAllGroups()
+      |map(g => {value: g.uid, label: g.name|t('site')})
+      |unshift({value: 'admins', label: 'Admins'|t('app')}),
+      showAllOption: true,
+      allLabel: 'All users'|t('app'),
+      allValue: 'all',
+      values: settings.require2fa ?? false,
+    }) }}
+  {% endif %}
+
   {% if CraftEdition == CraftPro %}
+    {{ forms.lightswitchField({
+      fieldClass: 'first',
+      label: 'Verify email addresses'|t('app'),
+      instructions: 'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)'|t('app'),
+      name: 'requireEmailVerification',
+      on: settings.requireEmailVerification,
+    }) }}
+
     <hr>
     <h2>{{ 'Public Registration'|t('app') }}</h2>
 
@@ -125,29 +151,5 @@
         value: settings.defaultGroup
       }) }}
     </div>
-
-    <hr>
-    <h2>{{ 'Security'|t('app') }}</h2>
-
-    {{ forms.lightswitchField({
-      fieldClass: 'first',
-      label: 'Verify email addresses'|t('app'),
-      instructions: 'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)'|t('app'),
-      name: 'requireEmailVerification',
-      on: settings.requireEmailVerification,
-    }) }}
-
-    {{ forms.checkboxSelectField({
-      label: 'Require two-step verification'|t('app'),
-      instructions: 'Choose which users must use two-step verification when accessing the control panel.'|t('app'),
-      name: 'require2fa',
-      options: craft.app.userGroups.getAllGroups()
-      |map(g => {value: g.uid, label: g.name|t('site')})
-      |unshift({value: 'admins', label: 'Admins'|t('app')}),
-      showAllOption: true,
-      allLabel: 'All users'|t('app'),
-      allValue: 'all',
-      values: settings.require2fa ?? false,
-    }) }}
   {% endif %}
 {% endblock %}

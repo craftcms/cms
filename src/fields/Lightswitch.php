@@ -239,13 +239,17 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
 
         $label = $this->onLabel ?: Craft::t('app', 'Enabled');
 
-        return Html::tag('span', '', [
-            'class' => 'checkbox-icon',
-            'role' => 'img',
-            'title' => $label,
-            'aria' => [
-                'label' => $label,
-            ],
-        ]);
+        return
+            Html::tag('span', '', [
+                'class' => 'checkbox-icon',
+                'role' => 'img',
+                'title' => $label,
+                'aria' => [
+                    'label' => $label,
+                ],
+            ]) .
+            Html::tag('span', $this->getUiLabel(), [
+                'class' => 'checkbox-preview-label',
+            ]);
     }
 }

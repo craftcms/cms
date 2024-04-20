@@ -1,7 +1,7 @@
-import $ from 'jquery';
-
 /** global: Craft */
 /** global: Garnish */
+/** global: $ */
+/** global: jQuery */
 
 /**
  * Element Editor
@@ -99,6 +99,23 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.draftElementIds = {};
       this.enableAutosave = Craft.autosaveDrafts;
       this.previewLinks = [];
+
+      if (this.settings.previewTargets?.length) {
+        const $actionBtn = this.isFullPage
+          ? $('#action-btn')
+          : this.slideout.$actionBtn;
+        const idPrefix = this.namespaceId('action-view');
+        const $viewAction = $actionBtn
+          ?.data('disclosureMenu')
+          ?.$container.find(`a[id^="${idPrefix}-"]`);
+        if ($viewAction?.length) {
+          const href = $viewAction.attr('href');
+          $viewAction
+            .data('targetUrl', href)
+            .attr('href', this.getTokenizedPreviewUrl(href, null, false));
+          this.previewLinks.push($viewAction);
+        }
+      }
 
       this.siteIds = Object.keys(this.settings.siteStatuses).map((siteId) => {
         return parseInt(siteId);
@@ -414,6 +431,10 @@ Craft.ElementEditor = Garnish.Base.extend(
           );
         }
       });
+
+      if (!this.isFullPage) {
+        this.slideout.$cancelBtn.text(Craft.t('app', 'Close'));
+      }
     },
 
     initForDraft: function () {

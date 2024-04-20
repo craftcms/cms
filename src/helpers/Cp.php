@@ -19,6 +19,7 @@ use craft\base\Statusable;
 use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
+use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\MenuItemType;
 use craft\errors\InvalidHtmlTagException;
@@ -172,6 +173,18 @@ class Cp
         ) {
             $alerts[] = Craft::t('app', 'A critical update is available.') .
                 ' <a class="go nowrap" href="' . UrlHelper::url('utilities/updates') . '">' . Craft::t('app', 'Go to Updates') . '</a>';
+        }
+
+        // Do any plugins require a higher edition?
+        if (Craft::$app->edition !== CmsEdition::Pro) {
+            foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
+                if ($plugin->minCmsEdition->value > Craft::$app->edition->value) {
+                    $alerts[] = Craft::t('app', '{plugin} requires Craft CMS {edition} edition.', [
+                        'plugin' => $plugin->name,
+                        'edition' => $plugin->minCmsEdition->name,
+                    ]);
+                }
+            }
         }
 
         // Display an alert if there are pending project config YAML changes
@@ -2776,7 +2789,7 @@ JS;
 
         try {
             // system icon name?
-            if (preg_match('/^[a-z\-]+$/', $icon)) {
+            if (preg_match('/^[a-z\-]+(\d?)$/', $icon)) {
                 $path = match ($icon) {
                     'asterisk-slash', 'diamond-slash', 'element-card', 'element-card-slash', 'element-cards', 'graphql',
                     'grip-dots', 'image-slash', 'list-flip', 'list-tree-flip', 'share-flip' =>

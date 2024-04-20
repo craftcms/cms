@@ -99,7 +99,9 @@ import $ from 'jquery';
             multi: true,
             vertical: true,
             handle: '> .actions > .checkbox, > .titlebar',
-            filter: ':not(.tab-label)',
+            filter: (target) => {
+              return !$(target).closest('.tab-label').length;
+            },
             checkboxMode: true,
           }
         );
@@ -545,8 +547,11 @@ import $ from 'jquery';
       }
 
       this._handleTitleBarClick = function (ev) {
-        ev.preventDefault();
-        this.toggle();
+        // don't expand/collapse the matrix "block" if double tapping the tabs
+        if (!$(ev.target).closest('.tab-label').length) {
+          ev.preventDefault();
+          this.toggle();
+        }
       };
 
       this.addListener(this.$titlebar, 'doubletap', this._handleTitleBarClick);

@@ -267,6 +267,10 @@ fieldset:last-child,
   margin-bottom: var(--xl) !important;
 }
 
+.pointer {
+  cursor: pointer !important;
+}
+
 .no-scroll {
   overflow: hidden !important;
 }
@@ -683,13 +687,8 @@ button {
   }
 
   .so-notice > & {
-    @include margin(
-      calc(var(--s) * -1),
-      0,
-      calc(var(--s) * -1),
-      calc(var(--xl) * -1)
-    );
-    @include padding(var(--s), 0, var(--s), var(--xl));
+    @include margin(-5px, 0, -5px, calc(var(--xl) * -1));
+    @include padding(5px, 0, 5px, var(--xl));
     @include border-bottom-left-radius(var(--large-border-radius));
 
     body.ltr & {
@@ -2986,6 +2985,10 @@ table {
   border-bottom: none !important;
 }
 
+.datatablesorthelper th .toggle {
+  display: none !important;
+}
+
 .chip,
 .card {
   color: var(--custom-text-color, var(--text-color));
@@ -3123,6 +3126,7 @@ table {
       border-radius: var(--small-border-radius);
       max-width: 100%;
       max-height: 100%;
+      width: 100%;
     }
   }
 }
@@ -3333,6 +3337,12 @@ table {
         overflow: hidden;
         text-wrap: pretty;
       }
+
+      .checkbox-preview-label {
+        display: inline;
+        font-style: italic;
+        margin-inline-start: 5px;
+      }
     }
   }
 
@@ -3356,6 +3366,11 @@ table {
       height: 100%;
     }
   }
+}
+
+// Adjust the columns when in live preview
+.lp-editor-container .card-grid {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .context-label,
@@ -3626,10 +3641,6 @@ table {
       height: 100%;
       background: transparentize($white, 0.25);
       border-radius: var(--large-border-radius);
-    }
-
-    .update-spinner {
-      z-index: 101;
     }
   }
 
@@ -5940,6 +5951,10 @@ $min2ColWidth: 400px;
         .elements {
           &.busy {
             min-height: calc(100% - 48px);
+
+            .update-spinner {
+              z-index: 101;
+            }
           }
 
           .header {
@@ -7138,6 +7153,10 @@ body.reduce-focus-visibility {
   }
 }
 
+.checkbox-preview-label {
+  display: none;
+}
+
 .monaco-mouse-cursor-text {
   @include focus-styles {
     box-shadow: none !important;
@@ -8248,6 +8267,11 @@ body.licensing-issues {
 
   .flex-fields {
     --row-gap: var(--m) !important;
+  }
+
+  // no margin when a .field comes after a hidden item.
+  .hidden + .field {
+    margin-top: 0;
   }
 
   & > .titlebar {

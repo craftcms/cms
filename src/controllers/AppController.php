@@ -575,20 +575,15 @@ class AppController extends Controller
         $arr['name'] = $name;
         $arr['latestVersion'] = $update->getLatest()->version ?? null;
 
-        if ($update->abandoned) {
-            $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
-            if ($update->replacementName) {
-                if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
-                    $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
-                } else {
-                    $replacementUrl = $update->replacementUrl;
-                }
-                $arr['statusText'] .= ' ' .
-                    Craft::t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', [
-                        'url' => $replacementUrl,
-                        'name' => $update->replacementName,
-                    ]);
-            }
+        // Make sure that the platform & composer.json PHP version are compatible
+        $phpConstraintError = null;
+        if (
+            $update->phpConstraint &&
+            !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)
+        ) {
+            $arr['status'] = 'phpIssue';
+            $arr['statusText'] = $phpConstraintError;
+            $arr['ctaUrl'] = false;
         } elseif ($update->status === Update::STATUS_EXPIRED) {
             $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
                 'name' => $name,
@@ -602,22 +597,28 @@ class AppController extends Controller
                 $arr['altCtaText'] = Craft::t('app', 'Update anyway');
             }
         } else {
-            // Make sure that the platform & composer.json PHP version are compatible
-            $phpConstraintError = null;
-            if ($update->phpConstraint && !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)) {
-                $arr['status'] = 'phpIssue';
-                $arr['statusText'] = $phpConstraintError;
-                $arr['ctaUrl'] = false;
-            } else {
-                if ($update->status === Update::STATUS_BREAKPOINT) {
-                    $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
-                        'update' => $name . ' ' . ($update->getLatest()->version ?? ''),
-                    ]);
+            if ($update->abandoned) {
+                $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
+                if ($update->replacementName) {
+                    if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+                        $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
+                    } else {
+                        $replacementUrl = $update->replacementUrl;
+                    }
+                    $arr['statusText'] .= ' ' .
+                        Craft::t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', [
+                            'url' => $replacementUrl,
+                            'name' => $update->replacementName,
+                        ]);
                 }
+            } elseif ($update->status === Update::STATUS_BREAKPOINT) {
+                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
+                    'update' => $name . ' ' . ($update->getLatest()->version ?? ''),
+                ]);
+            }
 
-                if ($allowUpdates) {
-                    $arr['ctaText'] = Craft::t('app', 'Update');
-                }
+            if ($allowUpdates) {
+                $arr['ctaText'] = Craft::t('app', 'Update');
             }
         }
 

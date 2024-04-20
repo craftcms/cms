@@ -83,7 +83,7 @@ class Craft extends Yii2
         'dbSetup' => null,
         'projectConfig' => null,
         'fullMock' => false,
-        'edition' => CmsEdition::Solo->value,
+        'edition' => CmsEdition::Pro->value,
     ];
 
     /**
@@ -280,6 +280,8 @@ class Craft extends Yii2
             ob_end_clean();
             throw $exception;
         }
+
+        \Craft::$app->setEdition(CmsEdition::Pro);
 
         // Avoid a "headers already sent" error
         ob_end_clean();

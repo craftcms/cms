@@ -608,8 +608,14 @@ export default Base.extend(
       }
 
       // Enforce the filter
-      if (this.settings.filter && !$(ev.target).is(this.settings.filter)) {
-        return;
+      if (this.settings.filter) {
+        if (typeof this.settings.filter === 'function') {
+          if (!this.settings.filter(ev.target)) {
+            return;
+          }
+        } else if (!$(ev.target).is(this.settings.filter)) {
+          return;
+        }
       }
 
       var $item = $($.data(ev.currentTarget, 'select-item'));

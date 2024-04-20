@@ -1,7 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
-
-import $ from 'jquery';
+/** global: $ */
+/** global: jQuery */
 
 /**
  * Base component select input
@@ -113,7 +113,9 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       if (this.settings.selectable) {
         this.componentSelect = new Garnish.Select({
           multi: this.settings.sortable,
-          filter: ':not(a):not(button)',
+          filter: (target) => {
+            return !$(target).closest('a[href],button').length;
+          },
           // prevent keyboard focus since component selection is only needed for drag-n-drop
           makeFocusable: false,
         });

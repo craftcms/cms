@@ -1490,6 +1490,7 @@ li.breadcrumb-toggle-wrapper {
         min-height: var(--xl);
         box-sizing: border-box;
         color: var(--text-color);
+        cursor: pointer;
         user-select: none;
         border-radius: var(--large-border-radius);
         word-break: break-word;

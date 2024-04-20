@@ -14,8 +14,9 @@ const state = {
 
   // Craft editions
   CraftEdition: null,
-  CraftPro: null,
   CraftSolo: null,
+  CraftTeam: null,
+  CraftPro: null,
 };
 
 /**
@@ -27,39 +28,45 @@ const getters = {
       const features = {
         solo: [
           {
-            name: 'Ultra-flexible content modeling',
+            name: 'One admin account',
+            description:
+              'The Solo edition is limited to a single admin account.',
+          },
+          {
+            name: 'Flexible content modeling',
             description:
               'Define custom content types, fields, and relations needed to perfectly contain your unique content requirements.',
           },
           {
-            name: 'Advanced content previewing',
+            name: 'Multi-site + localization',
+            description:
+              'Serve multiple related/localized sites from a single Craft installation.',
+          },
+          {
+            name: 'Advanced previewing',
             description:
               'Preview your content from multiple targets, including single-page applications.',
           },
           {
-            name: 'Powerful front-end tools',
+            name: 'Twig + GraphQL',
             description:
-              'Develop custom front-end templates with Twig, or use Craft as a headless CMS.',
+              'Define custom front-end templates, or use Craft headlessly with the auto-generated GraphQL API.',
+          },
+        ],
+        team: [
+          {
+            name: 'Five user accounts',
+            description: 'Create up to five user accounts.',
           },
           {
-            name: 'GraphQL API',
+            name: 'One user role',
             description:
-              'Make your content available to other applications with a self-generating GraphQL API.',
+              'All user accounts have access to all content management features.',
           },
           {
-            name: 'Multi-Site',
+            name: 'Developer support',
             description:
-              'Run multiple related sites from a single installation, with shared content and user accounts.',
-          },
-          {
-            name: 'Localization',
-            description:
-              'Cater to distinct audiences from around the world with Craft’s best-in-class localization capabilities.',
-          },
-          {
-            name: 'Single admin account',
-            description:
-              'The Solo edition is limited to a single admin account.',
+              'Get developer-to-developer support right from the Craft core development team.',
           },
         ],
         pro: [
@@ -69,27 +76,17 @@ const getters = {
               'Create unlimited user accounts with per-user permissions.',
           },
           {
-            name: 'Front-end user registration',
-            description:
-              'Create a member site with front-end user account registration.',
+            name: 'Unlimited user roles',
+            description: 'Create user groups with custom permissions.',
           },
           {
-            name: 'Unlimited user groups',
-            description: 'Manage custom user roles and permissions.',
-          },
-          {
-            name: 'System branding',
+            name: 'Branded control panel',
             description: 'Personalize the control panel for your brand.',
           },
           {
-            name: 'System email customization',
+            name: 'Branded communication',
             description:
               'Customize system email messages and provide a custom email template.',
-          },
-          {
-            name: 'Basic developer support',
-            description:
-              'Get developer-to-developer support right from the Craft core development team.',
           },
         ],
       };
@@ -139,6 +136,8 @@ const getters = {
       switch (editionHandle) {
         case 'solo':
           return state.CraftSolo;
+        case 'team':
+          return state.CraftTeam;
         case 'pro':
           return state.CraftPro;
         default:
@@ -250,8 +249,9 @@ const mutations = {
 
     // Craft editions
     state.CraftEdition = response.data.CraftEdition;
-    state.CraftPro = response.data.CraftPro;
     state.CraftSolo = response.data.CraftSolo;
+    state.CraftTeam = response.data.CraftTeam;
+    state.CraftPro = response.data.CraftPro;
   },
 
   updateCraftIdData(state, {responseData}) {

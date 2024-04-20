@@ -16,6 +16,7 @@ use Cose\Algorithm\Signature\RSA\RS256;
 use Cose\Algorithm\Signature\RSA\RS384;
 use Cose\Algorithm\Signature\RSA\RS512;
 use Cose\Algorithms;
+use Symfony\Component\Serializer\SerializerInterface;
 use Webauthn\AttestationStatement\AttestationObjectLoader;
 use Webauthn\AttestationStatement\AttestationStatementSupportManager;
 use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
@@ -23,6 +24,7 @@ use Webauthn\AuthenticationExtensions\ExtensionOutputCheckerHandler;
 use Webauthn\AuthenticatorAssertionResponseValidator;
 use Webauthn\AuthenticatorAttestationResponseValidator;
 use Webauthn\AuthenticatorSelectionCriteria;
+use Webauthn\Denormalizer\WebauthnSerializerFactory;
 use Webauthn\PublicKeyCredentialLoader;
 use Webauthn\PublicKeyCredentialParameters;
 use Webauthn\TokenBinding\IgnoreTokenBindingHandler;
@@ -90,6 +92,21 @@ class WebauthnServer
         return PublicKeyCredentialLoader::create(
             $this->getAttestationObjectLoader()
         );
+    }
+
+    /**
+     * Return the Symphony Serializer that will deal with serialization/deserialization of data.
+     *
+     * @return SerializerInterface
+     * @see https://webauthn-doc.spomky-labs.com/v/v4.8/pure-php/input-loading#the-serializer
+     */
+    public function getSerializer(): SerializerInterface
+    {
+        $attestationStatementSupportManager = AttestationStatementSupportManager::create();
+        $attestationStatementSupportManager->add(NoneAttestationStatementSupport::create());
+        $factory = new WebauthnSerializerFactory($attestationStatementSupportManager);
+
+        return $factory->create();
     }
 
     /**

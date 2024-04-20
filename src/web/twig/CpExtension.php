@@ -30,6 +30,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         return [
             'CraftEdition' => Craft::$app->edition->value,
             'CraftSolo' => CmsEdition::Solo->value,
+            'CraftTeam' => CmsEdition::Team->value,
             'CraftPro' => CmsEdition::Pro->value,
             'requestedSite' => Cp::requestedSite(),
         ];
@@ -47,9 +48,31 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('elementCard', [Cp::class, 'elementCardHtml'], ['is_safe' => ['html']]),
             new TwigFunction('elementChip', [Cp::class, 'elementChipHtml'], ['is_safe' => ['html']]),
             new TwigFunction('elementIndex', [Cp::class, 'elementIndexHtml'], ['is_safe' => ['html']]),
-            new TwigFunction('statusIndicator', [Cp::class, 'statusIndicatorHtml'], ['is_safe' => ['html']]),
-            new TwigFunction('siteMenuItems', [Cp::class, 'siteMenuItems']),
+            new TwigFunction('findCrumb', fn(array $items) => $this->findCrumb($items)),
             new TwigFunction('iconSvg', [Cp::class, 'iconSvg'], ['is_safe' => ['html']]),
+            new TwigFunction('siteMenuItems', [Cp::class, 'siteMenuItems']),
+            new TwigFunction('statusIndicator', [Cp::class, 'statusIndicatorHtml'], ['is_safe' => ['html']]),
         ];
+    }
+
+    private function findCrumb(array $items): array
+    {
+        foreach ($items as $item) {
+            if (array_key_exists('selected', $item)) {
+                if ($item['selected']) {
+                    return $item;
+                }
+                continue;
+            }
+
+            if (isset($item['items'])) {
+                $selected = $this->findCrumb($item['items']);
+                if (!empty($selected)) {
+                    return $selected;
+                }
+            }
+        }
+
+        return [];
     }
 }

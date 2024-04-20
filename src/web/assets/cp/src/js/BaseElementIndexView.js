@@ -45,7 +45,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
       this.setTotalVisible($elements.length);
       this.setMorePending(
-        this.settings.batchSize && $elements.length == this.settings.batchSize
+        this.elementIndex.settings.batchSize &&
+          $elements.length == this.elementIndex.settings.batchSize
       );
 
       // Load thumbnails
@@ -58,7 +59,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           {
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
-            filter: ':not(a[href]):not(.toggle):not(.btn)',
+            filter: (target) => {
+              return !$(target).closest('a[href],.toggle,.btn').length;
+            },
             checkboxMode: this.settings.checkboxMode,
             onSelectionChange: this.onSelectionChange.bind(this),
           }
@@ -81,8 +84,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       // Enable inline element editing if this is an index page
       if (this.elementIndex.isAdministrative) {
         this._handleElementEditing = (ev) => {
-          if (['A', 'BUTTON'].includes(ev.target.nodeName)) {
-            // Let the link do its thing
+          if ($(ev.target).closest('a[href],button').length) {
+            // Let the link/button do its thing
             return;
           }
 
@@ -120,7 +123,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       this.afterInit();
 
       // Set up lazy-loading
-      if (!this.elementIndex.paginated && this.settings.batchSize) {
+      if (
+        !this.elementIndex.paginated &&
+        this.elementIndex.settings.batchSize
+      ) {
         if (this.settings.context === 'index') {
           this.$scroller = Garnish.$scrollContainer;
         } else {
@@ -285,7 +291,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
      * Returns whether the user has reached the bottom of the scroll area.
      */
     canLoadMore: function () {
-      if (!this.getMorePending() || !this.settings.batchSize) {
+      if (!this.getMorePending() || !this.elementIndex.settings.batchSize) {
         return false;
       }
 
@@ -317,7 +323,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       if (
         !this.getMorePending() ||
         this.loadingMore ||
-        !this.settings.batchSize
+        !this.elementIndex.settings.batchSize
       ) {
         return;
       }
@@ -352,7 +358,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           }
 
           this.setTotalVisible(this.getTotalVisible() + $newElements.length);
-          this.setMorePending($newElements.length == this.settings.batchSize);
+          this.setMorePending(
+            $newElements.length == this.elementIndex.settings.batchSize
+          );
 
           // Is there room to load more right now?
           this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');

@@ -1933,6 +1933,10 @@ JS, [
     {
         $element = $this->_element();
 
+        if ($element instanceof Response) {
+            return $element;
+        }
+
         if (!$element || $element->getIsRevision()) {
             throw new BadRequestHttpException('No element was identified by the request.');
         }
@@ -2167,7 +2171,7 @@ JS, [
 
         /** @var ElementInterface $element */
         $element = $this->element = Craft::createObject($this->_elementType);
-        if ($this->_siteId) {
+        if ($this->_siteId && $element::isLocalized()) {
             $element->siteId = $this->_siteId;
         }
         $element->setAttributesFromRequest($this->_attributes);

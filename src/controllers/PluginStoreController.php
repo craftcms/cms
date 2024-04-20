@@ -67,6 +67,7 @@ class PluginStoreController extends Controller
                 'edition' => Craft::$app->edition->handle(),
             ],
             'cmsLicenseKey' => App::licenseKey(),
+            'cmsEditions' => array_map(fn(CmsEdition $edition) => $edition->handle(), CmsEdition::cases()),
             'craftIdAccessToken' => $this->getCraftIdAccessToken(),
             'phpVersion' => App::phpVersion(),
             'composerPhpVersion' => Craft::$app->getComposer()->getConfig()['config']['platform']['php'] ?? null,
@@ -104,6 +105,7 @@ class PluginStoreController extends Controller
         $data['canTestEditions'] = Craft::$app->getCanTestEditions();
         $data['CraftEdition'] = Craft::$app->edition->value;
         $data['CraftSolo'] = CmsEdition::Solo->value;
+        $data['CraftTeam'] = CmsEdition::Team->value;
         $data['CraftPro'] = CmsEdition::Pro->value;
 
         // Logos

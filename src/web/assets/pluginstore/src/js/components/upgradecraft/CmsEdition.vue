@@ -3,8 +3,11 @@
     <div class="description">
       <edition-badge :name="edition.name" :block="true" :big="true" />
       <p class="edition-description">{{ editionDescription }}</p>
+    </div>
+
+    <div class="price-container">
       <div class="price">
-        <template v-if="edition.price && edition.price > 0">
+        <template v-if="parseInt(edition.price)">
           {{ edition.price | currency }}
         </template>
         <template v-else>
@@ -12,20 +15,26 @@
         </template>
       </div>
 
-      <p
-        v-if="edition.price && edition.price > 0"
-        class="tw--mt-8 tw-py-6 tw-text-gray-700"
-      >
-        {{ 'Includes one year of updates.' | t('app') }}<br />
+      <p v-if="edition.price > 0" class="price-renewal-info">
         {{
-          '{renewalPrice}/year per site for updates after that.'
+          'Plus {renewalPrice}/year for updates after one year.'
             | t('app', {
               renewalPrice: $options.filters.currency(edition.renewalPrice),
             })
         }}
       </p>
+    </div>
 
+    <div class="feature-list">
       <ul>
+        <li v-if="previousEdition" class="cms-editions-previous">
+          {{
+            'Everything in {edition}, plus…'
+              | t('app', {
+                edition: previousEdition.name,
+              })
+          }}
+        </li>
         <li v-for="(feature, key) in features" :key="key">
           <c-icon icon="check" />
           {{ feature.name }}
@@ -56,7 +65,7 @@
   import EditionBadge from '../EditionBadge';
 
   export default {
-    props: ['edition'],
+    props: ['edition', 'previousEdition'],
 
     components: {
       InfoHud,
@@ -75,14 +84,16 @@
         switch (this.edition.handle) {
           case 'solo':
             return this.$options.filters.t(
-              'For when you’re building a website for yourself or a friend.',
+              'For personal sites built for yourself or a friend.',
+              'app'
+            );
+          case 'team':
+            return this.$options.filters.t(
+              'For marketing sites managed by small teams.',
               'app'
             );
           case 'pro':
-            return this.$options.filters.t(
-              'For when you’re building something professionally for a client or team.',
-              'app'
-            );
+            return this.$options.filters.t('For everything else.', 'app');
           default:
             return null;
         }
@@ -101,11 +112,9 @@
 
 <style lang="scss">
   .cms-editions-edition {
-    @apply tw-border tw-border-gray-200 tw-border-solid tw-p-8 tw-rounded tw-text-center tw-flex tw-flex-col;
+    @apply tw-border tw-border-gray-200 tw-border-solid tw-p-8 tw-rounded tw-text-center;
 
     .description {
-      @apply tw-flex-1;
-
       .edition-name {
         @apply tw-border-b tw-border-gray-200 tw-border-solid tw-text-gray-700 tw-inline-block tw-py-1 tw-uppercase tw-text-lg tw-font-bold;
       }
@@ -113,20 +122,25 @@
       .edition-description {
         @apply tw-text-lg tw-my-6 tw-leading-normal;
       }
+    }
 
+    .price-container {
       .price {
-        @apply tw-text-3xl tw-font-bold tw-my-8;
+        @apply tw-text-3xl tw-font-bold;
       }
 
+      .price-renewal-info {
+        @apply tw-mx-auto tw-mt-2 tw-text-gray-700;
+        max-width: 12rem;
+      }
+    }
+
+    .feature-list {
       ul {
-        @apply tw-text-left tw-mb-8;
+        @apply tw-text-left;
 
-        li {
-          @apply tw-py-2 tw-border-b tw-border-gray-200 tw-border-solid;
-
-          &:first-child {
-            @apply tw-border-t;
-          }
+        li:not(:first-child) {
+          @apply tw-mt-2;
         }
       }
     }
@@ -141,6 +155,7 @@
         margin-left: -11px;
       }
 
+      .cms-edition-status-badge,
       .c-btn {
         @apply tw-mt-3;
       }

@@ -325,8 +325,12 @@ class UrlManager extends \yii\web\UrlManager
             /** @var array $rules */
             $rules = require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'common.php';
 
-            if (Craft::$app->edition === CmsEdition::Pro) {
-                $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'pro.php');
+            if (Craft::$app->edition->value >= CmsEdition::Team->value) {
+                $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'team.php');
+
+                if (Craft::$app->edition === CmsEdition::Pro) {
+                    $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'pro.php');
+                }
             }
 
             $eventName = self::EVENT_REGISTER_CP_URL_RULES;

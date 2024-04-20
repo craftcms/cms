@@ -1,4 +1,5 @@
-import $ from 'jquery';
+/** global: $ */
+/** global: jQuery */
 
 /**
  * Element label
@@ -63,8 +64,8 @@ class CraftElementLabel extends HTMLElement {
 
   createTooltip() {
     this.tooltip = document.createElement('craft-tooltip');
-    this.tooltip.setAttribute('self-managed', 'true');
-    this.tooltip.setAttribute('aria-label', this.innerText);
+    this.tooltip.setAttribute('aria-hidden', 'true');
+    this.tooltip.innerText = this.innerText;
 
     // If there's a context label, make it a little nicer
     const contextLabel = this.querySelector('.context-label');

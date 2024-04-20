@@ -33,7 +33,7 @@ class Craft extends Yii
     /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Solo]] should be used instead. */
     public const Solo = 0;
     /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Pro]] should be used instead. */
-    public const Pro = 1;
+    public const Pro = 2;
 
     /**
      * @var array The default cookie configuration.

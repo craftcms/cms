@@ -328,7 +328,6 @@ $menuBorderRadius: $mediumBorderRadius;
   // (sub-pixel antialiasing looks too bold/blurry with light text on dark background)
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
-  font-weight: 500;
 }
 
 @mixin light-focus-ring() {
@@ -642,8 +641,12 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin menu-item-active-styles {
-  color: var(--white);
+  color: var(--white) !important;
   background-color: var(--dark-sel-color);
+
+  svg {
+    @include svg-mask(var(--white));
+  }
 }
 
 @mixin disclosure-link-hover-styles {
