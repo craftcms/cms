@@ -2648,6 +2648,7 @@ h2 + .actions {
       var(--pane-padding, var(--padding)) * -1 + var(--pane-padding, var(--m))
     );
   padding: 0 !important;
+  overscroll-behavior: contain;
   overflow-x: auto;
 
   table.data {

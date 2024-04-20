@@ -403,9 +403,7 @@ class NestedElementManager extends Component
                 }
 
                 $html .=
-                    Html::tag('div', Craft::t('app', 'No {type} yet.', [
-                        'type' => $elementType::pluralLowerDisplayName(),
-                    ]), [
+                    Html::tag('div', Craft::t('app', 'Nothing yet.'), [
                         'class' => array_keys(array_filter([
                             'pane' => true,
                             'no-border' => true,

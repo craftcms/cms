@@ -1086,11 +1086,12 @@ li.breadcrumb-toggle-wrapper {
   position: sticky;
   bottom: 0;
   z-index: 1;
-  margin: calc(var(--xl) + 1px) calc(var(--padding) * -1 + 2px)
+  margin: calc(var(--s) + 1px) calc(var(--padding) * -1 + 2px)
     calc(var(--xl) * -1 + 2px);
   background-color: var(--gray-050);
   border-radius: var(--small-border-radius);
   box-sizing: border-box;
+  border-top: 2px solid var(--white);
 
   &:empty {
     display: none;

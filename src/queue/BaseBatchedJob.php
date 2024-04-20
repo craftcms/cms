@@ -115,7 +115,6 @@ abstract class BaseBatchedJob extends BaseJob
     public function execute($queue): void
     {
         $items = $this->data()->getSlice($this->itemOffset, $this->batchSize);
-        $totalInBatch = is_array($items) ? count($items) : iterator_count($items);
 
         $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
         $startMemory = $memoryLimit != -1 ? memory_get_usage() : null;
@@ -129,9 +128,11 @@ abstract class BaseBatchedJob extends BaseJob
         $i = 0;
 
         foreach ($items as $item) {
-            $this->setProgress($queue, $i / $totalInBatch, Translation::prep('app', '{step, number} of {total, number}', [
-                'step' => $this->itemOffset + 1,
-                'total' => $this->totalItems(),
+            $step = $this->itemOffset + 1;
+            $total = $this->totalItems();
+            $this->setProgress($queue, $step / $total, Translation::prep('app', '{step, number} of {total, number}', [
+                'step' => $step,
+                'total' => $total,
             ]));
             $this->processItem($item);
             $this->itemOffset++;
