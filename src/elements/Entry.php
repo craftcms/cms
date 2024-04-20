@@ -1194,30 +1194,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
-    public function getAdditionalChipAttributes(): array
-    {
-        return [
-            'data' => [
-                'movable' => $this->canMove(),
-            ],
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAdditionalCardAttributes(): array
-    {
-        return [
-            'data' => [
-                'movable' => $this->canMove(),
-            ],
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function previewTargets(): array
     {
         if ($this->fieldId) {
@@ -2032,6 +2008,18 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             default:
                 return parent::attributeHtml($attribute);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function htmlAttributes(string $context): array
+    {
+        return [
+            'data' => [
+                'movable' => $this->canMove(),
+            ],
+        ];
     }
 
     /**

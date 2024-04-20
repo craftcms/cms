@@ -471,7 +471,6 @@ class Cp
                 ]),
             ],
             $config['attributes'],
-            $element->getAdditionalChipAttributes(),
         );
 
         $config['showStatus'] = $config['showStatus'] && ($element->getIsDraft() || $element::hasStatuses());
@@ -554,7 +553,6 @@ class Cp
                 ]),
             ],
             $config['attributes'],
-            $element->getAdditionalCardAttributes(),
         );
 
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
