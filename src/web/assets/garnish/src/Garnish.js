@@ -815,7 +815,10 @@ Garnish = $.extend(Garnish, {
         break;
       }
 
-      $targetInputs.eq(i).val($sourceInputs.eq(i).val());
+      const $targetInput = $targetInputs.eq(i);
+      if ($targetInput.attr('type') !== 'file') {
+        $targetInputs.eq(i).val($sourceInputs.eq(i).val());
+      }
     }
   },
 

@@ -3,11 +3,17 @@
 ## Unreleased
 
 - Fixed a bug where the Database Backup utility was present when the `backupCommand` config setting was set to `false`.
+- Fixed an error that occurred when running the `db/convert-charset` command, if any tables contained `char` or `varchar` foreign key columns. ([#14815](https://github.com/craftcms/cms/issues/14815))
+- Fixed a bug where parsed first/last names could have different casing than the full name that was submitted. ([#14723](https://github.com/craftcms/cms/issues/14723))
+- Fixed a bug where `craft\helpers\UrlHelper::isAbsoluteUrl()` was returning `false` for URLs with schemes other than `http` or `https`, such as `mailto` and `tel`. ([#14830](https://github.com/craftcms/cms/issues/14830))
+- Fixed a JavaScript error that occurred when opening Live Preview, if an Assets field’s “Upload files” button had been pressed. ([#14832](https://github.com/craftcms/cms/issues/14832))
 - Fixed a bug where element selection modals were only showing the first 100 elements. ([#14790](https://github.com/craftcms/cms/issues/14790))
 - Fixed a PHP error that could occur on the Dashboard if any Quick Post widgets hadn’t been saved since before Craft 1.2. ([#14794](https://github.com/craftcms/cms/issues/14794))
 - Fixed a bug where double-clicking on an inline Matrix block tab would cause it to expand/collapse. ([#14791](https://github.com/craftcms/cms/issues/14791))
 - Fixed a bug where site breadcrumbs weren’t getting hyperlinked for installs with multiple site groups. ([#14802](https://github.com/craftcms/cms/issues/14802))
 - Fixed a bug where element conditions were allowing custom field condition rules to be selected multiple times. ([#14809](https://github.com/craftcms/cms/issues/14809))
+- Fixed a bug where relational fields within nested Matrix entries weren’t getting loaded via GraphQL. ([#14819](https://github.com/craftcms/cms/issues/14819))
+- Fixed an error that occurred when creating an address within an Addresses field on a secondary site. ([#14829](https://github.com/craftcms/cms/issues/14829))
 
 ## 5.0.4 - 2024-04-10
 
