@@ -267,6 +267,10 @@ fieldset:last-child,
   margin-bottom: var(--xl) !important;
 }
 
+.pointer {
+  cursor: pointer !important;
+}
+
 .no-scroll {
   overflow: hidden !important;
 }

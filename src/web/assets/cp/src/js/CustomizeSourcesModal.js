@@ -859,7 +859,7 @@ Craft.CustomizeSourcesModal.CustomSource =
 
       $container.append('<hr/>');
 
-      this.$deleteBtn = $('<a class="error delete"/>')
+      this.$deleteBtn = $('<a class="error delete pointer"/>')
         .attr({
           role: 'button',
           tabindex: '0',
