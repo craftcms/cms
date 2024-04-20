@@ -24,6 +24,7 @@ use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
 use craft\elements\actions\Duplicate;
+use craft\elements\actions\MoveToSection;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\NewSiblingAfter;
 use craft\elements\actions\NewSiblingBefore;
@@ -466,6 +467,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                         'deep' => true,
                     ];
                 }
+
+                $actions[] = MoveToSection::class;
             }
 
             // Delete?
@@ -1821,6 +1824,81 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     }
 
     /**
+     * Returns whether the given user is authorized to move this entry.
+     *
+     * @param User|null $user
+     * @return bool
+     * @since 5.0.0
+     */
+    public function canMove(?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        $section = $this->getSection();
+
+        if (!$section) {
+            return false;
+        }
+
+        // disallow moving singles and trashed entries
+        if ($section->type === Section::TYPE_SINGLE || $this->trashed) {
+            return false;
+        }
+
+        // if there aren't any compatible sections, just don't bother with further checks
+        if (!$this->_moveCompatibleSectionsCount()) {
+            return false;
+        }
+
+        if ($this->getIsDraft()) {
+            /** @var static|DraftBehavior $this */
+            return (
+                $this->creatorId === $user->id ||
+                $user->can("savePeerEntryDrafts:$section->uid")
+            );
+        }
+
+        if (!$user->can("saveEntries:$section->uid")) {
+            return false;
+        }
+
+        return (
+            in_array($user->id, $this->getAuthorIds(), true) ||
+            $user->can("savePeerEntries:$section->uid")
+        );
+    }
+
+    /**
+     * Get sections that this entry could be moved to - sections that use the exact same entry type.
+     *
+     * @return int
+     */
+    private function _moveCompatibleSectionsCount(): int
+    {
+        // get entry type id
+        $entryTypeId = $this->getTypeId();
+
+        // get sections all editable sections without singles and without the section this entry belongs to
+        // get all entry types for them
+        $sections = Collection::make(Craft::$app->getEntries()->getEditableSections())
+            ->filter(fn(Section $s) => $s->type !== Section::TYPE_SINGLE && $s->id !== $this->sectionId)
+            ->map(fn(Section $s) => [
+                'entryTypes' => $s->getEntryTypes(),
+            ]);
+
+        // get sections that use the same entry type as this entry
+        $compatibleSections = $sections
+            ->filter(fn(array $s) => ArrayHelper::contains($s['entryTypes'], 'id', $entryTypeId));
+
+        return $compatibleSections->count();
+    }
+
+    /**
      * @inheritdoc
      */
     public function canCreateDrafts(User $user): bool
@@ -1935,12 +2013,26 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    protected function htmlAttributes(string $context): array
+    {
+        return [
+            'data' => [
+                'movable' => $this->canMove(),
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function metaFieldsHtml(bool $static): string
     {
         $fields = [];
         $view = Craft::$app->getView();
         $section = $this->getSection();
         $user = Craft::$app->getUser()->getIdentity();
+
+        $this->_applyActionBtnEntryTypeCompatibility();
 
         if ($section?->type !== Section::TYPE_SINGLE) {
             // Type
@@ -2074,6 +2166,48 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $fields[] = parent::metaFieldsHtml($static);
 
         return implode("\n", $fields);
+    }
+
+    /**
+     * Checks if the "Apply Draft" and "Revert to a revision" buttons should be disabled and if so
+     * applies the tooltip message.
+     *
+     * @return void
+     * @throws InvalidConfigException
+     */
+    private function _applyActionBtnEntryTypeCompatibility(): void
+    {
+        $draftMessage = Craft::t(
+            'app',
+            'This draft’s entry type is no longer available. You can still view it, but not apply it.'
+        );
+        $revisionMessage = Craft::t(
+            'app',
+            'This revision’s entry type is no longer available. You can still view it, but not revert to it.'
+        );
+
+        if (!$this->isEntryTypeCompatible()) {
+            $js = <<<JS
+let applyDraftBtn = $('#action-buttons .tooltip-draft-btn')
+if (applyDraftBtn.length > 0) {
+  applyDraftBtn.addClass('disabled');
+  let tooltipBtn = `<craft-tooltip aria-label="$draftMessage">` +
+    applyDraftBtn.get(0).outerHTML +
+    `</craft-tooltip>`;
+  applyDraftBtn.replaceWith(tooltipBtn);
+}
+
+let revertRevisionBtn = $('#action-buttons .revision-draft-btn');
+if (revertRevisionBtn.length > 0) {
+  revertRevisionBtn.addClass('disabled');
+  let tooltipBtn = `<craft-tooltip aria-label="$revisionMessage">` +
+    revertRevisionBtn.get(0).outerHTML +
+    `</craft-tooltip>`;
+  revertRevisionBtn.replaceWith(tooltipBtn);
+}
+JS;
+            Craft::$app->getView()->registerJs($js);
+        }
     }
 
     /**
@@ -2584,6 +2718,28 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             !$this->getIsRevision() &&
             $this->getSection()?->enableVersioning
         );
+    }
+
+    /**
+     * Check if entry's Entry Type is still allowed by its Section.
+     *
+     * @return bool
+     * @throws InvalidConfigException
+     */
+    public function isEntryTypeCompatible(): bool
+    {
+        $section = $this->getSection();
+
+        // if entry doesn't belong to a section (is nested) just allow it
+        if (!$section) {
+            return true;
+        }
+
+        $sectionEntryTypes = Collection::make($section->getEntryTypes())
+            ->map(fn(EntryType $et) => $et->id)
+            ->all();
+
+        return in_array($this->getTypeId(), $sectionEntryTypes);
     }
 
     /**

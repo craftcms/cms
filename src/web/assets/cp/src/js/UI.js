@@ -31,6 +31,11 @@ Craft.ui = {
     if (config.controls) {
       $btn.attr('aria-controls', config.controls);
     }
+    if (config.data) {
+      Object.entries(config.data).forEach((item) => {
+        $btn.attr('data-' + item[0], item[1]);
+      });
+    }
     if (config.spinner) {
       $btn.append($('<div class="spinner spinner-absolute"/>'));
     }

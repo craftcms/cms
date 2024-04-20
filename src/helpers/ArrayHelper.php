@@ -314,7 +314,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
 
     /**
      * Returns whether the given array contains *only* values where a given key (the name of a
-     * -ub-array key or sub-object property) is sett o given value.
+     * -ub-array key or sub-object property) is set to given value.
      *
      * @param iterable $array the array that the value will be searched for in
      * @param callable|string $key the column name or anonymous function which must be set to $value
