@@ -16,9 +16,12 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\errors\EntryTypeNotFoundException;
+use craft\errors\InvalidElementException;
 use craft\errors\SectionNotFoundException;
+use craft\errors\UnsupportedSiteException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
+use craft\events\EntryMoveEvent;
 use craft\events\EntryTypeEvent;
 use craft\events\SectionEvent;
 use craft\helpers\AdminTable;
@@ -46,6 +49,7 @@ use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\caching\TagDependency;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
@@ -116,6 +120,18 @@ class Entries extends Component
      * @since 5.0.0
      */
     public const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
+
+    /**
+     * @event EntryMoveEvent The event that is triggered before an entry is move to a different section.
+     * @since 5.1.0
+     */
+    public const EVENT_BEFORE_MOVE_TO_SECTION = 'beforeMoveToSection';
+
+    /**
+     * @event EntryMoveEvent The event that is triggered before an entry is move to a different section.
+     * @since 5.1.0
+     */
+    public const EVENT_AFTER_MOVE_TO_SECTION = 'afterMoveToSection';
 
     /**
      * @var bool Whether entries should be resaved after a section or entry type has been updated.
@@ -1823,5 +1839,139 @@ SQL)->execute();
         }
 
         return $entries;
+    }
+
+    /**
+     * Move entry to a different section.
+     *
+     * @param Entry $entry
+     * @param Section $section
+     * @return bool
+     * @throws Exception
+     * @throws InvalidElementException
+     * @throws Throwable
+     * @throws UnsupportedSiteException
+     * @since 5.1.0
+     */
+    public function moveEntryToSection(Entry $entry, Section $section): bool
+    {
+        // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_MOVE_TO_SECTION)) {
+            $this->trigger(self::EVENT_BEFORE_MOVE_TO_SECTION, new EntryMoveEvent([
+                'entry' => $entry,
+                'section' => $section,
+            ]));
+        }
+
+        // Make sure the element exists
+        if (!$entry->id) {
+            throw new Exception('Attempting to move an unsaved element.');
+        }
+
+        // and that it's not a nested entry
+        if ($entry->getPrimaryOwnerId() !== null) {
+            throw new Exception('Attempting to move a nested element.');
+        }
+
+        // Ensure all fields have been normalized
+        $entry->getFieldValues();
+
+        $oldSection = $entry->getSection();
+
+        // move to new section
+        $entry->sectionId = $section->id;
+
+        // Validate
+        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->validate();
+
+        // If there are any errors on the URI, re-validate as disabled
+        if ($entry->hasErrors('uri') && $entry->enabled) {
+            $entry->enabled = false;
+            $entry->validate();
+        }
+
+        // When moving to a section that allows for less authors than the entry has, allow the move.
+        // The error will be shown the next time that entry is saved.
+        if ($entry->hasErrors('authorIds')) {
+            $entry->clearErrors('authorIds');
+        }
+
+        if ($entry->hasErrors()) {
+            throw new InvalidElementException($entry, 'Element ' . $entry->id . ' could not be moved because it doesn\'t validate.');
+        }
+
+        // prevents revision from being created
+        $entry->resaving = true;
+
+        $elementsService = Craft::$app->getElements();
+        $elementsService->ensureBulkOp(function() use (
+            $entry,
+            $section,
+            $oldSection,
+            $elementsService,
+        ) {
+            $transaction = Craft::$app->getDb()->beginTransaction();
+            try {
+                // Start with $entry’s site
+                if (!$elementsService->saveElement($entry, false, false)) {
+                    throw new InvalidElementException($entry, 'Element ' . $entry->id . ' could not be moved for site ' . $entry->siteId);
+                }
+
+                $structuresService = Craft::$app->getStructures();
+
+                if ($entry->getIsCanonical()) {
+                    $canonical = $entry->getCanonical(true);
+
+                    // if we're moving it to a Structure section, place it at the root
+                    if ($section->type === Section::TYPE_STRUCTURE && $canonical->structureId) {
+                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                            $structuresService->prependToRoot($section->structureId, $canonical, Structures::MODE_INSERT);
+                        } else {
+                            $structuresService->appendToRoot($section->structureId, $canonical, Structures::MODE_INSERT);
+                        }
+                    }
+
+                    // if we're moving it from a Structure section, remove it from the structure
+                    if ($oldSection->structureId) {
+                        $structuresService->remove($oldSection->structureId, $canonical);
+                    }
+                }
+
+                $entry->newSiteIds = [];
+                $entry->afterPropagate(false);
+
+                // now update drafts & revisions too
+                $ids = array_merge(
+                    Entry::find()->draftOf($entry)->status(null)->site('*')->unique()->ids(),
+                    Entry::find()->revisionOf($entry)->status(null)->site('*')->unique()->ids(),
+                );
+                if (!empty($ids)) {
+                    Db::update(Table::ENTRIES, [
+                        'sectionId' => $section->id,
+                    ], [
+                        'id' => $ids,
+                    ]);
+                }
+
+                $transaction->commit();
+
+                // Invalidate caches for the old section
+                $tag = sprintf('element::%s::section:%s', Entry::class, $oldSection->id);
+                TagDependency::invalidate(Craft::$app->getCache(), $tag);
+            } catch (Throwable $e) {
+                $transaction->rollBack();
+                throw $e;
+            }
+        });
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_TO_SECTION)) {
+            $this->trigger(self::EVENT_AFTER_MOVE_TO_SECTION, new EntryMoveEvent([
+                'entry' => $entry,
+                'section' => $section,
+            ]));
+        }
+
+        return true;
     }
 }

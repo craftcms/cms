@@ -392,6 +392,7 @@ class EntriesController extends BaseEntriesController
      *
      * @return Response
      * @throws BadRequestHttpException
+     * @since 5.1.0
      */
     public function actionMoveToSectionModalData(): Response
     {
@@ -485,7 +486,7 @@ class EntriesController extends BaseEntriesController
      *
      * @return Response
      * @throws BadRequestHttpException
-     * @throws \yii\db\Exception
+     * @since 5.1.0
      */
     public function actionMoveToSection(): Response
     {
@@ -512,7 +513,7 @@ class EntriesController extends BaseEntriesController
         $errors = [];
         foreach ($entries as $entry) {
             try {
-                Craft::$app->getElements()->moveEntryToSection($entry, $section);
+                Craft::$app->getEntries()->moveEntryToSection($entry, $section);
             } catch (\Exception|InvalidElementException|UnsupportedSiteException $e) {
                 Craft::error('Could not delete move entry to a different section: ' . $e->getMessage(), __METHOD__);
                 $errors[] = $e->getMessage();
