@@ -58,9 +58,6 @@ class CraftTooltip extends HTMLElement {
 
   disconnectedCallback() {
     this.hide();
-    if (this.delayTimeout) {
-      clearTimeout(this.delayTimeout);
-    }
 
     if (this.listeners.length) {
       this.listeners.forEach(([event, handler]) => {
@@ -113,6 +110,10 @@ class CraftTooltip extends HTMLElement {
   }
 
   hide() {
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+    }
+
     Object.assign(this.style, {
       opacity: 0,
       transform: this.getInitialTransform(),
