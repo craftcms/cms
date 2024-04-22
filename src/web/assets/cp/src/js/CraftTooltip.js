@@ -12,6 +12,7 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  * @property {'top'|'top-start'|'top-end'|'right'|'right-start'|'right-end'|'bottom'|'bottom-start'|'bottom-end'|'left'|'left-start'|'left-end'} placement - The placement of the tooltip relative to the parent element.
  * @property {boolean} arrow - Whether the tooltip should have an arrow.
  * @property {number} offset - The offset of the tooltip from the parent element.
+ * @property {number} delay - The delay before the tooltip is shown on mouseentery.
  * @method show - Show the tooltip.
  * @method hide - Hide the tooltip.
  * @method update - Update the position of the tooltip.
@@ -28,6 +29,8 @@ class CraftTooltip extends HTMLElement {
 
     this.placement = this.getAttribute('placement') || 'bottom';
     this.direction = getComputedStyle(this).direction;
+    this.delay = this.getAttribute('delay') || 500;
+    this.delayTimeout = null;
 
     if (this.arrow && !this.arrowElement) {
       this.renderInner();
@@ -35,14 +38,14 @@ class CraftTooltip extends HTMLElement {
     }
 
     this.listeners = [
-      ['mouseenter', this.show],
-      ['focus', this.show],
-      ['mouseleave', this.hide],
-      ['blur', this.hide],
+      ['mouseenter', this.show, this.delay],
+      ['focus', this.show, 0],
+      ['mouseleave', this.hide, 0],
+      ['blur', this.hide, 0],
     ];
 
-    this.listeners.forEach(([event, handler]) => {
-      this.parentElement?.addEventListener(event, handler.bind(this));
+    this.listeners.forEach(([event, handler, delay]) => {
+      this.parentElement?.addEventListener(event, handler.bind(this, delay));
     });
 
     // Close on ESC
@@ -55,6 +58,9 @@ class CraftTooltip extends HTMLElement {
 
   disconnectedCallback() {
     this.hide();
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+    }
 
     if (this.listeners.length) {
       this.listeners.forEach(([event, handler]) => {
@@ -91,16 +97,19 @@ class CraftTooltip extends HTMLElement {
     this.inner.appendChild(this.arrowElement);
   }
 
-  show() {
+  show(delay) {
     this.update();
-    Object.assign(this.style, {
-      opacity: 1,
-      transform: ['left', 'right'].includes(this.getStaticSide())
-        ? `translateX(0)`
-        : `translateY(0)`,
-      // Make sure if a user hovers over the label itself, it stays open
-      pointerEvents: 'auto',
-    });
+
+    this.delayTimeout = setTimeout(() => {
+      Object.assign(this.style, {
+        opacity: 1,
+        transform: ['left', 'right'].includes(this.getStaticSide())
+          ? `translateX(0)`
+          : `translateY(0)`,
+        // Make sure if a user hovers over the label itself, it stays open
+        pointerEvents: 'auto',
+      });
+    }, delay);
   }
 
   hide() {
