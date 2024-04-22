@@ -15,6 +15,7 @@ use craft\base\CpEditable;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
+use craft\base\GqlInlineFragmentInterface;
 use craft\base\Iconic;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
@@ -34,6 +35,7 @@ use craft\validators\UniqueValidator;
  */
 class EntryType extends Model implements
     FieldLayoutProviderInterface,
+    GqlInlineFragmentInterface,
     Chippable,
     CpEditable,
     Iconic,
@@ -326,6 +328,24 @@ JS, [
         /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
         return $behavior->getFieldLayout();
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getFieldContext(): string
+    {
+        return 'global';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getEagerLoadingPrefix(): string
+    {
+        return $this->handle;
     }
 
     /**

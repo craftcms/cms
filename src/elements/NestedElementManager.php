@@ -896,10 +896,13 @@ JS, [
                     'canonicalId' => $setCanonicalId ? $element->id : null,
                     'primaryOwner' => $target,
                     'owner' => $target,
-                    'siteId' => $target->siteId,
                     'propagating' => false,
                     'sortOrder' => $element->getSortOrder(),
                 ];
+
+                if ($element::isLocalized()) {
+                    $newAttributes['siteId'] = $target->siteId;
+                }
 
                 if ($target->updatingFromDerivative && $element->getIsDerivative()) {
                     if (
