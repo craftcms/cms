@@ -374,6 +374,7 @@ class NestedElementManager extends Component
                     'deleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
                         'type' => $elementType::lowerDisplayName(),
                     ]),
+                    'showInGrid' => $config['showInGrid'],
                 ];
 
                 $html = Html::beginTag('div', options: [
@@ -403,9 +404,7 @@ class NestedElementManager extends Component
                 }
 
                 $html .=
-                    Html::tag('div', Craft::t('app', 'No {type} yet.', [
-                        'type' => $elementType::pluralLowerDisplayName(),
-                    ]), [
+                    Html::tag('div', Craft::t('app', 'Nothing yet.'), [
                         'class' => array_keys(array_filter([
                             'pane' => true,
                             'no-border' => true,

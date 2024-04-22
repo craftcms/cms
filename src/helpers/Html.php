@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\Asset;
 use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;
+use craft\web\View;
 use enshrined\svgSanitize\Sanitizer;
 use Throwable;
 use yii\base\Exception;
@@ -96,7 +97,24 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
-        return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+        $async = (bool)(ArrayHelper::remove($options, 'async') ?? Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
+
+        if (!$async) {
+            Craft::$app->getResponse()->setNoCacheHeaders();
+            return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+        }
+
+        Craft::$app->getView()->registerHtml(
+            Craft::$app->getView()->renderTemplate(
+                '_special/async-csrf-input',
+                [
+                    'url' => UrlHelper::actionUrl('users/session-info'),
+                ],
+                View::TEMPLATE_MODE_CP,
+            )
+        );
+
+        return static::tag('craft-csrf-input');
     }
 
     /**

@@ -99,12 +99,24 @@ class Template
      * @param string $type The type of attribute (@see [[TwigTemplate]] constants)
      * @param bool $isDefinedTest Whether this is only a defined check
      * @param bool $ignoreStrictCheck Whether to ignore the strict attribute check or not
+     * @param bool $sandboxed Whether sandboxing is enabled
+     * @param int $lineno The template line where the attribute was called
      * @return mixed The attribute value, or a Boolean when $isDefinedTest is true, or null when the attribute is not set and $ignoreStrictCheck is true
      * @throws RuntimeError if the attribute does not exist and Twig is running in strict mode and $isDefinedTest is false
      * @internal
      */
-    public static function attribute(Environment $env, Source $source, mixed $object, mixed $item, array $arguments = [], string $type = TwigTemplate::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false): mixed
-    {
+    public static function attribute(
+        Environment $env,
+        Source $source,
+        mixed $object,
+        mixed $item,
+        array $arguments = [],
+        string $type = TwigTemplate::ANY_CALL,
+        bool $isDefinedTest = false,
+        bool $ignoreStrictCheck = false,
+        bool $sandboxed = false,
+        int $lineno = -1,
+    ): mixed {
         // Include this element in any active caches
         if ($object instanceof ElementInterface) {
             Craft::$app->getElements()->collectCacheInfoForElement($object);
@@ -126,7 +138,18 @@ class Template
         }
 
         try {
-            return twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+            return twig_get_attribute(
+                $env,
+                $source,
+                $object,
+                $item,
+                $arguments,
+                $type,
+                $isDefinedTest,
+                $ignoreStrictCheck,
+                $sandboxed,
+                $lineno,
+            );
         } catch (UnknownMethodException $e) {
             // Copy twig_get_attribute()'s BadMethodCallException handling
             if ($ignoreStrictCheck || !$env->isStrictVariables()) {
