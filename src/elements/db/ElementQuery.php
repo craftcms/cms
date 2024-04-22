@@ -16,6 +16,7 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\cache\ElementQueryTagDependency;
+use craft\db\CoalesceColumnsExpression;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
@@ -537,7 +538,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private array|null $_cacheTags = null;
 
     /**
-     * @var array<string,string> Column alias => name mapping
+     * @var array<string,string|string[]> Column alias => name mapping
      * @see prepare()
      * @see joinElementTable()
      * @see _applyOrderByParams()
@@ -1592,11 +1593,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Map custom field handles to their content values
         foreach ($this->customFields as $field) {
-            if (
-                !isset($this->_columnMap[$field->handle]) &&
-                ($valueSql = $field->getValueSql()) !== null
-            ) {
-                $this->_columnMap[$field->handle] = $valueSql;
+            $valueSql = $field->getValueSql();
+            if ($valueSql !== null) {
+                if (isset($this->_columnMap[$field->handle])) {
+                    if (!is_array($this->_columnMap[$field->handle])) {
+                        $this->_columnMap[$field->handle] = [$this->_columnMap[$field->handle]];
+                    }
+                    $this->_columnMap[$field->handle][] = $valueSql;
+                } else {
+                    $this->_columnMap[$field->handle] = $valueSql;
+                }
             }
         }
 
@@ -3124,7 +3130,13 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             if ($pos !== false) {
                 // Swap it with the mapped column name
-                $orderByColumns[$pos] = $columnName;
+                if (is_array($columnName)) {
+                    $params = [];
+                    $orderByColumns[$pos] = (new CoalesceColumnsExpression($columnName))->getSql($params);
+                } else {
+                    $orderByColumns[$pos] = $columnName;
+                }
+
                 $orderBy = array_combine($orderByColumns, $orderBy);
             }
         }
@@ -3196,12 +3208,16 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $column = $this->_columnMap[$alias];
 
                     // Completely ditch the mapped name if instantiated elements are going to be returned
-                    if (!$this->asArray) {
+                    if (!$this->asArray && is_string($this->_columnMap[$alias])) {
                         $alias = $this->_columnMap[$alias];
                     }
                 }
 
-                $select[$alias] = $column;
+                if (is_array($column)) {
+                    $select[$alias] = new CoalesceColumnsExpression($column);
+                } else {
+                    $select[$alias] = $column;
+                }
             }
         }
 

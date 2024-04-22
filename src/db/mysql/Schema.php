@@ -9,6 +9,8 @@ namespace craft\db\mysql;
 
 use Craft;
 use craft\db\Connection;
+use craft\db\ExpressionBuilder;
+use craft\db\ExpressionInterface;
 use craft\db\TableSchema;
 use craft\helpers\App;
 use craft\helpers\Db;
@@ -99,6 +101,9 @@ class Schema extends \yii\db\mysql\Schema
     public function createQueryBuilder(): QueryBuilder
     {
         return new QueryBuilder($this->db, [
+            'expressionBuilders' => [
+                ExpressionInterface::class => ExpressionBuilder::class,
+            ],
             'separator' => "\n",
         ]);
     }

@@ -8,6 +8,7 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\console\Controller;
 use craft\elements\Address;
@@ -229,6 +230,12 @@ class ResaveController extends Controller
     public bool $ifEmpty = false;
 
     /**
+     * @var bool Whether the `--set` attribute should only be set if the current value doesn’t validate.
+     * @since 4.9.0
+     */
+    public bool $ifInvalid = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID): array
@@ -273,6 +280,7 @@ class ResaveController extends Controller
         $options[] = 'set';
         $options[] = 'to';
         $options[] = 'ifEmpty';
+        $options[] = 'ifInvalid';
 
         return $options;
     }
@@ -430,6 +438,7 @@ class ResaveController extends Controller
                 'set' => $this->set,
                 'to' => $this->to,
                 'ifEmpty' => $this->ifEmpty,
+                'ifInvalid' => $this->ifInvalid,
                 'touch' => $this->touch,
                 'updateSearchIndex' => $this->updateSearchIndex,
             ]));
@@ -560,8 +569,22 @@ class ResaveController extends Controller
                     }
 
                     try {
-                        if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($element, $this->set))) {
-                            $element->{$this->set} = $to($element);
+                        if (isset($this->set)) {
+                            $set = true;
+                            if ($this->ifEmpty) {
+                                if (!ElementHelper::isAttributeEmpty($element, $this->set)) {
+                                    $set = false;
+                                }
+                            } elseif ($this->ifInvalid) {
+                                $element->setScenario(Element::SCENARIO_LIVE);
+                                if ($element->validate($this->set) && $element->validate("field:$this->set")) {
+                                    $set = false;
+                                }
+                            }
+
+                            if ($set) {
+                                $element->{$this->set} = $to($element);
+                            }
                         }
                     } catch (Throwable $e) {
                         throw new InvalidElementException($element, $e->getMessage());
