@@ -18,6 +18,7 @@
 - Fixed a bug where SVG element icons weren’t visible in Safari. ([#14833](https://github.com/craftcms/cms/issues/14833))
 - Fixed a bug where element sources were getting text cursors on hover in Safari. ([#14833](https://github.com/craftcms/cms/issues/14833))
 - Fixed a bug where “Delete custom source” buttons within Customize Sources modals were getting text cursors on hover.
+- Fixed a bug where Matrix fields that weren’t set to show cards in a grid were still getting a grid view when nested entries were created for the first time. ([#14840](https://github.com/craftcms/cms/issues/14840))
 
 ## 5.0.4 - 2024-04-10
 
