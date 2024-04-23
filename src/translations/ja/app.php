@@ -2014,6 +2014,7 @@ return [
     'on {date}' => '、{date}',
     'on {day}' => '、{day}',
     'one' => '１',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'または <a>開発者サポートに相談する</a>',
     'path/to/subfolder' => 'サブフォルダへのパス',
     'revision' => 'リビジョン',
