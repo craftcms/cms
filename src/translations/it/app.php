@@ -2014,6 +2014,7 @@ return [
     'on {date}' => 'in data {date}',
     'on {day}' => 'in data {day}',
     'one' => 'uno',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'o <a>invia all\'Assistenza per sviluppatori</a>',
     'path/to/subfolder' => 'percorso/per/sottocartella',
     'revision' => 'revisione',
