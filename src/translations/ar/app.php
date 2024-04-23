@@ -2014,6 +2014,7 @@ return [
     'on {date}' => 'في {date}',
     'on {day}' => 'بتاريخ {day}',
     'one' => 'واحد',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'أو <a dir="rtl">الإرسال إلى دعم المطورين Craft</a>',
     'path/to/subfolder' => 'مسار المجلد الفرعي',
     'revision' => 'مراجعة',
