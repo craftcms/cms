@@ -2014,6 +2014,7 @@ return [
     'on {date}' => 'le {date}',
     'on {day}' => 'le {day}',
     'one' => 'un',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'ou <a>envoyer au Support pour développeurs</a>',
     'path/to/subfolder' => 'chemin/vers/sous-dossier',
     'revision' => 'révision',
