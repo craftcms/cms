@@ -474,6 +474,7 @@ JS, [
                     $view->namespaceInputId('branch-limit-field'),
                     $view->namespaceInputId('min-relations-field'),
                     $view->namespaceInputId('max-relations-field'),
+                    $view->namespaceInputId('viewMode-field'),
                 ],
         ]);
 

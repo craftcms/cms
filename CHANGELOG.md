@@ -19,6 +19,8 @@
 - Fixed a bug where element sources were getting text cursors on hover in Safari. ([#14833](https://github.com/craftcms/cms/issues/14833))
 - Fixed a bug where “Delete custom source” buttons within Customize Sources modals were getting text cursors on hover.
 - Fixed a bug where Matrix fields that weren’t set to show cards in a grid were still getting a grid view when nested entries were created for the first time. ([#14840](https://github.com/craftcms/cms/issues/14840))
+- Fixed a bug where related categories and entries weren’t removable when the Categories/Entries field’s “Maintain hierarchy” setting was enabled. ([#14843](https://github.com/craftcms/cms/issues/14843))
+- Fixed a bug where Categories and Entries fields were showing the “View Mode” setting when “Maintain hierarchy” was enabled, despite it having no effect. ([#14847](https://github.com/craftcms/cms/pull/14847))
 
 ## 5.0.4 - 2024-04-10
 
