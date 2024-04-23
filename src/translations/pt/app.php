@@ -2014,6 +2014,7 @@ return [
     'on {date}' => 'a {date}',
     'on {day}' => 'a {day}',
     'one' => 'um',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'ou <a>envie para o apoio do desenvolvedor</a>',
     'path/to/subfolder' => 'caminho/para/subpasta',
     'revision' => 'revisão',
