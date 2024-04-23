@@ -2014,6 +2014,7 @@ return [
     'on {date}' => 'dne {date}',
     'on {day}' => 'dne {day}',
     'one' => 'jedna',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'nebo <a>pošlete na podporu vývojářů</a>',
     'path/to/subfolder' => 'cesta/k/podsložce',
     'revision' => 'revize',
