@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a bug where clicking on sort handles within element index tables could select the element. ([#14669](https://github.com/craftcms/cms/issues/14669))
+- Fixed a bug where clicking on drag handles within element index tables could select the element. ([#14669](https://github.com/craftcms/cms/issues/14669))
 
 ## 5.0.5 - 2024-04-23
 
