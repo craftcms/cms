@@ -30,14 +30,21 @@
       </ul>
 
       <div class="buttons">
-        {% set linkText = 'Resolve now'|t('app') %}
-        {{ tag('a', {
-          class: ['go', 'btn', 'link-btn'],
-          href: cartUrl,
-          target: '_blank',
-          text: linkText,
-          aria: {label: linkText},
-        }) }}
+        <div class="flex mb-0">
+          {% set linkText = 'Resolve now'|t('app') %}
+          {{ tag('a', {
+            class: ['btn', 'link-btn'],
+            href: cartUrl,
+            target: '_blank',
+            text: linkText,
+            aria: {label: linkText},
+          }) }}
+          <span>
+            {{ 'or <a href="{url}">try before buying</a>'|t('app', {
+              url: 'https://craftcms.com/knowledge-base/how-to-trial-craft-cms-and-plugin-editions',
+            })|raw }}
+          </span>
+        </div>
 
         {% set refreshLabel %}
           {%- apply spaceless %}
