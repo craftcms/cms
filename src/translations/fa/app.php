@@ -2014,6 +2014,7 @@ return [
     'on {date}' => 'در {date}',
     'on {day}' => 'در {day}',
     'one' => 'یک',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'یا <a>ارسال به پشتیبانی توسعه دهندگان</a>',
     'path/to/subfolder' => 'مسیر/به/زیرشاخه',
     'revision' => 'بازبینی',
