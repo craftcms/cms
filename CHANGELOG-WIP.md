@@ -4,6 +4,7 @@
 - Sort options are now sorted alphabetically within element indexes, and custom fields’ options are now listed in a “Fields” group. ([#14725](https://github.com/craftcms/cms/issues/14725))
 - Unselected table column options are now sorted alphabetically within element indexes.
 - Table views within element index pages are now scrolled directly, so that their horizontal scrollbars are always visible without scrolling to the bottom of the page. ([#14765](https://github.com/craftcms/cms/issues/14765))
+- Element tooltips now appear after a half-second delay. ([#14836](https://github.com/craftcms/cms/issues/14836))
 
 ### Administration
 - Added the `asyncCsrfInputs` config setting. ([#14625](https://github.com/craftcms/cms/pull/14625))
