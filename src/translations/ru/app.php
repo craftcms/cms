@@ -2014,6 +2014,7 @@ return [
     'on {date}' => '{date}',
     'on {day}' => 'в {day}',
     'one' => 'один',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'или <a>отправить в службу поддержки разработчиков</a>',
     'path/to/subfolder' => 'путь/к/вложенной папке',
     'revision' => 'версия',
