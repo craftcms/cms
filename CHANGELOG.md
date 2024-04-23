@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.0.5 - 2024-04-23
 
 - Fixed a bug where the Database Backup utility was present when the `backupCommand` config setting was set to `false`.
 - Fixed an error that occurred when running the `db/convert-charset` command, if any tables contained `char` or `varchar` foreign key columns. ([#14815](https://github.com/craftcms/cms/issues/14815))
