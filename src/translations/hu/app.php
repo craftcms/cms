@@ -2018,6 +2018,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     'on {date}' => '{date} napon',
     'on {day}' => '{day} napon',
     'one' => 'egy',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'or <a>küldés a Fejlesztői támogatásnak</a>',
     'path/to/subfolder' => 'útvonal/az/almappához',
     'revision' => 'verzió',
