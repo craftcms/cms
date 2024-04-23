@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where clicking on sort handles within element index tables could select the element. ([#14669](https://github.com/craftcms/cms/issues/14669))
+
 ## 5.0.5 - 2024-04-23
 
 - Fixed a bug where the Database Backup utility was present when the `backupCommand` config setting was set to `false`.
