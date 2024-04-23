@@ -2014,6 +2014,7 @@ return [
     'on {date}' => '{date}',
     'on {day}' => '{day}',
     'one' => '一',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => '或<a>发送至开发者支持</a>',
     'path/to/subfolder' => '到/子文件夹的/路径',
     'revision' => '修订',
