@@ -914,6 +914,7 @@ class ProjectConfig extends Component
      * Get the list of applied changes
      *
      * @return array
+     * @since 4.9.0
      */
     public function getAppliedChanges(): array
     {
