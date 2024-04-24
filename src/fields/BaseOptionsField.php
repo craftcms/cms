@@ -480,13 +480,18 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             }
         }
 
+        $request = Craft::$app->getRequest();
+
         return [
             [
                 'in',
                 'range' => $range,
                 'allowArray' => $this->multi,
                 // Don't allow saving invalid blank values via Selectize
-                'skipOnEmpty' => !($this instanceof Dropdown && Craft::$app->getRequest()->getIsCpRequest()),
+                'skipOnEmpty' => !(
+                    $this instanceof Dropdown &&
+                    ($request->getIsCpRequest() || $request->getIsConsoleRequest())
+                ),
             ],
         ];
     }

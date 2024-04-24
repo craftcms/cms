@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where element caches weren’t getting invalidated when an element was moved within a structure. ([#14846](https://github.com/craftcms/cms/issues/14846))
+- Fixed a bug where CSV’s header rows weren’t using the configured delimiter. ([#14855](https://github.com/craftcms/cms/issues/14855))
+
 ## 4.8.10 - 2024-04-23
 
 - Fixed a SQL error that could occur when converting a field to a Lightswitch field on PostgreSQL. ([#14792](https://github.com/craftcms/cms/issues/14792))

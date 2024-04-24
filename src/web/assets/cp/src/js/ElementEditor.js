@@ -70,10 +70,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     init: function (container, settings) {
       this.$container = $(container);
 
-      if (this.$container.prop('tagName') !== 'FORM') {
-        throw 'Element editors may only be used with forms.';
-      }
-
       if (this.$container.data('elementEditor')) {
         console.warn('Double-instantiating an element editor on an element.');
         this.$container.data('elementEditor').destroy();
@@ -84,7 +80,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.setSettings(settings, Craft.ElementEditor.defaults);
 
-      this.isFullPage = this.$container[0] === Craft.cp.$primaryForm[0];
+      this.isFullPage = [Craft.cp.$primaryForm[0], Craft.cp.$main[0]].includes(
+        this.$container[0]
+      );
 
       if (this.isFullPage) {
         this.$tabContainer = $('#tabs');
@@ -156,9 +154,13 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       }
 
-      // If this is a revision, we're done here
-      if (this.settings.revisionId) {
+      // If the user can't save the element, we're done here
+      if (!this.settings.canSave) {
         return;
+      }
+
+      if (this.$container.prop('tagName') !== 'FORM') {
+        throw 'Element editors may only be used with forms.';
       }
 
       if (this.isFullPage && Craft.edition === Craft.Pro) {
@@ -2202,6 +2204,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       additionalSites: [],
       canCreateDrafts: false,
       canEditMultipleSites: false,
+      canSave: false,
       canSaveCanonical: false,
       elementId: null,
       canonicalId: null,
