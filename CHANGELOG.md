@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where clicking on drag handles within element index tables could select the element. ([#14669](https://github.com/craftcms/cms/issues/14669))
+- Fixed a bug where nested related categories and entries weren’t removable when the Categories/Entries field’s “Maintain hierarchy” setting was enabled. ([#14843](https://github.com/craftcms/cms/issues/14843))
+
 ## 5.0.5 - 2024-04-23
 
 - Fixed a bug where the Database Backup utility was present when the `backupCommand` config setting was set to `false`.
