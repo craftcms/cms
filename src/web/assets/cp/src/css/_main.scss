@@ -557,13 +557,19 @@ ol {
 
 /* code */
 code,
-.code,
-.code input,
-.code textarea {
+.code {
   @include fixed-width-font;
 
   &.smalltext {
     font-size: 0.8em !important;
+  }
+}
+
+.code {
+  input,
+  textarea {
+    @include fixed-width-font;
+    font-size: 1em !important;
   }
 }
 
@@ -4113,6 +4119,7 @@ table.editable {
       box-shadow: none;
       border-radius: 0;
       padding: 7px 10px;
+      line-height: 20px;
       background-color: transparent;
       overflow: hidden;
       transition: none;
