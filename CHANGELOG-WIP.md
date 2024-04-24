@@ -20,6 +20,7 @@
 - Added `craft\db\ExpressionBuilder`.
 - Added `craft\db\ExpressionInterface`.
 - `craft\base\NameTrait::prepareNamesForSave()` no longer updates the name properties if `fullName`, `firstName`, and `lastName` are already set. ([#14665](https://github.com/craftcms/cms/issues/14665))
+- `craft\helpers\Typecast::properties()` now typecasts numeric strings to integers, for `int|string` properties. ([#14618](https://github.com/craftcms/cms/issues/14618))
 - Added `Craft.MatrixInput.Entry`. ([#14730](https://github.com/craftcms/cms/pull/14730))
 
 ### System
