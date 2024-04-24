@@ -17,6 +17,7 @@
 - `craft\helpers\Html::csrfInput()` and the `csrfInput` Twig function now support passing an `async` key to the `options` array, overriding the default behavior per the `asyncCsrfInputs` config setting. ([#14625](https://github.com/craftcms/cms/pull/14625))
 
 ### Extensibility
+- Added `craft\services\ProjectConfig::getAppliedChanges()`. ([#14851](https://github.com/craftcms/cms/discussions/14851))
 - Added `craft\services\Sites::getSitesByLanguage()`.
 - Added `craft\web\ErrorHandler::exceptionAsArray()`.
 - Added `craft\web\ErrorHandler::showExceptionDetails()`.
