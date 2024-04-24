@@ -118,7 +118,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getElements: function () {
-      return this.$elementsContainer.find('> li > .element');
+      if (this.$elementsContainer.hasClass('structure')) {
+        return this.$elementsContainer.find('> li .row .element');
+      } else {
+        return this.$elementsContainer.find('> li > .element');
+      }
     },
 
     getAddElementsBtn: function () {
@@ -139,7 +143,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       return {
         multi: this.settings.sortable,
         filter: (target) => {
-          return !$(target).closest('a[href],button').length;
+          return !$(target).closest('a[href],button,[role=button]').length;
         },
         // prevent keyboard focus since element selection is only needed for drag-n-drop
         makeFocusable: false,

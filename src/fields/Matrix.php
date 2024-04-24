@@ -1160,7 +1160,7 @@ JS;
      */
     public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
     {
-        $entryTypeHandle = StringHelper::removeLeft(StringHelper::removeRight($fragmentName, '_EntryType'), $this->handle . '_');
+        $entryTypeHandle = StringHelper::removeLeft(StringHelper::removeRight($fragmentName, '_Entry'), $this->handle . '_');
 
         $entryType = ArrayHelper::firstWhere($this->getEntryTypes(), 'handle', $entryTypeHandle);
 

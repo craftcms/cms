@@ -71,6 +71,24 @@ trait NameTrait
             $name = (new NameParser($languages))->parse($this->fullName);
             $this->firstName = $name->getFirstname() ?: null;
             $this->lastName = $name->getLastname() ?: null;
+
+            // Re-extract the first and last names from the full name to ensure casing doesn't change
+            // see https://github.com/craftcms/cms/issues/14723
+            if ($this->firstName !== null) {
+                $firstNameOffset = mb_stripos($this->fullName, $this->firstName);
+                if ($firstNameOffset !== false) {
+                    $this->firstName = mb_substr($this->fullName, $firstNameOffset, mb_strlen($this->firstName));
+                }
+            }
+            if ($this->lastName !== null) {
+                $lastNameOffset = mb_stripos($this->fullName, $this->lastName,
+                    isset($firstNameOffset) && $firstNameOffset !== false
+                        ? $firstNameOffset + mb_strlen($this->firstName) : 0,
+                );
+                if ($lastNameOffset !== false) {
+                    $this->lastName = mb_substr($this->fullName, $lastNameOffset, mb_strlen($this->lastName));
+                }
+            }
         } elseif ($this->firstName !== null || $this->lastName !== null) {
             $this->fullName = trim("$this->firstName $this->lastName") ?: null;
         }

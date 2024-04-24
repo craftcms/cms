@@ -374,6 +374,7 @@ class NestedElementManager extends Component
                     'deleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
                         'type' => $elementType::lowerDisplayName(),
                     ]),
+                    'showInGrid' => $config['showInGrid'],
                 ];
 
                 $html = Html::beginTag('div', options: [
@@ -898,10 +899,13 @@ JS, [
                     'canonicalId' => $setCanonicalId ? $element->id : null,
                     'primaryOwner' => $target,
                     'owner' => $target,
-                    'siteId' => $target->siteId,
                     'propagating' => false,
                     'sortOrder' => $element->getSortOrder(),
                 ];
+
+                if ($element::isLocalized()) {
+                    $newAttributes['siteId'] = $target->siteId;
+                }
 
                 if ($target->updatingFromDerivative && $element->getIsDerivative()) {
                     if (
