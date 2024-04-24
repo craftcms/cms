@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed a bug where element caches weren’t getting invalidated when an element was moved within a structure. ([#14846](https://github.com/craftcms/cms/issues/14846))
+- Fixed a bug where CSV’s header rows weren’t using the configured delimiter. ([#14855](https://github.com/craftcms/cms/issues/14855))
 - Fixed a bug where clicking on drag handles within element index tables could select the element. ([#14669](https://github.com/craftcms/cms/issues/14669))
 - Fixed a bug where nested related categories and entries weren’t removable when the Categories/Entries field’s “Maintain hierarchy” setting was enabled. ([#14843](https://github.com/craftcms/cms/issues/14843))
 
