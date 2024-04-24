@@ -599,6 +599,10 @@ class Structures extends Component
             throw $e;
         }
 
+        // Invalidate all caches for the element type
+        // (see https://github.com/craftcms/cms/issues/14846)
+        Craft::$app->getElements()->invalidateCachesForElementType($element::class);
+
         if ($this->hasEventHandlers($afterEvent)) {
             // Fire an 'afterMoveElement' event
             $this->trigger($afterEvent, new MoveElementEvent([
