@@ -114,7 +114,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         this.componentSelect = new Garnish.Select({
           multi: this.settings.sortable,
           filter: (target) => {
-            return !$(target).closest('a[href],button').length;
+            return !$(target).closest('a[href],button,[role=button]').length;
           },
           // prevent keyboard focus since component selection is only needed for drag-n-drop
           makeFocusable: false,
