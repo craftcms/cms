@@ -119,7 +119,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     getElements: function () {
       if (this.$elementsContainer.hasClass('structure')) {
-        return this.$elementsContainer.find('> li > .row > .element');
+        return this.$elementsContainer.find('> li .row .element');
       } else {
         return this.$elementsContainer.find('> li > .element');
       }
