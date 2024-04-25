@@ -460,18 +460,19 @@ JS,
         $labelsByGroup = [];
 
         if ($rule) {
-            $ruleLabel = $rule->getLabel();
+            $label = $rule->getLabel();
             $hint = $rule->getLabelHint();
+            $key = $label . ($hint !== null ? " - $hint" : '');
             $groupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
 
             $groupedRuleTypeOptions[$groupLabel] = [
                 [
-                    'label' => $ruleLabel,
+                    'label' => $label,
                     'hint' => $hint,
                     'value' => $ruleValue,
                 ],
             ];
-            $labelsByGroup[$groupLabel][$hint] = true;
+            $labelsByGroup[$groupLabel][$key] = true;
         }
 
         foreach ($selectableRules as $value => $selectableRule) {
