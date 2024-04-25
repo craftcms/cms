@@ -7,13 +7,16 @@
 - Element tooltips now appear after a half-second delay. ([#14836](https://github.com/craftcms/cms/issues/14836))
 
 ### Administration
+- Element conditions within field layout designers’ component settings now only list custom fields present in the current field layout. ([#14787](https://github.com/craftcms/cms/issues/14787)) 
 - Added the `asyncCsrfInputs` config setting. ([#14625](https://github.com/craftcms/cms/pull/14625))
 - Added the `safeMode` config setting. ([#14734](https://github.com/craftcms/cms/pull/14734))
 - `resave` commands now support an `--if-invalid` option. ([#14731](https://github.com/craftcms/cms/issues/14731))
 
 ### Extensibility
+- Added `craft\conditions\ConditionInterface::getBuilderConfig()`.
 - Added `craft\controllers\EditUserTrait`. ([#14789](https://github.com/craftcms/cms/pull/14789))
 - Added `craft\controllers\UsersController::EVENT_DEFINE_EDIT_SCREENS`. ([#14789](https://github.com/craftcms/cms/pull/14789))
+- Added `craft\elements\conditions\ElementConditionInterface::setFieldLayouts()`.
 - Added `craft\events\DefineEditUserScreensEvent`. ([#14789](https://github.com/craftcms/cms/pull/14789))
 - Added `craft\services\ProjectConfig::getAppliedChanges()`. ([#14851](https://github.com/craftcms/cms/discussions/14851))
 - Added `craft\web\Request::getBearerToken()`. ([#14784](https://github.com/craftcms/cms/pull/14784))
@@ -27,3 +30,4 @@
 ### System
 - Batched queue jobs now set their progress based on the total progress across all batches, rather than just the current batch. ([#14817](https://github.com/craftcms/cms/pull/14817))
 - Fixed a bug where ordering by a custom field would only partially work, if the custom field was included in multiple field layouts for the resulting elements. ([#14821](https://github.com/craftcms/cms/issues/14821))
+- Fixed a bug where element conditions within field layout designers’ component settings weren’t listing custom fields which were just added to the layout. ([#14787](https://github.com/craftcms/cms/issues/14787))

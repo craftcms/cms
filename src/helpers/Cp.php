@@ -2185,21 +2185,10 @@ JS;
             $fieldLayoutConfig['id'] = $fieldLayout->id;
         }
 
-        $newTabSettingsData = self::_fldTabSettingsData(new FieldLayoutTab([
-            'uid' => 'TAB_UID',
-            'name' => 'TAB_NAME',
-            'layout' => $fieldLayout,
-        ]));
-
         return
             Html::beginTag('div', [
                 'id' => $config['id'],
                 'class' => 'layoutdesigner',
-                'data' => [
-                    'new-tab-settings-namespace' => $newTabSettingsData['settings-namespace'],
-                    'new-tab-settings-html' => $newTabSettingsData['settings-html'],
-                    'new-tab-settings-js' => $newTabSettingsData['settings-js'],
-                ],
             ]) .
             Html::hiddenInput('fieldLayout', Json::encode($fieldLayoutConfig), [
                 'data' => ['config-input' => true],
@@ -2284,9 +2273,9 @@ JS;
         return
             Html::beginTag('div', [
                 'class' => 'fld-tab',
-                'data' => array_merge([
+                'data' => [
                     'uid' => $tab->uid,
-                ], self::_fldTabSettingsData($tab)),
+                ],
             ]) .
             Html::beginTag('div', ['class' => 'tabs']) .
             Html::beginTag('div', [
@@ -2320,28 +2309,6 @@ JS;
             ]) .
             Html::endTag('div') . // .fld-tabcontent
             Html::endTag('div'); // .fld-tab
-    }
-
-    /**
-     * @param FieldLayoutTab $tab
-     * @return array
-     */
-    private static function _fldTabSettingsData(FieldLayoutTab $tab): array
-    {
-        $view = Craft::$app->getView();
-        $oldNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName("tab-$tab->uid");
-        $view->setNamespace($namespace);
-        $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs($tab->getSettingsHtml());
-        $settingsJs = $view->clearJsBuffer(false);
-        $view->setNamespace($oldNamespace);
-
-        return [
-            'settings-namespace' => $namespace,
-            'settings-html' => $settingsHtml,
-            'settings-js' => $settingsJs,
-        ];
     }
 
     /**

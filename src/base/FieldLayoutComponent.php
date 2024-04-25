@@ -168,6 +168,13 @@ abstract class FieldLayoutComponent extends Model
     public function getElementCondition(): ?ElementConditionInterface
     {
         if (isset($this->_elementCondition) && !$this->_elementCondition instanceof ElementConditionInterface) {
+            if (is_string($this->_elementCondition)) {
+                $this->_elementCondition = ['class' => $this->_elementCondition];
+            }
+            $this->_elementCondition = array_merge(
+                ['fieldLayouts' => [$this->getLayout()]],
+                $this->_elementCondition,
+            );
             $this->_elementCondition = $this->_normalizeCondition($this->_elementCondition);
         }
 
@@ -266,7 +273,11 @@ abstract class FieldLayoutComponent extends Model
             $elementType = $this->elementType ?? $this->getLayout()->type;
 
             if ($elementType && is_subclass_of($elementType, ElementInterface::class)) {
-                $elementCondition = $this->getElementCondition() ?? self::defaultElementCondition($elementType);
+                $elementCondition = $this->getElementCondition();
+                if (!$elementCondition) {
+                    $elementCondition = clone self::defaultElementCondition($elementType);
+                    $elementCondition->setFieldLayouts([$this->getLayout()]);
+                }
                 $elementCondition->mainTag = 'div';
                 $elementCondition->id = 'element-condition';
                 $elementCondition->name = 'elementCondition';

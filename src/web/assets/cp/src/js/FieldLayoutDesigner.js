@@ -425,29 +425,9 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
         name: this.$container.find('.tabs .tab span').text(),
         elements: [],
       };
-      this.$container.data(
-        'settings-namespace',
-        this.designer.$container
-          .data('new-tab-settings-namespace')
-          .replace(/\bTAB_UID\b/g, this.uid)
-      );
-      this.$container.data(
-        'settings-html',
-        this.designer.$container
-          .data('new-tab-settings-html')
-          .replace(/\bTAB_UID\b/g, this.uid)
-          .replace(/\bTAB_NAME\b/g, this.config.name)
-      );
-      this.$container.data(
-        'settings-js',
-        this.designer.$container
-          .data('new-tab-settings-js')
-          .replace(/\bTAB_UID\b/g, this.uid)
-      );
     }
 
     if (this.designer.settings.customizableTabs) {
-      this.settingsNamespace = this.$container.data('settings-namespace');
       this.createMenu();
     }
 
@@ -499,7 +479,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
         label: Craft.t('app', 'Settings'),
         icon: 'gear',
         onActivate: () => {
-          this.showSettings();
+          this.createSettings();
         },
       },
       disclosureMenu.addGroup()
@@ -558,25 +538,36 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     });
   },
 
-  async showSettings() {
-    if (!this.slideout) {
-      await this.createSettings();
-    } else {
-      this.slideout.open();
-    }
-  },
-
   async createSettings() {
-    const settingsHtml = this.$container.data('settings-html');
-    const settingsJs = this.$container.data('settings-js');
-    this.slideout = await Craft.FieldLayoutDesigner.createSlideout(
-      {settingsHtml},
-      settingsJs
-    );
+    let data;
+    try {
+      const response = await Craft.sendActionRequest(
+        'POST',
+        'fields/render-layout-component-settings',
+        {
+          data: {
+            uid: this.uid,
+            layoutConfig: this.designer.config,
+            elementType: this.designer.settings.elementType,
+          },
+        }
+      );
+      data = response.data;
+    } catch (e) {
+      Craft.cp.displayError(e?.response?.data?.message);
+      throw e;
+    }
+
+    this.settingsNamespace = data.namespace;
+    this.slideout = await Craft.FieldLayoutDesigner.createSlideout(data);
 
     this.slideout.$container.on('submit', (ev) => {
       ev.preventDefault();
       this.applySettings();
+    });
+    this.slideout.on('close', () => {
+      this.slideout.destroy();
+      this.slideout = null;
     });
   },
 
@@ -596,8 +587,10 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
 
     Craft.sendActionRequest('POST', 'fields/apply-layout-tab-settings', {
       data: {
-        config: config,
+        uid: this.uid,
+        layoutConfig: this.designer.config,
         elementType: this.designer.settings.elementType,
+        config,
         settingsNamespace: this.settingsNamespace,
         settings: this.slideout.$container.serialize(),
       },
@@ -814,7 +807,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
 
     // cleanup
     $container.attr('data-keywords', null);
-    $container.attr('data-settings-html', null);
   },
 
   initUi: function () {
@@ -889,12 +881,12 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         label: Craft.t('app', 'Settings'),
         icon: 'gear',
         onActivate: () => {
-          this.showSettings();
+          this.createSettings();
         },
       });
 
       this.addListener(this.$container, 'dblclick', () => {
-        this.showSettings();
+        this.createSettings();
       });
     }
 
@@ -1054,23 +1046,16 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     });
   },
 
-  async showSettings() {
-    if (!this.slideout) {
-      await this.createSettings();
-    } else {
-      this.slideout.open();
-    }
-  },
-
   async createSettings() {
     let data;
     try {
       const response = await Craft.sendActionRequest(
         'POST',
-        'fields/render-layout-element-settings',
+        'fields/render-layout-component-settings',
         {
           data: {
-            config: this.config,
+            uid: this.uid,
+            layoutConfig: this.tab.designer.config,
             elementType: this.tab.designer.settings.elementType,
           },
         }
@@ -1087,6 +1072,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     this.slideout.$container.on('submit', (ev) => {
       ev.preventDefault();
       this.applySettings();
+    });
+    this.slideout.on('close', () => {
+      this.slideout.destroy();
+      this.slideout = null;
     });
 
     const $fieldsContainer = this.slideout.$container.find('.fields:first');
@@ -1219,8 +1208,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         'fields/apply-layout-element-settings',
         {
           data: {
-            config,
+            uid: this.uid,
+            layoutConfig: this.tab.designer.config,
             elementType: this.tab.designer.settings.elementType,
+            config,
             settingsNamespace: this.settingsNamespace,
             settings: withSettings
               ? this.slideout.$container.serialize()
