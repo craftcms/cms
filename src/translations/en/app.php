@@ -1372,6 +1372,7 @@ return [
     'Select context' => 'Select context',
     'Select element' => 'Select element',
     'Select section' => 'Select section',
+    'Select site' => 'Select site',
     'Select transform' => 'Select transform',
     'Select volume' => 'Select volume',
     'Select {element}' => 'Select {element}',
