@@ -349,10 +349,12 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                 <div id="app-info">
                     {% set fullEditionName = '{edition} edition'|t('app', {edition: editionName}) %}
                     <span>
-                        Craft CMS
-                        <span id="edition-logo" title="{{ fullEditionName }}">
-                            <span aria-hidden="true">{{ editionName }}</span>
-                            <span class="visually-hidden">{{ fullEditionName }}</span>
+                        <span lang="en">
+                            Craft CMS
+                            <span id="edition-logo" title="{{ fullEditionName }}">
+                                <span aria-hidden="true">{{ editionName }}</span>
+                                <span class="visually-hidden">{{ fullEditionName }}</span>
+                            </span>
                         </span>
                         {{ craft.app.version }}
                     </span>
