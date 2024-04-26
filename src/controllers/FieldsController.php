@@ -490,7 +490,6 @@ JS, [
         return $this->asJson([
             'config' => ['type' => get_class($element)] + $element->toArray(),
             'selectorHtml' => $selectorHtml,
-            'hasConditions' => $element->hasConditions(),
         ]);
     }
 
