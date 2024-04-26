@@ -2185,6 +2185,10 @@ JS;
             $fieldLayoutConfig['id'] = $fieldLayout->id;
         }
 
+        if ($fieldLayout->type) {
+            $fieldLayoutConfig['type'] = $fieldLayout->type;
+        }
+
         return
             Html::beginTag('div', [
                 'id' => $config['id'],
