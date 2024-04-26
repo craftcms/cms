@@ -169,10 +169,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     {
         $column = $this->db->quoteColumnName($column);
         $path = $this->db->quoteValue(
-            sprintf('$.%s', implode(
-                '.',
-                array_map(fn(string $seg) => str_ends_with($seg, '[*]') ? $seg : sprintf('"%s"', $seg), $path)
-            ))
+            sprintf('$.%s', implode('.', array_map(fn(string $seg) => sprintf('"%s"', $seg), $path)))
         );
 
         // Maria doesn't support ->/->> operators :(
