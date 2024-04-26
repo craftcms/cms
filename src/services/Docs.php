@@ -32,6 +32,11 @@ class Docs extends Component
     public string $kbBaseUrl = 'https://craftcms.com/knowledge-base/';
 
     /**
+     * Base URL for class Reference.
+     */
+    public string $classReferenceBaseUrl = 'https://docs.craftcms.com/api/v5/';
+
+    /**
      * Base URL for docs "API" requests
      */
     public string $docsApiBaseUrl = 'https://craftcms.com/api/docs/';
@@ -64,7 +69,7 @@ class Docs extends Component
                 'base_uri' => $this->documentationBaseUrl,
             ]);
 
-            $response = $client->get('sitemap.js');
+            $response = $client->get('sitemap.json');
             $pages = Json::decodeIfJson($response->getBody());
 
             $candidates = array_filter($pages, function($page) {
@@ -115,6 +120,66 @@ class Docs extends Component
         ]);
 
         return Json::decodeIfJson($response->getBody());
+    }
+
+    /**
+     * Builds a URL to a Knowledge Base article or category.
+     * 
+     * @param string $path Category or article slug.
+     * @return string Absolute URL
+     */
+    public function kbUrl(string $path = ''): string
+    {
+        return $this->kbBaseUrl . trim($path, '/');
+    }
+
+    /**
+     * Generates a URL to the class reference page for the passed class or object.
+     * 
+     * @param mixed $source
+     * @param string $member
+     * @param string $memberType
+     * @return string
+     */
+    public function classReferenceUrl(mixed $source = null, string $member = null, string $memberType = null): string
+    {
+        $url = $this->classReferenceBaseUrl;
+
+        // Do you just want the bare URL? Sure:
+        if ($source === null) {
+            return $url;
+        }
+
+        // Normalize into a fully-qualified class name:
+        if (is_object($source)) {
+            $source = $source::class;
+        }
+
+        $url = $url . $this->getClassHandle($source) . '.html';
+
+        // Classes are always on their own pages, but each method and property is identified with an anchor:
+        if ($member !== null) {
+            $url = $url . match ($memberType) {
+                'method' => '#method-' . strtolower($member),
+                'property' => '#property-' . strtolower($member),
+                'constant' => '#constants',
+            };
+        }
+
+        return $url;
+    }
+
+    /**
+     * Turns a fully-qualified class name into a valid class reference URL segment.
+     * 
+     * This output agrees with internal logic for generating document names.
+     * 
+     * @param string $className
+     * @return string Kebab-cased class name
+     */
+    public function getClassHandle(string $className): string
+    {
+        return strtolower(str_replace('\\', '-', $className));
     }
 
     /**

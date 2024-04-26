@@ -12,6 +12,7 @@ use craft\base\ApplicationTrait;
 use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
+use craft\debug\DocsPanel;
 use craft\debug\DumpPanel;
 use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
@@ -482,6 +483,7 @@ class Application extends \yii\web\Application
                 'db' => DbPanel::class,
                 'asset' => AssetPanel::class,
                 'mail' => MailPanel::class,
+                'docs' => DocsPanel::class,
             ],
         ]);
         /** @var DebugModule $module */
