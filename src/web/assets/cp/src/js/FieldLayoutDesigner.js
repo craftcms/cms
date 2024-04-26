@@ -599,23 +599,9 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
         this.updateConfig((config) =>
           $.extend(response.data.config, {elements: config.elements})
         );
-        const $label = this.$container.find('.tabs .tab span');
-        const $indicator = $label.children('.fld-indicator');
-        if (response.data.hasConditions) {
-          if (!$indicator.length) {
-            $label.append(
-              $('<div/>', {
-                class: 'fld-indicator',
-                title: Craft.t('app', 'This tab is conditional'),
-                'aria-label': Craft.t('app', 'This tab is conditional'),
-                'data-icon': 'condition',
-                role: 'img',
-              })
-            );
-          }
-        } else if ($indicator.length) {
-          $indicator.remove();
-        }
+        const $label = this.$container.find('.tabs .tab');
+        const $actionBtn = $label.children('button').detach();
+        $label.html(response.data.labelHtml).append($actionBtn);
         this.slideout.close();
       })
       .catch((e) => {

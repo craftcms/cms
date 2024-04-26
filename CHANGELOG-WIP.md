@@ -11,6 +11,7 @@
 - Added the `asyncCsrfInputs` config setting. ([#14625](https://github.com/craftcms/cms/pull/14625))
 - Added the `safeMode` config setting. ([#14734](https://github.com/craftcms/cms/pull/14734))
 - `resave` commands now support an `--if-invalid` option. ([#14731](https://github.com/craftcms/cms/issues/14731))
+- Improved the styling of conditional tabs and UI elements within field layout designers.
 
 ### Extensibility
 - Added `craft\conditions\ConditionInterface::getBuilderConfig()`.
@@ -19,6 +20,7 @@
 - Added `craft\elements\conditions\ElementConditionInterface::setFieldLayouts()`.
 - Added `craft\events\DefineEditUserScreensEvent`. ([#14789](https://github.com/craftcms/cms/pull/14789))
 - Added `craft\helpers\Cp::parseTimestampParam()`.
+- Added `craft\models\FieldLayoutTab::labelHtml()`.
 - Added `craft\services\ProjectConfig::getAppliedChanges()`. ([#14851](https://github.com/craftcms/cms/discussions/14851))
 - Added `craft\web\Request::getBearerToken()`. ([#14784](https://github.com/craftcms/cms/pull/14784))
 - Added `craft\db\CoalesceColumnsExpression`.

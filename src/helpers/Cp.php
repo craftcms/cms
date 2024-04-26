@@ -2282,24 +2282,13 @@ JS;
                 ],
             ]) .
             Html::beginTag('div', ['class' => 'tabs']) .
-            Html::beginTag('div', [
+            Html::tag('div', $tab->labelHtml(), [
                 'class' => array_filter([
                     'tab',
                     'sel',
                     $customizable ? 'draggable' : null,
                 ]),
             ]) .
-            Html::beginTag('span') .
-            Html::encode($tab->name) .
-            ($tab->hasConditions() ? Html::tag('div', '', [
-                'class' => ['fld-indicator'],
-                'title' => Craft::t('app', 'This tab is conditional'),
-                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
-                'data' => ['icon' => 'condition'],
-                'role' => 'img',
-            ]) : '') .
-            Html::endTag('span') .
-            Html::endTag('div') . // .tab
             Html::endTag('div') . // .tabs
             Html::beginTag('div', ['class' => 'fld-tabcontent']) .
             implode('', array_map(fn(FieldLayoutElement $element) => self::layoutElementSelectorHtml($element, false), $tab->getElements())) .
