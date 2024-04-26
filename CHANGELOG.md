@@ -9,6 +9,8 @@
 - Fixed a bug where admin tables weren’t displaying disabled statuses. ([#14861](https://github.com/craftcms/cms/issues/14861))
 - Fixed a bug where clicking on drag handles within element index tables could select the element. ([#14669](https://github.com/craftcms/cms/issues/14669))
 - Fixed a bug where nested related categories and entries weren’t removable when the Categories/Entries field’s “Maintain hierarchy” setting was enabled. ([#14843](https://github.com/craftcms/cms/issues/14843))
+- Fixed a SQL error that could occur on PostgreSQL. ([#14860](https://github.com/craftcms/cms/pull/14870))
+- Fixed a bug where field layout designers were showing redundant field indicators, for fields with hidden labels. ([#14859](https://github.com/craftcms/cms/issues/14859))
 
 ## 5.0.5 - 2024-04-23
 
