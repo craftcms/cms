@@ -18,6 +18,7 @@
 - Added `craft\controllers\UsersController::EVENT_DEFINE_EDIT_SCREENS`. ([#14789](https://github.com/craftcms/cms/pull/14789))
 - Added `craft\elements\conditions\ElementConditionInterface::setFieldLayouts()`.
 - Added `craft\events\DefineEditUserScreensEvent`. ([#14789](https://github.com/craftcms/cms/pull/14789))
+- Added `craft\helpers\Cp::parseTimestampParam()`.
 - Added `craft\services\ProjectConfig::getAppliedChanges()`. ([#14851](https://github.com/craftcms/cms/discussions/14851))
 - Added `craft\web\Request::getBearerToken()`. ([#14784](https://github.com/craftcms/cms/pull/14784))
 - Added `craft\db\CoalesceColumnsExpression`.
