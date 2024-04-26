@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where errors weren’t getting logged. [#14863](https://github.com/craftcms/cms/issues/14863)
 - Fixed a bug where element caches weren’t getting invalidated when an element was moved within a structure. ([#14846](https://github.com/craftcms/cms/issues/14846))
 - Fixed a bug where CSV’s header rows weren’t using the configured delimiter. ([#14855](https://github.com/craftcms/cms/issues/14855))
 - Fixed a bug where editable table cell text styling could change after initial focus. ([#14857](https://github.com/craftcms/cms/issues/14857))
