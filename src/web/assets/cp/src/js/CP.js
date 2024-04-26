@@ -1946,7 +1946,7 @@ var JobProgressIcon = Garnish.Base.extend({
       this._$bgCanvas.velocity('fadeOut');
 
       this._animateArc(1, 1, () => {
-        this.$a.remove();
+        this.$li.remove();
         this.destroy();
       });
     });
