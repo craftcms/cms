@@ -202,7 +202,6 @@ abstract class BaseField extends FieldLayoutElement
                 'class' => ['smalltext', 'light', 'code', 'fld-attribute-label'],
                 'title' => $this->attribute(),
             ]) .
-            ($label === null ? $indicatorHtml : '') .
             Html::endTag('div'); // .fld-attribute
 
         if ($indicatorHtml) {
