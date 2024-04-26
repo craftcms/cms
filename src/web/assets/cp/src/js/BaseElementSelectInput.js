@@ -573,7 +573,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         const lastElementIndex = this.$elements.index($elements.last());
         $nextElement = this.$elements.eq(lastElementIndex + 1);
       }
-      if ($nextElement.length) {
+      if ($nextElement && $nextElement.length) {
         $nextElement.focus();
       } else {
         this.focusNextLogicalElement();
