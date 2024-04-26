@@ -153,6 +153,6 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
     public function jsonContains(string $targetSql, mixed $value): string
     {
         $value = $this->db->quoteValue(Json::encode($value));
-        return "($targetSql @> $value::jsonb)";
+        return "($targetSql::jsonb @> $value::jsonb)";
     }
 }

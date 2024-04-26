@@ -14,6 +14,8 @@ use craft\base\CpEditable;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\base\FieldLayoutComponent;
+use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Iconic;
 use craft\fieldlayoutelements\CustomField;
@@ -420,32 +422,14 @@ JS, [
     // -------------------------------------------------------------------------
 
     /**
-     * Applies a field layout tab’s settings.
+     * Renders a field layout component’s settings.
      *
-     * @return Response
-     * @throws BadRequestHttpException
-     * @since 4.0.0
+     * @since 5.1.0
      */
-    public function actionApplyLayoutTabSettings(): Response
+    public function actionRenderLayoutComponentSettings(): Response
     {
-        $tab = new FieldLayoutTab($this->_fldComponentConfig());
-
-        return $this->asJson([
-            'config' => $tab->toArray(),
-            'hasConditions' => $tab->hasConditions(),
-        ]);
-    }
-
-    /**
-     * Renders a field layout element’s settings.
-     *
-     * @since 5.0.0
-     */
-    public function actionRenderLayoutElementSettings(): Response
-    {
-        $element = Craft::$app->getFields()->createLayoutElement($this->_fldComponentConfig());
+        $element = $this->_fldComponent();
         $namespace = StringHelper::randomString(10);
-
         $view = Craft::$app->getView();
         $html = $view->namespaceInputs(fn() => $element->getSettingsHtml(), $namespace);
 
@@ -458,6 +442,24 @@ JS, [
     }
 
     /**
+     * Applies a field layout tab’s settings.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 4.0.0
+     */
+    public function actionApplyLayoutTabSettings(): Response
+    {
+        /** @var FieldLayoutTab $tab */
+        $tab = $this->_fldComponent();
+
+        return $this->asJson([
+            'config' => $tab->toArray(),
+            'hasConditions' => $tab->hasConditions(),
+        ]);
+    }
+
+    /**
      * Applies a field layout element’s settings.
      *
      * @return Response
@@ -466,7 +468,8 @@ JS, [
      */
     public function actionApplyLayoutElementSettings(): Response
     {
-        $element = Craft::$app->getFields()->createLayoutElement($this->_fldComponentConfig());
+        /** @var FieldLayoutElement $element */
+        $element = $this->_fldComponent();
 
         if ($element instanceof CustomField) {
             $field = $element->getField();
@@ -516,22 +519,65 @@ JS, [
     }
 
     /**
-     * Returns the posted settings.
+     * Returns the field layout component being edited, populated with the posted config/settings.
      *
-     * @return array
+     * @return FieldLayoutComponent
      */
-    private function _fldComponentConfig(): array
+    private function _fldComponent(): FieldLayoutComponent
     {
-        $config = $this->request->getRequiredBodyParam('config');
-        $config['elementType'] = $this->request->getRequiredBodyParam('elementType');
+        $uid = $this->request->getRequiredBodyParam('uid');
+        $elementType = $this->request->getRequiredBodyParam('elementType');
+        $layoutConfig = $this->request->getRequiredBodyParam('layoutConfig');
+
+        if (!isset($layoutConfig['tabs'])) {
+            throw new BadRequestHttpException('Layout config doesn’t have any tabs.');
+        }
+
+        $layoutConfig['type'] = $elementType;
+
+        $componentConfig = $this->request->getBodyParam('config') ?? [];
+        $componentConfig['elementType'] = $elementType;
         $settingsStr = $this->request->getBodyParam('settings');
 
         if ($settingsStr !== null) {
             parse_str($settingsStr, $settings);
             $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
-            $config = array_merge($config, ArrayHelper::getValue($settings, $settingsNamespace, []));
+            $componentConfig = array_merge($componentConfig, ArrayHelper::getValue($settings, $settingsNamespace, []));
         }
 
-        return $config;
+        $isTab = false;
+
+        foreach ($layoutConfig['tabs'] as &$tabConfig) {
+            if (isset($tabConfig['uid']) && $tabConfig['uid'] === $uid) {
+                $isTab = true;
+                $tabConfig = array_merge($tabConfig, $componentConfig);
+                break;
+            }
+
+            foreach ($tabConfig['elements'] as &$elementConfig) {
+                if (isset($elementConfig['uid']) && $elementConfig['uid'] === $uid) {
+                    $elementConfig = array_merge($elementConfig, $componentConfig);
+                    break 2;
+                }
+            }
+        }
+
+        $layout = Craft::$app->getFields()->createLayout($layoutConfig);
+
+        if ($isTab) {
+            foreach ($layout->getTabs() as $tab) {
+                if ($tab->uid === $uid) {
+                    return $tab;
+                }
+            }
+
+            throw new BadRequestHttpException("Invalid layout tab UUID: $uid");
+        }
+
+        $element = $layout->getElementByUid($uid);
+        if (!$element) {
+            throw new BadRequestHttpException("Invalid layout element UUID: $uid");
+        }
+        return $element;
     }
 }

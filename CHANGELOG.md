@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Fixed a bug where element caches weren’t getting invalidated when an element was moved within a structure. ([#14846](https://github.com/craftcms/cms/issues/14846))
+- Fixed a bug where CSV’s header rows weren’t using the configured delimiter. ([#14855](https://github.com/craftcms/cms/issues/14855))
+- Fixed a bug where editable table cell text styling could change after initial focus. ([#14857](https://github.com/craftcms/cms/issues/14857))
+- Fixed a bug where conditions could list rules with duplicate labels.
+- Fixed a bug where admin tables weren’t displaying disabled statuses. ([#14861](https://github.com/craftcms/cms/issues/14861))
+- Fixed a bug where clicking on drag handles within element index tables could select the element. ([#14669](https://github.com/craftcms/cms/issues/14669))
+- Fixed a bug where nested related categories and entries weren’t removable when the Categories/Entries field’s “Maintain hierarchy” setting was enabled. ([#14843](https://github.com/craftcms/cms/issues/14843))
+- Fixed a SQL error that could occur on PostgreSQL. ([#14860](https://github.com/craftcms/cms/pull/14870))
+- Fixed a bug where field layout designers were showing redundant field indicators, for fields with hidden labels. ([#14859](https://github.com/craftcms/cms/issues/14859))
+
+## 5.0.5 - 2024-04-23
+
 - Fixed a bug where the Database Backup utility was present when the `backupCommand` config setting was set to `false`.
 - Fixed an error that occurred when running the `db/convert-charset` command, if any tables contained `char` or `varchar` foreign key columns. ([#14815](https://github.com/craftcms/cms/issues/14815))
 - Fixed a bug where parsed first/last names could have different casing than the full name that was submitted. ([#14723](https://github.com/craftcms/cms/issues/14723))
@@ -19,6 +31,8 @@
 - Fixed a bug where element sources were getting text cursors on hover in Safari. ([#14833](https://github.com/craftcms/cms/issues/14833))
 - Fixed a bug where “Delete custom source” buttons within Customize Sources modals were getting text cursors on hover.
 - Fixed a bug where Matrix fields that weren’t set to show cards in a grid were still getting a grid view when nested entries were created for the first time. ([#14840](https://github.com/craftcms/cms/issues/14840))
+- Fixed a bug where related categories and entries weren’t removable when the Categories/Entries field’s “Maintain hierarchy” setting was enabled. ([#14843](https://github.com/craftcms/cms/issues/14843))
+- Fixed a bug where Categories and Entries fields were showing the “View Mode” setting when “Maintain hierarchy” was enabled, despite it having no effect. ([#14847](https://github.com/craftcms/cms/pull/14847))
 
 ## 5.0.4 - 2024-04-10
 
