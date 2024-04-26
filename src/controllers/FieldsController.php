@@ -113,6 +113,7 @@ class FieldsController extends Controller
 
         /** @var string[]|FieldInterface[] $compatibleFieldTypes */
         $fieldTypeOptions = [];
+        $fieldTypeNames = [];
         $foundCurrent = false;
         $missingFieldPlaceholder = null;
         $multiInstanceTypesOnly = (bool)$this->request->getParam('multiInstanceTypesOnly');
@@ -129,30 +130,26 @@ class FieldsController extends Controller
                 )
             ) {
                 $compatible = $isCurrent || in_array($class, $compatibleFieldTypes, true);
+                $name = $class::displayName();
                 $option = [
                     'icon' => $class::icon(),
                     'value' => $class,
-                    'sortKey' => $class::displayName(),
                 ];
                 if ($compatible) {
-                    $option['label'] = $class::displayName();
+                    $option['label'] = $name;
                 } else {
                     $option['labelHtml'] = Html::beginTag('div', ['class' => 'inline-flex']) .
-                        Html::tag('span', Html::encode($class::displayName())) .
+                        Html::tag('span', Html::encode($name)) .
                         Html::tag('span', Cp::iconSvg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]) .
                         Html::endTag('div');
                 }
                 $fieldTypeOptions[] = $option;
+                $fieldTypeNames[] = $name;
             }
         }
 
         // Sort them by name
-        ArrayHelper::multisort($fieldTypeOptions, 'sortKey');
-
-        // and remove the sort key as it's no longer needed
-        array_walk($fieldTypeOptions, function(&$item, $key) {
-            unset($item['sortKey']);
-        });
+        array_multisort($fieldTypeNames, $fieldTypeOptions);
 
         if ($field instanceof MissingField) {
             if ($foundCurrent) {
