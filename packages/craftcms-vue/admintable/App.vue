@@ -123,19 +123,21 @@
                 v-html="props.rowData.icon"
               ></span>
               <span
-                v-if="props.rowData.status"
+                v-if="props.rowData.status !== undefined"
                 class="status"
                 :class="{enabled: props.rowData.status}"
               ></span>
               <a
-                :class="{'cell-bold': !props.rowData.status}"
+                :class="{'cell-bold': props.rowData.status === undefined}"
                 v-if="props.rowData.url"
                 :href="props.rowData.url"
                 >{{ props.rowData.title }}</a
               >
-              <span :class="{'cell-bold': !props.rowData.status}" v-else>{{
-                props.rowData.title
-              }}</span>
+              <span
+                :class="{'cell-bold': props.rowData.status === undefined}"
+                v-else
+                >{{ props.rowData.title }}</span
+              >
             </div>
 
             <template slot="handle" slot-scope="props">
