@@ -132,6 +132,7 @@ class FieldsController extends Controller
                 $option = [
                     'icon' => $class::icon(),
                     'value' => $class,
+                    'sortKey' => $class::displayName(),
                 ];
                 if ($compatible) {
                     $option['label'] = $class::displayName();
@@ -146,7 +147,12 @@ class FieldsController extends Controller
         }
 
         // Sort them by name
-        ArrayHelper::multisort($fieldTypeOptions, 'label');
+        ArrayHelper::multisort($fieldTypeOptions, 'sortKey');
+
+        // and remove the sort key as it's no longer needed
+        array_walk($fieldTypeOptions, function(&$item, $key) {
+            unset($item['sortKey']);
+        });
 
         if ($field instanceof MissingField) {
             if ($foundCurrent) {
