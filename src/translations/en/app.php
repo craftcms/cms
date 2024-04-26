@@ -2017,6 +2017,7 @@ return [
     'on {date}' => 'on {date}',
     'on {day}' => 'on {day}',
     'one' => 'one',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'or <a>send to Developer Support</a>',
     'path/to/subfolder' => 'path/to/subfolder',
     'revision' => 'revision',

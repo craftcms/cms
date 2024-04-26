@@ -179,7 +179,7 @@ abstract class BaseField extends FieldLayoutElement
         $icon = $this->selectorIcon();
 
         $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', Cp::iconSvg($indicator['icon']), [
-            'class' => array_filter(array_merge(['cp-icon', 'puny'], [$indicator['iconColor'] ?? null])),
+            'class' => array_filter(['cp-icon', 'puny', $indicator['iconColor'] ?? null]),
             'title' => $indicator['label'],
             'aria' => ['label' => $indicator['label']],
         ]), $this->selectorIndicators()));
@@ -202,7 +202,6 @@ abstract class BaseField extends FieldLayoutElement
                 'class' => ['smalltext', 'light', 'code', 'fld-attribute-label'],
                 'title' => $this->attribute(),
             ]) .
-            ($label === null ? $indicatorHtml : '') .
             Html::endTag('div'); // .fld-attribute
 
         if ($indicatorHtml) {

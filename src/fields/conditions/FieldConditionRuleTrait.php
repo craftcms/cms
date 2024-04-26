@@ -188,7 +188,13 @@ trait FieldConditionRuleTrait
      */
     public function getExclusiveQueryParams(): array
     {
-        return [];
+        $params = [];
+
+        foreach ($this->fieldInstances() as $field) {
+            $params[] = $field->handle;
+        }
+
+        return array_values(array_unique($params));
     }
 
     /**

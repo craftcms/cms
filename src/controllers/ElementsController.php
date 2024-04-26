@@ -2171,7 +2171,7 @@ JS, [
 
         /** @var ElementInterface $element */
         $element = $this->element = Craft::createObject($this->_elementType);
-        if ($this->_siteId) {
+        if ($this->_siteId && $element::isLocalized()) {
             $element->siteId = $this->_siteId;
         }
         $element->setAttributesFromRequest($this->_attributes);

@@ -1057,18 +1057,6 @@ li.breadcrumb-toggle-wrapper {
   padding: var(--xl) var(--padding);
   word-wrap: break-word;
 
-  &:has(.tablepane) {
-    border: 2px solid white;
-    overflow: hidden;
-    padding: 0;
-
-    .tablepane,
-    .source-path,
-    #footer {
-      margin: 0;
-    }
-  }
-
   & > hr {
     margin-left: calc(var(--xl) * -1);
     margin-right: calc(var(--xl) * -1);
@@ -1098,7 +1086,7 @@ li.breadcrumb-toggle-wrapper {
   position: sticky;
   bottom: 0;
   z-index: 1;
-  margin: calc(var(--xl) + 1px) calc(var(--padding) * -1 + 2px)
+  margin: calc(var(--s) + 1px) calc(var(--padding) * -1 + 2px)
     calc(var(--xl) * -1 + 2px);
   background-color: var(--gray-050);
   border-radius: var(--small-border-radius);
@@ -1502,6 +1490,7 @@ li.breadcrumb-toggle-wrapper {
         min-height: var(--xl);
         box-sizing: border-box;
         color: var(--text-color);
+        cursor: pointer;
         user-select: none;
         border-radius: var(--large-border-radius);
         word-break: break-word;
