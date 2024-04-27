@@ -15,6 +15,7 @@
 - Fixed a JavaScript error that could occur when removing elements from an element select input. ([#14873](https://github.com/craftcms/cms/pull/14873))
 - Fixed a bug where queue jobs’ progress indicators in the control panel sidebar weren’t fully cleaned up when jobs were finished. ([#14856](https://github.com/craftcms/cms/issues/14856))
 - Fixed a bug where errors weren’t getting logged. ([#14863](https://github.com/craftcms/cms/issues/14863))
+- Fixed a bug where asset thumbnails could have the wrong aspect ratio. ([#14866](https://github.com/craftcms/cms/issues/14866))
 
 ## 5.0.5 - 2024-04-23
 
