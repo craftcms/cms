@@ -2144,7 +2144,9 @@ JS,[
             return null;
         }
 
-        if ($this->getWidth() && $this->getHeight()) {
+        $forCard = $size % 128 === 0;
+
+        if (!$forCard && $this->getWidth() && $this->getHeight()) {
             [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $size, $size);
         } else {
             $width = $height = $size;

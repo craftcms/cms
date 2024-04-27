@@ -3256,8 +3256,8 @@ table {
     align-items: stretch;
     margin: calc(var(--m) * -1);
     @include margin-right(0);
-    width: 120px;
-    min-width: 120px; // needed for flex
+    width: 128px;
+    min-width: 128px; // needed for flex
     min-height: calc(var(--m) * 2 + var(--lh) * 3 + var(--xs));
     background-color: var(--gray-100);
     overflow: hidden;
@@ -3294,7 +3294,7 @@ table {
     img,
     svg {
       width: 100%;
-      max-height: 120px;
+      max-height: 128px;
       object-fit: cover;
     }
   }
