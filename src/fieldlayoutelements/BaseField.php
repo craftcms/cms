@@ -388,7 +388,7 @@ abstract class BaseField extends FieldLayoutElement
      * Returns the HTML for an element’s thumbnail.
      *
      * @param ElementInterface $element The element the field is associated with
-     * @param int $size The width and height the thumbnail should have.
+     * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
      */
     public function thumbHtml(ElementInterface $element, int $size): ?string
