@@ -7,6 +7,7 @@
 
 namespace craft\config;
 
+use Closure;
 use Craft;
 use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
@@ -419,7 +420,7 @@ class GeneralConfig extends BaseConfig
     public bool $backupOnUpdate = true;
 
     /**
-     * @var string|null|false The shell command that Craft should execute to create a database backup.
+     * @var string|null|false|Closure The shell command that Craft should execute to create a database backup.
      *
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
@@ -447,7 +448,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Environment
      */
-    public string|null|false $backupCommand = null;
+    public string|null|false|Closure $backupCommand = null;
 
     /**
      * @var string|null The base URL Craft should use when generating control panel URLs.
@@ -2412,7 +2413,7 @@ class GeneralConfig extends BaseConfig
     public string $resourceBaseUrl = '@web/cpresources';
 
     /**
-     * @var string|null|false The shell command Craft should execute to restore a database backup.
+     * @var string|null|false|Closure The shell command Craft should execute to restore a database backup.
      *
      * By default Craft will run `mysql` or `psql`, provided those libraries are in the `$PATH` variable for the user the web server is running as.
      *
@@ -2438,7 +2439,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Environment
      */
-    public string|null|false $restoreCommand = null;
+    public string|null|false|Closure $restoreCommand = null;
 
     /**
      * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
@@ -3531,12 +3532,12 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param string|null|false $value
+     * @param string|null|false|Closure $value
      * @return self
      * @see $backupCommand
      * @since 4.2.0
      */
-    public function backupCommand(string|null|false $value): self
+    public function backupCommand(string|null|false|Closure $value): self
     {
         $this->backupCommand = $value;
         return $this;
@@ -5820,12 +5821,12 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param string|null|false $value
+     * @param string|null|false|Closure $value
      * @return self
      * @see $restoreCommand
      * @since 4.2.0
      */
-    public function restoreCommand(string|null|false $value): self
+    public function restoreCommand(string|null|false|Closure $value): self
     {
         $this->restoreCommand = $value;
         return $this;

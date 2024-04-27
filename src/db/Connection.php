@@ -271,12 +271,12 @@ class Connection extends \yii\db\Connection
         // Determine the command that should be executed
         $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
-        if ($backupCommand === null) {
-            $backupCommand = $this->getSchema()->getDefaultBackupCommand($event->ignoreTables);
-        }
-
         if ($backupCommand === false) {
             throw new Exception('Database not backed up because the backup command is false.');
+        } elseif ($backupCommand === null) {
+            $backupCommand = $this->getSchema()->getDefaultBackupCommand($event->ignoreTables);
+        } elseif ($backupCommand instanceof \Closure) {
+            $backupCommand = $backupCommand($this->getSchema()->getDefaultBackupCommand($event->ignoreTables));
         }
 
         // Create the shell command
@@ -337,12 +337,12 @@ class Connection extends \yii\db\Connection
         // Determine the command that should be executed
         $restoreCommand = Craft::$app->getConfig()->getGeneral()->restoreCommand;
 
-        if ($restoreCommand === null) {
-            $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
-        }
-
         if ($restoreCommand === false) {
             throw new Exception('Database not restored because the restore command is false.');
+        } elseif ($restoreCommand === null) {
+            $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
+        } elseif ($restoreCommand instanceof \Closure) {
+            $restoreCommand = $restoreCommand($this->getSchema()->getDefaultRestoreCommand());
         }
 
         // Create the shell command
