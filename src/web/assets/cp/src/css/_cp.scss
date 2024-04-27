@@ -967,6 +967,8 @@ li.breadcrumb-toggle-wrapper {
   }
 
   @media only screen and (max-width: $minHorizontalUiWidth - calc(1rem/16)) {
+    flex-direction: row-reverse;
+    justify-content: start;
     margin-top: 10px;
   }
 }
