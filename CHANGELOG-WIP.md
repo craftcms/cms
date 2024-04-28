@@ -36,3 +36,4 @@
 - Fixed a bug where ordering by a custom field would only partially work, if the custom field was included in multiple field layouts for the resulting elements. ([#14821](https://github.com/craftcms/cms/issues/14821))
 - Fixed a bug where element conditions within field layout designers’ component settings weren’t listing custom fields which were just added to the layout. ([#14787](https://github.com/craftcms/cms/issues/14787))
 - Fixed a bug where asset thumbnails within element cards were blurry. ([#14866](https://github.com/craftcms/cms/issues/14866))
+- Fixed a styling issue with Categories and Entries fields when “Maintain Hierarchy” was enabled.

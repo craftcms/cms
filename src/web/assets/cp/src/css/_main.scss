@@ -3848,15 +3848,18 @@ table {
     li {
       @include padding-left(38px);
       background-repeat: no-repeat;
+      --background-position-x: 0;
+      --background-position-y: -6px;
+      background-position: var(--background-position-x)
+        var(--background-position-y);
 
       body.ltr & {
         background-image: url(../images/branch.png);
-        background-position: 0 0;
       }
 
       body.rtl & {
+        --background-position-x: 100%;
         background-image: url(../images/branch_rtl.png);
-        background-position: 100% 0;
       }
 
       &:not(:last-child):not(.last) {
@@ -3864,11 +3867,11 @@ table {
         @include border-left(1px solid var(--gray-200));
 
         body.ltr & {
-          background-position: -1px 0;
+          --background-position-x: -1px;
         }
 
         body.rtl & {
-          background-position: calc(100% + 1px) 0;
+          --background-position-x: calc(100% + 1px);
         }
       }
 
@@ -3924,7 +3927,7 @@ table {
       @include margin-left(14px);
 
       li {
-        background-position: 0 6px !important;
+        --background-position-y: 0;
       }
     }
   }
