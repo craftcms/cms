@@ -2049,7 +2049,7 @@ return [
     '{attribute} must be no earlier than {min}.' => '“{attribute}”不得早于 {min}。',
     '{attribute} must be no greater than {max}.' => '“{attribute}”不得大于 {max}。',
     '{attribute} must be no later than {max}.' => '“{attribute}”不得晚于 {max}。',
-    '{attribute} must be no less than {min}.' => '“{attribute}”不得早于 {min}。',
+    '{attribute} must be no less than {min}.' => '“{attribute}”不得小于 {min}。',
     '{attribute} must be set to a new password.' => '“{attribute}”必须设置一个新的密码。',
     '{attribute} must contain “{slug}”' => '“{attribute}”必须包含“{slug}”',
     '{attribute} should contain at least {min, number} {min, plural, one{address} other{addresses}}.' => '“{attribute}”应至少包含 {min, number} 个{min, plural, other{地址}}。',
