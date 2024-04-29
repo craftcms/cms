@@ -451,6 +451,28 @@ class GeneralConfig extends BaseConfig
     public string|null|false|Closure $backupCommand = null;
 
     /**
+     * @var string|null The output format to pass to `pg_dump` when backing up the database.
+     *
+     * This setting has no effect with MySQL databases.
+     *
+     * Valid options are `custom`, `directory`, `tar`, or `plain`.
+     * When set to `null` (default), `pg_restore` will default to `plain`
+     * @see https://www.postgresql.org/docs/current/app-pgdump.html
+     *
+     *  ::: code
+     *  ```php Static Config
+     *  ->backupCommandFormat('custom')
+     *  ```
+     *  ```shell Environment Override
+     *  CRAFT_BACKUP_COMMAND_FORMAT=custom
+     *  ```
+     *  :::
+     *
+     * @group Environment
+     */
+    public ?string $backupCommandFormat = null;
+
+    /**
      * @var string|null The base URL Craft should use when generating control panel URLs.
      *
      * It will be determined automatically if left blank.
@@ -3540,6 +3562,27 @@ class GeneralConfig extends BaseConfig
     public function backupCommand(string|null|false|Closure $value): self
     {
         $this->backupCommand = $value;
+        return $this;
+    }
+
+    /**
+     * The output format to pass to `pg_dump` when backing up the database.
+     *
+     * This setting has no effect with MySQL databases.
+     *
+     * Valid options are `custom`, `directory`, `tar`, or `plain`.
+     * When set to `null` (default), `pg_restore` will default to `plain`
+     * @see https://www.postgresql.org/docs/current/app-pgdump.html
+     *
+     * @group Environment
+     * @param string $value
+     * @return self
+     * @see $backupCommandFormat
+     * @since 4.9.0
+     */
+    public function backupCommandFormat(string $value): self
+    {
+        $this->backupCommandFormat = $value;
         return $this;
     }
 

@@ -11,6 +11,7 @@ use Composer\Util\Platform;
 use Craft;
 use craft\db\Connection;
 use craft\db\TableSchema;
+use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
 /**
@@ -116,29 +117,37 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
-        if ($ignoreTables === null) {
-            $ignoreTables = $this->db->getIgnoredBackupTables();
-        }
-        $ignoredTableArgs = [];
+        $command = (new ShellCommand('pg_dump'))
+            ->addArg('--dbname=', '{database}')
+            ->addArg('--host=', '{server}')
+            ->addArg('--port=', '{port}')
+            ->addArg('--username=', '{user}')
+            ->addArg('--if-exists')
+            ->addArg('--clean')
+            ->addArg('--no-owner')
+            ->addArg('--no-privileges')
+            ->addArg('--no-acl')
+            ->addArg('--file=', '{file}')
+            ->addArg('--schema=', '{schema}');
+
+        $ignoreTables = $ignoreTables ?? Craft::$app->getDb()->getIgnoredBackupTables();
+        $format = Craft::$app->getConfig()->getGeneral()->backupCommandFormat;
+        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
+
         foreach ($ignoreTables as $table) {
-            $table = $this->getRawTableName($table);
-            $ignoredTableArgs[] = "--exclude-table-data '{schema}.$table'";
+            $table = Craft::$app->getDb()->getSchema()->getRawTableName($table);
+            $command->addArg('--exclude-table-data', "{schema}.$table");
         }
 
-        return $this->_pgpasswordCommand() .
-            'pg_dump' .
-            ' --dbname={database}' .
-            ' --host={server}' .
-            ' --port={port}' .
-            ' --username={user}' .
-            ' --if-exists' .
-            ' --clean' .
-            ' --no-owner' .
-            ' --no-privileges' .
-            ' --no-acl' .
-            ' --file="{file}"' .
-            ' --schema={schema}' .
-            ' ' . implode(' ', $ignoredTableArgs);
+        if ($format) {
+            $command->addArg('--format=', $format);
+        }
+
+        if ($commandFromConfig instanceof \Closure) {
+            $command = $commandFromConfig($command);
+        }
+
+        return $command->getExecCommand();
     }
 
     /**
@@ -148,14 +157,22 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return $this->_pgpasswordCommand() .
-            'psql' .
-            ' --dbname={database}' .
-            ' --host={server}' .
-            ' --port={port}' .
-            ' --username={user}' .
-            ' --no-password' .
-            ' < "{file}"';
+        $command = (new ShellCommand($this->usePgRestore() ? 'pg_restore' : 'psql'))
+            ->addArg('--dbname=', '{database}')
+            ->addArg('--host=', '{server}')
+            ->addArg('--port=', '{port}')
+            ->addArg('--username=', '{user}')
+            ->addArg('--no-password');
+
+        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->restoreCommand;
+
+        if ($commandFromConfig instanceof \Closure) {
+            $command = $commandFromConfig($command);
+        }
+
+        return $this->_pgpasswordCommand()
+            . $command->getExecCommand()
+            . '< "{file}"';
     }
 
     /**
@@ -214,6 +231,14 @@ class Schema extends \yii\db\pgsql\Schema
         }
 
         return null;
+    }
+
+    public function usePgRestore(): bool
+    {
+        return in_array(Craft::$app->getConfig()->getGeneral()->backupCommandFormat, [
+            'custom',
+            'directory',
+        ], true);
     }
 
     /**
