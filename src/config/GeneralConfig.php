@@ -469,6 +469,7 @@ class GeneralConfig extends BaseConfig
      *  :::
      *
      * @group Environment
+     * @since 4.9.0
      */
     public ?string $backupCommandFormat = null;
 

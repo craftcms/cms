@@ -233,6 +233,12 @@ class Schema extends \yii\db\pgsql\Schema
         return null;
     }
 
+    /**
+     * Whether `pg_restore` should be used by default for the backup command.
+     *
+     * @return bool
+     * @since 4.9.0
+     */
     public function usePgRestore(): bool
     {
         return in_array(Craft::$app->getConfig()->getGeneral()->backupCommandFormat, [
