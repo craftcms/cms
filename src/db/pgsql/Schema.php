@@ -135,7 +135,7 @@ class Schema extends \yii\db\pgsql\Schema
         $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
         foreach ($ignoreTables as $table) {
-            $table = Craft::$app->getDb()->getSchema()->getRawTableName($table);
+            $table = $this->getRawTableName($table);
             $command->addArg('--exclude-table-data', "{schema}.$table");
         }
 

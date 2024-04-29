@@ -193,7 +193,7 @@ class Schema extends \yii\db\mysql\Schema
             ->addArg('--no-create-info');
 
         foreach ($ignoreTables as $table) {
-            $table = Craft::$app->getDb()->getSchema()->getRawTableName($table);
+            $table = $this->getRawTableName($table);
             $dataDump->addArg('--ignore-table', "{schema}.$table");
         }
 
