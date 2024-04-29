@@ -16,6 +16,7 @@
 - Fixed a bug where queue jobs’ progress indicators in the control panel sidebar weren’t fully cleaned up when jobs were finished. ([#14856](https://github.com/craftcms/cms/issues/14856))
 - Fixed a bug where errors weren’t getting logged. ([#14863](https://github.com/craftcms/cms/issues/14863))
 - Fixed a bug where asset thumbnails could have the wrong aspect ratio. ([#14866](https://github.com/craftcms/cms/issues/14866))
+- Fixed an infinite recursion bug that occurred when selecting elements, if no sources were enabled for the selected site. ([#14882](https://github.com/craftcms/cms/issues/14882))
 
 ## 5.0.5 - 2024-04-23
 
