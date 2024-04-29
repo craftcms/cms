@@ -6059,9 +6059,6 @@ $min2ColWidth: 400px;
 .activity-container {
   &:not(:last-child) {
     @include margin-left(var(--s));
-    &:empty {
-      display: none;
-    }
   }
 
   ul {
