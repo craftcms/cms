@@ -558,7 +558,7 @@ class Cp
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
-        $thumb = $element->getThumbHtml(120);
+        $thumb = $element->getThumbHtml(128);
         if ($thumb === null && $element instanceof Iconic) {
             $icon = $element->getIcon();
             if ($icon) {
