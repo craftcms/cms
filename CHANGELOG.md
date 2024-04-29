@@ -8,7 +8,7 @@
 - Fixed a bug where conditions could list rules with duplicate labels.
 - Fixed a bug where admin tables weren’t displaying disabled statuses. ([#14861](https://github.com/craftcms/cms/issues/14861))
 - Fixed a bug where clicking on drag handles within element index tables could select the element. ([#14669](https://github.com/craftcms/cms/issues/14669))
-- Fixed a bug where nested related categories and entries weren’t removable when the Categories/Entries field’s “Maintain hierarchy” setting was enabled. ([#14843](https://github.com/craftcms/cms/issues/14843))
+- Fixed a bug where nested related categories and entries weren’t directly removable, and could be unintentionally overwritten, when the Categories/Entries field’s “Maintain hierarchy” setting was enabled. ([#14843](https://github.com/craftcms/cms/issues/14843), [#14872](https://github.com/craftcms/cms/issues/14872))
 - Fixed a SQL error that could occur on PostgreSQL. ([#14860](https://github.com/craftcms/cms/pull/14870))
 - Fixed a bug where field layout designers were showing redundant field indicators, for fields with hidden labels. ([#14859](https://github.com/craftcms/cms/issues/14859))
 - Fixed a bug where field type names weren’t sorted alphabetically when editing an existing field. ([#14858](https://github.com/craftcms/cms/issues/14858))
@@ -16,6 +16,7 @@
 - Fixed a bug where queue jobs’ progress indicators in the control panel sidebar weren’t fully cleaned up when jobs were finished. ([#14856](https://github.com/craftcms/cms/issues/14856))
 - Fixed a bug where errors weren’t getting logged. ([#14863](https://github.com/craftcms/cms/issues/14863))
 - Fixed a bug where asset thumbnails could have the wrong aspect ratio. ([#14866](https://github.com/craftcms/cms/issues/14866))
+- Fixed an infinite recursion bug that occurred when selecting elements, if no sources were enabled for the selected site. ([#14882](https://github.com/craftcms/cms/issues/14882))
 
 ## 5.0.5 - 2024-04-23
 
