@@ -338,10 +338,8 @@ class Connection extends \yii\db\Connection
 
         if ($restoreCommand === false) {
             throw new Exception('Database not restored because the restore command is false.');
-        } elseif ($restoreCommand === null) {
+        } elseif ($restoreCommand === null || $restoreCommand instanceof \Closure) {
             $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
-        } elseif ($restoreCommand instanceof \Closure) {
-            $restoreCommand = $restoreCommand($this->getSchema()->getDefaultRestoreCommand());
         }
 
         // Create the shell command
