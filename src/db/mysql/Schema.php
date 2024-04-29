@@ -213,7 +213,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
+        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->restoreCommand;
         $command = (new ShellCommand('mysql'))
             ->addArg('--defaults-file=', $this->_createDumpConfigFile())
             ->addArg('{database}');
