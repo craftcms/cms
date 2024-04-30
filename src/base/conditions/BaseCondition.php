@@ -290,7 +290,7 @@ JS, [$view->namespaceInputId($this->id)]);
             ]);
 
             $html .= Html::hiddenInput('class', get_class($this));
-            $html .= Html::hiddenInput('config', Json::encode($this->config()));
+            $html .= Html::hiddenInput('config', Json::encode($this->getBuilderConfig()));
 
             foreach ($this->getConditionRules() as $rule) {
                 try {
@@ -591,6 +591,14 @@ JS,
     /**
      * @inheritdoc
      */
+    public function getBuilderConfig(): array
+    {
+        return $this->config();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getConfig(): array
     {
         return array_merge($this->config(), [
@@ -611,7 +619,7 @@ JS,
     }
 
     /**
-     * Returns the condition’s portable config.
+     * Returns the base config that should be maintained by the builder and included in the condition’s portable config.
      *
      * @return array
      */

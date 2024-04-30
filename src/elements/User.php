@@ -994,15 +994,12 @@ class User extends Element implements IdentityInterface
      */
     public function setAttributes($values, $safeOnly = true): void
     {
-        if (array_key_exists('fullName', $values)) {
-            // Clear out the first and last names.
-            // They'll get reset from prepareNamesForSave() if fullName isn't empty.
-            $this->firstName = null;
-            $this->lastName = null;
-        } elseif (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
-            // Clear out the full name.
-            // It'll get reset from prepareNamesForSave() if the first/last names aren't empty.
+        if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            // Unset fullName so NameTrait::prepareNamesForSave() can set it
             $this->fullName = null;
+        } elseif (array_key_exists('fullName', $values)) {
+            // Unset firstName and lastName so NameTrait::prepareNamesForSave() can set them
+            $this->firstName = $this->lastName = null;
         }
 
         parent::setAttributes($values, $safeOnly);
@@ -1617,11 +1614,10 @@ XML;
      */
     public function can(string $permission): bool
     {
-        if (Craft::$app->edition !== CmsEdition::Pro) {
-            return true;
-        }
-
-        if ($this->admin) {
+        if (
+            $this->admin ||
+            Craft::$app->edition === CmsEdition::Solo
+        ) {
             return true;
         }
 
@@ -1654,9 +1650,11 @@ XML;
      */
     public function canAssignUserGroups(): bool
     {
-        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
-            if ($this->can("assignUserGroup:$group->uid")) {
-                return true;
+        if (Craft::$app->edition === CmsEdition::Pro) {
+            foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+                if ($this->can("assignUserGroup:$group->uid")) {
+                    return true;
+                }
             }
         }
 
@@ -2293,8 +2291,8 @@ JS, [
      */
     public function afterSave(bool $isNew): void
     {
-        // All users should be admins unless this is Craft Pro
-        if ($isNew && Craft::$app->edition !== CmsEdition::Pro) {
+        if ($isNew && Craft::$app->edition === CmsEdition::Solo) {
+            // Make sure they're an admin
             $this->admin = true;
         }
 
@@ -2378,6 +2376,14 @@ JS, [
         $this->setDirtyAttributes($dirtyAttributes);
 
         parent::afterSave($isNew);
+
+        if (Craft::$app->edition === CmsEdition::Team) {
+            // Make sure they're in the Team group
+            $group = Craft::$app->getUserGroups()->getTeamGroup();
+            if (!$this->isInGroup($group)) {
+                Craft::$app->getUsers()->assignUserToGroups($this->id, [$group->id]);
+            }
+        }
 
         if (!$isNew && $changePassword) {
             // Destroy all other sessions for this user
