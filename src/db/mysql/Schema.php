@@ -194,8 +194,10 @@ class Schema extends \yii\db\mysql\Schema
 
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
-            $dataDump->addArg('--ignore-table', "{schema}.$table");
+            $dataDump->addArg('--ignore-table=', "{database}.$table");
         }
+
+        $dataDump->addArg('{database}');
 
         if ($commandFromConfig instanceof \Closure) {
             $schemaDump = $commandFromConfig($schemaDump);
