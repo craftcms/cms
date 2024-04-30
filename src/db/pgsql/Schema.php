@@ -12,8 +12,8 @@ use craft\db\Connection;
 use craft\db\ExpressionBuilder;
 use craft\db\ExpressionInterface;
 use craft\db\TableSchema;
-use mikehaertl\shellcommand\Command as ShellCommand;
 use craft\helpers\App;
+use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
 /**
