@@ -37,7 +37,7 @@
 - Fixed a bug where `craft\elements\db\ElementQuery::count()` could return the wrong number if the query had a cached result, with `offset` or `limit` params.
 - Console requests no longer filter out info logs. ([#14280](https://github.com/craftcms/cms/issues/14280), [#14434](https://github.com/craftcms/cms/pull/14434))
 - Fixed a styling issue with Categories and Entries fields when “Maintain Hierarchy” was enabled.
-- Fixed a bug where the footer delete action wasn’t working in admin tables.
+- Fixed a bug where Delete actions weren’t working in admin tables. ([craftcms/commerce#3444](https://github.com/craftcms/commerce/issues/3444))
 
 ## 4.8.11 - 2024-04-29
 
