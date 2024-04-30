@@ -254,7 +254,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                         <div id="main-content" class="{{ mainContentClasses|join(' ') }}">
                             {# sidebar #}
                             {% if sidebar %}
-                                <h2 id="sidebar-toggle-container">
+                                <div id="sidebar-toggle-container">
                                     <button
                                         type="button"
                                         id="sidebar-toggle"
@@ -262,9 +262,9 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                         aria-controls="sidebar-container"
                                         aria-expanded="false"
                                     >
-                                        <span id="content-heading"></span>
+                                      <span id="content-heading"></span>
                                     </button>
-                                </h2>
+                                </div>
                                 <div id="sidebar-container">
                                     <div id="sidebar" class="sidebar">
                                         {{ sidebar|raw }}

@@ -1001,7 +1001,7 @@ li.breadcrumb-toggle-wrapper {
 #sidebar {
   position: relative;
   box-sizing: border-box;
-  padding: 0 31px var(--m);
+  padding: 0 40px var(--m);
   width: $sidebarWidth;
   background-color: transparent;
 
@@ -1032,6 +1032,10 @@ li.breadcrumb-toggle-wrapper {
   .skip-link {
     margin: 0 var(--s);
   }
+
+  @media only screen and (min-width: $minFullUiWidth) {
+    padding: 0 31px var(--m);
+  }
 }
 
 #content-container {
@@ -1043,14 +1047,6 @@ li.breadcrumb-toggle-wrapper {
    */
   width: 400px;
 }
-
-// #content-heading {
-//   margin-top: var(--xl) !important;
-
-//   @media only screen and (min-width: $minHorizontalUiWidth) {
-//     @include visually-hidden;
-//   }
-// }
 
 .content-pane {
   @include pane;
@@ -1278,12 +1274,13 @@ li.breadcrumb-toggle-wrapper {
   }
 
   #source-actions {
+    margin-top: var(--s);
     margin-left: -9px;
   }
 
   #sidebar-toggle-container {
     display: block;
-    margin-bottom: var(--m);
+    margin-bottom: var(--s);
   }
 
   #sidebar-toggle {
@@ -1322,6 +1319,12 @@ li.breadcrumb-toggle-wrapper {
 
   #sidebar {
     margin-bottom: var(--m);
+
+    body.showing-sidebar & {
+      @include pane;
+      padding-block: 0.5rem;
+      border-radius: var(--large-border-radius);
+    }
 
     body:not(.showing-sidebar) & {
       display: none;
