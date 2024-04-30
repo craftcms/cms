@@ -814,7 +814,7 @@
             label: Craft.t('app', 'Delete'),
             action: this.deleteAction,
             error: true,
-            ajax: true,
+            ajax: this.tableDataEndpoint ? true : false,
             allowMultiple: this.allowMultipleDeletions,
             separator: itemActions.length ? true : false,
           });
