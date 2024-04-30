@@ -1085,22 +1085,24 @@ class UsersController extends Controller
             }
         }
 
-        // Fire an 'beforeAssignGroupsAndPermissions' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-            $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                'user' => $user,
-            ]));
-        }
+        if (Craft::$app->edition === CmsEdition::Pro) {
+            // Fire an 'beforeAssignGroupsAndPermissions' event
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                    'user' => $user,
+                ]));
+            }
 
-        // Assign user groups and permissions if the current user is allowed to do that
-        $this->_saveUserGroups($user, $currentUser);
-        $this->_saveUserPermissions($user, $currentUser);
+            // Assign user groups and permissions if the current user is allowed to do that
+            $this->_saveUserGroups($user, $currentUser);
+            $this->_saveUserPermissions($user, $currentUser);
 
-        // Fire an 'afterAssignGroupsAndPermissions' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-            $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                'user' => $user,
-            ]));
+            // Fire an 'afterAssignGroupsAndPermissions' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                    'user' => $user,
+                ]));
+            }
         }
 
         return $this->asSuccess(Craft::t('app', 'Permissions saved.'));

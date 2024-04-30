@@ -8,6 +8,10 @@
 - Thumbnails within element cards are slightly larger.
 - Improved element editor page styling on mobile. ([#14898](https://github.com/craftcms/cms/pull/14898), [#14885](https://github.com/craftcms/cms/issues/14885))
 
+### User Management
+- Team edition users are no longer required to be admins.
+- Added the “User Permissions” settings page for managing the permissions of non-admin Team edition users. ([#14768](https://github.com/craftcms/cms/discussions/14768))
+
 ### Administration
 - Element conditions within field layout designers’ component settings now only list custom fields present in the current field layout. ([#14787](https://github.com/craftcms/cms/issues/14787))
 - Improved the behavior of the URI input within Edit Route modals. ([#14884](https://github.com/craftcms/cms/issues/14884))
