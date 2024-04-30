@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.9.0 - 2024-04-30
 
 ### Content Management
 - It’s now possible to preview revisions. ([#14521](https://github.com/craftcms/cms/discussions/14521))
