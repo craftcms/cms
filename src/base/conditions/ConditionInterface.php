@@ -32,6 +32,14 @@ interface ConditionInterface
     public function getBuilderInnerHtml(bool $autofocusAddButton = false): string;
 
     /**
+     * Returns configuration that should be maintained for the builder.
+     *
+     * @return array
+     * @since 5.1.0
+     */
+    public function getBuilderConfig(): array;
+
+    /**
      * Returns the condition’s portable config.
      *
      * @return array

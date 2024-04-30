@@ -649,6 +649,11 @@ class Db
                     $val = str_replace('\*', '*', $val);
                 }
 
+                // if we're prepping to compare to a timestamp - ensure the value is a number not a string
+                if ($parsedColumnType === Schema::TYPE_TIMESTAMP) {
+                    $val = (int)$val;
+                }
+
                 if ($like) {
                     if ($caseInsensitive) {
                         $operator = $operator === '=' ? 'ilike' : 'not ilike';
@@ -866,6 +871,33 @@ class Db
         string|null $columnType = Schema::TYPE_INTEGER,
     ): ?array {
         return static::parseParam($column, $value, $defaultOperator, false, $columnType);
+    }
+
+    /**
+     * Parses a query param value for a timestamp column and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * The follow values are supported:
+     *
+     * - A number
+     * - `:empty:` or `:notempty:`
+     * - `'not x'` or `'!= x'`
+     * - `'> x'`, `'>= x'`, `'< x'`, or `'<= x'`, or a combination of those
+     *
+     * @param string $column The database column that the param is targeting.
+     * @param string|string[] $value The param value
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     * @return array|null
+     * @throws InvalidArgumentException if the param value isn’t numeric
+     * @since 5.1.0
+     */
+    public static function parseTimestampParam(
+        string $column,
+        mixed $value,
+        string $defaultOperator = '=',
+    ): ?array {
+        return static::parseParam($column, $value, $defaultOperator, false, Schema::TYPE_TIMESTAMP);
     }
 
     /**

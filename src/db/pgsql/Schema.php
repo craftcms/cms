@@ -9,8 +9,11 @@ namespace craft\db\pgsql;
 
 use Craft;
 use craft\db\Connection;
+use craft\db\ExpressionBuilder;
+use craft\db\ExpressionInterface;
 use craft\db\TableSchema;
 use craft\helpers\App;
+use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
 /**
@@ -49,6 +52,9 @@ class Schema extends \yii\db\pgsql\Schema
     public function createQueryBuilder(): QueryBuilder
     {
         return new QueryBuilder($this->db, [
+            'expressionBuilders' => [
+                ExpressionInterface::class => ExpressionBuilder::class,
+            ],
             'separator' => "\n",
         ]);
     }
@@ -128,29 +134,37 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
-        if ($ignoreTables === null) {
-            $ignoreTables = $this->db->getIgnoredBackupTables();
-        }
-        $ignoredTableArgs = [];
+        $command = (new ShellCommand('pg_dump'))
+            ->addArg('--dbname=', '{database}')
+            ->addArg('--host=', '{server}')
+            ->addArg('--port=', '{port}')
+            ->addArg('--username=', '{user}')
+            ->addArg('--if-exists')
+            ->addArg('--clean')
+            ->addArg('--no-owner')
+            ->addArg('--no-privileges')
+            ->addArg('--no-acl')
+            ->addArg('--file=', '{file}')
+            ->addArg('--schema=', '{schema}');
+
+        $ignoreTables = $ignoreTables ?? Craft::$app->getDb()->getIgnoredBackupTables();
+        $format = Craft::$app->getConfig()->getGeneral()->backupCommandFormat;
+        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
+
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
-            $ignoredTableArgs[] = "--exclude-table-data '{schema}.$table'";
+            $command->addArg('--exclude-table-data', "{schema}.$table");
         }
 
-        return $this->_pgpasswordCommand() .
-            'pg_dump' .
-            ' --dbname={database}' .
-            ' --host={server}' .
-            ' --port={port}' .
-            ' --username={user}' .
-            ' --if-exists' .
-            ' --clean' .
-            ' --no-owner' .
-            ' --no-privileges' .
-            ' --no-acl' .
-            ' --file="{file}"' .
-            ' --schema={schema}' .
-            ' ' . implode(' ', $ignoredTableArgs);
+        if ($format) {
+            $command->addArg('--format=', $format);
+        }
+
+        if ($commandFromConfig instanceof \Closure) {
+            $command = $commandFromConfig($command);
+        }
+
+        return $command->getExecCommand();
     }
 
     /**
@@ -160,14 +174,28 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return $this->_pgpasswordCommand() .
-            'psql' .
-            ' --dbname={database}' .
-            ' --host={server}' .
-            ' --port={port}' .
-            ' --username={user}' .
-            ' --no-password' .
-            ' < "{file}"';
+        $command = (new ShellCommand($this->usePgRestore() ? 'pg_restore' : 'psql'))
+            ->addArg('--dbname=', '{database}')
+            ->addArg('--host=', '{server}')
+            ->addArg('--port=', '{port}')
+            ->addArg('--username=', '{user}')
+            ->addArg('--no-password');
+
+        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->restoreCommand;
+
+
+        // If we're using pg_restore, we can't use STDIN, as it may be a directory
+        if ($this->usePgRestore()) {
+            $command->addArg('{file}');
+        }
+
+        if ($commandFromConfig instanceof \Closure) {
+            $command = $commandFromConfig($command);
+        }
+
+        return $this->_pgpasswordCommand()
+            . $command->getExecCommand()
+            . ($this->usePgRestore() ? '' : ' < "{file}"');
     }
 
     /**
@@ -226,6 +254,20 @@ class Schema extends \yii\db\pgsql\Schema
         }
 
         return null;
+    }
+
+    /**
+     * Whether `pg_restore` should be used by default for the backup command.
+     *
+     * @return bool
+     * @since 4.9.0
+     */
+    public function usePgRestore(): bool
+    {
+        return in_array(Craft::$app->getConfig()->getGeneral()->backupCommandFormat, [
+            'custom',
+            'directory',
+        ], true);
     }
 
     /**

@@ -134,15 +134,15 @@ class UserQuery extends ElementQuery
      * @var mixed The permission that the resulting users must have.
      * ---
      * ```php
-     * // fetch users with control panel access
+     * // fetch users who can access the front end when the system is offline
      * $admins = \craft\elements\User::find()
-     *     ->can('accessCp')
+     *     ->can('accessSiteWhenSystemIsOff')
      *     ->all();
      * ```
      * ```twig
-     * {# fetch users with control panel access #}
+     * {# fetch users who can access the front end when the system is offline #}
      * {% set admins = craft.users()
-     *   .can('accessCp')
+     *   .can('accessSiteWhenSystemIsOff')
      *   .all() %}
      * ```
      * @used-by can()
@@ -371,16 +371,16 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch users that can access the control panel #}
+     * {# Fetch users who can access the front end when the system is offline #}
      * {% set {elements-var} = {twig-method}
-     *   .can('accessCp')
+     *   .can('accessSiteWhenSystemIsOff')
      *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch users that can access the control panel
+     * // Fetch users who can access the front end when the system is offline
      * ${elements-var} = {element-class}::find()
-     *     ->can('accessCp')
+     *     ->can('accessSiteWhenSystemIsOff')
      *     ->all();
      * ```
      *

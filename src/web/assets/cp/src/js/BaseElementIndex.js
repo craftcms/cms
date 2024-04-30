@@ -3853,6 +3853,10 @@ const SourceNav = Garnish.Base.extend(
     },
 
     selectItem: function (item) {
+      if (item.length === 0) {
+        return;
+      }
+
       const $item = $(item);
       this.deselectAll();
 
@@ -4231,13 +4235,34 @@ const ViewMenu = Garnish.Base.extend({
   _createSortField: function () {
     const $container = $('<div class="flex"/>');
 
+    const options = this.elementIndex
+      .getSortOptions(this.$source)
+      .sort((a, b) => {
+        return a.label === b.label ? 0 : a.label < b.label ? -1 : 1;
+      });
+    const groups = options.reduce(
+      (groups, o) => {
+        const index = o.attr.startsWith('field:') ? 1 : 0;
+        groups[index].push(o);
+        return groups;
+      },
+      [[], []]
+    );
+    if (groups[1].length) {
+      groups[1].unshift({
+        optgroup: Craft.t('app', 'Fields'),
+      });
+    }
+
     const $sortAttributeSelectContainer = Craft.ui
       .createSelect({
-        options: this.elementIndex.getSortOptions(this.$source).map((o) => {
-          return {
-            label: Craft.escapeHtml(o.label),
-            value: o.attr,
-          };
+        options: groups.flat().map((o) => {
+          return o.optgroup
+            ? o
+            : {
+                label: Craft.escapeHtml(o.label),
+                value: o.attr,
+              };
         }),
       })
       .addClass('fullwidth')
@@ -4328,7 +4353,11 @@ const ViewMenu = Garnish.Base.extend({
   },
 
   _createTableColumnsField: function () {
-    const columns = this.elementIndex.getTableColumnOptions(this.$source);
+    const columns = this.elementIndex
+      .getTableColumnOptions(this.$source)
+      .sort((a, b) => {
+        return a.label === b.label ? 0 : a.label < b.label ? -1 : 1;
+      });
 
     if (!columns.length) {
       return $();
