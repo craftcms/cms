@@ -48,6 +48,7 @@
 - Fixed a bug where element conditions within field layout designers’ component settings weren’t listing custom fields which were just added to the layout. ([#14787](https://github.com/craftcms/cms/issues/14787))
 - Fixed a bug where asset thumbnails within element cards were blurry. ([#14866](https://github.com/craftcms/cms/issues/14866))
 - Fixed a styling issue with Categories and Entries fields when “Maintain Hierarchy” was enabled.
+- Fixed a bug where Delete actions weren’t working in admin tables. ([craftcms/commerce#3444](https://github.com/craftcms/commerce/issues/3444))
 
 ## 5.0.6 - 2024-04-29
 
