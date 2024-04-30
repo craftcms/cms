@@ -978,6 +978,37 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $siteId
+     * @return static
+     */
+    public function language($value): self
+    {
+        if (is_string($value)) {
+            $sites = Craft::$app->getSites()->getSitesByLanguage($value);
+            if (empty($sites)) {
+                throw new InvalidArgumentException("Invalid language: $value");
+            }
+            $this->siteId = array_map(fn(Site $site) => $site->id, $sites);
+        } else {
+            if ($not = (strtolower(reset($value)) === 'not')) {
+                array_shift($value);
+            }
+            $this->siteId = [];
+            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                if (in_array($site->language, $value, true) === !$not) {
+                    $this->siteId[] = $site->id;
+                }
+            }
+            if (empty($this->siteId)) {
+                throw new InvalidArgumentException('Invalid language param: [' . ($not ? 'not, ' : '') . implode(', ', $value) . ']');
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @return static
      * @uses $unique
      * @since 3.2.0
@@ -1569,11 +1600,67 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function count($q = '*', $db = null): bool|int|string|null
     {
         // Cached?
-        if (($cachedResult = $this->getCachedResult()) !== null) {
+        if (
+            !$this->offset &&
+            !$this->limit &&
+            ($cachedResult = $this->getCachedResult()) !== null
+        ) {
             return count($cachedResult);
         }
 
-        return parent::count($q, $db) ?: 0;
+        try {
+            return $this->prepareSubquery()->count($q, $db) ?: 0;
+        } catch (QueryAbortedException) {
+            return 0;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function sum($q, $db = null)
+    {
+        try {
+            return $this->prepareSubquery()->sum($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function average($q, $db = null)
+    {
+        try {
+            return $this->prepareSubquery()->average($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function min($q, $db = null)
+    {
+        try {
+            return $this->prepareSubquery()->min($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function max($q, $db = null)
+    {
+        try {
+            return $this->prepareSubquery()->max($q, $db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
     }
 
     /**

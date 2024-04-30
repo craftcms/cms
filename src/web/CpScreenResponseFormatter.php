@@ -116,9 +116,10 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
     private function _formatTemplate(YiiResponse $response, CpScreenResponseBehavior $behavior): void
     {
         $response->format = Response::FORMAT_HTML;
+        $isForm = (bool)$behavior->action;
 
         if ($behavior->prepareScreen) {
-            call_user_func($behavior->prepareScreen, $response, 'main-form');
+            call_user_func($behavior->prepareScreen, $response, $isForm ? 'main-form' : 'main');
         }
 
         $crumbs = is_callable($behavior->crumbs) ? call_user_func($behavior->crumbs) : $behavior->crumbs;
@@ -156,7 +157,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'submitButtonLabel' => $behavior->submitButtonLabel,
                 'additionalButtons' => $addlButtons,
                 'tabs' => $behavior->tabs,
-                'fullPageForm' => (bool)$behavior->action,
+                'fullPageForm' => $isForm,
                 'mainAttributes' => $behavior->mainAttributes,
                 'mainFormAttributes' => $behavior->formAttributes,
                 'formActions' => array_map(function(array $action) use ($security): array {
