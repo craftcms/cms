@@ -221,12 +221,12 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                             {% endblock %}
                                         </div>
                                         {% if toolbar %}
-                                            <div id="toolbar" class="flex" tabindex="2">
+                                            <div id="toolbar" class="flex">
                                                 {{ toolbar|raw }}
                                             </div>
                                         {% endif %}
                                         {% if actionButton or additionalButtons %}
-                                            <div id="action-buttons" class="flex" tabindex="1">
+                                            <div id="action-buttons" class="flex">
                                                 {{ additionalButtons|raw }}
                                                 {{ actionButton|raw }}
 
