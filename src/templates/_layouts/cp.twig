@@ -221,12 +221,12 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                             {% endblock %}
                                         </div>
                                         {% if toolbar %}
-                                            <div id="toolbar" class="flex">
+                                            <div id="toolbar" class="flex" tabindex="2">
                                                 {{ toolbar|raw }}
                                             </div>
                                         {% endif %}
                                         {% if actionButton or additionalButtons %}
-                                            <div id="action-buttons" class="flex">
+                                            <div id="action-buttons" class="flex" tabindex="1">
                                                 {{ additionalButtons|raw }}
                                                 {{ actionButton|raw }}
 
@@ -254,17 +254,17 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                         <div id="main-content" class="{{ mainContentClasses|join(' ') }}">
                             {# sidebar #}
                             {% if sidebar %}
-                                <div id="sidebar-toggle-container">
+                                <h2 id="sidebar-toggle-container">
                                     <button
                                         type="button"
                                         id="sidebar-toggle"
-                                        class="btn menubtn"
+                                        class="btn menubtn chromeless"
                                         aria-controls="sidebar-container"
                                         aria-expanded="false"
                                     >
-                                        {{ 'Show sidebar'|t('app') }}
+                                        <span id="content-heading"></span>
                                     </button>
-                                </div>
+                                </h2>
                                 <div id="sidebar-container">
                                     <div id="sidebar" class="sidebar">
                                         {{ sidebar|raw }}
@@ -274,9 +274,6 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
 
                             {# content-container #}
                             <div id="content-container">
-                                {% if sidebar %}
-                                    <h2 id="content-heading"></h2>
-                                {% endif %}
                                 {% block main %}
                                     {% if errorSummary is not empty %}
                                         {{ errorSummary is defined ? errorSummary|raw }}
