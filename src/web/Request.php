@@ -1213,6 +1213,31 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns the `Bearer` token value from the `X-Craft-Authorization` or `Authorization` header, if present.
+     *
+     * @return string|null
+     * @since 4.9.0
+     */
+    public function getBearerToken(): ?string
+    {
+        $authHeaders = $this->getHeaders()->get('X-Craft-Authorization', null, false)
+            ?? $this->getHeaders()->get('Authorization', null, false)
+            ?? [];
+
+        foreach ($authHeaders as $authHeader) {
+            $authValues = array_map('trim', explode(',', $authHeader));
+
+            foreach ($authValues as $authValue) {
+                if (preg_match('/^Bearer\s+(.+)$/i', $authValue, $matches)) {
+                    return $matches[1];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Converts any invalid cookies in `$_COOKIE` into an array of [[Cookie]] objects.
      *
      * @return array the cookies obtained from request

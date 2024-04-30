@@ -3391,15 +3391,18 @@ $checkboxPadding: $checkboxSize + 4;
     li {
       @include padding-left(38px);
       background-repeat: no-repeat;
+      --background-position-x: 0;
+      --background-position-y: -2px;
+      background-position: var(--background-position-x)
+        var(--background-position-y);
 
       body.ltr & {
         background-image: url(../images/branch.png);
-        background-position: 0 0;
       }
 
       body.rtl & {
+        --background-position-x: 100%;
         background-image: url(../images/branch_rtl.png);
-        background-position: 100% 0;
       }
 
       &:not(:last-child):not(.last) {
@@ -3407,11 +3410,11 @@ $checkboxPadding: $checkboxSize + 4;
         @include border-left(1px solid var(--gray-200));
 
         body.ltr & {
-          background-position: -1px 0;
+          --background-position-x: -1px;
         }
 
         body.rtl & {
-          background-position: calc(100% + 1px) 0;
+          --background-position-x: calc(100% + 1px);
         }
       }
 
@@ -3499,7 +3502,7 @@ $checkboxPadding: $checkboxSize + 4;
     @include margin-left(12px);
 
     li {
-      background-position: 0 2px !important;
+      --background-position-y: 0;
 
       .element {
         margin: 0;

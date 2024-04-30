@@ -2695,15 +2695,20 @@ JS,
 
         if ($fullName !== null) {
             $model->fullName = $fullName;
+
+            // Unset firstName and lastName so NameTrait::prepareNamesForSave() can set them
+            $model->firstName = $model->lastName = null;
         } else {
             // Still check for firstName/lastName in case a front-end form is still posting them
             $firstName = $this->request->getBodyParam('firstName');
             $lastName = $this->request->getBodyParam('lastName');
 
             if ($firstName !== null || $lastName !== null) {
-                $model->fullName = null;
                 $model->firstName = $firstName ?? $model->firstName;
                 $model->lastName = $lastName ?? $model->lastName;
+
+                // Unset fullName so NameTrait::prepareNamesForSave() can set it
+                $model->fullName = null;
             }
         }
     }

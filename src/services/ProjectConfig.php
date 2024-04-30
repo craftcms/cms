@@ -911,6 +911,17 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Get the list of applied changes
+     *
+     * @return array
+     * @since 4.9.0
+     */
+    public function getAppliedChanges(): array
+    {
+        return $this->_appliedChanges;
+    }
+
+    /**
      * Returns whether all schema versions stored in the config are compatible with the actual codebase.
      * The schemas must match exactly to avoid unpredictable behavior that can occur when running migrations
      * and applying project config changes at the same time.

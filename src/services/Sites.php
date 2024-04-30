@@ -634,6 +634,19 @@ class Sites extends Component
     }
 
     /**
+     * Returns sites by their language.
+     *
+     * @param string $language
+     * @param bool|null $withDisabled
+     * @return Site[]
+     * @since 4.9.0
+     */
+    public function getSitesByLanguage(string $language, ?bool $withDisabled = null): array
+    {
+        return ArrayHelper::where($this->_allSites($withDisabled), 'language', $language, true);
+    }
+
+    /**
      * Saves a site.
      *
      * @param Site $site The site to be saved
@@ -1122,6 +1135,7 @@ class Sites extends Component
     {
         $this->_allSitesById = null;
         $this->_enabledSitesById = null;
+        $this->_editableSiteIds = null;
         $this->_loadAllSites();
         Craft::$app->getIsMultiSite(true);
     }
