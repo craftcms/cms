@@ -3853,6 +3853,10 @@ const SourceNav = Garnish.Base.extend(
     },
 
     selectItem: function (item) {
+      if (item.length === 0) {
+        return;
+      }
+
       const $item = $(item);
       this.deselectAll();
 

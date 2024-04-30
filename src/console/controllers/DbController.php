@@ -214,7 +214,7 @@ class DbController extends Controller
             $db->backupTo($path);
             if ($this->zip) {
                 $zipPath = FileHelper::zip($path);
-                unlink($path);
+                FileHelper::unlink($path);
                 $path = $zipPath;
             }
         } catch (Throwable $e) {

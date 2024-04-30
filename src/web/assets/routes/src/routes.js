@@ -277,7 +277,7 @@ import './routes.scss';
           var node = uriNodes[i];
 
           if (Garnish.isTextNode(node)) {
-            var text = this.uriInput.addTextElement();
+            var text = this.uriInput.addTextElement(undefined, false);
             text.setVal(node.nodeValue);
           } else {
             this.addUriVar(node);
@@ -292,7 +292,7 @@ import './routes.scss';
       this.base($container);
 
       // We must add vars on mousedown, so that text elements don't have a chance
-      // to lose focus, thus losing the carot position.
+      // to lose focus, thus losing the caret position.
       var $uriVars = this.$container.find('.uri-tokens').children('div');
 
       this.addListener($uriVars, 'mousedown', function (event) {
@@ -312,17 +312,27 @@ import './routes.scss';
       this.addListener($uriVar, 'keydown', function (event) {
         switch (event.keyCode) {
           case Garnish.LEFT_KEY: {
-            // Select the previous element
+            event.preventDefault();
+            // Select the first/previous element
             setTimeout(() => {
-              this.uriInput.focusPreviousElement($uriVar);
+              if (Garnish.isCtrlKeyPressed(event)) {
+                this.uriInput.focusStart();
+              } else {
+                this.uriInput.focusPreviousElement($uriVar);
+              }
             }, 1);
 
             break;
           }
           case Garnish.RIGHT_KEY: {
-            // Select the next element
+            event.preventDefault();
+            // Select the last/next element
             setTimeout(() => {
-              this.uriInput.focusNextElement($uriVar);
+              if (Garnish.isCtrlKeyPressed(event)) {
+                this.uriInput.focusEnd();
+              } else {
+                this.uriInput.focusNextElement($uriVar);
+              }
             }, 1);
 
             break;
@@ -345,17 +355,6 @@ import './routes.scss';
         this.$heading.html(Craft.t('app', 'Edit Route'));
         this.$deleteBtn.show();
       }
-
-      // Focus on the first element
-      setTimeout(() => {
-        if (this.uriInput.elements.length) {
-          var $firstElem = this.uriInput.elements[0];
-          this.uriInput.setFocus($firstElem);
-          this.uriInput.setCarotPos($firstElem, 0);
-        } else {
-          this.$uriInput.trigger('focus');
-        }
-      }, 100);
 
       this.base();
     },

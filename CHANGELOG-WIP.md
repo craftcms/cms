@@ -10,10 +10,14 @@
 - Table views within element index pages are now scrolled directly, so that their horizontal scrollbars are always visible without scrolling to the bottom of the page. ([#14765](https://github.com/craftcms/cms/issues/14765))
 - Element tooltips now appear after a half-second delay. ([#14836](https://github.com/craftcms/cms/issues/14836))
 - Thumbnails within element cards are slightly larger.
+- Improved element editor page styling on mobile. ([#14898](https://github.com/craftcms/cms/pull/14898), [#14885](https://github.com/craftcms/cms/issues/14885))
 
 ### Administration
-- Element conditions within field layout designers’ component settings now only list custom fields present in the current field layout. ([#14787](https://github.com/craftcms/cms/issues/14787)) 
+- Element conditions within field layout designers’ component settings now only list custom fields present in the current field layout. ([#14787](https://github.com/craftcms/cms/issues/14787))
+- Improved the behavior of the URI input within Edit Route modals. ([#14884](https://github.com/craftcms/cms/issues/14884))
 - Added the `asyncCsrfInputs` config setting. ([#14625](https://github.com/craftcms/cms/pull/14625))
+- Added the `backupCommandFormat` config setting. ([#14897](https://github.com/craftcms/cms/pull/14897))
+- The `backupCommand` config setting can now be set to a closure, which will be passed a `mikehaertl\shellcommand\Command` object. ([#14897](https://github.com/craftcms/cms/pull/14897))
 - Added the `safeMode` config setting. ([#14734](https://github.com/craftcms/cms/pull/14734))
 - `resave` commands now support an `--if-invalid` option. ([#14731](https://github.com/craftcms/cms/issues/14731))
 - Improved the styling of conditional tabs and UI elements within field layout designers.
