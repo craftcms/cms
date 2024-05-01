@@ -6668,15 +6668,6 @@ $min2ColWidth: 400px;
       @include right(5px);
     }
   }
-
-  // todo: why are body.ltr and body.rtl needed here?
-  body.ltr &,
-  body.rtl & {
-    &.elementselect .chip {
-      float: none !important;
-      display: inline-block;
-    }
-  }
 }
 
 .tagmenu {
