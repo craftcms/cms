@@ -12,6 +12,7 @@ use craft\enums\CmsEdition;
 use craft\models\UserGroup;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -44,6 +45,68 @@ class UserSettingsController extends Controller
     }
 
     /**
+     * Renders a user group’s edit screen.
+     *
+     * @param int|null $groupId
+     * @param UserGroup|null $group
+     * @return Response
+     * @since 5.1.0
+     */
+    public function actionEditGroup(?int $groupId = null, ?UserGroup $group = null): Response
+    {
+        $this->requireCpRequest();
+
+        if (Craft::$app->edition === CmsEdition::Team) {
+            if (!$group) {
+                $group = Craft::$app->getUserGroups()->getTeamGroup();
+            }
+
+            return $this->renderTemplate('settings/users/groups/_team.twig', compact(
+                'group',
+            ));
+        }
+
+        if (!$group) {
+            if ($groupId) {
+                $group = Craft::$app->getUserGroups()->getGroupById($groupId);
+                if (!$group) {
+                    throw new NotFoundHttpException("Invalid group ID: $groupId");
+                }
+            } else {
+                $group = Craft::createObject(UserGroup::class);
+            }
+        }
+
+        $crumbs = [
+            ['label' => Craft::t('app', 'Settings'), 'url' => 'settings'],
+            ['label' => Craft::t('app', 'Users'), 'url' => 'settings/users'],
+            ['label' => Craft::t('app', 'User Groups'), 'url' => 'settings/users'],
+        ];
+
+        $formActions = [
+            [
+                'label' => Craft::t('app', 'Save and continue editing'),
+                'redirect' => Craft::$app->getSecurity()->hashData('settings/users/groups/{id}'),
+                'shortcut' => true,
+                'retainScroll' => true,
+            ],
+        ];
+
+        if ($group->id) {
+            $title = trim($group->name) ?: Craft::t('app', 'Edit User Group');
+        } else {
+            $title = Craft::t('app', 'Create a new user group');
+        }
+
+        return $this->renderTemplate('settings/users/groups/_edit.twig', compact(
+            'group',
+            'crumbs',
+            'formActions',
+            'title',
+        ));
+    }
+
+    /**
      * Saves a user group.
      *
      * @return Response|null
@@ -53,20 +116,26 @@ class UserSettingsController extends Controller
     {
         $this->requirePostRequest();
 
-        $groupId = $this->request->getBodyParam('groupId');
-
-        if ($groupId) {
-            $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-            if (!$group) {
-                throw new BadRequestHttpException('User group not found');
-            }
+        if (Craft::$app->edition === CmsEdition::Team) {
+            $group = Craft::$app->getUserGroups()->getTeamGroup();
         } else {
-            $group = new UserGroup();
+            $groupId = $this->request->getBodyParam('groupId');
+
+            if ($groupId) {
+                $group = Craft::$app->getUserGroups()->getGroupById($groupId);
+                if (!$group) {
+                    throw new BadRequestHttpException('User group not found');
+                }
+            } else {
+                $group = new UserGroup();
+            }
+
+            $group->name = $this->request->getBodyParam('name');
+            $group->handle = $this->request->getBodyParam('handle');
+            $group->description = $this->request->getBodyParam('description');
         }
 
-        $group->name = $this->request->getBodyParam('name');
-        $group->handle = $this->request->getBodyParam('handle');
-        $group->description = $this->request->getBodyParam('description');
+        $isNewGroup = !$group->id;
 
         // Did it save?
         if (!Craft::$app->getUserGroups()->saveGroup($group)) {
@@ -84,7 +153,7 @@ class UserSettingsController extends Controller
         $permissions = $this->request->getBodyParam('permissions', []);
 
         // See if there are any new permissions in here
-        if ($groupId && is_array($permissions)) {
+        if (!$isNewGroup && is_array($permissions)) {
             foreach ($permissions as $permission) {
                 if (!$group->can($permission)) {
                     // Yep. This will require an elevated session
@@ -94,8 +163,10 @@ class UserSettingsController extends Controller
             }
         }
 
-        // assignNewUserGroup => assignUserGroup:<uid>
-        if (!$groupId) {
+        if (Craft::$app->edition === CmsEdition::Team) {
+            $permissions[] = 'accessCp';
+        } elseif ($isNewGroup) {
+            // assignNewUserGroup => assignUserGroup:<uid>
             $assignNewGroupKey = array_search('assignNewUserGroup', $permissions);
             if ($assignNewGroupKey !== false) {
                 $permissions[$assignNewGroupKey] = "assignUserGroup:$group->uid";
@@ -104,7 +175,9 @@ class UserSettingsController extends Controller
 
         Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
-        $this->setSuccessFlash(Craft::t('app', 'Group saved.'));
+        $this->setSuccessFlash(Craft::$app->edition === CmsEdition::Team
+            ? Craft::t('app', 'Permissions saved.')
+            : Craft::t('app', 'Group saved.'));
         return $this->redirectToPostedUrl($group);
     }
 

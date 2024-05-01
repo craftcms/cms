@@ -5,7 +5,7 @@
   position: relative;
 }
 
-.user-permissions h3:first-child {
+.user-permissions h3:first-child:not(.mt-0) {
   margin-top: 14px !important;
 }
 
@@ -34,7 +34,7 @@
   opacity: 0.5;
 }
 
-.user-permissions h3 {
+.user-permissions h3:has(+ .select-all) {
   @include padding-right(0.5em);
   @include border-right(1px solid #eee);
   @include margin-right(0.5em);
