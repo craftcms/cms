@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911]), [#14510](https://github.com/craftcms/cms/issues/14510))
+
 ## 4.9.0 - 2024-04-30
 
 ### Content Management
