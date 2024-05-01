@@ -394,12 +394,13 @@ Craft.NestedElementManager = Garnish.Base.extend(
         this.elementSort.addItems($element.parent());
       }
 
+      const $actionMenuBtn = $element.find('.action-btn');
+      const disclosureMenu = $actionMenuBtn
+        .disclosureMenu()
+        .data('disclosureMenu');
+      const $actionMenu = disclosureMenu.$container;
+
       if (Garnish.hasAttr($element, 'data-deletable')) {
-        const $actionMenuBtn = $element.find('.action-btn');
-        const disclosureMenu = $actionMenuBtn
-          .disclosureMenu()
-          .data('disclosureMenu');
-        const $actionMenu = disclosureMenu.$container;
         $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
         const $ul = $('<ul/>').appendTo($actionMenu);
         const $li = $('<li/>').appendTo($ul);
