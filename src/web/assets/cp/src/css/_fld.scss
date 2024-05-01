@@ -354,7 +354,7 @@ $gridColor: var(--gray-100);
   display: flex;
   flex-direction: row;
   margin: 0 var(--neg-padding) -24px;
-  padding: var(--padding);
+  padding: 5px var(--padding);
   @include pane;
   background-color: var(--gray-050);
   z-index: 3;
