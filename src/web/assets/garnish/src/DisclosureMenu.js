@@ -351,6 +351,8 @@ export default Base.extend(
 
       this.trigger('hide');
       this.clearSearchStr();
+      this.removeListener(Garnish.$scrollContainer, 'scroll');
+      this.removeListener(Garnish.$win, 'resize');
       Garnish.uiLayerManager.removeLayer();
     },
 
