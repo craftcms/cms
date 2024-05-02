@@ -34,6 +34,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // Set the sort header
     this.initTableHeaders();
 
+    this.createScrollbar();
+
     // Create the table sorter
     if (
       (this.settings.sortable ||
@@ -649,5 +651,32 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     this.base();
+  },
+
+  createScrollbar() {
+    const footer = document.querySelector('#content > #footer');
+    const stickyScrollbar = document.createElement('craft-proxy-scrollbar');
+    stickyScrollbar.setAttribute('scroller', '.tablepane');
+    stickyScrollbar.setAttribute('content', '.tablepane > table');
+
+    stickyScrollbar.style.bottom = `${
+      footer.getBoundingClientRect().height + 2
+    }px`;
+
+    let $scrollbar = $(stickyScrollbar);
+    const observer = new IntersectionObserver(
+      ([ev]) => {
+        if (ev.intersectionRatio < 1) {
+          $scrollbar.insertAfter(this.$container);
+        } else {
+          $scrollbar.remove();
+        }
+      },
+      {
+        rootMargin: '0px 0px -1px 0px',
+        threshold: [1],
+      }
+    );
+    observer.observe(footer);
   },
 });

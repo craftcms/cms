@@ -3623,6 +3623,12 @@ table {
       background: transparent;
     }
   }
+
+  craft-proxy-scrollbar {
+    position: sticky;
+    width: calc(100% + var(--xl) * 2);
+    margin-inline: calc(var(--xl) * -1);
+  }
 }
 
 .elements {
