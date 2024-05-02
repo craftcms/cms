@@ -5,6 +5,7 @@
 - Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911]), [#14510](https://github.com/craftcms/cms/issues/14510))
 - Fixed a bug where it was possible to delete entries from Matrix fields which were configured to display nested entries statically. ([#14904](https://github.com/craftcms/cms/issues/14904), [#14915](https://github.com/craftcms/cms/pull/14915))
 - Fixed an error that could occur when creating a nested entry in a Matrix field. ([#14915](https://github.com/craftcms/cms/pull/14915))
+- Fixed a bug where Matrix fields’ “Max Entries” settings were taking the total number of nested entries across all sites into account, rather than just the nested entries for the current site. ([#14932](https://github.com/craftcms/cms/issues/14932))
 - Fixed a bug where nested entry draft data could get corrupted when a draft was created for the owner element.
 - Fixed a bug where Matrix and Addresses fields could show drafts of their nested elements when in card view.
 - Fixed a bug where nested elements’ breadcrumbs could include the draft label, styled like it was part of the element’s title.
