@@ -1003,7 +1003,7 @@ li.breadcrumb-toggle-wrapper {
 #sidebar {
   position: relative;
   box-sizing: border-box;
-  padding: 0 31px var(--m);
+  padding: 0 40px var(--m);
   width: $sidebarWidth;
   background-color: transparent;
 
@@ -1031,6 +1031,13 @@ li.breadcrumb-toggle-wrapper {
       }
     }
   }
+  .skip-link {
+    margin: 0 var(--s);
+  }
+
+  @media only screen and (min-width: $minFullUiWidth) {
+    padding: 0 31px var(--m);
+  }
 }
 
 #content-container {
@@ -1041,14 +1048,6 @@ li.breadcrumb-toggle-wrapper {
   clip the content when table cells are long.
    */
   width: 400px;
-}
-
-#content-heading {
-  margin-top: var(--xl) !important;
-
-  @media only screen and (min-width: $minHorizontalUiWidth) {
-    @include visually-hidden;
-  }
 }
 
 .content-pane {
@@ -1224,13 +1223,17 @@ li.breadcrumb-toggle-wrapper {
 
   #main-content {
     width: 100vw;
+    &.has-sidebar {
+      padding-left: 0;
+    }
   }
 }
 
 // Rearrange #main-content to flow vertically at < 999
 @media only screen and (max-width: $minHorizontalUiWidth - calc(1rem/16)) {
   #header {
-    display: block;
+    display: flex;
+    flex-wrap: wrap;
 
     .flex:not(#toolbar) {
       margin-top: 10px;
@@ -1239,10 +1242,17 @@ li.breadcrumb-toggle-wrapper {
 
   #toolbar {
     flex-wrap: wrap !important;
+    order: 3;
+    width: 100%;
+    flex: auto;
 
     & > * {
       margin-top: 10px !important;
     }
+  }
+
+  #action-buttons {
+    order: 2;
   }
 
   body.fixed-header #header .flex:first-child {
@@ -1251,28 +1261,38 @@ li.breadcrumb-toggle-wrapper {
 
   #main-content {
     display: block;
+    &.has-sidebar {
+      padding: 0 var(--padding) 48px;
+    }
+  }
+
+  #sidebar {
+    nav {
+      margin-left: -40px;
+      margin-right: -40px;
+    }
+    .skip-link {
+      margin: 0;
+    }
+  }
+
+  #source-actions {
+    margin-top: var(--s);
+    margin-left: -9px;
   }
 
   #sidebar-toggle-container {
     display: block;
-    margin-bottom: var(--m);
+    margin-bottom: var(--s);
   }
 
   #sidebar-toggle {
     &:after {
       top: 0;
-      transform: rotate(-45deg);
+      transform: rotate(45deg);
 
       body.rtl & {
         transform: rotate(135deg);
-      }
-    }
-
-    body.showing-sidebar & {
-      background-color: darken($grey200, 10%) !important;
-
-      &:after {
-        transform: rotate(45deg);
       }
     }
   }
@@ -1294,7 +1314,7 @@ li.breadcrumb-toggle-wrapper {
 
   #sidebar,
   #details {
-    position: static !important;
+    position: relative !important;
     overflow-y: visible !important;
     max-height: none !important;
     width: auto;
@@ -1302,6 +1322,12 @@ li.breadcrumb-toggle-wrapper {
 
   #sidebar {
     margin-bottom: var(--m);
+
+    body.showing-sidebar & {
+      @include pane;
+      padding-block: 0.5rem;
+      border-radius: var(--large-border-radius);
+    }
 
     body:not(.showing-sidebar) & {
       display: none;

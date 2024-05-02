@@ -394,29 +394,26 @@ Craft.NestedElementManager = Garnish.Base.extend(
         this.elementSort.addItems($element.parent());
       }
 
+      const $actionMenuBtn = $element.find('.action-btn');
+      const disclosureMenu = $actionMenuBtn
+        .disclosureMenu()
+        .data('disclosureMenu');
+
       if (Garnish.hasAttr($element, 'data-deletable')) {
-        const $actionMenuBtn = $element.find('.action-btn');
-        const disclosureMenu = $actionMenuBtn
-          .disclosureMenu()
-          .data('disclosureMenu');
-        const $actionMenu = disclosureMenu.$container;
-        $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
-        const $ul = $('<ul/>').appendTo($actionMenu);
-        const $li = $('<li/>').appendTo($ul);
-        const $a = $('<a/>', {
-          class: 'error',
-          type: 'button',
-          role: 'button',
-          'data-icon': 'trash',
-          'aria-label': this.settings.deleteLabel || Craft.t('app', 'Delete'),
-          text: this.settings.deleteLabel || Craft.t('app', 'Delete'),
-        }).appendTo($li);
-        this.addListener($a, 'activate', (ev) => {
-          disclosureMenu.hide();
-          if (confirm(this.settings.deleteConfirmationMessage)) {
-            this.deleteElement($element);
-          }
-        });
+        const ul = disclosureMenu.addGroup();
+        disclosureMenu.addItem(
+          {
+            icon: 'trash',
+            label: this.settings.deleteLabel || Craft.t('app', 'Delete'),
+            destructive: true,
+            onActivate: () => {
+              if (confirm(this.settings.deleteConfirmationMessage)) {
+                this.deleteElement($element);
+              }
+            },
+          },
+          ul
+        );
       }
     },
 

@@ -383,7 +383,7 @@ class NestedElementManager extends Component
                 ]);
 
                 /** @var NestedElementInterface[] $elements */
-                $elements = $this->getValue($owner, true)->all();
+                $elements = $this->getValue($owner)->all();
                 $this->setOwnerOnNestedElements($owner, $elements);
 
                 if (!empty($elements)) {
@@ -695,14 +695,25 @@ JS, [
                     $element->setSortOrder($sortOrder);
                     $elementsService->saveElement($element, false);
 
-                    // If this is a draft, we can shed the draft data now
-                    if ($element->getIsDraft()) {
-                        $canonicalElementId = $element->getCanonicalId();
-                        Craft::$app->getDrafts()->removeDraftData($element);
-                        Db::delete(Table::ELEMENTS_OWNERS, [
-                            'elementId' => $canonicalElementId,
-                            'ownerId' => $owner->id,
-                        ]);
+                    // If this element's primary owner is $owner, and it’s a draft of another element whose owner is
+                    // $owner's canonical (e.g. a draft entry created by Matrix::_createEntriesFromSerializedData()),
+                    // we can shed its draft data and relation with the canonical owner now
+                    if (
+                        $element->getPrimaryOwnerId() === $owner->id &&
+                        $element->getIsDraft() &&
+                        !$element->getIsUnpublishedDraft() &&
+                        $owner->getIsDraft() &&
+                        !$owner->getIsUnpublishedDraft()
+                    ) {
+                        /** @var NestedElementInterface $canonical */
+                        $canonical = $element->getCanonical(true);
+                        if ($canonical->getPrimaryOwnerId() === $owner->getCanonicalId()) {
+                            Craft::$app->getDrafts()->removeDraftData($element);
+                            Db::delete(Table::ELEMENTS_OWNERS, [
+                                'elementId' => $canonical->id,
+                                'ownerId' => $owner->id,
+                            ]);
+                        }
                     }
                 } elseif ((int)$element->getSortOrder() !== $sortOrder) {
                     // Just update its sortOrder

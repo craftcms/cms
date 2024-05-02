@@ -252,6 +252,7 @@ import $ from 'jquery';
               ownerElementType: this.settings.ownerElementType,
               siteId: this.settings.siteId,
               namespace: this.settings.namespace,
+              staticEntries: this.settings.staticEntries,
             },
           }
         );

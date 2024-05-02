@@ -5377,13 +5377,18 @@ $min2ColWidth: 400px;
   }
 
   &:not(.so-mobile) {
-    border-radius: var(--large-border-radius);
+    @include border-radius(
+      var(--large-border-radius),
+      0,
+      0,
+      var(--large-border-radius)
+    );
   }
 
   &:not(.so-mobile):not(.so-lp) {
-    top: 5px;
-    width: calc(55% - 5px);
-    height: calc(100% - 10px);
+    top: 0;
+    width: 55%;
+    height: 100%;
 
     @media screen and (prefers-reduced-motion: no-preference) {
       body.ltr & {
@@ -6671,15 +6676,6 @@ $min2ColWidth: 400px;
       position: absolute;
       top: 0;
       @include right(5px);
-    }
-  }
-
-  // todo: why are body.ltr and body.rtl needed here?
-  body.ltr &,
-  body.rtl & {
-    &.elementselect .chip {
-      float: none !important;
-      display: inline-block;
     }
   }
 }

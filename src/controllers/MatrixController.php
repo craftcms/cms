@@ -78,6 +78,7 @@ class MatrixController extends Controller
         $ownerElementType = $this->request->getRequiredBodyParam('ownerElementType');
         $siteId = $this->request->getRequiredBodyParam('siteId');
         $namespace = $this->request->getRequiredBodyParam('namespace');
+        $staticEntries = $this->request->getBodyParam('staticEntries', false);
 
         $elementsService = Craft::$app->getElements();
         $owner = $elementsService->getElementById($ownerId, $ownerElementType, $siteId);
@@ -135,6 +136,7 @@ class MatrixController extends Controller
             'entryTypes' => $field->getEntryTypesForField($entries, $owner),
             'entry' => $entry,
             'isFresh' => true,
+            'staticEntries' => $staticEntries,
         ]), $namespace);
 
         return $this->asJson([

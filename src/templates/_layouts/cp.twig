@@ -258,11 +258,11 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                     <button
                                         type="button"
                                         id="sidebar-toggle"
-                                        class="btn menubtn"
+                                        class="btn menubtn chromeless"
                                         aria-controls="sidebar-container"
                                         aria-expanded="false"
                                     >
-                                        {{ 'Show sidebar'|t('app') }}
+                                      <span id="content-heading"></span>
                                     </button>
                                 </div>
                                 <div id="sidebar-container">
@@ -274,9 +274,6 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
 
                             {# content-container #}
                             <div id="content-container">
-                                {% if sidebar %}
-                                    <h2 id="content-heading"></h2>
-                                {% endif %}
                                 {% block main %}
                                     {% if errorSummary is not empty %}
                                         {{ errorSummary is defined ? errorSummary|raw }}
