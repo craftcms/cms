@@ -34,6 +34,13 @@ class DbController extends Controller
      */
     public bool $zip = false;
 
+    /**
+     * @var string|null The output format that should be used (`custom`, `directory`, `tar`, or `plain`).
+     *
+     * The `backupCommandFormat` config setting will be used by default.
+     *
+     * @since 4.10.0
+     */
     public ?string $format = null;
 
     /**
@@ -182,7 +189,7 @@ class DbController extends Controller
         $this->stdout('Backing up the database ... ');
         $db = Craft::$app->getDb();
 
-        if ($this->format && $db->getIsPgsql()) {
+        if (isset($this->format) && $db->getIsPgsql()) {
             $db->getSchema()->setBackupFormat($this->format);
         }
 

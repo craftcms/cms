@@ -367,11 +367,23 @@ ORDER BY i.relname, k';
         return Platform::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
     }
 
+    /**
+     * Returns the backup format that should be used (`custom`, `directory`, `tar`, or `plain`).
+     *
+     * @return string|null
+     * @since 4.10.0
+     */
     public function getBackupFormat(): ?string
     {
         return $this->_backupFormat ?? Craft::$app->getConfig()->getGeneral()->backupCommandFormat;
     }
 
+    /**
+     * Sets the backup format that should be used (`custom`, `directory`, `tar`, or `plain`).
+     *
+     * @param string|null $backupFormat
+     * @since 4.10.0
+     */
     public function setBackupFormat(?string $backupFormat): void
     {
         $this->_backupFormat = $backupFormat;
