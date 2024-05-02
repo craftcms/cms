@@ -282,14 +282,6 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         this.$fieldGroups.last().append($selector).removeClass('hidden');
         this.refreshLibraryFields();
         this.initLibraryElements($selector);
-
-        // refresh all instances of this field
-        const $fields = designer.$tabContainer.find(
-          `.fld-field[data-id=${this.fieldId}]`
-        );
-        for (let i = 0; i < $fields.length; i++) {
-          $fields.eq(i).data('fld-element')?.refresh();
-        }
       });
     },
 
