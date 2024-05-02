@@ -238,8 +238,14 @@ class DbController extends Controller
         }
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-        $size = Craft::$app->getFormatter()->asShortSize(filesize($path));
-        $this->stdout("Backup file: $path ($size)" . PHP_EOL);
+
+        if (is_dir($path)) {
+            $this->stdout("Backup directory: $path" . PHP_EOL);
+        } else {
+            $size = Craft::$app->getFormatter()->asShortSize(filesize($path));
+            $this->stdout("Backup file: $path ($size)" . PHP_EOL);
+        }
+
         return ExitCode::OK;
     }
 
