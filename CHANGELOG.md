@@ -1,10 +1,11 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.1.1 - 2024-05-02
 
-- Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911]), [#14510](https://github.com/craftcms/cms/issues/14510))
+- Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911), [#14510](https://github.com/craftcms/cms/issues/14510))
 - Fixed a bug where it was possible to delete entries from Matrix fields which were configured to display nested entries statically. ([#14904](https://github.com/craftcms/cms/issues/14904), [#14915](https://github.com/craftcms/cms/pull/14915))
 - Fixed an error that could occur when creating a nested entry in a Matrix field. ([#14915](https://github.com/craftcms/cms/pull/14915))
+- Fixed a bug where Matrix fields’ “Max Entries” settings were taking the total number of nested entries across all sites into account, rather than just the nested entries for the current site. ([#14932](https://github.com/craftcms/cms/issues/14932))
 - Fixed a bug where nested entry draft data could get corrupted when a draft was created for the owner element.
 - Fixed a bug where Matrix and Addresses fields could show drafts of their nested elements when in card view.
 - Fixed a bug where nested elements’ breadcrumbs could include the draft label, styled like it was part of the element’s title.
@@ -13,6 +14,7 @@
 - Fixed a bug where field layout component settings slideouts’ footers had extra padding.
 - Fixed a bug where MySQL backups weren’t restorable on certain environments. ([#14925](https://github.com/craftcms/cms/pull/14925))
 - Fixed a bug where `app/resource-js` requests weren’t working for guest requests. ([#14908](https://github.com/craftcms/cms/issues/14908))
+- Fixed a JavaScript error that occurred after creating a new field within a field layout designer. ([#14933](https://github.com/craftcms/cms/issues/14933))
 
 ## 5.1.0 - 2024-04-30
 

@@ -342,9 +342,8 @@ class Addresses extends Field implements
             return (clone $value)
                 ->drafts(null)
                 ->status(null)
-                ->site('*')
+                ->siteId($owner->siteId)
                 ->limit(null)
-                ->unique()
                 ->count();
         }
 
