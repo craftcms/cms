@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911]), [#14510](https://github.com/craftcms/cms/issues/14510))
+- Fixed a bug where the logic of `--single-transaction` for MySQL backups was reversed. ([#14925](https://github.com/craftcms/cms/pull/14925))
 
 ## 4.9.0 - 2024-04-30
 
