@@ -174,7 +174,8 @@ class Schema extends \yii\db\pgsql\Schema
                 ->addArg('--no-owner')
                 ->addArg('--no-acl')
                 ->addArg('--schema=', '{schema}')
-                ->addArg('--single-transaction');
+                ->addArg('--single-transaction')
+                ->addArg('{file}');
         }
 
         $commandFromConfig = Craft::$app->getConfig()->getGeneral()->restoreCommand;

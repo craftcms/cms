@@ -257,12 +257,7 @@ class DbController extends Controller
     public function actionRestore(?string $path = null): int
     {
         if (!is_readable($path)) {
-            if (!is_dir($path) && Craft::$app->getConfig()->getGeneral()->backupCommandFormat === 'directory') {
-                $this->stderr("Backup directory doesn't exist: $path" . PHP_EOL);
-            } else {
-                $this->stderr("Backup file doesn't exist: $path" . PHP_EOL);
-            }
-
+            $this->stderr("Backup path doesn't exist: $path" . PHP_EOL);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -314,6 +309,7 @@ class DbController extends Controller
                 Craft::$app->getDb()->getSchema()->restoreFormat = $this->format ?? match (FileHelper::getMimeType($path)) {
                     'application/octet-stream' => 'custom',
                     'application/x-tar' => 'tar',
+                    'directory' => 'directory',
                     default => null,
                 };
             }
