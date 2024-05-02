@@ -180,13 +180,19 @@ class Schema extends \yii\db\pgsql\Schema
 
         $commandFromConfig = Craft::$app->getConfig()->getGeneral()->restoreCommand;
 
+
+        // If we're using pg_restore, we can't use STDIN, as it may be a directory
+        if ($this->usePgRestore()) {
+            $command->addArg('{file}');
+        }
+
         if ($commandFromConfig instanceof \Closure) {
             $command = $commandFromConfig($command);
         }
 
         return $this->_pgpasswordCommand()
             . $command->getExecCommand()
-            . ($this->usePgRestore() ? '' : '< "{file}"');
+            . ($this->usePgRestore() ? '' : ' < "{file}"');
     }
 
     /**

@@ -173,8 +173,8 @@ class Schema extends \yii\db\mysql\Schema
 
         // https://bugs.mysql.com/bug.php?id=109685
         $useSingleTransaction =
-            ($isMySQL5 && version_compare($serverVersion, '5.7.41', '>=')) ||
-            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>='));
+            ($isMySQL5 && version_compare($serverVersion, '5.7.41', '<')) ||
+            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '<'));
 
         if ($useSingleTransaction) {
             $baseCommand->addArg('--single-transaction');

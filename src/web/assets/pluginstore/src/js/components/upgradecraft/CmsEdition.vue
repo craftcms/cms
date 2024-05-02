@@ -1,5 +1,5 @@
 <template>
-  <div class="cms-editions-edition">
+  <div class="cms-editions-edition" v-if="editionExists">
     <div class="description">
       <edition-badge :name="edition.name" :block="true" :big="true" />
       <p class="edition-description">{{ editionDescription }}</p>
@@ -76,12 +76,12 @@
           case 'solo':
             return this.$options.filters.t(
               'For when you’re building a website for yourself or a friend.',
-              'app'
+              'app',
             );
           case 'pro':
             return this.$options.filters.t(
               'For when you’re building something professionally for a client or team.',
-              'app'
+              'app',
             );
           default:
             return null;
@@ -90,6 +90,10 @@
 
       editionIndex() {
         return this.getCmsEditionIndex(this.edition.handle);
+      },
+
+      editionExists() {
+        return this.editionIndex !== null;
       },
 
       features() {

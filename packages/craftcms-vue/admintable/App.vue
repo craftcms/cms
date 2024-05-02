@@ -50,8 +50,8 @@
                   isLoading
                     ? false
                     : button.enabled != undefined
-                    ? button.enabled
-                    : true
+                      ? button.enabled
+                      : true
                 "
               ></admin-table-button>
             </div>
@@ -485,7 +485,7 @@
         this.$nextTick(() => {
           if (this.$refs.vuetable) {
             this.selectAll = this.$refs.vuetable.$el.querySelector(
-              '.selectallcontainer'
+              '.selectallcontainer',
             );
             if (this.selectAll && this.allowMultipleSelections) {
               this.selectAll.addEventListener('click', this.handleSelectAll);
@@ -582,9 +582,9 @@
           Craft.sendActionRequest('POST', reorderAction, {data}).then(
             (response) => {
               Craft.cp.displayNotice(
-                Craft.escapeHtml(this.reorderSuccessMessage)
+                Craft.escapeHtml(this.reorderSuccessMessage),
               );
-            }
+            },
           );
         } else {
           Craft.cp.displayError(Craft.escapeHtml(this.reorderFailMessage));
@@ -816,7 +816,7 @@
             label: Craft.t('app', 'Delete'),
             action: this.deleteAction,
             error: true,
-            ajax: true,
+            ajax: this.tableDataEndpoint ? true : false,
             allowMultiple: this.allowMultipleDeletions,
             separator: itemActions.length ? true : false,
           });
@@ -867,7 +867,7 @@
 
         if (this.$refs.vuetable.tableData.length) {
           let disabledRows = this.$refs.vuetable.tableData.filter(
-            (row) => !this.checkboxStatus(row)
+            (row) => !this.checkboxStatus(row),
           );
 
           checkboxCount = disabledRows.length;

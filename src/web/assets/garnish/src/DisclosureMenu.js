@@ -191,7 +191,7 @@ export default Base.extend(
       this.addListener(
         Garnish.$scrollContainer,
         'scroll',
-        'setContainerPosition'
+        'setContainerPosition',
       );
       this.addListener(Garnish.$win, 'resize', 'setContainerPosition');
 
@@ -241,7 +241,7 @@ export default Base.extend(
         Garnish.ESC_KEY,
         function () {
           this.hide();
-        }.bind(this)
+        }.bind(this),
       );
     },
 
@@ -264,6 +264,8 @@ export default Base.extend(
       }
 
       this.trigger('hide');
+      this.removeListener(Garnish.$scrollContainer, 'scroll');
+      this.removeListener(Garnish.$win, 'resize');
       Garnish.uiLayerManager.removeLayer();
     },
 
@@ -290,7 +292,7 @@ export default Base.extend(
       this.$container.css(
         'minWidth',
         this._alignmentElementWidth -
-          (this.$container.outerWidth() - this.$container.width())
+          (this.$container.outerWidth() - this.$container.width()),
       );
 
       this._menuWidth = this.$container.outerWidth();
@@ -323,7 +325,7 @@ export default Base.extend(
             this._alignmentElementOffset.top -
             Math.min(
               this._menuHeight,
-              topClearance - this.settings.windowSpacing
+              topClearance - this.settings.windowSpacing,
             ),
           maxHeight: topClearance - this.settings.windowSpacing,
         });
@@ -404,7 +406,7 @@ export default Base.extend(
       const left = Math.round(
         this._alignmentElementOffset.left +
           this._alignmentElementWidth / 2 -
-          this._menuWidth / 2
+          this._menuWidth / 2,
       );
 
       this.$container.css({
@@ -417,5 +419,5 @@ export default Base.extend(
     defaults: {
       windowSpacing: 5,
     },
-  }
+  },
 );
