@@ -34,6 +34,8 @@ class DbController extends Controller
      */
     public bool $zip = false;
 
+    public ?string $format = null;
+
     /**
      * @var bool Whether to overwrite an existing backup file, if a specific file path is given.
      */
@@ -56,9 +58,17 @@ class DbController extends Controller
             case 'backup':
                 $options[] = 'zip';
                 $options[] = 'overwrite';
+
+                if (Craft::$app->getDb()->getIsPgsql()) {
+                    $options[] = 'format';
+                }
                 break;
             case 'restore':
                 $options[] = 'dropAllTables';
+
+                if (Craft::$app->getDb()->getIsPgsql()) {
+                    $options[] = 'format';
+                }
                 break;
         }
 
@@ -171,6 +181,10 @@ class DbController extends Controller
     {
         $this->stdout('Backing up the database ... ');
         $db = Craft::$app->getDb();
+
+        if ($this->format && $db->getIsPgsql()) {
+            $db->getSchema()->setBackupFormat($this->format);
+        }
 
         if ($path !== null) {
             // Prefix with the working directory if a relative path or no path is given
@@ -296,6 +310,14 @@ class DbController extends Controller
         $this->stdout('Restoring database backup ... ');
 
         try {
+            if (Craft::$app->getDb()->getIsPgsql()) {
+                Craft::$app->getDb()->getSchema()->restoreFormat = $this->format ?? match (FileHelper::getMimeType($path)) {
+                    'application/octet-stream' => 'custom',
+                    'application/x-tar' => 'tar',
+                    default => null,
+                };
+            }
+
             Craft::$app->getDb()->restore($path);
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
