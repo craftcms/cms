@@ -8,6 +8,7 @@
 - Fixed a bug where action buttons might not work for nested entries in Matrix fields set to card view. ([#14915](https://github.com/craftcms/cms/pull/14915))
 - Fixed the styling of tag chips within Tags fields. ([#14916](https://github.com/craftcms/cms/issues/14916))
 - Fixed a bug where field layout component settings slideouts’ footers had extra padding.
+- Fixed a bug where MySQL backups weren’t restorable on certain environments. ([#14925](https://github.com/craftcms/cms/pull/14925))
 
 ## 5.1.0 - 2024-04-30
 
