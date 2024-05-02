@@ -172,9 +172,10 @@ class Schema extends \yii\db\mysql\Schema
         $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
         // https://bugs.mysql.com/bug.php?id=109685
-        $useSingleTransaction =
+        $useSingleTransaction = !(
             ($isMySQL5 && version_compare($serverVersion, '5.7.41', '>=')) ||
-            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>='));
+            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>='))
+        );
 
         if ($useSingleTransaction) {
             $baseCommand->addArg('--single-transaction');
