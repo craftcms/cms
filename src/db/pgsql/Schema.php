@@ -23,6 +23,9 @@ use yii\db\Exception;
  */
 class Schema extends \yii\db\pgsql\Schema
 {
+    private ?string $_backupFormat = null;
+    public ?string $restoreFormat = null;
+
     /**
      * @var int The maximum length that objects' names can be.
      */
@@ -131,7 +134,7 @@ class Schema extends \yii\db\pgsql\Schema
             ->addArg('--schema=', '{schema}');
 
         $ignoreTables = $ignoreTables ?? Craft::$app->getDb()->getIgnoredBackupTables();
-        $format = Craft::$app->getConfig()->getGeneral()->backupCommandFormat;
+        $format = $this->getBackupFormat();
         $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
         foreach ($ignoreTables as $table) {
@@ -163,6 +166,16 @@ class Schema extends \yii\db\pgsql\Schema
             ->addArg('--port=', '{port}')
             ->addArg('--username=', '{user}')
             ->addArg('--no-password');
+
+        if ($this->usePgRestore()) {
+            $command
+                ->addArg('--clean')
+                ->addArg('--if-exists')
+                ->addArg('--no-owner')
+                ->addArg('--no-acl')
+                ->addArg('--schema=', '{schema}')
+                ->addArg('--single-transaction');
+        }
 
         $commandFromConfig = Craft::$app->getConfig()->getGeneral()->restoreCommand;
 
@@ -234,17 +247,14 @@ class Schema extends \yii\db\pgsql\Schema
     }
 
     /**
-     * Whether `pg_restore` should be used by default for the backup command.
+     * Whether `pg_restore` should be used for the restore command.
      *
      * @return bool
      * @since 4.9.0
      */
     public function usePgRestore(): bool
     {
-        return in_array(Craft::$app->getConfig()->getGeneral()->backupCommandFormat, [
-            'custom',
-            'directory',
-        ], true);
+        return $this->restoreFormat && $this->restoreFormat !== 'plain';
     }
 
     /**
@@ -352,5 +362,15 @@ ORDER BY i.relname, k';
     private function _pgpasswordCommand(): string
     {
         return Platform::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
+    }
+
+    public function getBackupFormat(): ?string
+    {
+        return $this->_backupFormat ?? Craft::$app->getConfig()->getGeneral()->backupCommandFormat;
+    }
+
+    public function setBackupFormat(?string $backupFormat): void
+    {
+        $this->_backupFormat = $backupFormat;
     }
 }
