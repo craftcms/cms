@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+### Accessibility
+- Changed toggle sidebar icon color on details pages to meet minimum contrast for UI components.
+- Updated context label text in header to meet minimum contrast for text.
+- Darkened link colors in footer to meet minimum contrast for text.
+- Set Craft edition language property in footer to support screen reader pronunciation in non-English control panel languages.
+- Translate accessible name of "Select site" button multi-site breadcrumb navigation.
+
 ## 5.1.1 - 2024-05-02
 
 - Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911), [#14510](https://github.com/craftcms/cms/issues/14510))
