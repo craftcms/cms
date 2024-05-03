@@ -1724,6 +1724,10 @@ ul.icons {
       color: var(--gray-300);
     }
   }
+
+  .cp-icon svg {
+    @include svg-mask(currentColor); // Matches color of font icons
+  }
 }
 
 .disabled {
