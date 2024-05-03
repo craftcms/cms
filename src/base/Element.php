@@ -3132,7 +3132,11 @@ abstract class Element extends Component implements ElementInterface
             if ($owner) {
                 return [
                     ...$owner->getCrumbs(),
-                    ['html' => Cp::elementChipHtml($owner)],
+                    [
+                        'html' => Cp::elementChipHtml($owner, [
+                            'showDraftName' => false,
+                        ]),
+                    ],
                 ];
             }
         }

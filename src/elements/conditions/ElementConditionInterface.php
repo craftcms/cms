@@ -33,6 +33,14 @@ interface ElementConditionInterface extends ConditionInterface
     public function getFieldLayouts(): array;
 
     /**
+     * Sets the possible field layouts that the condition could be working with.
+     *
+     * @param array<FieldLayout|array> $fieldLayouts
+     * @since 5.1.0
+     */
+    public function setFieldLayouts(array $fieldLayouts): void;
+
+    /**
      * Modifies a given query based on the configured condition rules.
      *
      * @param ElementQueryInterface $query

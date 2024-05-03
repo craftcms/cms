@@ -19,7 +19,7 @@ interface Thumbable
     /**
      * Returns the HTML for the component’s thumbnail, if it has one.
      *
-     * @param int $size The width and height the thumbnail should have.
+     * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
      */
     public function getThumbHtml(int $size): ?string;

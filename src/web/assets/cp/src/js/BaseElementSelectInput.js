@@ -250,7 +250,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     updateButtonContainer: function () {
       const $container =
         this.$addElementBtn.length && this.$addElementBtn.parent('.flex');
-      if ($container && $container.length) {
+      if ($container?.length) {
         if ($container.children(':not(.hidden)').length) {
           $container.removeClass('hidden');
         } else {
@@ -573,7 +573,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         const lastElementIndex = this.$elements.index($elements.last());
         $nextElement = this.$elements.eq(lastElementIndex + 1);
       }
-      if ($nextElement.length) {
+      if ($nextElement?.length) {
         $nextElement.focus();
       } else {
         this.focusNextLogicalElement();

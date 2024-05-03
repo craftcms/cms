@@ -214,7 +214,7 @@ class DbController extends Controller
             $db->backupTo($path);
             if ($this->zip) {
                 $zipPath = FileHelper::zip($path);
-                unlink($path);
+                FileHelper::unlink($path);
                 $path = $zipPath;
             }
         } catch (Throwable $e) {
@@ -242,8 +242,13 @@ class DbController extends Controller
      */
     public function actionRestore(?string $path = null): int
     {
-        if (!is_file($path)) {
-            $this->stderr("Backup file doesn't exist: $path" . PHP_EOL);
+        if (!is_readable($path)) {
+            if (!is_dir($path) && Craft::$app->getConfig()->getGeneral()->backupCommandFormat === 'directory') {
+                $this->stderr("Backup directory doesn't exist: $path" . PHP_EOL);
+            } else {
+                $this->stderr("Backup file doesn't exist: $path" . PHP_EOL);
+            }
+
             return ExitCode::UNSPECIFIED_ERROR;
         }
 

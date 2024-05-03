@@ -2657,7 +2657,6 @@ h2 + .actions {
       var(--pane-padding, var(--padding)) * -1 + var(--pane-padding, var(--m))
     );
   padding: 0 !important;
-  overscroll-behavior: contain;
   overflow-x: auto;
 
   table.data {
@@ -3136,6 +3135,9 @@ table {
       border-radius: var(--small-border-radius);
       max-width: 100%;
       max-height: 100%;
+    }
+
+    svg {
       width: 100%;
     }
   }
@@ -3257,8 +3259,8 @@ table {
     align-items: stretch;
     margin: calc(var(--m) * -1);
     @include margin-right(0);
-    width: 120px;
-    min-width: 120px; // needed for flex
+    width: 128px;
+    min-width: 128px; // needed for flex
     min-height: calc(var(--m) * 2 + var(--lh) * 3 + var(--xs));
     background-color: var(--gray-100);
     overflow: hidden;
@@ -3295,7 +3297,7 @@ table {
     img,
     svg {
       width: 100%;
-      max-height: 120px;
+      max-height: 128px;
       object-fit: cover;
     }
   }
@@ -3625,6 +3627,12 @@ table {
       background: transparent;
     }
   }
+
+  craft-proxy-scrollbar {
+    position: sticky;
+    width: calc(100% + var(--xl) * 2);
+    margin-inline: calc(var(--xl) * -1);
+  }
 }
 
 .elements {
@@ -3849,15 +3857,18 @@ table {
     li {
       @include padding-left(38px);
       background-repeat: no-repeat;
+      --background-position-x: 0;
+      --background-position-y: -6px;
+      background-position: var(--background-position-x)
+        var(--background-position-y);
 
       body.ltr & {
         background-image: url(../images/branch.png);
-        background-position: 0 0;
       }
 
       body.rtl & {
+        --background-position-x: 100%;
         background-image: url(../images/branch_rtl.png);
-        background-position: 100% 0;
       }
 
       &:not(:last-child):not(.last) {
@@ -3865,11 +3876,11 @@ table {
         @include border-left(1px solid var(--gray-200));
 
         body.ltr & {
-          background-position: -1px 0;
+          --background-position-x: -1px;
         }
 
         body.rtl & {
-          background-position: calc(100% + 1px) 0;
+          --background-position-x: calc(100% + 1px);
         }
       }
 
@@ -3925,7 +3936,7 @@ table {
       @include margin-left(14px);
 
       li {
-        background-position: 0 6px !important;
+        --background-position-y: 0;
       }
     }
   }
@@ -5370,13 +5381,18 @@ $min2ColWidth: 400px;
   }
 
   &:not(.so-mobile) {
-    border-radius: var(--large-border-radius);
+    @include border-radius(
+      var(--large-border-radius),
+      0,
+      0,
+      var(--large-border-radius)
+    );
   }
 
   &:not(.so-mobile):not(.so-lp) {
-    top: 5px;
-    width: calc(55% - 5px);
-    height: calc(100% - 10px);
+    top: 0;
+    width: 55%;
+    height: 100%;
 
     @media screen and (prefers-reduced-motion: no-preference) {
       body.ltr & {
@@ -6059,9 +6075,7 @@ $min2ColWidth: 400px;
 
 /* recent activity container */
 .activity-container {
-  &:not(:last-child) {
-    @include margin-right(var(--s));
-  }
+  margin-inline: var(--s);
 
   ul {
     display: flex;
@@ -6666,15 +6680,6 @@ $min2ColWidth: 400px;
       position: absolute;
       top: 0;
       @include right(5px);
-    }
-  }
-
-  // todo: why are body.ltr and body.rtl needed here?
-  body.ltr &,
-  body.rtl & {
-    &.elementselect .chip {
-      float: none !important;
-      display: inline-block;
     }
   }
 }

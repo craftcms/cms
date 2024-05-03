@@ -150,6 +150,7 @@ $gridColor: var(--gray-100);
 
     .tab {
       display: flex;
+      align-items: center;
       gap: var(--xs);
       max-width: calc(100% - 10px);
       box-sizing: border-box;
@@ -276,6 +277,7 @@ $gridColor: var(--gray-100);
       flex: 1;
       display: flex;
       align-items: center;
+      gap: var(--xs);
     }
 
     .fld-element-label h4,
@@ -352,7 +354,7 @@ $gridColor: var(--gray-100);
   display: flex;
   flex-direction: row;
   margin: 0 var(--neg-padding) -24px;
-  padding: var(--padding);
+  padding: 5px var(--padding);
   @include pane;
   background-color: var(--gray-050);
   z-index: 3;

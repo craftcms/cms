@@ -64,6 +64,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                 .length;
             },
             checkboxMode: this.settings.checkboxMode,
+            waitForDoubleClicks: this.settings.waitForDoubleClicks,
             onSelectionChange: this.onSelectionChange.bind(this),
           }
         );
@@ -435,6 +436,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       multiSelect: false,
       canSelectElement: null,
       checkboxMode: false,
+      waitForDoubleClicks: false,
       sortable: false,
       loadMoreElementsAction: 'element-indexes/get-more-elements',
       onAppendElements: $.noop,
