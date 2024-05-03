@@ -487,7 +487,8 @@ Craft.CP = Garnish.Base.extend(
     updateContentHeading: function () {
       const $item = this.$sidebar.find('a.sel:first');
       const $label = $item.children('.label');
-      $('#content-heading').text($label.length ? $label.text() : $item.text());
+      const $innerText = ` - ${$label.length ? $label.text() : $item.text()}`;
+      $('#content-heading').text($innerText);
       Garnish.$bod.removeClass('showing-sidebar');
     },
 

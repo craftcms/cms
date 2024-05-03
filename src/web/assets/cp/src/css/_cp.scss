@@ -912,6 +912,12 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+#content-heading {
+  @media only screen and (min-width: $minHorizontalUiWidth) {
+    display: none;
+  }
+}
+
 #toolbar {
   flex: 1;
   align-items: flex-start;
