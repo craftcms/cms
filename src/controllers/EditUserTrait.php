@@ -123,9 +123,8 @@ trait EditUserTrait
         $response = $this->asCpScreen();
         if ($user->getIsCurrent()) {
             $screenName = $screens[$screen]["label"];
-            $regionName = Craft::t('app', 'My Account');
-            $responseTitle = "$screenName - $regionName";
-            $response->title($responseTitle);
+            $response->title(Craft::t('app', 'My Account'));
+            $response->docTitle($screenName);
         } else {
             $response->title($user->getUiLabel());
         }

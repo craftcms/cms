@@ -99,7 +99,7 @@ Craft.CP = Garnish.Base.extend(
 
       this.isMobile = Garnish.isMobileBrowser();
 
-      this.updateContentHeading();
+      //this.updateContentHeading();
 
       // Swap any instruction text with info icons
       let $allInstructions = this.$details.find(
@@ -478,18 +478,6 @@ Craft.CP = Garnish.Base.extend(
       options.data.saveShortcut = true;
 
       Craft.submitForm(this.$primaryForm, options);
-    },
-
-    updateSidebarMenuLabel: function () {
-      this.updateContentHeading();
-    },
-
-    updateContentHeading: function () {
-      const $item = this.$sidebar.find('a.sel:first');
-      const $label = $item.children('.label');
-      const $innerText = ` - ${$label.length ? $label.text() : $item.text()}`;
-      $('#content-heading').text($innerText);
-      Garnish.$bod.removeClass('showing-sidebar');
     },
 
     toggleNav: function () {
