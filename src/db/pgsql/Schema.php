@@ -398,7 +398,7 @@ ORDER BY i.relname, k';
     }
 
     /**
-     * Returns the backup format that should be used (`custom`, `directory`, `tar`, or `plain`).
+     * Returns the restore format that should be used (`custom`, `directory`, `tar`, or `plain`).
      *
      * @return string|null
      * @since 4.10.0
@@ -409,7 +409,7 @@ ORDER BY i.relname, k';
     }
 
     /**
-     * Sets the backup format that should be used (`custom`, `directory`, `tar`, or `plain`).
+     * Sets the restore format that should be used (`custom`, `directory`, `tar`, or `plain`).
      *
      * @param string|null $restoreFormat
      * @since 4.10.0
