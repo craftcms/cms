@@ -1790,6 +1790,7 @@ return [
     'User Group' => 'User Group',
     'User Groups' => 'User Groups',
     'User Permissions' => 'User Permissions',
+    'User {page}' => 'User {page}',
     'User Photo Location' => 'User Photo Location',
     'User Photo Volume' => 'User Photo Volume',
     'User Photos' => 'User Photos',

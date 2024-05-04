@@ -120,13 +120,19 @@ trait EditUserTrait
             throw new ForbiddenHttpException('User not authorized to perform this action.');
         }
 
+        $pageName = $screens[$screen]["label"];
         $response = $this->asCpScreen();
         if ($user->getIsCurrent()) {
-            $screenName = $screens[$screen]["label"];
             $response->title(Craft::t('app', 'My Account'));
-            $response->docTitle($screenName);
+            $response->docTitle($pageName);
         } else {
-            $response->title($user->getUiLabel());
+            $username = $user->getUiLabel();
+            $extendedTitle = Craft::t('app', 'User {page}', [
+                'page' => $pageName,
+            ]);
+            $docTitle = "$username - $extendedTitle";
+            $response->title($username);
+            $response->docTitle($docTitle);
         }
 
         $navItems = [];
