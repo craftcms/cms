@@ -318,16 +318,17 @@ class DbController extends Controller
         $this->stdout('Restoring database backup ... ');
 
         try {
-            if (Craft::$app->getDb()->getIsPgsql()) {
-                Craft::$app->getDb()->getSchema()->restoreFormat = $this->format ?? match (FileHelper::getMimeType($path)) {
+            $db = Craft::$app->getDb();
+            if ($db->getIsPgsql()) {
+                $restoreFormat = $this->format ?? match (FileHelper::getMimeType($path)) {
                     'application/octet-stream' => 'custom',
                     'application/x-tar' => 'tar',
                     'directory' => 'directory',
                     default => null,
                 };
+                $db->getSchema()->setRestoreFormat($restoreFormat);
             }
-
-            Craft::$app->getDb()->restore($path);
+            $db->restore($path);
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);

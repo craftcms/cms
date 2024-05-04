@@ -23,8 +23,16 @@ use yii\db\Exception;
  */
 class Schema extends \yii\db\pgsql\Schema
 {
-    private ?string $_backupFormat = null;
-    public ?string $restoreFormat = null;
+    /**
+     * @see getBackupFormat()
+     * @see setBackupFormat()
+     */
+    private ?string $backupFormat = null;
+    /**
+     * @see getRestoreFormat()
+     * @see setRestoreFormat()
+     */
+    private ?string $restoreFormat = null;
 
     /**
      * @var int The maximum length that objects' names can be.
@@ -257,7 +265,7 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function usePgRestore(): bool
     {
-        return $this->restoreFormat && $this->restoreFormat !== 'plain';
+        return isset($this->restoreFormat) && $this->restoreFormat !== 'plain';
     }
 
     /**
@@ -375,7 +383,7 @@ ORDER BY i.relname, k';
      */
     public function getBackupFormat(): ?string
     {
-        return $this->_backupFormat ?? Craft::$app->getConfig()->getGeneral()->backupCommandFormat;
+        return $this->backupFormat ?? Craft::$app->getConfig()->getGeneral()->backupCommandFormat;
     }
 
     /**
@@ -386,6 +394,28 @@ ORDER BY i.relname, k';
      */
     public function setBackupFormat(?string $backupFormat): void
     {
-        $this->_backupFormat = $backupFormat;
+        $this->backupFormat = $backupFormat;
+    }
+
+    /**
+     * Returns the backup format that should be used (`custom`, `directory`, `tar`, or `plain`).
+     *
+     * @return string|null
+     * @since 4.10.0
+     */
+    public function getRestoreFormat(): ?string
+    {
+        return $this->restoreFormat;
+    }
+
+    /**
+     * Sets the backup format that should be used (`custom`, `directory`, `tar`, or `plain`).
+     *
+     * @param string|null $restoreFormat
+     * @since 4.10.0
+     */
+    public function setRestoreFormat(?string $restoreFormat): void
+    {
+        $this->restoreFormat = $restoreFormat;
     }
 }
