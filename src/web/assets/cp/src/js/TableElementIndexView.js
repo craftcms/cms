@@ -654,7 +654,16 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   createScrollbar() {
+    if (this.elementIndex.context !== 'index') {
+      return;
+    }
+
     const footer = document.querySelector('#content > #footer');
+
+    if (!footer) {
+      return;
+    }
+
     const stickyScrollbar = document.createElement('craft-proxy-scrollbar');
     stickyScrollbar.setAttribute('scroller', '.tablepane');
     stickyScrollbar.setAttribute('content', '.tablepane > table');
