@@ -482,6 +482,10 @@ class Cp
                 $config['attributes'],
                 fn() => $element->getChipLabelHtml(),
             );
+
+            if ($element->isProvisionalDraft) {
+                $config['labelHtml'] .= self::changeStatusLabelHtml();
+            }
         }
 
         $html = static::chipHtml($element, $config);
@@ -558,9 +562,12 @@ class Cp
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
-        $statusLabel = $element::hasStatuses() ? static::componentStatusLabelHtml($element) : null;
-        if ($statusLabel) {
-            $bodyContent .= Html::tag('div', $statusLabel, ['class' => 'flex']);
+        $labels =
+            ($element::hasStatuses() ? static::componentStatusLabelHtml($element) : '') .
+            ($element->isProvisionalDraft ? self::changeStatusLabelHtml() : '');
+
+        if ($labels !== '') {
+            $bodyContent .= Html::tag('div', $labels, ['class' => 'flex']);
         }
 
         $thumb = $element->getThumbHtml(128);
@@ -726,6 +733,15 @@ class Cp
         ]);
     }
 
+    private static function changeStatusLabelHtml(): string
+    {
+        return static::statusLabelHtml([
+            'color' => Color::Blue,
+            'icon' => 'pen-circle',
+            'label' => Craft::t('app', 'Edited'),
+        ]);
+    }
+
     /**
      * Renders status label HTML for a [[Statusable]] component.
      *
@@ -772,9 +788,11 @@ class Cp
                 'data' => array_filter([
                     'type' => get_class($element),
                     'id' => $element->id,
+                    'canonical-id' => $element->getCanonicalId(),
                     'draft-id' => $element->draftId,
                     'revision-id' => $element->revisionId,
                     'site-id' => $element->siteId,
+                    'provisional' => $element->isProvisionalDraft,
                     'status' => $element->getStatus(),
                     'label' => (string)$element,
                     'url' => $element->getUrl(),

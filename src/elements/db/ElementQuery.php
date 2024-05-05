@@ -181,6 +181,8 @@ class ElementQuery extends Query implements ElementQueryInterface
      * This can be set to one of the following:
      *
      * - A source element ID – matches drafts of that element
+     * - A source element
+     *  - An array of source elements or element IDs
      * - `'*'` – matches drafts of any source element
      * - `false` – matches unpublished drafts that have no source element
      *
@@ -690,11 +692,27 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function draftOf($value): static
     {
+        $valid = false;
         if ($value instanceof ElementInterface) {
             $this->draftOf = $value->getCanonicalId();
-        } elseif (is_numeric($value) || $value === '*' || $value === false || $value === null) {
+            $valid = true;
+        } elseif (
+            is_numeric($value) ||
+            (is_array($value) && ArrayHelper::isNumeric($value)) ||
+            $value === '*' ||
+            $value === false ||
+            $value === null
+        ) {
             $this->draftOf = $value;
-        } else {
+            $valid = true;
+        } elseif (is_array($value) && !empty($value)) {
+            $c = Collection::make($value);
+            if ($c->every(fn($v) => $v instanceof ElementInterface || is_numeric($v))) {
+                $this->draftOf = $c->map(fn($v) => $v instanceof ElementInterface ? $v->id : $v)->all();
+                $valid = true;
+            }
+        }
+        if (!$valid) {
             throw new InvalidArgumentException('Invalid draftOf value');
         }
         if ($value !== null && $this->drafts === false) {

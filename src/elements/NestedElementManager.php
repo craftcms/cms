@@ -384,6 +384,10 @@ class NestedElementManager extends Component
 
                 /** @var NestedElementInterface[] $elements */
                 $elements = $this->getValue($owner)->all();
+
+                // See if there are any provisional drafts we should swap these out with
+                ElementHelper::swapInProvisionalDrafts($elements);
+
                 $this->setOwnerOnNestedElements($owner, $elements);
 
                 if (!empty($elements)) {
