@@ -450,8 +450,10 @@ export default Base.extend(
           $checkbox.data('select-item', item);
           this.addListener($checkbox, 'keydown', (event) => {
             if (
-              event.keyCode === Garnish.SPACE_KEY ||
-              event.keyCode === Garnish.RETURN_KEY
+              (event.keyCode === Garnish.RETURN_KEY ||
+                event.keyCode === Garnish.SPACE_KEY) &&
+              !event.shiftKey &&
+              !Garnish.isCtrlKeyPressed(event)
             ) {
               event.preventDefault();
               this.onCheckboxActivate(event);
