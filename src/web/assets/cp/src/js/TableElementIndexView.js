@@ -654,7 +654,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   createScrollbar() {
-    if (this.elementIndex.context !== 'index') {
+    if (this.elementIndex.settings.context !== 'index') {
       return;
     }
 
