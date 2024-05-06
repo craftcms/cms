@@ -103,7 +103,6 @@ export default Base.extend(
       this.first = this.last = this.getItemIndex($item);
 
       if (focus) {
-        this.setFocusableItem($item);
         this.focusItem($item, preventScroll);
       }
 
@@ -136,7 +135,6 @@ export default Base.extend(
       this.$last = $item;
       this.last = this.getItemIndex($item);
 
-      this.setFocusableItem($item);
       this.focusItem($item, preventScroll);
 
       // prepare params for $.slice()
@@ -452,8 +450,10 @@ export default Base.extend(
           $checkbox.data('select-item', item);
           this.addListener($checkbox, 'keydown', (event) => {
             if (
-              event.keyCode === Garnish.SPACE_KEY ||
-              event.keyCode === Garnish.RETURN_KEY
+              (event.keyCode === Garnish.RETURN_KEY ||
+                event.keyCode === Garnish.SPACE_KEY) &&
+              !event.shiftKey &&
+              !Garnish.isCtrlKeyPressed(event)
             ) {
               event.preventDefault();
               this.onCheckboxActivate(event);
@@ -530,7 +530,6 @@ export default Base.extend(
       }
 
       if (this.$focusedItem) {
-        this.setFocusableItem(this.$focusedItem);
         this.focusItem(this.$focusedItem, true);
       }
 
@@ -571,6 +570,7 @@ export default Base.extend(
      */
     focusItem: function ($item, preventScroll) {
       if (this.settings.makeFocusable) {
+        this.setFocusableItem($item);
         $item[0].focus({preventScroll: !!preventScroll});
       }
       this.$focusedItem = $item;
