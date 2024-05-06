@@ -3204,7 +3204,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getChipLabelHtml(): string
     {
-        return $this->getUiLabel();
+        return Html::encode($this->getUiLabel());
     }
 
     /**
