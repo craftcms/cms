@@ -777,7 +777,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     updateMainHeading: function () {
       $('#content-heading').text(` - ${this.getSourceLabel()}`);
-      Garnish.$bod.removeClass('showing-sidebar');
     },
 
     deinitSource: function ($source) {
