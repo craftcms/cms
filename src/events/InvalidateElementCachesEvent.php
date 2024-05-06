@@ -7,6 +7,7 @@
 
 namespace craft\events;
 
+use craft\base\Element;
 use yii\base\Event;
 
 /**
@@ -23,4 +24,9 @@ class InvalidateElementCachesEvent extends Event
      * @var array An array of TagDependency tag names that are being invalidated
      */
     public array $tags;
+
+    /**
+     * @var Element|null The element that is being invalidated
+     */
+    public ?Element $element = null;
 }
