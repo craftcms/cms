@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where pressing <kbd>Shift</kbd> + <kbd>Spacebar</kbd> wasn’t reliably opening the asset preview modal on the Assets index page. ([#14943](https://github.com/craftcms/cms/issues/14943))
+- Fixed a bug where pressing arrow keys within asset preview modals wasn’t retargeting the preview modal to adjacent assets. ([#14943](https://github.com/craftcms/cms/issues/14943))
+
 ## 5.1.1 - 2024-05-02
 
 - Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911), [#14510](https://github.com/craftcms/cms/issues/14510))
