@@ -164,7 +164,7 @@ class Schema extends \yii\db\pgsql\Schema
             $command = $commandFromConfig($command);
         }
 
-        return $command->getExecCommand();
+        return $this->_pgpasswordCommand() . $command->getExecCommand();
     }
 
     /**
