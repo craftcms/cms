@@ -3,6 +3,9 @@
 ## Unreleased
 
 - Fixed a bug where the `db/backup` command would prompt for password input on PostgreSQL. ([#14945](https://github.com/craftcms/cms/issues/14945))
+- Fixed a bug where pressing <kbd>Shift</kbd> + <kbd>Spacebar</kbd> wasn’t reliably opening the asset preview modal on the Assets index page. ([#14943](https://github.com/craftcms/cms/issues/14943))
+- Fixed a bug where pressing <kbd>Shift</kbd> + <kbd>Spacebar</kbd> within an asset preview modal wasn’t closing the modal.
+- Fixed a bug where pressing arrow keys within asset preview modals wasn’t retargeting the preview modal to adjacent assets. ([#14943](https://github.com/craftcms/cms/issues/14943))
 
 ## 4.9.1 - 2024-05-02
 

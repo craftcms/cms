@@ -153,6 +153,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           );
         }
       }
+
+      this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
     },
 
     _findDraggableItems: function ($items) {
@@ -619,10 +621,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @private
      */
     _onUpdateElements: function (append, $newElements) {
-      this.removeListener(this.$elements, 'keydown');
-      this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
-      this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
-
       this.$listedFolders = $newElements.find(
         '.element[data-is-folder][data-folder-name]'
       );
@@ -687,49 +685,24 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _onKeyDown: function (ev) {
       if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
         if (Craft.PreviewFileModal.openInstance) {
-          Craft.PreviewFileModal.openInstance.selfDestruct();
+          Craft.PreviewFileModal.openInstance.hide();
         } else {
-          var $element = this.view.elementSelect.$focusedItem.find('.element');
+          let $element = $(ev.target).closest('.element');
+          if (!$element.length) {
+            $element = $(ev.target).find('.element:first');
+          }
 
-          if ($element.length) {
-            this._loadPreview($element);
+          if ($element.length && !Garnish.hasAttr($element, 'data-folder-id')) {
+            Craft.PreviewFileModal.showForAsset(
+              $element,
+              this.view.elementSelect
+            );
           }
         }
 
         ev.stopPropagation();
         return false;
       }
-    },
-
-    /**
-     * Handle element being focused
-     * @private
-     */
-    _onElementFocus: function (ev) {
-      var $element = $(ev.item).find('.element');
-
-      if (Craft.PreviewFileModal.openInstance && $element.length) {
-        this._loadPreview($element);
-      }
-    },
-
-    /**
-     * Load the preview for an asset
-     * @private
-     */
-    _loadPreview: function ($element) {
-      var settings = {};
-
-      if ($element.data('image-width')) {
-        settings.startingWidth = $element.data('image-width');
-        settings.startingHeight = $element.data('image-height');
-      }
-
-      new Craft.PreviewFileModal(
-        $element.data('id'),
-        this.view.elementSelect,
-        settings
-      );
     },
 
     /**
