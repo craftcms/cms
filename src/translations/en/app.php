@@ -413,7 +413,7 @@ return [
     'County' => 'County',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.',
     'Craft CMS edition changed.' => 'Craft CMS edition changed.',
-    '<span lang="en">Craft CMS</span> is running in Dev Mode.' => '<span lang="en">Craft CMS</span> is running in Dev Mode.',
+    'Craft CMS is running in Dev Mode.' => '<span lang="en">Craft CMS</span> is running in Dev Mode.',
     'Craft Support' => 'Craft Support',
     'Craft isn’t installed yet.' => 'Craft isn’t installed yet.',
     'Craft {version} Upgrade' => 'Craft {version} Upgrade',

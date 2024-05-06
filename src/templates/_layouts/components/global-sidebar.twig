@@ -131,7 +131,7 @@
             </div>
 
             {% if currentUser.admin and devMode %}
-                {% set devModeText = '<span lang="en">Craft CMS</span> is running in Dev Mode.'|t('app') %}
+                {% set devModeText = 'Craft CMS is running in Dev Mode.'|t('app') %}
                 <div id="devmode">
                     {% tag 'span' with {
                         class: 'visually-hidden',
