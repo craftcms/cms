@@ -353,7 +353,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * Returns the first key in a given array.
      *
      * @param array $array
-     * @return string|int|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $array isn’t an array, or is empty.
+     * @return string|int|null The first key, whether that is a number (if the array is numerically indexed) or a string, or `null` if `$array` is empty.
      * @deprecated in 4.5.0. `array_key_first()` should be used instead.
      */
     public static function firstKey(array $array): int|string|null
@@ -365,7 +365,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * Returns the first value in a given array.
      *
      * @param array $array
-     * @return mixed The first value, or null if $array isn’t an array, or is empty.
+     * @return mixed The first value, or `null` if `$array` is empty.
      */
     public static function firstValue(array $array): mixed
     {
