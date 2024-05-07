@@ -51,6 +51,10 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
   updateButton: function () {
     if (!this.$source) {
+      // Remove the old button, if there is one
+      if (this.$newEntryBtnGroup) {
+        this.$newEntryBtnGroup.remove();
+      }
       return;
     }
 
@@ -142,16 +146,24 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           }).appendTo(this.$newEntryBtnGroup);
         }
       } else {
-        this.$newEntryBtn = $menuBtn = Craft.ui
-          .createButton({
-            label: Craft.t('app', 'New entry'),
-            ariaLabel: Craft.t('app', 'New entry, choose a section'),
-            spinner: true,
-          })
-          .addClass('submit add icon menubtn btngroup-btn-last')
-          .attr('aria-controls', menuId)
-          .attr('data-disclosure-trigger', '')
-          .appendTo(this.$newEntryBtnGroup);
+        // check if any publishable sections are available for this site
+        const siteId = this.siteId;
+        let sitesPublishableSections = this.publishableSections.filter(
+          (section) => ($.inArray(siteId, section.sites) === -1 ? false : true)
+        );
+        // if there aren't, don't add the newEntryBtn
+        if (sitesPublishableSections.length > 0) {
+          this.$newEntryBtn = $menuBtn = Craft.ui
+            .createButton({
+              label: Craft.t('app', 'New entry'),
+              ariaLabel: Craft.t('app', 'New entry, choose a section'),
+              spinner: true,
+            })
+            .addClass('submit add icon menubtn btngroup-btn-last')
+            .attr('aria-controls', menuId)
+            .attr('data-disclosure-trigger', '')
+            .appendTo(this.$newEntryBtnGroup);
+        }
       }
 
       this.addButton(this.$newEntryBtnGroup);
