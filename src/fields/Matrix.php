@@ -864,10 +864,22 @@ class Matrix extends Field implements
             // and so not passed to PHP for save
             $view->setInitialDeltaValue($this->handle, null);
 
+            $js .= "\n" . <<<JS
+input.on('afterInit', async () => {
+  input.elementEditor?.pause();
+JS . "\n";
+
             $entryTypeJs = Json::encode($entryTypes[0]->handle);
             for ($i = count($value); $i < $this->minEntries; $i++) {
-                $js .= "\ninput.addEntry($entryTypeJs, null, false);";
+                $js .= <<<JS
+  await input.addEntry($entryTypeJs, null, false);
+JS . "\n";
             }
+
+            $js .= <<<JS
+  input.elementEditor?.resume();
+});
+JS;
         }
 
         $view->registerJs("(() => {\n$js\n})();");
