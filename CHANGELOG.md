@@ -6,6 +6,7 @@
 - Fixed a bug where pressing <kbd>Shift</kbd> + <kbd>Spacebar</kbd> wasn’t reliably opening the asset preview modal on the Assets index page. ([#14943](https://github.com/craftcms/cms/issues/14943))
 - Fixed a bug where pressing <kbd>Shift</kbd> + <kbd>Spacebar</kbd> within an asset preview modal wasn’t closing the modal.
 - Fixed a bug where pressing arrow keys within asset preview modals wasn’t retargeting the preview modal to adjacent assets. ([#14943](https://github.com/craftcms/cms/issues/14943))
+- Fixed a bug where entry selection modals could have a “New entry” button even if there weren’t any sections enabled for the selected site. ([#14923](https://github.com/craftcms/cms/issues/14923))
 - Fixed XSS vulnerabilities.
 
 ## 5.1.1 - 2024-05-02
