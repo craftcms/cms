@@ -87,9 +87,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       const menuId = 'new-entry-menu-' + Craft.randomString(10);
 
       // check if any publishable sections are available for this site
-      const siteId = this.siteId;
-      let sitesPublishableSections = this.publishableSections.filter(
-        (section) => ($.inArray(siteId, section.sites) === -1 ? false : true)
+      const publishableSectionsForSite = this.publishableSections.filter(
+        (section) => section.sites.includes(this.siteId)
       );
 
       // If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
@@ -142,7 +141,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           }
         });
 
-        if (sitesPublishableSections.length > 1) {
+        if (publishableSectionsForSite.length > 1) {
           $menuBtn = $('<button/>', {
             type: 'button',
             class: 'btn submit menubtn btngroup-btn-last',
@@ -153,7 +152,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
         }
       } else {
         // if there aren't, don't add the newEntryBtn
-        if (sitesPublishableSections.length > 0) {
+        if (publishableSectionsForSite.length > 0) {
           this.$newEntryBtn = $menuBtn = Craft.ui
             .createButton({
               label: Craft.t('app', 'New entry'),
@@ -181,10 +180,10 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             this.settings.context === 'index' ? 'link' : 'button';
           if (
             (this.settings.context === 'index' &&
-              $.inArray(this.siteId, section.sites) !== -1) ||
+              section.sites.includes(this.siteId)) ||
             (this.settings.context !== 'index' &&
               section !== selectedSection &&
-              $.inArray(this.siteId, section.sites) !== -1)
+              section.sites.includes(this.siteId))
           ) {
             const $li = $('<li/>').appendTo($ul);
             const $a = $('<a/>', {
