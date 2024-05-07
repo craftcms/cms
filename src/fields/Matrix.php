@@ -677,7 +677,10 @@ class Matrix extends Field implements
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
-        if ($value === '') {
+        // But we should exclude matrix entries in block view nested in matrix entries from this caching:
+        // https://github.com/craftcms/cms/issues/14947
+        /** @var Entry $element */
+        if ($value === '' && !($fromRequest && $this->viewMode === self::VIEW_MODE_BLOCKS && $element->fieldId && $element->saveOwnership)) {
             $query->setCachedResult([]);
         } elseif ($element && is_array($value)) {
             $query->setCachedResult($this->_createEntriesFromSerializedData($value, $element, $fromRequest));
