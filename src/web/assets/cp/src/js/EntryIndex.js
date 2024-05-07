@@ -150,20 +150,18 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             'aria-label': Craft.t('app', 'New entry, choose a section'),
           }).appendTo(this.$newEntryBtnGroup);
         }
-      } else {
-        // if there aren't, don't add the newEntryBtn
-        if (publishableSectionsForSite.length > 0) {
-          this.$newEntryBtn = $menuBtn = Craft.ui
-            .createButton({
-              label: Craft.t('app', 'New entry'),
-              ariaLabel: Craft.t('app', 'New entry, choose a section'),
-              spinner: true,
-            })
-            .addClass('submit add icon menubtn btngroup-btn-last')
-            .attr('aria-controls', menuId)
-            .attr('data-disclosure-trigger', '')
-            .appendTo(this.$newEntryBtnGroup);
-        }
+      } else if (publishableSectionsForSite.length > 0) {
+        // only add the New Entry button if there are any sections for this site
+        this.$newEntryBtn = $menuBtn = Craft.ui
+          .createButton({
+            label: Craft.t('app', 'New entry'),
+            ariaLabel: Craft.t('app', 'New entry, choose a section'),
+            spinner: true,
+          })
+          .addClass('submit add icon menubtn btngroup-btn-last')
+          .attr('aria-controls', menuId)
+          .attr('data-disclosure-trigger', '')
+          .appendTo(this.$newEntryBtnGroup);
       }
 
       this.addButton(this.$newEntryBtnGroup);
