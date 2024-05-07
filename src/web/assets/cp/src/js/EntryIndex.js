@@ -182,7 +182,9 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           if (
             (this.settings.context === 'index' &&
               $.inArray(this.siteId, section.sites) !== -1) ||
-            (this.settings.context !== 'index' && section !== selectedSection)
+            (this.settings.context !== 'index' &&
+              section !== selectedSection &&
+              $.inArray(this.siteId, section.sites) !== -1)
           ) {
             const $li = $('<li/>').appendTo($ul);
             const $a = $('<a/>', {
