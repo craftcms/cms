@@ -86,6 +86,12 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       let $menuBtn;
       const menuId = 'new-entry-menu-' + Craft.randomString(10);
 
+      // check if any publishable sections are available for this site
+      const siteId = this.siteId;
+      let sitesPublishableSections = this.publishableSections.filter(
+        (section) => ($.inArray(siteId, section.sites) === -1 ? false : true)
+      );
+
       // If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
       // Otherwise only show a menu button
       if (selectedSection) {
@@ -136,7 +142,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           }
         });
 
-        if (this.publishableSections.length > 1) {
+        if (sitesPublishableSections.length > 1) {
           $menuBtn = $('<button/>', {
             type: 'button',
             class: 'btn submit menubtn btngroup-btn-last',
@@ -146,11 +152,6 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           }).appendTo(this.$newEntryBtnGroup);
         }
       } else {
-        // check if any publishable sections are available for this site
-        const siteId = this.siteId;
-        let sitesPublishableSections = this.publishableSections.filter(
-          (section) => ($.inArray(siteId, section.sites) === -1 ? false : true)
-        );
         // if there aren't, don't add the newEntryBtn
         if (sitesPublishableSections.length > 0) {
           this.$newEntryBtn = $menuBtn = Craft.ui
