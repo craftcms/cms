@@ -622,7 +622,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getSourceLabel: function () {
-      return this.$source.data('label');
+      return this.$source?.data('label');
     },
 
     getItemLabel: function () {
