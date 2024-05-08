@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where entry selection modals could list all entries when no sources were available for the selected site. ([#14956](https://github.com/craftcms/cms/issues/14956))
+- Fixed a bug where element cards could get duplicate status indicators. ([#14958](https://github.com/craftcms/cms/issues/14958))
 
 ## 5.1.2 - 2024-05-07
 
