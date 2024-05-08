@@ -126,9 +126,19 @@ import './install.scss';
           }, 1000);
         } else {
           $h1.text('Install failed 😞');
-          $('<p/>', {
-            text: 'Please check your logs for more info.',
-          }).insertAfter($h1);
+          const message = response?.response?.data?.message;
+          let $p;
+          if (message) {
+            $p = $('<p/>', {
+              text: message,
+              class: 'pane code',
+            });
+          } else {
+            $p = $('<p/>', {
+              text: 'Please check your logs for more info.',
+            });
+          }
+          $p.insertAfter($h1);
         }
       },
 
