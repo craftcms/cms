@@ -1533,7 +1533,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         context: this.settings.context,
         elementType: this.elementType,
         canHaveDrafts: this.settings.canHaveDrafts,
-        source: this.instanceState.selectedSource,
+        source: this.sourceKey,
         condition: this.settings.condition,
         referenceElementId: this.settings.referenceElementId,
         referenceElementSiteId: this.settings.referenceElementSiteId,

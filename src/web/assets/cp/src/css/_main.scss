@@ -3061,6 +3061,10 @@ table {
     }
   }
 
+  &:has(.thumb) .chip-content {
+    max-width: calc(100% - var(--thumb-size));
+  }
+
   &.sel,
   li.sel &,
   li.active-drop-target & {
