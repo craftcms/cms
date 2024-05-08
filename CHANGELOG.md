@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where entry selection modals could list all entries when no sources were available for the selected site. ([#14956](https://github.com/craftcms/cms/issues/14956))
+
 ## 5.1.2 - 2024-05-07
 
 - Fixed a bug where the `db/backup` command would prompt for password input on PostgreSQL. ([#14945](https://github.com/craftcms/cms/issues/14945))
