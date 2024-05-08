@@ -25,6 +25,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\services\ElementSources;
 use Throwable;
@@ -864,7 +865,9 @@ class ElementIndexesController extends BaseElementsController
             $responseData['headHtml'] = $view->getHeadHtml();
             $responseData['bodyHtml'] = $view->getBodyHtml();
         } else {
-            $responseData['html'] = '';
+            $responseData['html'] = Html::tag('div', Craft::t('app', 'Nothing yet.'), [
+                'class' => ['zilch', 'small'],
+            ]);
         }
 
         return $responseData;
