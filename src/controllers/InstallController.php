@@ -12,6 +12,8 @@ use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
 use craft\errors\DbConnectException;
+use craft\errors\MigrationException;
+use craft\errors\OperationAbortedException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Install as InstallHelper;
@@ -294,7 +296,13 @@ class InstallController extends Controller
             'site' => $site,
         ]);
 
-        $migrator->migrateUp($migration);
+        try {
+            $migrator->migrateUp($migration);
+        } catch (MigrationException $e) {
+            $previous = $e->getPrevious();
+            $message = $previous instanceof OperationAbortedException ? $previous->getMessage() : $e->getMessage();
+            return $this->asFailure($message);
+        }
 
         // Mark all existing migrations as applied
         foreach ($migrator->getNewMigrations() as $name) {

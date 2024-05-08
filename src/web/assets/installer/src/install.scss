@@ -180,6 +180,11 @@ input.hidden {
     margin-top: 200px !important;
   }
 
+  p {
+    max-width: 40em;
+    margin: 0 auto;
+  }
+
   #spinner {
     display: block;
     margin: 0 auto;
