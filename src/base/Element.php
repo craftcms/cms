@@ -1249,8 +1249,7 @@ abstract class Element extends Component implements ElementInterface
         $elements = static::indexElements($elementQuery, $sourceKey);
 
         if (empty($elements)) {
-            $message = Craft::t('app', 'Nothing yet.');
-            return Html::tag('div', $message, [
+            return Html::tag('div', Craft::t('app', 'Nothing yet.'), [
                 'class' => ['zilch', 'small'],
             ]);
         }
