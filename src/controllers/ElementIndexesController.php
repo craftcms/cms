@@ -708,10 +708,16 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Does the source specify any criteria attributes?
-        if ($this->source['type'] === ElementSources::TYPE_CUSTOM) {
-            /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = $conditionsService->createCondition($this->source['condition']);
-            $sourceCondition->modifyQuery($query);
+        switch ($this->source['type']) {
+            case ElementSources::TYPE_NATIVE:
+                if (isset($this->source['criteria'])) {
+                    Craft::configure($query, $this->source['criteria']);
+                }
+                break;
+            case ElementSources::TYPE_CUSTOM:
+                /** @var ElementConditionInterface $sourceCondition */
+                $sourceCondition = $conditionsService->createCondition($this->source['condition']);
+                $sourceCondition->modifyQuery($query);
         }
 
         $applyCriteria = function(array $criteria) use ($query): bool {
