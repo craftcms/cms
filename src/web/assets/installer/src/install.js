@@ -126,19 +126,19 @@ import './install.scss';
           }, 1000);
         } else {
           $h1.text('Install failed 😞');
-          const message = response?.response?.data?.message;
-          let $p;
-          if (message) {
-            $p = $('<p/>', {
-              text: message,
-              class: 'pane code',
-            });
+          const messageHtml = response?.response?.data?.messageHtml;
+          if (messageHtml) {
+            $('<div/>', {
+              class: 'pane',
+              html: messageHtml,
+            }).insertAfter($h1);
           } else {
-            $p = $('<p/>', {
-              text: 'Please check your logs for more info.',
-            });
+            $('<p/>', {
+              text:
+                response?.response?.data?.message ??
+                'Please check your logs for more info.',
+            }).insertAfter($h1);
           }
-          $p.insertAfter($h1);
         }
       },
 

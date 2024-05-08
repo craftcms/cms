@@ -18,6 +18,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Install as InstallHelper;
 use craft\helpers\StringHelper;
+use craft\markdown\Markdown;
 use craft\migrations\Install;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
@@ -299,9 +300,15 @@ class InstallController extends Controller
         try {
             $migrator->migrateUp($migration);
         } catch (MigrationException $e) {
+            $data = [];
             $previous = $e->getPrevious();
-            $message = $previous instanceof OperationAbortedException ? $previous->getMessage() : $e->getMessage();
-            return $this->asFailure($message);
+            if ($previous instanceof OperationAbortedException) {
+                $message = $previous->getMessage();
+                $data['messageHtml'] = (new Markdown())->parse($message);
+            } else {
+                $message = $e->getMessage();
+            }
+            return $this->asFailure($message, $data);
         }
 
         // Mark all existing migrations as applied

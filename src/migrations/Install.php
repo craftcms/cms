@@ -70,8 +70,9 @@ class Install extends Migration
     public function safeUp(): bool
     {
         if (!$this->_validateProjectConfig($error)) {
-            echo "\nProject config validation failed: $error\n\nAborting install.\n\n";
-            throw new OperationAbortedException("Project config validation failed: $error");
+            $message = "Project config validation failed: $error\n\nRun `composer install` or remove your `config/project/` folder and try again.";
+            echo "\n$message\n\nAborting install.\n\n";
+            throw new OperationAbortedException($message);
         }
 
         $this->createTables();
