@@ -1726,7 +1726,7 @@ ul.icons {
   }
 }
 
-.disabled {
+.disabled:not(.status):not(.status-label) {
   opacity: 0.25;
   pointer-events: none;
   user-select: none;
@@ -3220,7 +3220,7 @@ table {
   flex-direction: row;
   align-items: stretch;
   padding: var(--m);
-  gap: var(--m);
+  gap: var(--s);
   border-radius: var(--large-border-radius);
   cursor: default;
   user-select: none;
@@ -3299,6 +3299,10 @@ table {
       max-height: 128px;
       object-fit: cover;
     }
+
+    & + .card-content {
+      @include margin-left(calc(var(--m) - var(--s)));
+    }
   }
 
   & > .cp-icon {
@@ -3314,7 +3318,6 @@ table {
   }
 
   .card-content {
-    margin: calc((1rem - var(--lh)) / 2) 0;
     flex: 1 0 0 !important;
     overflow: hidden;
     position: relative;
@@ -3325,11 +3328,7 @@ table {
       flex-direction: row;
       align-items: center;
       gap: 5px;
-
-      .status {
-        margin: 0;
-        flex: 0 0 10px;
-      }
+      min-height: calc(22rem / 16);
 
       .label {
         font-weight: 600;
@@ -3477,7 +3476,7 @@ table {
     flex-direction: row;
     align-items: center;
     gap: var(--s);
-    min-height: 1rem;
+    min-height: calc(22rem / 16);
 
     &:empty {
       display: none;
@@ -4215,7 +4214,7 @@ ul.tree,
   @include margin(7px, 0, 0, -15px);
 }
 
-/* status icons */
+/* status indicators */
 .status {
   flex: 0 0 auto;
   display: inline-block;
@@ -4376,6 +4375,155 @@ ul.tree,
   opacity: 1;
 }
 
+$statusLabelColorShade: '900';
+$statusLabelBgShade: '500';
+
+/* status labels */
+.status-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--xs);
+  height: calc(22rem / 16);
+  padding: 0 var(--s);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-color, var(--status-label-text-color));
+  text-transform: uppercase;
+
+  &:before {
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: var(--status-label-bg-color);
+    border-radius: calc(11rem / 16);
+    content: '';
+    opacity: 0.15;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .status {
+    @include margin(0, 0, 0, -3px);
+  }
+
+  &.on,
+  &.live,
+  &.active,
+  &.enabled {
+    --status-label-text-color: var(--teal-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--teal-#{$statusLabelBgShade});
+  }
+  &.red,
+  &.off,
+  &.suspended,
+  &.expired {
+    --status-label-text-color: var(--red-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--red-#{$statusLabelBgShade});
+  }
+  &.amber,
+  &.warning {
+    --status-label-text-color: var(--amber-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--amber-#{$statusLabelBgShade});
+  }
+  &.orange,
+  &.pending {
+    --status-label-text-color: var(--orange-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--orange-#{$statusLabelBgShade});
+  }
+  &.yellow {
+    --status-label-text-color: var(--yellow-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--yellow-#{$statusLabelBgShade});
+  }
+  &.lime {
+    --status-label-text-color: var(--lime-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--lime-#{$statusLabelBgShade});
+  }
+  &.green {
+    --status-label-text-color: var(--green-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--green-#{$statusLabelBgShade});
+  }
+  &.emerald {
+    --status-label-text-color: var(--emerald-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--emerald-#{$statusLabelBgShade});
+  }
+  &.teal,
+  &.turquoise {
+    --status-label-text-color: var(--teal-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--teal-#{$statusLabelBgShade});
+  }
+  &.cyan {
+    --status-label-text-color: var(--cyan-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--cyan-#{$statusLabelBgShade});
+  }
+  &.sky {
+    --status-label-text-color: var(--sky-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--sky-#{$statusLabelBgShade});
+  }
+  &.blue {
+    --status-label-text-color: var(--blue-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--blue-#{$statusLabelBgShade});
+  }
+  &.indigo {
+    --status-label-text-color: var(--indigo-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--indigo-#{$statusLabelBgShade});
+  }
+  &.violet {
+    --status-label-text-color: var(--violet-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--violet-#{$statusLabelBgShade});
+  }
+  &.purple {
+    --status-label-text-color: var(--purple-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--purple-#{$statusLabelBgShade});
+  }
+  &.fuchsia {
+    --status-label-text-color: var(--fuchsia-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--fuchsia-#{$statusLabelBgShade});
+  }
+  &.pink {
+    --status-label-text-color: var(--pink-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--pink-#{$statusLabelBgShade});
+  }
+  &.rose {
+    --status-label-text-color: var(--rose-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--rose-#{$statusLabelBgShade});
+  }
+  &.light {
+    --status-label-text-color: var(--gray-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--gray-#{$statusLabelBgShade});
+  }
+  &.gray,
+  &.grey,
+  &.disabled,
+  &.inactive {
+    --status-label-text-color: var(--gray-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--gray-#{$statusLabelBgShade});
+  }
+}
+
+.card.sel,
+li.sel .card,
+table.data tbody tr:not(.disabled).sel,
+table.data tbody tr:not(.disabled).active-drop-target {
+  .status-label {
+    &.gray,
+    &.grey,
+    &.disabled,
+    &.inactive {
+      --status-label-bg-color: var(--white);
+
+      &:before {
+        opacity: 0.075;
+      }
+    }
+  }
+}
+
+/* colors */
 .icon,
 .cp-icon,
 [data-icon],

@@ -385,7 +385,7 @@ class Cp
 
         if ($config['showStatus']) {
             /** @var Chippable&Statusable $component */
-            $html .= self::componentStatusHtml($component) ?? '';
+            $html .= self::componentStatusIndicatorHtml($component) ?? '';
         }
 
         if ($config['showLabel']) {
@@ -555,7 +555,13 @@ class Cp
             $config['attributes'],
         );
 
-        $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
+        $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => $element->getCardLabelHtml());
+
+        if ($element::hasStatuses()) {
+            $headingContent .= Html::tag('span', '', ['class' => 'flex-grow']) .
+                static::componentStatusLabelHtml($element);
+        }
+
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
         $thumb = $element->getThumbHtml(128);
@@ -580,7 +586,6 @@ class Cp
             Html::endTag('div') . // .card-content
             Html::beginTag('div', ['class' => 'card-actions-container']) .
             Html::beginTag('div', ['class' => 'card-actions']) .
-            (self::componentStatusHtml($element) ?? '') .
             ($config['selectable'] ? self::componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '') .
             ($config['showActionMenu'] ? self::componentActionMenu($element) : '') .
             ($config['sortable'] ? Html::button('', [
@@ -614,17 +619,17 @@ class Cp
     }
 
     /**
-     * Renders accessible HTML for status indicators.
+     * Renders status indicator HTML.
      *
      * When the `status` is equal to "draft" the draft icon will be displayed. The attributes passed as the
      * second argument should be a status definition from [[\craft\base\ElementInterface::statuses]]
      *
      * @param string $status Status string
-     * @param array|null $attributes Attributes to be passed along.
+     * @param array $attributes Attributes to be passed along.
      * @return string|null
      * @since 5.0.0
      */
-    public static function statusIndicatorHtml(string $status, array $attributes = null): ?string
+    public static function statusIndicatorHtml(string $status, array $attributes = []): ?string
     {
         if ($status === 'draft') {
             return Html::tag('span', '', [
@@ -655,6 +660,85 @@ class Cp
         ]);
     }
 
+    /**
+     * Renders status indicator HTML for a [[Statusable]] component.
+     *
+     * @param Statusable $component
+     * @return string|null
+     * @since 5.2.0
+     */
+    public static function componentStatusIndicatorHtml(Statusable $component): ?string
+    {
+        $status = $component->getStatus();
+
+        if ($status === 'draft') {
+            return self::statusIndicatorHtml('draft');
+        }
+
+        $statusDef = $component::statuses()[$status] ?? null;
+
+        // Just to give the `statusIndicatorHtml` clean types
+        if (is_string($statusDef)) {
+            $statusDef = ['label' => $statusDef];
+        }
+
+        return self::statusIndicatorHtml($status, $statusDef);
+    }
+
+    /**
+     * Renders status label HTML.
+     *
+     * When the `status` is equal to "draft" the draft icon will be displayed. The attributes passed as the
+     * second argument should be a status definition from [[\craft\base\ElementInterface::statuses]]
+     *
+     * @param string $status Status string
+     * @param array $attributes Attributes to be passed along.
+     * @return string|null
+     * @since 5.2.0
+     */
+    public static function statusLabelHtml(string $status, array $attributes = []): ?string
+    {
+        $indicatorHtml = static::statusIndicatorHtml($status, ['label' => '']);
+        $label = $attributes['label'] ?? ($status === 'draft' ? Craft::t('app', 'Draft') : ucfirst($status));
+
+        $color = $attributes['color'] ?? null;
+        if ($color instanceof Color) {
+            $color = $color->value;
+        }
+
+        return Html::tag('span', sprintf('%s %s', $indicatorHtml, $label), [
+            'class' => array_filter([
+                'status-label',
+                $status,
+                $color,
+            ]),
+        ]);
+    }
+
+    /**
+     * Renders status label HTML for a [[Statusable]] component.
+     *
+     * @param Statusable $component
+     * @return string|null
+     * @since 5.2.0
+     */
+    public static function componentStatusLabelHtml(Statusable $component): ?string
+    {
+        $status = $component->getStatus();
+
+        if ($status === 'draft') {
+            return self::statusLabelHtml('draft');
+        }
+
+        $statusDef = $component::statuses()[$status] ?? null;
+
+        // Just to give the `statusIndicatorHtml` clean types
+        if (is_string($statusDef)) {
+            $statusDef = ['label' => $statusDef];
+        }
+
+        return self::statusLabelHtml($status, $statusDef);
+    }
 
     private static function baseElementAttributes(ElementInterface $element, array $config): array
     {
@@ -704,24 +788,6 @@ class Cp
                 'labelledby' => $labelId,
             ],
         ]);
-    }
-
-    private static function componentStatusHtml(Statusable $component): ?string
-    {
-        $status = $component->getStatus();
-
-        if ($status === 'draft') {
-            return self::statusIndicatorHtml('draft');
-        }
-
-        $statusDef = $component::statuses()[$status] ?? null;
-
-        // Just to give the `statusIndicatorHtml` clean types
-        if (is_string($statusDef)) {
-            $statusDef = ['label' => $statusDef];
-        }
-
-        return self::statusIndicatorHtml($status, $statusDef);
     }
 
     private static function elementLabelHtml(ElementInterface $element, array $config, array $attributes, callable $uiLabel): string

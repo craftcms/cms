@@ -1382,6 +1382,10 @@ abstract class Element extends Component implements ElementInterface
             'uid' => ['label' => Craft::t('app', 'UID')],
         ];
 
+        if (static::hasStatuses()) {
+            $attributes['status'] = ['label' => Craft::t('app', 'Status')];
+        }
+
         if (static::hasUris()) {
             $attributes = array_merge($attributes, [
                 'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -3219,6 +3223,14 @@ abstract class Element extends Component implements ElementInterface
     public function getChipLabelHtml(): string
     {
         return Html::encode($this->getUiLabel());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCardLabelHtml(): string
+    {
+        return $this->getChipLabelHtml();
     }
 
     /**
@@ -5189,6 +5201,9 @@ JS, [
             case 'parent':
                 $parent = $this->getParent();
                 return $parent ? Cp::elementChipHtml($parent) : '';
+
+            case 'status':
+                return Cp::componentStatusLabelHtml($this);
 
             case 'link':
                 if (ElementHelper::isDraftOrRevision($this)) {

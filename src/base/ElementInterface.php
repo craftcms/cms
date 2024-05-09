@@ -791,6 +791,14 @@ interface ElementInterface extends
     public function getChipLabelHtml(): string;
 
     /**
+     * Returns the label HTML for element cards.
+     *
+     * @return string
+     * @since 5.2.0
+     */
+    public function getCardLabelHtml(): string;
+
+    /**
      * Returns the body HTML for element cards.
      *
      * @return string|null
