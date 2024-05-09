@@ -882,13 +882,18 @@ class ProjectConfig extends Component
      * Remove values from internal config by a list of paths.
      *
      * @param array $paths
-     * @throws \yii\db\Exception
      */
     protected function removeInternalConfigValuesByPaths(array $paths): void
     {
-        Db::delete(Table::PROJECTCONFIG, [
-            'path' => $paths,
-        ]);
+        $chunks = array_chunk($paths, 1000);
+        $db = Craft::$app->getDb();
+        $db->transaction(function() use ($chunks, $db) {
+            foreach ($chunks as $chunk) {
+                Db::delete(Table::PROJECTCONFIG, [
+                    'path' => $chunk,
+                ], db: $db);
+            }
+        });
     }
 
     /**
