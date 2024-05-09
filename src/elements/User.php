@@ -454,7 +454,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineTableAttributes(): array
     {
-        return [
+        return array_merge(parent::defineTableAttributes(), [
             'email' => ['label' => Craft::t('app', 'Email')],
             'username' => ['label' => Craft::t('app', 'Username')],
             'fullName' => ['label' => Craft::t('app', 'Full Name')],
@@ -463,12 +463,8 @@ class User extends Element implements IdentityInterface
             'groups' => ['label' => Craft::t('app', 'Groups')],
             'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
             'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
-            'id' => ['label' => Craft::t('app', 'ID')],
-            'uid' => ['label' => Craft::t('app', 'UID')],
             'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
-            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
-        ];
+        ]);
     }
 
     /**

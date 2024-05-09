@@ -595,7 +595,7 @@ class Asset extends Element
      */
     protected static function defineTableAttributes(): array
     {
-        $attributes = [
+        $attributes = array_merge(parent::defineTableAttributes(), [
             'filename' => ['label' => Craft::t('app', 'Filename')],
             'size' => ['label' => Craft::t('app', 'File Size')],
             'kind' => ['label' => Craft::t('app', 'File Kind')],
@@ -605,13 +605,9 @@ class Asset extends Element
             'alt' => ['label' => Craft::t('app', 'Alternative Text')],
             'location' => ['label' => Craft::t('app', 'Location')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
-            'id' => ['label' => Craft::t('app', 'ID')],
-            'uid' => ['label' => Craft::t('app', 'UID')],
             'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
-            'dateCreated' => ['label' => Craft::t('app', 'Date Uploaded')],
-            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
             'uploader' => ['label' => Craft::t('app', 'Uploaded By')],
-        ];
+        ]);
 
         // Hide Author from Craft Solo
         if (Craft::$app->edition === CmsEdition::Solo) {

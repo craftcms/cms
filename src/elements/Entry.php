@@ -581,25 +581,18 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected static function defineTableAttributes(): array
     {
-        $attributes = [
+        $attributes = array_merge(parent::defineTableAttributes(), [
             'section' => ['label' => Craft::t('app', 'Section')],
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'authors' => ['label' => Craft::t('app', 'Authors')],
-            'slug' => ['label' => Craft::t('app', 'Slug')],
             'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
             'parent' => ['label' => Craft::t('app', 'Parent')],
-            'uri' => ['label' => Craft::t('app', 'URI')],
             'postDate' => ['label' => Craft::t('app', 'Post Date')],
             'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
-            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
-            'id' => ['label' => Craft::t('app', 'ID')],
-            'uid' => ['label' => Craft::t('app', 'UID')],
-            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
             'revisionNotes' => ['label' => Craft::t('app', 'Revision Notes')],
             'revisionCreator' => ['label' => Craft::t('app', 'Last Edited By')],
             'drafts' => ['label' => Craft::t('app', 'Drafts')],
-        ];
+        ]);
 
         // Hide Author & Last Edited By from Craft Solo
         if (Craft::$app->edition === CmsEdition::Solo) {

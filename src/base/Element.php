@@ -1375,7 +1375,22 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function defineTableAttributes(): array
     {
-        return [];
+        $attributes = [
+            'dateCreated' => ['label' => Craft::t('app', 'Date Uploaded')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
+        ];
+
+        if (static::hasUris()) {
+            $attributes = array_merge($attributes, [
+                'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
+                'slug' => ['label' => Craft::t('app', 'Slug')],
+                'uri' => ['label' => Craft::t('app', 'URI')],
+            ]);
+        }
+
+        return $attributes;
     }
 
     /**
