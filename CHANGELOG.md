@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a SQL error that could occur when applying or rebuilding the project config.
+- Fixed a bug where adjacent selected table rows were getting extra spacing in Firefox.
 
 ## 4.9.2 - 2024-05-07
 
