@@ -5,6 +5,7 @@
 - Improved mobile styling. ([#14910](https://github.com/craftcms/cms/pull/14910))
 - Improved the look of slideouts.
 - Table views within element index pages are no longer scrolled directly. ([#14927](https://github.com/craftcms/cms/pull/14927))
+- Improved the look of user gradicons when selected.
 
 ### Administration
 - Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))
