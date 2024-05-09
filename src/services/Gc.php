@@ -232,14 +232,14 @@ class Gc extends Component
             if ($this->db->getIsMysql()) {
                 $sql = <<<SQL
 DELETE [[e]].* FROM $elementsTable [[e]]
-LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])
 WHERE $conditionSql
 SQL;
             } else {
                 $sql = <<<SQL
 DELETE FROM $elementsTable
 USING $elementsTable [[e]]
-LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])
 WHERE
   $elementsTable.[[id]] = [[e.id]] AND $conditionSql
 SQL;
