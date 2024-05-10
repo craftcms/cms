@@ -2,14 +2,17 @@
 
 namespace craft\log;
 
+use Closure;
 use Craft;
 use craft\helpers\App;
 use DateTimeZone;
 use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\StreamHandler;
+use Monolog\Level;
 use Monolog\Logger;
 use Monolog\Processor\ProcessorInterface;
 use Monolog\Processor\PsrLogMessageProcessor;
@@ -41,6 +44,14 @@ class MonologTarget extends PsrTarget
      * @var bool Whether to log request context
      */
     public bool $logContext = true;
+
+    /**
+     * @var null|array|Closure The handlers for the logger
+     * @phpstan-var null|array|Closure(MonologTarget): array<HandlerInterface>
+     * - If `null`, the default handlers will be used ({@see getDefaultHandlers}).
+     * - If a closure, it will be called with the log target as the sole argument and should return an array of handlers.
+     */
+    public null|array|Closure $handlers = null;
 
     /**
      * @var bool
@@ -92,6 +103,7 @@ class MonologTarget extends PsrTarget
             allowInlineLineBreaks: $this->allowLineBreaks,
             ignoreEmptyContextAndExtra: true,
         );
+        $this->handlers = $this->handlers ?? $this->getDefaultHandlers();
         $this->logger = $this->_createLogger($this->name);
     }
 
@@ -141,6 +153,33 @@ class MonologTarget extends PsrTarget
         $logger->popProcessor();
     }
 
+    public function getDefaultHandlers(): array
+    {
+        $handlers = [];
+
+        if (App::isStreamLog()) {
+            $handlers[] = (new StreamHandler(
+                'php://stderr',
+                Level::Warning,
+                bubble: false,
+            ))->setFormatter($this->formatter);
+            $handlers[] = (new StreamHandler(
+                'php://stdout',
+                $this->level,
+                bubble: false,
+            ))->setFormatter($this->formatter);
+        } else {
+            $handlers[] = (new RotatingFileHandler(
+                App::parseEnv(sprintf('@storage/logs/%s.log', $this->name)),
+                $this->maxFiles,
+                $this->level,
+                filePermission: Craft::$app->getConfig()->getGeneral()->defaultFileMode,
+            ))->setFormatter($this->formatter);
+        }
+
+        return $handlers;
+    }
+
     /**
      * Context is logged via {@see self::export} method, so it can be added using Monolog.
      * @inheritdoc
@@ -173,7 +212,6 @@ class MonologTarget extends PsrTarget
 
     private function _createLogger(string $name): Logger
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $logger = (new Logger($name))->useMicrosecondTimestamps($this->useMicrosecondTimestamps);
 
         if ($this->processor) {
@@ -184,28 +222,11 @@ class MonologTarget extends PsrTarget
                 ->pushProcessor(new MessageProcessor());
         }
 
-        if (App::isStreamLog()) {
-            $logger->pushHandler((new StreamHandler(
-                'php://stderr',
-                Logger::WARNING,
-                bubble: false,
-            ))->setFormatter($this->formatter));
+        $handlers = $this->handlers instanceof Closure
+            ? ($this->handlers)($this)
+            : $this->handlers;
 
-            $logger->pushHandler((new StreamHandler(
-                'php://stdout',
-                $this->level,
-                bubble: false,
-            ))->setFormatter($this->formatter));
-        } else {
-            $logger->pushHandler((new RotatingFileHandler(
-                App::parseEnv(sprintf('@storage/logs/%s.log', $name)),
-                $this->maxFiles,
-                $this->level,
-                filePermission: $generalConfig->defaultFileMode,
-            ))->setFormatter($this->formatter));
-        }
-
-        return $logger;
+        return $logger->setHandlers($handlers);
     }
 
     /**
@@ -260,6 +281,11 @@ class MonologTarget extends PsrTarget
     public function setFormatter(?FormatterInterface $formatter): void
     {
         $this->_setLoggerProperty('formatter', $formatter);
+    }
+
+    public function getFormatter(): ?FormatterInterface
+    {
+        return $this->formatter;
     }
 
     /**
