@@ -4256,8 +4256,10 @@ ul.tree,
     &:not(.light):not(.gray):not(.red):not(.orange):not(.amber):not(.yellow) {
       &:not(.lime):not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky) {
         &:not(.blue):not(.indigo):not(.violet):not(.purple):not(.fuchsia) {
-          &:not(.pink):not(.rose):not(.grey):not(.black) {
-            border-color: var(--ui-control-color);
+          &:not(.pink):not(.rose):not(.grey):not(.black):not(.disabled) {
+            &:not(.inactive) {
+              border-color: var(--ui-control-color);
+            }
           }
         }
       }
@@ -4364,14 +4366,15 @@ ul.tree,
   background-color: var(--gray-800);
 }
 .status.gray,
+.status.disabled,
+.status.inactive,
 .bg-gray,
 .status.grey,
 .bg-grey {
   background-color: var(--gray-300);
 }
 
-.status.white,
-.status.disabled {
+.status.white {
   opacity: 1;
 }
 
@@ -4407,31 +4410,20 @@ $statusLabelBgShade: '500';
     pointer-events: none;
   }
 
-  .status {
+  .status,
+  .cp-icon {
     @include margin(0, 0, 0, -3px);
   }
 
-  &.on,
-  &.live,
-  &.active,
-  &.enabled {
-    --status-label-text-color: var(--teal-#{$statusLabelColorShade});
-    --status-label-bg-color: var(--teal-#{$statusLabelBgShade});
-  }
-  &.red,
-  &.off,
-  &.suspended,
-  &.expired {
+  &.red {
     --status-label-text-color: var(--red-#{$statusLabelColorShade});
     --status-label-bg-color: var(--red-#{$statusLabelBgShade});
   }
-  &.amber,
-  &.warning {
+  &.amber {
     --status-label-text-color: var(--amber-#{$statusLabelColorShade});
     --status-label-bg-color: var(--amber-#{$statusLabelBgShade});
   }
-  &.orange,
-  &.pending {
+  &.orange {
     --status-label-text-color: var(--orange-#{$statusLabelColorShade});
     --status-label-bg-color: var(--orange-#{$statusLabelBgShade});
   }
@@ -4451,8 +4443,7 @@ $statusLabelBgShade: '500';
     --status-label-text-color: var(--emerald-#{$statusLabelColorShade});
     --status-label-bg-color: var(--emerald-#{$statusLabelBgShade});
   }
-  &.teal,
-  &.turquoise {
+  &.teal {
     --status-label-text-color: var(--teal-#{$statusLabelColorShade});
     --status-label-bg-color: var(--teal-#{$statusLabelBgShade});
   }
@@ -4496,10 +4487,7 @@ $statusLabelBgShade: '500';
     --status-label-text-color: var(--gray-#{$statusLabelColorShade});
     --status-label-bg-color: var(--gray-#{$statusLabelBgShade});
   }
-  &.gray,
-  &.grey,
-  &.disabled,
-  &.inactive {
+  &.gray {
     --status-label-text-color: var(--gray-#{$statusLabelColorShade});
     --status-label-bg-color: var(--gray-#{$statusLabelBgShade});
   }
@@ -4509,16 +4497,11 @@ $statusLabelBgShade: '500';
 li.sel .card,
 table.data tbody tr:not(.disabled).sel,
 table.data tbody tr:not(.disabled).active-drop-target {
-  .status-label {
-    &.gray,
-    &.grey,
-    &.disabled,
-    &.inactive {
-      --status-label-bg-color: var(--white);
+  .status-label.gray {
+    --status-label-bg-color: var(--white);
 
-      &:before {
-        opacity: 0.075;
-      }
+    &:before {
+      opacity: 0.075;
     }
   }
 }
@@ -6767,8 +6750,10 @@ $min2ColWidth: 400px;
       &:not(.light):not(.gray):not(.red):not(.orange):not(.amber):not(.yellow) {
         &:not(.lime):not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky) {
           &:not(.blue):not(.indigo):not(.violet):not(.purple):not(.fuchsia) {
-            &:not(.pink):not(.rose):not(.grey):not(.black) {
-              border-color: currentColor;
+            &:not(.pink):not(.rose):not(.grey):not(.black):not(.disabled) {
+              &:not(.inactive) {
+                border-color: currentColor;
+              }
             }
           }
         }

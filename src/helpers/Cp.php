@@ -691,26 +691,38 @@ class Cp
      * When the `status` is equal to "draft" the draft icon will be displayed. The attributes passed as the
      * second argument should be a status definition from [[\craft\base\ElementInterface::statuses]]
      *
-     * @param string $status Status string
-     * @param array $attributes Attributes to be passed along.
+     * @param array $config Config options
      * @return string|null
      * @since 5.2.0
      */
-    public static function statusLabelHtml(string $status, array $attributes = []): ?string
+    public static function statusLabelHtml(array $config = []): ?string
     {
-        $indicatorHtml = static::statusIndicatorHtml($status, ['label' => '']);
-        $label = $attributes['label'] ?? ($status === 'draft' ? Craft::t('app', 'Draft') : ucfirst($status));
+        $config += [
+            'color' => Color::Gray->value,
+            'icon' => null,
+            'label' => null,
+        ];
 
-        $color = $attributes['color'] ?? null;
-        if ($color instanceof Color) {
-            $color = $color->value;
+        if ($config['color'] instanceof Color) {
+            $config['color'] = $config['color']->value;
         }
 
-        return Html::tag('span', sprintf('%s %s', $indicatorHtml, $label), [
+        if ($config['icon']) {
+            $html = Html::tag('span', static::iconSvg($config['icon']), [
+                'class' => ['cp-icon', 'puny', $config['color']],
+            ]);
+        } else {
+            $html = static::statusIndicatorHtml($config['color'], ['label' => '']);
+        }
+
+        if ($config['label']) {
+            $html .= ' ' . Html::encode($config['label']);
+        }
+
+        return Html::tag('span', $html, [
             'class' => array_filter([
                 'status-label',
-                $status,
-                $color,
+                $config['color'],
             ]),
         ]);
     }
@@ -726,18 +738,21 @@ class Cp
     {
         $status = $component->getStatus();
 
-        if ($status === 'draft') {
-            return self::statusLabelHtml('draft');
+        if (!$status) {
+            return null;
         }
 
-        $statusDef = $component::statuses()[$status] ?? null;
-
-        // Just to give the `statusIndicatorHtml` clean types
-        if (is_string($statusDef)) {
-            $statusDef = ['label' => $statusDef];
+        $config = $component::statuses()[$status] ?? [];
+        if (is_string($config)) {
+            $config = ['label' => $config];
         }
+        $config['color'] ??= Color::tryFromStatus($status) ?? Color::Gray;
+        $config['label'] ??= match ($status) {
+            'draft' => Craft::t('app', 'Draft'),
+            default => ucfirst($status),
+        };
 
-        return self::statusLabelHtml($status, $statusDef);
+        return self::statusLabelHtml($config);
     }
 
     private static function baseElementAttributes(ElementInterface $element, array $config): array
