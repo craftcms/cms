@@ -35,6 +35,7 @@ use craft\web\twig\nodevisitors\EventTagAdder;
 use craft\web\twig\nodevisitors\EventTagFinder;
 use craft\web\twig\nodevisitors\GetAttrAdjuster;
 use craft\web\twig\nodevisitors\Profiler;
+use craft\web\twig\tokenparsers\CacheResponseTokenParser;
 use craft\web\twig\tokenparsers\CacheTokenParser;
 use craft\web\twig\tokenparsers\DdTokenParser;
 use craft\web\twig\tokenparsers\DeprecatedTokenParser;
@@ -130,6 +131,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getTokenParsers(): array
     {
         return [
+            new CacheResponseTokenParser(),
             new CacheTokenParser(),
             new DeprecatedTokenParser(),
             new DdTokenParser(),
