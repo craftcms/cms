@@ -2870,6 +2870,13 @@ table {
               color: var(--white);
               background-color: var(--selected-bg-color);
             }
+
+            .icon,
+            .cp-icon,
+            [data-icon],
+            [data-icon-after] {
+              --icon-color: var(--white) !important;
+            }
           }
         }
       }
@@ -3081,7 +3088,10 @@ table {
       var(--dark-sel-color)
     ) !important;
 
-    .cp-icon {
+    .icon,
+    .cp-icon,
+    [data-icon],
+    [data-icon-after] {
       --icon-color: var(--white) !important;
     }
   }
@@ -3249,6 +3259,13 @@ table {
     & > .thumb {
       background-color: var(--dark-sel-color) !important;
       filter: brightness(0.85);
+    }
+
+    .icon,
+    .cp-icon,
+    [data-icon],
+    [data-icon-after] {
+      --icon-color: var(--white) !important;
     }
   }
 
