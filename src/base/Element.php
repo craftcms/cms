@@ -3228,14 +3228,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getCardLabelHtml(): string
-    {
-        return $this->getChipLabelHtml();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getCardBodyHtml(): ?string
     {
         $previews = array_filter(array_map(

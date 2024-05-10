@@ -555,14 +555,13 @@ class Cp
             $config['attributes'],
         );
 
-        $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => $element->getCardLabelHtml());
-
-        if ($element::hasStatuses()) {
-            $headingContent .= Html::tag('span', '', ['class' => 'flex-grow']) .
-                static::componentStatusLabelHtml($element);
-        }
-
+        $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
+
+        $statusLabel = $element::hasStatuses() ? static::componentStatusLabelHtml($element) : null;
+        if ($statusLabel) {
+            $bodyContent .= Html::tag('div', $statusLabel, ['class' => 'flex']);
+        }
 
         $thumb = $element->getThumbHtml(128);
         if ($thumb === null && $element instanceof Iconic) {
