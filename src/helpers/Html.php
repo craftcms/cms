@@ -517,7 +517,37 @@ class Html extends \yii\helpers\Html
             return $value;
         }
         if (is_string($value)) {
+            // first match any css properties that contain 'url()'
+            preg_match('/^\s*([a-z\-]+:url\(.*\));?|;\s*(.*:url\(.*\));?/', $value, $matches);
+            $placeholders = [];
+
+            if (!empty($matches)) {
+                // clean up the matches
+                array_walk($matches, function(&$match) {
+                    $match = trim(trim($match), ';');
+                });
+                $matches = array_unique(ArrayHelper::filterEmptyStringsFromArray($matches));
+
+                // compile placeholders
+                foreach ($matches as $key => $match) {
+                    $placeholders[] = "PLACEHOLDER_$key";
+                }
+
+                // then replace css properties we matched with their placeholders
+                $value = str_replace($matches, $placeholders, $value);
+            }
+
+            // now split the styles string on semicolons
             $styles = ArrayHelper::filterEmptyStringsFromArray(preg_split('/\s*;\s*/', $value));
+
+            if (!empty($matches)) {
+                // finally replace placeholders with their correct values
+                $styles = preg_replace_callback('/PLACEHOLDER_(\d+)/', function($items) use ($matches) {
+                    return $matches[$items[1]];
+                }, $styles);
+            }
+
+            // and proceed with the array of styles
             $normalized = [];
             foreach ($styles as $style) {
                 [$n, $v] = array_pad(preg_split('/\s*:\s*/', $style, 2), 2, '');
