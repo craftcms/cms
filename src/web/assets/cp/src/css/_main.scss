@@ -4333,7 +4333,7 @@ ul.tree,
 .bg-teal,
 .status.turquoise,
 .bg-turquoise {
-  background-color: var(--teal-500);
+  background-color: var(--enabled-color);
 }
 .status.cyan,
 .bg-cyan {
@@ -4434,7 +4434,7 @@ $statusLabelBgShade: '500';
 
   &.red {
     --status-label-text-color: var(--red-#{$statusLabelColorShade});
-    --status-label-bg-color: var(--red-#{$statusLabelBgShade});
+    --status-label-bg-color: var(--disabled-color);
   }
   &.amber {
     --status-label-text-color: var(--amber-#{$statusLabelColorShade});
@@ -4442,7 +4442,7 @@ $statusLabelBgShade: '500';
   }
   &.orange {
     --status-label-text-color: var(--orange-#{$statusLabelColorShade});
-    --status-label-bg-color: var(--orange-#{$statusLabelBgShade});
+    --status-label-bg-color: var(--pending-color);
   }
   &.yellow {
     --status-label-text-color: var(--yellow-#{$statusLabelColorShade});
@@ -4462,7 +4462,7 @@ $statusLabelBgShade: '500';
   }
   &.teal {
     --status-label-text-color: var(--teal-#{$statusLabelColorShade});
-    --status-label-bg-color: var(--teal-#{$statusLabelBgShade});
+    --status-label-bg-color: var(--enabled-color);
   }
   &.cyan {
     --status-label-text-color: var(--cyan-#{$statusLabelColorShade});
@@ -4553,7 +4553,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
     --icon-color: var(--emerald-500);
   }
   &.teal {
-    --icon-color: var(--teal-500);
+    --icon-color: var(--enabled-color);
   }
   &.cyan {
     --icon-color: var(--cyan-500);
