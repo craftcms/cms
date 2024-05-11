@@ -47,7 +47,7 @@ enum Color: string
      */
     public static function tryFromStatus(string $status): ?self
     {
-        return match($status) {
+        return match ($status) {
             'on', 'live', 'active', 'enabled', 'turquoise' => self::Teal,
             'off', 'suspended', 'expired' => self::Red,
             'warning' => self::Amber,
