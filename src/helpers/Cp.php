@@ -567,7 +567,9 @@ class Cp
             ($element->isProvisionalDraft ? self::changeStatusLabelHtml() : '');
 
         if ($labels !== '') {
-            $bodyContent .= Html::tag('div', $labels, ['class' => 'flex']);
+            $bodyContent .= Html::tag('div', $labels, [
+                'class' => ['flex', 'gap-xs'],
+            ]);
         }
 
         $thumb = $element->getThumbHtml(128);
