@@ -186,7 +186,7 @@ class Gc extends Component
     /**
      * Hard-deletes eligible elements.
      *
-     * Any soft-deleted block elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
+     * Any soft-deleted nested elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
      *
      * @since 4.0.0
      */
@@ -218,7 +218,7 @@ class Gc extends Component
         }
 
         if (!empty($nestedElementTypes)) {
-            // Only hard-delete block elements that don't have any revisions
+            // Only hard-delete nested elements that don't have any revisions
             $elementsTable = Table::ELEMENTS;
             $revisionsTable = Table::REVISIONS;
             $params = [];
