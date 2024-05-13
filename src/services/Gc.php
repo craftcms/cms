@@ -197,11 +197,11 @@ class Gc extends Component
         }
 
         $normalElementTypes = [];
-        $blockElementTypes = [];
+        $nestedElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             if (is_subclass_of($elementType, NestedElementInterface::class)) {
-                $blockElementTypes[] = $elementType;
+                $nestedElementTypes[] = $elementType;
             } else {
                 $normalElementTypes[] = $elementType;
             }
@@ -217,7 +217,7 @@ class Gc extends Component
             ]);
         }
 
-        if ($blockElementTypes) {
+        if (!empty($nestedElementTypes)) {
             $elementsTable = Table::ELEMENTS;
             $revisionsTable = Table::REVISIONS;
             $elementsOwnersTable = Table::ELEMENTS_OWNERS;
@@ -228,7 +228,7 @@ class Gc extends Component
                 'and',
                 $this->_hardDeleteCondition('e'),
                 [
-                    'e.type' => $blockElementTypes,
+                    'e.type' => $nestedElementTypes,
                     'r.id' => null,
                     'eo.elementId' => null,
                 ],
@@ -260,7 +260,7 @@ SQL;
                 'and',
                 $this->_hardDeleteCondition('e'),
                 [
-                    'e.type' => $blockElementTypes,
+                    'e.type' => $nestedElementTypes,
                     'r.id' => null,
                 ],
             ], $params);
