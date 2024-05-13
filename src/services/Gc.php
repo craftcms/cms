@@ -123,17 +123,19 @@ class Gc extends Component
         $this->deletePartialElements(User::class, Table::USERS, 'id');
 
         $this->_deleteUnsupportedSiteEntries();
-
         $this->_deleteOrphanedNestedEntries();
+
+        // Fire a 'run' event
+        // Note this should get fired *before* orphaned drafts & revisions are deleted
+        // (see https://github.com/craftcms/cms/issues/14309)
+        if ($this->hasEventHandlers(self::EVENT_RUN)) {
+            $this->trigger(self::EVENT_RUN);
+        }
+
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
         $this->_deleteOrphanedRelations();
         $this->_deleteOrphanedStructureElements();
-
-        // Fire a 'run' event
-        if ($this->hasEventHandlers(self::EVENT_RUN)) {
-            $this->trigger(self::EVENT_RUN);
-        }
 
         $this->hardDelete([
             Table::STRUCTURES,
@@ -184,7 +186,7 @@ class Gc extends Component
     /**
      * Hard-deletes eligible elements.
      *
-     * Any soft-deleted block elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
+     * Any soft-deleted nested elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
      *
      * @since 4.0.0
      */
@@ -195,11 +197,11 @@ class Gc extends Component
         }
 
         $normalElementTypes = [];
-        $blockElementTypes = [];
+        $nestedElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             if (is_subclass_of($elementType, NestedElementInterface::class)) {
-                $blockElementTypes[] = $elementType;
+                $nestedElementTypes[] = $elementType;
             } else {
                 $normalElementTypes[] = $elementType;
             }
@@ -215,17 +217,20 @@ class Gc extends Component
             ]);
         }
 
-        if ($blockElementTypes) {
-            // Only hard-delete block elements that don't have any revisions
+        if (!empty($nestedElementTypes)) {
             $elementsTable = Table::ELEMENTS;
             $revisionsTable = Table::REVISIONS;
+            $elementsOwnersTable = Table::ELEMENTS_OWNERS;
+
+            // first hard-delete nested elements which are not nested (owned) and that don't have any revisions
             $params = [];
             $conditionSql = $this->db->getQueryBuilder()->buildCondition([
                 'and',
                 $this->_hardDeleteCondition('e'),
                 [
-                    'e.type' => $blockElementTypes,
+                    'e.type' => $nestedElementTypes,
                     'r.id' => null,
+                    'eo.elementId' => null,
                 ],
             ], $params);
 
@@ -233,6 +238,7 @@ class Gc extends Component
                 $sql = <<<SQL
 DELETE [[e]].* FROM $elementsTable [[e]]
 LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = COALESCE([[e.canonicalId]], [[e.id]])
 WHERE $conditionSql
 SQL;
             } else {
@@ -240,6 +246,36 @@ SQL;
 DELETE FROM $elementsTable
 USING $elementsTable [[e]]
 LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = COALESCE([[e.canonicalId]], [[e.id]])
+WHERE
+  $elementsTable.[[id]] = [[e.id]] AND $conditionSql
+SQL;
+            }
+
+            $this->db->createCommand($sql, $params)->execute();
+
+            // then hard-delete any nested elements that don't have any revisions, including nested ones
+            $params = [];
+            $conditionSql = $this->db->getQueryBuilder()->buildCondition([
+                'and',
+                $this->_hardDeleteCondition('e'),
+                [
+                    'e.type' => $nestedElementTypes,
+                    'r.id' => null,
+                ],
+            ], $params);
+
+            if ($this->db->getIsMysql()) {
+                $sql = <<<SQL
+DELETE [[e]].* FROM $elementsTable [[e]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])
+WHERE $conditionSql
+SQL;
+            } else {
+                $sql = <<<SQL
+DELETE FROM $elementsTable
+USING $elementsTable [[e]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])
 WHERE
   $elementsTable.[[id]] = [[e.id]] AND $conditionSql
 SQL;
