@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use craft\errors\OperationAbortedException;
 use craft\helpers\Db;
 use Throwable;
 use yii\db\ColumnSchemaBuilder;
@@ -52,7 +53,9 @@ abstract class Migration extends \yii\db\Migration
             }
             $transaction->commit();
         } catch (Throwable $e) {
-            $this->_printException($e);
+            if (!$e instanceof OperationAbortedException) {
+                $this->_printException($e);
+            }
             $transaction->rollBack();
             if ($throwExceptions) {
                 throw $e;
