@@ -13,6 +13,7 @@
 - Fixed a bug where soft-deleted elements that belonged to a revision could be deleted by garbage collection. ([#14967](https://github.com/craftcms/cms/pull/14967))
 - Fixed a bug where disabled entries weren’t being displayed within Matrix fields in card view. ([#14973](https://github.com/craftcms/cms/issues/14973))
 - Fixed a bug where users’ Permissions screen was inaccessible for the Team edition. ([#14976](https://github.com/craftcms/cms/issues/14976))
+- Fixed a SQL error that could occur when attempting to update to Craft 5 for the second time. ([#14987](https://github.com/craftcms/cms/issues/14987))
 
 ## 5.1.2 - 2024-05-07
 
