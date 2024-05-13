@@ -197,11 +197,11 @@ class Gc extends Component
         }
 
         $normalElementTypes = [];
-        $blockElementTypes = [];
+        $nestedElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             if (is_subclass_of($elementType, NestedElementInterface::class)) {
-                $blockElementTypes[] = $elementType;
+                $nestedElementTypes[] = $elementType;
             } else {
                 $normalElementTypes[] = $elementType;
             }
@@ -217,7 +217,7 @@ class Gc extends Component
             ]);
         }
 
-        if ($blockElementTypes) {
+        if (!empty($nestedElementTypes)) {
             // Only hard-delete block elements that don't have any revisions
             $elementsTable = Table::ELEMENTS;
             $revisionsTable = Table::REVISIONS;
@@ -226,7 +226,7 @@ class Gc extends Component
                 'and',
                 $this->_hardDeleteCondition('e'),
                 [
-                    'e.type' => $blockElementTypes,
+                    'e.type' => $nestedElementTypes,
                     'r.id' => null,
                 ],
             ], $params);
