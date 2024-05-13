@@ -1,8 +1,24 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a SQL error that could occur when applying or rebuilding the project config.
+- Fixed a bug where adjacent selected table rows were getting extra spacing in Firefox.
+- Fixed a SQL error that could occur when creating revisions after garbage collection was run. ([#14309](https://github.com/craftcms/cms/issues/14309))
+- Fixed a bug where the `serve` command wasn’t serving paths with non-ASCII characters. ([#14977](https://github.com/craftcms/cms/issues/14977))
+- Fixed a bug where element chips within element selection tables had insufficient contrast. ([#14963](https://github.com/craftcms/cms/issues/14963))
+
+## 4.9.2 - 2024-05-07
+
+- Fixed a bug where the `db/backup` command would prompt for password input on PostgreSQL. ([#14945](https://github.com/craftcms/cms/issues/14945))
+- Fixed a bug where pressing <kbd>Shift</kbd> + <kbd>Spacebar</kbd> wasn’t reliably opening the asset preview modal on the Assets index page. ([#14943](https://github.com/craftcms/cms/issues/14943))
+- Fixed a bug where pressing <kbd>Shift</kbd> + <kbd>Spacebar</kbd> within an asset preview modal wasn’t closing the modal.
+- Fixed a bug where pressing arrow keys within asset preview modals wasn’t retargeting the preview modal to adjacent assets. ([#14943](https://github.com/craftcms/cms/issues/14943))
+- Fixed a bug where entry selection modals could have a “New entry” button even if there weren’t any sections enabled for the selected site. ([#14923](https://github.com/craftcms/cms/issues/14923))
+
 ## 4.9.1 - 2024-05-02
 
-- Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911]), [#14510](https://github.com/craftcms/cms/issues/14510))
+- Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911), [#14510](https://github.com/craftcms/cms/issues/14510))
 - Fixed a bug where MySQL backups weren’t restorable on certain environments. ([#14925](https://github.com/craftcms/cms/pull/14925))
 - Fixed a bug where `app/resource-js` requests weren’t working for guest requests. ([#14908](https://github.com/craftcms/cms/issues/14908))
 

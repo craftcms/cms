@@ -133,15 +133,17 @@ class Gc extends Component
 
         $this->_deleteUnsupportedSiteEntries();
 
+        // Fire a 'run' event
+        // Note this should get fired *before* orphaned drafts & revisions are deleted
+        // (see https://github.com/craftcms/cms/issues/14309)
+        if ($this->hasEventHandlers(self::EVENT_RUN)) {
+            $this->trigger(self::EVENT_RUN);
+        }
+
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
         $this->_deleteOrphanedRelations();
         $this->_deleteOrphanedStructureElements();
-
-        // Fire a 'run' event
-        if ($this->hasEventHandlers(self::EVENT_RUN)) {
-            $this->trigger(self::EVENT_RUN);
-        }
 
         $this->hardDelete([
             Table::STRUCTURES,
