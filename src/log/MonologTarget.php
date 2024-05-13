@@ -12,7 +12,6 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\StreamHandler;
-use Monolog\Level;
 use Monolog\Logger;
 use Monolog\Processor\ProcessorInterface;
 use Monolog\Processor\PsrLogMessageProcessor;
@@ -48,7 +47,7 @@ class MonologTarget extends PsrTarget
     /**
      * @var null|array|Closure The handlers for the logger
      * @phpstan-var null|array|Closure(MonologTarget): array<HandlerInterface>
-     * - If `null`, the default handlers will be used ({@see getDefaultHandlers}).
+     * - If `null`, the default handlers will be used (see [[getDefaultHandlers()]].
      * - If a closure, it will be called with the log target as the sole argument and should return an array of handlers.
      */
     public null|array|Closure $handlers = null;
@@ -160,7 +159,7 @@ class MonologTarget extends PsrTarget
         if (App::isStreamLog()) {
             $handlers[] = (new StreamHandler(
                 'php://stderr',
-                Level::Warning,
+                Logger::WARNING,
                 bubble: false,
             ))->setFormatter($this->formatter);
             $handlers[] = (new StreamHandler(
