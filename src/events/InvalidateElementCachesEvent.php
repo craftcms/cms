@@ -26,7 +26,9 @@ class InvalidateElementCachesEvent extends Event
     public array $tags;
 
     /**
-     * @var ElementInterface|null The element that is being invalidated
+     * @var ElementInterface|null The element whose caches are being invalidated, if this was triggered from
+     * [[\craft\services\Elements::invalidateCachesForElement()]].
+     * @since 4.10.0
      */
     public ?ElementInterface $element = null;
 }
