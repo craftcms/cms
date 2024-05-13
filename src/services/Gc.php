@@ -218,9 +218,43 @@ class Gc extends Component
         }
 
         if (!empty($nestedElementTypes)) {
-            // Only hard-delete nested elements that don't have any revisions
             $elementsTable = Table::ELEMENTS;
             $revisionsTable = Table::REVISIONS;
+            $elementsOwnersTable = Table::ELEMENTS_OWNERS;
+
+            // first hard-delete nested elements which are not nested (owned) and that don't have any revisions
+            $params = [];
+            $conditionSql = $this->db->getQueryBuilder()->buildCondition([
+                'and',
+                $this->_hardDeleteCondition('e'),
+                [
+                    'e.type' => $nestedElementTypes,
+                    'r.id' => null,
+                    'eo.elementId' => null,
+                ],
+            ], $params);
+
+            if ($this->db->getIsMysql()) {
+                $sql = <<<SQL
+DELETE [[e]].* FROM $elementsTable [[e]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = COALESCE([[e.canonicalId]], [[e.id]])
+WHERE $conditionSql
+SQL;
+            } else {
+                $sql = <<<SQL
+DELETE FROM $elementsTable
+USING $elementsTable [[e]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = COALESCE([[e.canonicalId]], [[e.id]])
+WHERE
+  $elementsTable.[[id]] = [[e.id]] AND $conditionSql
+SQL;
+            }
+
+            $this->db->createCommand($sql, $params)->execute();
+
+            // then hard-delete any nested elements that don't have any revisions, including nested ones
             $params = [];
             $conditionSql = $this->db->getQueryBuilder()->buildCondition([
                 'and',
@@ -234,14 +268,14 @@ class Gc extends Component
             if ($this->db->getIsMysql()) {
                 $sql = <<<SQL
 DELETE [[e]].* FROM $elementsTable [[e]]
-LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])
 WHERE $conditionSql
 SQL;
             } else {
                 $sql = <<<SQL
 DELETE FROM $elementsTable
 USING $elementsTable [[e]]
-LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])
 WHERE
   $elementsTable.[[id]] = [[e.id]] AND $conditionSql
 SQL;
