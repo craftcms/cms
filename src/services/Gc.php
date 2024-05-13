@@ -186,7 +186,7 @@ class Gc extends Component
     /**
      * Hard-deletes eligible elements.
      *
-     * Any soft-deleted block elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
+     * Any soft-deleted nested elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
      *
      * @since 4.0.0
      */
@@ -222,7 +222,7 @@ class Gc extends Component
             $revisionsTable = Table::REVISIONS;
             $elementsOwnersTable = Table::ELEMENTS_OWNERS;
 
-            // first hard-delete block elements which are not nested (owned) and that don't have any revisions
+            // first hard-delete nested elements which are not nested (owned) and that don't have any revisions
             $params = [];
             $conditionSql = $this->db->getQueryBuilder()->buildCondition([
                 'and',
@@ -254,7 +254,7 @@ SQL;
 
             $this->db->createCommand($sql, $params)->execute();
 
-            // then hard-delete any block elements that don't have any revisions, including nested ones
+            // then hard-delete any nested elements that don't have any revisions, including nested ones
             $params = [];
             $conditionSql = $this->db->getQueryBuilder()->buildCondition([
                 'and',
