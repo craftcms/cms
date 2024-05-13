@@ -1595,11 +1595,8 @@ ul.icons {
 
 .disabled {
   opacity: 0.25;
-}
-
-.disabled,
-.disabled .btn {
-  cursor: default;
+  pointer-events: none;
+  user-select: none;
 }
 
 .noteditable {
@@ -5325,15 +5322,6 @@ $min2ColWidth: 400px;
             }
 
             tr {
-              &.disabled {
-                opacity: 1;
-                color: var(--gray-200);
-
-                .element {
-                  opacity: 0.25;
-                }
-              }
-
               th,
               td {
                 cursor: default;
