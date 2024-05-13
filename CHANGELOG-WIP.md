@@ -18,5 +18,6 @@
 - Added `craft\db\getRestoreFormat()`.
 - Added `craft\db\setBackupFormat()`.
 - Added `craft\db\setRestoreFormat()`.
+- Added `craft\events\InvalidateElementcachesEvent::$element`.
 - `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
 - Added the `waitForDoubleClicks` setting to `Garnish.Select`, `Craft.BaseElementIndex`, and `Craft.BaseElementIndexView`.
