@@ -4,6 +4,7 @@
 
 - Fixed a SQL error that could occur when applying or rebuilding the project config.
 - Fixed a bug where adjacent selected table rows were getting extra spacing in Firefox.
+- Fixed a SQL error that could occur when creating revisions after garbage collection was run. ([#14309](https://github.com/craftcms/cms/issues/14309))
 - Fixed a bug where entry selection modals could list all entries when no sources were available for the selected site. ([#14956](https://github.com/craftcms/cms/issues/14956))
 - Fixed a bug where element cards could get duplicate status indicators. ([#14958](https://github.com/craftcms/cms/issues/14958))
 - Fixed a bug where element chips could overflow their containers. ([#14924](https://github.com/craftcms/cms/issues/14924))
