@@ -11,3 +11,4 @@
 - Added `craft\db\getRestoreFormat()`.
 - Added `craft\db\setBackupFormat()`.
 - Added `craft\db\setRestoreFormat()`.
+- Added `craft\events\InvalidateElementcachesEvent::$element`.
