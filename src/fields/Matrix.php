@@ -699,11 +699,6 @@ class Matrix extends Field implements
                 ) use ($owner) {
                     $query->ownerId = $owner->id;
 
-                    // in the cards view, we want to show the disabled entries too
-                    if ($this->viewMode === self::VIEW_MODE_CARDS) {
-                        $query->status(null);
-                    }
-
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
                         $query->id = null;
