@@ -28,7 +28,39 @@ use yii\db\Expression;
 class SystemMessages extends Component
 {
     /**
-     * @event RegisterEmailMessagesEvent The event that is triggered when registering email messages.
+     * @event RegisterEmailMessagesEvent The event that is triggered when registering system messages.
+     *
+     * ```php
+     * use craft\base\Event;
+     * use craft\events\RegisterEmailMessagesEvent;
+     * use craft\services\SystemMessages;
+     *
+     * Event::on(
+     *     SystemMessages::class,
+     *     SystemMessages::EVENT_REGISTER_MESSAGES,
+     *     function(RegisterEmailMessagesEvent $event) {
+     *         $event->messages[] = [
+     *             'key' => 'account_approved',
+     *             'heading' => 'When a member’s account is approved',
+     *             'subject' => 'Your account is approved!',
+     *             'body' => "Hey {{user.friendlyName|e}},\n\nYour account with {{systemName}} has been approved by {{approver}}!",
+     *         ];
+     *     },
+     * );
+     * ```
+     *
+     * Once a system message is registered, it will be editable from the System Messages utility.
+     *
+     * System messages can be sent via [[\craft\mail\Mailer::composeFromKey()]]:
+     *
+     * ```php
+     * Craft::$app->getMailer()
+     *    ->composeFromKey('account_approved', [
+     *        'approver' => $approver->friendlyName,
+     *    ])
+     *    ->setTo($user)
+     *    ->send();
+     * ```
      */
     public const EVENT_REGISTER_MESSAGES = 'registerMessages';
 
