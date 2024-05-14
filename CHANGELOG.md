@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.1.3 - 2024-05-14
 
 - Fixed a SQL error that could occur when applying or rebuilding the project config.
 - Fixed a bug where adjacent selected table rows were getting extra spacing in Firefox.
