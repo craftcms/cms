@@ -1,12 +1,13 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.1.3 - 2024-05-14
 
 - Fixed a SQL error that could occur when applying or rebuilding the project config.
 - Fixed a bug where adjacent selected table rows were getting extra spacing in Firefox.
 - Fixed a SQL error that could occur when creating revisions after garbage collection was run. ([#14309](https://github.com/craftcms/cms/issues/14309))
 - Fixed a bug where the `serve` command wasn’t serving paths with non-ASCII characters. ([#14977](https://github.com/craftcms/cms/issues/14977))
 - Fixed a bug where `craft\helpers\Html::explodeStyle()` and `normalizeTagAttributes()` weren’t handling styles with encoded images via `url()` properly. ([#14964](https://github.com/craftcms/cms/issues/14964))
+- Fixed a bug where the `db/backup` command would fail if the destination path contained a space.
 - Fixed a bug where entry selection modals could list all entries when no sources were available for the selected site. ([#14956](https://github.com/craftcms/cms/issues/14956))
 - Fixed a bug where element cards could get duplicate status indicators. ([#14958](https://github.com/craftcms/cms/issues/14958))
 - Fixed a bug where element chips could overflow their containers. ([#14924](https://github.com/craftcms/cms/issues/14924))
