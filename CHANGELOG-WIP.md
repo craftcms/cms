@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 5.2 (WIP)
 
 ### Content Management
+- It’s now possible to edit assets’ alternative text from the Assets index page. ([#14893](https://github.com/craftcms/cms/discussions/14893))
 - Element index checkboxes no longer have a lag when deselected, except within element selection modals. ([#14896](https://github.com/craftcms/cms/issues/14896))
 - Improved mobile styling. ([#14910](https://github.com/craftcms/cms/pull/14910))
 - Improved the look of slideouts.
