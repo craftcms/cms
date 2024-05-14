@@ -2644,6 +2644,22 @@ JS,[
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function inlineAttributeInputHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'alt':
+                return Cp::textareaHtml([
+                    'name' => 'alt',
+                    'value' => $this->alt,
+                ]);
+            default:
+                return parent::inlineAttributeInputHtml($attribute);
+        }
+    }
+
+    /**
      * Returns the HTML for asset previews.
      *
      * @return string
