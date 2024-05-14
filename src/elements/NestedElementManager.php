@@ -383,7 +383,10 @@ class NestedElementManager extends Component
                 ]);
 
                 /** @var NestedElementInterface[] $elements */
-                $elements = $this->getValue($owner)->all();
+                $elements = $this->getValue($owner)
+                    ->status(null)
+                    ->limit(null)
+                    ->all();
                 $this->setOwnerOnNestedElements($owner, $elements);
 
                 if (!empty($elements)) {

@@ -38,6 +38,7 @@ class m230617_070415_entrify_matrix_blocks extends Migration
         $this->addColumn(Table::ENTRIES, 'fieldId', $this->integer()->after('primaryOwnerId'));
         $this->addColumn(Table::ELEMENTS, 'deletedWithOwner', $this->boolean()->null()->after('dateDeleted'));
 
+        $this->dropTableIfExists(Table::ELEMENTS_OWNERS);
         $this->createTable(Table::ELEMENTS_OWNERS, [
             'elementId' => $this->integer()->notNull(),
             'ownerId' => $this->integer()->notNull(),
