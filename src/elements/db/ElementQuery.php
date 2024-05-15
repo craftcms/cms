@@ -2505,10 +2505,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             // Group the fields by handle and field UUID
             /** @var FieldInterface[][][] $fieldsByHandle */
-            $fieldsByHandle = ArrayHelper::index($this->customFields, null, [
-                fn(FieldInterface $field) => $field->handle,
-                fn(FieldInterface $field) => $field->uid,
-            ]);
+            $fieldsByHandle = [];
+            foreach ($this->customFields as $field) {
+                $fieldsByHandle[$field->handle][$field->uid] = $field;
+            }
 
             foreach ($fieldsByHandle as $handle => $instancesByUid) {
                 // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...
