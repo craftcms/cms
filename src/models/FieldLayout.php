@@ -232,6 +232,12 @@ class FieldLayout extends Model
     private array $_tabs;
 
     /**
+     * @var FieldInterface[]
+     * @see getCustomFields()
+     */
+    private array $_customFields;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -643,7 +649,7 @@ class FieldLayout extends Model
      */
     public function getCustomFields(): array
     {
-        return $this->_customFields();
+        return $this->_customFields ??= $this->_customFields();
     }
 
     /**
