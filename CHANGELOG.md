@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Improved the performance of element indexes that contained asset thumbnails.
+
 ## 5.1.3 - 2024-05-14
 
 - Fixed a SQL error that could occur when applying or rebuilding the project config.

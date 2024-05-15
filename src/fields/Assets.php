@@ -494,7 +494,8 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     {
         /** @var AssetQuery|ElementCollection $value */
         if ($value instanceof AssetQuery) {
-            $value = (clone $value)->eagerly(__METHOD__);
+            $handle = sprintf('%s-%s', preg_replace('/:+/', '-', __METHOD__), $size);
+            $value = (clone $value)->eagerly($handle);
         }
 
         return $value->one()?->getThumbHtml($size);
