@@ -261,6 +261,12 @@ abstract class Field extends SavableComponent implements FieldInterface
     private ?bool $_isFresh = null;
 
     /**
+     * @var array<string,string|false>
+     * @see getValueSql()
+     */
+    private array $_valueSql;
+
+    /**
      * Constructor
      */
     public function __construct($config = [])
@@ -792,6 +798,13 @@ abstract class Field extends SavableComponent implements FieldInterface
             return null;
         }
 
+        $cacheKey = $key ?? '*';
+        $this->_valueSql[$cacheKey] ??= $this->_valueSql($key) ?? false;
+        return $this->_valueSql[$cacheKey] || null;
+    }
+
+    private function _valueSql(?string $key): ?string
+    {
         $dbType = static::dbType();
 
         if ($dbType === null) {
