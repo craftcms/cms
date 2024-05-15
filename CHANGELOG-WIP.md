@@ -1,5 +1,8 @@
 # Release notes for Craft CMS 4.10 (WIP)
 
+### Content Management
+- Relational field condition rules no longer factor in the target elements’ statuses or sites. ([#14989](https://github.com/craftcms/cms/issues/14989))
+
 ### Administration
 - Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))
 - The `db/restore` command now autodetects the backup format for PostgreSQL installs, if `--format` isn’t passed. ([#14931](https://github.com/craftcms/cms/pull/14931))
@@ -12,3 +15,4 @@
 - Added `craft\db\setBackupFormat()`.
 - Added `craft\db\setRestoreFormat()`.
 - Added `craft\events\InvalidateElementcachesEvent::$element`.
+- Added `craft\fields\BaseRelationField::existsQueryCondition()`.
