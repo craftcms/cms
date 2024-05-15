@@ -122,35 +122,10 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
 
         if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
             $emptyCondition = array_shift($value);
-            if ($emptyCondition === 'not :empty:') {
-                $emptyCondition = ':notempty:';
-            }
-
-            $ns = $field->handle . '_' . StringHelper::randomString(5);
-            $condition = [
-                'exists', (new Query())
-                    ->from(["relations_$ns" => DbTable::RELATIONS])
-                    ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
-                    ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
-                    ->where("[[relations_$ns.sourceId]] = [[elements.id]]")
-                    ->andWhere([
-                        'or',
-                        ["relations_$ns.sourceSiteId" => null],
-                        ["relations_$ns.sourceSiteId" => new Expression('[[elements_sites.siteId]]')],
-                    ])
-                    ->andWhere([
-                        "relations_$ns.fieldId" => $field->id,
-                        "elements_$ns.enabled" => true,
-                        "elements_$ns.dateDeleted" => null,
-                        "elements_sites_$ns.siteId" => $field->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]'),
-                        "elements_sites_$ns.enabled" => true,
-                    ]),
-            ];
-
-            if ($emptyCondition === ':notempty:') {
-                $conditions[] = $condition;
+            if (in_array($emptyCondition, [':notempty:', 'not :empty:'])) {
+                $conditions[] = static::existsQueryCondition($field);
             } else {
-                $conditions[] = ['not', $condition];
+                $conditions[] = ['not', static::existsQueryCondition($field)];
             }
         }
 
@@ -175,6 +150,54 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
 
         array_unshift($conditions, 'or');
         return $conditions;
+    }
+
+    /**
+     * Returns a query builder-compatible condition for an element query,
+     * limiting the results to only elements where the given relation field has a value.
+     *
+     * @param self $field The relation field
+     * @param bool $enabledOnly Whether to only
+     * @param bool $inTargetSiteOnly
+     * @return array
+     * @since 4.10.0
+     */
+    public static function existsQueryCondition(self $field, bool $enabledOnly = true, bool $inTargetSiteOnly = true): array
+    {
+        $ns = sprintf('%s_%s', $field->handle, StringHelper::randomString(5));
+
+        $query = (new Query())
+            ->from(["relations_$ns" => DbTable::RELATIONS])
+            ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
+            ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
+            ->where([
+                'and',
+                "[[relations_$ns.sourceId]] = [[elements.id]]",
+                [
+                    "relations_$ns.fieldId" => $field->id,
+                    "elements_$ns.dateDeleted" => null,
+                ],
+                [
+                    'or',
+                    ["relations_$ns.sourceSiteId" => null],
+                    ["relations_$ns.sourceSiteId" => new Expression('[[elements_sites.siteId]]')],
+                ],
+            ]);
+
+        if ($enabledOnly) {
+            $query->andWhere([
+                "elements_$ns.enabled" => true,
+                "elements_sites_$ns.enabled" => true,
+            ]);
+        }
+
+        if ($inTargetSiteOnly) {
+            $query->andWhere([
+                "elements_sites_$ns.siteId" => $field->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]'),
+            ]);
+        }
+
+        return ['exists', $query];
     }
 
     /**

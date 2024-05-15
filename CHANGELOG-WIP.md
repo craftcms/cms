@@ -4,6 +4,7 @@
 - It’s now possible to edit assets’ alternative text from the Assets index page. ([#14893](https://github.com/craftcms/cms/discussions/14893))
 - Double-clicking anywhere within a table row on an element index page will now open the element’s editor slideout. ([#14379](https://github.com/craftcms/cms/discussions/14379))
 - Element index checkboxes no longer have a lag when deselected, except within element selection modals. ([#14896](https://github.com/craftcms/cms/issues/14896))
+- Relational field condition rules no longer factor in the target elements’ statuses or sites. ([#14989](https://github.com/craftcms/cms/issues/14989))
 - Improved mobile styling. ([#14910](https://github.com/craftcms/cms/pull/14910))
 - Improved the look of slideouts.
 - Table views within element index pages are no longer scrolled directly. ([#14927](https://github.com/craftcms/cms/pull/14927))
@@ -26,4 +27,5 @@
 - Added `craft\db\setRestoreFormat()`.
 - Added `craft\events\InvalidateElementcachesEvent::$element`.
 - `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
+- Added `craft\fields\BaseRelationField::existsQueryCondition()`.
 - Added the `waitForDoubleClicks` setting to `Garnish.Select`, `Craft.BaseElementIndex`, and `Craft.BaseElementIndexView`.
