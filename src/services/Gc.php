@@ -600,9 +600,6 @@ SQL;
 
         $params = [];
 
-        $condition = $this->_hardDeleteCondition('s');
-        $conditionSql = $this->db->getQueryBuilder()->buildCondition($condition, $params);
-
         $structureIds = (new Query())
             ->select('[[s.id]]')
             ->distinct()
@@ -610,12 +607,18 @@ SQL;
             ->leftJoin(['se' => $structureElementsTable], '[[s.id]] = [[se.structureId]]')
             ->leftJoin(['e' => $elementsTable], '[[e.id]] = [[se.elementId]]')
             ->leftJoin(['r' => $revisionsTable], '[[r.canonicalId]] = coalesce([[e.canonicalId]],[[e.id]])')
-            ->where($conditionSql)
-            ->andWhere('[[r.canonicalId]] IS NOT NULL')
+            ->where([
+                'and',
+                $this->_hardDeleteCondition('s'),
+                [
+                    'r.canonicalId' => null,
+                ],
+            ])
             ->column();
 
         if (!empty($structureIds)) {
             $ids = implode(',', $structureIds);
+            $conditionSql = $this->db->getQueryBuilder()->buildCondition($this->_hardDeleteCondition('s'), $params);
 
             // and now perform the actual deletion based on those IDs
             if ($this->db->getIsMysql()) {
