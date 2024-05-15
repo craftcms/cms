@@ -145,8 +145,9 @@ class Gc extends Component
         $this->_deleteOrphanedRelations();
         $this->_deleteOrphanedStructureElements();
 
+        $this->_hardDeleteStructures();
+
         $this->hardDelete([
-            Table::STRUCTURES,
             Table::FIELDLAYOUTS,
             Table::SITES,
         ]);
@@ -579,6 +580,62 @@ SQL;
 
         $this->db->createCommand($sql)->execute();
         $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Hard delete structures data
+     * Any soft-deleted structure elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
+     *
+     * @return void
+     * @throws \yii\db\Exception
+     */
+    private function _hardDeleteStructures(): void
+    {
+        // get IDs of structures that can be deleted;
+        // those are the ones for which the elements don't have any revisions
+        $structuresTable = Table::STRUCTURES;
+        $structureElementsTable = Table::STRUCTUREELEMENTS;
+        $elementsTable = Table::ELEMENTS;
+        $revisionsTable = Table::REVISIONS;
+
+        $params = [];
+
+        $condition = $this->_hardDeleteCondition('s');
+        $conditionSql = $this->db->getQueryBuilder()->buildCondition($condition, $params);
+
+        $structureIds = (new Query())
+            ->select('[[s.id]]')
+            ->distinct()
+            ->from(['s' => $structuresTable])
+            ->leftJoin(['se' => $structureElementsTable], '[[s.id]] = [[se.structureId]]')
+            ->leftJoin(['e' => $elementsTable], '[[e.id]] = [[se.elementId]]')
+            ->leftJoin(['r' => $revisionsTable], '[[r.canonicalId]] = coalesce([[e.canonicalId]],[[e.id]])')
+            ->where($conditionSql)
+            ->andWhere('[[r.canonicalId]] IS NOT NULL')
+            ->column();
+
+        if (!empty($structureIds)) {
+            $ids = implode(',', $structureIds);
+
+            // and now perform the actual deletion based on those IDs
+            if ($this->db->getIsMysql()) {
+                $sql = <<<SQL
+DELETE [[s]].* FROM $structuresTable [[s]]
+WHERE [[s.id]] NOT IN ($ids)
+AND $conditionSql
+SQL;
+            } else {
+                $sql = <<<SQL
+DELETE FROM $structuresTable
+USING $structuresTable [[s]]
+WHERE 
+    $structuresTable.[[id]] = [[s.id]] AND 
+    [[s.id]] NOT IN ($ids) AND
+    $conditionSql
+SQL;
+            }
+            $this->db->createCommand($sql, $params)->execute();
+        }
     }
 
     private function _gcCache(): void
