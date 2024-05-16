@@ -5414,6 +5414,7 @@ $min2ColWidth: 400px;
     padding-left: var(--padding);
     padding-right: var(--padding);
     z-index: 2;
+    border-radius: 0;
 
     & > .so-toolbar {
       display: flex;
