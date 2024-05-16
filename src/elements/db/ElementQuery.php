@@ -406,6 +406,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public bool $eagerly = false;
 
+    /**
+     * @var bool Whether custom fields should be factored into the query.
+     * @used-by withCustomFields()
+     * @since 5.2.0
+     */
+    public bool $withCustomFields = true;
+
     // Structure parameters
     // -------------------------------------------------------------------------
 
@@ -1184,6 +1191,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         $this->eagerly = $value !== false;
         $this->eagerLoadAlias = is_string($value) ? $value : null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $withCustomFields
+     */
+    public function withCustomFields(bool $value = true): static
+    {
+        $this->withCustomFields = $value;
         return $this;
     }
 
@@ -2370,6 +2387,9 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
+        if (!$this->withCustomFields) {
+            return [];
+        }
         $fields = [];
         foreach ($this->fieldLayouts() as $fieldLayout) {
             array_push($fields, ...$fieldLayout->getCustomFields());

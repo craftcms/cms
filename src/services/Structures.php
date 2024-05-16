@@ -296,26 +296,6 @@ class Structures extends Component
         return 0;
     }
 
-    /**
-     * Returns the total number of descendants for a given structure element.
-     *
-     * @param ElementInterface $element
-     * @return int
-     * @since 5.2.0
-     */
-    public function getTotalDescendants(ElementInterface $element): int
-    {
-        if (!$element->structureId || $element->lft === null || !$element->rgt === null) {
-            return 0;
-        }
-
-        return StructureElement::find()
-            ->where(['structureId' => $element->structureId])
-            ->andWhere(['>', 'structureelements.lft', $element->lft])
-            ->andWhere(['<', 'structureelements.rgt', $element->rgt])
-            ->count();
-    }
-
     // Moving elements around
     // -------------------------------------------------------------------------
 
