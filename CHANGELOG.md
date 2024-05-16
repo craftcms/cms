@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where `craft\elements\db\ElementQuery::exists()` would return `true` if `setCachedResult()` had been called, even if an empty array was passed.
+
 ## 4.9.3 - 2024-05-14
 
 - Fixed a SQL error that could occur when applying or rebuilding the project config.
