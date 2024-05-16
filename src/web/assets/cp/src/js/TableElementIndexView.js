@@ -34,8 +34,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // Set the sort header
     this.initTableHeaders();
 
-    this.addListener(Garnish.$win, 'resize', this.setContainerHeight);
-    this.setContainerHeight();
+    this.createScrollbar();
 
     // Create the table sorter
     if (
@@ -403,25 +402,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     Craft.cp.updateResponsiveTables();
   },
 
-  setContainerHeight: function (event) {
-    window.requestAnimationFrame(() => {
-      const $tablePane = this.$container.find('.tablepane');
-      if (!$tablePane.length) {
-        return;
-      }
-
-      const footerHeight = $('#content > #footer').outerHeight(true) || 0;
-      const margin = parseInt(
-        getComputedStyle($tablePane[0]).getPropertyValue('--padding'),
-        10
-      );
-      const containerHeight =
-        window.innerHeight - $tablePane.offset().top - footerHeight - margin;
-
-      $tablePane.css('max-height', containerHeight);
-    });
-  },
-
   _collapseElement: function ($toggle, force) {
     if (!force && !$toggle.hasClass('expanded')) {
       return false;
@@ -671,5 +651,40 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     this.base();
+  },
+
+  createScrollbar() {
+    if (this.elementIndex.settings.context !== 'index') {
+      return;
+    }
+
+    const footer = document.querySelector('#content > #footer');
+    if (!footer) {
+      return;
+    }
+
+    const stickyScrollbar = document.createElement('craft-proxy-scrollbar');
+    stickyScrollbar.setAttribute('scroller', '.tablepane');
+    stickyScrollbar.setAttribute('content', '.tablepane > table');
+
+    stickyScrollbar.style.bottom = `${
+      footer.getBoundingClientRect().height + 2
+    }px`;
+
+    let $scrollbar = $(stickyScrollbar);
+    const observer = new IntersectionObserver(
+      ([ev]) => {
+        if (ev.intersectionRatio < 1) {
+          $scrollbar.insertAfter(this.$container);
+        } else {
+          $scrollbar.remove();
+        }
+      },
+      {
+        rootMargin: '0px 0px -1px 0px',
+        threshold: [1],
+      }
+    );
+    observer.observe(footer);
   },
 });
