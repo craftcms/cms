@@ -29,3 +29,6 @@
 - `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
 - Added `craft\fields\BaseRelationField::existsQueryCondition()`.
 - Added the `waitForDoubleClicks` setting to `Garnish.Select`, `Craft.BaseElementIndex`, and `Craft.BaseElementIndexView`.
+
+### System
+- Improved the performance of `exists()` element queries.

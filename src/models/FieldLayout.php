@@ -228,6 +228,8 @@ class FieldLayout extends Model
 
     /**
      * @var FieldLayoutTab[]
+     * @see getTabs()
+     * @see setTabs()
      */
     private array $_tabs;
 
