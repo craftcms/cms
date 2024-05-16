@@ -16,3 +16,6 @@
 - Added `craft\db\setRestoreFormat()`.
 - Added `craft\events\InvalidateElementcachesEvent::$element`.
 - Added `craft\fields\BaseRelationField::existsQueryCondition()`.
+
+### System
+- Improved the performance of `exists()` element queries.

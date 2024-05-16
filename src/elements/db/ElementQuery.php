@@ -1738,7 +1738,13 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($cachedResult !== null) {
             return !empty($cachedResult);
         }
-        return parent::exists($db);
+        try {
+            return $this->prepareSubquery()
+                ->select('elements.id')
+                ->exists($db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
     }
 
     /**
