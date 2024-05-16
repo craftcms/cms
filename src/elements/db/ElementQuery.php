@@ -1824,15 +1824,19 @@ class ElementQuery extends Query implements ElementQueryInterface
             return null;
         }
 
-        $planHandle = $this->eagerLoadHandle;
-        if (str_contains($planHandle, ':')) {
-            $planHandle = explode(':', $planHandle, 2)[1];
+        if (isset($this->eagerLoadAlias)) {
+            $alias = $this->eagerLoadAlias;
+        } else {
+            $alias = $this->eagerLoadHandle;
+            if (str_contains($alias, ':')) {
+                $alias = explode(':', $alias, 2)[1];
+            }
         }
 
         // see if it was already eager-loaded
         $eagerLoaded = match ($count) {
-            true => $this->wasCountEagerLoaded($this->eagerLoadAlias),
-            false => $this->wasEagerLoaded($this->eagerLoadAlias),
+            true => $this->wasCountEagerLoaded($alias),
+            false => $this->wasEagerLoaded($alias),
         };
 
         if (!$eagerLoaded) {
@@ -1842,7 +1846,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 [
                     new EagerLoadPlan([
                         'handle' => $this->eagerLoadHandle,
-                        'alias' => $this->eagerLoadAlias ?? $planHandle,
+                        'alias' => $alias,
                         'criteria' => $criteria + $this->getCriteria() + ['with' => $this->with],
                         'all' => !$count,
                         'count' => $count,
@@ -1853,10 +1857,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($count) {
-            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle);
+            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($alias);
         }
 
-        return $this->eagerLoadSourceElement->getEagerLoadedElements($planHandle);
+        return $this->eagerLoadSourceElement->getEagerLoadedElements($alias);
     }
 
     /**

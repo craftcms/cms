@@ -4,6 +4,7 @@
 
 - Improved the performance of element indexes that contained asset thumbnails.
 - Fixed a bug where `craft\elements\db\ElementQuery::exists()` would return `true` if `setCachedResult()` had been called, even if an empty array was passed.
+- Fixed a bug where `eagerly()` wasn’t working when a custom alias was passed in.
 
 ## 5.1.3 - 2024-05-14
 
