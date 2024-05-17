@@ -3062,7 +3062,7 @@ table {
   }
 
   &:has(.thumb) .chip-content {
-    max-width: calc(100% - var(--thumb-size));
+    min-width: calc(100% - var(--thumb-size));
   }
 
   &.sel,
