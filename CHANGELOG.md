@@ -10,6 +10,7 @@
 - Fixed an error that occurred on users’ Addresses screens. ([#15018](https://github.com/craftcms/cms/pull/15018))
 - Fixed a bug where asset chips’ content wasn’t spanning the full width for Assets fields in large thumbnail mode. ([#14993](https://github.com/craftcms/cms/issues/14993))
 - Fixed infinite scrolling on Structure element sources. ([#14992](https://github.com/craftcms/cms/issues/14992))
+- Fixed right-to-left styling issues. ([#15019](https://github.com/craftcms/cms/pull/15019))
 
 ## 5.1.3 - 2024-05-14
 
