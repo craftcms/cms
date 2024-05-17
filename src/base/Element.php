@@ -5004,7 +5004,7 @@ JS, [
                         'plan' => $plan,
                     ]);
                     $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
-                    if ($event->handle) {
+                    if ($event->handled) {
                         break;
                     }
                 }
