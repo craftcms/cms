@@ -983,7 +983,7 @@ JS, [
     ): string {
         $html = $form?->render() ?? '';
 
-        // Trigger a defineEditorContent event
+        // Fire a 'defineEditorContent' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_EDITOR_CONTENT)) {
             $event = new DefineElementEditorHtmlEvent([
                 'element' => $element,

@@ -597,16 +597,19 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $html = $this->inputHtml($value, $element, false);
 
-        // Give plugins a chance to modify it
-        $event = new DefineFieldHtmlEvent([
-            'value' => $value,
-            'element' => $element,
-            'inline' => false,
-            'html' => $html,
-        ]);
+        // Fire a 'defineInputHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_INPUT_HTML)) {
+            $event = new DefineFieldHtmlEvent([
+                'value' => $value,
+                'element' => $element,
+                'inline' => false,
+                'html' => $html,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
+            return $event->html;
+        }
 
-        $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
-        return $event->html;
+        return $html;
     }
 
     /**
@@ -621,16 +624,19 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $html = $this->inputHtml($value, $element, true);
 
-        // Give plugins a chance to modify it
-        $event = new DefineFieldHtmlEvent([
-            'value' => $value,
-            'element' => $element,
-            'inline' => true,
-            'html' => $html,
-        ]);
+        // Fire a 'defineInputHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_INPUT_HTML)) {
+            $event = new DefineFieldHtmlEvent([
+                'value' => $value,
+                'element' => $element,
+                'inline' => true,
+                'html' => $html,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
+            return $event->html;
+        }
 
-        $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
-        return $event->html;
+        return $html;
     }
 
     /**
@@ -685,7 +691,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getSearchKeywords(mixed $value, ElementInterface $element): string
     {
-        // Give plugins/modules a chance to define custom keywords
+        // Fire a 'defineKeywords' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_KEYWORDS)) {
             $event = new DefineFieldKeywordsEvent([
                 'value' => $value,
@@ -696,6 +702,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 return $event->keywords;
             }
         }
+
         return $this->searchKeywords($value, $element);
     }
 
@@ -941,14 +948,17 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
-        // Trigger a 'beforeElementSave' event
-        $event = new FieldElementEvent([
-            'element' => $element,
-            'isNew' => $isNew,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_ELEMENT_SAVE, $event);
+        // Fire a 'beforeElementSave' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_ELEMENT_SAVE)) {
+            $event = new FieldElementEvent([
+                'element' => $element,
+                'isNew' => $isNew,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_ELEMENT_SAVE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -956,7 +966,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
-        // Trigger an 'afterElementSave' event
+        // Fire an 'afterElementSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_SAVE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
                 'element' => $element,
@@ -970,7 +980,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
-        // Trigger an 'afterElementPropagate' event
+        // Fire an 'afterElementPropagate' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_PROPAGATE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_PROPAGATE, new FieldElementEvent([
                 'element' => $element,
@@ -984,13 +994,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function beforeElementDelete(ElementInterface $element): bool
     {
-        // Trigger a 'beforeElementDelete' event
-        $event = new FieldElementEvent([
-            'element' => $element,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_ELEMENT_DELETE, $event);
+        // Fire a 'beforeElementDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_ELEMENT_DELETE)) {
+            $event = new FieldElementEvent(['element' => $element]);
+            $this->trigger(self::EVENT_BEFORE_ELEMENT_DELETE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -998,7 +1009,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function afterElementDelete(ElementInterface $element): void
     {
-        // Trigger an 'afterElementDelete' event
+        // Fire an 'afterElementDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_DELETE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
                 'element' => $element,
@@ -1027,13 +1038,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function beforeElementRestore(ElementInterface $element): bool
     {
-        // Trigger a 'beforeElementRestore' event
-        $event = new FieldElementEvent([
-            'element' => $element,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_ELEMENT_RESTORE, $event);
+        // Fire a 'beforeElementRestore' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_ELEMENT_RESTORE)) {
+            $event = new FieldElementEvent(['element' => $element]);
+            $this->trigger(self::EVENT_BEFORE_ELEMENT_RESTORE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -1041,7 +1053,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function afterElementRestore(ElementInterface $element): void
     {
-        // Trigger an 'afterElementRestore' event
+        // Fire an 'afterElementRestore' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_RESTORE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_RESTORE, new FieldElementEvent([
                 'element' => $element,

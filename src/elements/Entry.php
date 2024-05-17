@@ -1362,9 +1362,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // Fire a 'defineEntryTypes' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
-            $event = new DefineEntryTypesEvent([
-                'entryTypes' => $entryTypes,
-            ]);
+            $event = new DefineEntryTypesEvent(['entryTypes' => $entryTypes]);
             $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
             $entryTypes = $event->entryTypes;
         }
@@ -2123,11 +2121,9 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
         }
 
+        // Fire a 'defineParentSelectionCriteria' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA)) {
-            // Fire a defineParentSelectionCriteria event
-            $event = new ElementCriteriaEvent([
-                'criteria' => $parentOptionCriteria,
-            ]);
+            $event = new ElementCriteriaEvent(['criteria' => $parentOptionCriteria]);
             $this->trigger(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA, $event);
             return $event->criteria;
         }

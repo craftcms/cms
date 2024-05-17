@@ -1186,17 +1186,15 @@ class User extends Element implements IdentityInterface
         $this->authError = null;
 
         // Fire a 'beforeAuthenticate' event
-        $event = new AuthenticateUserEvent([
-            'password' => $password,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
-
-        if (isset($this->authError)) {
-            return false;
-        }
-
-        if (!$event->performAuthentication) {
-            return true;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_AUTHENTICATE)) {
+            $event = new AuthenticateUserEvent(['password' => $password]);
+            $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
+            if (isset($this->authError)) {
+                return false;
+            }
+            if (!$event->performAuthentication) {
+                return true;
+            }
         }
 
         // Validate the password
@@ -1237,15 +1235,17 @@ class User extends Element implements IdentityInterface
         $this->authError = null;
 
         // Fire a 'beforeAuthenticate' event
-        $event = new AuthenticateUserEvent();
-        $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_AUTHENTICATE)) {
+            $event = new AuthenticateUserEvent();
+            $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
 
-        if (isset($this->authError)) {
-            return false;
-        }
+            if (isset($this->authError)) {
+                return false;
+            }
 
-        if (!$event->performAuthentication) {
-            return true;
+            if (!$event->performAuthentication) {
+                return true;
+            }
         }
 
         // make sure the passkey exists and belongs to this user
@@ -1364,8 +1364,10 @@ class User extends Element implements IdentityInterface
      */
     private function _defineName(): string
     {
+        // Fire a 'defineName' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_NAME)) {
-            $this->trigger(self::EVENT_DEFINE_NAME, $event = new DefineValueEvent());
+            $event = new DefineValueEvent();
+            $this->trigger(self::EVENT_DEFINE_NAME, $event);
             if ($event->value !== null) {
                 return $event->value;
             }
@@ -1404,8 +1406,10 @@ class User extends Element implements IdentityInterface
      */
     private function _defineFriendlyName(): ?string
     {
+        // Fire a 'defineFriendlyName' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_FRIENDLY_NAME)) {
-            $this->trigger(self::EVENT_DEFINE_FRIENDLY_NAME, $event = new DefineValueEvent());
+            $event = new DefineValueEvent();
+            $this->trigger(self::EVENT_DEFINE_FRIENDLY_NAME, $event);
             if ($event->handled || $event->value !== null) {
                 return $event->value;
             }

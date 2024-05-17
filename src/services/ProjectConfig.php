@@ -1248,16 +1248,17 @@ class ProjectConfig extends Component
         $config[self::PATH_VOLUMES] = $this->_getVolumeData();
 
         // Fire a 'rebuild' event
-        $event = new RebuildConfigEvent([
-            'config' => $config,
-        ]);
-        $this->trigger(self::EVENT_REBUILD, $event);
+        if ($this->hasEventHandlers(self::EVENT_REBUILD)) {
+            $event = new RebuildConfigEvent(['config' => $config]);
+            $this->trigger(self::EVENT_REBUILD, $event);
+            $config = $event->config;
+        }
 
         // Reset the component name map
         $this->_setInternal(self::PATH_META_NAMES, [], updateTimestamp: false, force: true);
 
         // Process the changes
-        foreach ($event->config as $path => $value) {
+        foreach ($config as $path => $value) {
             $this->_setInternal($path, $value, 'Project config rebuild', updateTimestamp: false, force: true);
         }
 

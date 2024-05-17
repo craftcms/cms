@@ -2245,7 +2245,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'row' => $row,
             ]);
             $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
-
             $row = $event->row ?? $row;
             if (isset($event->element)) {
                 $element = $event->element;
@@ -2286,10 +2285,14 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function beforePrepare(): bool
     {
-        $event = new CancelableEvent();
-        $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
+        // Fire a 'beforePrepare' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_PREPARE)) {
+            $event = new CancelableEvent();
+            $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -2304,11 +2307,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function afterPrepare(): bool
     {
-        $event = new CancelableEvent();
-        $this->trigger(self::EVENT_AFTER_PREPARE, $event);
-
-        if (!$event->isValid) {
-            return false;
+        // Fire an 'afterPrepare' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PREPARE)) {
+            $event = new CancelableEvent();
+            $this->trigger(self::EVENT_AFTER_PREPARE, $event);
+            if (!$event->isValid) {
+                return false;
+            }
         }
 
         $elementsService = Craft::$app->getElements();
@@ -2336,10 +2341,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             } else {
                 $queryTags = $this->cacheTags();
 
+                // Fire a 'defineCacheTags' event
                 if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
-                    $event = new DefineValueEvent([
-                        'value' => $queryTags,
-                    ]);
+                    $event = new DefineValueEvent(['value' => $queryTags]);
                     $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
                     $queryTags = $event->value;
                 }

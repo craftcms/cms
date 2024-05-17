@@ -2017,20 +2017,24 @@ JS,[
             return null;
         }
 
-        // Give plugins/modules a chance to provide a custom URL
-        $event = new DefineAssetUrlEvent([
-            'transform' => $transform,
-            'asset' => $this,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
-        $url = $event->url;
+        // Fire a 'beforeDefineUrl' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DEFINE_URL)) {
+            $event = new DefineAssetUrlEvent([
+                'transform' => $transform,
+                'asset' => $this,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
+            $url = $event->url;
+        } else {
+            $url = null;
+        }
 
         // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
-        if ($url === null && !$event->handled) {
+        if ($url === null && !($event->handled ?? false)) {
             $url = $this->_url($transform, $immediately);
         }
 
-        // Give plugins/modules a chance to customize it
+        // Fire a 'defineUrl' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
             $event = new DefineAssetUrlEvent([
                 'url' => $url,
@@ -2084,14 +2088,13 @@ JS,[
                 $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
             }
 
+            // Fire a 'beforeGenerateTransform' event
             if ($this->hasEventHandlers(self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
                 $event = new GenerateTransformEvent([
                     'asset' => $this,
                     'transform' => $transform,
                 ]);
-
                 $this->trigger(self::EVENT_BEFORE_GENERATE_TRANSFORM, $event);
-
                 // If a plugin set the url, we'll just use that.
                 if ($event->url !== null) {
                     return Html::encodeSpaces($event->url);
@@ -2110,13 +2113,13 @@ JS,[
                 return null;
             }
 
+            // Fire an 'afterGenerateTransform' event
             if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
                 $event = new GenerateTransformEvent([
                     'asset' => $this,
                     'transform' => $transform,
                     'url' => $url,
                 ]);
-
                 $this->trigger(self::EVENT_AFTER_GENERATE_TRANSFORM, $event);
             }
 
