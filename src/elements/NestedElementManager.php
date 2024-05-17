@@ -382,11 +382,20 @@ class NestedElementManager extends Component
                     'class' => 'nested-element-cards',
                 ]);
 
-                /** @var NestedElementInterface[] $elements */
-                $elements = $this->getValue($owner)
-                    ->status(null)
-                    ->limit(null)
-                    ->all();
+
+                /** @var ElementQueryInterface|ElementCollection $value */
+                $value = $this->getValue($owner);
+                if ($value instanceof ElementCollection) {
+                    /** @var NestedElementInterface[] $elements */
+                    $elements = $value->all();
+                } else {
+                    /** @var NestedElementInterface[] $elements */
+                    $elements = $value
+                        ->status(null)
+                        ->limit(null)
+                        ->all();
+                }
+
                 $this->setOwnerOnNestedElements($owner, $elements);
 
                 if (!empty($elements)) {
