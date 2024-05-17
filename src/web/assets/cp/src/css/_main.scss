@@ -7612,9 +7612,7 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
     }
   }
 
-  &.disabled {
-    opacity: 1;
-
+  &.disabled-entry {
     & > .titlebar {
       @include padding-right(90px);
     }

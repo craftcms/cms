@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where `craft\elements\db\ElementQuery::exists()` would return `true` if `setCachedResult()` had been called, even if an empty array was passed.
+- Fixed a bug where it wasn’t possible to interact with disabled Matrix blocks. ([#15002](https://github.com/craftcms/cms/issues/15002))
 
 ## 4.9.3 - 2024-05-14
 
