@@ -1608,6 +1608,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             return count($cachedResult);
         }
 
+        if ($this->offset || $this->limit) {
+            return parent::count($q, $db) ?: 0;
+        }
+
         try {
             return $this->prepareSubquery()->count($q, $db) ?: 0;
         } catch (QueryAbortedException) {
@@ -1620,6 +1624,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function sum($q, $db = null)
     {
+        if ($this->offset || $this->limit) {
+            return parent::sum($q, $db) ?: 0;
+        }
+
         try {
             return $this->prepareSubquery()->sum($q, $db);
         } catch (QueryAbortedException) {
@@ -1632,6 +1640,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function average($q, $db = null)
     {
+        if ($this->offset || $this->limit) {
+            return parent::average($q, $db) ?: 0;
+        }
+
         try {
             return $this->prepareSubquery()->average($q, $db);
         } catch (QueryAbortedException) {
@@ -1644,6 +1656,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function min($q, $db = null)
     {
+        if ($this->offset || $this->limit) {
+            return parent::min($q, $db) ?: 0;
+        }
+
         try {
             return $this->prepareSubquery()->min($q, $db);
         } catch (QueryAbortedException) {
@@ -1656,6 +1672,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function max($q, $db = null)
     {
+        if ($this->offset || $this->limit) {
+            return parent::max($q, $db) ?: 0;
+        }
+
         try {
             return $this->prepareSubquery()->max($q, $db);
         } catch (QueryAbortedException) {
