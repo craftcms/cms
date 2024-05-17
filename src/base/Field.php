@@ -800,7 +800,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
         $cacheKey = $key ?? '*';
         $this->_valueSql[$cacheKey] ??= $this->_valueSql($key) ?? false;
-        return $this->_valueSql[$cacheKey] || null;
+        return $this->_valueSql[$cacheKey] ?: null;
     }
 
     private function _valueSql(?string $key): ?string
