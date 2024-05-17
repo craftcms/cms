@@ -3060,7 +3060,7 @@ table {
     }
   }
 
-  &:has(.thumb) .chip-content {
+  &:has(.thumb):not(.large) .chip-content {
     max-width: calc(100% - var(--thumb-size));
   }
 
