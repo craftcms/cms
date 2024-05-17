@@ -5200,10 +5200,6 @@ $min2ColWidth: 400px;
           & > .timewrapper {
             width: 45%;
           }
-
-          & > .clear-btn {
-            @include margin-right(-24px);
-          }
         }
 
         & > .datewrapper,
