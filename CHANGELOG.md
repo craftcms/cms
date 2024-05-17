@@ -4,6 +4,7 @@
 
 - Fixed a bug where `craft\elements\db\ElementQuery::exists()` would return `true` if `setCachedResult()` had been called, even if an empty array was passed.
 - Fixed a bug where it wasn’t possible to interact with disabled Matrix blocks. ([#15002](https://github.com/craftcms/cms/issues/15002))
+- Fixed an infinite recursion bug that could occur when `craft\web\Response::redirect()` was called. ([#15014](https://github.com/craftcms/cms/pull/15014))
 
 ## 4.9.3 - 2024-05-14
 
