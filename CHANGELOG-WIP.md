@@ -32,3 +32,4 @@
 
 ### System
 - Improved the performance of `exists()` element queries.
+- Improved the performance of `craft\base\Element::toArray()`.
