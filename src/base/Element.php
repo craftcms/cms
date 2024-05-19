@@ -2406,8 +2406,10 @@ abstract class Element extends Component implements ElementInterface
         foreach ($this->fieldLayoutFields() as $field) {
             if (!isset($fields[$field->handle])) {
                 if ($this->_serializeFields) {
-                    $value = $this->getFieldValue($field->handle);
-                    $fields[$field->handle] = fn() => $field->serializeValue($value, $this);
+                    $fields[$field->handle] = function() use ($field) {
+                        $value = $this->getFieldValue($field->handle);
+                        return $field->serializeValue($value, $this);
+                    };
                 } else {
                     $fields[$field->handle] = fn() => $this->clonedFieldValue($field->handle);
                 }
