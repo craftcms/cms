@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error that occurred on the current user’s Profile screen if they didn’t have permission to access the primary site. ([#15022](https://github.com/craftcms/cms/issues/15022))
+
 ## 5.1.4 - 2024-05-17
 
 - Improved the performance of element indexes that contained asset thumbnails. ([#14760](https://github.com/craftcms/cms/issues/14760))
