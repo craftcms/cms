@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that occurred on the current user’s Profile screen if they didn’t have permission to access the primary site. ([#15022](https://github.com/craftcms/cms/issues/15022))
+- Fixed a bug where non-localizable elements’ edit screens were displaying a site breadcrumb.
 
 ## 5.1.4 - 2024-05-17
 
