@@ -2653,7 +2653,6 @@ h2 + .actions {
       var(--pane-padding, var(--padding)) * -1 + var(--pane-padding, var(--m))
     );
   padding: 0 !important;
-  overscroll-behavior: contain;
   overflow-x: auto;
 
   table.data {
@@ -3061,7 +3060,7 @@ table {
     }
   }
 
-  &:has(.thumb) .chip-content {
+  &:has(.thumb):not(.large) .chip-content {
     min-width: calc(100% - var(--thumb-size));
   }
 
@@ -3626,6 +3625,12 @@ table {
       border-top: 1px solid var(--hairline-color);
       background: transparent;
     }
+  }
+
+  craft-proxy-scrollbar {
+    position: sticky;
+    width: calc(100% + var(--xl) * 2);
+    margin-inline: calc(var(--xl) * -1);
   }
 }
 
