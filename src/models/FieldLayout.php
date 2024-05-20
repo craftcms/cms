@@ -237,7 +237,7 @@ class FieldLayout extends Model
      * @var FieldInterface[]
      * @see getCustomFields()
      */
-    private array $_customFields;
+    private ?array $_customFields = null;
 
     /**
      * @inheritdoc
@@ -374,6 +374,9 @@ class FieldLayout extends Model
             array_unshift($layoutElements, ...array_values($missingFields));
             $tab->setElements($layoutElements);
         }
+
+        // Clear caches
+        $this->reset();
     }
 
     /**
@@ -917,5 +920,15 @@ class FieldLayout extends Model
                 }
             }
         }
+    }
+
+    /**
+     * Resets the memoized custom fields.
+     *
+     * @internal
+     */
+    public function reset(): void
+    {
+        $this->_customFields = null;
     }
 }
