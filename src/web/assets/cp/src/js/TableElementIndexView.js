@@ -659,7 +659,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     const footer = document.querySelector('#content > #footer');
-
     if (!footer) {
       return;
     }

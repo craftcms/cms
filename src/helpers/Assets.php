@@ -196,15 +196,15 @@ class Assets
     public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false): string
     {
         if ($isFilename) {
-            /** @var string $baseName */
-            $baseName = pathinfo($name, PATHINFO_FILENAME);
+            /** @var string $originalBaseName */
+            $originalBaseName = pathinfo($name, PATHINFO_FILENAME);
             /** @var string $extension */
             $extension = pathinfo($name, PATHINFO_EXTENSION);
             if ($extension !== '') {
                 $extension = '.' . $extension;
             }
         } else {
-            $baseName = $name;
+            $originalBaseName = $name;
             $extension = '';
         }
 
@@ -215,29 +215,27 @@ class Assets
             $separator = null;
         }
 
-        $baseNameSanitized = FileHelper::sanitizeFilename($baseName, [
+        $baseName = FileHelper::sanitizeFilename($originalBaseName, [
             'asciiOnly' => $generalConfig->convertFilenamesToAscii,
             'separator' => $separator,
         ]);
 
-        // Fire a 'setFilename' event
-        if ($isFilename && !$preventPluginModifications && Event::hasHandlers(self::class, self::EVENT_SET_FILENAME)) {
-            $event = new SetAssetFilenameEvent([
-                'filename' => $baseNameSanitized,
-                'originalFilename' => $baseName,
-                'extension' => $extension,
-            ]);
-            Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
-            $baseName = $event->filename;
-            $extension = $event->extension;
-        }
+        if ($isFilename) {
+            // Fire a 'setFilename' event
+            if (!$preventPluginModifications && Event::hasHandlers(self::class, self::EVENT_SET_FILENAME)) {
+                $event = new SetAssetFilenameEvent([
+                    'filename' => $baseName,
+                    'originalFilename' => $originalBaseName,
+                    'extension' => $extension,
+                ]);
+                Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
+                $baseName = $event->filename;
+                $extension = $event->extension;
+            }
 
-        if ($isFilename && empty($baseName)) {
-            $baseName = '-';
-        }
-
-        if (!$isFilename) {
-            $baseName = $baseNameSanitized;
+            if ($baseName === '') {
+                $baseName = '-';
+            }
         }
 
         // Put them back together, but keep the full filename w/ extension from going over 255 chars
