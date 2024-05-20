@@ -2648,6 +2648,25 @@ JS,[
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function inlineAttributeInputHtml(string $attribute): string
+    {
+        if ($attribute === 'alt') {
+            $altField = $this->getFieldLayout()->getFirstVisibleElementByType(AltField::class, $this);
+
+            if ($altField) {
+                $altField->label = '__blank__'; // so that we don't show the label when inline editing
+                return $altField->formHtml($this, false);
+            } else {
+                return '';
+            }
+        }
+
+        return parent::inlineAttributeInputHtml($attribute);
+    }
+
+    /**
      * Returns the HTML for asset previews.
      *
      * @return string
