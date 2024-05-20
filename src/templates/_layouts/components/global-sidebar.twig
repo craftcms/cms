@@ -17,7 +17,7 @@
         target: external ? '_blank',
     }|merge(item.linkAttributes ?? {}, recursive=true) %}
 
-  {% tag 'a' with linkAttributes %}
+    {% tag 'a' with linkAttributes %}
         <span class="sidebar-action__prefix">
             {% if showIcon %}
             <span class="nav-icon" aria-hidden="true">
