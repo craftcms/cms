@@ -18,7 +18,8 @@
 - The web-based installer now displays the error message when installation fails. 
 
 ### Development
-- Entry queries now support passing `*` to the `section` param, to filter the results to all section entries. ([#14978](https://github.com/craftcms/cms/discussions/14978)) 
+- Added the `withCustomFields` element query param. ([#15003](https://github.com/craftcms/cms/pull/15003))
+- Entry queries now support passing `*` to the `section` param, to filter the results to all section entries. ([#14978](https://github.com/craftcms/cms/discussions/14978))
 
 ### Extensibility
 - Added `craft\db\getBackupFormat()`.
@@ -31,5 +32,6 @@
 - Added the `waitForDoubleClicks` setting to `Garnish.Select`, `Craft.BaseElementIndex`, and `Craft.BaseElementIndexView`.
 
 ### System
+- Improved overall system performance. ([#15003](https://github.com/craftcms/cms/pull/15003))
 - Improved the performance of `exists()` element queries.
 - Improved the performance of `craft\base\Element::toArray()`.
