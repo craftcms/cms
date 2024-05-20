@@ -406,6 +406,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public bool $eagerly = false;
 
+    /**
+     * @var bool Whether custom fields should be factored into the query.
+     * @used-by withCustomFields()
+     * @since 5.2.0
+     */
+    public bool $withCustomFields = true;
+
     // Structure parameters
     // -------------------------------------------------------------------------
 
@@ -1184,6 +1191,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         $this->eagerly = $value !== false;
         $this->eagerLoadAlias = is_string($value) ? $value : null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $withCustomFields
+     */
+    public function withCustomFields(bool $value = true): static
+    {
+        $this->withCustomFields = $value;
         return $this;
     }
 
@@ -2228,7 +2245,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'row' => $row,
             ]);
             $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
-
             $row = $event->row ?? $row;
             if (isset($event->element)) {
                 $element = $event->element;
@@ -2269,10 +2285,14 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function beforePrepare(): bool
     {
-        $event = new CancelableEvent();
-        $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
+        // Fire a 'beforePrepare' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_PREPARE)) {
+            $event = new CancelableEvent();
+            $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -2287,11 +2307,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function afterPrepare(): bool
     {
-        $event = new CancelableEvent();
-        $this->trigger(self::EVENT_AFTER_PREPARE, $event);
-
-        if (!$event->isValid) {
-            return false;
+        // Fire an 'afterPrepare' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PREPARE)) {
+            $event = new CancelableEvent();
+            $this->trigger(self::EVENT_AFTER_PREPARE, $event);
+            if (!$event->isValid) {
+                return false;
+            }
         }
 
         $elementsService = Craft::$app->getElements();
@@ -2319,10 +2341,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             } else {
                 $queryTags = $this->cacheTags();
 
+                // Fire a 'defineCacheTags' event
                 if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
-                    $event = new DefineValueEvent([
-                        'value' => $queryTags,
-                    ]);
+                    $event = new DefineValueEvent(['value' => $queryTags]);
                     $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
                     $queryTags = $event->value;
                 }
@@ -2374,6 +2395,9 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
+        if (!$this->withCustomFields) {
+            return [];
+        }
         $fields = [];
         foreach ($this->fieldLayouts() as $fieldLayout) {
             array_push($fields, ...$fieldLayout->getCustomFields());
@@ -2519,10 +2543,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             // Group the fields by handle and field UUID
             /** @var FieldInterface[][][] $fieldsByHandle */
-            $fieldsByHandle = ArrayHelper::index($this->customFields, null, [
-                fn(FieldInterface $field) => $field->handle,
-                fn(FieldInterface $field) => $field->uid,
-            ]);
+            $fieldsByHandle = [];
+            foreach ($this->customFields as $field) {
+                $fieldsByHandle[$field->handle][$field->uid] = $field;
+            }
 
             foreach ($fieldsByHandle as $handle => $instancesByUid) {
                 // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...

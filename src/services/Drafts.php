@@ -130,16 +130,18 @@ class Drafts extends Component
         $markAsSaved = ArrayHelper::remove($newAttributes, 'markAsSaved') ?? true;
 
         // Fire a 'beforeCreateDraft' event
-        $event = new DraftEvent([
-            'canonical' => $canonical,
-            'creatorId' => $creatorId,
-            'provisional' => $provisional,
-            'draftName' => $name,
-            'draftNotes' => $notes,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_CREATE_DRAFT, $event);
-        $name = $event->draftName;
-        $notes = $event->draftNotes;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_DRAFT)) {
+            $event = new DraftEvent([
+                'canonical' => $canonical,
+                'creatorId' => $creatorId,
+                'provisional' => $provisional,
+                'draftName' => $name,
+                'draftNotes' => $notes,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_CREATE_DRAFT, $event);
+            $name = $event->draftName;
+            $notes = $event->draftNotes;
+        }
 
         if ($name === null || $name === '') {
             $name = $this->generateDraftName($canonical->id);

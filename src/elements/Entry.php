@@ -324,19 +324,17 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public static function modifyCustomSource(array $config): array
     {
-        try {
-            /** @var EntryCondition $condition */
-            $condition = Craft::$app->getConditions()->createCondition($config['condition']);
-        } catch (InvalidConfigException) {
+        if (empty($config['condition']['conditionRules'])) {
             return $config;
         }
 
-        $rules = $condition->getConditionRules();
-
         // see if it's limited to one section
         /** @var SectionConditionRule|null $sectionRule */
-        $sectionRule = ArrayHelper::firstWhere($rules, fn($rule) => $rule instanceof SectionConditionRule);
-        $sectionOptions = $sectionRule?->getValues();
+        $sectionRule = ArrayHelper::firstWhere(
+            $config['condition']['conditionRules'],
+            fn(array $rule) => $rule['class'] === SectionConditionRule::class,
+        );
+        $sectionOptions = $sectionRule['values'] ?? null;
 
         if ($sectionOptions && count($sectionOptions) === 1) {
             $section = Craft::$app->getEntries()->getSectionByUid(reset($sectionOptions));
@@ -347,8 +345,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // see if it specifies any entry types
         /** @var TypeConditionRule|null $entryTypeRule */
-        $entryTypeRule = ArrayHelper::firstWhere($rules, fn($rule) => $rule instanceof TypeConditionRule);
-        $entryTypeOptions = $entryTypeRule?->getValues();
+        $entryTypeRule = ArrayHelper::firstWhere(
+            $config['condition']['conditionRules'],
+            fn(array $rule) => $rule['class'] === TypeConditionRule::class,
+        );
+        $entryTypeOptions = $entryTypeRule['values'] ?? null;
 
         if ($entryTypeOptions) {
             $entryType = Craft::$app->getEntries()->getEntryTypeByUid(reset($entryTypeOptions));
@@ -1361,9 +1362,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // Fire a 'defineEntryTypes' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
-            $event = new DefineEntryTypesEvent([
-                'entryTypes' => $entryTypes,
-            ]);
+            $event = new DefineEntryTypesEvent(['entryTypes' => $entryTypes]);
             $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
             $entryTypes = $event->entryTypes;
         }
@@ -2122,11 +2121,9 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
         }
 
+        // Fire a 'defineParentSelectionCriteria' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA)) {
-            // Fire a defineParentSelectionCriteria event
-            $event = new ElementCriteriaEvent([
-                'criteria' => $parentOptionCriteria,
-            ]);
+            $event = new ElementCriteriaEvent(['criteria' => $parentOptionCriteria]);
             $this->trigger(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA, $event);
             return $event->criteria;
         }

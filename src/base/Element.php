@@ -924,14 +924,17 @@ abstract class Element extends Component implements ElementInterface
     {
         $sources = static::defineSources($context);
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementSourcesEvent([
-            'context' => $context,
-            'sources' => $sources,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
+        // Fire a 'registerSources' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SOURCES)) {
+            $event = new RegisterElementSourcesEvent([
+                'context' => $context,
+                'sources' => $sources,
+            ]);
+            Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
+            return $event->sources;
+        }
 
-        return $event->sources;
+        return $sources;
     }
 
     /**
@@ -977,14 +980,17 @@ abstract class Element extends Component implements ElementInterface
     {
         $fieldLayouts = static::defineFieldLayouts($source);
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementFieldLayoutsEvent([
-            'source' => $source,
-            'fieldLayouts' => $fieldLayouts,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_FIELD_LAYOUTS, $event);
+        // Fire a 'registerFieldLayouts' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_FIELD_LAYOUTS)) {
+            $event = new RegisterElementFieldLayoutsEvent([
+                'source' => $source,
+                'fieldLayouts' => $fieldLayouts,
+            ]);
+            Event::trigger(static::class, self::EVENT_REGISTER_FIELD_LAYOUTS, $event);
+            return $event->fieldLayouts;
+        }
 
-        return $event->fieldLayouts;
+        return $fieldLayouts;
     }
 
     /**
@@ -1056,14 +1062,19 @@ abstract class Element extends Component implements ElementInterface
             $actions->push(Delete::class);
         }
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementActionsEvent([
-            'source' => $source,
-            'actions' => $actions->all(),
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
+        $actions = $actions->all();
 
-        return $event->actions;
+        // Fire a 'registerActions' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_ACTIONS)) {
+            $event = new RegisterElementActionsEvent([
+                'source' => $source,
+                'actions' => $actions,
+            ]);
+            Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
+            return $event->actions;
+        }
+
+        return $actions;
     }
 
     /**
@@ -1096,14 +1107,17 @@ abstract class Element extends Component implements ElementInterface
     {
         $exporters = static::defineExporters($source);
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementExportersEvent([
-            'source' => $source,
-            'exporters' => $exporters,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_EXPORTERS, $event);
+        // Fire a 'registerExporters' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_EXPORTERS)) {
+            $event = new RegisterElementExportersEvent([
+                'source' => $source,
+                'exporters' => $exporters,
+            ]);
+            Event::trigger(static::class, self::EVENT_REGISTER_EXPORTERS, $event);
+            return $event->exporters;
+        }
 
-        return $event->exporters;
+        return $exporters;
     }
 
     /**
@@ -1129,13 +1143,14 @@ abstract class Element extends Component implements ElementInterface
     {
         $attributes = static::defineSearchableAttributes();
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementSearchableAttributesEvent([
-            'attributes' => $attributes,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
+        // Fire a 'registerSearchableAttributes' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES)) {
+            $event = new RegisterElementSearchableAttributesEvent(['attributes' => $attributes]);
+            Event::trigger(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
+            return $event->attributes;
+        }
 
-        return $event->attributes;
+        return $attributes;
     }
 
     /**
@@ -1222,18 +1237,22 @@ abstract class Element extends Component implements ElementInterface
                 $viewState['tableColumns'] ?? null
             );
 
-            // Give each attribute a chance to modify the criteria
+            // Prepare the element query for each of the table attributes
+            $hasHandlers = Event::hasHandlers(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE);
             foreach ($variables['attributes'] as $attribute) {
-                $event = new ElementIndexTableAttributeEvent([
-                    'query' => $elementQuery,
-                    'attribute' => $attribute[0],
-                ]);
-
-                Event::trigger(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $event);
-
-                if (!$event->handled) {
-                    static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
+                if ($hasHandlers) {
+                    // Fire a 'prepQueryForTableAttribute' event
+                    $event = new ElementIndexTableAttributeEvent([
+                        'query' => $elementQuery,
+                        'attribute' => $attribute[0],
+                    ]);
+                    Event::trigger(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $event);
+                    if ($event->handled) {
+                        continue;
+                    }
                 }
+
+                static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
             }
 
             if (!$variables['showHeaderColumn'] && count($variables['attributes']) <= 1) {
@@ -1323,13 +1342,14 @@ abstract class Element extends Component implements ElementInterface
     {
         $sortOptions = static::defineSortOptions();
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementSortOptionsEvent([
-            'sortOptions' => $sortOptions,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_SORT_OPTIONS, $event);
+        // Fire a 'registerSortOptions' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SORT_OPTIONS)) {
+            $event = new RegisterElementSortOptionsEvent(['sortOptions' => $sortOptions]);
+            Event::trigger(static::class, self::EVENT_REGISTER_SORT_OPTIONS, $event);
+            return $event->sortOptions;
+        }
 
-        return $event->sortOptions;
+        return $sortOptions;
     }
 
     /**
@@ -1358,13 +1378,14 @@ abstract class Element extends Component implements ElementInterface
     {
         $tableAttributes = static::defineTableAttributes();
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementTableAttributesEvent([
-            'tableAttributes' => $tableAttributes,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $event);
+        // Fire a 'registerTableAttributes' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES)) {
+            $event = new RegisterElementTableAttributesEvent(['tableAttributes' => $tableAttributes]);
+            Event::trigger(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $event);
+            return $event->tableAttributes;
+        }
 
-        return $event->tableAttributes;
+        return $tableAttributes;
     }
 
     /**
@@ -1400,14 +1421,17 @@ abstract class Element extends Component implements ElementInterface
     {
         $tableAttributes = static::defineDefaultTableAttributes($source);
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementDefaultTableAttributesEvent([
-            'source' => $source,
-            'tableAttributes' => $tableAttributes,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $event);
+        // Fire a 'registerDefaultTableAttributes' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES)) {
+            $event = new RegisterElementDefaultTableAttributesEvent([
+                'source' => $source,
+                'tableAttributes' => $tableAttributes,
+            ]);
+            Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $event);
+            return $event->tableAttributes;
+        }
 
-        return $event->tableAttributes;
+        return $tableAttributes;
     }
 
     /**
@@ -1492,18 +1516,20 @@ abstract class Element extends Component implements ElementInterface
             return $field->getEagerLoadingMap($sourceElements);
         }
 
-        // Give plugins a chance to provide custom mappings
-        $event = new DefineEagerLoadingMapEvent([
-            'sourceElements' => $sourceElements,
-            'handle' => $handle,
-        ]);
-        Event::trigger(static::class, self::EVENT_DEFINE_EAGER_LOADING_MAP, $event);
-        if ($event->elementType !== null) {
-            return [
-                'elementType' => $event->elementType,
-                'map' => $event->map,
-                'criteria' => $event->criteria,
-            ];
+        // Fire a 'defineEagerLoadingMap' event
+        if (Event::hasHandlers(static::class, self::EVENT_DEFINE_EAGER_LOADING_MAP)) {
+            $event = new DefineEagerLoadingMapEvent([
+                'sourceElements' => $sourceElements,
+                'handle' => $handle,
+            ]);
+            Event::trigger(static::class, self::EVENT_DEFINE_EAGER_LOADING_MAP, $event);
+            if ($event->elementType !== null) {
+                return [
+                    'elementType' => $event->elementType,
+                    'map' => $event->map,
+                    'criteria' => $event->criteria,
+                ];
+            }
         }
 
         return false;
@@ -2989,10 +3015,9 @@ abstract class Element extends Component implements ElementInterface
     {
         $cacheTags = static::cacheTags();
 
+        // Fire a 'defineCacheTags' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
-            $event = new DefineValueEvent([
-                'value' => $cacheTags,
-            ]);
+            $event = new DefineValueEvent(['value' => $cacheTags]);
             $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
             return $event->value;
         }
@@ -3024,16 +3049,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSearchKeywords(string $attribute): string
     {
-        // Give plugins/modules a chance to define custom keywords
+        // Fire a 'defineKeywords' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_KEYWORDS)) {
-            $event = new DefineAttributeKeywordsEvent([
-                'attribute' => $attribute,
-            ]);
+            $event = new DefineAttributeKeywordsEvent(['attribute' => $attribute]);
             $this->trigger(self::EVENT_DEFINE_KEYWORDS, $event);
             if ($event->handled) {
                 return $event->keywords ?? '';
             }
         }
+
         return $this->searchKeywords($attribute);
     }
 
@@ -3054,11 +3078,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getRoute(): mixed
     {
-        // Give plugins a chance to set this
+        // Fire a 'setRoute' event
         if ($this->hasEventHandlers(self::EVENT_SET_ROUTE)) {
             $event = new SetElementRouteEvent();
             $this->trigger(self::EVENT_SET_ROUTE, $event);
-
             if ($event->handled || $event->route !== null) {
                 return $event->route ?: null;
             }
@@ -3098,22 +3121,24 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl(): ?string
     {
-        // Give plugins/modules a chance to provide a custom URL
-        $event = new DefineUrlEvent();
-        $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
-        $url = $event->url;
+        // Fire a 'beforeDefineUrl' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DEFINE_URL)) {
+            $event = new DefineUrlEvent();
+            $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
+            $url = $event->url;
+        } else {
+            $url = null;
+        }
 
         // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
-        if ($url === null && !$event->handled && isset($this->uri)) {
+        if ($url === null && !($event->handled ?? false) && isset($this->uri)) {
             $path = $this->getIsHomepage() ? '' : $this->uri;
             $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
         }
 
-        // Give plugins/modules a chance to customize it
+        // Fire a 'defineUrl' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
-            $event = new DefineUrlEvent([
-                'url' => $url,
-            ]);
+            $event = new DefineUrlEvent(['url' => $url]);
             $this->trigger(self::EVENT_DEFINE_URL, $event);
             // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
             if ($event->url !== null || $event->handled) {
@@ -3264,13 +3289,14 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_VIEW)) {
-            return false;
+        // Fire an 'authorizeView' event
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_VIEW)) {
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_VIEW, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_VIEW, $event);
-        return $event->authorized;
+        return false;
     }
 
     /**
@@ -3285,13 +3311,14 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_SAVE)) {
-            return false;
+        // Fire an 'authorizeSave' event
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_SAVE)) {
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_SAVE, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_SAVE, $event);
-        return $event->authorized;
+        return false;
     }
 
     /**
@@ -3306,13 +3333,14 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DUPLICATE)) {
-            return false;
+        // Fire an 'authorizeDuplicate' event
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_DUPLICATE)) {
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_DUPLICATE, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_DUPLICATE, $event);
-        return $event->authorized;
+        return false;
     }
 
     /**
@@ -3336,13 +3364,14 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE)) {
-            return false;
+        // Fire an 'authorizeDelete' event
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE)) {
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_DELETE, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_DELETE, $event);
-        return $event->authorized;
+        return false;
     }
 
     /**
@@ -3357,13 +3386,14 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
+        // Fire an 'authorizeDeleteForSite' event
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE_FOR_SITE)) {
-            return false;
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_DELETE_FOR_SITE, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_DELETE_FOR_SITE, $event);
-        return $event->authorized;
+        return false;
     }
 
     /**
@@ -3371,13 +3401,14 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canCreateDrafts(User $user): bool
     {
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_CREATE_DRAFTS)) {
-            return false;
+        // Fire an 'authorizeCreateDrafts' event
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_CREATE_DRAFTS)) {
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_CREATE_DRAFTS, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_CREATE_DRAFTS, $event);
-        return $event->authorized;
+        return false;
     }
 
     /**
@@ -3468,10 +3499,14 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getAdditionalButtons(): string
     {
-        // Fire a defineAdditionalButtons event
-        $event = new DefineHtmlEvent();
-        $this->trigger(self::EVENT_DEFINE_ADDITIONAL_BUTTONS, $event);
-        return $event->html;
+        // Fire a 'defineAdditionalButtons' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDITIONAL_BUTTONS)) {
+            $event = new DefineHtmlEvent();
+            $this->trigger(self::EVENT_DEFINE_ADDITIONAL_BUTTONS, $event);
+            return $event->html;
+        }
+
+        return '';
     }
 
     /**
@@ -3484,11 +3519,9 @@ abstract class Element extends Component implements ElementInterface
             ...array_map(fn(array $item) => $item + ['destructive' => true], $this->destructiveActionMenuItems()),
         ];
 
-        // Fire a defineActionMenuItems event
+        // Fire a 'defineActionMenuItems' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-            $event = new DefineMenuItemsEvent([
-                'items' => $items,
-            ]);
+            $event = new DefineMenuItemsEvent(['items' => $items]);
             $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
             return $event->items;
         }
@@ -3702,11 +3735,9 @@ JS, [
     {
         $previewTargets = $this->previewTargets();
 
-        // Give plugins a chance to modify them
+        // Fire a 'registerPreviewTargets' event
         if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
-            $event = new RegisterPreviewTargetsEvent([
-                'previewTargets' => $previewTargets,
-            ]);
+            $event = new RegisterPreviewTargetsEvent(['previewTargets' => $previewTargets]);
             $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
             $previewTargets = $event->previewTargets;
         }
@@ -4967,18 +4998,22 @@ JS, [
                 }
                 break;
             default:
-                // Give plugins a chance to store this
-                $event = new SetEagerLoadedElementsEvent([
-                    'handle' => $handle,
-                    'elements' => $elements,
-                    'plan' => $plan,
-                ]);
-                $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
-                if (!$event->handled) {
-                    // No takers. Just store it in the internal array then.
-                    /** @phpstan-ignore-next-line */
-                    $this->_eagerLoadedElements[$handle] = ElementCollection::make($elements);
+                // Fire a 'setEagerLoadedElements' event
+                if ($this->hasEventHandlers(self::EVENT_SET_EAGER_LOADED_ELEMENTS)) {
+                    $event = new SetEagerLoadedElementsEvent([
+                        'handle' => $handle,
+                        'elements' => $elements,
+                        'plan' => $plan,
+                    ]);
+                    $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
+                    if ($event->handled) {
+                        break;
+                    }
                 }
+
+                // No takers. Just store it in the internal array then.
+                /** @phpstan-ignore-next-line */
+                $this->_eagerLoadedElements[$handle] = ElementCollection::make($elements);
         }
     }
 
@@ -5087,13 +5122,14 @@ JS, [
             ],
         ]);
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementHtmlAttributesEvent([
-            'htmlAttributes' => $htmlAttributes,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_HTML_ATTRIBUTES, $event);
+        // Fire a 'registerHtmlAttributes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_HTML_ATTRIBUTES)) {
+            $event = new RegisterElementHtmlAttributesEvent(['htmlAttributes' => $htmlAttributes]);
+            $this->trigger(self::EVENT_REGISTER_HTML_ATTRIBUTES, $event);
+            return $event->htmlAttributes;
+        }
 
-        return $event->htmlAttributes;
+        return $htmlAttributes;
     }
 
     /**
@@ -5113,14 +5149,13 @@ JS, [
      */
     public function getAttributeHtml(string $attribute): string
     {
-        // Give plugins a chance to set this
-        $event = new DefineAttributeHtmlEvent([
-            'attribute' => $attribute,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_ATTRIBUTE_HTML, $event);
-
-        if ($event->html !== null) {
-            return $event->html;
+        // Fire a 'defineAttributeHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ATTRIBUTE_HTML)) {
+            $event = new DefineAttributeHtmlEvent(['attribute' => $attribute]);
+            $this->trigger(self::EVENT_DEFINE_ATTRIBUTE_HTML, $event);
+            if (isset($event->html)) {
+                return $event->html;
+            }
         }
 
         return $this->attributeHtml($attribute);
@@ -5131,14 +5166,13 @@ JS, [
      */
     public function getInlineAttributeInputHtml(string $attribute): string
     {
-        // Give plugins a chance to set this
-        $event = new DefineAttributeHtmlEvent([
-            'attribute' => $attribute,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $event);
-
-        if ($event->html !== null) {
-            return $event->html;
+        // Fire a 'defineInlineAttributeInputHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML)) {
+            $event = new DefineAttributeHtmlEvent(['attribute' => $attribute]);
+            $this->trigger(self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $event);
+            if (isset($event->html)) {
+                return $event->html;
+            }
         }
 
         return $this->inlineAttributeInputHtml($attribute);
@@ -5407,12 +5441,16 @@ JS, [
             $components[] = $this->notesFieldHtml();
         }
 
-        // Fire a defineSidebarHtml event
-        $event = new DefineHtmlEvent([
-            'html' => implode("\n", $components),
-        ]);
-        $this->trigger(self::EVENT_DEFINE_SIDEBAR_HTML, $event);
-        return $event->html;
+        $html = implode("\n", $components);
+
+        // Fire a 'defineSidebarHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SIDEBAR_HTML)) {
+            $event = new DefineHtmlEvent(['html' => $html]);
+            $this->trigger(self::EVENT_DEFINE_SIDEBAR_HTML, $event);
+            return $event->html;
+        }
+
+        return $html;
     }
 
     /**
@@ -5424,12 +5462,14 @@ JS, [
      */
     protected function metaFieldsHtml(bool $static): string
     {
-        // Fire a defineMetaFieldsHtml event
-        $event = new DefineHtmlEvent([
-            'static' => $static,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_META_FIELDS_HTML, $event);
-        return $event->html;
+        // Fire a 'defineMetaFieldsHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_META_FIELDS_HTML)) {
+            $event = new DefineHtmlEvent(['static' => $static]);
+            $this->trigger(self::EVENT_DEFINE_META_FIELDS_HTML, $event);
+            return $event->html;
+        }
+
+        return '';
     }
 
     /**
@@ -5591,11 +5631,12 @@ JS,
     {
         $metadata = $this->metadata();
 
-        // Fire a defineMetadata event
-        $event = new DefineMetadataEvent([
-            'metadata' => $metadata,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_METADATA, $event);
+        // Fire a 'defineMetadata' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_METADATA)) {
+            $event = new DefineMetadataEvent(['metadata' => $metadata]);
+            $this->trigger(self::EVENT_DEFINE_METADATA, $event);
+            $metadata = $event->metadata;
+        }
 
         $formatter = Craft::$app->getFormatter();
 
@@ -5625,7 +5666,7 @@ JS,
                 }
                 return $icon . Html::tag('span', $label);
             },
-        ], $event->metadata, [
+        ], $metadata, [
             Craft::t('app', 'Created at') => $this->dateCreated && !$this->getIsUnpublishedDraft()
                 ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
                 : false,
@@ -5689,13 +5730,14 @@ JS,
             }
         }
 
-        // Trigger a 'beforeSave' event
-        $event = new ModelEvent([
-            'isNew' => $isNew,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_SAVE, $event);
-
-        return $event->isValid;
+        // Fire a 'beforeSave' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE)) {
+            $event = new ModelEvent(['isNew' => $isNew]);
+            $this->trigger(self::EVENT_BEFORE_SAVE, $event);
+            return $event->isValid;
+        }
+        
+        return true;
     }
 
     /**
@@ -5708,7 +5750,7 @@ JS,
             $field->afterElementSave($this, $isNew);
         }
 
-        // Trigger an 'afterSave' event
+        // Fire an 'afterSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
             $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
                 'isNew' => $isNew,
@@ -5731,7 +5773,7 @@ JS,
             Craft::$app->getRelations()->deleteLeftoverRelations($this);
         }
 
-        // Trigger an 'afterPropagate' event
+        // Fire an 'afterPropagate' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE)) {
             $this->trigger(self::EVENT_AFTER_PROPAGATE, new ModelEvent([
                 'isNew' => $isNew,
@@ -5751,11 +5793,14 @@ JS,
             }
         }
 
-        // Trigger a 'beforeDelete' event
-        $event = new ModelEvent();
-        $this->trigger(self::EVENT_BEFORE_DELETE, $event);
+        // Fire a 'beforeDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE)) {
+            $event = new ModelEvent();
+            $this->trigger(self::EVENT_BEFORE_DELETE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -5768,7 +5813,7 @@ JS,
             $field->afterElementDelete($this);
         }
 
-        // Trigger an 'afterDelete' event
+        // Fire an 'afterDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
             $this->trigger(self::EVENT_AFTER_DELETE);
         }
@@ -5812,11 +5857,14 @@ JS,
             }
         }
 
-        // Trigger a 'beforeRestore' event
-        $event = new ModelEvent();
-        $this->trigger(self::EVENT_BEFORE_RESTORE, $event);
+        // Fire a 'beforeRestore' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE)) {
+            $event = new ModelEvent();
+            $this->trigger(self::EVENT_BEFORE_RESTORE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -5829,7 +5877,7 @@ JS,
             $field->afterElementRestore($this);
         }
 
-        // Trigger an 'afterRestore' event
+        // Fire an 'afterRestore' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE)) {
             $this->trigger(self::EVENT_AFTER_RESTORE);
         }
@@ -5840,13 +5888,14 @@ JS,
      */
     public function beforeMoveInStructure(int $structureId): bool
     {
-        // Trigger a 'beforeMoveInStructure' event
-        $event = new ElementStructureEvent([
-            'structureId' => $structureId,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_MOVE_IN_STRUCTURE, $event);
+        // Fire a 'beforeMoveInStructure' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_MOVE_IN_STRUCTURE)) {
+            $event = new ElementStructureEvent(['structureId' => $structureId]);
+            $this->trigger(self::EVENT_BEFORE_MOVE_IN_STRUCTURE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -5854,7 +5903,7 @@ JS,
      */
     public function afterMoveInStructure(int $structureId): void
     {
-        // Trigger an 'afterMoveInStructure' event
+        // Fire an 'afterMoveInStructure' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
             $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
                 'structureId' => $structureId,

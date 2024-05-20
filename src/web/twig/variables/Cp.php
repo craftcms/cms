@@ -340,12 +340,12 @@ class Cp extends Component
             ];
         }
 
-        // Allow plugins to modify the nav
-        $event = new RegisterCpNavItemsEvent([
-            'navItems' => $navItems,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
-        $navItems = $event->navItems;
+        // Fire a 'registerCpNavItems' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_CP_NAV_ITEMS)) {
+            $event = new RegisterCpNavItemsEvent(['navItems' => $navItems]);
+            $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
+            $navItems = $event->navItems;
+        }
 
         // Figure out which item is selected, and normalize the items
         $path = Craft::$app->getRequest()->getPathInfo();
@@ -487,13 +487,14 @@ class Cp extends Component
             }
         }
 
-        // Allow plugins to modify the settings
-        $event = new RegisterCpSettingsEvent([
-            'settings' => $settings,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_CP_SETTINGS, $event);
+        // Fire a 'registerCpSettings' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_CP_SETTINGS)) {
+            $event = new RegisterCpSettingsEvent(['settings' => $settings]);
+            $this->trigger(self::EVENT_REGISTER_CP_SETTINGS, $event);
+            return $event->settings;
+        }
 
-        return $event->settings;
+        return $settings;
     }
 
     /**
@@ -1048,11 +1049,16 @@ class Cp extends Component
      */
     public function prepFormActions(?array $formActions): ?array
     {
-        $event = new FormActionsEvent([
-            'formActions' => $formActions ?? [],
-        ]);
-        $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
-        return $event->formActions ?: null;
+        // Fire a 'registerFormActions' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_FORM_ACTIONS)) {
+            $event = new FormActionsEvent([
+                'formActions' => $formActions ?? [],
+            ]);
+            $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
+            return $event->formActions ?: null;
+        }
+
+        return null;
     }
 
     /**

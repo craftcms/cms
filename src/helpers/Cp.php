@@ -210,10 +210,12 @@ class Cp
             ]);
         }
 
-        // Give plugins a chance to add their own alerts
-        $event = new RegisterCpAlertsEvent();
-        Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
-        $alerts = array_merge($alerts, $event->alerts);
+        // Fire a 'registerAlerts' event
+        if (Event::hasHandlers(self::class, self::EVENT_REGISTER_ALERTS)) {
+            $event = new RegisterCpAlertsEvent();
+            Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
+            $alerts = array_merge($alerts, $event->alerts);
+        }
 
         // Inline CSS styles
         foreach ($alerts as $i => $alert) {
@@ -486,7 +488,7 @@ class Cp
 
         $html = static::chipHtml($element, $config);
 
-        // Allow plugins to modify the HTML
+        // Fire a 'defineElementChipHtml' event
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CHIP_HTML)) {
             $event = new DefineElementHtmlEvent([
                 'element' => $element,
@@ -599,7 +601,7 @@ class Cp
 
         $html .= Html::endTag('div'); // .card
 
-        // Allow plugins to modify the HTML
+        // Fire a 'defineElementCardHtml' event
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CARD_HTML)) {
             $event = new DefineElementHtmlEvent([
                 'element' => $element,
@@ -835,7 +837,7 @@ class Cp
             'size' => $size,
         ]);
 
-        // Allow plugins to modify the inner HTML
+        // Fire a 'defineElementInnerHtml' event
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_INNER_HTML)) {
             $parsed = Html::parseTag($html);
             $innerHtml = substr($html, $parsed['htmlStart'], $parsed['htmlEnd'] - $parsed['htmlStart']);

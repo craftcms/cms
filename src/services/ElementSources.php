@@ -284,16 +284,21 @@ class ElementSources extends Component
      */
     public function getSourceSortOptions(string $elementType, string $sourceKey): array
     {
-        $event = new DefineSourceSortOptionsEvent([
-            'elementType' => $elementType,
-            'source' => $sourceKey,
-        ]);
-
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
-        $event->sortOptions = array_merge($event->sortOptions, $this->getSortOptionsForFieldLayouts($fieldLayouts));
+        $sortOptions = $this->getSortOptionsForFieldLayouts($fieldLayouts);
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
-        return $event->sortOptions;
+        // Fire a 'defineSourceSortOptions' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS)) {
+            $event = new DefineSourceSortOptionsEvent([
+                'elementType' => $elementType,
+                'source' => $sourceKey,
+                'sortOptions' => $sortOptions,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
+            return $event->sortOptions;
+        }
+
+        return $sortOptions;
     }
 
     /**
@@ -342,16 +347,21 @@ class ElementSources extends Component
      */
     public function getSourceTableAttributes(string $elementType, string $sourceKey): array
     {
-        $event = new DefineSourceTableAttributesEvent([
-            'elementType' => $elementType,
-            'source' => $sourceKey,
-        ]);
-
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
-        $event->attributes = array_merge($event->attributes, $this->getTableAttributesForFieldLayouts($fieldLayouts));
+        $attributes = $this->getTableAttributesForFieldLayouts($fieldLayouts);
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
-        return $event->attributes;
+        // Fire a 'defineSourceTableAttributes' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES)) {
+            $event = new DefineSourceTableAttributesEvent([
+                'elementType' => $elementType,
+                'source' => $sourceKey,
+                'attributes' => $attributes,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
+            return $event->attributes;
+        }
+
+        return $attributes;
     }
 
     /**

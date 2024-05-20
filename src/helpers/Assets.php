@@ -220,9 +220,9 @@ class Assets
             'separator' => $separator,
         ]);
 
-        // Give developers a chance to do their own sanitation
         if ($isFilename) {
-            if (!$preventPluginModifications) {
+            // Fire a 'setFilename' event
+            if (!$preventPluginModifications && Event::hasHandlers(self::class, self::EVENT_SET_FILENAME)) {
                 $event = new SetAssetFilenameEvent([
                     'filename' => $baseName,
                     'originalFilename' => $originalBaseName,
@@ -688,13 +688,12 @@ class Assets
             // Merge with the extraFileKinds setting
             self::$_fileKinds = ArrayHelper::merge(self::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
 
-            // Allow plugins to modify file kinds
-            $event = new RegisterAssetFileKindsEvent([
-                'fileKinds' => self::$_fileKinds,
-            ]);
-
-            Event::trigger(self::class, self::EVENT_REGISTER_FILE_KINDS, $event);
-            self::$_fileKinds = $event->fileKinds;
+            // Fire a 'registerFileKinds' event
+            if (Event::hasHandlers(self::class, self::EVENT_REGISTER_FILE_KINDS)) {
+                $event = new RegisterAssetFileKindsEvent(['fileKinds' => self::$_fileKinds]);
+                Event::trigger(self::class, self::EVENT_REGISTER_FILE_KINDS, $event);
+                self::$_fileKinds = $event->fileKinds;
+            }
 
             // Sort by label
             ArrayHelper::multisort(self::$_fileKinds, 'label');
