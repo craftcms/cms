@@ -2658,8 +2658,6 @@ JS,[
             if ($altField) {
                 $altField->label = '__blank__'; // so that we don't show the label when inline editing
                 return $altField->formHtml($this, false);
-            } else {
-                return '';
             }
         }
 
