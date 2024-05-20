@@ -70,6 +70,16 @@ class AltField extends TextareaField
     /**
      * @inheritdoc
      */
+    protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        $this->class = array_merge($this->class ?? [], ['nicetext']);
+
+        return parent::inputHtml($element, $static);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::t('app', 'Alternative Text');
