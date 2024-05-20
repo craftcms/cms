@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where `craft\helpers\Assets::prepareAssetName()` wasn’t sanitizing filenames if `$preventPluginModifications` was `true`.
 - Fixed an error that occurred on the current user’s Profile screen if they didn’t have permission to access the primary site. ([#15022](https://github.com/craftcms/cms/issues/15022))
 - Fixed a bug where non-localizable elements’ edit screens were displaying a site breadcrumb.
 
