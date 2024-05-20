@@ -628,13 +628,17 @@ class Matrix extends Field implements
         $value = $owner->getFieldValue($this->handle);
 
         if ($value instanceof EntryQuery) {
-            return (clone $value)
+            $value = (clone $value)
                 ->drafts(null)
                 ->status(null)
                 ->siteId($owner->siteId)
                 ->limit(null)
-                ->count();
+                ->collect();
         }
+
+        // we want to exclude unpublished drafts from the count
+        // https://github.com/craftcms/cms/issues/15015
+        $value = $value->filter(fn($item) => !$item->getIsUnpublishedDraft());
 
         return $value->count();
     }
