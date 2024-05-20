@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where `craft\helpers\Assets::prepareAssetName()` wasn’t sanitizing filenames if `$preventPluginModifications` was `true`.
+
 ## 4.9.4 - 2024-05-17
 
 - Fixed a bug where `craft\elements\db\ElementQuery::exists()` would return `true` if `setCachedResult()` had been called, even if an empty array was passed.
