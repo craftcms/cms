@@ -913,6 +913,15 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #content-heading {
+  font-size: 0.875rem;
+  font-weight: normal;
+
+  &:before {
+    content: '/';
+    display: inline-block;
+    margin-inline: 0.5rem;
+  }
+
   @media only screen and (min-width: $minHorizontalUiWidth) {
     display: none;
   }
