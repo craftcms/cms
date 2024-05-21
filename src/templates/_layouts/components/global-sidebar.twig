@@ -71,7 +71,8 @@
                             class: [
                                 'nav-item',
                                 item.sel ? 'sel',
-                                item.subnav ? 'has-subnav'
+                                item.subnav ? 'has-subnav',
+                                item.currentPage ? 'nav-item--selected',
                             ],
                         } %}
                         <li {{ attr(itemAttributes) }}>
@@ -87,7 +88,7 @@
                                     {% for itemId, item in item.subnav %}
                                         {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId -%}
 
-                                        <li class="nav-item nav-item--sub">
+                                        <li class="nav-item nav-item--sub {{ itemIsSelected ? 'nav-item--selected' : '' }}">
                                             {{ _self.action(item|merge({
                                                 linkAttributes:  {
                                                     class: ['sidebar-action--sub'],

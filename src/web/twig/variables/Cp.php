@@ -366,8 +366,12 @@ class Cp extends Component
 
                 // Modify aria-current value for exact page vs. subpages
                 $item['linkAttributes']['aria']['current'] = $item['url'] === $path ? 'page' : 'true';
+
+                // Whether the page is the active page
+                $item['currentPage'] = $item['url'] === $path;
             } else {
                 $item['sel'] = false;
+                $item['currentPage'] = false;
                 if (!isset($item['subnav'])) {
                     $item['subnav'] = false;
                 }

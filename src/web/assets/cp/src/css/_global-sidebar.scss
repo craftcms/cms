@@ -92,11 +92,6 @@
 
   > .sidebar-action {
     grid-area: action;
-
-    &[aria-current='page'] {
-      font-weight: var(--font-weight-bold);
-      padding-left: var(--s);
-    }
   }
 }
 
@@ -184,7 +179,7 @@
     position: absolute;
     inset-inline-start: calc((10rem / 16) * -1); // match #system-name
     inset-block-start: 50%;
-    height: 80%;
+    height: 100%;
     transform: translateY(-50%);
     width: var(--xs);
   }
@@ -400,6 +395,18 @@ States
   [data-sidebar='expanded'] {
     #sidebar-toggle-icon {
       transform: rotate(180deg);
+    }
+
+    .nav-item > .sidebar-action {
+      &[aria-current='page'] {
+        font-weight: var(--font-weight-bold);
+        padding-left: var(--s);
+      }
+    }
+
+    // Subtle background (non-conformant as a standalone indicator)
+    .nav-item--selected {
+      background-color: var(--gray-200);
     }
   }
 }
