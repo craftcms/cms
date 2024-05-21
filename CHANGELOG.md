@@ -1,5 +1,17 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Scalar element queries now set `$select` to the scalar expression, and `$orderBy`, `$limit`, and `$offset` to `null`, on the element query. ([#15001](https://github.com/craftcms/cms/issues/15001))
+- Fixed a bug where `craft\helpers\Assets::prepareAssetName()` wasn’t sanitizing filenames if `$preventPluginModifications` was `true`.
+- Fixed a bug where element queries’ `count()` methods were factoring in the `limit` param when searching with `orderBy` set to `score`. ([#15001](https://github.com/craftcms/cms/issues/15001))
+
+## 4.9.4 - 2024-05-17
+
+- Fixed a bug where `craft\elements\db\ElementQuery::exists()` would return `true` if `setCachedResult()` had been called, even if an empty array was passed.
+- Fixed a bug where it wasn’t possible to interact with disabled Matrix blocks. ([#15002](https://github.com/craftcms/cms/issues/15002))
+- Fixed an infinite recursion bug that could occur when `craft\web\Response::redirect()` was called. ([#15014](https://github.com/craftcms/cms/pull/15014))
+
 ## 4.9.3 - 2024-05-14
 
 - Fixed a SQL error that could occur when applying or rebuilding the project config.
