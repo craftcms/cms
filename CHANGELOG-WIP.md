@@ -15,7 +15,8 @@
 - The `db/restore` command now autodetects the backup format for PostgreSQL installs, if `--format` isn’t passed. ([#14931](https://github.com/craftcms/cms/pull/14931))
 - The `install` command and web-based installer now validate the existing project config files at the outset, and abort installation if there are any issues.
 - The `resave/entries` command now has an `--all-sections` flag.
-- The web-based installer now displays the error message when installation fails. 
+- The web-based installer now displays the error message when installation fails.
+- Edit Entry Type pages now have a “Delete” action. ([#14983](https://github.com/craftcms/cms/discussions/14983))
 
 ### Development
 - Added the `withCustomFields` element query param. ([#15003](https://github.com/craftcms/cms/pull/15003))
