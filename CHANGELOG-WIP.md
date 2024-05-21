@@ -29,9 +29,12 @@
 - Added `craft\events\InvalidateElementcachesEvent::$element`.
 - `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
 - Added `craft\fields\BaseRelationField::existsQueryCondition()`.
+- Added `craft\helpers\StringHelper::indent()`.
+- Added the `reloadOnBroadcastSave` setting to `Craft.ElementEditor`. ([#14814](https://github.com/craftcms/cms/issues/14814))
 - Added the `waitForDoubleClicks` setting to `Garnish.Select`, `Craft.BaseElementIndex`, and `Craft.BaseElementIndexView`.
 
 ### System
 - Improved overall system performance. ([#15003](https://github.com/craftcms/cms/pull/15003))
 - Improved the performance of `exists()` element queries.
 - Improved the performance of `craft\base\Element::toArray()`.
+- The Debug Toolbar now pre-serializes objects stored as request parameters, fixing a bug where closures could prevent the entire Request panel from showing up. ([#14982](https://github.com/craftcms/cms/discussions/14982))
