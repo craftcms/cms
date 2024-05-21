@@ -92,6 +92,11 @@
 
   > .sidebar-action {
     grid-area: action;
+
+    &[aria-current='page'] {
+      font-weight: var(--font-weight-bold);
+      padding-left: var(--s);
+    }
   }
 }
 
