@@ -7,6 +7,7 @@
 - Fixed a bug where element queries’ `count()` methods were factoring in the `limit` param when searching with `orderBy` set to `score`. ([#15001](https://github.com/craftcms/cms/issues/15001))
 - Fixed a bug where soft-deleted elements that belonged to a revision could be deleted by garbage collection. ([#14995](https://github.com/craftcms/cms/pull/14995))
 - Fixed a bug where soft-deleted structure data associated with elements that belonged to a revision could be deleted by garbage collection. ([#14995](https://github.com/craftcms/cms/pull/14995))
+- Fixed a bug where element edit pages’ scroll positions weren’t always retained when automatically refreshed.
 
 ## 4.9.4 - 2024-05-17
 
