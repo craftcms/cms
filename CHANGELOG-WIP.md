@@ -16,6 +16,7 @@
 - Added `craft\db\setRestoreFormat()`.
 - Added `craft\events\InvalidateElementcachesEvent::$element`.
 - Added `craft\fields\BaseRelationField::existsQueryCondition()`.
+- Added the `reloadOnBroadcastSave` setting to `Craft.ElementEditor`. ([#14814](https://github.com/craftcms/cms/issues/14814))
 
 ### System
 - Improved the performance of `exists()` element queries.
