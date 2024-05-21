@@ -17,8 +17,10 @@
 - Added `craft\events\InvalidateElementcachesEvent::$element`.
 - Added `craft\fields\BaseRelationField::existsQueryCondition()`.
 - Added `craft\helpers\StringHelper::indent()`.
+- Added `craft\queue\Queue::getJobId()`.
 - Added the `reloadOnBroadcastSave` setting to `Craft.ElementEditor`. ([#14814](https://github.com/craftcms/cms/issues/14814))
 
 ### System
 - Improved the performance of `exists()` element queries.
 - The Debug Toolbar now pre-serializes objects stored as request parameters, fixing a bug where closures could prevent the entire Request panel from showing up. ([#14982](https://github.com/craftcms/cms/discussions/14982))  
+- Batched queue jobs now verify that they are still reserved before each step, and before spawning additional batch jobs. ([#14986](https://github.com/craftcms/cms/discussions/14986))
