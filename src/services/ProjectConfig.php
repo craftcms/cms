@@ -1248,16 +1248,17 @@ class ProjectConfig extends Component
         $config[self::PATH_VOLUMES] = $this->_getVolumeData();
 
         // Fire a 'rebuild' event
-        $event = new RebuildConfigEvent([
-            'config' => $config,
-        ]);
-        $this->trigger(self::EVENT_REBUILD, $event);
+        if ($this->hasEventHandlers(self::EVENT_REBUILD)) {
+            $event = new RebuildConfigEvent(['config' => $config]);
+            $this->trigger(self::EVENT_REBUILD, $event);
+            $config = $event->config;
+        }
 
         // Reset the component name map
         $this->_setInternal(self::PATH_META_NAMES, [], updateTimestamp: false, force: true);
 
         // Process the changes
-        foreach ($event->config as $path => $value) {
+        foreach ($config as $path => $value) {
             $this->_setInternal($path, $value, 'Project config rebuild', updateTimestamp: false, force: true);
         }
 
@@ -1624,7 +1625,7 @@ class ProjectConfig extends Component
             return;
         }
 
-        $config = ProjectConfigHelper::splitConfigIntoComponents($this->getCurrentWorkingConfig()->export());
+        $config = $this->getCurrentWorkingConfig();
 
         try {
             $basePath = Craft::$app->getPath()->getProjectConfigPath();
@@ -1634,8 +1635,7 @@ class ProjectConfig extends Component
                 'except' => ['.*', '.*/'],
             ]);
 
-            // get fresh internal config so that all the name comments are properly updated
-            $projectConfigNames = $this->_loadInternalConfig()->get(self::PATH_META_NAMES);
+            $projectConfigNames = $config->get(self::PATH_META_NAMES);
 
             $uids = [];
             $replacements = [];
@@ -1647,16 +1647,15 @@ class ProjectConfig extends Component
                 }
             }
 
-            foreach ($config as $relativeFile => $configData) {
+            $splitConfig = ProjectConfigHelper::splitConfigIntoComponents($config->export());
+            foreach ($splitConfig as $relativeFile => $configData) {
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
                 $filePath = $basePath . DIRECTORY_SEPARATOR . $relativeFile;
                 $yamlContent = Yaml::dump($configData, 20, 2);
-
                 if (!empty($uids)) {
                     $yamlContent = preg_replace($uids, $replacements, $yamlContent);
                 }
-
                 FileHelper::writeToFile($filePath, $yamlContent);
             }
         } catch (Throwable $e) {

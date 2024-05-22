@@ -363,7 +363,7 @@ class ElementsController extends Controller
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
             ->title($title)
-            ->site($element->getSite())
+            ->site($element::isLocalized() ? $element->getSite() : null)
             ->selectableSites(array_map(fn(int $siteId) => [
                 'site' => $sitesService->getSiteById($siteId),
                 'status' => isset($enabledSiteIds[$siteId]) ? 'enabled' : 'disabled',
@@ -983,7 +983,7 @@ JS, [
     ): string {
         $html = $form?->render() ?? '';
 
-        // Trigger a defineEditorContent event
+        // Fire a 'defineEditorContent' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_EDITOR_CONTENT)) {
             $event = new DefineElementEditorHtmlEvent([
                 'element' => $element,

@@ -377,6 +377,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             $this->storeTransformIndexData($index);
         }, $image);
 
+        // Fire a 'transformImage' event
         if ($this->hasEventHandlers(static::EVENT_TRANSFORM_IMAGE)) {
             $event = new ImageTransformerOperationEvent([
                 'asset' => $asset,

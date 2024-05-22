@@ -382,11 +382,19 @@ class NestedElementManager extends Component
                     'class' => 'nested-element-cards',
                 ]);
 
-                /** @var NestedElementInterface[] $elements */
-                $elements = $this->getValue($owner)
-                    ->status(null)
-                    ->limit(null)
-                    ->all();
+
+                /** @var ElementQueryInterface|ElementCollection $value */
+                $value = $this->getValue($owner);
+                if ($value instanceof ElementCollection) {
+                    /** @var NestedElementInterface[] $elements */
+                    $elements = $value->all();
+                } else {
+                    /** @var NestedElementInterface[] $elements */
+                    $elements = $value
+                        ->status(null)
+                        ->limit(null)
+                        ->all();
+                }
 
                 // See if there are any provisional drafts we should swap these out with
                 ElementHelper::swapInProvisionalDrafts($elements);
@@ -468,15 +476,23 @@ class NestedElementManager extends Component
                 $elementType = $this->elementType;
                 $view = Craft::$app->getView();
 
+                $criteria = [
+                    $this->ownerIdParam => $owner->id,
+                ];
+
+                if ($owner->getIsRevision()) {
+                    $criteria['revisions'] = null;
+                    $criteria['trashed'] = null;
+                    $criteria['drafts'] = false;
+                }
+
                 $settings['indexSettings'] = [
                     'namespace' => $view->getNamespace(),
                     'allowedViewModes' => $config['allowedViewModes']
                         ? array_map(fn($mode) => StringHelper::toString($mode), $config['allowedViewModes'])
                         : null,
                     'showHeaderColumn' => $config['showHeaderColumn'],
-                    'criteria' => array_merge([
-                        $this->ownerIdParam => $owner->id,
-                    ], $this->criteria),
+                    'criteria' => array_merge($criteria, $this->criteria),
                     'batchSize' => $config['pageSize'],
                     'actions' => [],
                     'canHaveDrafts' => $elementType::hasDrafts(),

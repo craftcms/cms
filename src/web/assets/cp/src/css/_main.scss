@@ -2865,6 +2865,10 @@ table {
             --ui-control-color: var(--white);
             @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
 
+            .status-label .status-label-text {
+              --status-label-text-color: var(--white) !important;
+            }
+
             th,
             td {
               color: var(--white);
@@ -3067,13 +3071,14 @@ table {
     }
   }
 
-  &:has(.thumb) .chip-content {
-    max-width: calc(100% - var(--thumb-size));
+  &:has(.thumb):not(.large) .chip-content {
+    min-width: calc(100% - var(--thumb-size));
   }
 
   &.sel,
   li.sel &,
-  li.active-drop-target & {
+  li.active-drop-target &,
+  .card.sel & {
     --text-color: var(--white);
     --custom-text-color: var(--white) !important;
     --medium-dark-text-color: var(--white);
@@ -3591,6 +3596,32 @@ table {
   &.main {
     .source-path {
       margin: -22px calc(var(--padding) * -1 + 2px) 24px;
+    }
+
+    .inline-editing {
+      textarea,
+      input[type='email'],
+      input[type='text'].fullwidth,
+      input[type='url'] {
+        min-width: 10rem;
+      }
+
+      .money-container input[type='text'].fullwidth,
+      input[type='text'][inputmode].fullwidth {
+        min-width: 5rem;
+      }
+
+      .lightswitch-outer-container .lightswitch-inner-container span {
+        overflow: initial;
+      }
+
+      .selectize.select:not(.fullwidth) {
+        width: 10rem;
+      }
+
+      .flex:has(input[type='text'][inputmode].fullwidth) {
+        flex-wrap: nowrap;
+      }
     }
   }
 
@@ -4411,10 +4442,6 @@ $statusLabelBgShade: '500';
   gap: var(--xs);
   height: calc(22rem / 16);
   padding: 0 var(--s);
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-color, var(--status-label-text-color));
-  text-transform: uppercase;
 
   &:before {
     position: absolute;
@@ -4434,6 +4461,14 @@ $statusLabelBgShade: '500';
   .status,
   .cp-icon {
     @include margin(0, 0, 0, -3px);
+  }
+
+  .status-label-text {
+    position: relative;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--status-label-text-color);
   }
 
   &.red {
@@ -5353,10 +5388,6 @@ $min2ColWidth: 400px;
           & > .timewrapper {
             width: 45%;
           }
-
-          & > .clear-btn {
-            @include margin-right(-24px);
-          }
         }
 
         & > .datewrapper,
@@ -5562,6 +5593,7 @@ $min2ColWidth: 400px;
     padding-left: var(--padding);
     padding-right: var(--padding);
     z-index: 2;
+    border-radius: 0;
 
     & > .so-toolbar {
       display: flex;

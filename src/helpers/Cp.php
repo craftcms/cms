@@ -210,10 +210,12 @@ class Cp
             ]);
         }
 
-        // Give plugins a chance to add their own alerts
-        $event = new RegisterCpAlertsEvent();
-        Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
-        $alerts = array_merge($alerts, $event->alerts);
+        // Fire a 'registerAlerts' event
+        if (Event::hasHandlers(self::class, self::EVENT_REGISTER_ALERTS)) {
+            $event = new RegisterCpAlertsEvent();
+            Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
+            $alerts = array_merge($alerts, $event->alerts);
+        }
 
         // Inline CSS styles
         foreach ($alerts as $i => $alert) {
@@ -490,7 +492,7 @@ class Cp
 
         $html = static::chipHtml($element, $config);
 
-        // Allow plugins to modify the HTML
+        // Fire a 'defineElementChipHtml' event
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CHIP_HTML)) {
             $event = new DefineElementHtmlEvent([
                 'element' => $element,
@@ -612,7 +614,7 @@ class Cp
 
         $html .= Html::endTag('div'); // .card
 
-        // Allow plugins to modify the HTML
+        // Fire a 'defineElementCardHtml' event
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CARD_HTML)) {
             $event = new DefineElementHtmlEvent([
                 'element' => $element,
@@ -639,33 +641,44 @@ class Cp
      */
     public static function statusIndicatorHtml(string $status, array $attributes = []): ?string
     {
+        $attributes += [
+            'color' => null,
+            'label' => ucfirst($status),
+            'class' => $status,
+        ];
+
         if ($status === 'draft') {
             return Html::tag('span', '', [
                 'data' => ['icon' => 'draft'],
                 'class' => 'icon',
                 'role' => 'img',
                 'aria' => [
-                    'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
+                    'label' => sprintf('%s %s',
+                        Craft::t('app', 'Status:'),
+                        $attributes['label'] ?? Craft::t('app', 'Draft'),
+                    ),
                 ],
             ]);
         }
 
-        $color = $attributes['color'] ?? null;
-        if ($color instanceof Color) {
-            $color = $color->value;
+        if ($attributes['color'] instanceof Color) {
+            $attributes['color'] = $attributes['color']->value;
         }
 
-        return Html::tag('span', '', [
+        $options = [
             'class' => array_filter([
                 'status',
-                $status,
-                $color,
+                $attributes['class'],
+                $attributes['color'],
             ]),
-            'role' => 'img',
-            'aria' => [
-                'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $attributes['label'] ?? ucfirst($status)),
-            ],
-        ]);
+        ];
+
+        if ($attributes['label'] !== null) {
+            $options['role'] = 'img';
+            $options['aria']['label'] = sprintf('%s %s', Craft::t('app', 'Status:'), $attributes['label']);
+        }
+
+        return Html::tag('span', '', $options);
     }
 
     /**
@@ -709,6 +722,7 @@ class Cp
             'color' => Color::Gray->value,
             'icon' => null,
             'label' => null,
+            'indicatorClass' => null,
         ];
 
         if ($config['color'] instanceof Color) {
@@ -720,11 +734,14 @@ class Cp
                 'class' => ['cp-icon', 'puny', $config['color']],
             ]);
         } else {
-            $html = static::statusIndicatorHtml($config['color'], ['label' => '']);
+            $html = static::statusIndicatorHtml($config['color'], [
+                'label' => null,
+                'class' => $config['indicatorClass'] ?? $config['color'],
+            ]);
         }
 
         if ($config['label']) {
-            $html .= ' ' . Html::encode($config['label']);
+            $html .= ' ' . Html::tag('span', Html::encode($config['label']), ['class' => 'status-label-text']);
         }
 
         return Html::tag('span', $html, [
@@ -767,6 +784,10 @@ class Cp
         $config['label'] ??= match ($status) {
             'draft' => Craft::t('app', 'Draft'),
             default => ucfirst($status),
+        };
+        $config['indicatorClass'] = match ($status) {
+            'pending', 'off', 'suspended', 'expired' => $status,
+            default => $config['color']->value,
         };
 
         return self::statusLabelHtml($config);
@@ -935,7 +956,7 @@ class Cp
             'size' => $size,
         ]);
 
-        // Allow plugins to modify the inner HTML
+        // Fire a 'defineElementInnerHtml' event
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_INNER_HTML)) {
             $parsed = Html::parseTag($html);
             $innerHtml = substr($html, $parsed['htmlStart'], $parsed['htmlEnd'] - $parsed['htmlStart']);

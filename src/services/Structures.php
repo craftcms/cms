@@ -535,8 +535,8 @@ class Structures extends Component
 
         $targetElementId = $targetElementRecord->isRoot() ? null : $targetElementRecord->elementId;
 
+        // Fire a 'beforeInsertElement' or 'beforeMoveElement' event
         if ($this->hasEventHandlers($beforeEvent)) {
-            // Fire a 'beforeInsertElement' or 'beforeMoveElement' event
             $event = new MoveElementEvent([
                 'element' => $element,
                 'structureId' => $structureId,

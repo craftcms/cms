@@ -1,5 +1,40 @@
 # Release Notes for Craft CMS 5
 
+## 5.1.5 - 2024-05-22
+
+- Scalar element queries now set `$select` to the scalar expression, and `$orderBy`, `$limit`, and `$offset` to `null`, on the element query. ([#15001](https://github.com/craftcms/cms/issues/15001))
+- Added `craft\fieldlayoutelements\TextareaField::inputTemplateVariables()`.
+- Fixed a bug where `craft\helpers\Assets::prepareAssetName()` wasn’t sanitizing filenames if `$preventPluginModifications` was `true`.
+- Fixed a bug where element queries’ `count()` methods were factoring in the `limit` param when searching with `orderBy` set to `score`. ([#15001](https://github.com/craftcms/cms/issues/15001))
+- Fixed a bug where soft-deleted structure data associated with elements that belonged to a revision could be deleted by garbage collection. ([#14995](https://github.com/craftcms/cms/pull/14995))
+- Fixed a bug where element edit pages’ scroll positions weren’t always retained when automatically refreshed.
+- Fixed a bug where the `up` command could remove component name comments from the project config YAML files, for newly-added components. ([#15012](https://github.com/craftcms/cms/issues/15012))
+- Fixed a bug where assets’ Alternative Text fields didn’t expand to match the content height. ([#15026](https://github.com/craftcms/cms/issues/15026))
+- Fixed a bug where `craft\helpers\UrlHelper::isAbsoluteUrl()` was returning `true` for Windows file paths. ([#15043](https://github.com/craftcms/cms/issues/15043))
+- Fixed an error that occurred on the current user’s Profile screen if they didn’t have permission to access the primary site. ([#15022](https://github.com/craftcms/cms/issues/15022))
+- Fixed a bug where non-localizable elements’ edit screens were displaying a site breadcrumb.
+- Fixed a bug where entry GraphQL queries weren’t available if only nested entry field queries were selected in the schema.
+- Fixed a bug where chip labels could wrap unnecessarily. ([#15000](https://github.com/craftcms/cms/issues/15000), [#15017](https://github.com/craftcms/cms/pull/15017))
+- Fixed a bug where date/time clear buttons could bleed out of their container. ([#15017](https://github.com/craftcms/cms/pull/15017))
+- Fixed an error that occurred when editing an element, if any field layout conditions referenced a custom field that was no longer included in the layout. ([#14838](https://github.com/craftcms/cms/issues/14838))
+- Fixed a “User not authorized to create this element.” error that could occur when creating a new entry within a Matrix field, if the field had Max Entries set. ([#15015](https://github.com/craftcms/cms/issues/15015))
+- Fixed a bug where nested entries weren’t showing up within Matrix fields set to the element index view mode, when viewing entry revisions. ([#15038](https://github.com/craftcms/cms/pull/15038))
+- Fixed the styling of element chips displayed within an element card. ([#15044](https://github.com/craftcms/cms/issues/15044))
+- Fixed styling issues with inline-editing within element indexes. ([#15040](https://github.com/craftcms/cms/issues/15040), [#15049](https://github.com/craftcms/cms/pull/15049))
+- Fixed a bug where sticky scrollbars could stop working when switching between element index sources. ([#15047](https://github.com/craftcms/cms/issues/15047))
+
+## 5.1.4 - 2024-05-17
+
+- Improved the performance of element indexes that contained asset thumbnails. ([#14760](https://github.com/craftcms/cms/issues/14760))
+- Table views within element index pages are no longer scrolled directly. ([#14927](https://github.com/craftcms/cms/pull/14927), [#15010](https://github.com/craftcms/cms/pull/15010))
+- Fixed a bug where `craft\elements\db\ElementQuery::exists()` would return `true` if `setCachedResult()` had been called, even if an empty array was passed.
+- Fixed an infinite recursion bug that could occur when `craft\web\Response::redirect()` was called. ([#15014](https://github.com/craftcms/cms/pull/15014))
+- Fixed a bug where `eagerly()` wasn’t working when a custom alias was passed in.
+- Fixed an error that occurred on users’ Addresses screens. ([#15018](https://github.com/craftcms/cms/pull/15018))
+- Fixed a bug where asset chips’ content wasn’t spanning the full width for Assets fields in large thumbnail mode. ([#14993](https://github.com/craftcms/cms/issues/14993))
+- Fixed infinite scrolling on Structure element sources. ([#14992](https://github.com/craftcms/cms/issues/14992))
+- Fixed right-to-left styling issues. ([#15019](https://github.com/craftcms/cms/pull/15019))
+
 ## 5.1.3 - 2024-05-14
 
 - Fixed a SQL error that could occur when applying or rebuilding the project config.

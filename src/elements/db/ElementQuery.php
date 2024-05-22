@@ -408,6 +408,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public bool $eagerly = false;
 
+    /**
+     * @var bool Whether custom fields should be factored into the query.
+     * @used-by withCustomFields()
+     * @since 5.2.0
+     */
+    public bool $withCustomFields = true;
+
     // Structure parameters
     // -------------------------------------------------------------------------
 
@@ -1207,6 +1214,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $withCustomFields
+     */
+    public function withCustomFields(bool $value = true): static
+    {
+        $this->withCustomFields = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $withStructure
      */
     public function withStructure(bool $value = true): static
@@ -1737,59 +1754,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $eagerLoadedCount;
         }
 
-        try {
-            return $this->prepareSubquery()->count($q, $db) ?: 0;
-        } catch (QueryAbortedException) {
-            return 0;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function sum($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->sum($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function average($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->average($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function min($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->min($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function max($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->max($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
+        return parent::count($q, $db) ?: 0;
     }
 
     /**
@@ -1825,15 +1790,19 @@ class ElementQuery extends Query implements ElementQueryInterface
             return null;
         }
 
-        $planHandle = $this->eagerLoadHandle;
-        if (str_contains($planHandle, ':')) {
-            $planHandle = explode(':', $planHandle, 2)[1];
+        if (isset($this->eagerLoadAlias)) {
+            $alias = $this->eagerLoadAlias;
+        } else {
+            $alias = $this->eagerLoadHandle;
+            if (str_contains($alias, ':')) {
+                $alias = explode(':', $alias, 2)[1];
+            }
         }
 
         // see if it was already eager-loaded
         $eagerLoaded = match ($count) {
-            true => $this->wasCountEagerLoaded($this->eagerLoadAlias),
-            false => $this->wasEagerLoaded($this->eagerLoadAlias),
+            true => $this->wasCountEagerLoaded($alias),
+            false => $this->wasEagerLoaded($alias),
         };
 
         if (!$eagerLoaded) {
@@ -1843,7 +1812,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 [
                     new EagerLoadPlan([
                         'handle' => $this->eagerLoadHandle,
-                        'alias' => $this->eagerLoadAlias ?? $planHandle,
+                        'alias' => $alias,
                         'criteria' => $criteria + $this->getCriteria() + ['with' => $this->with],
                         'all' => !$count,
                         'count' => $count,
@@ -1854,10 +1823,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($count) {
-            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle);
+            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($alias);
         }
 
-        return $this->eagerLoadSourceElement->getEagerLoadedElements($planHandle);
+        return $this->eagerLoadSourceElement->getEagerLoadedElements($alias);
     }
 
     /**
@@ -1911,7 +1880,17 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function exists($db = null): bool
     {
-        return $this->getCachedResult() !== null || parent::exists($db);
+        $cachedResult = $this->getCachedResult();
+        if ($cachedResult !== null) {
+            return !empty($cachedResult);
+        }
+        try {
+            return $this->prepareSubquery()
+                ->select('elements.id')
+                ->exists($db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
     }
 
     /**
@@ -2082,6 +2061,58 @@ class ElementQuery extends Query implements ElementQueryInterface
         return $this->prepare($builder)->from['subquery'];
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function queryScalar($selectExpression, $db): bool|string|null
+    {
+        // Mostly copied from yii\db\Query::queryScalar(),
+        // except that createCommand() is called on the prepared subquery rather than this query.
+        // (We still temporarily override $select, $orderBy, $limit, and $offset on this query,
+        // so those values look right from EVENT_BEFORE_PREPARE/EVENT_AFTER_PREPARE listeners.)
+
+        if ($this->emulateExecution) {
+            return null;
+        }
+
+        if (
+            !$this->distinct
+            && empty($this->groupBy)
+            && empty($this->having)
+            && empty($this->union)
+        ) {
+            $select = $this->select;
+            $order = $this->orderBy;
+            $limit = $this->limit;
+            $offset = $this->offset;
+
+            $this->select = [$selectExpression];
+            $this->orderBy = null;
+            $this->limit = null;
+            $this->offset = null;
+
+            try {
+                $subquery = $this->prepareSubquery();
+                $subquery->select = [$selectExpression];
+                $subquery->orderBy = null;
+                $subquery->limit = null;
+                $subquery->offset = null;
+                $command = $subquery->createCommand($db);
+            } catch (QueryAbortedException) {
+                return false;
+            } finally {
+                $this->select = $select;
+                $this->orderBy = $order;
+                $this->limit = $limit;
+                $this->offset = $offset;
+            }
+
+            return $command->queryScalar();
+        }
+
+        return parent::queryScalar($selectExpression, $db);
+    }
+
     // Arrayable methods
     // -------------------------------------------------------------------------
 
@@ -2232,7 +2263,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'row' => $row,
             ]);
             $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
-
             $row = $event->row ?? $row;
             if (isset($event->element)) {
                 $element = $event->element;
@@ -2273,10 +2303,14 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function beforePrepare(): bool
     {
-        $event = new CancelableEvent();
-        $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
+        // Fire a 'beforePrepare' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_PREPARE)) {
+            $event = new CancelableEvent();
+            $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -2291,11 +2325,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function afterPrepare(): bool
     {
-        $event = new CancelableEvent();
-        $this->trigger(self::EVENT_AFTER_PREPARE, $event);
-
-        if (!$event->isValid) {
-            return false;
+        // Fire an 'afterPrepare' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PREPARE)) {
+            $event = new CancelableEvent();
+            $this->trigger(self::EVENT_AFTER_PREPARE, $event);
+            if (!$event->isValid) {
+                return false;
+            }
         }
 
         $elementsService = Craft::$app->getElements();
@@ -2323,10 +2359,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             } else {
                 $queryTags = $this->cacheTags();
 
+                // Fire a 'defineCacheTags' event
                 if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
-                    $event = new DefineValueEvent([
-                        'value' => $queryTags,
-                    ]);
+                    $event = new DefineValueEvent(['value' => $queryTags]);
                     $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
                     $queryTags = $event->value;
                 }
@@ -2378,6 +2413,9 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
+        if (!$this->withCustomFields) {
+            return [];
+        }
         $fields = [];
         foreach ($this->fieldLayouts() as $fieldLayout) {
             array_push($fields, ...$fieldLayout->getCustomFields());
@@ -2523,10 +2561,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             // Group the fields by handle and field UUID
             /** @var FieldInterface[][][] $fieldsByHandle */
-            $fieldsByHandle = ArrayHelper::index($this->customFields, null, [
-                fn(FieldInterface $field) => $field->handle,
-                fn(FieldInterface $field) => $field->uid,
-            ]);
+            $fieldsByHandle = [];
+            foreach ($this->customFields as $field) {
+                $fieldsByHandle[$field->handle][$field->uid] = $field;
+            }
 
             foreach ($fieldsByHandle as $handle => $instancesByUid) {
                 // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...
