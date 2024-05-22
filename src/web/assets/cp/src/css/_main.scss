@@ -3061,12 +3061,13 @@ table {
   }
 
   &:has(.thumb):not(.large) .chip-content {
-    max-width: calc(100% - var(--thumb-size));
+    min-width: calc(100% - var(--thumb-size));
   }
 
   &.sel,
   li.sel &,
-  li.active-drop-target & {
+  li.active-drop-target &,
+  .card.sel & {
     --text-color: var(--white);
     --custom-text-color: var(--white) !important;
     --medium-dark-text-color: var(--white);
@@ -3575,6 +3576,32 @@ table {
   &.main {
     .source-path {
       margin: -22px calc(var(--padding) * -1 + 2px) 24px;
+    }
+
+    .inline-editing {
+      textarea,
+      input[type='email'],
+      input[type='text'].fullwidth,
+      input[type='url'] {
+        min-width: 10rem;
+      }
+
+      .money-container input[type='text'].fullwidth,
+      input[type='text'][inputmode].fullwidth {
+        min-width: 5rem;
+      }
+
+      .lightswitch-outer-container .lightswitch-inner-container span {
+        overflow: initial;
+      }
+
+      .selectize.select:not(.fullwidth) {
+        width: 10rem;
+      }
+
+      .flex:has(input[type='text'][inputmode].fullwidth) {
+        flex-wrap: nowrap;
+      }
     }
   }
 
@@ -5204,10 +5231,6 @@ $min2ColWidth: 400px;
 
           & > .timewrapper {
             width: 45%;
-          }
-
-          & > .clear-btn {
-            @include margin-right(-24px);
           }
         }
 

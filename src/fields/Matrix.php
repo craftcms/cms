@@ -633,7 +633,6 @@ class Matrix extends Field implements
 
         if ($value instanceof EntryQuery) {
             return (clone $value)
-                ->drafts(null)
                 ->status(null)
                 ->siteId($owner->siteId)
                 ->limit(null)
