@@ -3066,7 +3066,8 @@ table {
 
   &.sel,
   li.sel &,
-  li.active-drop-target & {
+  li.active-drop-target &,
+  .card.sel & {
     --text-color: var(--white);
     --custom-text-color: var(--white) !important;
     --medium-dark-text-color: var(--white);

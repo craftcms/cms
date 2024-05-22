@@ -19,6 +19,7 @@
 - Fixed an error that occurred when editing an element, if any field layout conditions referenced a custom field that was no longer included in the layout. ([#14838](https://github.com/craftcms/cms/issues/14838))
 - Fixed a “User not authorized to create this element.” error that could occur when creating a new entry within a Matrix field, if the field had Max Entries set. ([#15015](https://github.com/craftcms/cms/issues/15015))
 - Fixed a bug where nested entries weren’t showing up within Matrix fields set to the element index view mode, when viewing entry revisions. ([#15038](https://github.com/craftcms/cms/pull/15038))
+- Fixed the styling of element chips displayed within an element card. ([#15044](https://github.com/craftcms/cms/issues/15044))
 
 ## 5.1.4 - 2024-05-17
 
