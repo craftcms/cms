@@ -3576,6 +3576,32 @@ table {
     .source-path {
       margin: -22px calc(var(--padding) * -1 + 2px) 24px;
     }
+
+    .inline-editing {
+      textarea,
+      input[type='email'],
+      input[type='text'].fullwidth,
+      input[type='url'] {
+        min-width: 10rem;
+      }
+
+      .money-container input[type='text'].fullwidth,
+      input[type='text'][inputmode].fullwidth {
+        min-width: 5rem;
+      }
+
+      .lightswitch-outer-container .lightswitch-inner-container span {
+        overflow: initial;
+      }
+
+      .selectize.select:not(.fullwidth) {
+        width: 10rem;
+      }
+
+      .flex:has(input[type='text'][inputmode].fullwidth) {
+        flex-wrap: nowrap;
+      }
+    }
   }
 
   .elementselectormodal & {
