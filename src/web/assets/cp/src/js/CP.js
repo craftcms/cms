@@ -222,9 +222,25 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Should we match the previous scroll position?
-      let scrollY = Craft.getLocalStorage('scrollY');
-      if (typeof scrollY !== 'undefined') {
-        Craft.removeLocalStorage('scrollY');
+      let scrollY;
+      const location = document.location;
+      const params = new URLSearchParams(location.search);
+      if (params.has('scrollY')) {
+        scrollY = params.get('scrollY');
+        params.delete('scrollY');
+        Craft.setUrl(
+          Craft.getUrl(
+            `${location.origin}${location.pathname}${location.hash}`,
+            params.toString()
+          )
+        );
+      } else {
+        scrollY = Craft.getLocalStorage('scrollY');
+        if (scrollY !== undefined) {
+          Craft.removeLocalStorage('scrollY');
+        }
+      }
+      if (scrollY !== undefined) {
         Garnish.$doc.ready(() => {
           Garnish.requestAnimationFrame(() => {
             window.scrollTo(0, scrollY);

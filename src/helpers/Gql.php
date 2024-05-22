@@ -200,7 +200,10 @@ class Gql
     public static function canQueryEntries(?GqlSchema $schema = null): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
-        return isset($allowedEntities['sections']);
+        return (
+            isset($allowedEntities['sections']) ||
+            isset($allowedEntities['nestedentryfields'])
+        );
     }
 
     /**

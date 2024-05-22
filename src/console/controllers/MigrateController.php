@@ -177,6 +177,33 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
+    public function runAction($id, $params = []): int
+    {
+        // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
+        $projectConfig = Craft::$app->getProjectConfig();
+        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
+            $projectConfig->regenerateExternalConfig();
+        } elseif ($projectConfig->areChangesPending(force: true)) {
+            // allow project config changes, but don't overwrite the pending changes
+            $readOnly = $projectConfig->readOnly;
+            $writeYamlAutomatically = $projectConfig->writeYamlAutomatically;
+            $projectConfig->readOnly = false;
+            $projectConfig->writeYamlAutomatically = false;
+        }
+
+        try {
+            return parent::runAction($id, $params);
+        } finally {
+            if (isset($readOnly, $writeYamlAutomatically)) {
+                $projectConfig->readOnly = $readOnly;
+                $projectConfig->writeYamlAutomatically = $writeYamlAutomatically;
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action): bool
     {
         if ($action->id !== 'all') {
@@ -202,16 +229,6 @@ class MigrateController extends BaseMigrateController
             }
 
             $this->migrationPath = $this->getMigrator()->migrationPath;
-        }
-
-        // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
-        $projectConfig = Craft::$app->getProjectConfig();
-        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
-            $projectConfig->regenerateExternalConfig();
-        } elseif ($projectConfig->areChangesPending(force: true)) {
-            // allow project config changes, but don't overwrite the pending changes
-            $projectConfig->readOnly = false;
-            $projectConfig->writeYamlAutomatically = false;
         }
 
         try {
