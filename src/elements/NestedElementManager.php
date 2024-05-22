@@ -473,15 +473,23 @@ class NestedElementManager extends Component
                 $elementType = $this->elementType;
                 $view = Craft::$app->getView();
 
+                $criteria = [
+                    $this->ownerIdParam => $owner->id,
+                ];
+
+                if ($owner->getIsRevision()) {
+                    $criteria['revisions'] = null;
+                    $criteria['trashed'] = null;
+                    $criteria['drafts'] = false;
+                }
+
                 $settings['indexSettings'] = [
                     'namespace' => $view->getNamespace(),
                     'allowedViewModes' => $config['allowedViewModes']
                         ? array_map(fn($mode) => StringHelper::toString($mode), $config['allowedViewModes'])
                         : null,
                     'showHeaderColumn' => $config['showHeaderColumn'],
-                    'criteria' => array_merge([
-                        $this->ownerIdParam => $owner->id,
-                    ], $this->criteria),
+                    'criteria' => array_merge($criteria, $this->criteria),
                     'batchSize' => $config['pageSize'],
                     'actions' => [],
                     'canHaveDrafts' => $elementType::hasDrafts(),
