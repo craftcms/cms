@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fieldlayoutelements\TextareaField;
+use craft\helpers\ArrayHelper;
 
 /**
  * AltField represents an Alternative Text field that can be included within a volume’s field layout designer.
@@ -65,6 +66,16 @@ class AltField extends TextareaField
             $fields['translatable'],
         );
         return $fields;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
+    {
+        return ArrayHelper::merge(parent::inputTemplateVariables($element, $static), [
+            'class' => ['nicetext'],
+        ]);
     }
 
     /**
