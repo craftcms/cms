@@ -3061,7 +3061,7 @@ table {
   }
 
   &:has(.thumb):not(.large) .chip-content {
-    max-width: calc(100% - var(--thumb-size));
+    min-width: calc(100% - var(--thumb-size));
   }
 
   &.sel,
@@ -5204,10 +5204,6 @@ $min2ColWidth: 400px;
 
           & > .timewrapper {
             width: 45%;
-          }
-
-          & > .clear-btn {
-            @include margin-right(-24px);
           }
         }
 
