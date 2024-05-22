@@ -1608,59 +1608,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return count($cachedResult);
         }
 
-        try {
-            return $this->prepareSubquery()->count($q, $db) ?: 0;
-        } catch (QueryAbortedException) {
-            return 0;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function sum($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->sum($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function average($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->average($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function min($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->min($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function max($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->max($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
+        return parent::count($q, $db) ?: 0;
     }
 
     /**
@@ -1886,6 +1834,58 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         /** @var Query */
         return $this->prepare($builder)->from['subquery'];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function queryScalar($selectExpression, $db): bool|string|null
+    {
+        // Mostly copied from yii\db\Query::queryScalar(),
+        // except that createCommand() is called on the prepared subquery rather than this query.
+        // (We still temporarily override $select, $orderBy, $limit, and $offset on this query,
+        // so those values look right from EVENT_BEFORE_PREPARE/EVENT_AFTER_PREPARE listeners.)
+
+        if ($this->emulateExecution) {
+            return null;
+        }
+
+        if (
+            !$this->distinct
+            && empty($this->groupBy)
+            && empty($this->having)
+            && empty($this->union)
+        ) {
+            $select = $this->select;
+            $order = $this->orderBy;
+            $limit = $this->limit;
+            $offset = $this->offset;
+
+            $this->select = [$selectExpression];
+            $this->orderBy = null;
+            $this->limit = null;
+            $this->offset = null;
+
+            try {
+                $subquery = $this->prepareSubquery();
+                $subquery->select = [$selectExpression];
+                $subquery->orderBy = null;
+                $subquery->limit = null;
+                $subquery->offset = null;
+                $command = $subquery->createCommand($db);
+            } catch (QueryAbortedException) {
+                return false;
+            } finally {
+                $this->select = $select;
+                $this->orderBy = $order;
+                $this->limit = $limit;
+                $this->offset = $offset;
+            }
+
+            return $command->queryScalar();
+        }
+
+        return parent::queryScalar($selectExpression, $db);
     }
 
     // Arrayable methods

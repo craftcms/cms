@@ -2094,7 +2094,7 @@ $.extend(Craft, {
    * Retrieves a value from localStorage if it exists.
    *
    * @param {string} key
-   * @param {*} defaultValue
+   * @param {*} [defaultValue]
    */
   getLocalStorage: function (key, defaultValue) {
     key = 'Craft-' + Craft.systemUid + '.' + key;
