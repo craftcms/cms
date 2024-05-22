@@ -10,6 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
+use craft\helpers\ProjectConfig;
 use craft\models\UserGroup;
 
 /**
@@ -41,7 +42,9 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     public static function isSelectable(): bool
     {
-        return !empty(Craft::$app->getUserGroups()->getAllGroups());
+        // make this condition selectable if we're applying PC changes, and we're about to add group(s)
+        $addingUserGroups = ProjectConfig::areUserGroupsBeingAdded();
+        return (!empty(Craft::$app->getUserGroups()->getAllGroups()) || $addingUserGroups);
     }
 
     /**

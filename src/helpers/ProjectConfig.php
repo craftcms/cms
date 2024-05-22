@@ -777,4 +777,41 @@ class ProjectConfig
         array_pop($segments);
         return !empty($segments) ? implode('.', $segments) : null;
     }
+
+    /**
+     * Checks if we're applying external PC changes, and if we're likely to be adding a User Group.
+     *
+     * @return bool
+     */
+    public static function areUserGroupsBeingAdded(): bool
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (!$projectConfig->isApplyingExternalChanges) {
+            return false;
+        }
+
+        if (!$projectConfig->areChangesPending(ProjectConfigService::PATH_USER_GROUPS)) {
+            return false;
+        }
+
+        // if we're applying external changes
+        // and there are pending changes for user groups
+        $changesSummary = $projectConfig->getPendingChangeSummary();
+        // return false if we don't have 'users.groups' under 'newItems'
+        // and if all the summary groups are not empty
+        // (when adding groups, $changesSummary will at some point be empty as we go through it)
+        if (
+            !isset($changesSummary['newItems']['users.groups']) &&
+            (
+                !empty($changesSummary['newItems']) ||
+                !empty($changesSummary['changedItems']) ||
+                !empty($changesSummary['removedItems'])
+            )
+        ) {
+            return false;
+        }
+
+        return true;
+    }
 }
