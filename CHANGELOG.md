@@ -9,6 +9,7 @@
 - Fixed a bug where element edit pages’ scroll positions weren’t always retained when automatically refreshed.
 - Fixed an error that occurred on the current user’s Profile screen if they didn’t have permission to access the primary site. ([#15022](https://github.com/craftcms/cms/issues/15022))
 - Fixed a bug where non-localizable elements’ edit screens were displaying a site breadcrumb.
+- Fixed a bug where entry GraphQL queries weren’t available if only nested entry field queries were selected in the schema.
 
 ## 5.1.4 - 2024-05-17
 
