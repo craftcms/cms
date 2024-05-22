@@ -2865,6 +2865,10 @@ table {
             --ui-control-color: var(--white);
             @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
 
+            .status-label .status-label-text {
+              --status-label-text-color: var(--white) !important;
+            }
+
             th,
             td {
               color: var(--white);
@@ -4438,10 +4442,6 @@ $statusLabelBgShade: '500';
   gap: var(--xs);
   height: calc(22rem / 16);
   padding: 0 var(--s);
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-color, var(--status-label-text-color));
-  text-transform: uppercase;
 
   &:before {
     position: absolute;
@@ -4461,6 +4461,14 @@ $statusLabelBgShade: '500';
   .status,
   .cp-icon {
     @include margin(0, 0, 0, -3px);
+  }
+
+  .status-label-text {
+    position: relative;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--status-label-text-color);
   }
 
   &.red {
