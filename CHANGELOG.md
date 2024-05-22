@@ -8,6 +8,7 @@
 - Fixed a bug where soft-deleted elements that belonged to a revision could be deleted by garbage collection. ([#14995](https://github.com/craftcms/cms/pull/14995))
 - Fixed a bug where soft-deleted structure data associated with elements that belonged to a revision could be deleted by garbage collection. ([#14995](https://github.com/craftcms/cms/pull/14995))
 - Fixed a bug where element edit pages’ scroll positions weren’t always retained when automatically refreshed.
+- Fixed a bug where the `up` command could remove component name comments from the project config YAML files, for newly-added components. ([#15012](https://github.com/craftcms/cms/issues/15012))
 
 ## 4.9.4 - 2024-05-17
 
