@@ -105,9 +105,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             ).then(({data}) => {
               for (let i = 0; i < $rows.length; i++) {
                 const $row = $rows.eq(i);
-                $row
-                  .find('> th[data-titlecell] .element')
-                  .replaceWith(data.elementHtml);
                 for (let attribute in data.attributeHtml) {
                   if (data.attributeHtml.hasOwnProperty(attribute)) {
                     $row

@@ -23,7 +23,6 @@ use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -1064,9 +1063,6 @@ class ElementIndexesController extends BaseElementsController
         }
 
         return $this->asJson([
-            'elementHtml' => Cp::elementChipHtml($element, [
-                'context' => $this->context,
-            ]),
             'attributeHtml' => $attributeHtml,
         ]);
     }
