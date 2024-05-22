@@ -10,6 +10,7 @@
 - Fixed a bug where element edit pages’ scroll positions weren’t always retained when automatically refreshed.
 - Fixed a bug where the `up` command could remove component name comments from the project config YAML files, for newly-added components. ([#15012](https://github.com/craftcms/cms/issues/15012))
 - Fixed a bug where assets’ Alternative Text fields didn’t expand to match the content height. ([#15026](https://github.com/craftcms/cms/issues/15026))
+- Fixed a bug where `craft\helpers\UrlHelper::isAbsoluteUrl()` was returning `true` for Windows file paths. ([#15043](https://github.com/craftcms/cms/issues/15043))
 - Fixed an error that occurred on the current user’s Profile screen if they didn’t have permission to access the primary site. ([#15022](https://github.com/craftcms/cms/issues/15022))
 - Fixed a bug where non-localizable elements’ edit screens were displaying a site breadcrumb.
 - Fixed a bug where entry GraphQL queries weren’t available if only nested entry field queries were selected in the schema.
