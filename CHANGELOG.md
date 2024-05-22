@@ -21,6 +21,7 @@
 - Fixed a bug where nested entries weren’t showing up within Matrix fields set to the element index view mode, when viewing entry revisions. ([#15038](https://github.com/craftcms/cms/pull/15038))
 - Fixed the styling of element chips displayed within an element card. ([#15044](https://github.com/craftcms/cms/issues/15044))
 - Fixed styling issues with inline-editing within element indexes. ([#15040](https://github.com/craftcms/cms/issues/15040), [#15049](https://github.com/craftcms/cms/pull/15049))
+- Fixed a bug where sticky scrollbars could stop working when switching between element index sources. ([#15047](https://github.com/craftcms/cms/issues/15047))
 
 ## 5.1.4 - 2024-05-17
 
