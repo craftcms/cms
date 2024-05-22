@@ -443,20 +443,24 @@ class Matrix extends Field implements
      */
     public function getEntryTypesForField(array $value, ?ElementInterface $element): array
     {
-        // Let plugins/modules override which entry types should be available for this field
-        $event = new DefineEntryTypesForFieldEvent([
-            'entryTypes' => $this->getEntryTypes(),
-            'element' => $element,
-            'value' => $value,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
-        $entryTypes = array_values($event->entryTypes);
+        $entryTypes = $this->getEntryTypes();
+
+        // Fire a 'defineEntryTypes' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
+            $event = new DefineEntryTypesForFieldEvent([
+                'entryTypes' => $entryTypes,
+                'element' => $element,
+                'value' => $value,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
+            $entryTypes = $event->entryTypes;
+        }
 
         if (empty($entryTypes)) {
             throw new InvalidConfigException('At least one entry type is required.');
         }
 
-        return $entryTypes;
+        return array_values($entryTypes);
     }
 
     /**
@@ -629,7 +633,6 @@ class Matrix extends Field implements
 
         if ($value instanceof EntryQuery) {
             return (clone $value)
-                ->drafts(null)
                 ->status(null)
                 ->siteId($owner->siteId)
                 ->limit(null)

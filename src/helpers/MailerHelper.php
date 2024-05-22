@@ -63,12 +63,14 @@ class MailerHelper
             Gmail::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $transportTypes,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_MAILER_TRANSPORTS, $event);
+        // Fire a 'registerMailerTransports' event
+        if (Event::hasHandlers(self::class, self::EVENT_REGISTER_MAILER_TRANSPORTS)) {
+            $event = new RegisterComponentTypesEvent(['types' => $transportTypes]);
+            Event::trigger(self::class, self::EVENT_REGISTER_MAILER_TRANSPORTS, $event);
+            return $event->types;
+        }
 
-        return $event->types;
+        return $transportTypes;
     }
 
     /**
