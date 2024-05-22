@@ -172,7 +172,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
             Craft.cp.displaySuccess(Craft.t('app', 'Changes saved.'));
             this.elementIndex.inlineEditing = false;
-            this.elementIndex.updateElements(true, false);
+            this.elementIndex.updateElements(true, false).then(() => {
+              this.elementIndex.$elements.removeClass('inline-editing');
+            });
           })
           .catch(() => {
             this.elementIndex.setIndexAvailable();
@@ -186,7 +188,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.addListener(this.$cancelBtn, 'activate', () => {
         this.$cancelBtn.addClass('loading');
         this.elementIndex.inlineEditing = false;
-        this.elementIndex.updateElements(true, false);
+        this.elementIndex.updateElements(true, false).then(() => {
+          this.elementIndex.$elements.removeClass('inline-editing');
+        });
       });
 
       this.addListener(this.$elementContainer, 'keydown', (event) => {
@@ -214,7 +218,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.addListener(this.$editBtn, 'activate', () => {
         this.$editBtn.addClass('loading');
         this.elementIndex.inlineEditing = true;
-        this.elementIndex.updateElements(true, false);
+        this.elementIndex.updateElements(true, false).then(() => {
+          this.elementIndex.$elements.addClass('inline-editing');
+        });
       });
     }
   },
