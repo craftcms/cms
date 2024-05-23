@@ -331,6 +331,25 @@ class Fields extends Component
     }
 
     /**
+     * Returns all available relational field type classes.
+     *
+     * @return string[] The available relational field type classes
+     * @phpstan-return class-string<BaseRelationField>[]
+     * @since 5.1.6
+     */
+    public function getRelationalFieldTypes(): array
+    {
+        $relationalFields = [];
+        foreach ($this->getAllFieldTypes() as $fieldClass) {
+            if (is_subclass_of($fieldClass, BaseRelationField::class)) {
+                $relationalFields[] = $fieldClass;
+            }
+        }
+
+        return $relationalFields;
+    }
+
+    /**
      * Creates a field with a given config.
      *
      * @template T of FieldInterface
@@ -1394,24 +1413,6 @@ class Fields extends Component
         $pagination = AdminTable::paginationLinks($page, $total, $limit);
 
         return [$pagination, $tableData];
-    }
-
-    /**
-     * Returns all available relational field type classes.
-     *
-     * @return string[] The available relational field type classes
-     * @phpstan-return class-string<FieldInterface>[]
-     */
-    public function getAllRelationalFieldTypes(): array
-    {
-        $relationalFields = [];
-        foreach ($this->getAllFieldTypes() as $fieldClass) {
-            if (is_subclass_of($fieldClass, BaseRelationField::class)) {
-                $relationalFields[] = $fieldClass;
-            }
-        }
-
-        return $relationalFields;
     }
 
     /**

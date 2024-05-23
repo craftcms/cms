@@ -94,8 +94,9 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     private function _elementTypeOptions(): array
     {
         $options = [];
-        /** @var string|BaseRelationField $field */
-        foreach (Craft::$app->getFields()->getAllRelationalFieldTypes() as $field) {
+        foreach (Craft::$app->getFields()->getRelationalFieldTypes() as $field) {
+            /** @var string|BaseRelationField $field */
+            /** @var string|ElementInterface $elementType */
             $elementType = $field::elementType();
             $options[] = [
                 'value' => $elementType,
