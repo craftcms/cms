@@ -21,6 +21,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
   initialSerializedValue: null,
 
+  stickyScrollbar: null,
+  stickyScrollbarObserver: null,
+
   getElementContainer: function () {
     // Save a reference to the table
     this.$table = this.$container.find('table:first');
@@ -102,9 +105,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             ).then(({data}) => {
               for (let i = 0; i < $rows.length; i++) {
                 const $row = $rows.eq(i);
-                $row
-                  .find('> th[data-titlecell] .element')
-                  .replaceWith(data.elementHtml);
                 for (let attribute in data.attributeHtml) {
                   if (data.attributeHtml.hasOwnProperty(attribute)) {
                     $row
@@ -172,7 +172,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
             Craft.cp.displaySuccess(Craft.t('app', 'Changes saved.'));
             this.elementIndex.inlineEditing = false;
-            this.elementIndex.updateElements(true, false);
+            this.elementIndex.updateElements(true, false).then(() => {
+              this.elementIndex.$elements.removeClass('inline-editing');
+            });
           })
           .catch(() => {
             this.elementIndex.setIndexAvailable();
@@ -186,7 +188,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.addListener(this.$cancelBtn, 'activate', () => {
         this.$cancelBtn.addClass('loading');
         this.elementIndex.inlineEditing = false;
-        this.elementIndex.updateElements(true, false);
+        this.elementIndex.updateElements(true, false).then(() => {
+          this.elementIndex.$elements.removeClass('inline-editing');
+        });
       });
 
       this.addListener(this.$elementContainer, 'keydown', (event) => {
@@ -214,7 +218,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.addListener(this.$editBtn, 'activate', () => {
         this.$editBtn.addClass('loading');
         this.elementIndex.inlineEditing = true;
-        this.elementIndex.updateElements(true, false);
+        this.elementIndex.updateElements(true, false).then(() => {
+          this.elementIndex.$elements.addClass('inline-editing');
+        });
       });
     }
   },
@@ -642,6 +648,13 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.$cancelBtn.remove();
     }
 
+    if (this.stickyScrollbar) {
+      this.stickyScrollbar.remove();
+    }
+    if (this.stickyScrollbarObserver) {
+      this.stickyScrollbarObserver.disconnect();
+    }
+
     if (this._broadcastListener) {
       Craft.messageReceiver.removeEventListener(
         'message',
@@ -654,17 +667,25 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   createScrollbar() {
-    const footer = document.querySelector('#content > #footer');
-    const stickyScrollbar = document.createElement('craft-proxy-scrollbar');
-    stickyScrollbar.setAttribute('scroller', '.tablepane');
-    stickyScrollbar.setAttribute('content', '.tablepane > table');
+    if (this.elementIndex.settings.context !== 'index') {
+      return;
+    }
 
-    stickyScrollbar.style.bottom = `${
+    const footer = document.querySelector('#content > #footer');
+    if (!footer) {
+      return;
+    }
+
+    this.stickyScrollbar = document.createElement('craft-proxy-scrollbar');
+    this.stickyScrollbar.setAttribute('scroller', '.tablepane');
+    this.stickyScrollbar.setAttribute('content', '.tablepane > table');
+
+    this.stickyScrollbar.style.bottom = `${
       footer.getBoundingClientRect().height + 2
     }px`;
 
-    let $scrollbar = $(stickyScrollbar);
-    const observer = new IntersectionObserver(
+    let $scrollbar = $(this.stickyScrollbar);
+    this.stickyScrollbarObserver = new IntersectionObserver(
       ([ev]) => {
         if (ev.intersectionRatio < 1) {
           $scrollbar.insertAfter(this.$container);
@@ -677,6 +698,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         threshold: [1],
       }
     );
-    observer.observe(footer);
+    this.stickyScrollbarObserver.observe(footer);
   },
 });

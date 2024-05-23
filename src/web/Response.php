@@ -226,6 +226,7 @@ class Response extends \yii\web\Response
 
         if (Craft::$app->state === BaseApplication::STATE_SENDING_RESPONSE) {
             $this->send();
+            Craft::$app->end();
         }
 
         return $this;

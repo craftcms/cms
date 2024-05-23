@@ -344,6 +344,7 @@ class EntryQuery extends ElementQuery
      * | `['foo', 'bar']` | in a section with a handle of `foo` or `bar`.
      * | `['not', 'foo', 'bar']` | not in a section with a handle of `foo` or `bar`.
      * | a [[Section|Section]] object | in a section represented by the object.
+     * | `'*'` | in any section.
      *
      * ---
      *
@@ -380,6 +381,8 @@ class EntryQuery extends ElementQuery
             } else {
                 $this->withStructure = false;
             }
+        } elseif ($value === '*') {
+            $this->sectionId = Craft::$app->getEntries()->getAllSectionIds();
         } elseif (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
                 $item = Craft::$app->getEntries()->getSectionByHandle($item);

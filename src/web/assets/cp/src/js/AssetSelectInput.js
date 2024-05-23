@@ -22,7 +22,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       'keydown',
       this._onKeyDown.bind(this)
     );
-    this.elementSelect.on('focusItem', this._onElementFocus.bind(this));
   },
 
   elementSelectSettings() {
@@ -52,7 +51,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
   openPreview: function ($element) {
     if (Craft.PreviewFileModal.openInstance) {
-      Craft.PreviewFileModal.openInstance.selfDestruct();
+      Craft.PreviewFileModal.openInstance.hide();
     } else {
       if (!$element) {
         $element = this.$elements
@@ -61,42 +60,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       }
 
       if ($element.length) {
-        this._loadPreview($element);
+        Craft.PreviewFileModal.showForAsset($element, this.elementSelect);
       }
     }
-  },
-
-  /**
-   * Handle element being focused
-   * @private
-   */
-  _onElementFocus: function (ev) {
-    var $element = $(ev.item);
-
-    if (Craft.PreviewFileModal.openInstance && $element.length) {
-      this._loadPreview($element);
-    }
-  },
-
-  /**
-   * Load the preview for an asset
-   * @private
-   */
-  _loadPreview: function ($element) {
-    var settings = {
-      minGutter: 50,
-    };
-
-    if ($element.data('image-width')) {
-      settings.startingWidth = $element.data('image-width');
-      settings.startingHeight = $element.data('image-height');
-    }
-
-    new Craft.PreviewFileModal(
-      $element.data('id'),
-      this.elementSelect,
-      settings
-    );
   },
 
   /**
