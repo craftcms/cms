@@ -25,6 +25,9 @@ $badgeColor: var(--gray-800);
   --global-sidebar-width: #{$sidebarWidth};
   --header-height: calc(44rem / 16);
   --details-width: #{$detailsWidth};
+
+  --nav-item-background-active: var(--medium-text-color);
+  --nav-item-background-hover: var(--gray-200);
 }
 
 html {
@@ -1024,7 +1027,7 @@ li.breadcrumb-toggle-wrapper {
 
         &:not(.sel) {
           &:hover {
-            background-color: var(--gray-200);
+            background-color: var(--nav-item-background-hover);
           }
         }
       }

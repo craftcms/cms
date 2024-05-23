@@ -59,9 +59,6 @@
   position: relative;
 }
 
-.global-nav > ul > li.sel {
-}
-
 .nav-icon {
   display: inline-flex;
   flex-direction: column;
@@ -186,17 +183,21 @@
 
   &:focus-visible,
   &:hover {
-    @include light-on-dark-text;
-    color: var(--white);
-    background-color: var(--medium-text-color);
+    background-color: var(--nav-item-background-hover);
   }
 
-  &.sel {
-    &:before {
-      --indicator-size: 6px;
-      color: var(--white);
-      background-color: var(--medium-text-color);
-    }
+  &[aria-current='page'] {
+    @include light-on-dark-text;
+    color: var(--white);
+    background-color: var(--nav-item-background-active);
+  }
+}
+
+.nav-item:not(.has-subnav) {
+  > [aria-current='true'] {
+    @include light-on-dark-text;
+    color: var(--white);
+    background-color: var(--nav-item-background-active);
   }
 }
 
@@ -204,13 +205,6 @@
   --indicator-size: 4px;
   font-size: 0.9em;
   min-height: 26px;
-
-  &:focus-visible,
-  &:hover {
-    &:before {
-      background-color: var(--white);
-    }
-  }
 
   &:before {
     @include left(calc((30px / 2) - (var(--indicator-size) / 2)));
@@ -395,18 +389,6 @@ States
   [data-sidebar='expanded'] {
     #sidebar-toggle-icon {
       transform: rotate(180deg);
-    }
-
-    .nav-item > .sidebar-action {
-      &[aria-current='page'] {
-        font-weight: var(--font-weight-bold);
-        padding-left: var(--s);
-      }
-    }
-
-    // Subtle background (non-conformant as a standalone indicator)
-    .nav-item--selected {
-      background-color: var(--gray-200);
     }
   }
 }
