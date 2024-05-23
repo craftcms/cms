@@ -1724,6 +1724,10 @@ ul.icons {
       color: var(--gray-300);
     }
   }
+
+  .cp-icon svg {
+    @include svg-mask(currentColor); // Matches color of font icons
+  }
 }
 
 .disabled:not(.status):not(.status-label) {
@@ -3415,7 +3419,7 @@ table {
   font-size: 11px;
   font-weight: normal;
   text-decoration: none !important;
-  color: var(--light-text-color);
+  color: var(--medium-dark-text-color);
   border-radius: calc(var(--touch-target-size) / 2);
   border: 1px solid var(--medium-hairline-color);
 }
