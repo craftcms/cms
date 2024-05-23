@@ -1,11 +1,5 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
-
-### Accessibility
-- On the mobile element index layout, the sidebar is kept open on source selection to prevent focus from being dropped (PT-1303)
-- User page document titles have been updated to describe the page purpose (PT-1701)
-
 ## 5.1.1 - 2024-05-02
 
 - Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911), [#14510](https://github.com/craftcms/cms/issues/14510))
