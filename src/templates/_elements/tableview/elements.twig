@@ -4,6 +4,7 @@
 {% set structureEditable = structureEditable is defined and not inlineEditing ? structureEditable : false -%}
 {% set padding = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% set elementsService = craft.app.elements %}
+{% set hasStatusCol = attributes|contains(0, 'status') %}
 
 {% for element in elements %}
     {% set totalDescendants = structure
@@ -12,6 +13,7 @@
             .drafts(null)
             .draftOf(false)
             .savedDraftsOnly()
+            .withCustomFields(false)
             .count()
         : 0 %}
     {% set elementTitle = element.title ?: element.id %}
@@ -56,6 +58,7 @@
                         {% endif %}
                         {% set chip = elementChip(element, {
                           context: context ?? 'index',
+                          showStatus: not hasStatusCol,
                         }) %}
                         {% if not (showHeaderColumn ?? false) %}
                             {% set chip = chip|attr({class: 'hidden'}) %}

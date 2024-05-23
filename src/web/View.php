@@ -394,7 +394,7 @@ class View extends \yii\web\View
         $core = $twig->getExtension(CoreExtension::class);
         $core->setTimezone(Craft::$app->getTimeZone());
 
-        // Fire a afterCreateTwig event
+        // Fire an 'afterCreateTwig' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_TWIG)) {
             $this->trigger(self::EVENT_AFTER_CREATE_TWIG, new CreateTwigEvent([
                 'templateMode' => $this->_templateMode ?? self::TEMPLATE_MODE_SITE,
@@ -1901,17 +1901,19 @@ JS;
     public function beforeRenderTemplate(string $template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderTemplate' event
-        $event = new TemplateEvent([
-            'template' => $template,
-            'variables' => $variables,
-            'templateMode' => $templateMode,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RENDER_TEMPLATE)) {
+            $event = new TemplateEvent([
+                'template' => $template,
+                'variables' => $variables,
+                'templateMode' => $templateMode,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
+            $variables = $event->variables;
+            $templateMode = $event->templateMode;
+            return $event->isValid;
+        }
 
-        $variables = $event->variables;
-        $templateMode = $event->templateMode;
-
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -1933,7 +1935,6 @@ JS;
                 'output' => $output,
             ]);
             $this->trigger(self::EVENT_AFTER_RENDER_TEMPLATE, $event);
-
             $output = $event->output;
         }
     }
@@ -1949,17 +1950,19 @@ JS;
     public function beforeRenderPageTemplate(string $template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderPageTemplate' event
-        $event = new TemplateEvent([
-            'template' => $template,
-            'variables' => &$variables,
-            'templateMode' => $templateMode,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $event);
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE)) {
+            $event = new TemplateEvent([
+                'template' => $template,
+                'variables' => &$variables,
+                'templateMode' => $templateMode,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $event);
+            $variables = $event->variables;
+            $templateMode = $event->templateMode;
+            return $event->isValid;
+        }
 
-        $variables = $event->variables;
-        $templateMode = $event->templateMode;
-
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -1981,7 +1984,6 @@ JS;
                 'output' => $output,
             ]);
             $this->trigger(self::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $event);
-
             $output = $event->output;
         }
     }
@@ -2228,28 +2230,31 @@ JS;
             return $this->_templateRoots[$which];
         }
 
+        $this->_templateRoots[$which] = [];
+
         if ($which === 'cp') {
             $name = self::EVENT_REGISTER_CP_TEMPLATE_ROOTS;
         } else {
             $name = self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS;
         }
-        $event = new RegisterTemplateRootsEvent();
-        $this->trigger($name, $event);
 
-        $roots = [];
+        if ($this->hasEventHandlers($name)) {
+            $event = new RegisterTemplateRootsEvent();
+            $this->trigger($name, $event);
 
-        foreach ($event->roots as $templatePath => $dir) {
-            $templatePath = strtolower(trim($templatePath, '/'));
-            if (!isset($roots[$templatePath])) {
-                $roots[$templatePath] = [];
+            foreach ($event->roots as $templatePath => $dir) {
+                $templatePath = strtolower(trim($templatePath, '/'));
+                if (!isset($this->_templateRoots[$which][$templatePath])) {
+                    $this->_templateRoots[$which][$templatePath] = [];
+                }
+                array_push($this->_templateRoots[$which][$templatePath], ...(array)$dir);
             }
-            array_push($roots[$templatePath], ...(array)$dir);
+
+            // Longest (most specific) first
+            krsort($this->_templateRoots[$which], SORT_STRING);
         }
 
-        // Longest (most specific) first
-        krsort($roots, SORT_STRING);
-
-        return $this->_templateRoots[$which] = $roots;
+        return $this->_templateRoots[$which];
     }
 
     private function resourceHash(string $key): string

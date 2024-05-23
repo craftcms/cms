@@ -2207,7 +2207,7 @@ $.extend(Craft, {
    * Retrieves a value from localStorage if it exists.
    *
    * @param {string} key
-   * @param {*} defaultValue
+   * @param {*} [defaultValue]
    */
   getLocalStorage: function (key, defaultValue) {
     key = 'Craft-' + Craft.systemUid + '.' + key;
@@ -2416,7 +2416,9 @@ $.extend(Craft, {
 
           if ($actions.length) {
             const $oldStatus = $actions.find('span.status');
-            const $newStatus = $replacement.find('span.status');
+            const $newStatus = $replacement.find(
+              '> .chip-content .chip-actions span.status,> .card-actions-container .card-actions span.status'
+            );
 
             if (
               $oldStatus.length &&

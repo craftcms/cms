@@ -102,14 +102,16 @@ trait EditUserTrait
             $screens[self::SCREEN_PREFERENCES] = ['label' => Craft::t('app', 'Preferences')];
         }
 
-        $event = new DefineEditUserScreensEvent([
-            'currentUser' => $currentUser,
-            'editedUser' => $user,
-            'screens' => $screens,
-        ]);
-        Event::trigger(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, $event);
-
-        $screens = $event->screens;
+        // Fire a 'defineEditScreens' event
+        if (Event::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS)) {
+            $event = new DefineEditUserScreensEvent([
+                'currentUser' => $currentUser,
+                'editedUser' => $user,
+                'screens' => $screens,
+            ]);
+            Event::trigger(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, $event);
+            $screens = $event->screens;
+        }
 
         if ($user->getIsCurrent()) {
             $screens[self::SCREEN_PASSWORD] = ['label' => Craft::t('app', 'Password & Verification')];

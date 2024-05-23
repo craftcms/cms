@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\elements\User;
 use craft\errors\MigrationException;
+use craft\errors\OperationAbortedException;
 use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
@@ -212,7 +213,10 @@ class InstallController extends Controller
         try {
             $migrator->migrateUp($migration);
         } catch (MigrationException $e) {
-            $this->stderr('*** failed to install Craft: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
+            $previous = $e->getPrevious();
+            if (!$previous instanceof OperationAbortedException) {
+                $this->stderr('*** failed to install Craft: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 

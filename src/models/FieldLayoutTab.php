@@ -296,6 +296,11 @@ class FieldLayoutTab extends FieldLayoutComponent
                 $this->_elements[] = $layoutElement;
             }
         }
+
+        // Clear caches
+        if (isset($this->_layout)) {
+            $this->_layout->reset();
+        }
     }
 
     /**

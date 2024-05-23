@@ -87,7 +87,7 @@ class Mailer extends \yii\symfonymailer\Mailer
      */
     public function send($message): bool
     {
-        // fire a beforePrep event
+        // Fire a 'beforePrep' event
         $this->trigger(self::EVENT_BEFORE_PREP, new MailEvent([
             'message' => $message,
         ]));
