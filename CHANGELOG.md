@@ -2,7 +2,9 @@
 
 ## Unreleased
 
+- Added `craft\services\Fields::getRelationalFieldTypes()`.
 - Fixed a bug where `craft\helpers\Typecast::properties()` wasn’t typecasting numeric strings to ints for `int|string|null` properties. ([#14618](https://github.com/craftcms/cms/issues/14618))
+- Fixed a bug where “Related To” conditions weren’t allowing entries to be selected. ([#15058](https://github.com/craftcms/cms/issues/15058))
 
 ## 5.1.5 - 2024-05-22
 
