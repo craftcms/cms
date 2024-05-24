@@ -776,7 +776,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     updateMainHeading: function () {
-      $('#content-heading').text(this.getSourceLabel());
+      let $contentHeading = $('#content-heading');
+
+      if (!$contentHeading.length) {
+        $contentHeading = $('<span>', {
+          id: 'content-heading',
+        });
+
+        $contentHeading.appendTo('.screen-title');
+      }
+
+      $contentHeading.text(this.getSourceLabel());
     },
 
     deinitSource: function ($source) {

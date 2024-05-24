@@ -216,7 +216,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                         <div id="page-title" class="flex{% if toolbar %} has-toolbar{% endif %}">
                                             {% block pageTitle %}
                                                 {% if title is defined and title|length %}
-                                                    <h1 class="screen-title" title="{{ title }}">{{ title }}<span id="content-heading"></span></h1>
+                                                    <h1 class="screen-title" title="{{ title }}">{{ title }}</h1>
                                                 {% endif %}
                                             {% endblock %}
                                         </div>
