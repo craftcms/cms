@@ -109,9 +109,7 @@
     border: transparent;
 
     &:hover {
-      @include light-on-dark-text;
-      color: var(--white);
-      background-color: var(--medium-text-color);
+      background-color: var(--nav-item-background-hover);
     }
 
     &[aria-expanded='true']:not(:hover) {
@@ -176,9 +174,7 @@
     position: absolute;
     inset-inline-start: calc((10rem / 16) * -1); // match #system-name
     inset-block-start: 50%;
-    height: 100%;
     transform: translateY(-50%);
-    width: var(--xs);
   }
 
   &:focus-visible,
@@ -193,6 +189,7 @@
   }
 }
 
+// Adds active styling when there is no top-level landing page
 .nav-item:not(.has-subnav) {
   > [aria-current='true'] {
     @include light-on-dark-text;
