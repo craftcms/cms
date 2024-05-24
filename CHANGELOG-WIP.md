@@ -10,6 +10,7 @@
 - The web-based installer now displays the error message when installation fails. 
 
 ### Extensibility
+- Improved type definitions for `craft\db\Query`, element queries, and `craft\elements\ElementCollection`.
 - Added `craft\db\getBackupFormat()`.
 - Added `craft\db\getRestoreFormat()`.
 - Added `craft\db\setBackupFormat()`.

@@ -15,10 +15,10 @@ use Illuminate\Support\Collection;
  * ElementCollection represents a collection of elements.
  *
  * @template TKey of array-key
- * @template TValue of ElementInterface
- * @extends Collection<TKey, TValue>
+ * @template TElement of ElementInterface
+ * @extends Collection<TKey,TElement>
  *
- * @method TValue one(callable|null $callback, mixed $default)
+ * @method TElement one(callable|null $callback, mixed $default)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.3.0
  */
