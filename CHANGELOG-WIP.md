@@ -19,6 +19,7 @@
 - Added `craft\fields\BaseRelationField::existsQueryCondition()`.
 - Added `craft\helpers\StringHelper::indent()`.
 - Added `craft\queue\Queue::getJobId()`.
+- `craft\elements\ElementCollection::with()` now supports collections made up of multiple element types.
 - Added the `reloadOnBroadcastSave` setting to `Craft.ElementEditor`. ([#14814](https://github.com/craftcms/cms/issues/14814))
 
 ### System

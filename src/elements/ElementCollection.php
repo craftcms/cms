@@ -50,9 +50,11 @@ class ElementCollection extends Collection
      */
     public function with(array|string $with): static
     {
-        $first = $this->first();
-        if ($first instanceof ElementInterface) {
-            Craft::$app->getElements()->eagerLoadElements(get_class($first), $this->items, $with);
+        /** @var array<class-string<TElement>,TElement[]> $elementsByClass */
+        $elementsByClass = $this->groupBy(fn(ElementInterface $element) => $element::class)->all();
+        $elementsService = Craft::$app->getElements();
+        foreach ($elementsByClass as $class => $classElements) {
+            $elementsService->eagerLoadElements($class, $this->items, $with);
         }
         return $this;
     }
