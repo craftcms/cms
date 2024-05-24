@@ -25,16 +25,6 @@ use Illuminate\Support\Collection;
 class ElementCollection extends Collection
 {
     /**
-     * Returns a collection of the elements’ IDs.
-     *
-     * @return Collection<TKey,int>
-     */
-    public function ids(): Collection
-    {
-        return Collection::make(array_map(fn(ElementInterface $element): int => $element->id, $this->items));
-    }
-
-    /**
      * Eager-loads related elements for the collected elements.
      *
      * See [Eager-Loading Elements](https://craftcms.com/docs/4.x/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
@@ -65,5 +55,15 @@ class ElementCollection extends Collection
             Craft::$app->getElements()->eagerLoadElements(get_class($first), $this->items, $with);
         }
         return $this;
+    }
+
+    /**
+     * Returns a collection of the elements’ IDs.
+     *
+     * @return Collection<TKey,int>
+     */
+    public function ids(): Collection
+    {
+        return Collection::make(array_map(fn(ElementInterface $element): int => $element->id, $this->items));
     }
 }
