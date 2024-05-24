@@ -473,6 +473,7 @@ class User extends Element implements IdentityInterface
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
+            'status',
             'fullName',
             'email',
             'dateCreated',

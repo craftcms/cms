@@ -1058,7 +1058,7 @@ class Cp extends Component
             return $event->formActions ?: null;
         }
 
-        return null;
+        return $formActions;
     }
 
     /**

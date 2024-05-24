@@ -15,23 +15,42 @@
 - The `db/restore` command now autodetects the backup format for PostgreSQL installs, if `--format` isn’t passed. ([#14931](https://github.com/craftcms/cms/pull/14931))
 - The `install` command and web-based installer now validate the existing project config files at the outset, and abort installation if there are any issues.
 - The `resave/entries` command now has an `--all-sections` flag.
-- The web-based installer now displays the error message when installation fails. 
+- The web-based installer now displays the error message when installation fails.
+- Edit Entry Type pages now have a “Delete” action. ([#14983](https://github.com/craftcms/cms/discussions/14983))
 
 ### Development
 - Added the `withCustomFields` element query param. ([#15003](https://github.com/craftcms/cms/pull/15003))
 - Entry queries now support passing `*` to the `section` param, to filter the results to all section entries. ([#14978](https://github.com/craftcms/cms/discussions/14978))
+
+### Accessibility
+- Added the “Status” column option to category, entry, and user indexes. ([#14968](https://github.com/craftcms/cms/pull/14968))
+- Element cards now display a textual status label rather than just the indicator. ([#14968](https://github.com/craftcms/cms/pull/14968))
+- Darkened the color of page sidebar toggle icons to meet the minimum contrast for UI components.
+- Darkened the color of context labels to meet the minimum contrast for text.
+- Darkened the color of footer links to meet the minimum contrast for text.
+- Set the language of the Craft edition in the footer, to improve screen reader pronunciation for non-English languages.
+- The accessible name of “Select site” buttons is now translated to the current language.
 
 ### Extensibility
 - Added `craft\db\getBackupFormat()`.
 - Added `craft\db\getRestoreFormat()`.
 - Added `craft\db\setBackupFormat()`.
 - Added `craft\db\setRestoreFormat()`.
+- Added `craft\enums\Color::tryFromStatus()`.
 - Added `craft\events\InvalidateElementcachesEvent::$element`.
 - `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
 - Added `craft\fields\BaseRelationField::existsQueryCondition()`.
+- Added `craft\helpers\Cp::componentStatusIndicatorHtml()`.
+- Added `craft\helpers\Cp::componentStatusLabelHtml()`.
+- Added `craft\helpers\Cp::statusLabelHtml()`.
+- Added `craft\helpers\StringHelper::indent()`.
+- Added `craft\queue\Queue::getJobId()`.
+- Added the `reloadOnBroadcastSave` setting to `Craft.ElementEditor`. ([#14814](https://github.com/craftcms/cms/issues/14814))
 - Added the `waitForDoubleClicks` setting to `Garnish.Select`, `Craft.BaseElementIndex`, and `Craft.BaseElementIndexView`.
 
 ### System
 - Improved overall system performance. ([#15003](https://github.com/craftcms/cms/pull/15003))
 - Improved the performance of `exists()` element queries.
 - Improved the performance of `craft\base\Element::toArray()`.
+- The Debug Toolbar now pre-serializes objects stored as request parameters, fixing a bug where closures could prevent the entire Request panel from showing up. ([#14982](https://github.com/craftcms/cms/discussions/14982))
+- Batched queue jobs now verify that they are still reserved before each step, and before spawning additional batch jobs. ([#14986](https://github.com/craftcms/cms/discussions/14986))

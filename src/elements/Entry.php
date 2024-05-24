@@ -608,7 +608,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected static function defineDefaultTableAttributes(string $source): array
     {
-        $attributes = [];
+        $attributes = ['status'];
 
         if ($source === '*') {
             $attributes[] = 'section';

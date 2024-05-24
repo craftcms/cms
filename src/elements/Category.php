@@ -335,6 +335,7 @@ class Category extends Element
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
+            'status',
             'link',
         ];
     }
