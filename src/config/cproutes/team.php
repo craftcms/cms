@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'myaccount/permissions' => 'users/permissions',
     'settings/users' => 'user-settings/edit-group',
     'users/new' => 'users/create',
     'users/<userId:\d+>' => 'users/profile',

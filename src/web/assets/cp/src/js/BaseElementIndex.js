@@ -625,7 +625,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getSourceLabel: function () {
-      return this.$source.data('label');
+      return this.$source?.data('label');
     },
 
     getItemLabel: function () {
@@ -1550,7 +1550,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         context: this.settings.context,
         elementType: this.elementType,
         canHaveDrafts: this.settings.canHaveDrafts,
-        source: this.instanceState.selectedSource,
+        source: this.sourceKey,
         condition: this.settings.condition,
         referenceElementId: this.settings.referenceElementId,
         referenceElementSiteId: this.settings.referenceElementSiteId,
@@ -3855,7 +3855,11 @@ const SourceNav = Garnish.Base.extend(
     handleKeypress: function (event) {
       const {keyCode} = event;
 
-      if (keyCode === Garnish.RETURN_KEY || keyCode === Garnish.SPACE_KEY) {
+      if (
+        (keyCode === Garnish.RETURN_KEY || keyCode === Garnish.SPACE_KEY) &&
+        !ev.shiftKey &&
+        !Garnish.isCtrlKeyPressed(ev)
+      ) {
         event.preventDefault();
         this.selectItem(event.target);
       }

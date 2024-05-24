@@ -443,20 +443,24 @@ class Matrix extends Field implements
      */
     public function getEntryTypesForField(array $value, ?ElementInterface $element): array
     {
-        // Let plugins/modules override which entry types should be available for this field
-        $event = new DefineEntryTypesForFieldEvent([
-            'entryTypes' => $this->getEntryTypes(),
-            'element' => $element,
-            'value' => $value,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
-        $entryTypes = array_values($event->entryTypes);
+        $entryTypes = $this->getEntryTypes();
+
+        // Fire a 'defineEntryTypes' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
+            $event = new DefineEntryTypesForFieldEvent([
+                'entryTypes' => $entryTypes,
+                'element' => $element,
+                'value' => $value,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
+            $entryTypes = $event->entryTypes;
+        }
 
         if (empty($entryTypes)) {
             throw new InvalidConfigException('At least one entry type is required.');
         }
 
-        return $entryTypes;
+        return array_values($entryTypes);
     }
 
     /**
@@ -629,7 +633,6 @@ class Matrix extends Field implements
 
         if ($value instanceof EntryQuery) {
             return (clone $value)
-                ->drafts(null)
                 ->status(null)
                 ->siteId($owner->siteId)
                 ->limit(null)
@@ -864,10 +867,22 @@ class Matrix extends Field implements
             // and so not passed to PHP for save
             $view->setInitialDeltaValue($this->handle, null);
 
+            $js .= "\n" . <<<JS
+input.on('afterInit', async () => {
+  input.elementEditor?.pause();
+JS . "\n";
+
             $entryTypeJs = Json::encode($entryTypes[0]->handle);
             for ($i = count($value); $i < $this->minEntries; $i++) {
-                $js .= "\ninput.addEntry($entryTypeJs, null, false);";
+                $js .= <<<JS
+  await input.addEntry($entryTypeJs, null, false);
+JS . "\n";
             }
+
+            $js .= <<<JS
+  input.elementEditor?.resume();
+});
+JS;
         }
 
         $view->registerJs("(() => {\n$js\n})();");

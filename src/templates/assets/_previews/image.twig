@@ -1,6 +1,9 @@
-<div class="button-fade asset-image-preview">
+{% set containerId = "asset-image-preview#{random()}" %}
+{% set toggleId = "toggle-focal#{random()}" %}
+
+<div id="{{ containerId }}" class="button-fade asset-image-preview">
     <div class="buttons">
-        <div class="btn" id="toggle-focal">
+        <div class="btn" id="{{ toggleId }}">
         </div>
     </div>
     {{ tag('img', {
@@ -26,9 +29,16 @@
 ]) %}
 
 {% js %}
+(() => {
   if (window.imageFocalPoint) {
     window.imageFocalPoint.destruct();
     delete window.imageFocalPoint;
   }
-  window.imageFocalPoint = new Craft.FocalPoint(Craft.PreviewFileModal.openInstance.$container.find('.asset-image-preview'), $('#toggle-focal'), {{ editFocal|default(false) }});
+
+  const $container = $('#{{ containerId }}');
+  const $toggle = $('#{{ toggleId }}');
+  if ($container.length && $toggle.length) {
+    window.imageFocalPoint = new Craft.FocalPoint($container, $toggle, {{ editFocal|default(false) }});
+  }
+})();
 {% endjs %}

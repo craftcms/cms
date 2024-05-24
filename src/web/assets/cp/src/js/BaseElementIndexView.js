@@ -92,13 +92,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           }
 
           const $target = $(ev.target);
-          var $element;
-
-          if ($target.hasClass('element')) {
-            $element = $target;
-          } else {
-            $element = $target.closest('.element');
-
+          let $element = $target.closest('.element');
+          if (!$element.length) {
+            $element = $target.closest('tr').find('.element:first');
             if (!$element.length) {
               return;
             }

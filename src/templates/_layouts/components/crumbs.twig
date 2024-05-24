@@ -4,7 +4,7 @@
     <nav aria-label="{{ 'Breadcrumbs'|t('app') }}">
       <ul id="crumb-list">
         {% for crumb in crumbs %}
-          {% set hasMenuItems = crumb.menu is defined and crumb.menu.items is defined %}
+          {% set hasMenuItems = (crumb.menu.items ?? [])|length %}
           {% if hasMenuItems %}
             {% set crumb = findCrumb(crumb.menu.items)|merge(crumb) %}
           {% endif %}
@@ -32,7 +32,7 @@
                 <span>{{ crumb.label ?? crumb.html|raw }}</span>
               {% endtag %}
 
-              {% if crumb.menu is defined and crumb.menu.items is defined %}
+              {% if hasMenuItems %}
                 {% set menuId = crumb.id is defined ? "#{crumb.id}-menu" : "crumb-menu#{random()}" %}
                 {% set menuLabel = crumb.menu.label ?? null %}
                 {{ tag('button', {
@@ -47,9 +47,6 @@
                     'disclosure-trigger': true,
                   },
                 }) }}
-              {% endif %}
-
-              {% if hasMenuItems %}
                 {{ disclosureMenu(crumb.menu.items, {
                   id: menuId,
                   withButton: false,
