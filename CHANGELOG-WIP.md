@@ -38,13 +38,13 @@
 - Added `craft\db\setRestoreFormat()`.
 - Added `craft\enums\Color::tryFromStatus()`.
 - Added `craft\events\InvalidateElementcachesEvent::$element`.
-- `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
 - Added `craft\fields\BaseRelationField::existsQueryCondition()`.
 - Added `craft\helpers\Cp::componentStatusIndicatorHtml()`.
 - Added `craft\helpers\Cp::componentStatusLabelHtml()`.
 - Added `craft\helpers\Cp::statusLabelHtml()`.
 - Added `craft\helpers\StringHelper::indent()`.
 - Added `craft\queue\Queue::getJobId()`.
+- `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
 - Added the `reloadOnBroadcastSave` setting to `Craft.ElementEditor`. ([#14814](https://github.com/craftcms/cms/issues/14814))
 - Added the `waitForDoubleClicks` setting to `Garnish.Select`, `Craft.BaseElementIndex`, and `Craft.BaseElementIndexView`.
 
