@@ -1412,7 +1412,7 @@ return [
     'Show nav' => 'Navigationsleiste anzeigen',
     'Show nested sources' => 'Geschachtelte Quellen anzeigen',
     'Show sidebar' => 'Seitenleiste anzeigen',
-    'Show the Slug field' => 'In Slug-Feld anzeigen',
+    'Show the Slug field' => 'Slug-Feld anzeigen',
     'Show the Status field' => 'Statusfeld anzeigen',
     'Show the Title field' => 'Titelfeld anzeigen',
     'Show the debug toolbar in the control panel' => 'Debug-Symbolleiste im Control Panel anzeigen',
