@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that occurred when upgrading to Craft 5 if a Matrix block type didn’t have any fields.
+- Fixed an error that occurred when upgrading to Craft 5 if any Matrix block rows had invalid `primaryOwnerId` values. ([#15063](https://github.com/craftcms/cms/issues/15063))
 
 ## 5.1.6 - 2024-05-23
 
