@@ -56,6 +56,31 @@ class DateTimeHelper
      */
     public const SECONDS_YEAR = 31556874;
 
+    public const DURATION_UNITS = [
+        'sec',
+        'secs',
+        'second',
+        'seconds',
+        'min',
+        'mins',
+        'minute',
+        'minutes',
+        'hour',
+        'hours',
+        'day',
+        'days',
+        'fortnight',
+        'fortnights',
+        'forthnight',
+        'forthnights',
+        'month',
+        'months',
+        'year',
+        'years',
+        'week',
+        'weeks',
+    ];
+
     /**
      * @var DateTime[]
      * @see pause()
@@ -807,6 +832,32 @@ class DateTimeHelper
     public static function humanDurationFromInterval(DateInterval $dateInterval, bool $showSeconds = true): string
     {
         return static::humanDuration($dateInterval, $showSeconds);
+    }
+
+    /**
+     * Converts a human-friendly duration (number and unit) to seconds.
+     *
+     * @param int $number
+     * @param string $unit
+     * @return int
+     * @since 4.10.0
+     */
+    public static function humanDurationToSeconds(int $number, string $unit): int
+    {
+        // So silly that PHP doesn't support "+1 week" http://www.php.net/manual/en/datetime.formats.relative.php
+        if ($unit === 'week') {
+            if ($number == 1) {
+                $number = 7;
+                $unit = 'days';
+            } else {
+                $unit = 'weeks';
+            }
+        }
+
+        $now = new DateTimeImmutable();
+        $then = $now->modify("+$number $unit");
+
+        return $then->getTimestamp() - $now->getTimestamp();
     }
 
     /**

@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
-use DateTimeImmutable;
+use craft\helpers\DateTimeHelper;
 use Twig\Compiler;
 use Twig\Node\Node;
 
@@ -26,7 +26,7 @@ class ExpiresNode extends Node
     {
         $durationNum = $this->getAttribute('durationNum');
 
-        $duration = $durationNum === null ? null : self::durationInSeconds(
+        $duration = $durationNum === null ? null : DateTimeHelper::humanDurationToSeconds(
             $durationNum,
             $this->getAttribute('durationUnit'),
         );
@@ -36,22 +36,5 @@ class ExpiresNode extends Node
         );
 
         $compiler->write("$line\n");
-    }
-
-    private static function durationInSeconds($number, $unit): int
-    {
-        if ($unit === 'week') {
-            if ($number == 1) {
-                $number = 7;
-                $unit = 'days';
-            } else {
-                $unit = 'weeks';
-            }
-        }
-
-        $now = new DateTimeImmutable();
-        $then = $now->modify("+$number $unit");
-
-        return $then->getTimestamp() - $now->getTimestamp();
     }
 }

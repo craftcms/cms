@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use Craft;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use Twig\Compiler;
 use Twig\Node\Node;
@@ -95,18 +96,8 @@ class CacheNode extends Node
             ->write("\$cacheService->endTemplateCache(\$cacheKey$n, $global, ");
 
         if ($durationNum) {
-            // So silly that PHP doesn't support "+1 week" http://www.php.net/manual/en/datetime.formats.relative.php
-
-            if ($durationUnit === 'week') {
-                if ($durationNum == 1) {
-                    $durationNum = 7;
-                    $durationUnit = 'days';
-                } else {
-                    $durationUnit = 'weeks';
-                }
-            }
-
-            $compiler->raw("'+$durationNum $durationUnit'");
+            $durationSeconds = DateTimeHelper::humanDurationToSeconds($durationNum, $durationUnit);
+            $compiler->raw("'+$durationSeconds seconds'");
         } else {
             $compiler->raw('null');
         }
