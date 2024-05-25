@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.1.7 - 2024-05-25
 
 - Scalar element queries no longer set their `$select` property to the scalar expression, fixing an error that could occur when executing scalar queries for relation fields. ([#15071](https://github.com/craftcms/cms/issues/15071))
 - Fixed an error that occurred when upgrading to Craft 5 if a Matrix block type didn’t have any fields.
