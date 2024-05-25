@@ -1639,6 +1639,14 @@ ul.icons {
     }
   }
 
+  &.hairline-dark {
+    border: 1px solid var(--dark-hairline-color);
+
+    &:not(:hover):not(:active):not([aria-expanded='true']) {
+      background-color: transparent;
+    }
+  }
+
   &.link-btn {
     color: var(--link-color);
 
@@ -3514,7 +3522,8 @@ table {
 
     & > .action-btn,
     & > .move {
-      @include touch-target;
+      height: var(--touch-target-size);
+      width: var(--touch-target-size);
       margin: 0 -4px;
       &:before {
         color: var(--custom-text-color, var(--ui-control-color));

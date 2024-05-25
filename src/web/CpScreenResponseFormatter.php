@@ -179,7 +179,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                     'hiddenLabel' => Craft::t('app', 'Actions'),
                     'buttonAttributes' => [
                         'id' => 'action-btn',
-                        'class' => ['action-btn'],
+                        'class' => ['action-btn', 'hairline-dark'],
                         'title' => Craft::t('app', 'Actions'),
                     ],
                 ]),

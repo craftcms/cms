@@ -147,7 +147,6 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                             {{ contextMenu|raw }}
                         </div>
                     {% endif %}
-                    {{ actionMenu|raw }}
                 </div>
                 <button
                     type="button"
@@ -225,12 +224,13 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                                 {{ toolbar|raw }}
                                             </div>
                                         {% endif %}
-                                        {% if actionButton or additionalButtons %}
+                                        {% if actionButton or additionalButtons or actionMenu or details %}
                                             <div id="action-buttons" class="flex">
                                                 {{ additionalButtons|raw }}
                                                 {{ actionButton|raw }}
+                                                {{ actionMenu|raw }}
 
-                                                {% if details is not empty %}
+                                                {% if details %}
                                                     {% set content %}
                                                         <span aria-hidden="true" class="cp-icon">{{ iconSvg('sidebar-end') }}</span>
                                                         <span class="visually-hidden">{{ 'Toggle details sidebar'|t('app') }}</span>
