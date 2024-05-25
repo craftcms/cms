@@ -43,6 +43,9 @@ class ExpiresTokenParser extends AbstractTokenParser
             $stream->next();
             $attributes['durationNum'] = $stream->expect(Token::NUMBER_TYPE)->getValue();
             $attributes['durationUnit'] = $stream->expect(Token::NAME_TYPE, DateTimeHelper::DURATION_UNITS)->getValue();
+        } elseif ($stream->test(Token::NAME_TYPE, 'until')) {
+            $stream->next();
+            $nodes['expiration'] = $parser->getExpressionParser()->parseExpression();
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);

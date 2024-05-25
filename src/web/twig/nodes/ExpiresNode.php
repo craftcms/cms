@@ -25,11 +25,15 @@ class ExpiresNode extends Node
     public function compile(Compiler $compiler): void
     {
         $durationNum = $this->getAttribute('durationNum');
+        $expiration = $this->hasNode('expiration') ? $this->getNode('expiration') : null;
 
-        $duration = $durationNum === null ? null : DateTimeHelper::humanDurationToSeconds(
-            $durationNum,
-            $this->getAttribute('durationUnit'),
-        );
+        $duration = $expiration
+            ? DateTimeHelper::toDateTime($expiration)->getTimestamp() - time()
+            : DateTimeHelper::humanDurationToSeconds(
+                $durationNum,
+                $this->getAttribute('durationUnit'),
+            );
+
         $line = sprintf(
             '\Craft::$app->getResponse()->setCacheHeaders(%s);',
             $duration,
