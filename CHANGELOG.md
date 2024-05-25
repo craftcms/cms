@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error that occurred when upgrading to Craft 5 if a Matrix block type didn’t have any fields.
+
 ## 5.1.6 - 2024-05-23
 
 - Added `craft\services\Fields::getRelationalFieldTypes()`.
