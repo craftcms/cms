@@ -2,6 +2,7 @@
 
 ### Content Management
 - Relational field condition rules no longer factor in the target elements’ statuses or sites. ([#14989](https://github.com/craftcms/cms/issues/14989))
+- “Save and continue editing” actions now restore the page’s scroll position on reload.
 
 ### Administration
 - Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))
