@@ -8,7 +8,8 @@
 - Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))
 - The `db/restore` command now autodetects the backup format for PostgreSQL installs, if `--format` isn’t passed. ([#14931](https://github.com/craftcms/cms/pull/14931))
 - The `install` command and web-based installer now validate the existing project config files at the outset, and abort installation if there are any issues.
-- The web-based installer now displays the error message when installation fails. 
+- The web-based installer now displays the error message when installation fails.
+- GraphQL schema edit pages now have a “Save and continue editing” alternate action.
 
 ### Development
 - Added `craft\elements\ElementCollection::find()`, which can return an element or elements in the collection based on a given element or ID. ([#15023](https://github.com/craftcms/cms/discussions/15023))
