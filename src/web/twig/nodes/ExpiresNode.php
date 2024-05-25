@@ -12,12 +12,12 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 /**
- * Class CacheResponseNode
+ * Class ExpiresNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.10.0
  */
-class CacheResponseNode extends Node
+class ExpiresNode extends Node
 {
     /**
      * @inheritdoc

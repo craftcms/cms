@@ -7,22 +7,22 @@
 
 namespace craft\web\twig\tokenparsers;
 
-use craft\web\twig\nodes\CacheResponseNode;
+use craft\web\twig\nodes\ExpiresNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
 /**
- * Class CacheResponse
+ * Class ExpiresTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.10.0
  */
-class CacheResponseTokenParser extends AbstractTokenParser
+class ExpiresTokenParser extends AbstractTokenParser
 {
     /**
      * @inheritdoc
      */
-    public function parse(Token $token): CacheResponseNode
+    public function parse(Token $token): ExpiresNode
     {
         $lineno = $token->getLine();
         $parser = $this->parser;
@@ -70,7 +70,7 @@ class CacheResponseTokenParser extends AbstractTokenParser
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new CacheResponseNode($nodes, $attributes, $lineno, $this->getTag());
+        return new ExpiresNode($nodes, $attributes, $lineno, $this->getTag());
     }
 
     /**
@@ -78,6 +78,6 @@ class CacheResponseTokenParser extends AbstractTokenParser
      */
     public function getTag(): string
     {
-        return 'cacheResponse';
+        return 'expires';
     }
 }
