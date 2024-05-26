@@ -24,21 +24,24 @@ class ExpiresNode extends Node
      */
     public function compile(Compiler $compiler): void
     {
-        $durationNum = $this->getAttribute('durationNum');
         $expiration = $this->hasNode('expiration') ? $this->getNode('expiration') : null;
 
-        $duration = $expiration
-            ? DateTimeHelper::toDateTime($expiration)->getTimestamp() - time()
-            : DateTimeHelper::humanDurationToSeconds(
-                $durationNum,
+        if ($expiration) {
+            $compiler
+                ->write('$expiration = ')
+                ->subcompile($expiration)
+                ->raw(";\n")
+                ->write('$duration = \craft\helpers\DateTimeHelper::toDateTime($expiration)->getTimestamp() - time();');
+        } else {
+            $duration = DateTimeHelper::humanDurationToSeconds(
+                $this->getAttribute('durationNum'),
                 $this->getAttribute('durationUnit'),
             );
+            $compiler->write("\$duration = $duration;\n");
+        }
 
-        $line = sprintf(
-            '\Craft::$app->getResponse()->setCacheHeaders(%s);',
-            $duration,
-        );
-
-        $compiler->write("$line\n");
+        $compiler
+            ->write('\Craft::$app->getResponse()->setCacheHeaders($duration);')
+            ->raw("\n");
     }
 }
