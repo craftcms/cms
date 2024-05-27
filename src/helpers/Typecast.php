@@ -169,7 +169,7 @@ final class Typecast
                 return [self::TYPE_INT_FLOAT, in_array(self::TYPE_NULL, $names)];
             }
             // Special case for int|string
-            if ($names === [self::TYPE_INT, self::TYPE_STRING] || $names === [self::TYPE_INT, self::TYPE_STRING, self::TYPE_NULL]) {
+            if ($names === [self::TYPE_INT, self::TYPE_STRING] || $names === [self::TYPE_INT, self::TYPE_NULL, self::TYPE_STRING]) {
                 return [self::TYPE_INT_STRING, in_array(self::TYPE_NULL, $names)];
             }
         }

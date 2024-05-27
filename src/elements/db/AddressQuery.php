@@ -14,20 +14,18 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Address;
-use craft\elements\ElementCollection;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\db\Connection;
 
 /**
  * AddressQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
  *
- * @method Address[]|array all($db = null)
- * @method Address|array|null one($db = null)
- * @method Address|array|null nth(int $n, ?Connection $db = null)
- * @method ElementCollection<Address> collect($db = null)
+ * @template TKey of array-key
+ * @template TElement of Address
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  * @doc-path addresses.md
