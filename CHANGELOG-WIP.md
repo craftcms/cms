@@ -28,6 +28,7 @@
 - The `resave/entries` command now has an `--all-sections` flag.
 - The web-based installer now displays the error message when installation fails.
 - Edit Entry Type pages now have a “Delete” action. ([#14983](https://github.com/craftcms/cms/discussions/14983))
+- After creating a new field, field layout designers now set their search value to the new field’s name. ([#15080](https://github.com/craftcms/cms/discussions/15080))
 - GraphQL schema edit pages now have a “Save and continue editing” alternate action.
 
 ### Development

@@ -282,6 +282,10 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         this.$fieldGroups.last().append($selector).removeClass('hidden');
         this.refreshLibraryFields();
         this.initLibraryElements($selector);
+
+        // set the search value to the new field name
+        this.$fieldSearch.val(response.data.field.name);
+        this.updateFieldSearchResults();
       });
     },
 
