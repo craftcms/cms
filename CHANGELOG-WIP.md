@@ -12,6 +12,15 @@
 - “Save and continue editing” actions now restore the page’s scroll position on reload.
 - “Remove” element actions within relational fields will now remove all selected elements, if the target element is selected. ([#15078](https://github.com/craftcms/cms/issues/15078))
 
+### Accessibility
+- Added the “Status” column option to category, entry, and user indexes. ([#14968](https://github.com/craftcms/cms/pull/14968))
+- Element cards now display a textual status label rather than just the indicator. ([#14968](https://github.com/craftcms/cms/pull/14968))
+- Darkened the color of page sidebar toggle icons to meet the minimum contrast for UI components.
+- Darkened the color of context labels to meet the minimum contrast for text.
+- Darkened the color of footer links to meet the minimum contrast for text.
+- Set the language of the Craft edition in the footer, to improve screen reader pronunciation for non-English languages.
+- The accessible name of “Select site” buttons is now translated to the current language.
+
 ### Administration
 - Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))
 - The `db/restore` command now autodetects the backup format for PostgreSQL installs, if `--format` isn’t passed. ([#14931](https://github.com/craftcms/cms/pull/14931))
@@ -24,17 +33,6 @@
 ### Development
 - Added the `withCustomFields` element query param. ([#15003](https://github.com/craftcms/cms/pull/15003))
 - Entry queries now support passing `*` to the `section` param, to filter the results to all section entries. ([#14978](https://github.com/craftcms/cms/discussions/14978))
-
-### Accessibility
-- Added the “Status” column option to category, entry, and user indexes. ([#14968](https://github.com/craftcms/cms/pull/14968))
-- Element cards now display a textual status label rather than just the indicator. ([#14968](https://github.com/craftcms/cms/pull/14968))
-- Darkened the color of page sidebar toggle icons to meet the minimum contrast for UI components.
-- Darkened the color of context labels to meet the minimum contrast for text.
-- Darkened the color of footer links to meet the minimum contrast for text.
-- Set the language of the Craft edition in the footer, to improve screen reader pronunciation for non-English languages.
-- The accessible name of “Select site” buttons is now translated to the current language.
-
-### Development
 - Added `craft\elements\ElementCollection::find()`, which can return an element or elements in the collection based on a given element or ID. ([#15023](https://github.com/craftcms/cms/discussions/15023))
 - Added `craft\elements\ElementCollection::fresh()`, which reloads each of the collection elements from the database. ([#15023](https://github.com/craftcms/cms/discussions/15023)) 
 - `craft\elements\ElementCollection::contains()` now returns `true` if an element is passed in and the collection contains an element with the same ID and site ID; or if an integer is passed in and the collection contains an element with the same ID. ([#15023](https://github.com/craftcms/cms/discussions/15023))
