@@ -59,7 +59,7 @@ class CacheTokenParser extends AbstractTokenParser
         if ($stream->test(Token::NAME_TYPE, 'for')) {
             $stream->next();
             $attributes['durationNum'] = $stream->expect(Token::NUMBER_TYPE)->getValue();
-            $attributes['durationUnit'] = $stream->expect(Token::NAME_TYPE, DateTimeHelper::DURATION_UNITS)->getValue();
+            $attributes['durationUnit'] = $stream->expect(Token::NAME_TYPE, DateTimeHelper::RELATIVE_TIME_UNITS)->getValue();
         } elseif ($stream->test(Token::NAME_TYPE, 'until')) {
             $stream->next();
             $nodes['expiration'] = $parser->getExpressionParser()->parseExpression();

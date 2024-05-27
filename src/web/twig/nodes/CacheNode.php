@@ -96,8 +96,8 @@ class CacheNode extends Node
             ->write("\$cacheService->endTemplateCache(\$cacheKey$n, $global, ");
 
         if ($durationNum) {
-            $durationSeconds = DateTimeHelper::humanDurationToSeconds($durationNum, $durationUnit);
-            $compiler->raw("'+$durationSeconds seconds'");
+            $duration = DateTimeHelper::relativeTimeStatement($durationNum, $durationUnit);
+            $compiler->raw("'$duration'");
         } else {
             $compiler->raw('null');
         }

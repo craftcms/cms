@@ -56,7 +56,13 @@ class DateTimeHelper
      */
     public const SECONDS_YEAR = 31556874;
 
-    public const DURATION_UNITS = [
+    /**
+     * @var string[] Supported relative time units.
+     * @see relativeTimeStatement()
+     * @see relativeTimeToSeconds()
+     * @since 4.10.0
+     */
+    public const RELATIVE_TIME_UNITS = [
         'sec',
         'secs',
         'second',
@@ -835,16 +841,17 @@ class DateTimeHelper
     }
 
     /**
-     * Converts a human-friendly duration (number and unit) to seconds.
+     * Returns a [relative time statement](https://www.php.net/manual/en/datetime.formats.php#datetime.formats.relative)
+     * based on the given number and unit.
      *
      * @param int $number
      * @param string $unit
-     * @return int
+     * @return string
      * @since 4.10.0
      */
-    public static function humanDurationToSeconds(int $number, string $unit): int
+    public static function relativeTimeStatement(int $number, string $unit): string
     {
-        // So silly that PHP doesn't support "+1 week" http://www.php.net/manual/en/datetime.formats.relative.php
+        // PHP doesn't support "+1 week"
         if ($unit === 'week') {
             if ($number == 1) {
                 $number = 7;
@@ -854,9 +861,21 @@ class DateTimeHelper
             }
         }
 
-        $now = new DateTimeImmutable();
-        $then = $now->modify("+$number $unit");
+        return "+$number $unit";
+    }
 
+    /**
+     * Converts a relative time (number and unit) to seconds.
+     *
+     * @param int $number
+     * @param string $unit
+     * @return int
+     * @since 4.10.0
+     */
+    public static function relativeTimeToSeconds(int $number, string $unit): int
+    {
+        $now = new DateTimeImmutable();
+        $then = $now->modify(static::relativeTimeStatement($number, $unit));
         return $then->getTimestamp() - $now->getTimestamp();
     }
 

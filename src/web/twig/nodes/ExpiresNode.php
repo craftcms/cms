@@ -33,7 +33,7 @@ class ExpiresNode extends Node
                 ->raw(";\n")
                 ->write('$duration = \craft\helpers\DateTimeHelper::toDateTime($expiration)->getTimestamp() - time();');
         } else {
-            $duration = DateTimeHelper::humanDurationToSeconds(
+            $duration = DateTimeHelper::relativeTimeToSeconds(
                 $this->getAttribute('durationNum'),
                 $this->getAttribute('durationUnit'),
             );
