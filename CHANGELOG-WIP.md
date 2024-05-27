@@ -12,6 +12,7 @@
 - GraphQL schema edit pages now have a “Save and continue editing” alternate action.
 
 ### Development
+- Added the `{% expires %}` tag, which simplifies setting cache headers on the response. ([#14969](https://github.com/craftcms/cms/pull/14969))
 - Added `craft\elements\ElementCollection::find()`, which can return an element or elements in the collection based on a given element or ID. ([#15023](https://github.com/craftcms/cms/discussions/15023))
 - Added `craft\elements\ElementCollection::fresh()`, which reloads each of the collection elements from the database. ([#15023](https://github.com/craftcms/cms/discussions/15023)) 
 - `craft\elements\ElementCollection::contains()` now returns `true` if an element is passed in and the collection contains an element with the same ID and site ID; or if an integer is passed in and the collection contains an element with the same ID. ([#15023](https://github.com/craftcms/cms/discussions/15023))
@@ -31,6 +32,8 @@
 - Added `craft\db\setRestoreFormat()`.
 - Added `craft\events\InvalidateElementcachesEvent::$element`.
 - Added `craft\fields\BaseRelationField::existsQueryCondition()`.
+- Added `craft\helpers\DateTimeHelper::relativeTimeStatement()`.
+- Added `craft\helpers\DateTimeHelper::relativeTimeToSeconds()`.
 - Added `craft\helpers\StringHelper::indent()`.
 - Added `craft\queue\Queue::getJobId()`.
 - `craft\elements\ElementCollection::with()` now supports collections made up of multiple element types.
