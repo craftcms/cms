@@ -220,8 +220,19 @@ Craft.ElementEditor = Garnish.Base.extend(
               ev.data.id === this.settings.canonicalId &&
               !this.settings.draftId)
           ) {
-            Craft.setLocalStorage('scrollY', window.scrollY);
-            window.location.reload();
+            // Reload unless reloadOnBroadcastSave is disabled (unless the
+            // draftId is different, in which case we really need to reload)
+            if (
+              this.settings.reloadOnBroadcastSave ||
+              ev.data.draftId !== this.settings.draftId
+            ) {
+              Craft.setUrl(
+                Craft.getUrl(document.location.href, {
+                  scrollY: window.scrollY,
+                })
+              );
+              window.location.reload();
+            }
           } else if (
             ev.data.event === 'deleteDraft' &&
             ev.data.canonicalId === this.settings.canonicalId &&
@@ -232,7 +243,11 @@ Craft.ElementEditor = Garnish.Base.extend(
             if (url.href !== document.location.href) {
               window.location.href = url;
             } else {
-              Craft.setLocalStorage('scrollY', window.scrollY);
+              Craft.setUrl(
+                Craft.getUrl(document.location.href, {
+                  scrollY: window.scrollY,
+                })
+              );
               window.location.reload();
             }
           }
@@ -2227,6 +2242,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       visibleLayoutElements: {},
       updatedTimestamp: null,
       canonicalUpdatedTimestamp: null,
+      reloadOnBroadcastSave: true,
     },
   }
 );

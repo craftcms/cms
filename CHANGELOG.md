@@ -1,8 +1,45 @@
 # Release Notes for Craft CMS 4
 
+## 4.9.5 - 2024-05-22
+
+- Scalar element queries now set `$select` to the scalar expression, and `$orderBy`, `$limit`, and `$offset` to `null`, on the element query. ([#15001](https://github.com/craftcms/cms/issues/15001))
+- Added `craft\fieldlayoutelements\TextareaField::inputTemplateVariables()`.
+- Fixed a bug where `craft\helpers\Assets::prepareAssetName()` wasn’t sanitizing filenames if `$preventPluginModifications` was `true`.
+- Fixed a bug where element queries’ `count()` methods were factoring in the `limit` param when searching with `orderBy` set to `score`. ([#15001](https://github.com/craftcms/cms/issues/15001))
+- Fixed a bug where soft-deleted elements that belonged to a revision could be deleted by garbage collection. ([#14995](https://github.com/craftcms/cms/pull/14995))
+- Fixed a bug where soft-deleted structure data associated with elements that belonged to a revision could be deleted by garbage collection. ([#14995](https://github.com/craftcms/cms/pull/14995))
+- Fixed a bug where element edit pages’ scroll positions weren’t always retained when automatically refreshed.
+- Fixed a bug where the `up` command could remove component name comments from the project config YAML files, for newly-added components. ([#15012](https://github.com/craftcms/cms/issues/15012))
+- Fixed a bug where assets’ Alternative Text fields didn’t expand to match the content height. ([#15026](https://github.com/craftcms/cms/issues/15026))
+- Fixed a bug where `craft\helpers\UrlHelper::isAbsoluteUrl()` was returning `true` for Windows file paths. ([#15043](https://github.com/craftcms/cms/issues/15043))
+
+## 4.9.4 - 2024-05-17
+
+- Fixed a bug where `craft\elements\db\ElementQuery::exists()` would return `true` if `setCachedResult()` had been called, even if an empty array was passed.
+- Fixed a bug where it wasn’t possible to interact with disabled Matrix blocks. ([#15002](https://github.com/craftcms/cms/issues/15002))
+- Fixed an infinite recursion bug that could occur when `craft\web\Response::redirect()` was called. ([#15014](https://github.com/craftcms/cms/pull/15014))
+
+## 4.9.3 - 2024-05-14
+
+- Fixed a SQL error that could occur when applying or rebuilding the project config.
+- Fixed a bug where adjacent selected table rows were getting extra spacing in Firefox.
+- Fixed a SQL error that could occur when creating revisions after garbage collection was run. ([#14309](https://github.com/craftcms/cms/issues/14309))
+- Fixed a bug where the `serve` command wasn’t serving paths with non-ASCII characters. ([#14977](https://github.com/craftcms/cms/issues/14977))
+- Fixed a bug where element chips within element selection tables had insufficient contrast. ([#14963](https://github.com/craftcms/cms/issues/14963))
+- Fixed a bug where `craft\helpers\Html::explodeStyle()` and `normalizeTagAttributes()` weren’t handling styles with encoded images via `url()` properly. ([#14964](https://github.com/craftcms/cms/issues/14964))
+- Fixed a bug where the `db/backup` command would fail if the destination path contained a space.
+
+## 4.9.2 - 2024-05-07
+
+- Fixed a bug where the `db/backup` command would prompt for password input on PostgreSQL. ([#14945](https://github.com/craftcms/cms/issues/14945))
+- Fixed a bug where pressing <kbd>Shift</kbd> + <kbd>Spacebar</kbd> wasn’t reliably opening the asset preview modal on the Assets index page. ([#14943](https://github.com/craftcms/cms/issues/14943))
+- Fixed a bug where pressing <kbd>Shift</kbd> + <kbd>Spacebar</kbd> within an asset preview modal wasn’t closing the modal.
+- Fixed a bug where pressing arrow keys within asset preview modals wasn’t retargeting the preview modal to adjacent assets. ([#14943](https://github.com/craftcms/cms/issues/14943))
+- Fixed a bug where entry selection modals could have a “New entry” button even if there weren’t any sections enabled for the selected site. ([#14923](https://github.com/craftcms/cms/issues/14923))
+
 ## 4.9.1 - 2024-05-02
 
-- Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911]), [#14510](https://github.com/craftcms/cms/issues/14510))
+- Fixed a bug where disclosure menus weren’t releasing their `scroll` and `resize` event listeners on hide. ([#14911](https://github.com/craftcms/cms/pull/14911), [#14510](https://github.com/craftcms/cms/issues/14510))
 - Fixed a bug where MySQL backups weren’t restorable on certain environments. ([#14925](https://github.com/craftcms/cms/pull/14925))
 - Fixed a bug where `app/resource-js` requests weren’t working for guest requests. ([#14908](https://github.com/craftcms/cms/issues/14908))
 

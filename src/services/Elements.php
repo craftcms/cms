@@ -796,6 +796,7 @@ class Elements extends Component
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
             $this->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
                 'tags' => $tags,
+                'element' => $element,
             ]));
         }
     }

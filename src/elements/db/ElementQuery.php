@@ -50,6 +50,10 @@ use yii\db\QueryBuilder;
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of ElementInterface
+ * @extends Query<TKey,TElement>
+ *
  * @property-write string|string[]|Site $site The site(s) that resulting elements must be returned in
  * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -101,7 +105,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @var string The name of the [[ElementInterface]] class.
-     * @phpstan-var class-string<ElementInterface>
+     * @phpstan-var class-string<TElement>
      */
     public string $elementType;
 
@@ -523,7 +527,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Constructor
      *
      * @param string $elementType The element type class associated with this query
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @phpstan-param class-string<TElement> $elementType
      * @param array $config Configurations to be applied to the newly created query object
      */
     public function __construct(string $elementType, array $config = [])
@@ -1565,7 +1569,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface[]|array The resulting elements.
+     * @return TElement[]|array The resulting elements.
      */
     public function populate($rows): array
     {
@@ -1608,64 +1612,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             return count($cachedResult);
         }
 
-        try {
-            return $this->prepareSubquery()->count($q, $db) ?: 0;
-        } catch (QueryAbortedException) {
-            return 0;
-        }
+        return parent::count($q, $db) ?: 0;
     }
 
     /**
      * @inheritdoc
-     */
-    public function sum($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->sum($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function average($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->average($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function min($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->min($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function max($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->max($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     * @return ElementInterface[]|array
+     * @return TElement[]|array
      */
     public function all($db = null): array
     {
@@ -1682,7 +1634,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @param YiiConnection|null $db
-     * @return Collection
+     * @return ElementCollection<TKey,TElement>
      */
     public function collect(?YiiConnection $db = null): Collection
     {
@@ -1691,7 +1643,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null
+     * @return TElement|array|null
      */
     public function one($db = null): mixed
     {
@@ -1734,12 +1686,22 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function exists($db = null): bool
     {
-        return $this->getCachedResult() !== null || parent::exists($db);
+        $cachedResult = $this->getCachedResult();
+        if ($cachedResult !== null) {
+            return !empty($cachedResult);
+        }
+        try {
+            return $this->prepareSubquery()
+                ->select('elements.id')
+                ->exists($db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
     }
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null
+     * @return TElement|array|null
      */
     public function nth(int $n, ?YiiConnection $db = null): mixed
     {
@@ -1767,7 +1729,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Returns the resulting elements set by [[setCachedResult()]], if the criteria params haven’t changed since then.
      *
-     * @return ElementInterface[]|null $elements The resulting elements, or null if setCachedResult() was never called or the criteria has changed
+     * @return TElement[]|null $elements The resulting elements, or null if setCachedResult() was never called or the criteria has changed
      * @see setCachedResult()
      */
     public function getCachedResult(): ?array
@@ -1791,7 +1753,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * If this is called, [[all()]] will return these elements rather than initiating a new SQL query,
      * as long as none of the parameters have changed since setCachedResult() was called.
      *
-     * @param ElementInterface[] $elements The resulting elements.
+     * @param TElement[] $elements The resulting elements.
      * @see getCachedResult()
      */
     public function setCachedResult(array $elements): void
@@ -1882,6 +1844,58 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         /** @var Query */
         return $this->prepare($builder)->from['subquery'];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function queryScalar($selectExpression, $db): bool|string|null
+    {
+        // Mostly copied from yii\db\Query::queryScalar(),
+        // except that createCommand() is called on the prepared subquery rather than this query.
+        // (We still temporarily override $select, $orderBy, $limit, and $offset on this query,
+        // so those values look right from EVENT_BEFORE_PREPARE/EVENT_AFTER_PREPARE listeners.)
+
+        if ($this->emulateExecution) {
+            return null;
+        }
+
+        if (
+            !$this->distinct
+            && empty($this->groupBy)
+            && empty($this->having)
+            && empty($this->union)
+        ) {
+            $select = $this->select;
+            $order = $this->orderBy;
+            $limit = $this->limit;
+            $offset = $this->offset;
+
+            $this->select = [$selectExpression];
+            $this->orderBy = null;
+            $this->limit = null;
+            $this->offset = null;
+
+            try {
+                $subquery = $this->prepareSubquery();
+                $subquery->select = [$selectExpression];
+                $subquery->orderBy = null;
+                $subquery->limit = null;
+                $subquery->offset = null;
+                $command = $subquery->createCommand($db);
+            } catch (QueryAbortedException) {
+                return false;
+            } finally {
+                $this->select = $select;
+                $this->orderBy = $order;
+                $this->limit = $limit;
+                $this->offset = $offset;
+            }
+
+            return $command->queryScalar();
+        }
+
+        return parent::queryScalar($selectExpression, $db);
     }
 
     // Arrayable methods

@@ -20,18 +20,18 @@ use craft\helpers\Db;
 use craft\models\MatrixBlockType;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\db\Connection;
 
 /**
  * MatrixBlockQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
+ *
+ * @template TKey of array-key
+ * @template TElement of MatrixBlock
+ * @extends ElementQuery<TKey,TElement>
  *
  * @property-write ElementInterface $owner The owner element the Matrix blocks must belong to
  * @property-write ElementInterface $primaryOwner The primary owner element the Matrix blocks must belong to
  * @property-write string|string[]|MatrixBlockType|null $type The block type(s) that resulting Matrix blocks must have
  * @property-write string|string[]|MatrixField|null $field The field the Matrix blocks must belong to
- * @method MatrixBlock[]|array all($db = null)
- * @method MatrixBlock|array|null one($db = null)
- * @method MatrixBlock|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path matrix-blocks.md

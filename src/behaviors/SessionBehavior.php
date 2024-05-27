@@ -250,7 +250,7 @@ class SessionBehavior extends Behavior
 
         $jsonMessage = Json::encode($message);
         $this->addJsFlash(<<<JS
-if (Craft.broadcaster) {
+if (Craft?.broadcaster) {
     Craft.broadcaster.postMessage($jsonMessage);
 }
 JS

@@ -133,18 +133,21 @@ class Gc extends Component
 
         $this->_deleteUnsupportedSiteEntries();
 
+        // Fire a 'run' event
+        // Note this should get fired *before* orphaned drafts & revisions are deleted
+        // (see https://github.com/craftcms/cms/issues/14309)
+        if ($this->hasEventHandlers(self::EVENT_RUN)) {
+            $this->trigger(self::EVENT_RUN);
+        }
+
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
         $this->_deleteOrphanedRelations();
         $this->_deleteOrphanedStructureElements();
 
-        // Fire a 'run' event
-        if ($this->hasEventHandlers(self::EVENT_RUN)) {
-            $this->trigger(self::EVENT_RUN);
-        }
+        $this->_hardDeleteStructures();
 
         $this->hardDelete([
-            Table::STRUCTURES,
             Table::FIELDLAYOUTS,
             Table::SITES,
         ]);
@@ -240,14 +243,14 @@ class Gc extends Component
             if ($this->db->getIsMysql()) {
                 $sql = <<<SQL
 DELETE [[e]].* FROM $elementsTable [[e]]
-LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]],[[e.id]])
 WHERE $conditionSql
 SQL;
             } else {
                 $sql = <<<SQL
 DELETE FROM $elementsTable
 USING $elementsTable [[e]]
-LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]],[[e.id]])
 WHERE
   $elementsTable.[[id]] = [[e.id]] AND $conditionSql
 SQL;
@@ -577,6 +580,65 @@ SQL;
 
         $this->db->createCommand($sql)->execute();
         $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Hard delete structures data
+     * Any soft-deleted structure elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
+     *
+     * @return void
+     * @throws \yii\db\Exception
+     */
+    private function _hardDeleteStructures(): void
+    {
+        // get IDs of structures that can be deleted;
+        // those are the ones for which the elements don't have any revisions
+        $structuresTable = Table::STRUCTURES;
+        $structureElementsTable = Table::STRUCTUREELEMENTS;
+        $elementsTable = Table::ELEMENTS;
+        $revisionsTable = Table::REVISIONS;
+
+        $params = [];
+
+        $structureIds = (new Query())
+            ->select('[[s.id]]')
+            ->distinct()
+            ->from(['s' => $structuresTable])
+            ->leftJoin(['se' => $structureElementsTable], '[[s.id]] = [[se.structureId]]')
+            ->leftJoin(['e' => $elementsTable], '[[e.id]] = [[se.elementId]]')
+            ->leftJoin(['r' => $revisionsTable], '[[r.canonicalId]] = coalesce([[e.canonicalId]],[[e.id]])')
+            ->where([
+                'and',
+                $this->_hardDeleteCondition('s'),
+                [
+                    'r.canonicalId' => null,
+                ],
+            ])
+            ->column();
+
+        if (!empty($structureIds)) {
+            $ids = implode(',', $structureIds);
+            $conditionSql = $this->db->getQueryBuilder()->buildCondition($this->_hardDeleteCondition('s'), $params);
+
+            // and now perform the actual deletion based on those IDs
+            if ($this->db->getIsMysql()) {
+                $sql = <<<SQL
+DELETE [[s]].* FROM $structuresTable [[s]]
+WHERE [[s.id]] NOT IN ($ids)
+AND $conditionSql
+SQL;
+            } else {
+                $sql = <<<SQL
+DELETE FROM $structuresTable
+USING $structuresTable [[s]]
+WHERE 
+    $structuresTable.[[id]] = [[s.id]] AND 
+    [[s.id]] NOT IN ($ids) AND
+    $conditionSql
+SQL;
+            }
+            $this->db->createCommand($sql, $params)->execute();
+        }
     }
 
     private function _gcCache(): void
