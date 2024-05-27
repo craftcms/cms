@@ -31,6 +31,7 @@
 - GraphQL schema edit pages now have a “Save and continue editing” alternate action.
 
 ### Development
+- Added the `{% expires %}` tag, which simplifies setting cache headers on the response. ([#14969](https://github.com/craftcms/cms/pull/14969))
 - Added the `withCustomFields` element query param. ([#15003](https://github.com/craftcms/cms/pull/15003))
 - Entry queries now support passing `*` to the `section` param, to filter the results to all section entries. ([#14978](https://github.com/craftcms/cms/discussions/14978))
 - Added `craft\elements\ElementCollection::find()`, which can return an element or elements in the collection based on a given element or ID. ([#15023](https://github.com/craftcms/cms/discussions/15023))
@@ -56,6 +57,8 @@
 - Added `craft\helpers\Cp::componentStatusIndicatorHtml()`.
 - Added `craft\helpers\Cp::componentStatusLabelHtml()`.
 - Added `craft\helpers\Cp::statusLabelHtml()`.
+- Added `craft\helpers\DateTimeHelper::relativeTimeStatement()`.
+- Added `craft\helpers\DateTimeHelper::relativeTimeToSeconds()`.
 - Added `craft\helpers\StringHelper::indent()`.
 - Added `craft\queue\Queue::getJobId()`.
 - `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
