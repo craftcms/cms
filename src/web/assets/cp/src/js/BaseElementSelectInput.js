@@ -97,7 +97,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         this.addListener(Garnish.$win, 'mousedown', (ev) => {
           if (
             !this.$container.is(ev.target) &&
-            !this.$container.find(ev.target).length
+            !this.$container.find(ev.target).length &&
+            !$(ev.target).closest('.menu').length
           ) {
             this.elementSelect.deselectAll();
           }
@@ -438,7 +439,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         icon: 'remove',
         label: Craft.t('app', 'Remove'),
         callback: () => {
-          this.removeElement($element);
+          // If the element is selected, remove *all* the selected elements
+          if (this.elementSelect?.isSelected($element)) {
+            this.removeElement(this.elementSelect.getSelectedItems());
+          } else {
+            this.removeElement($element);
+          }
         },
         destructive: true,
       });
@@ -543,6 +549,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
     },
 
+    /**
+     * Removes elements from the field value, without actually removing their DOM nodes.
+     * @param $elements
+     */
     removeElements: function ($elements) {
       if (this.settings.selectable) {
         this.elementSelect.removeItems($elements);
@@ -585,30 +595,39 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.onRemoveElements();
     },
 
-    removeElement: function ($element) {
+    /**
+     * Completely removes an element(s) from the UI and field value.
+     * @param $elements
+     */
+    removeElement: function ($elements) {
       if (this.settings.maintainHierarchy) {
-        // Find any descendants this element might have
-        const $allElements = $element.add(
-          $element.parent().siblings('ul').find('.element')
-        );
+        // Find any descendants the elements have
+        let $descendants = $();
+        for (let i = 0; i < $elements.length; i++) {
+          $descendants = $descendants.add(
+            $elements.eq(i).parent().siblings('ul').find('.element')
+          );
+        }
+        $elements = $elements.add($descendants);
+      }
 
-        // Remove any inputs from the form data
-        $('[name]', $allElements).removeAttr('name');
+      // Remove any inputs from the form data
+      $('[name]', $elements).removeAttr('name');
 
-        // Remove our record of them all at once
-        this.removeElements($allElements);
+      // Remove our record of them all at once
+      this.removeElements($elements);
 
-        // Animate them away one at a time
-        for (let i = 0; i < $allElements.length; i++) {
-          this._animateStructureElementAway($allElements, i);
+      if (this.settings.maintainHierarchy) {
+        for (let i = 0; i < $elements.length; i++) {
+          this._animateStructureElementAway($elements, i);
         }
       } else {
-        // Remove any inputs from the form data
-        $('[name]', $element).removeAttr('name');
-        this.removeElements($element);
-        this.animateElementAway($element, () => {
-          $element.parent('li').remove();
-        });
+        for (let i = 0; i < $elements.length; i++) {
+          const $element = $elements.eq(i);
+          this.animateElementAway($element, () => {
+            $element.parent('li').remove();
+          });
+        }
       }
     },
 

@@ -10,6 +10,7 @@
 - Table views within element index pages are no longer scrolled directly. ([#14927](https://github.com/craftcms/cms/pull/14927))
 - Improved the look of user gradicons when selected.
 - “Save and continue editing” actions now restore the page’s scroll position on reload.
+- “Remove” element actions within relational fields will now remove all selected elements, if the target element is selected. ([#15078](https://github.com/craftcms/cms/issues/15078))
 
 ### Administration
 - Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))
