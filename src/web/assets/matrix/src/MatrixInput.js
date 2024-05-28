@@ -220,6 +220,7 @@ import $ from 'jquery';
       },
 
       async addEntry(type, $insertBefore, autofocus) {
+        //await new Promise(resolve => setTimeout(resolve, 2000));
         if (this.addingEntry) {
           // only one new entry at a time
           return;
@@ -233,6 +234,21 @@ import $ from 'jquery';
         this.addingEntry = true;
 
         if (this.elementEditor) {
+          // if we're not yet submitting the form,
+          // but we have recent keypresses (we're writing) and the form observer hasn't been paused,
+          // wait until _recentKeypress is false before proceeding with adding new inline entry;
+          // otherwise, we'll have a clash and the changed content won't be saved before adding new entry
+          // see https://github.com/craftcms/cms/issues/15069
+          if (
+            !this.elementEditor.submittingForm &&
+            this.elementEditor.formObserver.isActive &&
+            this.elementEditor.formObserver._recentKeypress
+          ) {
+            while (this.elementEditor.formObserver._recentKeypress) {
+              await new Promise((resolve) => setTimeout(resolve, 100));
+            }
+          }
+
           // First ensure we're working with drafts for all elements leading up
           // to this field’s element
           await this.elementEditor.setFormValue(
