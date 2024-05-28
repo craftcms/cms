@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where entry type condition rules prefixed their option labels with section names. ([#15075](https://github.com/craftcms/cms/issues/15075))
+- Fixed an error that could occur when calling `craft\base\FieldLayoutComponent::getAttributes()` if the `$elementType` property wasn’t set yet. ([#15074](https://github.com/craftcms/cms/issues/15074))
 
 ## 5.1.7 - 2024-05-25
 
