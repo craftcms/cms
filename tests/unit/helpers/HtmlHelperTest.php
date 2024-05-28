@@ -504,7 +504,9 @@ class HtmlHelperTest extends TestCase
             ['foo-bar-baz', 'foo bar baz'],
             ['foo.bar', 'foo.bar'],
             ['foo-bar', 'foo bar'],
-            [null, '100'],
+            ['100', '100'],
+            ['100-foo-bar', '100-foo-bar'],
+            ['__FOO__ bar', '__FOO__ bar'],
         ];
     }
 
