@@ -801,7 +801,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         $names = array_flip($this->traitAttributes());
         unset($names['deletedWithEntryType']);
-        unset($names['saveOwnership']);
         $names['authorId'] = true;
         $names['authorIds'] = true;
         $names['typeId'] = true;
