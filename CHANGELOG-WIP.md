@@ -5,6 +5,7 @@
 - Double-clicking anywhere within a table row on an element index page will now open the element’s editor slideout. ([#14379](https://github.com/craftcms/cms/discussions/14379))
 - Element index checkboxes no longer have a lag when deselected, except within element selection modals. ([#14896](https://github.com/craftcms/cms/issues/14896))
 - Relational field condition rules no longer factor in the target elements’ statuses or sites. ([#14989](https://github.com/craftcms/cms/issues/14989))
+- Element cards now display provisional changes, with an “Edited” label. ([#14975](https://github.com/craftcms/cms/pull/14975))
 - Improved mobile styling. ([#14910](https://github.com/craftcms/cms/pull/14910))
 - Improved the look of slideouts.
 - Table views within element index pages are no longer scrolled directly. ([#14927](https://github.com/craftcms/cms/pull/14927))
@@ -36,6 +37,7 @@
 - Added the `{% expires %}` tag, which simplifies setting cache headers on the response. ([#14969](https://github.com/craftcms/cms/pull/14969))
 - Added the `withCustomFields` element query param. ([#15003](https://github.com/craftcms/cms/pull/15003))
 - Entry queries now support passing `*` to the `section` param, to filter the results to all section entries. ([#14978](https://github.com/craftcms/cms/discussions/14978))
+- Element queries now support passing an element instance, or an array of element instances/IDs, to the `draftOf` param.
 - Added `craft\elements\ElementCollection::find()`, which can return an element or elements in the collection based on a given element or ID. ([#15023](https://github.com/craftcms/cms/discussions/15023))
 - Added `craft\elements\ElementCollection::fresh()`, which reloads each of the collection elements from the database. ([#15023](https://github.com/craftcms/cms/discussions/15023)) 
 - `craft\elements\ElementCollection::contains()` now returns `true` if an element is passed in and the collection contains an element with the same ID and site ID; or if an integer is passed in and the collection contains an element with the same ID. ([#15023](https://github.com/craftcms/cms/discussions/15023))
@@ -62,6 +64,7 @@
 - Added `craft\helpers\Cp::statusLabelHtml()`.
 - Added `craft\helpers\DateTimeHelper::relativeTimeStatement()`.
 - Added `craft\helpers\DateTimeHelper::relativeTimeToSeconds()`.
+- Added `craft\helpers\ElementHelper::swapInProvisionalDrafts()`.
 - Added `craft\helpers\StringHelper::indent()`.
 - Added `craft\queue\Queue::getJobId()`.
 - `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
