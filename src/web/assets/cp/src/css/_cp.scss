@@ -960,6 +960,11 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #action-buttons {
+  .action-btn {
+    width: var(--ui-control-height);
+    height: var(--ui-control-height);
+  }
+
   @media only screen and (max-width: 400px) {
     .btngroup .btn:first-child {
       flex-basis: 100%;
