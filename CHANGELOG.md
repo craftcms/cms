@@ -10,6 +10,7 @@
 - Fixed a bug where `craft\elements\Address::toArray()` would include a `saveOwnership` key in its response array.
 - Fixed a bug where nested entry and address edit pages could have a “Delete for site” action.
 - Fixed a bug where field layout designers weren’t displaying native fields in the library pane when a tab was removed that contained them. ([#15064](https://github.com/craftcms/cms/issues/15064))
+- Fixed a bug where recent textual changes could be lost when creating a new inline-editable Matrix block, if the block was created before the autosave had a chance to initiate. ([#15069](https://github.com/craftcms/cms/issues/15069))
 
 ## 5.1.7 - 2024-05-25
 
