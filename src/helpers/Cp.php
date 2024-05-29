@@ -564,13 +564,15 @@ class Cp
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
-        $labels =
-            ($element::hasStatuses() ? static::componentStatusLabelHtml($element) : '') .
-            ($element->isProvisionalDraft ? self::changeStatusLabelHtml() : '');
+        $labels = array_filter([
+            $element::hasStatuses() ? static::componentStatusLabelHtml($element) : null,
+            $element->isProvisionalDraft ? self::changeStatusLabelHtml() : null,
+        ]);
 
-        if ($labels !== '') {
-            $bodyContent .= Html::tag('div', $labels, [
+        if (!empty($labels)) {
+            $bodyContent .= Html::ul($labels, [
                 'class' => ['flex', 'gap-xs'],
+                'encode' => false,
             ]);
         }
 
