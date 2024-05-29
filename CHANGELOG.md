@@ -9,6 +9,7 @@
 - Fixed a bug where nested entry titles weren’t getting included in the owner element’s search keywords. ([#15025](https://github.com/craftcms/cms/issues/15025))
 - Fixed a bug where `craft\elements\Address::toArray()` would include a `saveOwnership` key in its response array.
 - Fixed a bug where nested entry and address edit pages could have a “Delete for site” action.
+- Fixed a bug where field layout designers weren’t displaying native fields in the library pane when a tab was removed that contained them. ([#15064](https://github.com/craftcms/cms/issues/15064))
 
 ## 5.1.7 - 2024-05-25
 

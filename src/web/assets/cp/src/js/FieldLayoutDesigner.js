@@ -1333,7 +1333,9 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       this.tab.designer.refreshSelectedFields();
 
       if (!this.isMultiInstance) {
-        this.tab.designer.removeFieldByHandle(this.defaultHandle);
+        this.tab.designer.removeFieldByHandle(
+          this.defaultHandle || this.attribute
+        );
       }
     }
 
