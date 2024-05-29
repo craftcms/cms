@@ -308,13 +308,7 @@ class Addresses extends Field implements
      */
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): ?bool
     {
-        $owner = $element->getOwner();
-        if (!Craft::$app->getElements()->canSave($owner, $user)) {
-            return false;
-        }
-
-        // Make sure we aren't hitting the Min Addresses limit
-        return !$this->minAddressesReached($owner);
+        return false;
     }
 
     private function minAddressesReached(ElementInterface $owner): bool

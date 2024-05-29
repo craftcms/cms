@@ -7,6 +7,7 @@
 - Fixed an error that could occur when calling `craft\base\FieldLayoutComponent::getAttributes()` if the `$elementType` property wasn’t set yet. ([#15074](https://github.com/craftcms/cms/issues/15074))
 - Fixed a bug where nested entry titles weren’t getting included in the owner element’s search keywords. ([#15025](https://github.com/craftcms/cms/issues/15025))
 - Fixed a bug where `craft\elements\Address::toArray()` would include a `saveOwnership` key in its response array.
+- Fixed a bug where nested entry and address edit pages could have a “Delete for site” action.
 
 ## 5.1.7 - 2024-05-25
 
