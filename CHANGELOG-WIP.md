@@ -48,6 +48,7 @@
 
 ### Extensibility
 - Improved type definitions for `craft\db\Query`, element queries, and `craft\elements\ElementCollection`.
+- Added `craft\base\NestedElementTrait::$updateSearchIndexForOwner`.
 - Added `craft\db\getBackupFormat()`.
 - Added `craft\db\getRestoreFormat()`.
 - Added `craft\db\setBackupFormat()`.
@@ -64,6 +65,7 @@
 - Added `craft\queue\Queue::getJobId()`.
 - `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
 - `craft\elements\ElementCollection::with()` now supports collections made up of multiple element types.
+- `craft\services\Drafts::applyDraft()` now has a `$newAttributes` argument.
 - Added the `reloadOnBroadcastSave` setting to `Craft.ElementEditor`. ([#14814](https://github.com/craftcms/cms/issues/14814))
 - Added the `waitForDoubleClicks` setting to `Garnish.Select`, `Craft.BaseElementIndex`, and `Craft.BaseElementIndexView`.
 
@@ -73,3 +75,4 @@
 - Improved the performance of `craft\base\Element::toArray()`.
 - The Debug Toolbar now pre-serializes objects stored as request parameters, fixing a bug where closures could prevent the entire Request panel from showing up. ([#14982](https://github.com/craftcms/cms/discussions/14982))
 - Batched queue jobs now verify that they are still reserved before each step, and before spawning additional batch jobs. ([#14986](https://github.com/craftcms/cms/discussions/14986))
+- The search keyword index is now updated for owner elements, when a nested element is saved directly which belongs to a searchable custom field. 

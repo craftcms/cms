@@ -3784,16 +3784,7 @@ class Elements extends Component
                     }
 
                     if ($isValid) {
-                        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                            Craft::$app->getSearch()->indexElementAttributes($element, $searchableDirtyFields);
-                        } else {
-                            Queue::push(new UpdateSearchIndex([
-                                'elementType' => get_class($element),
-                                'elementId' => $element->id,
-                                'siteId' => $propagate ? '*' : $element->siteId,
-                                'fieldHandles' => $searchableDirtyFields,
-                            ]), 2048);
-                        }
+                        $this->updateSearchIndex($element, $searchableDirtyFields, $propagate);
                     }
                 }
             }
@@ -3846,6 +3837,45 @@ class Elements extends Component
         $element->propagateAll = $originalPropagateAll;
 
         return true;
+    }
+
+    private function updateSearchIndex(
+        ElementInterface $element,
+        array $searchableDirtyFields,
+        bool $propagate,
+        ?bool $updateForOwner = null,
+    ): void {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            Craft::$app->getSearch()->indexElementAttributes($element, $searchableDirtyFields);
+        } else {
+            Queue::push(new UpdateSearchIndex([
+                'elementType' => get_class($element),
+                'elementId' => $element->id,
+                'siteId' => $propagate ? '*' : $element->siteId,
+                'fieldHandles' => $searchableDirtyFields,
+            ]), 2048);
+        }
+
+        $updateForOwner ??= (
+            $element instanceof NestedElementInterface &&
+            $element->getIsCanonical() &&
+            isset($element->fieldId) &&
+            isset($element->updateSearchIndexForOwner) &&
+            $element->updateSearchIndexForOwner
+        );
+
+        if ($updateForOwner) {
+            /** @var NestedElementInterface $element */
+            $owner = $element->getOwner();
+            if ($owner) {
+                /** @phpstan-ignore-next-line */
+                $field = $owner->getFieldLayout()?->getFieldById($element->fieldId);
+                if ($field?->searchable) {
+                    $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
+                    $this->invalidateCachesForElement($owner);
+                }
+            }
+        }
     }
 
     /**
