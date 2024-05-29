@@ -70,7 +70,7 @@ abstract class FieldLayoutComponent extends Model
      * @var string|null The element type the field layout is for
      * @since 5.0.0
      */
-    public ?string $elementType;
+    public ?string $elementType = null;
 
     /**
      * @var FieldLayout The field layout tab this element belongs to
