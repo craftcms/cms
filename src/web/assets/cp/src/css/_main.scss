@@ -3284,6 +3284,10 @@ table {
     [data-icon-after] {
       --icon-color: var(--white) !important;
     }
+
+    .status-label .status-label-text {
+      --status-label-text-color: var(--white) !important;
+    }
   }
 
   & > .thumb {

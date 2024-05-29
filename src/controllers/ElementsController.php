@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
+use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\elements\User;
@@ -1221,6 +1222,10 @@ JS, [
             }
         }
 
+        if ($element instanceof NestedElementInterface && property_exists($element, 'updateSearchIndexForOwner')) {
+            $element->updateSearchIndexForOwner = true;
+        }
+
         try {
             $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
             // crossSiteValidate only if it's multisite, element supports drafts and we're not in a slideout
@@ -1675,8 +1680,13 @@ JS, [
             }
         }
 
+        $attributes = [];
+        if ($element instanceof NestedElementInterface) {
+            $attributes['updateSearchIndexForOwner'] = true;
+        }
+
         try {
-            $canonical = Craft::$app->getDrafts()->applyDraft($element);
+            $canonical = Craft::$app->getDrafts()->applyDraft($element, $attributes);
         } catch (InvalidElementException) {
             return $this->_asAppyDraftFailure($element);
         } finally {

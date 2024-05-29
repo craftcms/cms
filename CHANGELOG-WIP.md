@@ -9,18 +9,8 @@
 - Improved the look of slideouts.
 - Table views within element index pages are no longer scrolled directly. ([#14927](https://github.com/craftcms/cms/pull/14927))
 - Improved the look of user gradicons when selected.
-
-### Administration
-- Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))
-- The `db/restore` command now autodetects the backup format for PostgreSQL installs, if `--format` isn’t passed. ([#14931](https://github.com/craftcms/cms/pull/14931))
-- The `install` command and web-based installer now validate the existing project config files at the outset, and abort installation if there are any issues.
-- The `resave/entries` command now has an `--all-sections` flag.
-- The web-based installer now displays the error message when installation fails.
-- Edit Entry Type pages now have a “Delete” action. ([#14983](https://github.com/craftcms/cms/discussions/14983))
-
-### Development
-- Added the `withCustomFields` element query param. ([#15003](https://github.com/craftcms/cms/pull/15003))
-- Entry queries now support passing `*` to the `section` param, to filter the results to all section entries. ([#14978](https://github.com/craftcms/cms/discussions/14978))
+- “Save and continue editing” actions now restore the page’s scroll position on reload.
+- “Remove” element actions within relational fields will now remove all selected elements, if the target element is selected. ([#15078](https://github.com/craftcms/cms/issues/15078))
 
 ### Accessibility
 - Added the “Status” column option to category, entry, and user indexes. ([#14968](https://github.com/craftcms/cms/pull/14968))
@@ -31,7 +21,20 @@
 - Set the language of the Craft edition in the footer, to improve screen reader pronunciation for non-English languages.
 - The accessible name of “Select site” buttons is now translated to the current language.
 
+### Administration
+- Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))
+- The `db/restore` command now autodetects the backup format for PostgreSQL installs, if `--format` isn’t passed. ([#14931](https://github.com/craftcms/cms/pull/14931))
+- The `install` command and web-based installer now validate the existing project config files at the outset, and abort installation if there are any issues.
+- The `resave/entries` command now has an `--all-sections` flag.
+- The web-based installer now displays the error message when installation fails.
+- Edit Entry Type pages now have a “Delete” action. ([#14983](https://github.com/craftcms/cms/discussions/14983))
+- After creating a new field, field layout designers now set their search value to the new field’s name. ([#15080](https://github.com/craftcms/cms/discussions/15080))
+- GraphQL schema edit pages now have a “Save and continue editing” alternate action.
+
 ### Development
+- Added the `{% expires %}` tag, which simplifies setting cache headers on the response. ([#14969](https://github.com/craftcms/cms/pull/14969))
+- Added the `withCustomFields` element query param. ([#15003](https://github.com/craftcms/cms/pull/15003))
+- Entry queries now support passing `*` to the `section` param, to filter the results to all section entries. ([#14978](https://github.com/craftcms/cms/discussions/14978))
 - Added `craft\elements\ElementCollection::find()`, which can return an element or elements in the collection based on a given element or ID. ([#15023](https://github.com/craftcms/cms/discussions/15023))
 - Added `craft\elements\ElementCollection::fresh()`, which reloads each of the collection elements from the database. ([#15023](https://github.com/craftcms/cms/discussions/15023)) 
 - `craft\elements\ElementCollection::contains()` now returns `true` if an element is passed in and the collection contains an element with the same ID and site ID; or if an integer is passed in and the collection contains an element with the same ID. ([#15023](https://github.com/craftcms/cms/discussions/15023))
@@ -45,6 +48,7 @@
 
 ### Extensibility
 - Improved type definitions for `craft\db\Query`, element queries, and `craft\elements\ElementCollection`.
+- Added `craft\base\NestedElementTrait::$updateSearchIndexForOwner`.
 - Added `craft\db\getBackupFormat()`.
 - Added `craft\db\getRestoreFormat()`.
 - Added `craft\db\setBackupFormat()`.
@@ -55,10 +59,13 @@
 - Added `craft\helpers\Cp::componentStatusIndicatorHtml()`.
 - Added `craft\helpers\Cp::componentStatusLabelHtml()`.
 - Added `craft\helpers\Cp::statusLabelHtml()`.
+- Added `craft\helpers\DateTimeHelper::relativeTimeStatement()`.
+- Added `craft\helpers\DateTimeHelper::relativeTimeToSeconds()`.
 - Added `craft\helpers\StringHelper::indent()`.
 - Added `craft\queue\Queue::getJobId()`.
 - `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
 - `craft\elements\ElementCollection::with()` now supports collections made up of multiple element types.
+- `craft\services\Drafts::applyDraft()` now has a `$newAttributes` argument.
 - Added the `reloadOnBroadcastSave` setting to `Craft.ElementEditor`. ([#14814](https://github.com/craftcms/cms/issues/14814))
 - Added the `waitForDoubleClicks` setting to `Garnish.Select`, `Craft.BaseElementIndex`, and `Craft.BaseElementIndexView`.
 
@@ -68,3 +75,4 @@
 - Improved the performance of `craft\base\Element::toArray()`.
 - The Debug Toolbar now pre-serializes objects stored as request parameters, fixing a bug where closures could prevent the entire Request panel from showing up. ([#14982](https://github.com/craftcms/cms/discussions/14982))
 - Batched queue jobs now verify that they are still reserved before each step, and before spawning additional batch jobs. ([#14986](https://github.com/craftcms/cms/discussions/14986))
+- The search keyword index is now updated for owner elements, when a nested element is saved directly which belongs to a searchable custom field. 

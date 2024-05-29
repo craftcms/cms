@@ -597,7 +597,6 @@ class GraphqlController extends Controller
             $title = trim($schema->name) ?: Craft::t('app', 'Create a new GraphQL Schema');
         }
 
-
         return $this->renderTemplate('graphql/schemas/_edit.twig', compact(
             'schema',
             'title'
@@ -718,7 +717,7 @@ class GraphqlController extends Controller
         }
 
         $this->setSuccessFlash(Craft::t('app', 'Schema saved.'));
-        return $this->redirectToPostedUrl();
+        return $this->redirectToPostedUrl($schema);
     }
 
     /**

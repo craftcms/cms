@@ -2066,12 +2066,17 @@ class ElementQuery extends Query implements ElementQueryInterface
             && empty($this->having)
             && empty($this->union)
         ) {
-            $select = $this->select;
+            // Set $orderBy, $limit, and $offset on this query just so it more closely resembles the
+            // actual query that will be executed for `beforePrepare`/`afterPrepare` listeners
+            // (https://github.com/craftcms/cms/issues/15001)
+
+            // DON’T set $select though, in case this query ends up being cloned and executed from
+            // an event handler, like BaseRelationField does. (https://github.com/craftcms/cms/issues/15071)
+
             $order = $this->orderBy;
             $limit = $this->limit;
             $offset = $this->offset;
 
-            $this->select = [$selectExpression];
             $this->orderBy = null;
             $this->limit = null;
             $this->offset = null;
@@ -2086,7 +2091,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             } catch (QueryAbortedException) {
                 return false;
             } finally {
-                $this->select = $select;
                 $this->orderBy = $order;
                 $this->limit = $limit;
                 $this->offset = $offset;
