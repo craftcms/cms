@@ -1089,6 +1089,10 @@ Craft.ElementEditor = Garnish.Base.extend(
         throw 'Unable to set form values on a revision.';
       }
 
+      // Make sure any existing changes have already been dealt with
+      // (https://github.com/craftcms/cms/issues/15069)
+      await this.checkForm();
+
       // See if the value is already set
       const params = this.$container.serialize().split('&');
       if (
