@@ -226,47 +226,52 @@ Craft.LoginForm = Garnish.Base.extend(
         const $altContainer = $(
           '<div class="login-alt-container"/>'
         ).insertAfter($hr);
-        const $button = Craft.ui
-          .createButton({
-            label: Craft.t('app', 'Try another way'),
-            spinner: true,
-          })
-          .addClass('menubtn')
-          .appendTo($altContainer);
-        const $menu = $('<div class="menu login-alt-menu"/>').appendTo(
-          $altContainer
-        );
+        // const $button = Craft.ui
+        //   .createButton({
+        //     label: Craft.t('app', 'Try another way'),
+        //     spinner: true,
+        //   })
+        //   .addClass('menubtn')
+        //   .appendTo($altContainer);
+        const $menu = $(
+          '<div id="login-alt-menu" class="login-alt-menu menu menu--disclosure"/>'
+        ).appendTo($altContainer);
         const $ul = $('<ul/>').appendTo($menu);
         for (let method of data.otherMethods) {
           $('<li/>')
             .append(
-              $('<a/>', {
+              $('<button/>', {
                 text: method.name,
                 'data-method': method.class,
+                class: 'menu-item',
               })
             )
             .appendTo($ul);
         }
-        new Garnish.MenuBtn($button, {
-          onOptionSelect: (option) => {
-            $button.addClass('loading');
 
-            Craft.sendActionRequest('post', 'users/auth-form', {
-              data: {
-                method: $(option).data('method'),
-              },
+        // New disclosure btn
+        const $newButton = $(
+          '<button type="button" aria-controls="login-alt-menu">Try another way</button>'
+        ).appendTo($altContainer);
+
+        const $methodDisclosure = new Garnish.DisclosureMenu($newButton);
+
+        $ul.find('button').on('activate', (event) => {
+          Craft.sendActionRequest('post', 'users/auth-form', {
+            data: {
+              method: $(event.target).data('method'),
+            },
+          })
+            .then(({data}) => {
+              $authForm.remove();
+              $hr.remove();
+              $altContainer.remove();
+              $methodDisclosure.hide();
+              this.show2faForm(data);
             })
-              .then(({data}) => {
-                $authForm.remove();
-                $hr.remove();
-                $altContainer.remove();
-                console.log(data);
-                this.show2faForm(data);
-              })
-              .finally(() => {
-                $button.removeClass('loading');
-              });
-          },
+            .finally(() => {
+              //$button.removeClass('loading');
+            });
         });
       }
 
