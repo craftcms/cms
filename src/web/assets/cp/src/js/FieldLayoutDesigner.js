@@ -1333,14 +1333,9 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       this.tab.designer.refreshSelectedFields();
 
       if (!this.isMultiInstance) {
-        let handle = null;
-        // we need this for the native fields (they don't have a default handle)
-        if (typeof this.defaultHandle === 'undefined') {
-          handle = this.attribute;
-        } else {
-          handle = this.defaultHandle;
-        }
-        this.tab.designer.removeFieldByHandle(handle);
+        this.tab.designer.removeFieldByHandle(
+          this.defaultHandle || this.attribute
+        );
       }
     }
 
