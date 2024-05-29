@@ -150,7 +150,9 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * | Value | Fetches drafts…
      * | - | -
      * | `1` | for the {element} with an ID of 1.
+     * | `[1, 2]` | for the {elements} with an ID of 1 or 2.
      * | a [[{element-class}]] object | for the {element} represented by the object.
+     * | an array of [[{element-class}]] objects | for the {elements} represented by the objects.
      * | `'*'` | for any {element}
      * | `false` | that aren’t associated with a published {element}
      *

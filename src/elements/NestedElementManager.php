@@ -401,6 +401,9 @@ class NestedElementManager extends Component
                         ->all();
                 }
 
+                // See if there are any provisional drafts we should swap these out with
+                ElementHelper::swapInProvisionalDrafts($elements);
+
                 $this->setOwnerOnNestedElements($owner, $elements);
 
                 if (!empty($elements)) {

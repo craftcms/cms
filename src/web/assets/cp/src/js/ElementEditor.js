@@ -438,6 +438,14 @@ Craft.ElementEditor = Garnish.Base.extend(
                   })
                     .then((response) => {
                       Craft.cp.displaySuccess(response.data.message);
+
+                      // Broadcast a saveMessage event, in case any chips/cards should be
+                      // updated to stop showing the provisional changes
+                      Craft.broadcaster.postMessage({
+                        event: 'saveElement',
+                        id: this.settings.canonicalId,
+                      });
+
                       this.slideout.close();
                     })
                     .catch(reject);
@@ -1826,6 +1834,15 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.trigger('update');
+
+      if (this.settings.isProvisionalDraft && Craft.broadcaster) {
+        // Broadcast a saveMessage event, in case any chips/cards should be
+        // updated to show the provisional changes
+        Craft.broadcaster.postMessage({
+          event: 'saveElement',
+          id: this.settings.canonicalId,
+        });
+      }
     },
 
     setStatusMessage: function (message) {

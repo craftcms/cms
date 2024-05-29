@@ -70,13 +70,21 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
 
       if (this.settings.elementId) {
         params.elementId = this.settings.elementId;
-      } else if (this.$element && this.$element.data('id')) {
-        params.elementId = this.$element.data('id');
+      } else if (this.$element) {
+        if (this.$element.data('canonical-id')) {
+          params.elementId = this.$element.data('canonical-id');
+        } else if (this.$element.data('id')) {
+          params.elementId = this.$element.data('id');
+        }
       }
 
       if (this.settings.draftId) {
         params.draftId = this.settings.draftId;
-      } else if (this.$element && this.$element.data('draft-id')) {
+      } else if (
+        this.$element &&
+        this.$element.data('draft-id') &&
+        !Garnish.hasAttr(this.$element, 'data-provisional')
+      ) {
         params.draftId = this.$element.data('draft-id');
       } else if (this.settings.revisionId) {
         params.revisionId = this.settings.revisionId;
