@@ -226,6 +226,7 @@ Craft.LoginForm = Garnish.Base.extend(
         const $altContainer = $(
           '<div class="login-alt-container"/>'
         ).insertAfter($hr);
+
         // const $button = Craft.ui
         //   .createButton({
         //     label: Craft.t('app', 'Try another way'),
@@ -250,11 +251,14 @@ Craft.LoginForm = Garnish.Base.extend(
         }
 
         // New disclosure btn
-        const $newButton = $(
-          '<button type="button" aria-controls="login-alt-menu">Try another way</button>'
-        ).appendTo($altContainer);
+        const $newButton = $('<button/>', {
+          type: 'button',
+          'aria-controls': 'login-alt-menu',
+          html: Craft.t('app', 'Try another way'),
+        }).appendTo($altContainer);
 
         const $methodDisclosure = new Garnish.DisclosureMenu($newButton);
+        const $methodBtn = new Garnish.MultiFunctionBtn($newButton, {});
 
         $ul.find('button').on('activate', (event) => {
           Craft.sendActionRequest('post', 'users/auth-form', {
@@ -263,6 +267,7 @@ Craft.LoginForm = Garnish.Base.extend(
             },
           })
             .then(({data}) => {
+              $methodBtn.busyEvent();
               $authForm.remove();
               $hr.remove();
               $altContainer.remove();
@@ -270,6 +275,7 @@ Craft.LoginForm = Garnish.Base.extend(
               this.show2faForm(data);
             })
             .finally(() => {
+              $methodBtn.successEvent();
               //$button.removeClass('loading');
             });
         });
