@@ -12,11 +12,13 @@ use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use yii\base\Component;
 
@@ -127,6 +129,24 @@ class ElementSources extends Component
             }
         } else {
             $sources = $nativeSources;
+        }
+
+        // Normalize the site IDs
+        foreach ($sources as &$source) {
+            if (isset($source['sites'])) {
+                $sitesService = null;
+                $source['sites'] = array_filter(array_map(function(int|string $siteId) use (&$sitesService): ?int {
+                    if (is_string($siteId) && StringHelper::isUUID($siteId)) {
+                        $sitesService ??= Craft::$app->getSites();
+                        try {
+                            return $sitesService->getSiteByUid($siteId)->id;
+                        } catch (SiteNotFoundException) {
+                            return null;
+                        }
+                    }
+                    return (int)$siteId;
+                }, $source['sites']));
+            }
         }
 
         return $sources;

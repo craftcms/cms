@@ -13,6 +13,7 @@
 - “Save and continue editing” actions now restore the page’s scroll position on reload.
 - “Remove” element actions within relational fields will now remove all selected elements, if the target element is selected. ([#15078](https://github.com/craftcms/cms/issues/15078))
 - Action menus are now displayed within the page toolbar, rather than in the breadcrumbs. ([#14913](https://github.com/craftcms/cms/discussions/14913), [#15070](https://github.com/craftcms/cms/pull/15070))
+- Site menus within element selector modals now filter out sites that don’t have any sources. ([#15091](https://github.com/craftcms/cms/discussions/15091))
 
 ### Accessibility
 - Added the “Status” column option to category, entry, and user indexes. ([#14968](https://github.com/craftcms/cms/pull/14968))

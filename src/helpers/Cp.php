@@ -1067,9 +1067,12 @@ class Cp
         if ($config['showStatusMenu'] !== 'auto') {
             $config['showStatusMenu'] = (bool)$config['showStatusMenu'];
         }
-        if ($config['showSiteMenu'] !== 'auto') {
-            $config['showSiteMenu'] = (bool)$config['showSiteMenu'];
-        }
+
+        $config['showSiteMenu'] = $config['showSiteMenu'] === 'auto'
+            ? $elementType::isLocalized()
+            : (bool)$config['showSiteMenu'];
+
+        $siteIds = Craft::$app->getSites()->getEditableSiteIds();
 
         $sortOptions = Collection::make($elementType::sortOptions())
             ->map(fn($option, $key) => [
@@ -1170,6 +1173,22 @@ class Cp
             }
         }
 
+        // If all the sources are site-specific, filter out any unneeded site IDs
+        if (
+            $config['showSiteMenu'] &&
+            ArrayHelper::onlyContains($sources, fn(array $source) => $source['type'] === 'heading' || isset($source['sites']))
+        ) {
+            $representedSiteIds = [];
+            foreach ($sources as $source) {
+                if (isset($source['sites'])) {
+                    foreach ($source['sites'] as $siteId) {
+                        $representedSiteIds[$siteId] = true;
+                    }
+                }
+            }
+            $siteIds = array_filter($siteIds, fn(int $siteId) => isset($representedSiteIds[$siteId]));
+        }
+
         $view = Craft::$app->getView();
 
         if ($config['registerJs']) {
@@ -1218,6 +1237,7 @@ JS, [
                 'context' => $config['context'],
                 'showStatusMenu' => $config['showStatusMenu'],
                 'showSiteMenu' => $config['showSiteMenu'],
+                'siteIds' => $siteIds,
                 'canHaveDrafts' => $elementType::hasDrafts(),
             ], View::TEMPLATE_MODE_CP) .
             Html::endTag('div') . // .toolbar
