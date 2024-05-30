@@ -13,6 +13,7 @@
 - Fixed a bug where recent textual changes could be lost when creating a new inline-editable Matrix block, if the block was created before the autosave had a chance to initiate. ([#15069](https://github.com/craftcms/cms/issues/15069))
 - Fixed a bug where the `users/create` command would fail without explaining why, when the maximum number of users had already been reached.
 - Fixed a validation error that could occur when saving an entry on Craft Solo. ([#15082](https://github.com/craftcms/cms/issues/15082))
+- Fixed an error that could occur on an element edit page, if a Matrix field’s Propagation Method was set to “Custom…”, but its Propagation Key Format wasn’t filled in.
 
 ## 5.1.7 - 2024-05-25
 

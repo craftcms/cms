@@ -156,7 +156,7 @@ class NestedElementManager extends Component
      */
     public function getIsTranslatable(?ElementInterface $owner = null): bool
     {
-        if ($this->propagationMethod === PropagationMethod::Custom) {
+        if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
             return (
                 $owner === null ||
                 Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $owner) !== ''
