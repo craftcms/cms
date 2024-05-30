@@ -10,6 +10,7 @@
 - The `install` command and web-based installer now validate the existing project config files at the outset, and abort installation if there are any issues.
 - The web-based installer now displays the error message when installation fails.
 - GraphQL schema edit pages now have a “Save and continue editing” alternate action.
+- The system edition can now be defined by a `CRAFT_EDITION` environment variable. ([#15094](https://github.com/craftcms/cms/discussions/15094))
 
 ### Development
 - Added the `{% expires %}` tag, which simplifies setting cache headers on the response. ([#14969](https://github.com/craftcms/cms/pull/14969))
