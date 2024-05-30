@@ -34,6 +34,7 @@
 - After creating a new field, field layout designers now set their search value to the new field’s name. ([#15080](https://github.com/craftcms/cms/discussions/15080))
 - GraphQL schema edit pages now have a “Save and continue editing” alternate action.
 - Volumes’ “Subpath” and “Transform Subpath” settings can now be set to environment variables. ([#15087](https://github.com/craftcms/cms/discussions/15087))
+- The system edition can now be defined by a `CRAFT_EDITION` environment variable. ([#15094](https://github.com/craftcms/cms/discussions/15094))
 
 ### Development
 - Added the `{% expires %}` tag, which simplifies setting cache headers on the response. ([#14969](https://github.com/craftcms/cms/pull/14969))
