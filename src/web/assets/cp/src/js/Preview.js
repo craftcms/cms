@@ -6,7 +6,6 @@
 Craft.Preview = Garnish.Base.extend(
   {
     elementEditor: null,
-    previewElementEditor: null,
     tabManager: null,
     hasTabs: false,
 
@@ -17,9 +16,11 @@ Craft.Preview = Garnish.Base.extend(
     $editorHeader: null,
     $editorToolbar: null,
     $tabContainer: null,
-    $editor: null,
     $content: null,
     $spinner: null,
+
+    $editorFooter: null,
+    $saveBtn: null,
 
     $statusIcon: null,
     $dragHandle: null,
@@ -74,8 +75,11 @@ Craft.Preview = Garnish.Base.extend(
     _editorWidth: null,
     _editorWidthInPx: null,
 
-    init: function (elementEditor) {
-      this.elementEditor = elementEditor;
+    /**
+     * @param {Object} [settings]
+     */
+    init: function (settings) {
+      this.setSettings(settings, Craft.Preview.defaults);
 
       // Set the initial editor width
       this.editorWidth = Craft.getLocalStorage(
@@ -130,193 +134,8 @@ Craft.Preview = Garnish.Base.extend(
 
       $(document.activeElement).trigger('blur');
 
-      if (!this.$editor) {
-        this.editorId = `lp-editor-${Math.floor(Math.random() * 100000000)}`;
-
-        const previewSkipLinkText = Craft.t('app', 'Skip to {title}', {
-          title: Craft.t('app', 'Top of preview'),
-        });
-
-        this.$shade = $('<div/>', {class: 'modal-shade dark'}).appendTo(
-          Garnish.$bod
-        );
-        this.$previewWrapper = $('<div/>', {
-          role: 'dialog',
-          'aria-modal': 'true',
-          'aria-labelledby': 'lp-preview-heading',
-        }).appendTo(Garnish.$bod);
-        this.$modalLabel = $('<h2/>', {
-          id: 'lp-preview-heading',
-          class: 'visually-hidden',
-          html: Craft.t('app', 'Preview'),
-        }).appendTo(this.$previewWrapper);
-        this.$editorContainer = $('<div/>', {
-          class: 'lp-editor-container',
-        }).appendTo(this.$previewWrapper);
-        this.$previewContainer = $('<div/>', {
-          class: 'lp-preview-container',
-          id: 'lp-preview-container',
-        }).appendTo(this.$previewWrapper);
-        this.$notifier = $('<span/>', {
-          class: 'visually-hidden',
-          role: 'status',
-        }).appendTo(this.$previewContainer);
-
-        this.$editorHeader = $('<header/>', {
-          class: 'flex flex-nowrap',
-        }).appendTo(this.$editorContainer);
-        const $closeBtn = $('<button/>', {
-          type: 'button',
-          class: 'btn',
-          'data-icon': 'xmark',
-          title: Craft.t('app', 'Close Preview'),
-          'aria-label': Craft.t('app', 'Close Preview'),
-        }).appendTo(this.$editorHeader);
-        this.$editorToolbar = $('<div/>', {class: 'lp-toolbar'}).appendTo(
-          this.$editorHeader
-        );
-        this.$tabContainer = $('<div/>', {class: 'pane-tabs'}).appendTo(
-          this.$editorToolbar
-        );
-        this.$editor = $('<form/>', {
-          id: this.editorId,
-          class: 'lp-editor loading',
-        })
-          .appendTo(this.$editorContainer)
-          .append($('<div/>', {class: 'spinner'}));
-        this.$content = $('<div/>', {class: 'lp-content'}).appendTo(
-          this.$editor
-        );
-        this.$dragHandle = $('<div/>', {class: 'lp-draghandle'}).appendTo(
-          this.$editorContainer
-        );
-        $('<div/>', {class: 'flex-grow'}).appendTo(this.$editorHeader);
-        this.$spinner = $('<div/>', {
-          class: 'spinner hidden',
-          title: Craft.t('app', 'Saving'),
-        }).appendTo(this.$editorHeader);
-        this.$statusIcon = $('<div/>', {class: 'invisible'}).appendTo(
-          this.$editorHeader
-        );
-        this.$statusMessage = $('<span/>', {
-          class: 'visually-hidden',
-          'aria-live': 'polite',
-        }).appendTo(this.$editorHeader);
-        this.$previewSkipLink = $('<a/>', {
-          class: 'skip-link btn',
-          href: '#lp-preview-container',
-          html: previewSkipLinkText,
-        }).appendTo(this.$editorHeader);
-
-        if (Craft.Pro) {
-          this.$previewHeader = $('<header/>', {
-            class: 'lp-preview-header',
-          }).appendTo(this.$previewContainer);
-
-          // Preview targets
-          if (this.elementEditor.settings.previewTargets.length > 1) {
-            this.$targetBtn = $('<button/>', {
-              type: 'button',
-              class: 'btn menubtn',
-              text: this.elementEditor.settings.previewTargets[0].label,
-            }).appendTo(this.$previewHeader);
-            this.$targetMenu = $('<div/>', {
-              class: 'menu lp-target-menu',
-            }).insertAfter(this.$targetBtn);
-            const $ul = $('<ul/>', {class: 'padded'}).appendTo(
-              this.$targetMenu
-            );
-            let $li, $a;
-            for (
-              let i = 0;
-              i < this.elementEditor.settings.previewTargets.length;
-              i++
-            ) {
-              $li = $('<li/>').appendTo($ul);
-              $a = $('<a/>', {
-                data: {target: i},
-                text: this.elementEditor.settings.previewTargets[i].label,
-                class: i === 0 ? 'sel' : null,
-              }).appendTo($li);
-            }
-            new Garnish.MenuBtn(this.$targetBtn, {
-              onOptionSelect: (option) => {
-                this.switchTarget($(option).data('target'));
-              },
-            });
-
-            $('<div class="flex-grow"/>').appendTo(this.$previewHeader);
-          }
-
-          this._buildDeviceTypeFieldset();
-
-          $('<div class="flex-grow"/>').appendTo(this.$previewHeader);
-          const $buttonContainer = $('<div class="buttons"/>').appendTo(
-            this.$previewHeader
-          );
-
-          // Orientation toggle
-          this.$orientationBtn = $('<button/>', {
-            type: 'button',
-            class: 'btn disabled',
-            'data-icon': 'rotate',
-            'aria-disabled': 'true',
-            text: Craft.t('app', 'Rotate'),
-            'aria-label': Craft.t('app', 'Rotate'),
-          }).appendTo($buttonContainer);
-          this.addListener(this.$orientationBtn, 'click', 'switchOrientation');
-
-          // Refresh button
-          this.$refreshBtn = $('<button/>', {
-            type: 'button',
-            class: 'btn',
-            text: Craft.t('app', 'Refresh'),
-            'data-icon': 'refresh',
-          }).appendTo($buttonContainer);
-          this.addListener(this.$refreshBtn, 'click', () => {
-            this.updateIframe(false, true);
-          });
-
-          // Get the last stored orientation
-          this.deviceOrientation = Craft.getLocalStorage(
-            'LivePreview.orientation'
-          );
-        }
-
-        this.$iframeContainer = $('<div/>', {
-          class: 'lp-iframe-container',
-        }).appendTo(this.$previewContainer);
-        this.$devicePreviewContainer = $('<div/>', {
-          class: 'lp-device-preview-container',
-        }).appendTo(this.$iframeContainer);
-        this.$deviceMask = $('<div/>', {
-          class: 'lp-device-mask',
-        }).appendTo(this.$iframeContainer);
-
-        /* Prevents focus trap bug caused by iframe as last element */
-        this.$bumperLink = $('<a/>', {
-          class: 'skip-link btn lp-preview-container__bumper-link',
-          html: previewSkipLinkText,
-          href: '#lp-preview-container',
-        });
-        this.$bumperLink.appendTo(this.$previewContainer);
-
-        this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
-          axis: Garnish.X_AXIS,
-          onDragStart: this._onDragStart.bind(this),
-          onDrag: this._onDrag.bind(this),
-          onDragStop: this._onDragStop.bind(this),
-        });
-
-        this.addListener($closeBtn, 'click', 'close');
-        this.addListener(this.$statusIcon, 'click', () => {
-          this.elementEditor.showStatusHud(this.$statusIcon);
-        });
-      }
-
-      if (this.previewElementEditor) {
-        this.previewElementEditor.destroy();
-        delete this.previewElementEditor;
+      if (!this.$editorContainer) {
+        this._buildUi();
       }
 
       // Set the sizes
@@ -328,23 +147,173 @@ Craft.Preview = Garnish.Base.extend(
 
       this.slideIn();
 
-      // Let the page's element editor autosave up any last-minute changes
-      await this.elementEditor?.checkForm(false, true);
+      if (!this.elementEditor) {
+        await this._loadElementEditor();
+      }
+
+      this.trigger('open');
+    },
+
+    _buildUi: function () {
+      this.editorId = `lp-editor-${Math.floor(Math.random() * 100000000)}`;
+
+      const previewSkipLinkText = Craft.t('app', 'Skip to {title}', {
+        title: Craft.t('app', 'Top of preview'),
+      });
+
+      this.$shade = $('<div/>', {class: 'modal-shade dark'}).appendTo(
+        Garnish.$bod
+      );
+      this.$previewWrapper = $('<div/>', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'lp-preview-heading',
+      }).appendTo(Garnish.$bod);
+      this.$modalLabel = $('<h2/>', {
+        id: 'lp-preview-heading',
+        class: 'visually-hidden',
+        html: Craft.t('app', 'Preview'),
+      }).appendTo(this.$previewWrapper);
+      this.$editorContainer = $('<form/>', {
+        id: this.editorId,
+        class: 'lp-editor-container',
+      }).appendTo(this.$previewWrapper);
+      this.$previewContainer = $('<div/>', {
+        class: 'lp-preview-container',
+        id: 'lp-preview-container',
+      }).appendTo(this.$previewWrapper);
+      this.$notifier = $('<span/>', {
+        class: 'visually-hidden',
+        role: 'status',
+      }).appendTo(this.$previewContainer);
+
+      this.$editorHeader = $('<header/>', {
+        class: 'flex flex-nowrap',
+      }).appendTo(this.$editorContainer);
+      const $closeBtn = $('<button/>', {
+        type: 'button',
+        class: 'btn',
+        'data-icon': 'xmark',
+        title: Craft.t('app', 'Close Preview'),
+        'aria-label': Craft.t('app', 'Close Preview'),
+      }).appendTo(this.$editorHeader);
+      this.$editorToolbar = $('<div/>', {class: 'lp-toolbar'}).appendTo(
+        this.$editorHeader
+      );
+      this.$tabContainer = $('<div/>', {class: 'pane-tabs'}).appendTo(
+        this.$editorToolbar
+      );
+      this.$content = $('<div/>', {
+        class: 'lp-content loading',
+      })
+        .appendTo(this.$editorContainer)
+        .append($('<div/>', {class: 'spinner'}));
+
+      this.$editorFooter = $('<footer/>', {class: 'flex flex-nowrap'}).appendTo(
+        this.$editorContainer
+      );
+
+      this.$dragHandle = $('<div/>', {class: 'lp-draghandle'}).appendTo(
+        this.$editorContainer
+      );
+      $('<div/>', {class: 'flex-grow'}).appendTo(this.$editorHeader);
+      this.$spinner = $('<div/>', {
+        class: 'spinner hidden',
+        title: Craft.t('app', 'Saving'),
+      }).appendTo(this.$editorHeader);
+      this.$statusIcon = $('<div/>', {class: 'invisible'}).appendTo(
+        this.$editorHeader
+      );
+      this.$statusMessage = $('<span/>', {
+        class: 'visually-hidden',
+        'aria-live': 'polite',
+      }).appendTo(this.$editorHeader);
+      this.$previewSkipLink = $('<a/>', {
+        class: 'skip-link btn',
+        href: '#lp-preview-container',
+        html: previewSkipLinkText,
+      }).appendTo(this.$editorHeader);
+
+      this.$previewHeader = $('<header/>', {
+        class: 'lp-preview-header',
+      }).appendTo(this.$previewContainer);
+
+      this._buildDeviceTypeFieldset();
+
+      $('<div class="flex-grow"/>').appendTo(this.$previewHeader);
+      const $buttonContainer = $('<div class="buttons"/>').appendTo(
+        this.$previewHeader
+      );
+
+      // Orientation toggle
+      this.$orientationBtn = $('<button/>', {
+        type: 'button',
+        class: 'btn disabled',
+        'data-icon': 'rotate',
+        'aria-disabled': 'true',
+        text: Craft.t('app', 'Rotate'),
+        'aria-label': Craft.t('app', 'Rotate'),
+      }).appendTo($buttonContainer);
+      this.addListener(this.$orientationBtn, 'click', 'switchOrientation');
+
+      // Refresh button
+      this.$refreshBtn = $('<button/>', {
+        type: 'button',
+        class: 'btn',
+        text: Craft.t('app', 'Refresh'),
+        'data-icon': 'refresh',
+      }).appendTo($buttonContainer);
+      this.addListener(this.$refreshBtn, 'click', () => {
+        this.updateIframe(false, true);
+      });
+
+      // Get the last stored orientation
+      this.deviceOrientation = Craft.getLocalStorage('LivePreview.orientation');
+
+      this.$iframeContainer = $('<div/>', {
+        class: 'lp-iframe-container',
+      }).appendTo(this.$previewContainer);
+      this.$devicePreviewContainer = $('<div/>', {
+        class: 'lp-device-preview-container',
+      }).appendTo(this.$iframeContainer);
+      this.$deviceMask = $('<div/>', {
+        class: 'lp-device-mask',
+      }).appendTo(this.$iframeContainer);
+
+      /* Prevents focus trap bug caused by iframe as last element */
+      this.$bumperLink = $('<a/>', {
+        class: 'skip-link btn lp-preview-container__bumper-link',
+        html: previewSkipLinkText,
+        href: '#lp-preview-container',
+      });
+      this.$bumperLink.appendTo(this.$previewContainer);
+
+      this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
+        axis: Garnish.X_AXIS,
+        onDragStart: this._onDragStart.bind(this),
+        onDrag: this._onDrag.bind(this),
+        onDragStop: this._onDragStop.bind(this),
+      });
+
+      this.addListener($closeBtn, 'click', 'close');
+      this.addListener(this.$statusIcon, 'click', () => {
+        this.elementEditor.showStatusHud(this.$statusIcon);
+      });
+    },
+
+    _loadElementEditor: async function () {
+      await this.settings.onBeforeLoad();
 
       this.cancelToken = axios.CancelToken.source();
       let response;
       try {
         response = await Craft.sendActionRequest('GET', 'elements/edit', {
           params: {
-            elementType: this.elementEditor.settings.elementType,
-            elementId: this.elementEditor.settings.isProvisionalDraft
-              ? this.elementEditor.settings.canonicalId
-              : this.elementEditor.settings.elementId,
-            draftId: !this.elementEditor.settings.isProvisionalDraft
-              ? this.elementEditor.settings.draftId
-              : null,
-            revisionId: this.elementEditor.settings.revisionId,
-            siteId: this.elementEditor.settings.siteId,
+            elementType: this.settings.elementType,
+            elementId: this.settings.elementId,
+            draftId: this.settings.draftId,
+            revisionId: this.settings.revisionId,
+            siteId: this.settings.siteId,
           },
           cancelToken: this.cancelToken.token,
           headers: {
@@ -360,7 +329,7 @@ Craft.Preview = Garnish.Base.extend(
         this.ignoreFailedRequest = false;
         return;
       } finally {
-        this.$editor.removeClass('loading');
+        this.$content.removeClass('loading');
         this.cancelToken = null;
       }
 
@@ -368,61 +337,107 @@ Craft.Preview = Garnish.Base.extend(
       this.namespace = data.namespace;
       this.$content.html(data.content);
 
+      this.$saveBtn = Craft.ui
+        .createSubmitButton({
+          label: Craft.t('app', 'Save'),
+          spinner: true,
+        })
+        .appendTo(this.$editorFooter);
+
       this.updateTabs(data.tabs);
 
       if (data.formAttributes) {
-        Craft.setElementAttributes(this.$editor, data.formAttributes);
+        Craft.setElementAttributes(this.$editorContainer, data.formAttributes);
       }
 
-      this.$editor.data('delta-names', response.data.deltaNames);
-      this.$editor.data(
+      this.$editorContainer.data('delta-names', response.data.deltaNames);
+      this.$editorContainer.data(
         'initial-delta-values',
         response.data.initialDeltaValues
       );
-      this.$editor.data('initialSerializedValue', this.$editor.serialize());
+      this.$editorContainer.data(
+        'initialSerializedValue',
+        this.$editorContainer.serialize()
+      );
 
-      Craft.initUiElements(this.$editor);
+      Craft.initUiElements(this.$editorContainer);
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
 
-      this.previewElementEditor = new Craft.ElementEditor(
-        this.$editor,
+      this.elementEditor = new Craft.ElementEditor(
+        this.$editorContainer,
         Object.assign(
           {
             namespace: this.namespace,
             $contentContainer: this.$content,
-            // $actionBtn: this.$actionBtn,
+            $actionBtn: this.$saveBtn,
             $spinnerContainer: this.$editorHeader,
             updateTabs: (tabs) => this.updateTabs(tabs),
             getTabManager: () => this.tabManager,
+            handleSubmitResponse: () => {
+              window.location.reload();
+            },
             autosaveDrafts: true,
           },
-          this.$editor.data('elementEditorSettings')
+          this.$editorContainer.data('elementEditorSettings')
         )
       );
 
-      const editorTabManager = this.elementEditor.tabManager;
-      const previewTabManager = this.tabManager;
-      if (editorTabManager && previewTabManager) {
-        previewTabManager.selectTab(editorTabManager.getSelectedTabIndex());
-      }
-
-      Craft.cp.elementThumbLoader.load(this.$editor);
-      Craft.setFocusWithin(this.$editor);
-
-      this.updateIframe();
-
-      this.previewElementEditor.on('afterSaveDraft', ({response}) => {
-        this.elementEditor.handleSaveDraftResponse(response);
+      this.elementEditor.on('afterSaveDraft', ({response}) => {
+        this.trigger('afterSaveDraft', {response});
       });
 
-      this.previewElementEditor.on('update', () => {
+      this.elementEditor.on('update', () => {
         this.updateIframe();
       });
 
-      Craft.ElementThumbLoader.retryAll();
+      this.elementEditor.on('beforeSubmit', () => {
+        this.$saveBtn.addClass('loading');
+      });
 
-      this.trigger('open');
+      this.elementEditor.on('afterSubmit', () => {
+        this.$saveBtn.removeClass('loading');
+      });
+
+      Craft.cp.elementThumbLoader.load(this.$content);
+      Craft.setFocusWithin(this.$content);
+
+      // Preview targets
+      if (this.elementEditor.settings.previewTargets.length > 1) {
+        const $spacer = $('<div class="flex-grow"/>').insertAfter(
+          this.$deviceTypeContainer
+        );
+        this.$targetBtn = $('<button/>', {
+          type: 'button',
+          class: 'btn menubtn',
+          text: this.elementEditor.settings.previewTargets[0].label,
+        }).insertAfter($spacer);
+        this.$targetMenu = $('<div/>', {
+          class: 'menu lp-target-menu',
+        }).insertAfter(this.$targetBtn);
+        const $ul = $('<ul/>', {class: 'padded'}).appendTo(this.$targetMenu);
+        let $li, $a;
+        for (
+          let i = 0;
+          i < this.elementEditor.settings.previewTargets.length;
+          i++
+        ) {
+          $li = $('<li/>').appendTo($ul);
+          $a = $('<a/>', {
+            data: {target: i},
+            text: this.elementEditor.settings.previewTargets[i].label,
+            class: i === 0 ? 'sel' : null,
+          }).appendTo($li);
+        }
+        new Garnish.MenuBtn(this.$targetBtn, {
+          onOptionSelect: (option) => {
+            this.switchTarget($(option).data('target'));
+          },
+        });
+      }
+
+      this.updateIframe();
+      Craft.ElementThumbLoader.retryAll();
     },
 
     _getDeviceTypeTranslation: function (type) {
@@ -575,7 +590,7 @@ Craft.Preview = Garnish.Base.extend(
       }
 
       // Check the form one last time
-      await this.previewElementEditor.checkForm();
+      await this.elementEditor.checkForm();
 
       this.trigger('beforeClose');
 
@@ -616,10 +631,6 @@ Craft.Preview = Garnish.Base.extend(
 
       Craft.ElementThumbLoader.retryAll();
 
-      if (this.elementEditor.$previewBtn) {
-        this.elementEditor.$previewBtn.focus();
-      }
-
       this.isActive = false;
       this.isVisible = false;
       this.trigger('close');
@@ -645,7 +656,7 @@ Craft.Preview = Garnish.Base.extend(
         this.tabManager.on('selectTab', (ev) => {
           $(ev.$tab.attr('href')).removeClass('hidden');
           Garnish.$win.trigger('resize');
-          this.$editor.trigger('scroll');
+          this.$content.trigger('scroll');
         });
       }
     },
@@ -680,8 +691,7 @@ Craft.Preview = Garnish.Base.extend(
 
       // If the draft ID has changed or there's no iframe, we definitely need to refresh
       if (
-        this.draftId !==
-          (this.draftId = this.previewElementEditor.settings.draftId) ||
+        this.draftId !== (this.draftId = this.elementEditor.settings.draftId) ||
         !this.$iframe
       ) {
         refresh = true;
@@ -704,7 +714,7 @@ Craft.Preview = Garnish.Base.extend(
         return;
       }
 
-      this.previewElementEditor
+      this.elementEditor
         .getTokenizedPreviewUrl(target.url, 'x-craft-live-preview')
         .then((url) => {
           // Maintain the current scroll position?
@@ -1021,8 +1031,8 @@ Craft.Preview = Garnish.Base.extend(
       Craft.Preview.instances = Craft.Preview.instances.filter(
         (o) => o !== this
       );
-      this.previewElementEditor.destroy();
-      delete this.previewElementEditor;
+      this.elementEditor.destroy();
+      delete this.elementEditor;
       this.base();
     },
   },
@@ -1030,6 +1040,15 @@ Craft.Preview = Garnish.Base.extend(
     defaultEditorWidth: 0.33,
     minEditorWidthInPx: 320,
     instances: [],
+
+    defaults: {
+      elementType: null,
+      elementId: null,
+      draftId: null,
+      revisionId: null,
+      siteId: null,
+      onBeforeLoad: async () => {},
+    },
 
     refresh: function () {
       for (let preview of Craft.Preview.instances) {

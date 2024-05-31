@@ -46,7 +46,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     httpStatus: null,
     httpError: null,
 
-    openingPreview: false,
     preview: null,
     activatedPreviewToken: false,
     previewTokenQueue: null,
@@ -197,7 +196,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         );
       });
 
-      if (this.isFullPage) {
+      if (!this.slideout) {
         this.addListener(this.$container, 'submit', 'handleSubmit');
       }
 
@@ -1014,23 +1013,55 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     getPreview: function () {
+      // If we already have a preview instance, but the element has been edited
+      // since the last time it was open, discard it
+      if (
+        this.preview &&
+        !this.preview.isVisible &&
+        this.preview.elementEditor?.settings.updatedTimestamp !==
+          this.settings.updatedTimestamp
+      ) {
+        this.preview.destroy();
+        delete this.preview;
+      }
+
       if (!this.preview) {
-        this.preview = new Craft.Preview(this);
+        this.preview = new Craft.Preview({
+          elementType: this.settings.elementType,
+          elementId: this.settings.isProvisionalDraft
+            ? this.settings.canonicalId
+            : this.settings.elementId,
+          draftId: !this.settings.isProvisionalDraft
+            ? this.settings.draftId
+            : null,
+          revisionId: this.settings.revisionId,
+          siteId: this.settings.siteId,
+          onBeforeLoad: async () => {
+            // Autosave any last-minute changes before the preview loads its editor
+            await this.checkForm(false, true);
+          },
+        });
         let updatedTimestamp;
         this.preview.on('open', () => {
           updatedTimestamp = this.settings.updatedTimestamp;
+          this.pause();
         });
         this.preview.on('close', async () => {
+          if (this.$previewBtn) {
+            this.$previewBtn.focus();
+          }
           if (this.settings.updatedTimestamp !== updatedTimestamp) {
             await this.refreshContent();
           }
-          const editorTabManager = this.tabManager;
-          const previewTabManager = this.preview.tabManager;
-          if (editorTabManager && previewTabManager) {
-            editorTabManager.selectTab(previewTabManager.getSelectedTabIndex());
+          const tabIndex =
+            this.preview.tabManager?.getSelectedTabIndex() ?? null;
+          if (tabIndex !== null) {
+            this.tabManager?.selectTab(tabIndex);
           }
-          this.preview.destroy();
-          delete this.preview;
+          this.resume();
+        });
+        this.preview.on('afterSaveDraft', ({response}) => {
+          this._handleSaveDraftResponse(response);
         });
       }
       return this.preview;
@@ -1042,17 +1073,17 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.$previewBtn.attr('aria-disabled', true);
-      this.$previewBtn.addClass('loading');
 
       try {
-        await this.checkForm();
-        this.openingPreview = true;
-        await this.ensureIsDraftOrRevision(true);
-        this.getPreview().open();
+        const preview = this.getPreview();
+        await preview.open();
+
+        const tabIndex = this.tabManager?.getSelectedTabIndex() ?? null;
+        if (tabIndex !== null) {
+          preview.tabManager?.selectTab(tabIndex);
+        }
       } finally {
         this.$previewBtn.removeAttr('aria-disabled');
-        this.$previewBtn.removeClass('loading');
-        this.openingPreview = false;
       }
     },
 
@@ -1311,7 +1342,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           .then((response) => {
             this._afterSaveDraft();
             this._afterUpdateFieldLayout(data, selectedTabId, response);
-            this.handleSaveDraftResponse(response);
+            this._handleSaveDraftResponse(response);
 
             // Add missing field modified indicators
             const selector = response.data.modifiedAttributes
@@ -1380,7 +1411,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
     },
 
-    handleSaveDraftResponse(response) {
+    _handleSaveDraftResponse(response) {
       const createdProvisionalDraft = !this.settings.draftId;
 
       if (createdProvisionalDraft) {
