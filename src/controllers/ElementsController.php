@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
+use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\elements\User;
@@ -334,7 +335,19 @@ class ElementsController extends Controller
         $type = $element::lowerDisplayName();
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-        $redirectUrl = $element->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+        $crumbs = $this->_crumbs($element);
+        if (
+            $element instanceof NestedElementInterface &&
+            $element->getPrimaryOwnerId() &&
+            property_exists($element, 'fieldId') &&
+            $element->fieldId
+        ) {
+            $redirectUrl = $crumbs[0]['url'] ??
+                $element->getPostEditUrl() ??
+                Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+        } else {
+            $redirectUrl = $element->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+        }
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -368,7 +381,7 @@ class ElementsController extends Controller
                 'site' => $sitesService->getSiteById($siteId),
                 'status' => isset($enabledSiteIds[$siteId]) ? 'enabled' : 'disabled',
             ], $propEditableSiteIds))
-            ->crumbs($this->_crumbs($element))
+            ->crumbs($crumbs)
             ->contextMenuItems(fn() => $this->_contextMenuItems(
                 $element,
                 $isUnpublishedDraft,
