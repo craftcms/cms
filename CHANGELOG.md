@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where some condition rules weren’t getting added when applying project config changes, if they depended on another component which hadn’t been added yet. ([#15037](https://github.com/craftcms/cms/issues/15037))
+- Fixed a bug where the `craft\base\Element::EVENT_DEFINE_ADDITIONAL_BUTTONS` event wasn’t being respected for user edit pages. ([#15095](https://github.com/craftcms/cms/issues/15095))
 
 ## 4.9.5 - 2024-05-22
 
