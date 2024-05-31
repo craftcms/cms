@@ -2200,7 +2200,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       previewToken: null,
       revisionId: null,
       siteId: null,
-      siteStatuses: null,
+      siteStatuses: [],
       siteToken: null,
       visibleLayoutElements: {},
       updatedTimestamp: null,

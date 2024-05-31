@@ -329,7 +329,7 @@ Craft.Preview = Garnish.Base.extend(
       this.slideIn();
 
       // Let the page's element editor autosave up any last-minute changes
-      await this.elementEditor.checkForm(false, true);
+      await this.elementEditor?.checkForm(false, true);
 
       this.cancelToken = axios.CancelToken.source();
       let response;
