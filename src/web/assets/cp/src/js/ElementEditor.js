@@ -43,6 +43,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     submittingForm: false,
 
     draftElementIds: null,
+    draftElementUids: null,
     failed: false,
     httpStatus: null,
     httpError: null,
@@ -97,6 +98,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.previewTokenQueue = this._createQueue();
 
       this.draftElementIds = {};
+      this.draftElementUids = {};
       this.enableAutosave = Craft.autosaveDrafts;
       this.previewLinks = [];
 
@@ -1403,6 +1405,13 @@ Craft.ElementEditor = Garnish.Base.extend(
               };
             }
 
+            if ($.isPlainObject(response.data.draftElementUids)) {
+              this.draftElementUids = {
+                ...this.draftElementUids,
+                ...response.data.draftElementUids,
+              };
+            }
+
             // Add missing field modified indicators
             const selector = response.data.modifiedAttributes
               .map((attr) => {
@@ -1620,6 +1629,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     getDraftElementId(elementId) {
       return this.draftElementIds[elementId] || elementId;
+    },
+
+    getDraftElementUid(elementId) {
+      return this.draftElementUids[elementId] || null;
     },
 
     updatePreviewTargets: function (previewTargets) {
