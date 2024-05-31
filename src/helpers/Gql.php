@@ -618,4 +618,27 @@ class Gql
             throw $e;
         }
     }
+
+    /**
+     * Returns whether the given GraphQL query looks like an introspection query.
+     *
+     * @param string $query
+     * @return bool
+     * @since 4.9.6
+     */
+    public static function isIntrospectionQuery(string $query): bool
+    {
+        // strtok() won’t find a token if the string starts with it
+        /** @var string|false $tok */
+        $tok = strtok(" $query", '{');
+        if ($tok === false) {
+            return false;
+        }
+        $tok = strtok('({}');
+        if ($tok === false) {
+            return false;
+        }
+        $tok = trim($tok);
+        return in_array($tok, ['__schema', '__type']);
+    }
 }
