@@ -1231,11 +1231,22 @@ Craft.ElementEditor = Garnish.Base.extend(
       );
     },
 
-    async refreshContent() {
+    /**
+     * @param {Object} [params]
+     * @returns {Promise<void>}
+     */
+    async refreshContent(params) {
       this.settings.visibleLayoutElements = [];
-      let data = this.serializeForm(true);
-      data += '&applyParams=0';
-      await this.updateFieldLayout(data);
+      const data = [this.serializeForm(true)];
+      data.push(
+        $.param({
+          [this.namespaceInputName('applyParams')]: 0,
+        })
+      );
+      if (params && !$.isEmptyObject(params)) {
+        data.push($.param(params));
+      }
+      await this.updateFieldLayout(data.join('&'));
     },
 
     isPreviewActive: function () {
@@ -2020,7 +2031,8 @@ Craft.ElementEditor = Garnish.Base.extend(
             data,
           });
         } catch (e) {
-          this.settings.handleSubmitError(error);
+          this.settings.handleSubmitError(e);
+          return;
         } finally {
           this.submittingForm = false;
           this.trigger('afterSubmit');

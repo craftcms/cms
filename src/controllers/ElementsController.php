@@ -1868,6 +1868,12 @@ JS, [
             $element = $this->_createElement();
         }
 
+        // Prevalidate?
+        if ($this->_prevalidate && $element->enabled && $element->getEnabledForSite()) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+            $element->validate();
+        }
+
         /** @var Element|DraftBehavior|null $element */
         if (!$element || $element->getIsRevision()) {
             throw new BadRequestHttpException('No element was identified by the request.');

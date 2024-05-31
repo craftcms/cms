@@ -377,6 +377,17 @@ Craft.Preview = Garnish.Base.extend(
             handleSubmitResponse: () => {
               window.location.reload();
             },
+            handleSubmitError: async (error) => {
+              // We can get away with just refreshing the content since there's
+              // no sidebar to worry about
+              this.$saveBtn.addClass('loading');
+              // Wait a sec so the `finally` block has a chance to run
+              await (async () => {})();
+              await this.elementEditor.refreshContent({
+                [this.elementEditor.namespaceInputName('prevalidate')]: 1,
+              });
+              this.$saveBtn.removeClass('loading');
+            },
             autosaveDrafts: true,
           },
           this.$editorContainer.data('elementEditorSettings')
@@ -579,6 +590,16 @@ Craft.Preview = Garnish.Base.extend(
       Garnish.hideModalBackgroundLayers();
       Craft.setFocusWithin(this.$previewWrapper);
       Craft.trapFocusWithin(this.$previewWrapper);
+      Garnish.uiLayerManager.registerShortcut(
+        {
+          keyCode: Garnish.S_KEY,
+          ctrl: true,
+        },
+        async (ev) => {
+          await this.elementEditor.checkForm();
+          this.elementEditor.handleSubmit(ev);
+        }
+      );
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
         this.close();
       });
