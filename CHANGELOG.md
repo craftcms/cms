@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+- Added `craft\helpers\Gql::isIntrospectionQuery()`.
 - `craft\helpers\Html::id()` now allows IDs to begin with numbers. ([#15066](https://github.com/craftcms/cms/issues/15066))
 - Fixed a bug where some condition rules weren’t getting added when applying project config changes, if they depended on another component which hadn’t been added yet. ([#15037](https://github.com/craftcms/cms/issues/15037))
 - Fixed a bug where entry type condition rules prefixed their option labels with section names. ([#15075](https://github.com/craftcms/cms/issues/15075))
+- Fixed a bug where GraphQL queries could be misidentified as introspection queries. ([#15100](https://github.com/craftcms/cms/issues/15100))
 - Fixed an error that could occur when calling `craft\base\FieldLayoutComponent::getAttributes()` if the `$elementType` property wasn’t set yet. ([#15074](https://github.com/craftcms/cms/issues/15074))
 - Fixed a bug where nested entry titles weren’t getting included in the owner element’s search keywords. ([#15025](https://github.com/craftcms/cms/issues/15025))
 - Fixed a bug where `craft\elements\Address::toArray()` would include a `saveOwnership` key in its response array.
