@@ -6,12 +6,21 @@
 Craft.Preview = Garnish.Base.extend(
   {
     elementEditor: null,
-    formObserver: null,
+    previewElementEditor: null,
+    tabManager: null,
+    hasTabs: false,
 
     $shade: null,
+
+    editorId: null,
     $editorContainer: null,
+    $editorHeader: null,
+    $editorToolbar: null,
+    $tabContainer: null,
     $editor: null,
+    $content: null,
     $spinner: null,
+
     $statusIcon: null,
     $dragHandle: null,
     $previewWrapper: null,
@@ -30,8 +39,6 @@ Craft.Preview = Garnish.Base.extend(
     $devicePreviewContainer: null,
     $iframe: null,
     iframeLoaded: false,
-    $tempInput: null,
-    $fieldPlaceholder: null,
 
     isActive: false,
     isVisible: false,
@@ -56,7 +63,6 @@ Craft.Preview = Garnish.Base.extend(
 
     draftId: null,
     url: null,
-    fields: null,
 
     iframeHeight: null,
     scrollTop: null,
@@ -65,22 +71,11 @@ Craft.Preview = Garnish.Base.extend(
     dragger: null,
     dragStartEditorWidth: null,
 
-    _updateIframeProxy: null,
-
     _editorWidth: null,
     _editorWidthInPx: null,
 
     init: function (elementEditor) {
       this.elementEditor = elementEditor;
-
-      this._updateIframeProxy = this.updateIframe.bind(this);
-
-      this.$tempInput = $('<input/>', {
-        type: 'hidden',
-        name: '__PREVIEW_FIELDS__',
-        value: '1',
-      });
-      this.$fieldPlaceholder = $('<div/>');
 
       // Set the initial editor width
       this.editorWidth = Craft.getLocalStorage(
@@ -100,7 +95,7 @@ Craft.Preview = Garnish.Base.extend(
     },
 
     set editorWidth(width) {
-      var inPx;
+      let inPx;
 
       // Is this getting set in pixels?
       if (width >= 1) {
@@ -120,9 +115,14 @@ Craft.Preview = Garnish.Base.extend(
       this._editorWidthInPx = inPx;
     },
 
-    open: function () {
+    open: async function () {
       if (this.isActive) {
         return;
+      }
+
+      if (this.cancelToken) {
+        this.ignoreFailedRequest = true;
+        this.cancelToken.cancel();
       }
 
       this.isActive = true;
@@ -131,6 +131,8 @@ Craft.Preview = Garnish.Base.extend(
       $(document.activeElement).trigger('blur');
 
       if (!this.$editor) {
+        this.editorId = `lp-editor-${Math.floor(Math.random() * 100000000)}`;
+
         const previewSkipLinkText = Craft.t('app', 'Skip to {title}', {
           title: Craft.t('app', 'Top of preview'),
         });
@@ -160,37 +162,51 @@ Craft.Preview = Garnish.Base.extend(
           role: 'status',
         }).appendTo(this.$previewContainer);
 
-        var $editorHeader = $('<header/>', {class: 'flex'}).appendTo(
-          this.$editorContainer
+        this.$editorHeader = $('<header/>', {
+          class: 'flex flex-nowrap',
+        }).appendTo(this.$editorContainer);
+        const $closeBtn = $('<button/>', {
+          type: 'button',
+          class: 'btn',
+          'data-icon': 'xmark',
+          title: Craft.t('app', 'Close Preview'),
+          'aria-label': Craft.t('app', 'Close Preview'),
+        }).appendTo(this.$editorHeader);
+        this.$editorToolbar = $('<div/>', {class: 'lp-toolbar'}).appendTo(
+          this.$editorHeader
         );
-        this.$editor = $('<form/>', {class: 'lp-editor'}).appendTo(
-          this.$editorContainer
+        this.$tabContainer = $('<div/>', {class: 'pane-tabs'}).appendTo(
+          this.$editorToolbar
+        );
+        this.$editor = $('<form/>', {
+          id: this.editorId,
+          class: 'lp-editor loading',
+        })
+          .appendTo(this.$editorContainer)
+          .append($('<div/>', {class: 'spinner'}));
+        this.$content = $('<div/>', {class: 'lp-content'}).appendTo(
+          this.$editor
         );
         this.$dragHandle = $('<div/>', {class: 'lp-draghandle'}).appendTo(
           this.$editorContainer
         );
-        var $closeBtn = $('<button/>', {
-          type: 'button',
-          class: 'btn',
-          text: Craft.t('app', 'Close Preview'),
-        }).appendTo($editorHeader);
-        $('<div/>', {class: 'flex-grow'}).appendTo($editorHeader);
+        $('<div/>', {class: 'flex-grow'}).appendTo(this.$editorHeader);
         this.$spinner = $('<div/>', {
           class: 'spinner hidden',
           title: Craft.t('app', 'Saving'),
-        }).appendTo($editorHeader);
+        }).appendTo(this.$editorHeader);
         this.$statusIcon = $('<div/>', {class: 'invisible'}).appendTo(
-          $editorHeader
+          this.$editorHeader
         );
         this.$statusMessage = $('<span/>', {
           class: 'visually-hidden',
           'aria-live': 'polite',
-        }).appendTo($editorHeader);
+        }).appendTo(this.$editorHeader);
         this.$previewSkipLink = $('<a/>', {
           class: 'skip-link btn',
           href: '#lp-preview-container',
           html: previewSkipLinkText,
-        }).appendTo($editorHeader);
+        }).appendTo(this.$editorHeader);
 
         if (Craft.Pro) {
           this.$previewHeader = $('<header/>', {
@@ -298,6 +314,11 @@ Craft.Preview = Garnish.Base.extend(
         });
       }
 
+      if (this.previewElementEditor) {
+        this.previewElementEditor.destroy();
+        delete this.previewElementEditor;
+      }
+
       // Set the sizes
       this.handleWindowResize();
       this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
@@ -305,40 +326,99 @@ Craft.Preview = Garnish.Base.extend(
       this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
       this.$previewContainer.css(Craft.right, -this.getIframeWidth());
 
-      // Find the fields, excluding nested fields
-      this.fields = [];
-      var $fields = $('#content .field').not($('#content .field .field'));
+      this.slideIn();
 
-      if ($fields.length) {
-        // Insert our temporary input before the first field so we know where to swap in the serialized form values
-        this.$tempInput.insertBefore($fields.get(0));
+      // Let the page's element editor autosave up any last-minute changes
+      await this.elementEditor.checkForm(false, true);
 
-        // Move all the fields into the editor rather than copying them
-        // so any JS that's referencing the elements won't break.
-        for (let i = 0; i < $fields.length; i++) {
-          let $field = $($fields[i]),
-            $clone = this._getClone($field);
-
-          // It's important that the actual field is added to the DOM *after* the clone,
-          // so any radio buttons in the field get deselected from the clone rather than the actual field.
-          this.$fieldPlaceholder.insertAfter($field);
-          $field.detach();
-          this.$fieldPlaceholder.replaceWith($clone);
-          $field.appendTo(this.$editor);
-
-          this.fields.push({
-            $field: $field,
-            $clone: $clone,
-          });
+      this.cancelToken = axios.CancelToken.source();
+      let response;
+      try {
+        response = await Craft.sendActionRequest('GET', 'elements/edit', {
+          params: {
+            elementType: this.elementEditor.settings.elementType,
+            elementId: this.elementEditor.settings.isProvisionalDraft
+              ? this.elementEditor.settings.canonicalId
+              : this.elementEditor.settings.elementId,
+            draftId: !this.elementEditor.settings.isProvisionalDraft
+              ? this.elementEditor.settings.draftId
+              : null,
+            revisionId: this.elementEditor.settings.revisionId,
+            siteId: this.elementEditor.settings.siteId,
+          },
+          cancelToken: this.cancelToken.token,
+          headers: {
+            'X-Craft-Container-Id': this.editorId,
+            'X-Craft-Namespace': this.namespace,
+          },
+        });
+      } catch (e) {
+        if (!this.ignoreFailedRequest) {
+          Craft.cp.displayError();
+          reject(e);
         }
+        this.ignoreFailedRequest = false;
+        return;
+      } finally {
+        this.$editor.removeClass('loading');
+        this.cancelToken = null;
       }
+
+      const {data} = response;
+      this.namespace = data.namespace;
+      this.$content.html(data.content);
+
+      this.updateTabs(data.tabs);
+
+      if (data.formAttributes) {
+        Craft.setElementAttributes(this.$editor, data.formAttributes);
+      }
+
+      this.$editor.data('delta-names', response.data.deltaNames);
+      this.$editor.data(
+        'initial-delta-values',
+        response.data.initialDeltaValues
+      );
+      this.$editor.data('initialSerializedValue', this.$editor.serialize());
+
+      Craft.initUiElements(this.$editor);
+      await Craft.appendHeadHtml(data.headHtml);
+      await Craft.appendBodyHtml(data.bodyHtml);
+
+      this.previewElementEditor = new Craft.ElementEditor(
+        this.$editor,
+        Object.assign(
+          {
+            namespace: this.namespace,
+            $contentContainer: this.$content,
+            // $actionBtn: this.$actionBtn,
+            $spinnerContainer: this.$editorHeader,
+            updateTabs: (tabs) => this.updateTabs(tabs),
+            getTabManager: () => this.tabManager,
+            autosaveDrafts: true,
+          },
+          this.$editor.data('elementEditorSettings')
+        )
+      );
+
+      const editorTabManager = this.elementEditor.tabManager;
+      const previewTabManager = this.tabManager;
+      if (editorTabManager && previewTabManager) {
+        previewTabManager.selectTab(editorTabManager.getSelectedTabIndex());
+      }
+
+      Craft.cp.elementThumbLoader.load(this.$editor);
+      Craft.setFocusWithin(this.$editor);
 
       this.updateIframe();
 
-      this.formObserver = new Craft.FormObserver(this.$editor, () => {
-        this.elementEditor.checkForm();
+      this.previewElementEditor.on('afterSaveDraft', ({response}) => {
+        this.elementEditor.handleSaveDraftResponse(response);
       });
-      this.elementEditor.on('update', this._updateIframeProxy);
+
+      this.previewElementEditor.on('update', () => {
+        this.updateIframe();
+      });
 
       Craft.ElementThumbLoader.retryAll();
 
@@ -489,10 +569,13 @@ Craft.Preview = Garnish.Base.extend(
       });
     },
 
-    close: function () {
+    close: async function () {
       if (!this.isActive || !this.isVisible) {
         return;
       }
+
+      // Check the form one last time
+      await this.previewElementEditor.checkForm();
 
       this.trigger('beforeClose');
 
@@ -501,10 +584,6 @@ Craft.Preview = Garnish.Base.extend(
       this.removeListener(Garnish.$win, 'resize');
       Garnish.uiLayerManager.removeLayer();
       Garnish.resetModalBackgroundLayerVisibility();
-
-      // Remove our temporary input and move the preview fields back into place
-      this.$tempInput.detach();
-      this.moveFieldsBack();
 
       // Delay shade fade-out when animation is present
       if (Garnish.prefersReducedMotion()) {
@@ -519,9 +598,6 @@ Craft.Preview = Garnish.Base.extend(
           -this.editorWidthInPx,
           Garnish.getUserPreferredAnimationDuration(this.animationDuration),
           () => {
-            for (var i = 0; i < this.fields.length; i++) {
-              this.fields[i].$newClone.remove();
-            }
             this.$editorContainer.hide();
             this.trigger('slideOut');
           }
@@ -538,10 +614,6 @@ Craft.Preview = Garnish.Base.extend(
           }
         );
 
-      this.formObserver.destroy();
-      this.formObserver = null;
-      this.elementEditor.off('update', this._updateIframeProxy);
-
       Craft.ElementThumbLoader.retryAll();
 
       if (this.elementEditor.$previewBtn) {
@@ -553,21 +625,29 @@ Craft.Preview = Garnish.Base.extend(
       this.trigger('close');
     },
 
-    moveFieldsBack: function () {
-      for (var i = 0; i < this.fields.length; i++) {
-        var field = this.fields[i];
-        field.$newClone = this._getClone(field.$field);
-
-        // It's important that the actual field is added to the DOM *after* the clone,
-        // so any radio buttons in the field get deselected from the clone rather than the actual field.
-        this.$fieldPlaceholder.insertAfter(field.$field);
-        field.$field.detach();
-        this.$fieldPlaceholder.replaceWith(field.$newClone);
-        field.$clone.replaceWith(field.$field);
+    updateTabs: function (tabs) {
+      if (this.tabManager) {
+        this.tabManager.destroy();
+        this.tabManager = null;
+        this.$tabContainer.html('');
       }
 
-      Garnish.$win.trigger('resize');
-      Garnish.$doc.trigger('scroll');
+      this.hasTabs = !!tabs;
+
+      if (this.hasTabs) {
+        const $tabContainer = $(tabs);
+        this.$tabContainer.replaceWith($tabContainer);
+        this.$tabContainer = $tabContainer;
+        this.tabManager = new Craft.Tabs(this.$tabContainer);
+        this.tabManager.on('deselectTab', (ev) => {
+          $(ev.$tab.attr('href')).addClass('hidden');
+        });
+        this.tabManager.on('selectTab', (ev) => {
+          $(ev.$tab.attr('href')).removeClass('hidden');
+          Garnish.$win.trigger('resize');
+          this.$editor.trigger('scroll');
+        });
+      }
     },
 
     getIframeWidth: function () {
@@ -600,7 +680,8 @@ Craft.Preview = Garnish.Base.extend(
 
       // If the draft ID has changed or there's no iframe, we definitely need to refresh
       if (
-        this.draftId !== (this.draftId = this.elementEditor.settings.draftId) ||
+        this.draftId !==
+          (this.draftId = this.previewElementEditor.settings.draftId) ||
         !this.$iframe
       ) {
         refresh = true;
@@ -623,7 +704,7 @@ Craft.Preview = Garnish.Base.extend(
         return;
       }
 
-      this.elementEditor
+      this.previewElementEditor
         .getTokenizedPreviewUrl(target.url, 'x-craft-live-preview')
         .then((url) => {
           // Maintain the current scroll position?
@@ -652,7 +733,7 @@ Craft.Preview = Garnish.Base.extend(
 
           this.iframeLoaded = false;
 
-          var $iframe = $('<iframe/>', {
+          const $iframe = $('<iframe/>', {
             class: 'lp-preview',
             frameborder: 0,
             src: url,
@@ -911,22 +992,6 @@ Craft.Preview = Garnish.Base.extend(
       }
     },
 
-    _getClone: function ($field) {
-      var $clone = $field.clone();
-
-      // clone() won't account for input values that have changed since the original HTML set them
-      Garnish.copyInputValues($field, $clone);
-
-      // Remove any id= attributes
-      $clone.attr('id', '');
-      $clone.find('[id]').attr('id', '');
-
-      // Disable anything with a name attribute
-      $clone.find('[name]').prop('disabled', true);
-
-      return $clone;
-    },
-
     _onDragStart: function () {
       this.dragStartEditorWidth = this.editorWidthInPx;
       this.$previewContainer.addClass('dragging');
@@ -952,6 +1017,8 @@ Craft.Preview = Garnish.Base.extend(
       Craft.Preview.instances = Craft.Preview.instances.filter(
         (o) => o !== this
       );
+      this.previewElementEditor.destroy();
+      delete this.previewElementEditor;
       this.base();
     },
   },

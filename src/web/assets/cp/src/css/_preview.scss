@@ -16,6 +16,7 @@
     box-sizing: border-box;
     position: relative;
     z-index: 1;
+    height: 44px;
 
     @supports (backdrop-filter: blur(10px)) {
       & {
@@ -38,6 +39,49 @@
     .checkmark-icon {
       margin-bottom: 0;
     }
+
+    .btn[data-icon='xmark'] {
+      @include margin-left(-12px);
+      &:not(:hover):not(:active):not([aria-expanded='true']) {
+        background-color: transparent;
+      }
+    }
+
+    .lp-toolbar {
+      min-width: 0;
+
+      .pane-tabs {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+
+        [role='tablist'] {
+          padding: 0 12px;
+
+          &.scrollable {
+            mask-image: linear-gradient(
+              to right,
+              rgba(0, 0, 0, 0),
+              rgba(0, 0, 0) 12px,
+              rgba(0, 0, 0) calc(100% - 12px),
+              rgba(0, 0, 0, 0) 100%
+            );
+          }
+
+          [role='tab'] {
+            background-color: transparent;
+          }
+        }
+
+        .menubtn:not(.action-btn) {
+          margin-left: 0;
+          margin-right: 0;
+
+          &:not(:empty):not(.btn-empty)::after {
+            @include margin-left(0px);
+          }
+        }
+      }
+    }
   }
 }
 
@@ -50,6 +94,7 @@
     padding: 24px;
     overflow: auto;
     box-sizing: border-box;
+    position: relative;
 
     & > .field {
       &:last-child {
@@ -59,6 +104,17 @@
       & > .status-badge {
         @include left(-24px);
       }
+    }
+
+    &:not(.loading) > .spinner {
+      display: none;
+    }
+
+    &.loading > .spinner {
+      position: absolute;
+      top: calc(50% - 17px);
+      left: calc(50% - 12px);
+      color: var(--ui-control-color);
     }
 
     .matrixblock > .fields > .flex-fields > .field > .status-badge {

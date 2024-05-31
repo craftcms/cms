@@ -6,6 +6,7 @@
 Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
   {
     $element: null,
+    elementEditor: null,
 
     init: function (element, settings) {
       this.$element = $(element);
@@ -21,18 +22,34 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       this.base('elements/edit', settings);
 
       this.on('load', () => {
-        const editor = this.$container.data('elementEditor');
-        if (editor) {
-          editor.on('beforeSubmit', () => {
-            Object.keys(this.settings.saveParams).forEach((name) => {
-              $('<input/>', {
-                class: 'hidden',
-                name: editor.namespaceInputName(name),
-                value: this.settings.saveParams[name],
-              }).appendTo(this.$container);
-            });
+        this.elementEditor = new Craft.ElementEditor(
+          this.$container,
+          Object.assign(
+            {
+              namespace: this.namespace,
+              $contentContainer: this.$content,
+              $sidebar: this.$sidebar,
+              $actionBtn: this.$actionBtn,
+              $spinnerContainer: this.$toolbar,
+              updateTabs: (tabs) => this.updateTabs(tabs),
+              getTabManager: () => this.tabManager,
+            },
+            this.$container.data('elementEditorSettings')
+          )
+        );
+        this.elementEditor.on('beforeSubmit', () => {
+          Object.keys(this.settings.saveParams).forEach((name) => {
+            $('<input/>', {
+              class: 'hidden',
+              name: this.elementEditor.namespaceInputName(name),
+              value: this.settings.saveParams[name],
+            }).appendTo(this.$container);
           });
-        }
+          this.showSubmitSpinner();
+        });
+        this.elementEditor.on('afterSubmit', () => {
+          this.hideSubmitSpinner();
+        });
       });
 
       this.on('submit', (ev) => {
@@ -106,20 +123,24 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
     },
 
     handleSubmit: function (ev) {
-      let elementEditor = this.$container.data('elementEditor');
-
       if (ev.type === 'submit') {
-        elementEditor.handleSubmit(ev);
+        this.elementEditor.handleSubmit(ev);
       } else {
         // first, we have to save the draft and then fully save;
         // otherwise we'll have tab error indicator issues;
-        elementEditor
+        this.elementEditor
           .saveDraft()
           .then(() => {
-            elementEditor.handleSubmit(ev);
+            this.elementEditor.handleSubmit(ev);
           })
           .catch();
       }
+    },
+
+    destroy: function () {
+      this.elementEditor.destroy();
+      delete this.elementEditor;
+      this.base();
     },
   },
   {
