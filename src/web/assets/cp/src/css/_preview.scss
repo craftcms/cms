@@ -41,7 +41,7 @@
     }
 
     .btn[data-icon='xmark'] {
-      @include margin-left(-12px);
+      margin-inline-start: calc(-12rem / 16);
       &:not(:hover):not(:active):not([aria-expanded='true']) {
         background-color: transparent;
       }
@@ -49,10 +49,10 @@
 
     .lp-toolbar {
       min-width: 0;
+      margin-inline-end: -1rem;
 
       .pane-tabs {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
+        margin-inline: 0 !important;
 
         [role='tablist'] {
           padding: 0 12px;
@@ -73,11 +73,11 @@
         }
 
         .menubtn:not(.action-btn) {
-          margin-left: 0;
-          margin-right: 0;
+          --focus-ring: var(--inner-focus-ring);
+          margin-inline: 0;
 
           &:not(:empty):not(.btn-empty)::after {
-            @include margin-left(0px);
+            margin-inline-start: 0;
           }
         }
       }
@@ -102,7 +102,7 @@
       }
 
       & > .status-badge {
-        @include left(-24px);
+        inset-inline-start: calc(-24rem / 16);
       }
     }
 
@@ -112,13 +112,13 @@
 
     &.loading > .spinner {
       position: absolute;
-      top: calc(50% - 17px);
-      left: calc(50% - 12px);
+      inset-block-start: calc(50% - 17px);
+      inset-inline-start: calc(50% - 12px);
       color: var(--ui-control-color);
     }
 
     .matrixblock > .fields > .flex-fields > .field > .status-badge {
-      @include left(calc(var(--m) * -1));
+      inset-inline-start: calc(var(--m) * -1);
     }
   }
 
