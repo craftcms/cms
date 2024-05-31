@@ -216,7 +216,9 @@ class Path extends Component
      */
     public function getRebrandPath(bool $create = true): string
     {
-        $path = App::parseEnv('$CRAFT_REBRAND_PATH') ?? $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'rebrand';
+        $path = App::env('CRAFT_REBRAND_PATH')
+            ? App::parseEnv('$CRAFT_REBRAND_PATH')
+            : $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'rebrand';
 
         if ($create) {
             FileHelper::createDirectory($path);
