@@ -1004,6 +1004,10 @@ Craft.Preview = Garnish.Base.extend(
         this.editorWidth = this.dragStartEditorWidth - this.dragger.mouseDistX;
       }
 
+      if (this.tabManager) {
+        this.tabManager.updateMenuBtn();
+      }
+
       this.updateWidths();
       this.trigger('drag');
     },
