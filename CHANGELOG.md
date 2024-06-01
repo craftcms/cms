@@ -18,6 +18,7 @@
 - Fixed an error that could occur on an element edit page, if a Matrix field’s Propagation Method was set to “Custom…”, but its Propagation Key Format wasn’t filled in.
 - Fixed a bug where Matrix block invalidation errors weren’t getting grouped by block when set on the parent element, for blocks that didn’t have `uid` values. ([#15103](https://github.com/craftcms/cms/discussions/15103))
 - Fixed a bug where auto-generated entry titles weren’t getting validated to ensure they weren’t too long. ([#15102](https://github.com/craftcms/cms/issues/15102))
+- Fixed a bug where field conditions weren’t working reliably for nested entries within Matrix fields set to the inline-editable blocks view mode. ([#15104](https://github.com/craftcms/cms/issues/15104))
 
 ## 5.1.7 - 2024-05-25
 
