@@ -984,6 +984,7 @@ JS;
     {
         /** @var EntryQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
+        $new = 0;
 
         if ($value instanceof EntryQuery) {
             /** @var Entry[] $entries */
@@ -1004,7 +1005,8 @@ JS;
                 }
 
                 if (!$entry->validate()) {
-                    $element->addModelErrors($entry, "$this->handle[$entry->uid]");
+                    $key = $entry->uid ?? sprintf('new%s', ++$new);
+                    $element->addModelErrors($entry, sprintf('%s[%s]', $this->handle, $key));
                     $allEntriesValidate = false;
                 }
             }
