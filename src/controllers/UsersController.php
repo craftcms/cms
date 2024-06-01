@@ -1035,6 +1035,11 @@ class UsersController extends Controller
             $title = Craft::t('app', 'Create a new user');
         }
 
+        // Trigger EVENT_DEFINE_ADDITIONAL_BUTTONS
+        // ---------------------------------------------------------------------
+
+        $additionalButtons = $user->getAdditionalButtons();
+
         // Prep the form tabs & content
         // ---------------------------------------------------------------------
 
@@ -1209,7 +1214,8 @@ JS,
             'showPhotoField',
             'showPermissionsTab',
             'canAssignUserGroups',
-            'fieldsHtml'
+            'fieldsHtml',
+            'additionalButtons',
         ));
     }
 

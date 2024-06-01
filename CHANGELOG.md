@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+- Added `craft\helpers\Gql::isIntrospectionQuery()`.
 - Fixed a bug where some condition rules weren’t getting added when applying project config changes, if they depended on another component which hadn’t been added yet. ([#15037](https://github.com/craftcms/cms/issues/15037))
+- Fixed a bug where the `craft\base\Element::EVENT_DEFINE_ADDITIONAL_BUTTONS` event wasn’t being respected for user edit pages. ([#15095](https://github.com/craftcms/cms/issues/15095))
+- Fixed a bug where GraphQL queries could be misidentified as introspection queries. ([#15100](https://github.com/craftcms/cms/issues/15100))
 
 ## 4.9.5 - 2024-05-22
 
@@ -139,7 +142,7 @@
 - Fixed a bug where filesystems’ `afterSave()` and `afterDelete()` methods weren’t getting called. ([#14634](https://github.com/craftcms/cms/pull/14634))
 - Fixed an error that could occur on `elements/recent-activity` Ajax requests when editing an element. ([#14635](https://github.com/craftcms/cms/issues/14635))
 
-## 4.8.4 - 2024-03-19 0473839613b9f75edd0796ff27f7a322da4f6d49
+## 4.8.4 - 2024-03-19
 
 - Craft no longer shows an alert when an installed Craft/plugin edition is a lower tier than the licensed edition.
 
