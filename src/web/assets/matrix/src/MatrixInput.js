@@ -964,9 +964,9 @@ import $ from 'jquery';
           [param('fieldId')]: this.matrix.settings.fieldId,
           [param('sortOrder')]: this.$container.index() + 1,
           [param('typeId')]: this.$container.data('type-id'),
-          [param('elementUid')]: elementEditor.getDraftElementUid(
-            this.$container.data('uid')
-          ),
+          [param('elementUid')]:
+            elementEditor?.getDraftElementUid(this.$container.data('uid')) ??
+            this.$container.data('uid'),
         };
 
         const selectedTabId = this.$fieldsContainer
