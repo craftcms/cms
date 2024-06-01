@@ -2539,7 +2539,6 @@ abstract class Element extends Component implements ElementInterface
             'max' => 255,
             'disallowMb4' => true,
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-            'when' => fn() => $this->shouldValidateTitle(),
         ];
         $rules[] = [
             ['title'],
