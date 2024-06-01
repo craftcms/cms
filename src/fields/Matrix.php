@@ -729,7 +729,7 @@ class Matrix extends Field implements
 
         foreach ($value->all() as $entry) {
             /** @var Entry $entry */
-            $entryId = $entry->id ?? 'new' . ++$new;
+            $entryId = $entry->id ?? sprintf('new%s', ++$new);
             $serialized[$entryId] = [
                 'title' => $entry->title,
                 'slug' => $entry->slug,
