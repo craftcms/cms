@@ -571,7 +571,7 @@ trait ApplicationTrait
     public function getEdition(): int
     {
         if (!isset($this->_edition)) {
-            $handle = $this->getProjectConfig()->get('system.edition') ?? 'solo';
+            $handle = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition') ?? 'solo';
             $this->_edition = App::editionIdByHandle($handle);
         }
         return $this->_edition;

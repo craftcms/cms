@@ -140,6 +140,11 @@ abstract class BaseBatchedJob extends BaseJob
                     break;
                 }
             }
+
+            // Make sure the job is still reserved before continuing
+            if ($queue instanceof Queue && !$queue->isReserved($queue->getJobId())) {
+                return;
+            }
         }
 
         // Spawn another job if there are more items
