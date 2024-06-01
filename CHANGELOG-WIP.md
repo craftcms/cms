@@ -11,6 +11,7 @@
 - The web-based installer now displays the error message when installation fails.
 - GraphQL schema edit pages now have a “Save and continue editing” alternate action.
 - The system edition can now be defined by a `CRAFT_EDITION` environment variable. ([#15094](https://github.com/craftcms/cms/discussions/15094))
+- The rebrand assets path can now be defined by a `CRAFT_REBRAND_PATH` environment variable. ([#15110](https://github.com/craftcms/cms/pull/15110))
 
 ### Development
 - Added the `{% expires %}` tag, which simplifies setting cache headers on the response. ([#14969](https://github.com/craftcms/cms/pull/14969))
