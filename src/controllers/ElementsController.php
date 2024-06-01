@@ -1486,7 +1486,7 @@ JS, [
         $draftsService = Craft::$app->getDrafts();
         $draftsService->on(Drafts::EVENT_AFTER_CREATE_DRAFT, function(DraftEvent $event) use (&$draftElementIds,  &$draftElementUids) {
             $draftElementIds[$event->canonical->id] = $event->draft->id;
-            $draftElementUids[$event->canonical->id] = $event->draft->uid;
+            $draftElementUids[$event->canonical->uid] = $event->draft->uid;
         });
 
         $db = Craft::$app->getDb();

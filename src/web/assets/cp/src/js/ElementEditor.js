@@ -1631,8 +1631,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.draftElementIds[elementId] || elementId;
     },
 
-    getDraftElementUid(elementId) {
-      return this.draftElementUids[elementId] || null;
+    getDraftElementUid(elementUid) {
+      return this.draftElementUids[elementUid] || elementUid;
     },
 
     updatePreviewTargets: function (previewTargets) {

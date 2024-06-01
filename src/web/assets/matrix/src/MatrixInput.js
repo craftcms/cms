@@ -956,10 +956,6 @@ import $ from 'jquery';
           this.cancelToken.cancel();
         }
 
-        let draftUid = elementEditor.getDraftElementUid(
-          this.$container.data('id')
-        );
-
         const param = (n) => Craft.namespaceInputName(n, baseInputName);
         const extraData = {
           [param('visibleLayoutElements')]: this.visibleLayoutElements,
@@ -968,7 +964,9 @@ import $ from 'jquery';
           [param('fieldId')]: this.matrix.settings.fieldId,
           [param('sortOrder')]: this.$container.index() + 1,
           [param('typeId')]: this.$container.data('type-id'),
-          [param('elementUid')]: draftUid || this.$container.data('uid'),
+          [param('elementUid')]: elementEditor.getDraftElementUid(
+            this.$container.data('uid')
+          ),
         };
 
         const selectedTabId = this.$fieldsContainer
