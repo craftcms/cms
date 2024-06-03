@@ -1058,7 +1058,6 @@ li.breadcrumb-toggle-wrapper {
 .content-grid {
   position: relative;
   display: grid;
-  gap: var(--s);
   grid-template-columns: 1fr auto;
 }
 
@@ -1207,8 +1206,7 @@ li.breadcrumb-toggle-wrapper {
 #details-container {
   display: block;
   flex: 0 1 auto;
-  width: calc(var(--details-width) + var(--xs));
-  padding-inline-start: var(--xs);
+  width: calc(var(--details-width));
   position: sticky;
   top: 0;
 }
