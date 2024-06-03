@@ -1913,6 +1913,7 @@ return [
     'on {date}' => '- {date}',
     'on {day}' => '- {day}',
     'one' => '1',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => '또는 <a>개발 지원 부서에 전송</a>',
     'path/to/subfolder' => '경로/대상/하위 폴더',
     'revision' => '개정',
