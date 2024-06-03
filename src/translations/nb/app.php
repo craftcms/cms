@@ -1913,6 +1913,7 @@ return [
     'on {date}' => 'den {date}',
     'on {day}' => '{day}',
     'one' => 'en',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'eller <a>send til utviklerstøtte</a>',
     'path/to/subfolder' => 'filbane/til/undermappe',
     'revision' => 'versjon',
