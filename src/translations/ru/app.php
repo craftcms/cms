@@ -1913,6 +1913,7 @@ return [
     'on {date}' => '{date}',
     'on {day}' => 'в {day}',
     'one' => 'один',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'или <a>отправить в службу поддержки разработчиков</a>',
     'path/to/subfolder' => 'путь/к/вложенной папке',
     'revision' => 'версия',
@@ -1983,7 +1984,7 @@ return [
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{минута} other{минуты}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{месяц} other{месяцы}}
 ',
-    '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, one {уведомление} few {уведомления} many {уведомлений} other{уведомления}}',
+    '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{notification} other{notifications}}',
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, =1{секунда} other{секунды}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{неделя} other{недели}}',
     '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, one {} few {года} many {лет}=1{год} other{года}} обновлений',
