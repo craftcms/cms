@@ -1913,6 +1913,7 @@ return [
     'on {date}' => '{date}',
     'on {day}' => '{day}',
     'one' => 'bir',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'veya <a>Geliştirici Destek Bölümü\'ne gönderin</a>',
     'path/to/subfolder' => 'altklasore/giden/yol',
     'revision' => 'revizyon',
