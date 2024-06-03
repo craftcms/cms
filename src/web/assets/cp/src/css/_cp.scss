@@ -1055,6 +1055,12 @@ li.breadcrumb-toggle-wrapper {
   width: 400px;
 }
 
+.content-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+
 .content-pane {
   @include pane;
   border-radius: var(--large-border-radius);
@@ -1132,11 +1138,83 @@ li.breadcrumb-toggle-wrapper {
   display: none;
 }
 
+#details-toggle > button {
+  position: sticky;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  height: 100%;
+  max-height: 100vh;
+  width: var(--touch-target-size);
+  border-radius: var(--ui-control-border-radius);
+
+  .details-toggle__inner {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--hairline-color);
+    width: calc(var(--touch-target-size) - var(--s));
+    height: calc(var(--touch-target-size) * 2);
+    border-radius: var(--ui-control-border-radius);
+    background-color: var(--gray-100);
+    position: relative;
+    z-index: 10;
+  }
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    width: 1px;
+    background-color: var(--hairline-color);
+  }
+
+  &:hover,
+  &:focus,
+  &:focus-visible {
+    .details-toggle__inner {
+      background-color: var(--gray-200);
+    }
+
+    &:before {
+      transform: scaleX(300%);
+    }
+  }
+
+  &:focus-visible,
+  &:focus {
+    box-shadow: none;
+
+    .details-toggle__inner {
+      box-shadow: var(--focus-ring);
+    }
+  }
+
+  .toggle-icon {
+    .rtl & {
+      transform: rotate(180deg);
+    }
+  }
+
+  &[aria-expanded='true'] .toggle-icon--open {
+    display: none;
+  }
+
+  &[aria-expanded='false'] .toggle-icon--close {
+    display: none;
+  }
+}
+
 #details-container {
   display: block;
   flex: 0 1 auto;
-  width: calc(var(--details-width) + var(--m));
-  @include padding-left(var(--m));
+  width: calc(var(--details-width));
+  position: sticky;
+  top: 0;
 }
 
 #details {
@@ -1153,8 +1231,6 @@ li.breadcrumb-toggle-wrapper {
   }
 
   .details {
-    padding-bottom: calc(var(--xl) + 11.5em);
-
     .meta {
       border-radius: var(--large-border-radius);
 
