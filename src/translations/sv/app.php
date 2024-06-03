@@ -1913,6 +1913,7 @@ return [
     'on {date}' => 'den {date}',
     'on {day}' => 'den {day}',
     'one' => 'en',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'eller <a>skicka till utvecklarsupport</a>',
     'path/to/subfolder' => 'sökväg/till/undermapp',
     'revision' => 'revidering',
