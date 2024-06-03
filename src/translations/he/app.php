@@ -1913,6 +1913,7 @@ return [
     'on {date}' => 'ב-{date}',
     'on {day}' => 'ב-{day}',
     'one' => 'אחד',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'או <a>שלח לתמיכת מפתחים</a>',
     'path/to/subfolder' => 'נתיב/אל/תיקיית משנה',
     'revision' => 'תיקון',
