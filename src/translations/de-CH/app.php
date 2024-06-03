@@ -1913,6 +1913,7 @@ return [
     'on {date}' => 'am {date}',
     'on {day}' => 'am {day}',
     'one' => 'eins',
+    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
     'or <a>send to Developer Support</a>' => 'oder <a>an den Kundensupport senden</a>',
     'path/to/subfolder' => 'Pfad/zum/Unterverzeichnis',
     'revision' => 'Überprüfung',
