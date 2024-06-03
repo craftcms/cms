@@ -1194,6 +1194,12 @@ li.breadcrumb-toggle-wrapper {
     }
   }
 
+  .toggle-icon {
+    .rtl & {
+      transform: rotate(180deg);
+    }
+  }
+
   &[aria-expanded='true'] .toggle-icon--open {
     display: none;
   }
