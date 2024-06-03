@@ -1487,9 +1487,11 @@ JS, [
 
         // Keep track of all newly-created draft IDs
         $draftElementIds = [];
+        $draftElementUids = [];
         $draftsService = Craft::$app->getDrafts();
-        $draftsService->on(Drafts::EVENT_AFTER_CREATE_DRAFT, function(DraftEvent $event) use (&$draftElementIds) {
+        $draftsService->on(Drafts::EVENT_AFTER_CREATE_DRAFT, function(DraftEvent $event) use (&$draftElementIds,  &$draftElementUids) {
             $draftElementIds[$event->canonical->id] = $event->draft->id;
+            $draftElementUids[$event->canonical->uid] = $event->draft->uid;
         });
 
         $db = Craft::$app->getDb();
@@ -1544,6 +1546,7 @@ JS, [
             'draftNotes' => $element->draftNotes,
             'modifiedAttributes' => $element->getModifiedAttributes(),
             'draftElementIds' => $draftElementIds,
+            'draftElementUids' => $draftElementUids,
         ];
 
         if ($this->request->getIsCpRequest()) {

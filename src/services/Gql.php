@@ -517,7 +517,7 @@ class Gql extends Component
             if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey)) !== null) {
                 $result = $cachedResult;
             } else {
-                $isIntrospectionQuery = StringHelper::containsAny($query, ['__schema', '__type']);
+                $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
                 $schemaDef = $this->getSchemaDef($schema, true);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();

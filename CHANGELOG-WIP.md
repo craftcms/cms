@@ -14,6 +14,7 @@
 - “Remove” element actions within relational fields will now remove all selected elements, if the target element is selected. ([#15078](https://github.com/craftcms/cms/issues/15078))
 - Action menus are now displayed within the page toolbar, rather than in the breadcrumbs. ([#14913](https://github.com/craftcms/cms/discussions/14913), [#15070](https://github.com/craftcms/cms/pull/15070))
 - Site menus within element selector modals now filter out sites that don’t have any sources. ([#15091](https://github.com/craftcms/cms/discussions/15091))
+- The meta sidebar toggle has been moved into the gutter between the content pane and meta sidebar. ([#15117](https://github.com/craftcms/cms/pull/15117))
 
 ### Accessibility
 - Added the “Status” column option to category, entry, and user indexes. ([#14968](https://github.com/craftcms/cms/pull/14968))
@@ -35,6 +36,7 @@
 - GraphQL schema edit pages now have a “Save and continue editing” alternate action.
 - Volumes’ “Subpath” and “Transform Subpath” settings can now be set to environment variables. ([#15087](https://github.com/craftcms/cms/discussions/15087))
 - The system edition can now be defined by a `CRAFT_EDITION` environment variable. ([#15094](https://github.com/craftcms/cms/discussions/15094))
+- The rebrand assets path can now be defined by a `CRAFT_REBRAND_PATH` environment variable. ([#15110](https://github.com/craftcms/cms/pull/15110))
 
 ### Development
 - Added the `{% expires %}` tag, which simplifies setting cache headers on the response. ([#14969](https://github.com/craftcms/cms/pull/14969))
@@ -86,3 +88,5 @@
 - The Debug Toolbar now pre-serializes objects stored as request parameters, fixing a bug where closures could prevent the entire Request panel from showing up. ([#14982](https://github.com/craftcms/cms/discussions/14982))
 - Batched queue jobs now verify that they are still reserved before each step, and before spawning additional batch jobs. ([#14986](https://github.com/craftcms/cms/discussions/14986))
 - The search keyword index is now updated for owner elements, when a nested element is saved directly which belongs to a searchable custom field. 
+- Updated Yii to 2.0.50.
+- Updated inputmask to 5.0.9.
