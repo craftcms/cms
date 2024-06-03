@@ -1750,6 +1750,7 @@ li.breadcrumb-toggle-wrapper {
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields,
 .so-content .flex-fields,
+.lp-content .flex-fields,
 .draghelper .flex-fields {
   --row-gap: var(--xl);
   display: flex;
@@ -1833,6 +1834,7 @@ li.breadcrumb-toggle-wrapper {
 }
 
 .so-content .flex-fields,
+.lp-content .flex-fields,
 .draghelper.drag-in-slideout .flex-fields {
   & > :not(h2):not(hr):not(.line-break) {
     &,
