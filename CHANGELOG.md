@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.1.8 - 2024-06-03
 
 - Added `craft\helpers\Gql::isIntrospectionQuery()`.
 - `craft\helpers\Html::id()` now allows IDs to begin with numbers. ([#15066](https://github.com/craftcms/cms/issues/15066))
