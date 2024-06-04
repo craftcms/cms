@@ -1669,7 +1669,6 @@ return [
     'This year' => '今年',
     'This {type} doesn’t have revisions.' => 'この{type}にはリビジョンがありません。',
     'This {type} has been updated.' => 'この{type}は更新されました。',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'タイムゾーン',
     'Time fields are better suited for managing Time-only values.' => '時間のみの値を管理するには、時間フィールドの方が適しています。',
     'Time to reserve' => '予約する時間',
