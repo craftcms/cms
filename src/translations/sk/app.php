@@ -1669,7 +1669,6 @@ return [
     'This year' => 'Tento rok',
     'This {type} doesn’t have revisions.' => 'Tento {type} nemá revízie.',
     'This {type} has been updated.' => 'Časť {type} bola aktualizovaná.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'Časové pásmo',
     'Time fields are better suited for managing Time-only values.' => 'Časové polia sú vhodnejšie na správu časových hodnôt.',
     'Time to reserve' => 'Rezervovať čas',
