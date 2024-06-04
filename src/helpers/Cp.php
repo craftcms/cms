@@ -411,7 +411,12 @@ class Cp
         $html .= Html::endTag('div'); // .chip-actions
 
         if ($config['inputName'] !== null) {
-            $html .= Html::hiddenInput($config['inputName'], (string)$component->getId());
+            $inputId = (string)$component->getId();
+            if ($component instanceof ElementInterface) {
+                $inputId = (string)$component->getCanonicalId();
+            }
+
+            $html .= Html::hiddenInput($config['inputName'], $inputId);
         }
 
         $html .= Html::endTag('div') . // .chip-content
@@ -611,7 +616,10 @@ class Cp
             Html::endTag('div'); // .card-actions-container
 
         if ($config['context'] === 'field' && $config['inputName'] !== null) {
-            $html .= Html::hiddenInput($config['inputName'], (string)$element->id);
+            $html .= Html::hiddenInput(
+                $config['inputName'],
+                $element->isProvisionalDraft ? (string)$element->getCanonicalId() : (string)$element->id
+            );
         }
 
         $html .= Html::endTag('div'); // .card

@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -44,6 +45,8 @@ class RelationalFieldsController extends Controller
             /** @var ElementInterface[] $elements */
             $elements = $elementType::find()
                 ->id($elementIds)
+                ->drafts(null)
+                ->provisionalDrafts(null)
                 ->siteId($this->request->getParam('siteId'))
                 ->status(null)
                 ->all();
@@ -57,6 +60,8 @@ class RelationalFieldsController extends Controller
                 $structuresService->applyBranchLimitToElements($elements, $branchLimit);
             }
         }
+
+        ElementHelper::swapInProvisionalDrafts($elements);
 
         $html = $this->getView()->renderTemplate('_includes/forms/elementSelect.twig', [
             'elements' => $elements,

@@ -27,7 +27,7 @@
         descendants: structure ? (totalDescendants ?? 0) : false,
       },
       class: {
-        disabled: element.id in disabledElementIds,
+        disabled: element.id in disabledElementIds or element.canonicalId in disabledElementIds,
       }|filter|keys,
     } %}
         {% if selectable %}
