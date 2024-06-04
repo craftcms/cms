@@ -64,7 +64,9 @@ class NewSiblingAfter extends ElementAction
         type: $type,
         bulk: false,
         activate: (selectedItems, elementIndex) => {
-            Craft.redirectTo(Craft.getUrl($newSiblingUrl, 'after=' + selectedItems.find('.element').data('id')));
+            let selectedElement = selectedItems.find('.element');
+            let id = Garnish.hasAttr(selectedElement, 'data-provisional') ? selectedElement.data('canonicalId') : selectedElement.data('id');
+            Craft.redirectTo(Craft.getUrl($newSiblingUrl, 'after=' + id));
         },
     });
 })();

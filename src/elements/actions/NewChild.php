@@ -76,7 +76,9 @@ class NewChild extends ElementAction
             );
         },
         activate: (selectedItems, elementIndex) => {
-            const url = Craft.getUrl($newChildUrl, 'parentId=' + selectedItems.find('.element').data('id'));
+            let selectedElement = selectedItems.find('.element');
+            let id = Garnish.hasAttr(selectedElement, 'data-provisional') ? selectedElement.data('canonicalId') : selectedElement.data('id');
+            const url = Craft.getUrl($newChildUrl, 'parentId=' + id);
             Craft.redirectTo(url);
         },
     });
