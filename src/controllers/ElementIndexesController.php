@@ -558,7 +558,9 @@ class ElementIndexesController extends BaseElementsController
 
             $element->setFieldValuesFromRequest("$namespace.element-$element->id.fields");
 
-            if ($element->enabled && $element->getEnabledForSite()) {
+            if ($element->getIsUnpublishedDraft()) {
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+            } elseif ($element->enabled && $element->getEnabledForSite()) {
                 $element->setScenario(Element::SCENARIO_LIVE);
             }
 
