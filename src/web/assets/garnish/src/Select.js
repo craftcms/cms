@@ -623,9 +623,12 @@ export default Base.extend(
       if (this.first !== null && ev.shiftKey) {
         // Shift key is consistent for both selection modes
         this.selectRange($item, true);
-      } else if (this._actAsCheckbox(ev) && !this.isSelected($item)) {
-        // Checkbox-style selection is handled from onMouseUp()
-        this.selectItem($item, true, true);
+      } else if (
+        this._actAsCheckbox(ev) &&
+        (!this.settings.waitForDoubleClicks || !this.isSelected($item))
+      ) {
+        // Checkbox-style deselection is handled from onMouseUp()
+        this.toggleItem($item, true);
       } else {
         // Prepare for click handling in onMouseUp()
         this.mousedownTarget = ev.currentTarget;
@@ -650,22 +653,24 @@ export default Base.extend(
 
       // was this a click?
       if (!ev.shiftKey && ev.currentTarget === this.mousedownTarget) {
-        // If this is already selected, wait a moment to see if this is a double click before making any rash decisions
         if (this.isSelected($item)) {
-          this.clearMouseUpTimeout();
+          const handler = () => {
+            if (this._actAsCheckbox(ev)) {
+              this.deselectItem($item);
+            } else {
+              this.deselectOthers($item);
+            }
+          };
 
-          this.mouseUpTimeout = setTimeout(
-            function () {
-              if (this._actAsCheckbox(ev)) {
-                this.deselectItem($item);
-              } else {
-                this.deselectOthers($item);
-              }
-            }.bind(this),
-            300
-          );
+          if (this.settings.waitForDoubleClicks) {
+            // wait a moment to see if this is a double click before making any rash decisions
+            this.clearMouseUpTimeout();
+            this.mouseUpTimeout = setTimeout(handler, 300);
+          } else {
+            handler();
+          }
         } else if (!this._actAsCheckbox(ev)) {
-          // Checkbox-style deselection is handled from onMouseDown()
+          // Checkbox-style selection is handled from onMouseDown()
           this.deselectAll();
           this.selectItem($item, true, true);
         }
@@ -941,6 +946,7 @@ export default Base.extend(
       filter: null,
       checkboxMode: false,
       makeFocusable: false,
+      waitForDoubleClicks: false,
       onSelectionChange: $.noop,
     },
 

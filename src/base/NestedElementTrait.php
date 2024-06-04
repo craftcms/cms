@@ -79,6 +79,16 @@ trait NestedElementTrait
     public bool $saveOwnership = true;
 
     /**
+     * @var bool Whether the search index should be updated for the owner element, alongside this element.
+     *
+     * This will only be checked if [[fieldId]] is set, and `false` isn’t passed to the `updateSearchIndex`
+     * argument of [[\craft\services\Elements::saveElement()]].
+     *
+     * @since 5.2.0
+     */
+    public bool $updateSearchIndexForOwner = false;
+
+    /**
      * @var ElementInterface|false The primary owner element, or false if [[primaryOwnerId]] is invalid
      * @see getPrimaryOwner()
      * @see setPrimaryOwner()

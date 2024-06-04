@@ -70,7 +70,7 @@ class EntryTypesController extends Controller
             $title = Craft::t('app', 'Create a new entry type');
         }
 
-        return $this->asCpScreen()
+        $response = $this->asCpScreen()
             ->editUrl($entryType->getCpEditUrl())
             ->title($title)
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
@@ -87,46 +87,56 @@ class EntryTypesController extends Controller
                 'entryType' => $entryType,
                 'typeName' => Entry::displayName(),
                 'lowerTypeName' => Entry::lowerDisplayName(),
-            ])
-            ->metaSidebarHtml($entryType->id ? Cp::metadataHtml([
-                Craft::t('app', 'ID') => $entryType->id,
-                Craft::t('app', 'Used by') => function() use ($entryType) {
-                    $usages = $entryType->findUsages();
-                    if (empty($usages)) {
-                        return Html::tag('i', Craft::t('app', 'No usages'));
-                    }
+            ]);
 
-                    $labels = [];
-                    $items = array_map(function(Section|ElementContainerFieldInterface $usage) use (&$labels) {
-                        if ($usage instanceof Section) {
-                            $label = Craft::t('site', $usage->name);
-                            $url = $usage->getCpEditUrl();
-                            $icon = 'newspaper';
-                        } else {
-                            $label = Craft::t('site', $usage->name);
-                            $url = UrlHelper::cpUrl("settings/fields/edit/$usage->id");
-                            $icon = $usage::icon();
+        if ($entryType->id) {
+            $response
+                ->addAltAction(Craft::t('app', 'Delete'), [
+                    'action' => 'entry-types/delete',
+                    'destructive' => true,
+                ])
+                ->metaSidebarHtml(Cp::metadataHtml([
+                    Craft::t('app', 'ID') => $entryType->id,
+                    Craft::t('app', 'Used by') => function() use ($entryType) {
+                        $usages = $entryType->findUsages();
+                        if (empty($usages)) {
+                            return Html::tag('i', Craft::t('app', 'No usages'));
                         }
-                        $labels[] = $label;
-                        $labelHtml = Html::beginTag('span', [
-                            'class' => ['flex', 'flex-nowrap', 'gap-s'],
-                        ]) .
-                            Html::tag('div', Cp::iconSvg($icon), [
-                                'class' => ['cp-icon', 'small'],
-                            ]) .
-                            Html::tag('span', Html::encode($label)) .
-                            Html::endTag('span');
-                        return Html::a($labelHtml, $url);
-                    }, $entryType->findUsages());
 
-                    // sort by label
-                    array_multisort($labels, SORT_ASC, $items);
+                        $labels = [];
+                        $items = array_map(function(Section|ElementContainerFieldInterface $usage) use (&$labels) {
+                            if ($usage instanceof Section) {
+                                $label = Craft::t('site', $usage->name);
+                                $url = $usage->getCpEditUrl();
+                                $icon = 'newspaper';
+                            } else {
+                                $label = Craft::t('site', $usage->name);
+                                $url = UrlHelper::cpUrl("settings/fields/edit/$usage->id");
+                                $icon = $usage::icon();
+                            }
+                            $labels[] = $label;
+                            $labelHtml = Html::beginTag('span', [
+                                    'class' => ['flex', 'flex-nowrap', 'gap-s'],
+                                ]) .
+                                Html::tag('div', Cp::iconSvg($icon), [
+                                    'class' => ['cp-icon', 'small'],
+                                ]) .
+                                Html::tag('span', Html::encode($label)) .
+                                Html::endTag('span');
+                            return Html::a($labelHtml, $url);
+                        }, $entryType->findUsages());
 
-                    return Html::ul($items, [
-                        'encode' => false,
-                    ]);
-                },
-            ]) : null);
+                        // sort by label
+                        array_multisort($labels, SORT_ASC, $items);
+
+                        return Html::ul($items, [
+                            'encode' => false,
+                        ]);
+                    },
+                ]));
+        }
+
+        return $response;
     }
 
     /**
@@ -187,12 +197,25 @@ class EntryTypesController extends Controller
     public function actionDelete(): Response
     {
         $this->requirePostRequest();
-        $this->requireAcceptsJson();
 
-        $entryTypeId = $this->request->getRequiredBodyParam('id');
+        $entryTypeId = $this->request->getBodyParam('entryTypeId') ?? $this->request->getRequiredBodyParam('id');
 
-        $success = Craft::$app->getEntries()->deleteEntryTypeById($entryTypeId);
-        return $success ? $this->asSuccess() : $this->asFailure();
+        $entriesService = Craft::$app->getEntries();
+        $entryType = $entriesService->getEntryTypeById($entryTypeId);
+
+        if (!$entryType) {
+            throw new BadRequestHttpException("Invalid entry type ID: $entryType");
+        }
+
+        if (!$entriesService->deleteEntryType($entryType)) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t delete “{name}”.', [
+                'name' => $entryType->getUiLabel(),
+            ]));
+        }
+
+        return $this->asSuccess(Craft::t('app', '“{name}” deleted.', [
+            'name' => $entryType->getUiLabel(),
+        ]));
     }
 
     /**

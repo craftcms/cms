@@ -22,6 +22,10 @@ use yii\db\Connection as YiiConnection;
 /**
  * Class Query
  *
+ * @template TKey of array-key
+ * @template TValue
+ * @implements ArrayAccess<TKey, TValue>
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -148,9 +152,13 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
     public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
-        $event = new DefineBehaviorsEvent();
-        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
-        return $event->behaviors;
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
+            $event = new DefineBehaviorsEvent();
+            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+            return $event->behaviors;
+        }
+
+        return [];
     }
 
     /**
@@ -240,6 +248,7 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
 
     /**
      * @inheritdoc
+     * @return array<TKey,TValue>
      */
     public function all($db = null): array
     {
@@ -255,7 +264,7 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
      *
      * @param YiiConnection|null $db The database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
-     * @return Collection A collection of the resulting elements.
+     * @return Collection<TKey,TValue> A collection of the resulting elements.
      * @since 4.0.0
      */
     public function collect(?YiiConnection $db = null): Collection
@@ -265,7 +274,7 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
 
     /**
      * @inheritdoc
-     * @return array|null
+     * @return TValue|null
      */
     public function one($db = null): mixed
     {
