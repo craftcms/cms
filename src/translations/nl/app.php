@@ -1669,7 +1669,6 @@ return [
     'This year' => 'Dit jaar',
     'This {type} doesn’t have revisions.' => 'Deze {type} heeft geen revisies.',
     'This {type} has been updated.' => ' {type, select, draft{Dit} other{Deze}} {type} is bijgewerkt.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'Tijdzone',
     'Time fields are better suited for managing Time-only values.' => 'Tijdvelden zijn beter geschikt voor het beheer van alleen-tijdwaarden.',
     'Time to reserve' => 'Te reserveren tijd',
