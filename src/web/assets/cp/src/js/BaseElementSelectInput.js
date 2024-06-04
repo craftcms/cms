@@ -714,22 +714,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getSelectedElementIds: function () {
-      var ids = [];
+      const ids = [];
 
-      for (var i = 0; i < this.$elements.length; i++) {
-        let $selectedElement = this.$elements.eq(i);
-        let isProvisional = Garnish.hasAttr(
-          $selectedElement,
-          'data-provisional'
-        );
-
-        const id = isProvisional
-          ? $selectedElement.data('canonicalId')
-          : $selectedElement.data('id');
-
-        if (id) {
-          ids.push(id);
-        }
+      for (let i = 0; i < this.$elements.length; i++) {
+        ids.push(this.$elements.eq(i).data('id'));
       }
 
       return ids;

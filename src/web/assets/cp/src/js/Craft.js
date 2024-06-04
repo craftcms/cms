@@ -2323,9 +2323,7 @@ $.extend(Craft, {
     }
 
     return {
-      id: Garnish.hasAttr($element, 'data-provisional')
-        ? $element.data('canonicalId')
-        : $element.data('id'),
+      id: $element.data('id'),
       siteId: $element.data('site-id'),
       label: $element.data('label'),
       status: $element.data('status'),
