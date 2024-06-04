@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error that could occur when creating an entry via a slideout, if the slideout was submitted before the entry was autosaved. ([#15134](https://github.com/craftcms/cms/pull/15134))
+
 ## 5.1.8 - 2024-06-03
 
 - Added `craft\helpers\Gql::isIntrospectionQuery()`.
