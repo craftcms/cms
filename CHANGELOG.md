@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where element editor slideouts weren’t handling form submits properly. ([#15128](https://github.com/craftcms/cms/issues/15128))
+
 ## 5.2.0-beta.1 - 2024-06-03
 
 ### Content Management
