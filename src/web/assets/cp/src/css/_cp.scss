@@ -1056,9 +1056,12 @@ li.breadcrumb-toggle-wrapper {
 }
 
 .content-grid {
+  --size-main-content: calc(100% - var(--touch-target-size));
   position: relative;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(var(--size-main-content), 1fr) var(
+      --touch-target-size
+    );
 }
 
 .content-pane {
@@ -1380,6 +1383,10 @@ li.breadcrumb-toggle-wrapper {
 
   #content-container {
     min-height: 0 !important;
+  }
+
+  .content-grid {
+    --size-main-content: 100%;
   }
 
   #sidebar-container,
