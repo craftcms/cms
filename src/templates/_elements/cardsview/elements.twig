@@ -1,7 +1,7 @@
 {% apply spaceless %}
   {% for element in elements %}
     {% tag 'li' with {
-      class: element.id in disabledElementIds ? 'disabled' : null,
+      class: (element.isProvisionalDraft ? element.getCanonicalId() : element.id) in disabledElementIds ? 'disabled' : null,
       data: {
         id: element.id,
       },
