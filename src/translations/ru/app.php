@@ -1669,7 +1669,6 @@ return [
     'This year' => 'Текущий год',
     'This {type} doesn’t have revisions.' => 'У данного типа {type} нет версий.',
     'This {type} has been updated.' => 'Данный {type} был обновлен.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'Часовой пояс',
     'Time fields are better suited for managing Time-only values.' => 'Поля времени лучше всего подходят для работы с временными значениями.',
     'Time to reserve' => 'Время для резервирования',
