@@ -1669,7 +1669,6 @@ return [
     'This year' => '올해',
     'This {type} doesn’t have revisions.' => '이 {type}에는 개정 사항이 없습니다.',
     'This {type} has been updated.' => '이 {type}이(가) 업데이트되었습니다.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => '시간대',
     'Time fields are better suited for managing Time-only values.' => '시간 필드는 시간 전용 값을 관리하는 데 더 적합합니다.',
     'Time to reserve' => '예약 시간',
