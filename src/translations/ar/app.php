@@ -1669,7 +1669,6 @@ return [
     'This year' => 'هذا العام',
     'This {type} doesn’t have revisions.' => 'لا يملك هذا النوع {type} أي مراجعات.',
     'This {type} has been updated.' => 'تم تحديث هذا النوع {type}.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'المنطقة الزمنية',
     'Time fields are better suited for managing Time-only values.' => 'تعد الحقول الزمنية أكثر ملاءمة لإدارة قيم الوقت فقط.',
     'Time to reserve' => 'وقت الحجز',
