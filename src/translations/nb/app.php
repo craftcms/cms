@@ -1669,7 +1669,6 @@ return [
     'This year' => 'Dette året',
     'This {type} doesn’t have revisions.' => 'Denne {type} har ingen versjoner.',
     'This {type} has been updated.' => 'Denne {type} er oppdatert.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'Tidssone',
     'Time fields are better suited for managing Time-only values.' => 'Tidsfelter passer bedre til verdier som bare har med tid å gjøre.',
     'Time to reserve' => 'Tid å reservere',
