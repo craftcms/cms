@@ -1669,7 +1669,6 @@ return [
     'This year' => 'Bu yıl',
     'This {type} doesn’t have revisions.' => 'Bu {type} için revizyon yok.',
     'This {type} has been updated.' => 'Bu {type} güncellendi.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'Saat Dilimi',
     'Time fields are better suited for managing Time-only values.' => 'Saat alanları, sadece saat değerlerini yönetmek için daha uygundur.',
     'Time to reserve' => 'Atanma zamanı',
