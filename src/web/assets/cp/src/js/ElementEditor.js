@@ -11,7 +11,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     isFullPage: null,
     $container: null,
     $activityContainer: null,
-    $tabContainer: null,
     $contentContainer: null,
     $sidebar: null,
     $spinner: null,
@@ -43,16 +42,15 @@ Craft.ElementEditor = Garnish.Base.extend(
     submittingForm: false,
 
     draftElementIds: null,
+    draftElementUids: null,
     failed: false,
     httpStatus: null,
     httpError: null,
 
-    openingPreview: false,
     preview: null,
     activatedPreviewToken: false,
     previewTokenQueue: null,
     previewLinks: null,
-    scrollY: null,
 
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
 
@@ -64,6 +62,13 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     get slideout() {
       return this.$container.data('slideout');
+    },
+
+    get tabManager() {
+      const fn =
+        this.settings.getTabManager ??
+        (() => (this.isFullPage ? Craft.cp.tabManager : null));
+      return fn();
     },
 
     init: function (container, settings) {
@@ -83,30 +88,29 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.$container[0]
       );
 
-      if (this.isFullPage) {
-        this.$tabContainer = $('#tabs');
-        this.$contentContainer = $('#content');
-        this.$sidebar = $('#details .details');
-      } else {
-        this.$tabContainer = this.slideout.$tabContainer;
-        this.$contentContainer = this.slideout.$content;
-        this.$sidebar = this.slideout.$sidebar;
-      }
+      this.$contentContainer =
+        this.settings.$contentContainer ??
+        (this.isFullPage ? $('#content') : $());
+      this.$sidebar =
+        this.settings.$sidebar ??
+        (this.isFullPage ? $('#details .details') : $());
 
       this.queue = this._createQueue();
       this.previewTokenQueue = this._createQueue();
 
       this.draftElementIds = {};
-      this.enableAutosave = Craft.autosaveDrafts;
+      this.draftElementUids = {};
+      this.enableAutosave =
+        this.settings.autosaveDrafts ?? Craft.autosaveDrafts;
       this.previewLinks = [];
 
       if (this.settings.previewTargets?.length) {
-        const $actionBtn = this.isFullPage
-          ? $('#action-btn')
-          : this.slideout.$actionBtn;
+        const $actionBtn =
+          this.settings.$actionBtn ??
+          (this.isFullPage ? $('#action-btn') : $());
         const idPrefix = this.namespaceId('action-view');
         const $viewAction = $actionBtn
-          ?.data('disclosureMenu')
+          .data('disclosureMenu')
           ?.$container.find(`a[id^="${idPrefix}-"]`);
         if ($viewAction?.length) {
           const href = $viewAction.attr('href');
@@ -123,9 +127,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.$previewBtn = this.$container.find('.preview-btn');
 
-      const $spinnerContainer = this.isFullPage
-        ? $('#page-title')
-        : this.slideout.$toolbar;
+      const $spinnerContainer =
+        this.settings.$spinnerContainer ??
+        (this.isFullPage ? $('#page-title') : $());
       this.$spinner = $('<div/>', {
         class: 'revision-spinner spinner hidden',
         title: Craft.t('app', 'Saving'),
@@ -194,7 +198,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         );
       });
 
-      if (this.isFullPage) {
+      if (!this.slideout) {
         this.addListener(this.$container, 'submit', 'handleSubmit');
       }
 
@@ -287,11 +291,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     get namespace() {
-      if (this.isFullPage) {
-        return null;
-      }
-
-      return this.slideout.namespace;
+      return this.settings.namespace;
     },
 
     namespaceInputName(name) {
@@ -327,7 +327,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (this.formObserver) {
         this.formObserver.destroy();
         this.formObserver = null;
-        return;
       }
     },
 
@@ -343,15 +342,16 @@ Craft.ElementEditor = Garnish.Base.extend(
       let $discardButton = this.$container.find('.discard-changes-btn');
 
       if (!$discardButton.length) {
+        const $noticeContainer =
+          this.settings.$noticeContainer ??
+          (this.isFullPage
+            ? Craft.cp.$noticeContainer
+            : this.$container.find('.so-notice'));
         let initialHeight, scrollTop;
 
-        let $noticeContainer;
         if (this.isFullPage) {
           initialHeight = $('#content').height();
           scrollTop = Garnish.$win.scrollTop();
-          $noticeContainer = Craft.cp.$noticeContainer;
-        } else {
-          $noticeContainer = this.$container.find('.so-notice');
         }
 
         const $notice = $('<div/>', {
@@ -438,7 +438,15 @@ Craft.ElementEditor = Garnish.Base.extend(
                   })
                     .then((response) => {
                       Craft.cp.displaySuccess(response.data.message);
-                      this.slideout.close();
+
+                      // Broadcast a saveMessage event, in case any chips/cards should be
+                      // updated to stop showing the provisional changes
+                      Craft.broadcaster.postMessage({
+                        event: 'saveElement',
+                        id: this.settings.canonicalId,
+                      });
+
+                      this.slideout?.close();
                     })
                     .catch(reject);
                 }
@@ -448,7 +456,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
 
       if (!this.isFullPage) {
-        this.slideout.$cancelBtn.text(Craft.t('app', 'Close'));
+        this.slideout?.$cancelBtn.text(Craft.t('app', 'Close'));
       }
     },
 
@@ -799,9 +807,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     spinners: function () {
-      return this.preview
-        ? this.$spinner.add(this.preview.$spinner)
-        : this.$spinner;
+      return this.$spinner;
     },
 
     showSpinner: function () {
@@ -813,15 +819,11 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     statusIcons: function () {
-      return this.preview
-        ? this.$statusIcon.add(this.preview.$statusIcon)
-        : this.$statusIcon;
+      return this.$statusIcon;
     },
 
     statusMessage: function () {
-      return this.preview
-        ? this.$statusMessage.add(this.preview.$statusMessage)
-        : this.$statusMessage;
+      return this.$statusMessage;
     },
 
     createEditMetaAction: function () {
@@ -1013,32 +1015,55 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     getPreview: function () {
-      if (!this.preview) {
-        this.preview = new Craft.Preview(this);
-        if (!this.enableAutosave) {
-          this.preview.on('open', () => {
-            this.enableAutosave = true;
-            this.checkForm();
-          });
-          this.preview.on('close', () => {
-            this.enableAutosave = false;
+      // If we already have a preview instance, but the element has been edited
+      // since the last time it was open, discard it
+      if (
+        this.preview &&
+        !this.preview.isVisible &&
+        this.preview.elementEditor?.settings.updatedTimestamp !==
+          this.settings.updatedTimestamp
+      ) {
+        this.preview.destroy();
+        delete this.preview;
+      }
 
-            // Hide the status icon if the save was successful
-            const $statusIcons = this.statusIcons();
-            if ($statusIcons.hasClass('checkmark-icon')) {
-              $statusIcons.addClass('hidden');
-            }
-          });
-        }
-        this.preview.on('beforeOpen', () => {
-          this.formObserver?.pause();
+      if (!this.preview) {
+        this.preview = new Craft.Preview({
+          elementType: this.settings.elementType,
+          elementId: this.settings.isProvisionalDraft
+            ? this.settings.canonicalId
+            : this.settings.elementId,
+          draftId: !this.settings.isProvisionalDraft
+            ? this.settings.draftId
+            : null,
+          revisionId: this.settings.revisionId,
+          siteId: this.settings.siteId,
+          onBeforeLoad: async () => {
+            // Autosave any last-minute changes before the preview loads its editor
+            await this.checkForm(false, true);
+          },
         });
-        this.preview.on('close', () => {
-          this.formObserver?.resume();
-          if (this.scrollY) {
-            window.scrollTo(0, this.scrollY);
-            this.scrollY = null;
+        let updatedTimestamp;
+        this.preview.on('open', () => {
+          updatedTimestamp = this.settings.updatedTimestamp;
+          this.pause();
+        });
+        this.preview.on('close', async () => {
+          if (this.$previewBtn) {
+            this.$previewBtn.focus();
           }
+          if (this.settings.updatedTimestamp !== updatedTimestamp) {
+            await this.refreshContent();
+          }
+          const tabIndex =
+            this.preview.tabManager?.getSelectedTabIndex() ?? null;
+          if (tabIndex !== null) {
+            this.tabManager?.selectTab(tabIndex);
+          }
+          this.resume();
+        });
+        this.preview.on('afterSaveDraft', ({response}) => {
+          this._handleSaveDraftResponse(response);
         });
       }
       return this.preview;
@@ -1050,18 +1075,17 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.$previewBtn.attr('aria-disabled', true);
-      this.$previewBtn.addClass('loading');
 
       try {
-        await this.checkForm();
-        this.openingPreview = true;
-        await this.ensureIsDraftOrRevision(true);
-        this.scrollY = window.scrollY;
-        this.getPreview().open();
+        const preview = this.getPreview();
+        await preview.open();
+
+        const tabIndex = this.tabManager?.getSelectedTabIndex() ?? null;
+        if (tabIndex !== null) {
+          preview.tabManager?.selectTab(tabIndex);
+        }
       } finally {
         this.$previewBtn.removeAttr('aria-disabled');
-        this.$previewBtn.removeClass('loading');
-        this.openingPreview = false;
       }
     },
 
@@ -1088,6 +1112,10 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (this.settings.revisionId) {
         throw 'Unable to set form values on a revision.';
       }
+
+      // Make sure any existing changes have already been dealt with
+      // (https://github.com/craftcms/cms/issues/15069)
+      await this.checkForm();
 
       // See if the value is already set
       const params = this.$container.serialize().split('&');
@@ -1121,14 +1149,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     serializeForm: function (removeActionParams) {
       let data = this.$container.serialize();
 
-      if (this.isPreviewActive()) {
-        // Replace the temp input with the preview form data
-        data = data.replace(
-          '__PREVIEW_FIELDS__=1',
-          this.preview.$editor.serialize()
-        );
-      }
-
       if (removeActionParams && !this.settings.isUnpublishedDraft) {
         // Remove action and redirect params
         const actionName = encodeURIComponent(
@@ -1155,9 +1175,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {boolean} [force=false]
+     * @param {?boolean} [saveDraft]
      * @returns {Promise}
      */
-    checkForm: function (force) {
+    checkForm: function (force, saveDraft = null) {
       return this.queue.push(
         () =>
           new Promise((resolve, reject) => {
@@ -1190,7 +1211,10 @@ Craft.ElementEditor = Garnish.Base.extend(
               return;
             }
 
-            if (this.enableAutosave && this.settings.canCreateDrafts) {
+            if (
+              (saveDraft ?? this.enableAutosave) &&
+              this.settings.canCreateDrafts
+            ) {
               this._saveDraftInternal(data)
                 .then(resolve)
                 .catch((e) => {
@@ -1207,6 +1231,24 @@ Craft.ElementEditor = Garnish.Base.extend(
             }
           })
       );
+    },
+
+    /**
+     * @param {Object} [params]
+     * @returns {Promise<void>}
+     */
+    async refreshContent(params) {
+      this.settings.visibleLayoutElements = [];
+      const data = [this.serializeForm(true)];
+      data.push(
+        $.param({
+          [this.namespaceInputName('applyParams')]: 0,
+        })
+      );
+      if (params && !$.isEmptyObject(params)) {
+        data.push($.param(params));
+      }
+      await this.updateFieldLayout(data.join('&'));
     },
 
     isPreviewActive: function () {
@@ -1313,96 +1355,12 @@ Craft.ElementEditor = Garnish.Base.extend(
           .then((response) => {
             this._afterSaveDraft();
             this._afterUpdateFieldLayout(data, selectedTabId, response);
+            this._handleSaveDraftResponse(response);
 
-            const createdProvisionalDraft = !this.settings.draftId;
-
-            if (createdProvisionalDraft) {
-              this.settings.isProvisionalDraft = true;
-            }
-
-            if (this.isFullPage) {
-              if (response.data.title) {
-                this.$container.find('.screen-title').text(response.data.title);
-              }
-
-              if (response.data.docTitle) {
-                document.title = response.data.docTitle;
-              }
-            }
-
-            // Did we just add a site?
-            if (this.newSiteIds) {
-              this.newSiteIds.forEach((siteId) => {
-                const siteSettings = this.settings.additionalSites.find(
-                  (s) => s.siteId == siteId
-                );
-                const enabled =
-                  !siteSettings ||
-                  typeof siteSettings.enabledByDefault === 'undefined' ||
-                  siteSettings.enabledByDefault;
-                Craft.cp.showSiteCrumbMenuItem(siteId);
-                Craft.cp.setSiteCrumbMenuItemStatus(
-                  siteId,
-                  enabled ? 'enabled' : 'disabled'
-                );
-              });
-              this.newSiteIds = null;
-            }
-
-            if (this.settings.isProvisionalDraft) {
-              if (createdProvisionalDraft) {
-                // Replace the action
-                this.$container
-                  .find('input.action-input')
-                  .attr('value', 'elements/apply-draft');
-
-                // Update the editor settings
-                this.settings.elementId = response.data.elementId;
-                this.settings.draftId = response.data.draftId;
-                this.settings.isLive = false;
-                this.previewToken = null;
-
-                this.initForProvisionalDraft();
-              }
-            } else {
-              this.settings.draftName = response.data.draftName;
-              if (this.isFullPage) {
-                Craft.cp.updateContext(
-                  response.data.draftName,
-                  response.data.creator
-                    ? Craft.t('app', 'Saved {timestamp} by {creator}', {
-                        timestamp: response.data.timestamp,
-                        creator: response.data.creator,
-                      })
-                    : Craft.t('app', 'Saved {timestamp}', {
-                        timestamp: response.data.timestamp,
-                      })
-                );
-              }
-            }
-
-            // Did the controller send us updated preview targets?
-            if (
-              response.data.previewTargets &&
-              JSON.stringify(response.data.previewTargets) !==
-                JSON.stringify(this.settings.previewTargets)
-            ) {
-              this.updatePreviewTargets(response.data.previewTargets);
-            }
-
-            if (createdProvisionalDraft) {
-              this.updatePreviewLinks();
-              this.trigger('createProvisionalDraft');
-            }
-
-            if (this.$nameTextInput) {
-              this.checkMetaValues();
-            }
-
-            if ($.isPlainObject(response.data.draftElementIds)) {
-              this.draftElementIds = {
-                ...this.draftElementIds,
-                ...response.data.draftElementIds,
+            if ($.isPlainObject(response.data.draftElementUids)) {
+              this.draftElementUids = {
+                ...this.draftElementUids,
+                ...response.data.draftElementUids,
               };
             }
 
@@ -1421,7 +1379,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                   .find(selector)
                   .parentsUntil(this.$container, '.flex-fields > .field')
               )
-              .add(this.$sidebar.find(selector).closest('.field'))
+              .add(this.$sidebar?.find(selector).closest('.field'))
               .not(':has(> .status-badge)');
 
             for (let i = 0; i < $modifiedFields.length; i++) {
@@ -1438,12 +1396,8 @@ Craft.ElementEditor = Garnish.Base.extend(
               );
             }
 
-            // updated the updatedTimestamp values
-            this.settings.updatedTimestamp = response.data.updatedTimestamp;
-            this.settings.canonicalUpdatedTimestamp =
-              response.data.canonicalUpdatedTimestamp;
-
             this.afterUpdate(data);
+            this.trigger('afterSaveDraft', {response});
 
             if (Craft.broadcaster) {
               Craft.broadcaster.postMessage({
@@ -1475,6 +1429,105 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.ignoreFailedRequest = false;
           });
       });
+    },
+
+    _handleSaveDraftResponse(response) {
+      const createdProvisionalDraft = !this.settings.draftId;
+
+      if (createdProvisionalDraft) {
+        this.settings.isProvisionalDraft = true;
+      }
+
+      if (this.isFullPage) {
+        if (response.data.title) {
+          this.$container.find('.screen-title').text(response.data.title);
+        }
+
+        if (response.data.docTitle) {
+          document.title = response.data.docTitle;
+        }
+      }
+
+      // Did we just add a site?
+      if (this.newSiteIds) {
+        this.newSiteIds.forEach((siteId) => {
+          const siteSettings = this.settings.additionalSites.find(
+            (s) => s.siteId == siteId
+          );
+          const enabled =
+            !siteSettings ||
+            typeof siteSettings.enabledByDefault === 'undefined' ||
+            siteSettings.enabledByDefault;
+          Craft.cp.showSiteCrumbMenuItem(siteId);
+          Craft.cp.setSiteCrumbMenuItemStatus(
+            siteId,
+            enabled ? 'enabled' : 'disabled'
+          );
+        });
+        this.newSiteIds = null;
+      }
+
+      if (this.settings.isProvisionalDraft) {
+        if (createdProvisionalDraft) {
+          // Replace the action
+          this.$container
+            .find('input.action-input')
+            .attr('value', 'elements/apply-draft');
+
+          // Update the editor settings
+          this.settings.elementId = response.data.elementId;
+          this.settings.draftId = response.data.draftId;
+          this.settings.isLive = false;
+          this.previewToken = null;
+
+          this.initForProvisionalDraft();
+        }
+      } else {
+        this.settings.draftName = response.data.draftName;
+        if (this.isFullPage) {
+          Craft.cp.updateContext(
+            response.data.draftName,
+            response.data.creator
+              ? Craft.t('app', 'Saved {timestamp} by {creator}', {
+                  timestamp: response.data.timestamp,
+                  creator: response.data.creator,
+                })
+              : Craft.t('app', 'Saved {timestamp}', {
+                  timestamp: response.data.timestamp,
+                })
+          );
+        }
+      }
+
+      // Did the controller send us updated preview targets?
+      if (
+        response.data.previewTargets &&
+        JSON.stringify(response.data.previewTargets) !==
+          JSON.stringify(this.settings.previewTargets)
+      ) {
+        this.updatePreviewTargets(response.data.previewTargets);
+      }
+
+      if (createdProvisionalDraft) {
+        this.updatePreviewLinks();
+        this.trigger('createProvisionalDraft');
+      }
+
+      if (this.$nameTextInput) {
+        this.checkMetaValues();
+      }
+
+      if ($.isPlainObject(response.data.draftElementIds)) {
+        this.draftElementIds = {
+          ...this.draftElementIds,
+          ...response.data.draftElementIds,
+        };
+      }
+
+      // updated the updatedTimestamp values
+      this.settings.updatedTimestamp = response.data.updatedTimestamp;
+      this.settings.canonicalUpdatedTimestamp =
+        response.data.canonicalUpdatedTimestamp;
     },
 
     _afterSaveDraft: function () {
@@ -1509,19 +1562,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.cancelToken = axios.CancelToken.source();
 
         // Prep the data to be saved, keeping track of the first input name for each delta group
-        let modifiedFieldNames = [];
-        let preparedData = this.prepareData(
-          data,
-          !this.settings.isUnpublishedDraft
-            ? (deltaName, params) => {
-                if (params.length) {
-                  modifiedFieldNames.push(
-                    decodeURIComponent(params[0].split('=')[0])
-                  );
-                }
-              }
-            : null
-        );
+        let preparedData = this.prepareData(data);
 
         const extraData = {
           [this.namespaceInputName('visibleLayoutElements')]:
@@ -1623,6 +1664,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     getDraftElementId(elementId) {
       return this.draftElementIds[elementId] || elementId;
+    },
+
+    getDraftElementUid(elementUid) {
+      return this.draftElementUids[elementUid] || elementUid;
     },
 
     updatePreviewTargets: function (previewTargets) {
@@ -1744,14 +1789,10 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.settings.visibleLayoutElements = visibleLayoutElements;
 
       // Update the tabs
-      let tabManager;
-      if (this.isFullPage) {
-        Craft.cp.updateTabs(response.data.tabs);
-        tabManager = Craft.cp.tabManager;
-      } else {
-        this.slideout.updateTabs(response.data.tabs);
-        tabManager = this.slideout.tabManager;
-      }
+      const updateTabs =
+        this.settings.updateTabs ??
+        (this.isFullPage ? (tabs) => Craft.cp.updateTabs(tabs) : () => {});
+      updateTabs(response.data.tabs);
 
       // was a new tab selected after the request was kicked off?
       if (
@@ -1759,16 +1800,19 @@ Craft.ElementEditor = Garnish.Base.extend(
         newSelectedTabId &&
         selectedTabId !== newSelectedTabId
       ) {
-        const $newSelectedTab = tabManager.$tabs.filter(
-          `[data-id="${newSelectedTabId}"]`
-        );
-        if ($newSelectedTab.length) {
-          // if the new tab is visible - switch to it
-          tabManager.selectTab($newSelectedTab);
-        } else {
-          // if the new tab is not visible (e.g. hidden by a condition)
-          // switch to the first tab
-          tabManager.selectTab(tabManager.$tabs.first());
+        const tabManager = this.tabManager;
+        if (tabManager) {
+          const $newSelectedTab = tabManager.$tabs.filter(
+            `[data-id="${newSelectedTabId}"]`
+          );
+          if ($newSelectedTab.length) {
+            // if the new tab is visible - switch to it
+            tabManager.selectTab($newSelectedTab);
+          } else {
+            // if the new tab is not visible (e.g. hidden by a condition)
+            // switch to the first tab
+            tabManager.selectTab(tabManager.$tabs.first());
+          }
         }
       }
 
@@ -1806,7 +1850,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.setStatusMessage(this._saveSuccessMessage());
 
-      if (!Craft.autosaveDrafts) {
+      if (!this.settings.autosaveDrafts) {
         // Fade the icon out after a couple seconds, since it won't be accurate as content continues to change
         $statusIcons.velocity('stop').velocity(
           {
@@ -1822,6 +1866,15 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.trigger('update');
+
+      if (this.settings.isProvisionalDraft && Craft.broadcaster) {
+        // Broadcast a saveMessage event, in case any chips/cards should be
+        // updated to show the provisional changes
+        Craft.broadcaster.postMessage({
+          event: 'saveElement',
+          id: this.settings.canonicalId,
+        });
+      }
     },
 
     setStatusMessage: function (message) {
@@ -1932,7 +1985,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
     },
 
-    handleSubmit: function (ev) {
+    handleSubmit: async function (ev) {
       ev.preventDefault();
       ev.stopPropagation();
 
@@ -1984,21 +2037,20 @@ Craft.ElementEditor = Garnish.Base.extend(
         $form.appendTo(Garnish.$bod);
         $form.submit();
       } else {
-        this.slideout.showSubmitSpinner();
-        Craft.sendActionRequest('POST', null, {
-          headers: this._saveHeaders,
-          data,
-        })
-          .then((response) => {
-            this.slideout.handleSubmitResponse(response);
-          })
-          .catch((error) => {
-            this.slideout.handleSubmitError(error);
-          })
-          .finally(() => {
-            this.submittingForm = false;
-            this.slideout.hideSubmitSpinner();
+        let response;
+        try {
+          response = await Craft.sendActionRequest('POST', null, {
+            headers: this._saveHeaders,
+            data,
           });
+        } catch (e) {
+          this.settings.handleSubmitError(e);
+          return;
+        } finally {
+          this.submittingForm = false;
+          this.trigger('afterSubmit');
+        }
+        this.settings.handleSubmitResponse(response);
       }
     },
 
@@ -2169,9 +2221,20 @@ Craft.ElementEditor = Garnish.Base.extend(
           })
       );
     },
+
+    destroy: function () {
+      this.queue.destroy();
+      delete this.queue;
+      this.formObserver?.destroy();
+      delete this.formObserver;
+      this.preview?.destroy();
+      delete this.preview;
+      this.base();
+    },
   },
   {
     defaults: {
+      namespace: null,
       additionalSites: [],
       canCreateDrafts: false,
       canEditMultipleSites: false,
@@ -2193,12 +2256,21 @@ Craft.ElementEditor = Garnish.Base.extend(
       previewToken: null,
       revisionId: null,
       siteId: null,
-      siteStatuses: null,
+      siteStatuses: [],
       siteToken: null,
       visibleLayoutElements: {},
       updatedTimestamp: null,
       canonicalUpdatedTimestamp: null,
       reloadOnBroadcastSave: true,
+      $contentContainer: null,
+      $sidebar: null,
+      $actionBtn: null,
+      $spinnerContainer: null,
+      updateTabs: null,
+      getTabManager: null,
+      handleSubmitResponse: () => {},
+      handleSubmitError: () => {},
+      autosaveDrafts: null,
     },
   }
 );

@@ -1265,6 +1265,7 @@ JS, [
     {
         if ($value instanceof ElementQueryInterface) {
             $value = $value->all();
+            ElementHelper::swapInProvisionalDrafts($value);
         } elseif (!is_array($value)) {
             $value = [];
         }

@@ -1273,6 +1273,9 @@ abstract class Element extends Component implements ElementInterface
             ]);
         }
 
+        // See if there are any provisional drafts we should swap these out with
+        ElementHelper::swapInProvisionalDrafts($elements);
+
         $variables['elements'] = $elements;
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
@@ -2587,7 +2590,6 @@ abstract class Element extends Component implements ElementInterface
             'max' => 255,
             'disallowMb4' => true,
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-            'when' => fn() => $this->shouldValidateTitle(),
         ];
         $rules[] = [
             ['title'],

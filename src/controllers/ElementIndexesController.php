@@ -1041,15 +1041,26 @@ class ElementIndexesController extends BaseElementsController
             throw new ForbiddenHttpException('User not authorized to edit content for this site.');
         }
 
+        // check for a provisional draft first
         /** @var ElementInterface|null $element */
         $element = $elementType::find()
-            ->id($id)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->revisions(null)
+            ->draftOf($id)
+            ->provisionalDrafts()
             ->siteId($siteId)
             ->status(null)
             ->one();
+
+        if (!$element) {
+            /** @var ElementInterface|null $element */
+            $element = $elementType::find()
+                ->id($id)
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->revisions(null)
+                ->siteId($siteId)
+                ->status(null)
+                ->one();
+        }
 
         if (!$element) {
             throw new BadRequestHttpException("Invalid element ID: $id");

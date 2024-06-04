@@ -167,6 +167,11 @@ class UsersController extends Controller
      */
     public function actionCreate(): int
     {
+        if (!Craft::$app->getUsers()->canCreateUsers()) {
+            $this->stderr("The maximum number of users has already been reached.\n", Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         // Validate the arguments
         $attributesFromArgs = ArrayHelper::withoutValue([
             'email' => $this->email,

@@ -156,7 +156,7 @@ class NestedElementManager extends Component
      */
     public function getIsTranslatable(?ElementInterface $owner = null): bool
     {
-        if ($this->propagationMethod === PropagationMethod::Custom) {
+        if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
             return (
                 $owner === null ||
                 Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $owner) !== ''
@@ -400,6 +400,9 @@ class NestedElementManager extends Component
                         ->limit(null)
                         ->all();
                 }
+
+                // See if there are any provisional drafts we should swap these out with
+                ElementHelper::swapInProvisionalDrafts($elements);
 
                 $this->setOwnerOnNestedElements($owner, $elements);
 

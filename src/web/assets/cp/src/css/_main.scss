@@ -5579,7 +5579,11 @@ $min2ColWidth: 400px;
     --neg-padding: -14px;
   }
 
-  &:not(.so-mobile) {
+  &.so-lp {
+    border-radius: var(--large-border-radius);
+  }
+
+  &:not(.so-mobile):not(.so-lp) {
     @include border-radius(
       var(--large-border-radius),
       0,
