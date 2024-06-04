@@ -204,7 +204,11 @@ class Schema extends \yii\db\mysql\Schema
             $dataDump = $commandFromConfig($dataDump);
         }
 
-        return "{$schemaDump->getExecCommand()} && {$dataDump->getExecCommand()} >> '{file}'";
+        return sprintf(
+            '%s && %s >> "{file}"',
+            $schemaDump->getExecCommand(),
+            $dataDump->getExecCommand(),
+        );
     }
 
     /**
