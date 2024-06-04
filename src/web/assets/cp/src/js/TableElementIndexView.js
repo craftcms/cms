@@ -186,11 +186,18 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       });
 
       this.addListener(this.$cancelBtn, 'activate', () => {
-        this.$cancelBtn.addClass('loading');
-        this.elementIndex.inlineEditing = false;
-        this.elementIndex.updateElements(true, false).then(() => {
-          this.elementIndex.$elements.removeClass('inline-editing');
-        });
+        if (
+          !this.getDeltaInputChanges() ||
+          confirm(
+            Craft.t('app', 'Are you sure you want to discard your changes?')
+          )
+        ) {
+          this.$cancelBtn.addClass('loading');
+          this.elementIndex.inlineEditing = false;
+          this.elementIndex.updateElements(true, false).then(() => {
+            this.elementIndex.$elements.removeClass('inline-editing');
+          });
+        }
       });
 
       this.addListener(this.$elementContainer, 'keydown', (event) => {
