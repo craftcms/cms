@@ -45,8 +45,6 @@ class RelationalFieldsController extends Controller
             /** @var ElementInterface[] $elements */
             $elements = $elementType::find()
                 ->id($elementIds)
-                ->drafts(null)
-                ->provisionalDrafts(null)
                 ->siteId($this->request->getParam('siteId'))
                 ->status(null)
                 ->all();
