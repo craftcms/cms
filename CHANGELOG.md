@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where the `db/backup` command could fail on Windows. ([#15090](https://github.com/craftcms/cms/issues/15090))
+
 ## 4.9.6 - 2024-06-03
 
 - Added `craft\helpers\Gql::isIntrospectionQuery()`.
