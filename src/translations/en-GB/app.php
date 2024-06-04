@@ -1669,7 +1669,6 @@ return [
     'This year' => 'This year',
     'This {type} doesn’t have revisions.' => 'This {type} doesn’t have revisions.',
     'This {type} has been updated.' => 'This {type} has been updated.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'Time Zone',
     'Time fields are better suited for managing Time-only values.' => 'Time fields are better suited for managing Time-only values.',
     'Time to reserve' => 'Time to reserve',
