@@ -1669,7 +1669,6 @@ return [
     'This year' => 'امسال',
     'This {type} doesn’t have revisions.' => 'این {type} بازبینی ندارد.',
     'This {type} has been updated.' => 'این {type} بروزرسانی شده است.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'منطقه زمانی',
     'Time fields are better suited for managing Time-only values.' => 'فیلدهای زمان برای مدیریت مقادیر فقط زمانی مناسب‌تر هستند.',
     'Time to reserve' => 'زمان رزرو',
