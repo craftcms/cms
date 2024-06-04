@@ -1669,7 +1669,6 @@ return [
     'This year' => 'השנה',
     'This {type} doesn’t have revisions.' => 'ל-{type} הזה אין תיקונים.',
     'This {type} has been updated.' => 'ה-{type} הזה עודכן.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'אזור זמן',
     'Time fields are better suited for managing Time-only values.' => 'שדות שעה מתאימים יותר לניהול ערכי "שעה בלבד".',
     'Time to reserve' => 'שעה לשמירה',
