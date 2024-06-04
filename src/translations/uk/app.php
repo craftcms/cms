@@ -1669,7 +1669,6 @@ return [
     'This year' => 'Цього року',
     'This {type} doesn’t have revisions.' => 'Цей тип {type} не має версій.',
     'This {type} has been updated.' => 'Змінено {type}.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'Часовий пояс',
     'Time fields are better suited for managing Time-only values.' => 'Поля часу підходять для керування значеннями виключно часу.',
     'Time to reserve' => 'Час для резервування',
