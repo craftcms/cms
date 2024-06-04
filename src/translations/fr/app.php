@@ -1669,7 +1669,6 @@ return [
     'This year' => 'Cette année',
     'This {type} doesn’t have revisions.' => 'Ce {type} n\'a aucune révision.',
     'This {type} has been updated.' => 'Ce {type} a été mis à jour.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'Fuseau horaire',
     'Time fields are better suited for managing Time-only values.' => 'Les champs de type « Heure » sont plus adaptés à la gestion des valeurs ne contenant que lʼheure.',
     'Time to reserve' => 'Temps à réserver',
