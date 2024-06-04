@@ -31,7 +31,9 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
               $sidebar: this.$sidebar,
               $actionBtn: this.$actionBtn,
               $spinnerContainer: this.$toolbar,
-              updateTabs: (tabs) => this.updateTabs(tabs),
+              updateTabs: (tabs) => {
+                this.updateTabs(tabs);
+              },
               getTabManager: () => this.tabManager,
             },
             this.$container.data('elementEditorSettings')
