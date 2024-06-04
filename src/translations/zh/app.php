@@ -1669,7 +1669,6 @@ return [
     'This year' => '今年',
     'This {type} doesn’t have revisions.' => '此{type}没有修订。',
     'This {type} has been updated.' => '此{type}已更新。',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => '时区',
     'Time fields are better suited for managing Time-only values.' => '时间字段更适用于管理纯时间值。',
     'Time to reserve' => '要保留的时间',
