@@ -211,9 +211,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       let ids = [];
       if ($selectedElements) {
         for (var i = 0; i < $selectedElements.length; i++) {
-          let $selectedElement = $selectedElements.eq(i);
+          let $selectedElement = $selectedElements.eq(i).find('.element');
           let isProvisional = Garnish.hasAttr(
-            $selectedElement.find('.element'),
+            $selectedElement,
             'data-provisional'
           );
 
