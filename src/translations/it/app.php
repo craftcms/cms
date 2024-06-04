@@ -1669,7 +1669,6 @@ return [
     'This year' => 'Quest\'anno',
     'This {type} doesn’t have revisions.' => 'Questo {type} non ha revisioni.',
     'This {type} has been updated.' => 'Aggiornamento eseguito di {type}.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'Fuso orario',
     'Time fields are better suited for managing Time-only values.' => 'I campi temporali sono più adatti per la gestione dei valori solo temporali.',
     'Time to reserve' => 'Tempo da riservare',
