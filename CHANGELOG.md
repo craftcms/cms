@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that could occur when creating an entry via a slideout, if the slideout was submitted before the entry was autosaved. ([#15134](https://github.com/craftcms/cms/pull/15134))
+- Fixed a bug where upgrading from Craft CMS 4.4 was allowed even though the migrations assumed 4.5 or later was installed. ([#15133](https://github.com/craftcms/cms/issues/15133))
 
 ## 5.1.8 - 2024-06-03
 
