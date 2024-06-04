@@ -10,6 +10,7 @@ namespace crafttests\unit\web\twig;
 use ArrayObject;
 use Craft;
 use craft\elements\Address;
+use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\fields\MissingField;
@@ -20,6 +21,7 @@ use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
+use Illuminate\Support\Collection;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -1181,6 +1183,32 @@ class ExtensionTest extends TestCase
             'FROM_EMAIL_NAME',
             '{{ parseEnv("FROM_EMAIL_NAME") }}'
         );
+    }
+
+    /**
+     * @dataProvider collectFunctionDataProvider
+     *
+     * @param string $expectedClass
+     * @param array $items
+     */
+    public function testCollectFunction(string $expectedClass, array $items): void
+    {
+        $this->testRenderResult(
+            Collection::class,
+            "{{ className(collect(items)) }}",
+            ['items' => $items],
+        );
+    }
+
+    public function collectFunctionDataProvider(): array
+    {
+        $users = User::find()->all();
+        return [
+            [Collection::class, []],
+            [Collection::class, ['foo']],
+            [Collection::class, array_merge($users, ['foo'])],
+            [ElementCollection::class, $users],
+        ];
     }
 
     /**
