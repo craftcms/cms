@@ -16,6 +16,7 @@ use craft\base\MissingComponentInterface;
 use craft\base\PluginInterface;
 use craft\elements\Address;
 use craft\elements\Asset;
+use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\errors\AssetException;
 use craft\helpers\App;
@@ -1421,7 +1422,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function collectFunction(mixed $var): Collection
     {
-        return Collection::make($var);
+        $collection = Collection::make($var);
+
+        // If all the items are elements, return an ElementCollection instead
+        if ($collection->isNotEmpty() && $collection->doesntContain(fn($item) => !$item instanceof ElementInterface)) {
+            return ElementCollection::make($collection);
+        }
+
+        return $collection;
     }
 
     /**

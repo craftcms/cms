@@ -3,6 +3,7 @@
 ## Unreleased (5.2)
 
 - Element indexes will now show a confirmation dialog when cancelling a bulk inline edit. ([#15139](https://github.com/craftcms/cms/issues/15139), [#15142](https://github.com/craftcms/cms/pull/15142))
+- The `collect()` Twig function now returns a `craft\elements\ElementCollection` instance if all of the items are elements.
 - Fixed a bug where element editor slideouts weren’t handling form submits properly. ([#15128](https://github.com/craftcms/cms/issues/15128))
 - Fixed a bug where bulk element actions weren’t working on provisional drafts. ([#15130](https://github.com/craftcms/cms/issues/15130))
 - Fixed a bug where relations weren’t saving for elements that had a provisional draft. ([#15129](https://github.com/craftcms/cms/issues/15129))
