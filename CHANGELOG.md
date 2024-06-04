@@ -1,5 +1,15 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased (5.2)
+
+- Fixed a bug where element editor slideouts weren’t handling form submits properly. ([#15128](https://github.com/craftcms/cms/issues/15128))
+- Fixed a bug where bulk element actions weren’t working on provisional drafts. ([#15130](https://github.com/craftcms/cms/issues/15130))
+- Fixed a bug where relations weren’t saving for elements that had a provisional draft. ([#15129](https://github.com/craftcms/cms/issues/15129))
+
+## Unreleased
+
+- Fixed an error that could occur when creating an entry via a slideout, if the slideout was submitted before the entry was autosaved. ([#15134](https://github.com/craftcms/cms/pull/15134))
+
 ## 5.2.0-beta.1 - 2024-06-03
 
 ### Content Management
