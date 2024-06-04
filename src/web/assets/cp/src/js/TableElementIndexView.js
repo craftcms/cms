@@ -89,7 +89,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this._broadcastListener = (ev) => {
         if (ev.data.event === 'saveElement') {
           const $rows = this.$table.find(
-            `> tbody > tr[data-id="${ev.data.id}"],> tbody > tr[data-canonical-id="${ev.data.id}"]`
+            `> tbody > tr[data-id="${ev.data.id}"]`
           );
           if ($rows.length) {
             const data = {

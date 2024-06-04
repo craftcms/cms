@@ -2373,9 +2373,7 @@ $.extend(Craft, {
   },
 
   refreshElementInstances(elementId) {
-    const $elements = $(
-      `div.element[data-id="${elementId}"][data-settings],div.element[data-canonical-id="${elementId}"][data-provisional][data-settings]`
-    );
+    const $elements = $(`div.element[data-id="${elementId}"][data-settings]`);
     if (!$elements.length) {
       return;
     }
