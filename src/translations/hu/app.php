@@ -1669,7 +1669,6 @@ return [
     'This year' => 'Idei év',
     'This {type} doesn’t have revisions.' => 'Ez a {type} nem rendelkezik verziókkal.',
     'This {type} has been updated.' => 'Ez a {type} frissítve lett.',
-    'This {type} has unsaved changes.' => 'This {type} has unsaved changes.',
     'Time Zone' => 'Időzóna',
     'Time fields are better suited for managing Time-only values.' => 'A csak időt tartalmazó értékek kezeléséhez alkalmasabbak az idő típusú mezők.',
     'Time to reserve' => 'Lefoglalandó idő',
