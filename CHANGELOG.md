@@ -1,11 +1,8 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased (4.10)
-
-- The `collect()` Twig function now returns a `craft\elements\ElementCollection` instance if all of the items are elements.
-
 ## Unreleased
 
+- The `collect()` Twig function now returns a `craft\elements\ElementCollection` instance if all of the items are elements.
 - Fixed a bug where the `db/backup` command could fail on Windows. ([#15090](https://github.com/craftcms/cms/issues/15090))
 - Fixed an error that could occur when applying project config changes if a site was deleted. ([#14373](https://github.com/craftcms/cms/issues/14373))
 
@@ -59,6 +56,11 @@
 - Updated Yii to 2.0.50. ([#15124](https://github.com/craftcms/cms/issues/15124))
 - Updated inputmask to 5.0.9.
 - Updated punycode to 2.3.1.
+
+## 4.9.7 - 2024-06-05
+
+- Fixed a bug where the `db/backup` command could fail on Windows. ([#15090](https://github.com/craftcms/cms/issues/15090))
+- Fixed an error that could occur when applying project config changes if a site was deleted. ([#14373](https://github.com/craftcms/cms/issues/14373))
 
 ## 4.9.6 - 2024-06-03
 
