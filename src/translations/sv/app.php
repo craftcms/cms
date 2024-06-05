@@ -1099,7 +1099,7 @@ return [
     'Please set a valid volume for storing the user photos in user settings page first.' => 'Ställ först in en giltig volym för att lagra användarfoton på sidan för användarinställningar.',
     'Please talk to your host/IT department about upgrading your server.' => 'Kontakta din värd/IT-avdelning för att uppgradera din server.',
     'Plugin Installer' => 'Installationsprogram för plugin',
-    'Plugin Store' => 'Plugin Store',
+    'Plugin Store' => 'Plugin-butik',
     'Plugin Uninstaller' => 'Avinstallationsprogram för plugin',
     'Plugin disabled.' => 'Plugin inaktiverad.',
     'Plugin edition changed.' => 'Plugin-utgåva ändrad.',
