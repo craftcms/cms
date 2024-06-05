@@ -113,6 +113,14 @@
 - Updated Yii to 2.0.50. ([#15124](https://github.com/craftcms/cms/issues/15124))
 - Updated inputmask to 5.0.9.
 
+## 5.1.9 - 2024-06-05
+
+- Fixed a bug where the `db/backup` command could fail on Windows. ([#15090](https://github.com/craftcms/cms/issues/15090))
+- Fixed an error that could occur when applying project config changes if a site was deleted. ([#14373](https://github.com/craftcms/cms/issues/14373))
+- Fixed an error that could occur when creating an entry via a slideout, if the slideout was submitted before the entry was autosaved. ([#15134](https://github.com/craftcms/cms/pull/15134))
+- Fixed a bug where upgrading from Craft CMS 4.4 was allowed even though the migrations assumed 4.5 or later was installed. ([#15133](https://github.com/craftcms/cms/issues/15133))
+- Fixed an error that occurred when bulk inline editing an unpublished draft. ([#15138](https://github.com/craftcms/cms/issues/15138))
+
 ## 5.1.8 - 2024-06-03
 
 - Added `craft\helpers\Gql::isIntrospectionQuery()`.
