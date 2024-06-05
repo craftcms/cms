@@ -48,6 +48,10 @@ Craft.LoginForm = Garnish.Base.extend(
       });
 
       this.$spinner = document.createElement('craft-spinner');
+      this.$spinner.setAttribute('visible', 'false');
+      this.$spinner.setAttribute('focusWhenVisible', 'true');
+      this.$spinner.setAttribute('messageVisible', 'false');
+
       $(this.$spinner).insertAfter(this.$form);
 
       new Craft.PasswordInput(this.$passwordInput, {
@@ -256,7 +260,7 @@ Craft.LoginForm = Garnish.Base.extend(
         const $methodDisclosure = new Garnish.DisclosureMenu($button);
 
         $ul.find('button').on('activate', (event) => {
-          this.$spinner.show(true);
+          this.$spinner.visible = true;
           $methodDisclosure.hide();
           $authForm.remove();
           $hr.remove();
@@ -271,7 +275,7 @@ Craft.LoginForm = Garnish.Base.extend(
               this.show2faForm(data);
             })
             .finally(() => {
-              this.$spinner.hide();
+              this.$spinner.visible = false;
             });
         });
       }

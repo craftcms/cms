@@ -6,71 +6,95 @@
  @property {string} message - The loading message associated with the spinner
  @property {boolean} messageVisible - Whether the loading message is visible on-screen
  */
+const template = document.createElement('template');
+template.innerHTML = `
+  <div class="wrapper hidden" tabindex="-1">
+    <div class="spinner"></div>
+    <slot name="message">
+      <span class="message visually-hidden">${Craft.t('app', 'Loading')}</span>
+    </slot>
+  </div>
+`;
+
 class CraftSpinner extends HTMLElement {
   connectedCallback() {
-    this.message = this.getAttribute('message') || Craft.t('app', 'Loading');
-    this.messageVisible = this.getAttribute('messageVisible') || false;
+    this.root = this;
+    let clone = template.content.cloneNode(true);
+    this.root.append(clone);
 
-    this.wrapper = document.createElement('div');
-    this.spinner = document.createElement('div');
-    this.messageContainer = document.createElement('span');
-
-    if (!this.messageVisible) {
-      this.messageContainer.classList.add('visually-hidden');
+    if (this.visible === 'true') {
+      this.wrapper.classList.remove('hidden');
     }
 
-    this.wrapper.setAttribute('tabindex', '-1');
-    this.wrapper.classList.add('hidden', 'wrapper');
-    this.spinner.classList.add('spinner');
-    this.messageContainer.innerText = this.message;
+    if (this.messageVisible === 'true') {
+      this.messageWrapper.classList.remove('visually-hidden');
+    }
 
-    // Add spinner and message to wrapper
-    this.wrapper.append(this.spinner);
-    this.wrapper.append(this.messageContainer);
-    this.append(this.wrapper);
-
-    //
-    // if (!this.trigger.getAttribute('aria-expanded')) {
-    //   this.trigger.setAttribute('aria-expanded', 'false');
-    // }
-    //
-    // this.trigger.addEventListener('click', this.toggle.bind(this));
-    //
-    // this.expanded = this.trigger.getAttribute('aria-expanded') === 'true';
-    // this.expanded ? this.open() : this.close();
+    this.initialized = true;
   }
 
-  disconnectedCallback() {
-    // this.open();
-    // this.trigger.removeEventListener('click', this.toggle.bind(this));
+  static get observedAttributes() {
+    return ['visible'];
   }
 
-  toggle() {
-    // if (this.expanded) {
-    //   this.close();
-    // } else {
-    //   this.open();
-    // }
+  get focusWhenVisible() {
+    return this.getAttribute('focusWhenVisible');
   }
 
-  show(focus = false) {
+  get visible() {
+    return this.getAttribute('visible');
+  }
+
+  set visible(value) {
+    let boolValue;
+    if (typeof value === 'boolean') {
+      boolValue = value;
+    } else if (typeof value === 'string') {
+      boolValue = value.toLowerCase() === 'true';
+    } else {
+      console.error('Property "visible" must be a string or boolean');
+    }
+
+    this.setAttribute('visible', boolValue);
+  }
+
+  get messageWrapper() {
+    return this.querySelector('.message');
+  }
+
+  get messageVisible() {
+    return this.getAttribute('messageVisible');
+  }
+
+  get wrapper() {
+    return this.querySelector('.wrapper');
+  }
+
+  attributeChangedCallback(attrName, oldVal, newVal) {
+    if (!this.initialized) return;
+
+    if (attrName.toLowerCase() === 'visible') {
+      if (newVal === 'true') {
+        this.show();
+      } else {
+        this.hide();
+      }
+    }
+  }
+  disconnectedCallback() {}
+
+  show() {
     this.wrapper.classList.remove('hidden');
-    // this.trigger.setAttribute('aria-expanded', 'true');
-    // this.expanded = true;
-    // this.target.dataset.state = 'expanded';
-    // this.dispatchEvent(new CustomEvent('open'));
+    this.dispatchEvent(new CustomEvent('show'));
 
-    if (focus) {
+    if (this.focusWhenVisible === 'true') {
       this.wrapper.focus();
     }
   }
 
   hide() {
     this.wrapper.classList.add('hidden');
-    // this.trigger.setAttribute('aria-expanded', 'false');
-    // this.expanded = false;
-    // this.target.dataset.state = 'collapsed';
-    // this.dispatchEvent(new CustomEvent('close'));
+    this.dispatchEvent(new CustomEvent('hide'));
   }
 }
 
