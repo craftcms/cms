@@ -596,6 +596,7 @@ class Asset extends Element
     protected static function defineTableAttributes(): array
     {
         $attributes = array_merge(parent::defineTableAttributes(), [
+            'dateCreated' => ['label' => Craft::t('app', 'Date Uploaded')],
             'filename' => ['label' => Craft::t('app', 'Filename')],
             'size' => ['label' => Craft::t('app', 'File Size')],
             'kind' => ['label' => Craft::t('app', 'File Kind')],
