@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.10.0-beta.2 - 2024-06-05
 
 - The `collect()` Twig function now returns a `craft\elements\ElementCollection` instance if all of the items are elements.
 - Fixed a bug where the `db/backup` command could fail on Windows. ([#15090](https://github.com/craftcms/cms/issues/15090))
