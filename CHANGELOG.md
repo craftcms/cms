@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.2.0-beta.3 - 2024-06-04
 
 - Fixed an error that could occur when executing an element query with a custom field param. ([#15147](https://github.com/craftcms/cms/issues/15147))
 
