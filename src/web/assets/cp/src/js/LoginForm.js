@@ -48,8 +48,7 @@ Craft.LoginForm = Garnish.Base.extend(
       });
 
       this.$spinner = document.createElement('craft-spinner');
-      this.$spinner.setAttribute('visible', 'false');
-      this.$spinner.setAttribute('focusWhenVisible', 'true');
+      this.$spinner.setAttribute('visible', true);
       this.$spinner.setAttribute('messageVisible', 'false');
 
       $(this.$spinner).insertAfter(this.$form);
@@ -261,6 +260,7 @@ Craft.LoginForm = Garnish.Base.extend(
 
         $ul.find('button').on('activate', (event) => {
           this.$spinner.visible = true;
+          this.$spinner.focus();
           $methodDisclosure.hide();
           $authForm.remove();
           $hr.remove();

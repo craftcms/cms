@@ -8,11 +8,9 @@
  */
 const template = document.createElement('template');
 template.innerHTML = `
-  <div class="wrapper hidden" tabindex="-1">
+  <div class="wrapper hidden" style="" tabindex="-1">
     <div class="spinner"></div>
-    <slot name="message">
-      <span class="message visually-hidden">${Craft.t('app', 'Loading')}</span>
-    </slot>
+    <span class="message visually-hidden">${Craft.t('app', 'Loading')}</span>
   </div>
 `;
 
@@ -21,6 +19,9 @@ class CraftSpinner extends HTMLElement {
     this.root = this;
     let clone = template.content.cloneNode(true);
     this.root.append(clone);
+
+    this.root.style.display = 'flex';
+    this.root.style.justifyContent = 'center';
 
     if (this.visible === 'true') {
       this.wrapper.classList.remove('hidden');
@@ -37,25 +38,12 @@ class CraftSpinner extends HTMLElement {
     return ['visible'];
   }
 
-  get focusWhenVisible() {
-    return this.getAttribute('focusWhenVisible');
-  }
-
   get visible() {
     return this.getAttribute('visible');
   }
 
   set visible(value) {
-    let boolValue;
-    if (typeof value === 'boolean') {
-      boolValue = value;
-    } else if (typeof value === 'string') {
-      boolValue = value.toLowerCase() === 'true';
-    } else {
-      console.error('Property "visible" must be a string or boolean');
-    }
-
-    this.setAttribute('visible', boolValue);
+    this.setAttribute('visible', value);
   }
 
   get messageWrapper() {
@@ -74,11 +62,7 @@ class CraftSpinner extends HTMLElement {
     if (!this.initialized) return;
 
     if (attrName.toLowerCase() === 'visible') {
-      if (newVal === 'true') {
-        this.show();
-      } else {
-        this.hide();
-      }
+      return newVal === 'true' ? this.show() : this.hide();
     }
   }
   disconnectedCallback() {}
@@ -86,15 +70,15 @@ class CraftSpinner extends HTMLElement {
   show() {
     this.wrapper.classList.remove('hidden');
     this.dispatchEvent(new CustomEvent('show'));
-
-    if (this.focusWhenVisible === 'true') {
-      this.wrapper.focus();
-    }
   }
 
   hide() {
     this.wrapper.classList.add('hidden');
     this.dispatchEvent(new CustomEvent('hide'));
+  }
+
+  focus() {
+    this.wrapper.focus();
   }
 }
 
