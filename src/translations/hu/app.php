@@ -840,7 +840,7 @@ return [
     'License transferred.' => 'Licenc átutalva',
     'License' => 'Licenc',
     'Licensed' => 'Licencelve',
-    'Lightswitch' => 'Lightswitch',
+    'Lightswitch' => 'Villanykapcsoló',
     'Limit the number of selectable category branches.' => 'A választható kategóriaágak számának korlátozása.',
     'Limit the number of selectable {type} branches.' => 'A választható {type}-ágak számának korlátozása.',
     'Limit' => 'Korlát',
