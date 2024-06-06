@@ -688,7 +688,7 @@ return [
     'Folder “{folder}” already exists at target location' => '文件夹“{folder}”已经存在于目标位置',
     'Folder' => '文件夹',
     'For everything else.' => 'For everything else.',
-    'For marketing sites managed by small teams.' => 'For marketing sites managed by small teams.',
+    'For marketing sites managed by small teams.' => '用于由小团队管理的营销网站。',
     'For personal sites built for yourself or a friend.' => 'For personal sites built for yourself or a friend.',
     'Forgot password?' => '忘记了密码？',
     'Format' => '格式',
