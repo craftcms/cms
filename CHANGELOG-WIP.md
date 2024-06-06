@@ -26,6 +26,8 @@
 - Darkened the color of footer links to meet the minimum contrast for text.
 - Set the language of the Craft edition in the footer, to improve screen reader pronunciation for non-English languages.
 - The accessible name of “Select site” buttons is now translated to the current language.
+- Updated the “Try another way” menu for 2FA login options to use a disclosure menu.
+- Added a loading spinner when switching between 2FA login methods that is accessible to screen reader users.
 
 ### Administration
 - Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))
