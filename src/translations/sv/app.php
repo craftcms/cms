@@ -689,7 +689,7 @@ return [
     'Folder' => 'Mapp',
     'For everything else.' => 'För allt annat.',
     'For marketing sites managed by small teams.' => 'För reklamwebbplatser som drivs av små team.',
-    'For personal sites built for yourself or a friend.' => 'För personliga webbplatser som har byggts för dig eller en vän.',
+    'For personal sites built for yourself or a friend.' => 'För personliga webbplatser som är byggda åt dig själv eller en vän.',
     'Forgot password?' => 'Glömt lösenord?',
     'Format' => 'Format',
     'Formatting Locale' => 'Formattering av landsstandard',
