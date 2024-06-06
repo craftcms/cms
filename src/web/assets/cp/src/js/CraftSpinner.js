@@ -3,8 +3,7 @@
  * Spinner
  *
  *
- @property {string} message - The loading message associated with the spinner
- @property {boolean} messageVisible - Whether the loading message is visible on-screen
+ @property {boolean} visible - Whether the spinner is initially visible
  */
 const template = document.createElement('template');
 template.innerHTML = `
@@ -27,10 +26,6 @@ class CraftSpinner extends HTMLElement {
       this.wrapper.classList.remove('hidden');
     }
 
-    if (this.messageVisible === 'true') {
-      this.messageWrapper.classList.remove('visually-hidden');
-    }
-
     this.initialized = true;
   }
 
@@ -48,10 +43,6 @@ class CraftSpinner extends HTMLElement {
 
   get messageWrapper() {
     return this.querySelector('.message');
-  }
-
-  get messageVisible() {
-    return this.getAttribute('messageVisible');
   }
 
   get wrapper() {

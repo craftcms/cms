@@ -48,8 +48,7 @@ Craft.LoginForm = Garnish.Base.extend(
       });
 
       this.$spinner = document.createElement('craft-spinner');
-      this.$spinner.setAttribute('visible', true);
-      this.$spinner.setAttribute('messageVisible', 'false');
+      this.$spinner.setAttribute('visible', false);
 
       $(this.$spinner).insertAfter(this.$form);
 
@@ -253,6 +252,7 @@ Craft.LoginForm = Garnish.Base.extend(
         const $button = $('<button/>', {
           type: 'button',
           'aria-controls': 'login-alt-menu',
+          class: 'menu-toggle',
           html: Craft.t('app', 'Try another way'),
         }).appendTo($altContainer);
 
