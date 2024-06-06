@@ -300,7 +300,9 @@ class Cp
      * - `attributes` – Any custom HTML attributes that should be set on the chip
      * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
      * - `id` – The chip’s `id` attribute
-     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `inputName` – The `name` attribute that should be set on a hidden input, if set
+     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set.
+     *   Defaults to [[\craft\base\Identifiable::getId()`]].
      * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
      * - `selectable` – Whether the chip should include a checkbox input
      * - `showActionMenu` – Whether the chip should include an action menu
@@ -322,6 +324,7 @@ class Cp
             'autoReload' => true,
             'id' => sprintf('chip-%s', mt_rand()),
             'inputName' => null,
+            'inputValue' => null,
             'labelHtml' => null,
             'selectable' => false,
             'showActionMenu' => false,
@@ -411,7 +414,8 @@ class Cp
         $html .= Html::endTag('div'); // .chip-actions
 
         if ($config['inputName'] !== null) {
-            $html .= Html::hiddenInput($config['inputName'], (string)$component->getId());
+            $inputValue = $config['inputValue'] ?? $component->getId();
+            $html .= Html::hiddenInput($config['inputName'], (string)$inputValue);
         }
 
         $html .= Html::endTag('div') . // .chip-content
@@ -488,6 +492,10 @@ class Cp
             if ($element->isProvisionalDraft) {
                 $config['labelHtml'] .= self::changeStatusLabelHtml();
             }
+        }
+
+        if ($config['inputName'] !== null && $element->isProvisionalDraft) {
+            $config['inputValue'] = $element->getCanonicalId();
         }
 
         $html = static::chipHtml($element, $config);
@@ -611,7 +619,8 @@ class Cp
             Html::endTag('div'); // .card-actions-container
 
         if ($config['context'] === 'field' && $config['inputName'] !== null) {
-            $html .= Html::hiddenInput($config['inputName'], (string)$element->id);
+            $inputValue = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
+            $html .= Html::hiddenInput($config['inputName'], (string)$inputValue);
         }
 
         $html .= Html::endTag('div'); // .card
@@ -812,12 +821,10 @@ class Cp
                 ]),
                 'data' => array_filter([
                     'type' => get_class($element),
-                    'id' => $element->id,
-                    'canonical-id' => $element->getCanonicalId(),
-                    'draft-id' => $element->draftId,
+                    'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
+                    'draft-id' => $element->isProvisionalDraft ? null : $element->draftId,
                     'revision-id' => $element->revisionId,
                     'site-id' => $element->siteId,
-                    'provisional' => $element->isProvisionalDraft,
                     'status' => $element->getStatus(),
                     'label' => (string)$element,
                     'url' => $element->getUrl(),
