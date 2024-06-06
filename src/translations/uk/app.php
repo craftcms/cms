@@ -1913,7 +1913,7 @@ return [
     'on {date}' => '{date}',
     'on {day}' => '({day})',
     'one' => 'один',
-    'or <a href="{url}">try before buying</a>' => 'or <a href="{url}">try before buying</a>',
+    'or <a href="{url}">try before buying</a>' => 'або <a href="{url}">спробуйте перед покупкою</a>',
     'or <a>send to Developer Support</a>' => 'або <a>надіслати до служби підтримки розробників</a>',
     'path/to/subfolder' => 'шлях/до/вкладеної папки',
     'revision' => 'версія',
