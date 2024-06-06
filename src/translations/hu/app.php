@@ -687,7 +687,7 @@ return [
     'Folder renamed.' => 'Mappa átnevezve.',
     'Folder “{folder}” already exists at target location' => 'A célhelyen már van {folder} nevű mappa',
     'Folder' => 'Mappa',
-    'For everything else.' => 'For everything else.',
+    'For everything else.' => 'Minden egyébre.',
     'For marketing sites managed by small teams.' => 'For marketing sites managed by small teams.',
     'For personal sites built for yourself or a friend.' => 'For personal sites built for yourself or a friend.',
     'Forgot password?' => 'Elfelejtette a jelszót?',
