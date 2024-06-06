@@ -1056,12 +1056,16 @@ li.breadcrumb-toggle-wrapper {
 }
 
 .content-grid {
-  --size-main-content: calc(100% - var(--touch-target-size));
+  --size-main-content: 100%;
   position: relative;
   display: grid;
   grid-template-columns: minmax(var(--size-main-content), 1fr) var(
       --touch-target-size
     );
+
+  &:has(#details-toggle) {
+    --size-main-content: calc(100% - var(--touch-target-size));
+  }
 }
 
 .content-pane {
