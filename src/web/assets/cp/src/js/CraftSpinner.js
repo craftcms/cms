@@ -19,9 +19,6 @@ class CraftSpinner extends HTMLElement {
     let clone = template.content.cloneNode(true);
     this.root.append(clone);
 
-    this.root.style.display = 'flex';
-    this.root.style.justifyContent = 'center';
-
     if (this.visible === 'true') {
       this.wrapper.classList.remove('hidden');
     }
