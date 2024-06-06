@@ -97,13 +97,11 @@ class MonologTarget extends PsrTarget
             ignoreEmptyContextAndExtra: true,
         );
 
-        $this->logger = $logger instanceof Logger
-            ? $logger
-            : $this->_createDefaultLogger();
-
-        if ($logger instanceof Closure) {
-            $this->logger = $logger($this);
-        }
+        $this->logger = match (true) {
+            $logger instanceof Logger => $logger,
+            $logger instanceof Closure => $logger($this),
+            default => $this->_createDefaultLogger(),
+        };
     }
 
     /**
@@ -112,7 +110,7 @@ class MonologTarget extends PsrTarget
     public function getLogger(): Logger
     {
         /** @var Logger */
-        return $this->logger;
+        return $this->logger ?? $this->_createDefaultLogger();
     }
 
     /**
@@ -240,6 +238,11 @@ class MonologTarget extends PsrTarget
         $this->_setLoggerProperty('allowLineBreaks', $allowLineBreaks);
     }
 
+    public function getAllowLineBreaks(): bool
+    {
+        return $this->allowLineBreaks;
+    }
+
     /**
      * @param string|null $level
      * @throws InvalidConfigException
@@ -247,6 +250,11 @@ class MonologTarget extends PsrTarget
     public function setLevel(?string $level): void
     {
         $this->_setLoggerProperty('level', $level);
+    }
+
+    public function getLevel(): string
+    {
+        return $this->level;
     }
 
     /**
@@ -258,6 +266,11 @@ class MonologTarget extends PsrTarget
         $this->_setLoggerProperty('maxFiles', $maxFiles);
     }
 
+    public function getMaxFiles(): int
+    {
+        return $this->maxFiles;
+    }
+
     /**
      * @param bool $useMicrosecondTimestamps
      * @throws InvalidConfigException
@@ -265,6 +278,11 @@ class MonologTarget extends PsrTarget
     public function setUseMicrosecondTimestamps(bool $useMicrosecondTimestamps): void
     {
         $this->_setLoggerProperty('useMicrosecondTimestamps', $useMicrosecondTimestamps);
+    }
+
+    public function getUseMicrosecondTimestamps(): bool
+    {
+        return $this->useMicrosecondTimestamps;
     }
 
     /**
@@ -288,6 +306,11 @@ class MonologTarget extends PsrTarget
     public function setProcessor(?ProcessorInterface $processor): void
     {
         $this->_setLoggerProperty('processor', $processor);
+    }
+
+    public function getProcessor(): ?ProcessorInterface
+    {
+        return $this->processor;
     }
 
     /**
