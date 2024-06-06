@@ -9,7 +9,6 @@ use DateTimeZone;
 use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -43,14 +42,6 @@ class MonologTarget extends PsrTarget
      * @var bool Whether to log request context
      */
     public bool $logContext = true;
-
-    /**
-     * @var null|array|Closure The handlers for the logger
-     * @phpstan-var null|array|Closure(MonologTarget): array<HandlerInterface>
-     * - If `null`, the default handlers will be used (see [[getDefaultHandlers()]].
-     * - If a closure, it will be called with the log target as the sole argument and should return an array of handlers.
-     */
-    public null|array|Closure $handlers = null;
 
     /**
      * @var bool
@@ -91,19 +82,28 @@ class MonologTarget extends PsrTarget
      */
     protected ?ProcessorInterface $processor = null;
 
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function __construct($config = [])
     {
+        // Store and unset logger, so we can create it with a closure
+        $logger = $config['logger'] ?? null;
+        unset($config['logger']);
+
+        parent::__construct($config);
+
         $this->formatter = $this->formatter ?? new LineFormatter(
             format: "%datetime% [%channel%.%level_name%] [%extra.yii_category%] %message% %context% %extra%\n",
             dateFormat: 'Y-m-d H:i:s',
             allowInlineLineBreaks: $this->allowLineBreaks,
             ignoreEmptyContextAndExtra: true,
         );
-        $this->handlers = $this->handlers ?? $this->getDefaultHandlers();
-        $this->logger = $this->_createLogger($this->name);
+
+        $this->logger = $logger instanceof Logger
+            ? $logger
+            : $this->_createDefaultLogger();
+
+        if ($logger instanceof Closure) {
+            $this->logger = $logger($this);
+        }
     }
 
     /**
@@ -152,33 +152,6 @@ class MonologTarget extends PsrTarget
         $logger->popProcessor();
     }
 
-    public function getDefaultHandlers(): array
-    {
-        $handlers = [];
-
-        if (App::isStreamLog()) {
-            $handlers[] = (new StreamHandler(
-                'php://stderr',
-                Logger::WARNING,
-                bubble: false,
-            ))->setFormatter($this->formatter);
-            $handlers[] = (new StreamHandler(
-                'php://stdout',
-                $this->level,
-                bubble: false,
-            ))->setFormatter($this->formatter);
-        } else {
-            $handlers[] = (new RotatingFileHandler(
-                App::parseEnv(sprintf('@storage/logs/%s.log', $this->name)),
-                $this->maxFiles,
-                $this->level,
-                filePermission: Craft::$app->getConfig()->getGeneral()->defaultFileMode,
-            ))->setFormatter($this->formatter);
-        }
-
-        return $handlers;
-    }
-
     /**
      * Context is logged via {@see self::export} method, so it can be added using Monolog.
      * @inheritdoc
@@ -209,9 +182,9 @@ class MonologTarget extends PsrTarget
         return $messages->all();
     }
 
-    private function _createLogger(string $name): Logger
+    private function _createDefaultLogger(): Logger
     {
-        $logger = (new Logger($name))->useMicrosecondTimestamps($this->useMicrosecondTimestamps);
+        $logger = (new Logger($this->name))->useMicrosecondTimestamps($this->useMicrosecondTimestamps);
 
         if ($this->processor) {
             $logger->pushProcessor($this->processor);
@@ -221,11 +194,31 @@ class MonologTarget extends PsrTarget
                 ->pushProcessor(new MessageProcessor());
         }
 
-        $handlers = $this->handlers instanceof Closure
-            ? ($this->handlers)($this)
-            : $this->handlers;
+        $handlers = [];
 
-        return $logger->setHandlers($handlers);
+        if (App::isStreamLog()) {
+            $handlers[] = (new StreamHandler(
+                'php://stderr',
+                Logger::WARNING,
+                bubble: false,
+            ))->setFormatter($this->formatter);
+            $handlers[] = (new StreamHandler(
+                'php://stdout',
+                $this->level,
+                bubble: false,
+            ))->setFormatter($this->formatter);
+        } else {
+            $handlers[] = (new RotatingFileHandler(
+                App::parseEnv(sprintf('@storage/logs/%s.log', $this->name)),
+                $this->maxFiles,
+                $this->level,
+                filePermission: Craft::$app->getConfig()->getGeneral()->defaultFileMode,
+            ))->setFormatter($this->formatter);
+        }
+
+        $logger->setHandlers($handlers);
+
+        return $logger;
     }
 
     /**
@@ -235,6 +228,11 @@ class MonologTarget extends PsrTarget
     public function setName(string $name): void
     {
         $this->_setLoggerProperty('name', $name);
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 
     /**
