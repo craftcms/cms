@@ -194,29 +194,25 @@ class MonologTarget extends PsrTarget
                 ->pushProcessor(new MessageProcessor());
         }
 
-        $handlers = [];
-
         if (App::isStreamLog()) {
-            $handlers[] = (new StreamHandler(
+            $logger->pushHandler((new StreamHandler(
                 'php://stderr',
                 Logger::WARNING,
                 bubble: false,
-            ))->setFormatter($this->formatter);
-            $handlers[] = (new StreamHandler(
+            ))->setFormatter($this->formatter));
+            $logger->pushHandler((new StreamHandler(
                 'php://stdout',
                 $this->level,
                 bubble: false,
-            ))->setFormatter($this->formatter);
+            ))->setFormatter($this->formatter));
         } else {
-            $handlers[] = (new RotatingFileHandler(
+            $logger->pushHandler((new RotatingFileHandler(
                 App::parseEnv(sprintf('@storage/logs/%s.log', $this->name)),
                 $this->maxFiles,
                 $this->level,
                 filePermission: Craft::$app->getConfig()->getGeneral()->defaultFileMode,
-            ))->setFormatter($this->formatter);
+            ))->setFormatter($this->formatter));
         }
-
-        $logger->setHandlers($handlers);
 
         return $logger;
     }
