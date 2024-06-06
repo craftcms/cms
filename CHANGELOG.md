@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where element indexes’ “Date Created” columns were mislabeled as “Date Uploaded”. ([#15155](https://github.com/craftcms/cms/issues/15155))
+- Fixed a bug where the content pane had extra padding on pages without a meta sidebar.
 
 ## 5.2.0-beta.3 - 2024-06-04
 
