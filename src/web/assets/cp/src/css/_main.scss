@@ -1964,7 +1964,7 @@ ul.icons {
     height: 17px;
     &:after {
       top: -2px;
-      border-color: var(--link-color);
+      border-color: currentColor;
     }
   }
 
