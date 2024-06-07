@@ -910,7 +910,7 @@ JS;
                 'maxElements' => $this->maxEntries,
             ];
 
-            if ($owner->hasErrors()) {
+            if ($owner->hasErrors($this->handle)) {
                 $config['prevalidate'] = true;
             }
         }
