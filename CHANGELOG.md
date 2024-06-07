@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.2.0-beta.4 - 2024-06-07
 
 - Matrix fields in cards view and Addresses fields now show which nested entries/addresses contain validation errors. ([#15161](https://github.com/craftcms/cms/issues/15161))
 - Improved the accessibility of two-step verification steps on the control panel login screen. ([#15145](https://github.com/craftcms/cms/pull/15145))
