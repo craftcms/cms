@@ -56,6 +56,10 @@ use yii\db\QueryBuilder;
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of ElementInterface
+ * @extends Query<TKey,TElement>
+ *
  * @property-write string|string[]|Site $site The site(s) that resulting elements must be returned in
  * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -110,7 +114,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @var string The name of the [[ElementInterface]] class.
-     * @phpstan-var class-string<ElementInterface>
+     * @phpstan-var class-string<TElement>
      */
     public string $elementType;
 
@@ -181,6 +185,8 @@ class ElementQuery extends Query implements ElementQueryInterface
      * This can be set to one of the following:
      *
      * - A source element ID – matches drafts of that element
+     * - A source element
+     *  - An array of source elements or element IDs
      * - `'*'` – matches drafts of any source element
      * - `false` – matches unpublished drafts that have no source element
      *
@@ -564,7 +570,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Constructor
      *
      * @param string $elementType The element type class associated with this query
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @phpstan-param class-string<TElement> $elementType
      * @param array $config Configurations to be applied to the newly created query object
      */
     public function __construct(string $elementType, array $config = [])
@@ -697,11 +703,27 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function draftOf($value): static
     {
+        $valid = false;
         if ($value instanceof ElementInterface) {
             $this->draftOf = $value->getCanonicalId();
-        } elseif (is_numeric($value) || $value === '*' || $value === false || $value === null) {
+            $valid = true;
+        } elseif (
+            is_numeric($value) ||
+            (is_array($value) && ArrayHelper::isNumeric($value)) ||
+            $value === '*' ||
+            $value === false ||
+            $value === null
+        ) {
             $this->draftOf = $value;
-        } else {
+            $valid = true;
+        } elseif (is_array($value) && !empty($value)) {
+            $c = Collection::make($value);
+            if ($c->every(fn($v) => $v instanceof ElementInterface || is_numeric($v))) {
+                $this->draftOf = $c->map(fn($v) => $v instanceof ElementInterface ? $v->id : $v)->all();
+                $valid = true;
+            }
+        }
+        if (!$valid) {
             throw new InvalidArgumentException('Invalid draftOf value');
         }
         if ($value !== null && $this->drafts === false) {
@@ -1663,7 +1685,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface[]|array The resulting elements.
+     * @return TElement[]|array The resulting elements.
      */
     public function populate($rows): array
     {
@@ -1741,7 +1763,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface[]|array
+     * @return TElement[]|array
      */
     public function all($db = null): array
     {
@@ -1758,11 +1780,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @param YiiConnection|null $db
-     * @return ElementCollection
+     * @return ElementCollection<TKey,TElement>
      */
     public function collect(?YiiConnection $db = null): ElementCollection
     {
-        /** @phpstan-ignore-next-line */
         return $this->eagerLoad() ?? ElementCollection::make($this->all($db));
     }
 
@@ -1813,7 +1834,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null
+     * @return TElement|array|null
      */
     public function one($db = null): mixed
     {
@@ -1877,7 +1898,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null
+     * @return TElement|array|null
      */
     public function nth(int $n, ?YiiConnection $db = null): mixed
     {
@@ -1931,7 +1952,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Returns the resulting elements set by [[setCachedResult()]], if the criteria params haven’t changed since then.
      *
-     * @return ElementInterface[]|null $elements The resulting elements, or null if setCachedResult() was never called or the criteria has changed
+     * @return TElement[]|null $elements The resulting elements, or null if setCachedResult() was never called or the criteria has changed
      * @see setCachedResult()
      */
     public function getCachedResult(): ?array
@@ -1955,7 +1976,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * If this is called, [[all()]] will return these elements rather than initiating a new SQL query,
      * as long as none of the parameters have changed since setCachedResult() was called.
      *
-     * @param ElementInterface[] $elements The resulting elements.
+     * @param TElement[] $elements The resulting elements.
      * @see getCachedResult()
      */
     public function setCachedResult(array $elements): void
@@ -2063,12 +2084,17 @@ class ElementQuery extends Query implements ElementQueryInterface
             && empty($this->having)
             && empty($this->union)
         ) {
-            $select = $this->select;
+            // Set $orderBy, $limit, and $offset on this query just so it more closely resembles the
+            // actual query that will be executed for `beforePrepare`/`afterPrepare` listeners
+            // (https://github.com/craftcms/cms/issues/15001)
+
+            // DON’T set $select though, in case this query ends up being cloned and executed from
+            // an event handler, like BaseRelationField does. (https://github.com/craftcms/cms/issues/15071)
+
             $order = $this->orderBy;
             $limit = $this->limit;
             $offset = $this->offset;
 
-            $this->select = [$selectExpression];
             $this->orderBy = null;
             $this->limit = null;
             $this->offset = null;
@@ -2083,7 +2109,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             } catch (QueryAbortedException) {
                 return false;
             } finally {
-                $this->select = $select;
                 $this->orderBy = $order;
                 $this->limit = $limit;
                 $this->offset = $offset;
@@ -2545,7 +2570,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             /** @var FieldInterface[][][] $fieldsByHandle */
             $fieldsByHandle = [];
             foreach ($this->customFields as $field) {
-                $fieldsByHandle[$field->handle][$field->uid] = $field;
+                $fieldsByHandle[$field->handle][$field->uid][] = $field;
             }
 
             foreach ($fieldsByHandle as $handle => $instancesByUid) {

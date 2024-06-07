@@ -300,7 +300,9 @@ class Cp
      * - `attributes` – Any custom HTML attributes that should be set on the chip
      * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
      * - `id` – The chip’s `id` attribute
-     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `inputName` – The `name` attribute that should be set on a hidden input, if set
+     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set.
+     *   Defaults to [[\craft\base\Identifiable::getId()`]].
      * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
      * - `selectable` – Whether the chip should include a checkbox input
      * - `showActionMenu` – Whether the chip should include an action menu
@@ -322,6 +324,7 @@ class Cp
             'autoReload' => true,
             'id' => sprintf('chip-%s', mt_rand()),
             'inputName' => null,
+            'inputValue' => null,
             'labelHtml' => null,
             'selectable' => false,
             'showActionMenu' => false,
@@ -411,7 +414,8 @@ class Cp
         $html .= Html::endTag('div'); // .chip-actions
 
         if ($config['inputName'] !== null) {
-            $html .= Html::hiddenInput($config['inputName'], (string)$component->getId());
+            $inputValue = $config['inputValue'] ?? $component->getId();
+            $html .= Html::hiddenInput($config['inputName'], (string)$inputValue);
         }
 
         $html .= Html::endTag('div') . // .chip-content
@@ -484,6 +488,14 @@ class Cp
                 $config['attributes'],
                 fn() => $element->getChipLabelHtml(),
             );
+
+            if ($element->isProvisionalDraft) {
+                $config['labelHtml'] .= self::changeStatusLabelHtml();
+            }
+        }
+
+        if ($config['inputName'] !== null && $element->isProvisionalDraft) {
+            $config['inputValue'] = $element->getCanonicalId();
         }
 
         $html = static::chipHtml($element, $config);
@@ -560,9 +572,16 @@ class Cp
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
-        $statusLabel = $element::hasStatuses() ? static::componentStatusLabelHtml($element) : null;
-        if ($statusLabel) {
-            $bodyContent .= Html::tag('div', $statusLabel, ['class' => 'flex']);
+        $labels = array_filter([
+            $element::hasStatuses() ? static::componentStatusLabelHtml($element) : null,
+            $element->isProvisionalDraft ? self::changeStatusLabelHtml() : null,
+        ]);
+
+        if (!empty($labels)) {
+            $bodyContent .= Html::ul($labels, [
+                'class' => ['flex', 'gap-xs'],
+                'encode' => false,
+            ]);
         }
 
         $thumb = $element->getThumbHtml(128);
@@ -600,7 +619,8 @@ class Cp
             Html::endTag('div'); // .card-actions-container
 
         if ($config['context'] === 'field' && $config['inputName'] !== null) {
-            $html .= Html::hiddenInput($config['inputName'], (string)$element->id);
+            $inputValue = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
+            $html .= Html::hiddenInput($config['inputName'], (string)$inputValue);
         }
 
         $html .= Html::endTag('div'); // .card
@@ -687,7 +707,7 @@ class Cp
             return self::statusIndicatorHtml('draft');
         }
 
-        $statusDef = $component::statuses()[$status] ?? null;
+        $statusDef = $component::statuses()[$status] ?? [];
 
         // Just to give the `statusIndicatorHtml` clean types
         if (is_string($statusDef)) {
@@ -743,6 +763,15 @@ class Cp
         ]);
     }
 
+    private static function changeStatusLabelHtml(): string
+    {
+        return static::statusLabelHtml([
+            'color' => Color::Blue,
+            'icon' => 'pen-circle',
+            'label' => Craft::t('app', 'Edited'),
+        ]);
+    }
+
     /**
      * Renders status label HTML for a [[Statusable]] component.
      *
@@ -792,8 +821,8 @@ class Cp
                 ]),
                 'data' => array_filter([
                     'type' => get_class($element),
-                    'id' => $element->id,
-                    'draft-id' => $element->draftId,
+                    'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
+                    'draft-id' => $element->isProvisionalDraft ? null : $element->draftId,
                     'revision-id' => $element->revisionId,
                     'site-id' => $element->siteId,
                     'status' => $element->getStatus(),
@@ -1045,9 +1074,12 @@ class Cp
         if ($config['showStatusMenu'] !== 'auto') {
             $config['showStatusMenu'] = (bool)$config['showStatusMenu'];
         }
-        if ($config['showSiteMenu'] !== 'auto') {
-            $config['showSiteMenu'] = (bool)$config['showSiteMenu'];
-        }
+
+        $config['showSiteMenu'] = $config['showSiteMenu'] === 'auto'
+            ? $elementType::isLocalized()
+            : (bool)$config['showSiteMenu'];
+
+        $siteIds = Craft::$app->getSites()->getEditableSiteIds();
 
         $sortOptions = Collection::make($elementType::sortOptions())
             ->map(fn($option, $key) => [
@@ -1148,6 +1180,22 @@ class Cp
             }
         }
 
+        // If all the sources are site-specific, filter out any unneeded site IDs
+        if (
+            $config['showSiteMenu'] &&
+            ArrayHelper::onlyContains($sources, fn(array $source) => $source['type'] === 'heading' || isset($source['sites']))
+        ) {
+            $representedSiteIds = [];
+            foreach ($sources as $source) {
+                if (isset($source['sites'])) {
+                    foreach ($source['sites'] as $siteId) {
+                        $representedSiteIds[$siteId] = true;
+                    }
+                }
+            }
+            $siteIds = array_filter($siteIds, fn(int $siteId) => isset($representedSiteIds[$siteId]));
+        }
+
         $view = Craft::$app->getView();
 
         if ($config['registerJs']) {
@@ -1196,6 +1244,7 @@ JS, [
                 'context' => $config['context'],
                 'showStatusMenu' => $config['showStatusMenu'],
                 'showSiteMenu' => $config['showSiteMenu'],
+                'siteIds' => $siteIds,
                 'canHaveDrafts' => $elementType::hasDrafts(),
             ], View::TEMPLATE_MODE_CP) .
             Html::endTag('div') . // .toolbar

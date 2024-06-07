@@ -18,7 +18,17 @@
         : 0 %}
     {% set elementTitle = element.title ?: element.id %}
     {% set showInputs = (inlineEditing ?? false) and elementsService.canSave(element, currentUser) %}
-    <tr data-id="{{ element.id }}"{% if structure %} data-title="{{ elementTitle }}" data-level="{{ element.level }}" data-descendants="{{ totalDescendants ?? 0 }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
+    {% tag 'tr' with {
+      data: {
+        id: element.isProvisionalDraft ? element.getCanonicalId() : element.id,
+        title: elementTitle,
+        level: structure ? element.level : false,
+        descendants: structure ? (totalDescendants ?? 0) : false,
+      },
+      class: {
+        disabled: (element.isProvisionalDraft ? element.getCanonicalId() : element.id) in disabledElementIds,
+      }|filter|keys,
+    } %}
         {% if selectable %}
             <td class="checkbox-cell">
                 {{ tag('div', {
@@ -95,7 +105,7 @@
                 </td>
             {% endif %}
         {% endfor %}
-    </tr>
+    {% endtag %}
 {% endfor %}
 
 {% endapply -%}

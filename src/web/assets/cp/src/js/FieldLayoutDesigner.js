@@ -282,6 +282,10 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         this.$fieldGroups.last().append($selector).removeClass('hidden');
         this.refreshLibraryFields();
         this.initLibraryElements($selector);
+
+        // set the search value to the new field name
+        this.$fieldSearch.val(response.data.field.name);
+        this.updateFieldSearchResults();
       });
     },
 
@@ -1333,7 +1337,9 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       this.tab.designer.refreshSelectedFields();
 
       if (!this.isMultiInstance) {
-        this.tab.designer.removeFieldByHandle(this.defaultHandle);
+        this.tab.designer.removeFieldByHandle(
+          this.defaultHandle || this.attribute
+        );
       }
     }
 

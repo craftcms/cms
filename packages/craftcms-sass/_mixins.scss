@@ -563,7 +563,8 @@ $menuBorderRadius: $mediumBorderRadius;
     }
 
     &:active,
-    &.active {
+    &.active,
+    &[aria-expanded='true'] {
       background-color: darken($grey200, 10%);
     }
   }
@@ -583,10 +584,10 @@ $menuBorderRadius: $mediumBorderRadius;
   padding-left: 0;
   padding-right: 0;
 
-  &:not(:hover):not(:active):not(.active) {
+  &:not(:hover):not(:active):not(.active):not([aria-expanded='true']) {
     background-color: transparent;
   }
-  &:not(:active):not(.active):hover {
+  &:not(:active):not(.active):not([aria-expanded='true']):hover {
     background-color: transparentize($grey300, 0.85);
   }
 }

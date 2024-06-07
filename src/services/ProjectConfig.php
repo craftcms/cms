@@ -886,14 +886,11 @@ class ProjectConfig extends Component
     protected function removeInternalConfigValuesByPaths(array $paths): void
     {
         $chunks = array_chunk($paths, 1000);
-        $db = Craft::$app->getDb();
-        $db->transaction(function() use ($chunks, $db) {
-            foreach ($chunks as $chunk) {
-                Db::delete(Table::PROJECTCONFIG, [
-                    'path' => $chunk,
-                ], db: $db);
-            }
-        });
+        foreach ($chunks as $chunk) {
+            Db::delete(Table::PROJECTCONFIG, [
+                'path' => $chunk,
+            ]);
+        }
     }
 
     /**
