@@ -1,6 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
-import $ from 'jquery';
+/** global: $ */
+/** global: jQuery */
 
 /**
  * CP Screen Slideout

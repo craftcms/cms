@@ -252,6 +252,7 @@ import $ from 'jquery';
               ownerElementType: this.settings.ownerElementType,
               siteId: this.settings.siteId,
               namespace: this.settings.namespace,
+              staticEntries: this.settings.staticEntries,
             },
           }
         );
@@ -547,8 +548,11 @@ import $ from 'jquery';
       }
 
       this._handleTitleBarClick = function (ev) {
-        ev.preventDefault();
-        this.toggle();
+        // don't expand/collapse the matrix "block" if double tapping the tabs
+        if (!$(ev.target).closest('.tab-label').length) {
+          ev.preventDefault();
+          this.toggle();
+        }
       };
 
       this.addListener(this.$titlebar, 'doubletap', this._handleTitleBarClick);
@@ -960,7 +964,9 @@ import $ from 'jquery';
           [param('fieldId')]: this.matrix.settings.fieldId,
           [param('sortOrder')]: this.$container.index() + 1,
           [param('typeId')]: this.$container.data('type-id'),
-          [param('elementUid')]: this.$container.data('uid'),
+          [param('elementUid')]:
+            elementEditor?.getDraftElementUid(this.$container.data('uid')) ??
+            this.$container.data('uid'),
         };
 
         const selectedTabId = this.$fieldsContainer

@@ -97,7 +97,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         this.addListener(Garnish.$win, 'mousedown', (ev) => {
           if (
             !this.$container.is(ev.target) &&
-            !this.$container.find(ev.target).length
+            !this.$container.find(ev.target).length &&
+            !$(ev.target).closest('.menu').length
           ) {
             this.elementSelect.deselectAll();
           }
@@ -118,7 +119,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getElements: function () {
-      return this.$elementsContainer.find('.element');
+      if (this.$elementsContainer.hasClass('structure')) {
+        return this.$elementsContainer.find('> li .row .element');
+      } else {
+        return this.$elementsContainer.find('> li > .element');
+      }
     },
 
     getAddElementsBtn: function () {
@@ -139,7 +144,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       return {
         multi: this.settings.sortable,
         filter: (target) => {
-          return !$(target).closest('a,button').length;
+          return !$(target).closest('a[href],button,[role=button]').length;
         },
         // prevent keyboard focus since element selection is only needed for drag-n-drop
         makeFocusable: false,
@@ -246,7 +251,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     updateButtonContainer: function () {
       const $container =
         this.$addElementBtn.length && this.$addElementBtn.parent('.flex');
-      if ($container && $container.length) {
+      if ($container?.length) {
         if ($container.children(':not(.hidden)').length) {
           $container.removeClass('hidden');
         } else {
@@ -327,7 +332,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             title: Craft.t('app', 'Reorder'),
             'aria-label': Craft.t('app', 'Reorder'),
             'aria-describedby': $element.find('.label').attr('id'),
-          }).appendTo($element.find('.chip-actions,.card-actions'));
+          }).appendTo(
+            $element.find(
+              '> .chip-content > .chip-actions, > .card-actions-container > .card-actions'
+            )
+          );
         }
       }
 
@@ -430,7 +439,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         icon: 'remove',
         label: Craft.t('app', 'Remove'),
         callback: () => {
-          this.removeElement($element);
+          // If the element is selected, remove *all* the selected elements
+          if (this.elementSelect?.isSelected($element)) {
+            this.removeElement(this.elementSelect.getSelectedItems());
+          } else {
+            this.removeElement($element);
+          }
         },
         destructive: true,
       });
@@ -535,6 +549,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
     },
 
+    /**
+     * Removes elements from the field value, without actually removing their DOM nodes.
+     * @param $elements
+     */
     removeElements: function ($elements) {
       if (this.settings.selectable) {
         this.elementSelect.removeItems($elements);
@@ -565,7 +583,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         const lastElementIndex = this.$elements.index($elements.last());
         $nextElement = this.$elements.eq(lastElementIndex + 1);
       }
-      if ($nextElement.length) {
+      if ($nextElement?.length) {
         $nextElement.focus();
       } else {
         this.focusNextLogicalElement();
@@ -577,30 +595,39 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.onRemoveElements();
     },
 
-    removeElement: function ($element) {
+    /**
+     * Completely removes an element(s) from the UI and field value.
+     * @param $elements
+     */
+    removeElement: function ($elements) {
       if (this.settings.maintainHierarchy) {
-        // Find any descendants this element might have
-        const $allElements = $element.add(
-          $element.parent().siblings('ul').find('.element')
-        );
+        // Find any descendants the elements have
+        let $descendants = $();
+        for (let i = 0; i < $elements.length; i++) {
+          $descendants = $descendants.add(
+            $elements.eq(i).parent().siblings('ul').find('.element')
+          );
+        }
+        $elements = $elements.add($descendants);
+      }
 
-        // Remove any inputs from the form data
-        $('[name]', $allElements).removeAttr('name');
+      // Remove any inputs from the form data
+      $('[name]', $elements).removeAttr('name');
 
-        // Remove our record of them all at once
-        this.removeElements($allElements);
+      // Remove our record of them all at once
+      this.removeElements($elements);
 
-        // Animate them away one at a time
-        for (let i = 0; i < $allElements.length; i++) {
-          this._animateStructureElementAway($allElements, i);
+      if (this.settings.maintainHierarchy) {
+        for (let i = 0; i < $elements.length; i++) {
+          this._animateStructureElementAway($elements, i);
         }
       } else {
-        // Remove any inputs from the form data
-        $('[name]', $element).removeAttr('name');
-        this.removeElements($element);
-        this.animateElementAway($element, () => {
-          $element.parent('li').remove();
-        });
+        for (let i = 0; i < $elements.length; i++) {
+          const $element = $elements.eq(i);
+          this.animateElementAway($element, () => {
+            $element.parent('li').remove();
+          });
+        }
       }
     },
 
@@ -687,9 +714,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getSelectedElementIds: function () {
-      var ids = [];
+      const ids = [];
 
-      for (var i = 0; i < this.$elements.length; i++) {
+      for (let i = 0; i < this.$elements.length; i++) {
         ids.push(this.$elements.eq(i).data('id'));
       }
 

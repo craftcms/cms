@@ -128,7 +128,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       // Was .elements just created?
       if (!this.$elements.length) {
         this.$elements = $('<ul/>', {
-          class: 'elements card-grid',
+          class: `elements ${this.settings.showInGrid ? 'card-grid' : 'cards'}`,
         }).prependTo(this.$container);
         this.$container.children('.zilch').addClass('hidden');
       }
@@ -382,7 +382,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
     initElement($element) {
       if (Garnish.hasAttr($element, 'data-editable')) {
         this.addListener($element, 'dblclick,taphold', (ev) => {
-          if ($(ev.target).closest('a,button').length) {
+          if ($(ev.target).closest('a[href],button,[role=button]').length) {
             // Let the link/button do its thing
             return;
           }
@@ -394,29 +394,26 @@ Craft.NestedElementManager = Garnish.Base.extend(
         this.elementSort.addItems($element.parent());
       }
 
+      const $actionMenuBtn = $element.find('.action-btn');
+      const disclosureMenu = $actionMenuBtn
+        .disclosureMenu()
+        .data('disclosureMenu');
+
       if (Garnish.hasAttr($element, 'data-deletable')) {
-        const $actionMenuBtn = $element.find('.action-btn');
-        const disclosureMenu = $actionMenuBtn
-          .disclosureMenu()
-          .data('disclosureMenu');
-        const $actionMenu = disclosureMenu.$container;
-        $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
-        const $ul = $('<ul/>').appendTo($actionMenu);
-        const $li = $('<li/>').appendTo($ul);
-        const $a = $('<a/>', {
-          class: 'error',
-          type: 'button',
-          role: 'button',
-          'data-icon': 'trash',
-          'aria-label': this.settings.deleteLabel || Craft.t('app', 'Delete'),
-          text: this.settings.deleteLabel || Craft.t('app', 'Delete'),
-        }).appendTo($li);
-        this.addListener($a, 'activate', (ev) => {
-          disclosureMenu.hide();
-          if (confirm(this.settings.deleteConfirmationMessage)) {
-            this.deleteElement($element);
-          }
-        });
+        const ul = disclosureMenu.addGroup();
+        disclosureMenu.addItem(
+          {
+            icon: 'trash',
+            label: this.settings.deleteLabel || Craft.t('app', 'Delete'),
+            destructive: true,
+            onActivate: () => {
+              if (confirm(this.settings.deleteConfirmationMessage)) {
+                this.deleteElement($element);
+              }
+            },
+          },
+          ul
+        );
       }
     },
 
@@ -515,6 +512,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
     ownerId: null,
     defaults: {
       mode: 'cards',
+      showInGrid: false,
       ownerElementType: null,
       ownerId: null,
       ownerSiteId: null,

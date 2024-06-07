@@ -22,6 +22,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Search;
@@ -60,6 +61,7 @@ class AppController extends Controller
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'health-check' => self::ALLOW_ANONYMOUS_LIVE,
+        'resource-js' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -575,20 +577,15 @@ class AppController extends Controller
         $arr['name'] = $name;
         $arr['latestVersion'] = $update->getLatest()->version ?? null;
 
-        if ($update->abandoned) {
-            $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
-            if ($update->replacementName) {
-                if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
-                    $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
-                } else {
-                    $replacementUrl = $update->replacementUrl;
-                }
-                $arr['statusText'] .= ' ' .
-                    Craft::t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', [
-                        'url' => $replacementUrl,
-                        'name' => $update->replacementName,
-                    ]);
-            }
+        // Make sure that the platform & composer.json PHP version are compatible
+        $phpConstraintError = null;
+        if (
+            $update->phpConstraint &&
+            !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)
+        ) {
+            $arr['status'] = 'phpIssue';
+            $arr['statusText'] = $phpConstraintError;
+            $arr['ctaUrl'] = false;
         } elseif ($update->status === Update::STATUS_EXPIRED) {
             $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
                 'name' => $name,
@@ -602,22 +599,28 @@ class AppController extends Controller
                 $arr['altCtaText'] = Craft::t('app', 'Update anyway');
             }
         } else {
-            // Make sure that the platform & composer.json PHP version are compatible
-            $phpConstraintError = null;
-            if ($update->phpConstraint && !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)) {
-                $arr['status'] = 'phpIssue';
-                $arr['statusText'] = $phpConstraintError;
-                $arr['ctaUrl'] = false;
-            } else {
-                if ($update->status === Update::STATUS_BREAKPOINT) {
-                    $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
-                        'update' => $name . ' ' . ($update->getLatest()->version ?? ''),
-                    ]);
+            if ($update->abandoned) {
+                $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
+                if ($update->replacementName) {
+                    if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+                        $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
+                    } else {
+                        $replacementUrl = $update->replacementUrl;
+                    }
+                    $arr['statusText'] .= ' ' .
+                        Craft::t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', [
+                            'url' => $replacementUrl,
+                            'name' => $update->replacementName,
+                        ]);
                 }
+            } elseif ($update->status === Update::STATUS_BREAKPOINT) {
+                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
+                    'update' => $name . ' ' . ($update->getLatest()->version ?? ''),
+                ]);
+            }
 
-                if ($allowUpdates) {
-                    $arr['ctaText'] = Craft::t('app', 'Update');
-                }
+            if ($allowUpdates) {
+                $arr['ctaText'] = Craft::t('app', 'Update');
             }
         }
 
@@ -760,17 +763,20 @@ class AppController extends Controller
                 ->id($id)
                 ->fixedOrder()
                 ->drafts(null)
-                ->provisionalDrafts(null)
                 ->revisions(null)
                 ->siteId($siteId)
                 ->status(null)
                 ->all();
 
+            // See if there are any provisional drafts we should swap these out with
+            ElementHelper::swapInProvisionalDrafts($elements);
+
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
+                    $id = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
                     /** @var 'chip'|'card' $ui */
                     $ui = $instance['ui'] ?? 'chip';
-                    $elementHtml[$element->id][$key] = match ($ui) {
+                    $elementHtml[$id][$key] = match ($ui) {
                         'chip' => Cp::elementChipHtml($element, $instance),
                         'card' => Cp::elementCardHtml($element, $instance),
                     };

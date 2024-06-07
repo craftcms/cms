@@ -200,7 +200,10 @@ class Gql
     public static function canQueryEntries(?GqlSchema $schema = null): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
-        return isset($allowedEntities['sections']);
+        return (
+            isset($allowedEntities['sections']) ||
+            isset($allowedEntities['nestedentryfields'])
+        );
     }
 
     /**
@@ -644,5 +647,28 @@ class Gql
             Craft::$app->getErrorHandler()->logException($e);
             throw $e;
         }
+    }
+
+    /**
+     * Returns whether the given GraphQL query looks like an introspection query.
+     *
+     * @param string $query
+     * @return bool
+     * @since 4.9.6
+     */
+    public static function isIntrospectionQuery(string $query): bool
+    {
+        // strtok() won’t find a token if the string starts with it
+        /** @var string|false $tok */
+        $tok = strtok(" $query", '{');
+        if ($tok === false) {
+            return false;
+        }
+        $tok = strtok('({}');
+        if ($tok === false) {
+            return false;
+        }
+        $tok = trim($tok);
+        return in_array($tok, ['__schema', '__type']);
     }
 }

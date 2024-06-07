@@ -1,6 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
-import $ from 'jquery';
+/** global: $ */
+/** global: jQuery */
 
 /**
  * CP class
@@ -90,6 +91,7 @@ Craft.CP = Garnish.Base.extend(
       this.$header = $('#header');
       this.$mainContent = $('#main-content');
       this.$details = $('#details');
+      this.$detailsContainer = $('#details-container');
       this.$sidebarContainer = $('#sidebar-container');
       this.$sidebarToggle = $('#sidebar-toggle');
       this.$sidebar = $('#sidebar');
@@ -221,9 +223,25 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Should we match the previous scroll position?
-      let scrollY = Craft.getLocalStorage('scrollY');
-      if (typeof scrollY !== 'undefined') {
-        Craft.removeLocalStorage('scrollY');
+      let scrollY;
+      const location = document.location;
+      const params = new URLSearchParams(location.search);
+      if (params.has('scrollY')) {
+        scrollY = params.get('scrollY');
+        params.delete('scrollY');
+        Craft.setUrl(
+          Craft.getUrl(
+            `${location.origin}${location.pathname}${location.hash}`,
+            params.toString()
+          )
+        );
+      } else {
+        scrollY = Craft.getLocalStorage('scrollY');
+        if (scrollY !== undefined) {
+          Craft.removeLocalStorage('scrollY');
+        }
+      }
+      if (scrollY !== undefined) {
         Garnish.$doc.ready(() => {
           Garnish.requestAnimationFrame(() => {
             window.scrollTo(0, scrollY);
@@ -850,14 +868,14 @@ Craft.CP = Garnish.Base.extend(
         }
 
         this._setFixedTopPos(this.$sidebar, headerHeight);
-        this._setFixedTopPos(this.$details, headerHeight);
+        this.$detailsContainer.css('top', headerHeight + 14);
       } else if (this.fixedHeader) {
         this.$headerContainer.height('auto');
         this.$header.width('auto');
         Garnish.$bod.removeClass('fixed-header');
         this.$contentContainer.css('min-height', '');
         this.$sidebar.removeClass('fixed').css('top', '');
-        this.$details.removeClass('fixed').css('top', '');
+        this.$detailsContainer.css('top', '');
         this.fixedHeader = false;
       }
     },
@@ -1315,25 +1333,24 @@ Craft.CP = Garnish.Base.extend(
             Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
               .then(({data}) => {
                 // Get the existing utility nav badge and screen reader text, if any
-                let $badge = $utilitiesLink.children('.badge');
-                let $screenReaderText = $utilitiesLink.children(
+                let $badge = $utilitiesLink.children('.sidebar-action__badge');
+
+                if (data.badgeCount && !$badge.length) {
+                  $badge = $(
+                    '<span class="sidebar-action__badge">' +
+                      '<span class="badge" aria-hidden="true"></span>' +
+                      '<span class="visually-hidden" data-notification></span>' +
+                      '</span>'
+                  ).appendTo($utilitiesLink);
+                }
+
+                const $badgeLabel = $badge.children('.badge');
+                const $screenReaderText = $badge.children(
                   '[data-notification]'
                 );
 
                 if (data.badgeCount) {
-                  if (!$badge.length) {
-                    $badge = $(
-                      '<span class="badge" aria-hidden="true"/>'
-                    ).appendTo($utilitiesLink);
-                  }
-
-                  if (!$screenReaderText.length) {
-                    $screenReaderText = $(
-                      '<span class="visually-hidden" data-notification/>'
-                    ).appendTo($utilitiesLink);
-                  }
-
-                  $badge.text(data.badgeCount);
+                  $badgeLabel.text(data.badgeCount);
                   $screenReaderText.text(
                     Craft.t(
                       'app',
@@ -1343,10 +1360,10 @@ Craft.CP = Garnish.Base.extend(
                       }
                     )
                   );
-                } else if ($badge.length && $screenReaderText.length) {
+                } else if ($badge.length) {
                   $badge.remove();
-                  $screenReaderText.remove();
                 }
+
                 resolve();
               })
               .catch(reject);
@@ -1946,7 +1963,7 @@ var JobProgressIcon = Garnish.Base.extend({
       this._$bgCanvas.velocity('fadeOut');
 
       this._animateArc(1, 1, () => {
-        this.$a.remove();
+        this.$li.remove();
         this.destroy();
       });
     });

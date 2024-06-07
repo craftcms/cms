@@ -221,6 +221,17 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
+     * Returns the ID of the current job being handled.
+     *
+     * @return string
+     * @since 4.10.0
+     */
+    public function getJobId(): string
+    {
+        return $this->_executingJobId;
+    }
+
+    /**
      * @param string $id The job ID.
      * @return bool
      */
@@ -525,16 +536,18 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         $query = $this->_createJobQuery();
 
-        // Set up the reserved jobs condition
-        $reservedCondition = $this->db->getQueryBuilder()->buildCondition([
-            'and',
-            ['fail' => false],
-            ['not', ['timeUpdated' => null]],
-        ], $query->params);
+        $notFailedSql = $this->db->getQueryBuilder()->buildCondition(['fail' => false], $query->params);
+        $runningSql = $this->db->getQueryBuilder()->buildCondition(['not', ['timeUpdated' => null]], $query->params);
 
         $query
             ->select(['id', 'description', 'timePushed', 'delay', 'progress', 'progressLabel', 'timeUpdated', 'fail', 'error'])
-            ->orderBy(new Expression("CASE WHEN $reservedCondition THEN 1 ELSE 0 END DESC"))
+            // Sort by not failed first
+            ->orderBy(new Expression("CASE WHEN $notFailedSql THEN 1 ELSE 0 END DESC"))
+            // then running first
+            ->addOrderBy(new Expression("CASE WHEN $runningSql THEN 1 ELSE 0 END DESC"))
+            // then earliest start time (now or timePushed + delay)
+            ->addOrderBy(new Expression('GREATEST(:time, [[timePushed]] + [[delay]]) ASC', [':time' => time()]))
+            // then priority and ID
             ->addOrderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit);
 

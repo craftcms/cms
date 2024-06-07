@@ -210,10 +210,12 @@ class Cp
             ]);
         }
 
-        // Give plugins a chance to add their own alerts
-        $event = new RegisterCpAlertsEvent();
-        Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
-        $alerts = array_merge($alerts, $event->alerts);
+        // Fire a 'registerAlerts' event
+        if (Event::hasHandlers(self::class, self::EVENT_REGISTER_ALERTS)) {
+            $event = new RegisterCpAlertsEvent();
+            Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
+            $alerts = array_merge($alerts, $event->alerts);
+        }
 
         // Inline CSS styles
         foreach ($alerts as $i => $alert) {
@@ -298,7 +300,9 @@ class Cp
      * - `attributes` – Any custom HTML attributes that should be set on the chip
      * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
      * - `id` – The chip’s `id` attribute
-     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `inputName` – The `name` attribute that should be set on a hidden input, if set
+     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set.
+     *   Defaults to [[\craft\base\Identifiable::getId()`]].
      * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
      * - `selectable` – Whether the chip should include a checkbox input
      * - `showActionMenu` – Whether the chip should include an action menu
@@ -320,6 +324,7 @@ class Cp
             'autoReload' => true,
             'id' => sprintf('chip-%s', mt_rand()),
             'inputName' => null,
+            'inputValue' => null,
             'labelHtml' => null,
             'selectable' => false,
             'showActionMenu' => false,
@@ -385,7 +390,7 @@ class Cp
 
         if ($config['showStatus']) {
             /** @var Chippable&Statusable $component */
-            $html .= self::componentStatusHtml($component) ?? '';
+            $html .= self::componentStatusIndicatorHtml($component) ?? '';
         }
 
         if ($config['showLabel']) {
@@ -409,7 +414,8 @@ class Cp
         $html .= Html::endTag('div'); // .chip-actions
 
         if ($config['inputName'] !== null) {
-            $html .= Html::hiddenInput($config['inputName'], (string)$component->getId());
+            $inputValue = $config['inputValue'] ?? $component->getId();
+            $html .= Html::hiddenInput($config['inputName'], (string)$inputValue);
         }
 
         $html .= Html::endTag('div') . // .chip-content
@@ -482,11 +488,19 @@ class Cp
                 $config['attributes'],
                 fn() => $element->getChipLabelHtml(),
             );
+
+            if ($element->isProvisionalDraft) {
+                $config['labelHtml'] .= self::changeStatusLabelHtml();
+            }
+        }
+
+        if ($config['inputName'] !== null && $element->isProvisionalDraft) {
+            $config['inputValue'] = $element->getCanonicalId();
         }
 
         $html = static::chipHtml($element, $config);
 
-        // Allow plugins to modify the HTML
+        // Fire a 'defineElementChipHtml' event
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CHIP_HTML)) {
             $event = new DefineElementHtmlEvent([
                 'element' => $element,
@@ -558,7 +572,19 @@ class Cp
         $headingContent = self::elementLabelHtml($element, $config, $attributes, fn() => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
-        $thumb = $element->getThumbHtml(120);
+        $labels = array_filter([
+            $element::hasStatuses() ? static::componentStatusLabelHtml($element) : null,
+            $element->isProvisionalDraft ? self::changeStatusLabelHtml() : null,
+        ]);
+
+        if (!empty($labels)) {
+            $bodyContent .= Html::ul($labels, [
+                'class' => ['flex', 'gap-xs'],
+                'encode' => false,
+            ]);
+        }
+
+        $thumb = $element->getThumbHtml(128);
         if ($thumb === null && $element instanceof Iconic) {
             $icon = $element->getIcon();
             if ($icon) {
@@ -580,7 +606,6 @@ class Cp
             Html::endTag('div') . // .card-content
             Html::beginTag('div', ['class' => 'card-actions-container']) .
             Html::beginTag('div', ['class' => 'card-actions']) .
-            (self::componentStatusHtml($element) ?? '') .
             ($config['selectable'] ? self::componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '') .
             ($config['showActionMenu'] ? self::componentActionMenu($element) : '') .
             ($config['sortable'] ? Html::button('', [
@@ -594,12 +619,13 @@ class Cp
             Html::endTag('div'); // .card-actions-container
 
         if ($config['context'] === 'field' && $config['inputName'] !== null) {
-            $html .= Html::hiddenInput($config['inputName'], (string)$element->id);
+            $inputValue = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
+            $html .= Html::hiddenInput($config['inputName'], (string)$inputValue);
         }
 
         $html .= Html::endTag('div'); // .card
 
-        // Allow plugins to modify the HTML
+        // Fire a 'defineElementCardHtml' event
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CARD_HTML)) {
             $event = new DefineElementHtmlEvent([
                 'element' => $element,
@@ -614,47 +640,169 @@ class Cp
     }
 
     /**
-     * Renders accessible HTML for status indicators.
+     * Renders status indicator HTML.
      *
      * When the `status` is equal to "draft" the draft icon will be displayed. The attributes passed as the
      * second argument should be a status definition from [[\craft\base\ElementInterface::statuses]]
      *
      * @param string $status Status string
-     * @param array|null $attributes Attributes to be passed along.
+     * @param array $attributes Attributes to be passed along.
      * @return string|null
      * @since 5.0.0
      */
-    public static function statusIndicatorHtml(string $status, array $attributes = null): ?string
+    public static function statusIndicatorHtml(string $status, array $attributes = []): ?string
     {
+        $attributes += [
+            'color' => null,
+            'label' => ucfirst($status),
+            'class' => $status,
+        ];
+
         if ($status === 'draft') {
             return Html::tag('span', '', [
                 'data' => ['icon' => 'draft'],
                 'class' => 'icon',
                 'role' => 'img',
                 'aria' => [
-                    'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
+                    'label' => sprintf('%s %s',
+                        Craft::t('app', 'Status:'),
+                        $attributes['label'] ?? Craft::t('app', 'Draft'),
+                    ),
                 ],
             ]);
         }
 
-        $color = $attributes['color'] ?? null;
-        if ($color instanceof Color) {
-            $color = $color->value;
+        if ($attributes['color'] instanceof Color) {
+            $attributes['color'] = $attributes['color']->value;
         }
 
-        return Html::tag('span', '', [
+        $options = [
             'class' => array_filter([
                 'status',
-                $status,
-                $color,
+                $attributes['class'],
+                $attributes['color'],
             ]),
-            'role' => 'img',
-            'aria' => [
-                'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $attributes['label'] ?? ucfirst($status)),
-            ],
+        ];
+
+        if ($attributes['label'] !== null) {
+            $options['role'] = 'img';
+            $options['aria']['label'] = sprintf('%s %s', Craft::t('app', 'Status:'), $attributes['label']);
+        }
+
+        return Html::tag('span', '', $options);
+    }
+
+    /**
+     * Renders status indicator HTML for a [[Statusable]] component.
+     *
+     * @param Statusable $component
+     * @return string|null
+     * @since 5.2.0
+     */
+    public static function componentStatusIndicatorHtml(Statusable $component): ?string
+    {
+        $status = $component->getStatus();
+
+        if ($status === 'draft') {
+            return self::statusIndicatorHtml('draft');
+        }
+
+        $statusDef = $component::statuses()[$status] ?? [];
+
+        // Just to give the `statusIndicatorHtml` clean types
+        if (is_string($statusDef)) {
+            $statusDef = ['label' => $statusDef];
+        }
+
+        return self::statusIndicatorHtml($status, $statusDef);
+    }
+
+    /**
+     * Renders status label HTML.
+     *
+     * When the `status` is equal to "draft" the draft icon will be displayed. The attributes passed as the
+     * second argument should be a status definition from [[\craft\base\ElementInterface::statuses]]
+     *
+     * @param array $config Config options
+     * @return string|null
+     * @since 5.2.0
+     */
+    public static function statusLabelHtml(array $config = []): ?string
+    {
+        $config += [
+            'color' => Color::Gray->value,
+            'icon' => null,
+            'label' => null,
+            'indicatorClass' => null,
+        ];
+
+        if ($config['color'] instanceof Color) {
+            $config['color'] = $config['color']->value;
+        }
+
+        if ($config['icon']) {
+            $html = Html::tag('span', static::iconSvg($config['icon']), [
+                'class' => ['cp-icon', 'puny', $config['color']],
+            ]);
+        } else {
+            $html = static::statusIndicatorHtml($config['color'], [
+                'label' => null,
+                'class' => $config['indicatorClass'] ?? $config['color'],
+            ]);
+        }
+
+        if ($config['label']) {
+            $html .= ' ' . Html::tag('span', Html::encode($config['label']), ['class' => 'status-label-text']);
+        }
+
+        return Html::tag('span', $html, [
+            'class' => array_filter([
+                'status-label',
+                $config['color'],
+            ]),
         ]);
     }
 
+    private static function changeStatusLabelHtml(): string
+    {
+        return static::statusLabelHtml([
+            'color' => Color::Blue,
+            'icon' => 'pen-circle',
+            'label' => Craft::t('app', 'Edited'),
+        ]);
+    }
+
+    /**
+     * Renders status label HTML for a [[Statusable]] component.
+     *
+     * @param Statusable $component
+     * @return string|null
+     * @since 5.2.0
+     */
+    public static function componentStatusLabelHtml(Statusable $component): ?string
+    {
+        $status = $component->getStatus();
+
+        if (!$status) {
+            return null;
+        }
+
+        $config = $component::statuses()[$status] ?? [];
+        if (is_string($config)) {
+            $config = ['label' => $config];
+        }
+        $config['color'] ??= Color::tryFromStatus($status) ?? Color::Gray;
+        $config['label'] ??= match ($status) {
+            'draft' => Craft::t('app', 'Draft'),
+            default => ucfirst($status),
+        };
+        $config['indicatorClass'] = match ($status) {
+            'pending', 'off', 'suspended', 'expired' => $status,
+            default => $config['color']->value,
+        };
+
+        return self::statusLabelHtml($config);
+    }
 
     private static function baseElementAttributes(ElementInterface $element, array $config): array
     {
@@ -673,8 +821,8 @@ class Cp
                 ]),
                 'data' => array_filter([
                     'type' => get_class($element),
-                    'id' => $element->id,
-                    'draft-id' => $element->draftId,
+                    'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
+                    'draft-id' => $element->isProvisionalDraft ? null : $element->draftId,
                     'revision-id' => $element->revisionId,
                     'site-id' => $element->siteId,
                     'status' => $element->getStatus(),
@@ -704,24 +852,6 @@ class Cp
                 'labelledby' => $labelId,
             ],
         ]);
-    }
-
-    private static function componentStatusHtml(Statusable $component): ?string
-    {
-        $status = $component->getStatus();
-
-        if ($status === 'draft') {
-            return self::statusIndicatorHtml('draft');
-        }
-
-        $statusDef = $component::statuses()[$status] ?? null;
-
-        // Just to give the `statusIndicatorHtml` clean types
-        if (is_string($statusDef)) {
-            $statusDef = ['label' => $statusDef];
-        }
-
-        return self::statusIndicatorHtml($status, $statusDef);
     }
 
     private static function elementLabelHtml(ElementInterface $element, array $config, array $attributes, callable $uiLabel): string
@@ -835,7 +965,7 @@ class Cp
             'size' => $size,
         ]);
 
-        // Allow plugins to modify the inner HTML
+        // Fire a 'defineElementInnerHtml' event
         if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_INNER_HTML)) {
             $parsed = Html::parseTag($html);
             $innerHtml = substr($html, $parsed['htmlStart'], $parsed['htmlEnd'] - $parsed['htmlStart']);
@@ -944,9 +1074,12 @@ class Cp
         if ($config['showStatusMenu'] !== 'auto') {
             $config['showStatusMenu'] = (bool)$config['showStatusMenu'];
         }
-        if ($config['showSiteMenu'] !== 'auto') {
-            $config['showSiteMenu'] = (bool)$config['showSiteMenu'];
-        }
+
+        $config['showSiteMenu'] = $config['showSiteMenu'] === 'auto'
+            ? $elementType::isLocalized()
+            : (bool)$config['showSiteMenu'];
+
+        $siteIds = Craft::$app->getSites()->getEditableSiteIds();
 
         $sortOptions = Collection::make($elementType::sortOptions())
             ->map(fn($option, $key) => [
@@ -1047,6 +1180,22 @@ class Cp
             }
         }
 
+        // If all the sources are site-specific, filter out any unneeded site IDs
+        if (
+            $config['showSiteMenu'] &&
+            ArrayHelper::onlyContains($sources, fn(array $source) => $source['type'] === 'heading' || isset($source['sites']))
+        ) {
+            $representedSiteIds = [];
+            foreach ($sources as $source) {
+                if (isset($source['sites'])) {
+                    foreach ($source['sites'] as $siteId) {
+                        $representedSiteIds[$siteId] = true;
+                    }
+                }
+            }
+            $siteIds = array_filter($siteIds, fn(int $siteId) => isset($representedSiteIds[$siteId]));
+        }
+
         $view = Craft::$app->getView();
 
         if ($config['registerJs']) {
@@ -1095,6 +1244,7 @@ JS, [
                 'context' => $config['context'],
                 'showStatusMenu' => $config['showStatusMenu'],
                 'showSiteMenu' => $config['showSiteMenu'],
+                'siteIds' => $siteIds,
                 'canHaveDrafts' => $elementType::hasDrafts(),
             ], View::TEMPLATE_MODE_CP) .
             Html::endTag('div') . // .toolbar
@@ -2185,21 +2335,14 @@ JS;
             $fieldLayoutConfig['id'] = $fieldLayout->id;
         }
 
-        $newTabSettingsData = self::_fldTabSettingsData(new FieldLayoutTab([
-            'uid' => 'TAB_UID',
-            'name' => 'TAB_NAME',
-            'layout' => $fieldLayout,
-        ]));
+        if ($fieldLayout->type) {
+            $fieldLayoutConfig['type'] = $fieldLayout->type;
+        }
 
         return
             Html::beginTag('div', [
                 'id' => $config['id'],
                 'class' => 'layoutdesigner',
-                'data' => [
-                    'new-tab-settings-namespace' => $newTabSettingsData['settings-namespace'],
-                    'new-tab-settings-html' => $newTabSettingsData['settings-html'],
-                    'new-tab-settings-js' => $newTabSettingsData['settings-js'],
-                ],
             ]) .
             Html::hiddenInput('fieldLayout', Json::encode($fieldLayoutConfig), [
                 'data' => ['config-input' => true],
@@ -2284,29 +2427,18 @@ JS;
         return
             Html::beginTag('div', [
                 'class' => 'fld-tab',
-                'data' => array_merge([
+                'data' => [
                     'uid' => $tab->uid,
-                ], self::_fldTabSettingsData($tab)),
+                ],
             ]) .
             Html::beginTag('div', ['class' => 'tabs']) .
-            Html::beginTag('div', [
+            Html::tag('div', $tab->labelHtml(), [
                 'class' => array_filter([
                     'tab',
                     'sel',
                     $customizable ? 'draggable' : null,
                 ]),
             ]) .
-            Html::beginTag('span') .
-            Html::encode($tab->name) .
-            ($tab->hasConditions() ? Html::tag('div', '', [
-                'class' => ['fld-indicator'],
-                'title' => Craft::t('app', 'This tab is conditional'),
-                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
-                'data' => ['icon' => 'condition'],
-                'role' => 'img',
-            ]) : '') .
-            Html::endTag('span') .
-            Html::endTag('div') . // .tab
             Html::endTag('div') . // .tabs
             Html::beginTag('div', ['class' => 'fld-tabcontent']) .
             implode('', array_map(fn(FieldLayoutElement $element) => self::layoutElementSelectorHtml($element, false), $tab->getElements())) .
@@ -2320,28 +2452,6 @@ JS;
             ]) .
             Html::endTag('div') . // .fld-tabcontent
             Html::endTag('div'); // .fld-tab
-    }
-
-    /**
-     * @param FieldLayoutTab $tab
-     * @return array
-     */
-    private static function _fldTabSettingsData(FieldLayoutTab $tab): array
-    {
-        $view = Craft::$app->getView();
-        $oldNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName("tab-$tab->uid");
-        $view->setNamespace($namespace);
-        $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs($tab->getSettingsHtml());
-        $settingsJs = $view->clearJsBuffer(false);
-        $view->setNamespace($oldNamespace);
-
-        return [
-            'settings-namespace' => $namespace,
-            'settings-html' => $settingsHtml,
-            'settings-js' => $settingsJs,
-        ];
     }
 
     /**

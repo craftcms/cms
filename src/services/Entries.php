@@ -493,7 +493,11 @@ class Entries extends Component
                 'sections_sites.template',
             ])
             ->from(['sections_sites' => Table::SECTIONS_SITES])
-            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[sections_sites.siteId]]')
+            ->innerJoin(['sites' => Table::SITES], [
+                'and',
+                '[[sites.id]] = [[sections_sites.siteId]]',
+                ['sites.dateDeleted' => null],
+            ])
             ->orderBy(['sites.sortOrder' => SORT_ASC]);
     }
 

@@ -843,6 +843,7 @@ class Elements extends Component
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
             $this->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
                 'tags' => $tags,
+                'element' => $element,
             ]));
         }
     }
@@ -1269,10 +1270,9 @@ class Elements extends Component
      */
     public function setElementUri(ElementInterface $element): void
     {
+        // Fire a 'setElementUri' event
         if ($this->hasEventHandlers(self::EVENT_SET_ELEMENT_URI)) {
-            $event = new ElementEvent([
-                'element' => $element,
-            ]);
+            $event = new ElementEvent(['element' => $element]);
             $this->trigger(self::EVENT_SET_ELEMENT_URI, $event);
             if ($event->handled) {
                 return;
@@ -2261,13 +2261,16 @@ class Elements extends Component
     public function deleteElement(ElementInterface $element, bool $hardDelete = false): bool
     {
         // Fire a 'beforeDeleteElement' event
-        $event = new DeleteElementEvent([
-            'element' => $element,
-            'hardDelete' => $hardDelete,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
+            $event = new DeleteElementEvent([
+                'element' => $element,
+                'hardDelete' => $hardDelete,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
+            $hardDelete = $hardDelete || $event->hardDelete;
+        }
 
-        $element->hardDelete = $hardDelete || $event->hardDelete;
+        $element->hardDelete = $hardDelete;
 
         if (!$element->beforeDelete()) {
             return false;
@@ -2729,12 +2732,14 @@ class Elements extends Component
             User::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $elementTypes,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_ELEMENT_TYPES, $event);
+        // Fire a 'registerElementTypes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_ELEMENT_TYPES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $elementTypes]);
+            $this->trigger(self::EVENT_REGISTER_ELEMENT_TYPES, $event);
+            return $event->types;
+        }
 
-        return $event->types;
+        return $elementTypes;
     }
 
     // Element Actions & Exporters
@@ -3110,18 +3115,22 @@ class Elements extends Component
     private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with): void
     {
         $elementsService = Craft::$app->getElements();
+        $hasEventHandlers = $this->hasEventHandlers(self::EVENT_BEFORE_EAGER_LOAD_ELEMENTS);
 
         foreach ($elementsBySite as $siteId => $elements) {
-            // In case the elements were
             $elements = array_values($elements);
-            $event = new EagerLoadElementsEvent([
-                'elementType' => $elementType,
-                'elements' => $elements,
-                'with' => $with,
-            ]);
-            $this->trigger(self::EVENT_BEFORE_EAGER_LOAD_ELEMENTS, $event);
+            // Fire a 'beforeEagerLoadElements' event
+            if ($hasEventHandlers) {
+                $event = new EagerLoadElementsEvent([
+                    'elementType' => $elementType,
+                    'elements' => $elements,
+                    'with' => $with,
+                ]);
+                $this->trigger(self::EVENT_BEFORE_EAGER_LOAD_ELEMENTS, $event);
+                $with = $event->with;
+            }
 
-            foreach ($event->with as $plan) {
+            foreach ($with as $plan) {
                 // Get the plan handle, without a provider prefix
                 $planHandle = $plan->alias;
                 if (str_contains($planHandle, ':')) {
@@ -3765,21 +3774,17 @@ class Elements extends Component
                     !empty($searchableDirtyFields) ||
                     !empty(array_intersect($dirtyAttributes, ElementHelper::searchableAttributes($element)))
                 ) {
-                    $event = new ElementEvent([
-                        'element' => $element,
-                    ]);
-                    $this->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $event);
-                    if ($event->isValid) {
-                        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                            Craft::$app->getSearch()->indexElementAttributes($element, $searchableDirtyFields);
-                        } else {
-                            Queue::push(new UpdateSearchIndex([
-                                'elementType' => get_class($element),
-                                'elementId' => $element->id,
-                                'siteId' => $propagate ? '*' : $element->siteId,
-                                'fieldHandles' => $searchableDirtyFields,
-                            ]), 2048);
-                        }
+                    // Fire a 'beforeUpdateSearchIndex' event
+                    if ($this->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX)) {
+                        $event = new ElementEvent(['element' => $element]);
+                        $this->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $event);
+                        $isValid = $event->isValid;
+                    } else {
+                        $isValid = true;
+                    }
+
+                    if ($isValid) {
+                        $this->updateSearchIndex($element, $searchableDirtyFields, $propagate);
                     }
                 }
             }
@@ -3832,6 +3837,45 @@ class Elements extends Component
         $element->propagateAll = $originalPropagateAll;
 
         return true;
+    }
+
+    private function updateSearchIndex(
+        ElementInterface $element,
+        array $searchableDirtyFields,
+        bool $propagate,
+        ?bool $updateForOwner = null,
+    ): void {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            Craft::$app->getSearch()->indexElementAttributes($element, $searchableDirtyFields);
+        } else {
+            Queue::push(new UpdateSearchIndex([
+                'elementType' => get_class($element),
+                'elementId' => $element->id,
+                'siteId' => $propagate ? '*' : $element->siteId,
+                'fieldHandles' => $searchableDirtyFields,
+            ]), 2048);
+        }
+
+        $updateForOwner ??= (
+            $element instanceof NestedElementInterface &&
+            $element->getIsCanonical() &&
+            isset($element->fieldId) &&
+            isset($element->updateSearchIndexForOwner) &&
+            $element->updateSearchIndexForOwner
+        );
+
+        if ($updateForOwner) {
+            /** @var NestedElementInterface $element */
+            $owner = $element->getOwner();
+            if ($owner) {
+                /** @phpstan-ignore-next-line */
+                $field = $owner->getFieldLayout()?->getFieldById($element->fieldId);
+                if ($field?->searchable) {
+                    $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
+                    $this->invalidateCachesForElement($owner);
+                }
+            }
+        }
     }
 
     /**

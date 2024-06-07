@@ -4,6 +4,7 @@
 {% set structureEditable = structureEditable is defined and not inlineEditing ? structureEditable : false -%}
 {% set padding = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% set elementsService = craft.app.elements %}
+{% set hasStatusCol = attributes|contains(0, 'status') %}
 
 {% for element in elements %}
     {% set totalDescendants = structure
@@ -12,11 +13,22 @@
             .drafts(null)
             .draftOf(false)
             .savedDraftsOnly()
+            .withCustomFields(false)
             .count()
         : 0 %}
     {% set elementTitle = element.title ?: element.id %}
     {% set showInputs = (inlineEditing ?? false) and elementsService.canSave(element, currentUser) %}
-    <tr data-id="{{ element.id }}"{% if structure %} data-title="{{ elementTitle }}" data-level="{{ element.level }}" data-descendants="{{ totalDescendants ?? 0 }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
+    {% tag 'tr' with {
+      data: {
+        id: element.isProvisionalDraft ? element.getCanonicalId() : element.id,
+        title: elementTitle,
+        level: structure ? element.level : false,
+        descendants: structure ? (totalDescendants ?? 0) : false,
+      },
+      class: {
+        disabled: (element.isProvisionalDraft ? element.getCanonicalId() : element.id) in disabledElementIds,
+      }|filter|keys,
+    } %}
         {% if selectable %}
             <td class="checkbox-cell">
                 {{ tag('div', {
@@ -56,6 +68,7 @@
                         {% endif %}
                         {% set chip = elementChip(element, {
                           context: context ?? 'index',
+                          showStatus: not hasStatusCol,
                         }) %}
                         {% if not (showHeaderColumn ?? false) %}
                             {% set chip = chip|attr({class: 'hidden'}) %}
@@ -80,7 +93,7 @@
                 <td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">
                     {% if showInputs %}
                         {% set namespace = "#{nestedInputNamespace}[element-#{element.id}]" %}
-                        {% if attribute[0] starts with 'field:' %}
+                        {% if attribute[0] starts with 'field:' or attribute[0] starts with 'fieldInstance:' %}
                             {% set namespace = "#{namespace}[fields]" %}
                         {% endif %}
                         {% namespace namespace %}
@@ -92,7 +105,7 @@
                 </td>
             {% endif %}
         {% endfor %}
-    </tr>
+    {% endtag %}
 {% endfor %}
 
 {% endapply -%}

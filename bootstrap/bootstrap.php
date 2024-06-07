@@ -193,6 +193,7 @@ $customIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'custom-icons';
 $regularIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'regular';
 $solidIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'solid';
 require $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
+require $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . 'ArrayHelper.php';
 require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 
 // Set aliases
@@ -288,10 +289,24 @@ $config = ArrayHelper::merge(
         'components' => $components,
     ],
     require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'app.php',
-    require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . "app.{$appType}.php",
+    require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . "app.{$appType}.php"
+);
+
+$localConfig = ArrayHelper::merge(
     $configService->getConfigFromFile('app'),
     $configService->getConfigFromFile("app.{$appType}")
 );
+
+$safeMode = App::env('CRAFT_SAFE_MODE') ?? $generalConfig['safeMode'] ?? false;
+
+if ($safeMode) {
+    ArrayHelper::remove($localConfig, 'bootstrap');
+    ArrayHelper::remove($localConfig, 'components');
+    ArrayHelper::remove($localConfig, 'extensions');
+    ArrayHelper::remove($localConfig, 'container');
+}
+
+$config = ArrayHelper::merge($config, $localConfig);
 
 if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);

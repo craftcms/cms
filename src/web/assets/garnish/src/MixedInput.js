@@ -33,23 +33,26 @@ export default Base.extend({
   },
 
   onFocus: function () {
-    // Set focus to the first element
+    // Set focus to the last element
     if (this.elements.length) {
-      var $elem = this.elements[0];
+      var $elem = this.elements[this.elements.length - 1];
       this.setFocus($elem);
-      this.setCarotPos($elem, 0);
+      if (this.isText($elem)) {
+        this.setCaretPos($elem, $elem.val().length);
+      }
     } else {
       this.addTextElement();
     }
   },
 
-  addTextElement: function (index) {
+  addTextElement: function (index, focus = true) {
     var text = new TextElement(this);
-    this.addElement(text.$input, index);
+    this.addElement(text.$input, index, focus);
+    text.setWidth();
     return text;
   },
 
-  addElement: function ($elem, index) {
+  addElement: function ($elem, index, focus = true) {
     // Was a target index passed, and is it valid?
     if (typeof index === 'undefined') {
       if (this.focussedElement) {
@@ -124,13 +127,15 @@ export default Base.extend({
       this.setFocus($elem);
     });
 
-    // Set focus to the new element
-    setTimeout(
-      function () {
-        this.setFocus($elem);
-      }.bind(this),
-      1
-    );
+    if (focus) {
+      // Set focus to the new element
+      setTimeout(
+        function () {
+          this.setFocus($elem);
+        }.bind(this),
+        1
+      );
+    }
   },
 
   removeElement: function ($elem) {
@@ -149,7 +154,7 @@ export default Base.extend({
           $prevElem.val(newVal).trigger('change');
           this.removeElement($nextElem);
           this.setFocus($prevElem);
-          this.setCarotPos($prevElem, prevElemVal.length);
+          this.setCaretPos($prevElem, prevElemVal.length);
         }
       }
 
@@ -202,10 +207,10 @@ export default Base.extend({
       var $elem = this.elements[index - 1];
       this.setFocus($elem);
 
-      // If it's a text element, put the carot at the end
+      // If it's a text element, put the caret at the end
       if (this.isText($elem)) {
         var length = $elem.val().length;
-        this.setCarotPos($elem, length);
+        this.setCaretPos($elem, length);
       }
     }
   },
@@ -217,14 +222,39 @@ export default Base.extend({
       var $elem = this.elements[index + 1];
       this.setFocus($elem);
 
-      // If it's a text element, put the carot at the beginning
+      // If it's a text element, put the caret at the beginning
       if (this.isText($elem)) {
-        this.setCarotPos($elem, 0);
+        this.setCaretPos($elem, 0);
       }
     }
   },
 
+  focusStart: function () {
+    const $elem = this.elements[0];
+    this.setFocus($elem);
+
+    // If it's a text element, put the caret at the beginning
+    if (this.isText($elem)) {
+      this.setCaretPos($elem, 0);
+    }
+  },
+
+  focusEnd: function () {
+    const $elem = this.elements[this.elements.length - 1];
+    this.setFocus($elem);
+
+    // If it's a text element, put the caret at the end
+    if (this.isText($elem)) {
+      this.setCaretPos($elem, $elem.val().length);
+    }
+  },
+
+  /** @deprecated */
   setCarotPos: function ($elem, pos) {
+    this.setCaretPos($elem, pos);
+  },
+
+  setCaretPos: function ($elem, pos) {
     $elem.prop('selectionStart', pos);
     $elem.prop('selectionEnd', pos);
   },
@@ -247,7 +277,7 @@ var TextElement = Base.extend(
       );
       this.$input.css('margin-right', 2 - TextElement.padding + 'px');
 
-      this.setWidth();
+      this.setWidth(true);
 
       this.addListener(this.$input, 'focus', 'onFocus');
       this.addListener(this.$input, 'blur', 'onBlur');
@@ -315,7 +345,10 @@ var TextElement = Base.extend(
 
       switch (ev.keyCode) {
         case Garnish.LEFT_KEY: {
-          if (
+          if (Garnish.isCtrlKeyPressed(ev)) {
+            ev.preventDefault();
+            this.parentInput.focusStart();
+          } else if (
             this.$input.prop('selectionStart') === 0 &&
             this.$input.prop('selectionEnd') === 0
           ) {
@@ -326,7 +359,10 @@ var TextElement = Base.extend(
         }
 
         case Garnish.RIGHT_KEY: {
-          if (
+          if (Garnish.isCtrlKeyPressed(ev)) {
+            ev.preventDefault();
+            this.parentInput.focusEnd();
+          } else if (
             this.$input.prop('selectionStart') === this.val.length &&
             this.$input.prop('selectionEnd') === this.val.length
           ) {
@@ -371,9 +407,9 @@ var TextElement = Base.extend(
       return changed;
     },
 
-    setWidth: function () {
+    setWidth: function (force = false) {
       // has the width changed?
-      if (this.stageWidth !== this.getTextWidth(this.val)) {
+      if (this.stageWidth !== this.getTextWidth(this.val) || force) {
         // update the textarea width
         var width = this.stageWidth + TextElement.padding;
         this.$input.width(width);

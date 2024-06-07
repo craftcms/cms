@@ -188,7 +188,13 @@ trait FieldConditionRuleTrait
      */
     public function getExclusiveQueryParams(): array
     {
-        return [];
+        $params = [];
+
+        foreach ($this->fieldInstances() as $field) {
+            $params[] = $field->handle;
+        }
+
+        return array_values(array_unique($params));
     }
 
     /**
@@ -218,9 +224,16 @@ trait FieldConditionRuleTrait
      */
     public function matchElement(ElementInterface $element): bool
     {
+        try {
+            $fieldInstances = $this->fieldInstances();
+        } catch (InvalidConfigException) {
+            // The field doesn't exist
+            return true;
+        }
+
         // index the field instance UUIDs
         $instanceUids = array_flip(
-            array_map(fn(FieldInterface $field) => $field->layoutElement->uid, $this->fieldInstances()),
+            array_map(fn(FieldInterface $field) => $field->layoutElement->uid, $fieldInstances),
         );
 
         foreach ($element->getFieldLayout()->getCustomFields() as $field) {

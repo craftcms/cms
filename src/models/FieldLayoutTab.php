@@ -46,6 +46,23 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /**
+     * Returns the label HTML that should be displayed within field layout designers.
+     *
+     * @return string
+     * @since 5.1.0
+     */
+    public function labelHtml(): string
+    {
+        return
+            Html::tag('span', Html::encode($this->name)) .
+            ($this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
+                'class' => array_filter(array_merge(['cp-icon', 'puny', 'orange'])),
+                'title' => Craft::t('app', 'This tab is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
+            ]) : '');
+    }
+
+    /**
      * Updates a field layout tab’s config to the new format.
      *
      * @param array $config
@@ -278,6 +295,11 @@ class FieldLayoutTab extends FieldLayoutComponent
                 $layoutElement->setLayout($this->getLayout());
                 $this->_elements[] = $layoutElement;
             }
+        }
+
+        // Clear caches
+        if (isset($this->_layout)) {
+            $this->_layout->reset();
         }
     }
 

@@ -27,6 +27,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Addresses as AddressesField;
 use craft\fields\Assets as AssetsField;
+use craft\fields\BaseRelationField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\Checkboxes;
 use craft\fields\Color;
@@ -234,12 +235,14 @@ class Fields extends Component
             UsersField::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $fieldTypes,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_FIELD_TYPES, $event);
+        // Fire a 'registerFieldTypes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_FIELD_TYPES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $fieldTypes]);
+            $this->trigger(self::EVENT_REGISTER_FIELD_TYPES, $event);
+            return $event->types;
+        }
 
-        return $event->types;
+        return $fieldTypes;
     }
 
     /**
@@ -297,6 +300,7 @@ class Fields extends Component
             $types[] = get_class($field);
         }
 
+        // Fire a 'defineCompatibleFieldTypes' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
             $event = new DefineCompatibleFieldTypesEvent([
                 'field' => $field,
@@ -321,12 +325,33 @@ class Fields extends Component
             MatrixField::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $fieldTypes,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, $event);
+        // Fire a 'registerNestedEntryFieldTypes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $fieldTypes]);
+            $this->trigger(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, $event);
+            return $event->types;
+        }
 
-        return $event->types;
+        return $fieldTypes;
+    }
+
+    /**
+     * Returns all available relational field type classes.
+     *
+     * @return string[] The available relational field type classes
+     * @phpstan-return class-string<BaseRelationField>[]
+     * @since 5.1.6
+     */
+    public function getRelationalFieldTypes(): array
+    {
+        $relationalFields = [];
+        foreach ($this->getAllFieldTypes() as $fieldClass) {
+            if (is_subclass_of($fieldClass, BaseRelationField::class)) {
+                $relationalFields[] = $fieldClass;
+            }
+        }
+
+        return $relationalFields;
     }
 
     /**

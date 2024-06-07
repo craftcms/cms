@@ -156,7 +156,7 @@ class NestedElementManager extends Component
      */
     public function getIsTranslatable(?ElementInterface $owner = null): bool
     {
-        if ($this->propagationMethod === PropagationMethod::Custom) {
+        if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
             return (
                 $owner === null ||
                 Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $owner) !== ''
@@ -241,6 +241,11 @@ class NestedElementManager extends Component
         $this->setOwnerOnNestedElements($owner, $elements);
 
         foreach ($elements as $element) {
+            $hasTitles ??= $element::hasTitles();
+            if ($hasTitles) {
+                $keywords[] = $element->title;
+            }
+
             foreach ($element->getFieldLayout()->getCustomFields() as $field) {
                 if ($field->searchable) {
                     $fieldValue = $element->getFieldValue($field->handle);
@@ -374,6 +379,7 @@ class NestedElementManager extends Component
                     'deleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
                         'type' => $elementType::lowerDisplayName(),
                     ]),
+                    'showInGrid' => $config['showInGrid'],
                 ];
 
                 $html = Html::beginTag('div', options: [
@@ -381,8 +387,23 @@ class NestedElementManager extends Component
                     'class' => 'nested-element-cards',
                 ]);
 
-                /** @var NestedElementInterface[] $elements */
-                $elements = $this->getValue($owner, true)->all();
+
+                /** @var ElementQueryInterface|ElementCollection $value */
+                $value = $this->getValue($owner);
+                if ($value instanceof ElementCollection) {
+                    /** @var NestedElementInterface[] $elements */
+                    $elements = $value->all();
+                } else {
+                    /** @var NestedElementInterface[] $elements */
+                    $elements = $value
+                        ->status(null)
+                        ->limit(null)
+                        ->all();
+                }
+
+                // See if there are any provisional drafts we should swap these out with
+                ElementHelper::swapInProvisionalDrafts($elements);
+
                 $this->setOwnerOnNestedElements($owner, $elements);
 
                 if (!empty($elements)) {
@@ -403,9 +424,7 @@ class NestedElementManager extends Component
                 }
 
                 $html .=
-                    Html::tag('div', Craft::t('app', 'No {type} yet.', [
-                        'type' => $elementType::pluralLowerDisplayName(),
-                    ]), [
+                    Html::tag('div', Craft::t('app', 'Nothing yet.'), [
                         'class' => array_keys(array_filter([
                             'pane' => true,
                             'no-border' => true,
@@ -462,15 +481,23 @@ class NestedElementManager extends Component
                 $elementType = $this->elementType;
                 $view = Craft::$app->getView();
 
+                $criteria = [
+                    $this->ownerIdParam => $owner->id,
+                ];
+
+                if ($owner->getIsRevision()) {
+                    $criteria['revisions'] = null;
+                    $criteria['trashed'] = null;
+                    $criteria['drafts'] = false;
+                }
+
                 $settings['indexSettings'] = [
                     'namespace' => $view->getNamespace(),
                     'allowedViewModes' => $config['allowedViewModes']
                         ? array_map(fn($mode) => StringHelper::toString($mode), $config['allowedViewModes'])
                         : null,
                     'showHeaderColumn' => $config['showHeaderColumn'],
-                    'criteria' => array_merge([
-                        $this->ownerIdParam => $owner->id,
-                    ], $this->criteria),
+                    'criteria' => array_merge($criteria, $this->criteria),
                     'batchSize' => $config['pageSize'],
                     'actions' => [],
                     'canHaveDrafts' => $elementType::hasDrafts(),
@@ -696,14 +723,25 @@ JS, [
                     $element->setSortOrder($sortOrder);
                     $elementsService->saveElement($element, false);
 
-                    // If this is a draft, we can shed the draft data now
-                    if ($element->getIsDraft()) {
-                        $canonicalElementId = $element->getCanonicalId();
-                        Craft::$app->getDrafts()->removeDraftData($element);
-                        Db::delete(Table::ELEMENTS_OWNERS, [
-                            'elementId' => $canonicalElementId,
-                            'ownerId' => $owner->id,
-                        ]);
+                    // If this element's primary owner is $owner, and it’s a draft of another element whose owner is
+                    // $owner's canonical (e.g. a draft entry created by Matrix::_createEntriesFromSerializedData()),
+                    // we can shed its draft data and relation with the canonical owner now
+                    if (
+                        $element->getPrimaryOwnerId() === $owner->id &&
+                        $element->getIsDraft() &&
+                        !$element->getIsUnpublishedDraft() &&
+                        $owner->getIsDraft() &&
+                        !$owner->getIsUnpublishedDraft()
+                    ) {
+                        /** @var NestedElementInterface $canonical */
+                        $canonical = $element->getCanonical(true);
+                        if ($canonical->getPrimaryOwnerId() === $owner->getCanonicalId()) {
+                            Craft::$app->getDrafts()->removeDraftData($element);
+                            Db::delete(Table::ELEMENTS_OWNERS, [
+                                'elementId' => $canonical->id,
+                                'ownerId' => $owner->id,
+                            ]);
+                        }
                     }
                 } elseif ((int)$element->getSortOrder() !== $sortOrder) {
                     // Just update its sortOrder
@@ -898,10 +936,13 @@ JS, [
                     'canonicalId' => $setCanonicalId ? $element->id : null,
                     'primaryOwner' => $target,
                     'owner' => $target,
-                    'siteId' => $target->siteId,
                     'propagating' => false,
                     'sortOrder' => $element->getSortOrder(),
                 ];
+
+                if ($element::isLocalized()) {
+                    $newAttributes['siteId'] = $target->siteId;
+                }
 
                 if ($target->updatingFromDerivative && $element->getIsDerivative()) {
                     if (

@@ -147,6 +147,9 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
     },
 
     getElementSortAxis: function () {
+      if (this.$container.parents('.inline-editing').length == 1) {
+        return 'y';
+      }
       return 'x';
     },
 

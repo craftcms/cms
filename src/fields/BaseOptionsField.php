@@ -416,13 +416,18 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             }
         }
 
+        $request = Craft::$app->getRequest();
+
         return [
             [
                 'in',
                 'range' => $range,
                 'allowArray' => static::$multi,
                 // Don't allow saving invalid blank values via Selectize
-                'skipOnEmpty' => !($this instanceof Dropdown && Craft::$app->getRequest()->getIsCpRequest()),
+                'skipOnEmpty' => !(
+                    $this instanceof Dropdown &&
+                    ($request->getIsCpRequest() || $request->getIsConsoleRequest())
+                ),
             ],
         ];
     }
@@ -557,6 +562,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $options = $this->options();
         $translatedOptions = [];
 
+        // Fire a 'defineOptions' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_OPTIONS)) {
             $event = new DefineInputOptionsEvent([
                 'options' => $options,

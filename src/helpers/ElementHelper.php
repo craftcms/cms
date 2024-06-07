@@ -359,6 +359,7 @@ class ElementHelper
             ->id($element->id)
             ->siteId($propagatedSiteIds)
             ->status(null)
+            ->trashed(null)
             ->asArray()
             ->select(['elements_sites.siteId', 'elements_sites.enabled']);
 
@@ -914,5 +915,45 @@ class ElementHelper
         }
 
         return new Markup(implode("\n", $output), Craft::$app->charset);
+    }
+
+    /**
+     * Swaps out any canonical elements with provisional drafts, when they exist.
+     *
+     * @param ElementInterface[] $elements
+     * @since 5.2.0
+     */
+    public static function swapInProvisionalDrafts(array &$elements): void
+    {
+        $canonicalElements = array_filter($elements, fn(ElementInterface $element) => $element->getIsCanonical());
+
+        if (empty($canonicalElements)) {
+            return;
+        }
+
+        $first = reset($canonicalElements);
+
+        if (!$first::hasDrafts()) {
+            return;
+        }
+
+        $drafts = $first::find()
+            ->draftOf($canonicalElements)
+            ->provisionalDrafts()
+            ->siteId($first->siteId)
+            ->status(null)
+            ->indexBy('canonicalId')
+            ->all();
+
+        if (empty($drafts)) {
+            return;
+        }
+
+        // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
+        foreach ($canonicalElements as $i => $element) {
+            if (isset($drafts[$element->id])) {
+                $elements[$i] = $drafts[$element->id];
+            }
+        }
     }
 }
