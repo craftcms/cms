@@ -912,6 +912,21 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+#content-heading {
+  font-size: 0.875rem;
+  font-weight: normal;
+
+  &:before {
+    content: '/';
+    display: inline-block;
+    margin-inline: 0.5rem;
+  }
+
+  @media only screen and (min-width: $minHorizontalUiWidth) {
+    display: none;
+  }
+}
+
 #toolbar {
   flex: 1;
   align-items: flex-start;
@@ -1320,8 +1335,7 @@ li.breadcrumb-toggle-wrapper {
 // Rearrange #main-content to flow vertically at < 999
 @media only screen and (max-width: $minHorizontalUiWidth - calc(1rem/16)) {
   #header {
-    display: flex;
-    flex-wrap: wrap;
+    display: block;
 
     .flex:not(#toolbar) {
       margin-top: 10px;
@@ -1330,17 +1344,10 @@ li.breadcrumb-toggle-wrapper {
 
   #toolbar {
     flex-wrap: wrap !important;
-    order: 3;
-    width: 100%;
-    flex: auto;
 
     & > * {
       margin-top: 10px !important;
     }
-  }
-
-  #action-buttons {
-    order: 2;
   }
 
   body.fixed-header #header .flex:first-child {

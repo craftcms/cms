@@ -514,6 +514,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
         this.afterSetInitialSource(queryParams);
       }
+
+      // Set visible source name on small/zoomed screens
+      this.updateMainHeading();
     },
 
     afterInit: function () {
@@ -770,6 +773,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       } else {
         $source.data('hasNestedSources', false);
       }
+    },
+
+    updateMainHeading: function () {
+      let $contentHeading = $('#content-heading');
+
+      if (!$contentHeading.length) {
+        $contentHeading = $('<span>', {
+          id: 'content-heading',
+        });
+
+        $contentHeading.appendTo('.screen-title');
+      }
+
+      $contentHeading.text(this.getSourceLabel());
     },
 
     deinitSource: function ($source) {
@@ -2162,7 +2179,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.setInstanceState('selectedSource', this.sourceKey);
       this.sourceNav.selectItem($source);
 
-      Craft.cp.updateContentHeading();
+      this.updateMainHeading();
 
       if (this.searching) {
         // Clear the search value without causing it to update elements
