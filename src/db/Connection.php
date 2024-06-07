@@ -281,12 +281,17 @@ class Connection extends \yii\db\Connection
      */
     public function backupTo(string $filePath): void
     {
+        $ignoreTables = $this->getIgnoredBackupTables();
+
         // Fire a 'beforeCreateBackup' event
-        $event = new BackupEvent([
-            'file' => $filePath,
-            'ignoreTables' => $this->getIgnoredBackupTables(),
-        ]);
-        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, $event);
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
+            $event = new BackupEvent([
+                'file' => $filePath,
+                'ignoreTables' => $ignoreTables,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, $event);
+            $ignoreTables = $event->ignoreTables;
+        }
 
         // Determine the command that should be executed
         $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
@@ -294,7 +299,7 @@ class Connection extends \yii\db\Connection
         if ($backupCommand === false) {
             throw new Exception('Database not backed up because the backup command is false.');
         } elseif ($backupCommand === null || $backupCommand instanceof \Closure) {
-            $backupCommand = $this->getSchema()->getDefaultBackupCommand($event->ignoreTables);
+            $backupCommand = $this->getSchema()->getDefaultBackupCommand($ignoreTables);
         }
 
         // Create the shell command

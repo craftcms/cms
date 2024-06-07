@@ -92,13 +92,14 @@ abstract class Controller extends \yii\web\Controller
     {
         $behaviors = $this->defineBehaviors();
 
-        // Give plugins a chance to modify them
-        $event = new DefineBehaviorsEvent([
-            'behaviors' => $behaviors,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+        // Fire a 'defineBehaviors' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
+            $event = new DefineBehaviorsEvent(['behaviors' => $behaviors]);
+            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+            return $event->behaviors;
+        }
 
-        return $event->behaviors;
+        return $behaviors;
     }
 
     /**

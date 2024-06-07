@@ -193,6 +193,9 @@ class m230617_070415_entrify_matrix_blocks extends Migration
         }
 
         if (!empty($typeIdMap)) {
+            // disable FK checks for all of this
+            $this->db->createCommand()->checkIntegrity(false)->execute();
+
             // entrify the Matrix blocks
             $typeIdSql = 'CASE';
             foreach ($typeIdMap as $oldId => $newId) {
@@ -240,6 +243,8 @@ SQL,
                 ['type' => 'craft\elements\MatrixBlock'],
                 updateTimestamp: false,
             );
+
+            $this->db->createCommand()->checkIntegrity(true)->execute();
         }
 
         // drop the old Matrix tables

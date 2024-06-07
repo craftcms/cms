@@ -267,6 +267,13 @@ fieldset:last-child,
   margin-bottom: var(--xl) !important;
 }
 
+.center-absolute {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .pointer {
   cursor: pointer !important;
 }
@@ -1639,6 +1646,14 @@ ul.icons {
     }
   }
 
+  &.hairline-dark {
+    border: 1px solid var(--dark-hairline-color);
+
+    &:not(:hover):not(:active):not([aria-expanded='true']) {
+      background-color: transparent;
+    }
+  }
+
   &.link-btn {
     color: var(--link-color);
 
@@ -1724,9 +1739,13 @@ ul.icons {
       color: var(--gray-300);
     }
   }
+
+  .cp-icon svg {
+    @include svg-mask(currentColor); // Matches color of font icons
+  }
 }
 
-.disabled {
+.disabled:not(.status):not(.status-label) {
   opacity: 0.25;
   pointer-events: none;
   user-select: none;
@@ -1945,7 +1964,7 @@ ul.icons {
     height: 17px;
     &:after {
       top: -2px;
-      border-color: var(--link-color);
+      border-color: currentColor;
     }
   }
 
@@ -2865,10 +2884,21 @@ table {
             --ui-control-color: var(--white);
             @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
 
+            .status-label .status-label-text {
+              --status-label-text-color: var(--white) !important;
+            }
+
             th,
             td {
               color: var(--white);
               background-color: var(--selected-bg-color);
+            }
+
+            .icon,
+            .cp-icon,
+            [data-icon],
+            [data-icon-after] {
+              --icon-color: var(--white) !important;
             }
           }
         }
@@ -3060,13 +3090,14 @@ table {
     }
   }
 
-  &:has(.thumb) .chip-content {
-    max-width: calc(100% - var(--thumb-size));
+  &:has(.thumb):not(.large) .chip-content {
+    min-width: calc(100% - var(--thumb-size));
   }
 
   &.sel,
   li.sel &,
-  li.active-drop-target & {
+  li.active-drop-target &,
+  .card.sel & {
     --text-color: var(--white);
     --custom-text-color: var(--white) !important;
     --medium-dark-text-color: var(--white);
@@ -3081,7 +3112,10 @@ table {
       var(--dark-sel-color)
     ) !important;
 
-    .cp-icon {
+    .icon,
+    .cp-icon,
+    [data-icon],
+    [data-icon-after] {
       --icon-color: var(--white) !important;
     }
   }
@@ -3220,7 +3254,7 @@ table {
   flex-direction: row;
   align-items: stretch;
   padding: var(--m);
-  gap: var(--m);
+  gap: var(--s);
   border-radius: var(--large-border-radius);
   cursor: default;
   user-select: none;
@@ -3249,6 +3283,17 @@ table {
     & > .thumb {
       background-color: var(--dark-sel-color) !important;
       filter: brightness(0.85);
+    }
+
+    .icon,
+    .cp-icon,
+    [data-icon],
+    [data-icon-after] {
+      --icon-color: var(--white) !important;
+    }
+
+    .status-label .status-label-text {
+      --status-label-text-color: var(--white) !important;
     }
   }
 
@@ -3299,6 +3344,10 @@ table {
       max-height: 128px;
       object-fit: cover;
     }
+
+    & + .card-content {
+      @include margin-left(calc(var(--m) - var(--s)));
+    }
   }
 
   & > .cp-icon {
@@ -3314,7 +3363,6 @@ table {
   }
 
   .card-content {
-    margin: calc((1rem - var(--lh)) / 2) 0;
     flex: 1 0 0 !important;
     overflow: hidden;
     position: relative;
@@ -3325,11 +3373,7 @@ table {
       flex-direction: row;
       align-items: center;
       gap: 5px;
-
-      .status {
-        margin: 0;
-        flex: 0 0 10px;
-      }
+      min-height: calc(22rem / 16);
 
       .label {
         font-weight: 600;
@@ -3394,7 +3438,7 @@ table {
   font-size: 11px;
   font-weight: normal;
   text-decoration: none !important;
-  color: var(--light-text-color);
+  color: var(--medium-dark-text-color);
   border-radius: calc(var(--touch-target-size) / 2);
   border: 1px solid var(--medium-hairline-color);
 }
@@ -3477,7 +3521,7 @@ table {
     flex-direction: row;
     align-items: center;
     gap: var(--s);
-    min-height: 1rem;
+    min-height: calc(22rem / 16);
 
     &:empty {
       display: none;
@@ -3489,7 +3533,8 @@ table {
 
     & > .action-btn,
     & > .move {
-      @include touch-target;
+      height: var(--touch-target-size);
+      width: var(--touch-target-size);
       margin: 0 -4px;
       &:before {
         color: var(--custom-text-color, var(--ui-control-color));
@@ -3575,6 +3620,32 @@ table {
   &.main {
     .source-path {
       margin: -22px calc(var(--padding) * -1 + 2px) 24px;
+    }
+
+    .inline-editing {
+      textarea,
+      input[type='email'],
+      input[type='text'].fullwidth,
+      input[type='url'] {
+        min-width: 10rem;
+      }
+
+      .money-container input[type='text'].fullwidth,
+      input[type='text'][inputmode].fullwidth {
+        min-width: 5rem;
+      }
+
+      .lightswitch-outer-container .lightswitch-inner-container span {
+        overflow: initial;
+      }
+
+      .selectize.select:not(.fullwidth) {
+        width: 10rem;
+      }
+
+      .flex:has(input[type='text'][inputmode].fullwidth) {
+        flex-wrap: nowrap;
+      }
     }
   }
 
@@ -4219,7 +4290,7 @@ ul.tree,
   @include margin(7px, 0, 0, -15px);
 }
 
-/* status icons */
+/* status indicators */
 .status {
   flex: 0 0 auto;
   display: inline-block;
@@ -4261,8 +4332,10 @@ ul.tree,
     &:not(.light):not(.gray):not(.red):not(.orange):not(.amber):not(.yellow) {
       &:not(.lime):not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky) {
         &:not(.blue):not(.indigo):not(.violet):not(.purple):not(.fuchsia) {
-          &:not(.pink):not(.rose):not(.grey):not(.black) {
-            border-color: var(--ui-control-color);
+          &:not(.pink):not(.rose):not(.grey):not(.black):not(.disabled) {
+            &:not(.inactive) {
+              border-color: var(--ui-control-color);
+            }
           }
         }
       }
@@ -4319,7 +4392,7 @@ ul.tree,
 .bg-teal,
 .status.turquoise,
 .bg-turquoise {
-  background-color: var(--teal-500);
+  background-color: var(--enabled-color);
 }
 .status.cyan,
 .bg-cyan {
@@ -4369,17 +4442,151 @@ ul.tree,
   background-color: var(--gray-800);
 }
 .status.gray,
+.status.disabled,
+.status.inactive,
 .bg-gray,
 .status.grey,
 .bg-grey {
   background-color: var(--gray-300);
 }
 
-.status.white,
-.status.disabled {
+.status.white {
   opacity: 1;
 }
 
+$statusLabelColorShade: '900';
+$statusLabelBgShade: '500';
+
+/* status labels */
+.status-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--xs);
+  height: calc(22rem / 16);
+  padding: 0 var(--s);
+
+  &:before {
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: var(--status-label-bg-color);
+    border-radius: calc(11rem / 16);
+    content: '';
+    opacity: 0.15;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .status,
+  .cp-icon {
+    @include margin(0, 0, 0, -3px);
+  }
+
+  .status-label-text {
+    position: relative;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--status-label-text-color);
+  }
+
+  &.red {
+    --status-label-text-color: var(--red-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--disabled-color);
+  }
+  &.amber {
+    --status-label-text-color: var(--amber-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--amber-#{$statusLabelBgShade});
+  }
+  &.orange {
+    --status-label-text-color: var(--orange-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--pending-color);
+  }
+  &.yellow {
+    --status-label-text-color: var(--yellow-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--yellow-#{$statusLabelBgShade});
+  }
+  &.lime {
+    --status-label-text-color: var(--lime-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--lime-#{$statusLabelBgShade});
+  }
+  &.green {
+    --status-label-text-color: var(--green-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--green-#{$statusLabelBgShade});
+  }
+  &.emerald {
+    --status-label-text-color: var(--emerald-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--emerald-#{$statusLabelBgShade});
+  }
+  &.teal {
+    --status-label-text-color: var(--teal-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--enabled-color);
+  }
+  &.cyan {
+    --status-label-text-color: var(--cyan-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--cyan-#{$statusLabelBgShade});
+  }
+  &.sky {
+    --status-label-text-color: var(--sky-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--sky-#{$statusLabelBgShade});
+  }
+  &.blue {
+    --status-label-text-color: var(--blue-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--blue-#{$statusLabelBgShade});
+  }
+  &.indigo {
+    --status-label-text-color: var(--indigo-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--indigo-#{$statusLabelBgShade});
+  }
+  &.violet {
+    --status-label-text-color: var(--violet-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--violet-#{$statusLabelBgShade});
+  }
+  &.purple {
+    --status-label-text-color: var(--purple-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--purple-#{$statusLabelBgShade});
+  }
+  &.fuchsia {
+    --status-label-text-color: var(--fuchsia-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--fuchsia-#{$statusLabelBgShade});
+  }
+  &.pink {
+    --status-label-text-color: var(--pink-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--pink-#{$statusLabelBgShade});
+  }
+  &.rose {
+    --status-label-text-color: var(--rose-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--rose-#{$statusLabelBgShade});
+  }
+  &.light {
+    --status-label-text-color: var(--gray-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--gray-#{$statusLabelBgShade});
+  }
+  &.gray {
+    --status-label-text-color: var(--gray-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--gray-#{$statusLabelBgShade});
+  }
+}
+
+.card.sel,
+li.sel .card,
+table.data tbody tr:not(.disabled).sel,
+table.data tbody tr:not(.disabled).active-drop-target {
+  .status-label.gray {
+    --status-label-bg-color: var(--white);
+
+    &:before {
+      opacity: 0.075;
+    }
+  }
+}
+
+/* colors */
 .icon,
 .cp-icon,
 [data-icon],
@@ -4409,7 +4616,7 @@ ul.tree,
     --icon-color: var(--emerald-500);
   }
   &.teal {
-    --icon-color: var(--teal-500);
+    --icon-color: var(--enabled-color);
   }
   &.cyan {
     --icon-color: var(--cyan-500);
@@ -5205,10 +5412,6 @@ $min2ColWidth: 400px;
           & > .timewrapper {
             width: 45%;
           }
-
-          & > .clear-btn {
-            @include margin-right(-24px);
-          }
         }
 
         & > .datewrapper,
@@ -5383,7 +5586,11 @@ $min2ColWidth: 400px;
     --neg-padding: -14px;
   }
 
-  &:not(.so-mobile) {
+  &.so-lp {
+    border-radius: var(--large-border-radius);
+  }
+
+  &:not(.so-mobile):not(.so-lp) {
     @include border-radius(
       var(--large-border-radius),
       0,
@@ -6624,8 +6831,10 @@ $min2ColWidth: 400px;
       &:not(.light):not(.gray):not(.red):not(.orange):not(.amber):not(.yellow) {
         &:not(.lime):not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky) {
           &:not(.blue):not(.indigo):not(.violet):not(.purple):not(.fuchsia) {
-            &:not(.pink):not(.rose):not(.grey):not(.black) {
-              border-color: currentColor;
+            &:not(.pink):not(.rose):not(.grey):not(.black):not(.disabled) {
+              &:not(.inactive) {
+                border-color: currentColor;
+              }
             }
           }
         }

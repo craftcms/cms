@@ -23,7 +23,6 @@ use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -559,7 +558,9 @@ class ElementIndexesController extends BaseElementsController
 
             $element->setFieldValuesFromRequest("$namespace.element-$element->id.fields");
 
-            if ($element->enabled && $element->getEnabledForSite()) {
+            if ($element->getIsUnpublishedDraft()) {
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+            } elseif ($element->enabled && $element->getEnabledForSite()) {
                 $element->setScenario(Element::SCENARIO_LIVE);
             }
 
@@ -1042,15 +1043,26 @@ class ElementIndexesController extends BaseElementsController
             throw new ForbiddenHttpException('User not authorized to edit content for this site.');
         }
 
+        // check for a provisional draft first
         /** @var ElementInterface|null $element */
         $element = $elementType::find()
-            ->id($id)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->revisions(null)
+            ->draftOf($id)
+            ->provisionalDrafts()
             ->siteId($siteId)
             ->status(null)
             ->one();
+
+        if (!$element) {
+            /** @var ElementInterface|null $element */
+            $element = $elementType::find()
+                ->id($id)
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->revisions(null)
+                ->siteId($siteId)
+                ->status(null)
+                ->one();
+        }
 
         if (!$element) {
             throw new BadRequestHttpException("Invalid element ID: $id");
@@ -1064,9 +1076,6 @@ class ElementIndexesController extends BaseElementsController
         }
 
         return $this->asJson([
-            'elementHtml' => Cp::elementChipHtml($element, [
-                'context' => $this->context,
-            ]),
             'attributeHtml' => $attributeHtml,
         ]);
     }

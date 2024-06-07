@@ -118,12 +118,18 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function getSelectableConditionRules(): array
     {
         if (!isset($this->_selectableConditionRules)) {
-            $event = new RegisterConditionRulesEvent([
-                'conditionRules' => $this->selectableConditionRules(),
-            ]);
-            $this->trigger(self::EVENT_REGISTER_CONDITION_RULES, $event);
+            $rules = $this->selectableConditionRules();
 
-            $this->_selectableConditionRules = Collection::make($event->conditionRules)
+            // Fire a 'registerConditionRules' event
+            if ($this->hasEventHandlers(self::EVENT_REGISTER_CONDITION_RULES)) {
+                $event = new RegisterConditionRulesEvent([
+                    'conditionRules' => $rules,
+                ]);
+                $this->trigger(self::EVENT_REGISTER_CONDITION_RULES, $event);
+                $rules = $event->conditionRules;
+            }
+
+            $this->_selectableConditionRules = Collection::make($rules)
                 ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
                 ->map(fn($type) => $this->createConditionRule($type))
                 ->filter(fn(ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
@@ -178,6 +184,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function setConditionRules(array $rules): void
     {
         $this->_conditionRules = Collection::make();
+        $projectConfig = Craft::$app->getProjectConfig();
 
         foreach ($rules as $rule) {
             if (!$rule instanceof ConditionRuleInterface) {
@@ -189,7 +196,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 }
             }
 
-            if ($this->validateConditionRule($rule)) {
+            // Don't validate the rule when we're applying project config changes.
+            // The rule type might depend on something that hasn't been added yet.
+            if ($projectConfig->isApplyingExternalChanges || $this->validateConditionRule($rule)) {
                 $this->_conditionRules->add($rule);
                 $rule->setCondition($this);
             }

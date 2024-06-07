@@ -112,7 +112,11 @@
                 {% set toggleContent %}
                     <span class="sidebar-action__prefix">
                         <span class="nav-icon" aria-hidden="true" id="sidebar-toggle-icon">
-                            {{ iconSvg('angle-right') }}
+                            {% if craft.app.locale.getOrientation() == 'rtl' %}
+                                {{ iconSvg('angle-left') }}
+                            {% else %}
+                                {{ iconSvg('angle-right') }}
+                            {% endif %}
                         </span>
                     </span>
                     <span class="sidebar-action__label">
@@ -134,10 +138,11 @@
             {% if currentUser.admin and devMode %}
                 {% set devModeText = 'Craft CMS is running in Dev Mode.'|t('app') %}
                 <div id="devmode">
-                    {{ tag('span', {
+                    {% tag 'span' with {
                         class: 'visually-hidden',
-                        text: devModeText
-                    }) }}
+                    } %}
+                        {{ devModeText|raw }}
+                    {% endtag %}
                 </div>
             {% endif %}
         </div>

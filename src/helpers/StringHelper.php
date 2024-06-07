@@ -2035,4 +2035,16 @@ class StringHelper extends \yii\helpers\StringHelper
 
         return self::$_shortcodeEscapeMap;
     }
+
+    /**
+     * Indents each line in the given string.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.10.0
+     */
+    public static function indent(string $str, string $indent = '    '): string
+    {
+        return implode("\n", array_map(fn(string $line) => $indent . $line, static::lines($str)));
+    }
 }

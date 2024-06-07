@@ -10,12 +10,13 @@
   z-index: 100;
 
   & > header {
-    padding: 5px 24px;
+    padding: 5px var(--pane-padding, var(--xl));
     background-color: var(--gray-100);
     box-shadow: 0 1px 0 transparentize($grey700, 0.8);
     box-sizing: border-box;
     position: relative;
     z-index: 1;
+    height: 44px;
 
     @supports (backdrop-filter: blur(10px)) {
       & {
@@ -27,7 +28,7 @@
         background-color: transparentize($grey100, 0.25);
         backdrop-filter: blur(10px);
 
-        & + .lp-editor {
+        & + .lp-content {
           padding-top: #{44 + 24}px;
         }
       }
@@ -38,6 +39,50 @@
     .checkmark-icon {
       margin-bottom: 0;
     }
+
+    .btn[data-icon='xmark'] {
+      margin-inline-start: calc(-12rem / 16);
+      margin-inline-end: calc(var(--s) * -1);
+      &:not(:hover):not(:active):not([aria-expanded='true']) {
+        background-color: transparent;
+      }
+    }
+
+    .lp-toolbar {
+      min-width: 0;
+      margin-inline-end: -1rem;
+
+      .pane-tabs {
+        margin-inline: 0 !important;
+
+        [role='tablist'] {
+          padding: 0 12px;
+
+          &.scrollable {
+            mask-image: linear-gradient(
+              to right,
+              rgba(0, 0, 0, 0),
+              rgba(0, 0, 0) 12px,
+              rgba(0, 0, 0) calc(100% - 12px),
+              rgba(0, 0, 0, 0) 100%
+            );
+          }
+
+          [role='tab'] {
+            background-color: transparent;
+          }
+        }
+
+        .menubtn:not(.action-btn) {
+          --focus-ring: var(--inner-focus-ring);
+          margin-inline: 0;
+
+          &:not(:empty):not(.btn-empty)::after {
+            margin-inline-start: 0;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -45,24 +90,26 @@
   display: flex;
   flex-direction: column;
 
-  .lp-editor {
+  .lp-content {
     flex: 1;
-    padding: 24px;
+    padding: var(--pane-padding, var(--xl));
     overflow: auto;
     box-sizing: border-box;
+    position: relative;
 
-    & > .field {
-      &:last-child {
-        margin-bottom: 24px !important;
-      }
+    &:not(.loading) > .spinner {
+      display: none;
+    }
 
-      & > .status-badge {
-        @include left(-24px);
-      }
+    &.loading > .spinner {
+      position: absolute;
+      inset-block-start: calc(50% - 17px);
+      inset-inline-start: calc(50% - 12px);
+      color: var(--ui-control-color);
     }
 
     .matrixblock > .fields > .flex-fields > .field > .status-badge {
-      @include left(calc(var(--m) * -1));
+      inset-inline-start: calc(var(--m) * -1);
     }
   }
 
@@ -74,6 +121,14 @@
     width: 4px;
     height: 100%;
     cursor: col-resize;
+  }
+
+  & > footer {
+    padding: 5px var(--pane-padding, var(--xl));
+    box-shadow: inset 0 1px 0 var(--hairline-color);
+    background-color: var(--gray-100);
+    justify-content: end;
+    height: 44px;
   }
 }
 

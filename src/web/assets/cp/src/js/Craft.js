@@ -2207,7 +2207,7 @@ $.extend(Craft, {
    * Retrieves a value from localStorage if it exists.
    *
    * @param {string} key
-   * @param {*} defaultValue
+   * @param {*} [defaultValue]
    */
   getLocalStorage: function (key, defaultValue) {
     key = 'Craft-' + Craft.systemUid + '.' + key;
@@ -2978,6 +2978,7 @@ $.extend($.fn, {
         confirm: $btn.data('confirm'),
         action: $btn.data('action'),
         redirect: $btn.data('redirect'),
+        retainScroll: Garnish.hasAttr($btn, 'data-retain-scroll'),
         requireElevatedSession: Garnish.hasAttr(
           $btn,
           'data-require-elevated-session'

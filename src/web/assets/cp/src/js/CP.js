@@ -91,6 +91,7 @@ Craft.CP = Garnish.Base.extend(
       this.$header = $('#header');
       this.$mainContent = $('#main-content');
       this.$details = $('#details');
+      this.$detailsContainer = $('#details-container');
       this.$sidebarContainer = $('#sidebar-container');
       this.$sidebarToggle = $('#sidebar-toggle');
       this.$sidebar = $('#sidebar');
@@ -222,9 +223,25 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Should we match the previous scroll position?
-      let scrollY = Craft.getLocalStorage('scrollY');
-      if (typeof scrollY !== 'undefined') {
-        Craft.removeLocalStorage('scrollY');
+      let scrollY;
+      const location = document.location;
+      const params = new URLSearchParams(location.search);
+      if (params.has('scrollY')) {
+        scrollY = params.get('scrollY');
+        params.delete('scrollY');
+        Craft.setUrl(
+          Craft.getUrl(
+            `${location.origin}${location.pathname}${location.hash}`,
+            params.toString()
+          )
+        );
+      } else {
+        scrollY = Craft.getLocalStorage('scrollY');
+        if (scrollY !== undefined) {
+          Craft.removeLocalStorage('scrollY');
+        }
+      }
+      if (scrollY !== undefined) {
         Garnish.$doc.ready(() => {
           Garnish.requestAnimationFrame(() => {
             window.scrollTo(0, scrollY);
@@ -851,14 +868,14 @@ Craft.CP = Garnish.Base.extend(
         }
 
         this._setFixedTopPos(this.$sidebar, headerHeight);
-        this._setFixedTopPos(this.$details, headerHeight);
+        this.$detailsContainer.css('top', headerHeight + 14);
       } else if (this.fixedHeader) {
         this.$headerContainer.height('auto');
         this.$header.width('auto');
         Garnish.$bod.removeClass('fixed-header');
         this.$contentContainer.css('min-height', '');
         this.$sidebar.removeClass('fixed').css('top', '');
-        this.$details.removeClass('fixed').css('top', '');
+        this.$detailsContainer.css('top', '');
         this.fixedHeader = false;
       }
     },

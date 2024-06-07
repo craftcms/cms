@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Closure;
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
@@ -156,7 +157,7 @@ class NestedElementManager extends Component
      */
     public function getIsTranslatable(?ElementInterface $owner = null): bool
     {
-        if ($this->propagationMethod === PropagationMethod::Custom) {
+        if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
             return (
                 $owner === null ||
                 Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $owner) !== ''
@@ -241,6 +242,11 @@ class NestedElementManager extends Component
         $this->setOwnerOnNestedElements($owner, $elements);
 
         foreach ($elements as $element) {
+            $hasTitles ??= $element::hasTitles();
+            if ($hasTitles) {
+                $keywords[] = $element->title;
+            }
+
             foreach ($element->getFieldLayout()->getCustomFields() as $field) {
                 if ($field->searchable) {
                     $fieldValue = $element->getFieldValue($field->handle);
@@ -382,11 +388,32 @@ class NestedElementManager extends Component
                     'class' => 'nested-element-cards',
                 ]);
 
-                /** @var NestedElementInterface[] $elements */
-                $elements = $this->getValue($owner)
-                    ->status(null)
-                    ->limit(null)
-                    ->all();
+
+                /** @var ElementQueryInterface|ElementCollection $value */
+                $value = $this->getValue($owner);
+                if ($value instanceof ElementCollection) {
+                    /** @var NestedElementInterface[] $elements */
+                    $elements = $value->all();
+                } else {
+                    /** @var NestedElementInterface[] $elements */
+                    $elements = $value
+                        ->status(null)
+                        ->limit(null)
+                        ->all();
+                }
+
+                // See if there are any provisional drafts we should swap these out with
+                ElementHelper::swapInProvisionalDrafts($elements);
+
+                if ($this->hasErrors($owner)) {
+                    foreach ($elements as $element) {
+                        if ($element->enabled && $element->getEnabledForSite()) {
+                            $element->setScenario(Element::SCENARIO_LIVE);
+                        }
+                        $element->validate();
+                    }
+                }
+
                 $this->setOwnerOnNestedElements($owner, $elements);
 
                 if (!empty($elements)) {
@@ -464,15 +491,23 @@ class NestedElementManager extends Component
                 $elementType = $this->elementType;
                 $view = Craft::$app->getView();
 
+                $criteria = [
+                    $this->ownerIdParam => $owner->id,
+                ];
+
+                if ($owner->getIsRevision()) {
+                    $criteria['revisions'] = null;
+                    $criteria['trashed'] = null;
+                    $criteria['drafts'] = false;
+                }
+
                 $settings['indexSettings'] = [
                     'namespace' => $view->getNamespace(),
                     'allowedViewModes' => $config['allowedViewModes']
                         ? array_map(fn($mode) => StringHelper::toString($mode), $config['allowedViewModes'])
                         : null,
                     'showHeaderColumn' => $config['showHeaderColumn'],
-                    'criteria' => array_merge([
-                        $this->ownerIdParam => $owner->id,
-                    ], $this->criteria),
+                    'criteria' => array_merge($criteria, $this->criteria),
                     'batchSize' => $config['pageSize'],
                     'actions' => [],
                     'canHaveDrafts' => $elementType::hasDrafts(),
@@ -654,6 +689,12 @@ JS, [
         }
 
         return $owner->isFieldModified($this->field->handle, $anySite);
+    }
+
+    private function hasErrors(ElementInterface $owner): bool
+    {
+        $attribute = $this->attribute ?? $this->field->handle;
+        return $owner->hasErrors("$attribute.*");
     }
 
     private function saveNestedElements(ElementInterface $owner): void

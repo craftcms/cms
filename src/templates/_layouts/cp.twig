@@ -147,7 +147,6 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                             {{ contextMenu|raw }}
                         </div>
                     {% endif %}
-                    {{ actionMenu|raw }}
                 </div>
                 <button
                     type="button"
@@ -225,25 +224,12 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                                 {{ toolbar|raw }}
                                             </div>
                                         {% endif %}
-                                        {% if actionButton or additionalButtons %}
+                                        {% if actionButton or additionalButtons or actionMenu or details %}
                                             <div id="action-buttons" class="flex">
                                                 {{ additionalButtons|raw }}
                                                 {{ actionButton|raw }}
+                                                {{ actionMenu|raw }}
 
-                                                {% if details is not empty %}
-                                                    {% set content %}
-                                                        <span aria-hidden="true" class="cp-icon">{{ iconSvg('sidebar-end') }}</span>
-                                                        <span class="visually-hidden">{{ 'Toggle details sidebar'|t('app') }}</span>
-                                                    {% endset %}
-                                                    {% include '_includes/disclosure-toggle' with {
-                                                        id: 'details-toggle',
-                                                        controls: 'details-container',
-                                                        content: content,
-                                                        attributes: {
-                                                            class: 'btn btn-empty'
-                                                        }
-                                                    } %}
-                                                {% endif %}
                                             </div>
                                         {% endif %}
                                     {% endblock %}
@@ -274,37 +260,62 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
 
                             {# content-container #}
                             <div id="content-container">
+
                                 {% block main %}
                                     {% if errorSummary is not empty %}
                                         {{ errorSummary is defined ? errorSummary|raw }}
                                     {% endif %}
-                                    <div id="content" class="content-pane">
-                                        {% if contentNotice or tabs %}
-                                            <header id="content-header" class="pane-header">
-                                                {{ contentNotice ? tag('div', {
-                                                    id: 'content-notice',
-                                                    html: contentNotice,
-                                                    role: 'status',
-                                                }) }}
-                                                {% if tabs %}
-                                                    {% include "_includes/tabs" with {
-                                                        containerAttributes: {
-                                                            id: 'tabs',
-                                                        },
-                                                    } %}
-                                                {% endif %}
-                                            </header>
-                                        {% endif %}
 
-                                        {% block content %}
-                                            {{ content is defined ? content|raw }}
-                                        {% endblock %}
+                                    <div class="content-grid">
+                                        <div id="content" class="content-pane">
+                                            {% if contentNotice or tabs %}
+                                                <header id="content-header" class="pane-header">
+                                                    {{ contentNotice ? tag('div', {
+                                                        id: 'content-notice',
+                                                        html: contentNotice,
+                                                        role: 'status',
+                                                    }) }}
+                                                    {% if tabs %}
+                                                        {% include "_includes/tabs" with {
+                                                            containerAttributes: {
+                                                                id: 'tabs',
+                                                            },
+                                                        } %}
+                                                    {% endif %}
+                                                </header>
+                                            {% endif %}
 
-                                        {# footer #}
-                                        {% if footer %}
-                                            <div id="footer" class="flex flex-justify">
-                                                {{ footer|raw }}
-                                            </div>
+                                            {% block content %}
+                                                {{ content is defined ? content|raw }}
+                                            {% endblock %}
+
+                                            {# footer #}
+                                            {% if footer %}
+                                                <div id="footer" class="flex flex-justify">
+                                                    {{ footer|raw }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        {% if details is not empty %}
+                                            {% embed '_includes/disclosure-toggle' with {
+                                                id: 'details-toggle',
+                                                controls: 'details-container',
+                                            } only %}
+                                                {% block content %}
+                                                    <span class="details-toggle__inner">
+                                                        <span
+                                                            aria-hidden="true"
+                                                            class="cp-icon toggle-icon toggle-icon--close"
+                                                        >{{ iconSvg('angle-right') }}</span>
+                                                        <span
+                                                            aria-hidden="true"
+                                                            class="cp-icon toggle-icon toggle-icon--open"
+                                                        >{{ iconSvg('angle-left') }}</span>
+                                                        <span class="visually-hidden">{{ 'Toggle details sidebar'|t('app') }}</span>
+                                                    </span>
+                                                {% endblock %}
+                                            {% endembed %}
                                         {% endif %}
                                     </div>
                                 {% endblock %}
@@ -346,10 +357,12 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                 <div id="app-info">
                     {% set fullEditionName = '{edition} edition'|t('app', {edition: editionName}) %}
                     <span>
-                        Craft CMS
-                        <span id="edition-logo" title="{{ fullEditionName }}">
-                            <span aria-hidden="true">{{ editionName }}</span>
-                            <span class="visually-hidden">{{ fullEditionName }}</span>
+                        <span lang="en">
+                            Craft CMS
+                            <span id="edition-logo" title="{{ fullEditionName }}">
+                                <span aria-hidden="true">{{ editionName }}</span>
+                                <span class="visually-hidden">{{ fullEditionName }}</span>
+                            </span>
                         </span>
                         {{ craft.app.version }}
                     </span>

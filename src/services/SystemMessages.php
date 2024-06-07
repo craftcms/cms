@@ -115,14 +115,15 @@ class SystemMessages extends Component
             ],
         ];
 
-        // Give plugins a chance to add additional messages
-        $event = new RegisterEmailMessagesEvent([
-            'messages' => $messages,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_MESSAGES, $event);
+        // Fire a 'registerMessages' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_MESSAGES)) {
+            $event = new RegisterEmailMessagesEvent(['messages' => $messages]);
+            $this->trigger(self::EVENT_REGISTER_MESSAGES, $event);
+            $messages = $event->messages;
+        }
 
         // Sort them all by key
-        $messages = ArrayHelper::index($event->messages, 'key');
+        $messages = ArrayHelper::index($messages, 'key');
 
         // Make sure they're SystemMessage objects
         foreach ($messages as $key => $message) {

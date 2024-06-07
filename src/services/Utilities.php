@@ -97,14 +97,16 @@ class Utilities extends Component
         $utilityTypes[] = FindAndReplace::class;
         $utilityTypes[] = Migrations::class;
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $utilityTypes,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_UTILITIES, $event);
+        // Fire a 'registerUtilities' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_UTILITIES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $utilityTypes]);
+            $this->trigger(self::EVENT_REGISTER_UTILITIES, $event);
+            $utilityTypes = $event->types;
+        }
 
         $disabledUtilities = array_flip($generalConfig->disabledUtilities);
 
-        return array_values(array_filter($event->types, function(string $class) use ($disabledUtilities) {
+        return array_values(array_filter($utilityTypes, function(string $class) use ($disabledUtilities) {
             /** @var string|UtilityInterface $class */
             return !isset($disabledUtilities[$class::id()]);
         }));

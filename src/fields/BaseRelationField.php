@@ -1265,6 +1265,7 @@ JS, [
     {
         if ($value instanceof ElementQueryInterface) {
             $value = $value->all();
+            ElementHelper::swapInProvisionalDrafts($value);
         } elseif (!is_array($value)) {
             $value = [];
         }
@@ -1360,10 +1361,14 @@ JS, [
      */
     public function getInputSelectionCriteria(): array
     {
-        // Fire a defineSelectionCriteria event
-        $event = new ElementCriteriaEvent();
-        $this->trigger(self::EVENT_DEFINE_SELECTION_CRITERIA, $event);
-        return $event->criteria;
+        // Fire a 'defineSelectionCriteria event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SELECTION_CRITERIA)) {
+            $event = new ElementCriteriaEvent();
+            $this->trigger(self::EVENT_DEFINE_SELECTION_CRITERIA, $event);
+            return $event->criteria;
+        }
+
+        return [];
     }
 
     /**
