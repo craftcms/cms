@@ -1259,6 +1259,8 @@ Craft.ui = {
       return;
     }
 
+    this.clearErrorsFromField($field);
+
     $field.addClass('has-errors');
     $field.children('.input').addClass('errors');
 
