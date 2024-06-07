@@ -2112,7 +2112,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{step, number} of {total, number}' => '{step, number} / {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.' => '{total, number} {total, plural, one {}=1{hata} other{hata}} bulundu {num, number} {num, plural, one {}=1{sekme} other{sekme}}.',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{öge}} other{{öge}}}',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}' => '{total, number} {type} {total, plural, one {}=1{alan düzeni} other{alan düzeni}}',
     '{totalItems, plural, =1{Item} other{Items}} moved.' => '{totalItems, plural, one {}=1{öge} other{öge}} taşındı.',
     '{total} jobs' => '{total} iş',
