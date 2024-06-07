@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.1.10 - 2024-06-07
 
 - Fixed an error that could occur if a Local filesystem wasn’t configured with a base path.
 - Fixed a bug where some entries could be missing content after upgrading to Craft 5. ([#15150](https://github.com/craftcms/cms/issues/15150))
