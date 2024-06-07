@@ -28,6 +28,7 @@
 - Darkened the color of footer links to meet the minimum contrast for text.
 - Set the language of the Craft edition in the footer, to improve screen reader pronunciation for non-English languages.
 - The accessible name of “Select site” buttons is now translated to the current language.
+- Improved the accessibility of two-step verification steps on the control panel login screen. ([#15145](https://github.com/craftcms/cms/pull/15145))
 
 ### Administration
 - Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))

@@ -267,6 +267,13 @@ fieldset:last-child,
   margin-bottom: var(--xl) !important;
 }
 
+.center-absolute {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .pointer {
   cursor: pointer !important;
 }
@@ -1957,7 +1964,7 @@ ul.icons {
     height: 17px;
     &:after {
       top: -2px;
-      border-color: var(--link-color);
+      border-color: currentColor;
     }
   }
 
