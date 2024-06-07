@@ -2,9 +2,15 @@
 
 ## Unreleased
 
+- Matrix fields in cards view and Addresses fields now show which nested entries/addresses contain validation errors. ([#15161](https://github.com/craftcms/cms/issues/15161))
+- Fixed an error that could occur if a Local filesystem wasn’t configured with a base path.
+- Fixed a bug where some entries could be missing content after upgrading to Craft 5. ([#15150](https://github.com/craftcms/cms/issues/15150))
+- Fixed a bug where it wasn’t always possible to add new entries to Matrix fields in inline-editable blocks view, if the field’s Max Entries setting had been reached before page load. ([#15158](https://github.com/craftcms/cms/issues/15158))
+- Fixed an error that could occur when rendering the “My Drafts” widget. ([#14749](https://github.com/craftcms/cms/issues/14749))
 - Fixed a bug where element indexes’ “Date Created” columns were mislabeled as “Date Uploaded”. ([#15155](https://github.com/craftcms/cms/issues/15155))
 - Fixed a bug where the content pane had extra padding on pages without a meta sidebar.
 - Fixed a bug where reordered field layout tabs/elements weren’t getting saved. ([#15154](https://github.com/craftcms/cms/issues/15154))
+- Fixed a PHP error. ([#15160](https://github.com/craftcms/cms/issues/15160))
 
 ## 5.2.0-beta.3 - 2024-06-04
 

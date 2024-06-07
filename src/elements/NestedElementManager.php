@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Closure;
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
@@ -404,6 +405,15 @@ class NestedElementManager extends Component
                 // See if there are any provisional drafts we should swap these out with
                 ElementHelper::swapInProvisionalDrafts($elements);
 
+                if ($this->hasErrors($owner)) {
+                    foreach ($elements as $element) {
+                        if ($element->enabled && $element->getEnabledForSite()) {
+                            $element->setScenario(Element::SCENARIO_LIVE);
+                        }
+                        $element->validate();
+                    }
+                }
+
                 $this->setOwnerOnNestedElements($owner, $elements);
 
                 if (!empty($elements)) {
@@ -679,6 +689,12 @@ JS, [
         }
 
         return $owner->isFieldModified($this->field->handle, $anySite);
+    }
+
+    private function hasErrors(ElementInterface $owner): bool
+    {
+        $attribute = $this->attribute ?? $this->field->handle;
+        return $owner->hasErrors("$attribute.*");
     }
 
     private function saveNestedElements(ElementInterface $owner): void

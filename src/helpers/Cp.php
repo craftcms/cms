@@ -707,7 +707,7 @@ class Cp
             return self::statusIndicatorHtml('draft');
         }
 
-        $statusDef = $component::statuses()[$status] ?? null;
+        $statusDef = $component::statuses()[$status] ?? [];
 
         // Just to give the `statusIndicatorHtml` clean types
         if (is_string($statusDef)) {
