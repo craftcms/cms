@@ -889,6 +889,7 @@ JS;
         $entryTypes = $this->getEntryTypes();
         $config = [
             'showInGrid' => $this->showCardsInGrid,
+            'prevalidate' => false,
         ];
 
         if (!$static) {
@@ -908,6 +909,10 @@ JS;
                 'minElements' => $this->minEntries,
                 'maxElements' => $this->maxEntries,
             ];
+
+            if ($owner->hasErrors()) {
+                $config['prevalidate'] = true;
+            }
         }
 
         if ($this->viewMode === self::VIEW_MODE_CARDS) {
