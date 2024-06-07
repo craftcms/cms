@@ -27,6 +27,7 @@ Craft.LoginForm = Garnish.Base.extend(
 
     async init(container, settings) {
       this.$container = $(container);
+      this.$pane = this.$container.find('.login-form-container');
       this.$form = this.$container.find('.login-form');
       this.$usernameInput = this.$form.find('.login-username');
       this.$passwordInput = this.$form.find('.login-password');
@@ -49,6 +50,7 @@ Craft.LoginForm = Garnish.Base.extend(
 
       this.$spinner = document.createElement('craft-spinner');
       this.$spinner.setAttribute('visible', false);
+      this.$spinner.classList.add('center-absolute');
 
       $(this.$spinner).insertAfter(this.$form);
 
@@ -259,6 +261,9 @@ Craft.LoginForm = Garnish.Base.extend(
         const $methodDisclosure = new Garnish.DisclosureMenu($button);
 
         $ul.find('button').on('activate', (event) => {
+          const tempHeight = this.$pane.outerHeight();
+          this.$pane.outerHeight(tempHeight);
+
           this.$spinner.visible = true;
           this.$spinner.focus();
           $methodDisclosure.hide();
@@ -272,6 +277,7 @@ Craft.LoginForm = Garnish.Base.extend(
             },
           })
             .then(({data}) => {
+              this.$pane.removeAttr('style');
               this.show2faForm(data);
             })
             .finally(() => {
