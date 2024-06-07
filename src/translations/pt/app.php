@@ -413,7 +413,7 @@ return [
     'County' => 'Condado',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'O Craft CMS não suporta retroceder para esta versão. Atualize para o Craft CMS {version} ou posterior.',
     'Craft CMS edition changed.' => 'Edição do Craft CMS alterada.',
-    'Craft CMS is running in Dev Mode.' => 'Craft CMS está a ser executado no modo Dev.',
+    'Craft CMS is running in Dev Mode.' => 'Craft CMS está sendo executado no modo Dev.',
     'Craft Support' => 'Apoio Craft',
     'Craft isn’t installed yet.' => 'Craft ainda não foi instalado.',
     'Craft {version} Upgrade' => 'Atualização Craft {version}',
