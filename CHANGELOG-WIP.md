@@ -29,6 +29,7 @@
 - Set the language of the Craft edition in the footer, to improve screen reader pronunciation for non-English languages.
 - The accessible name of “Select site” buttons is now translated to the current language.
 - Improved the accessibility of two-step verification steps on the control panel login screen. ([#15145](https://github.com/craftcms/cms/pull/15145))
+- Improved the accessibility of global nav items with subnavs. ([#15006](https://github.com/craftcms/cms/issues/15006))
 
 ### Administration
 - Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))
