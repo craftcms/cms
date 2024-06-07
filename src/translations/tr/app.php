@@ -1997,7 +1997,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} yapılandırılmış bir kaynak değil. Orijinal kaynakları ilişkilendirirken yalnızca yapılandırılmış kaynaklar kullanılabilir.',
     '{step, number} of {total, number}' => '{step, number} / {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{öge}} other{{öge}}}',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{totalItems, plural, =1{Item} other{Items}} moved.' => '{totalItems, plural, one {}=1{öge} other{öge}} taşındı.',
     '{total} jobs' => '{total} iş',
     '{total} updates available!' => '{total} güncelleme mevcut!',
