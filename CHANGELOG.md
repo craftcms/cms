@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that occurred when using a multi-environment config. ([#15154](https://github.com/craftcms/cms/issues/15154))
+- Fixed a bug where the `users/login` action wasn’t checking if someone was already logged in. ([#15168](https://github.com/craftcms/cms/issues/15168))
 
 ## 5.2.0-beta.4 - 2024-06-07
 

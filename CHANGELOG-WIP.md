@@ -99,3 +99,4 @@
 - The search keyword index is now updated for owner elements, when a nested element is saved directly which belongs to a searchable custom field. 
 - Updated Yii to 2.0.50. ([#15124](https://github.com/craftcms/cms/issues/15124))
 - Updated inputmask to 5.0.9.
+- Fixed a bug where the `users/login` action wasn’t checking if someone was already logged in. ([#15168](https://github.com/craftcms/cms/issues/15168))
