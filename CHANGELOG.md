@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error that occurred when using a multi-environment config. ([#15154](https://github.com/craftcms/cms/issues/15154))
+
 ## 5.2.0-beta.4 - 2024-06-07
 
 - Matrix fields in cards view and Addresses fields now show which nested entries/addresses contain validation errors. ([#15161](https://github.com/craftcms/cms/issues/15161))

@@ -193,7 +193,6 @@ $customIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'custom-icons';
 $regularIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'regular';
 $solidIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'solid';
 require $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
-require $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . 'ArrayHelper.php';
 require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 
 // Set aliases
