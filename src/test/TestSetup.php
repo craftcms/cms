@@ -341,7 +341,6 @@ class TestSetup
         $srcPath = $repoRoot . '/src';
 
         require $libPath . '/yii2/Yii.php';
-        require $libPath . '/yii2/helpers/ArrayHelper.php';
         require $srcPath . '/Craft.php';
 
         // Set aliases
