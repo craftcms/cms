@@ -19,14 +19,14 @@
     {% tag 'a' with linkAttributes %}
         <span class="sidebar-action__prefix">
             {% if showIcon %}
-            <span class="nav-icon" aria-hidden="true">
-                {%- if item.icon is defined -%}
-                    {{ iconSvg(item.icon) }}
-                {%- elseif item.fontIcon is defined -%}
-                    <span data-icon="{{ item.fontIcon }}"></span>
-                {%- else -%}
-                    {% include "_includes/fallback-icon.svg.twig" with { label: item.label } %}
-                {%- endif -%}
+                <span class="nav-icon" aria-hidden="true">
+                    {%- if item.icon is defined -%}
+                        {{ iconSvg(item.icon) }}
+                    {%- elseif item.fontIcon is defined -%}
+                        <span data-icon="{{ item.fontIcon }}"></span>
+                    {%- else -%}
+                        {% include "_includes/fallback-icon.svg.twig" with { label: item.label } %}
+                    {%- endif -%}
                 </span>
             {% endif %}
         </span>
@@ -34,7 +34,7 @@
         <span class="sidebar-action__label">
             <span class="label">{{ item.label }}</span>
             {% if external %}
-              {{ links.externalLinkIcon() }}
+                {{ links.externalLinkIcon() }}
             {% endif %}
         </span>
 
@@ -79,9 +79,14 @@
 
                             {% if item.subnav %}
                                 <craft-disclosure class="nav-item__trigger">
-                                  <button type="button" class="btn menubtn hairline" aria-controls="{{ item.id }}-subnav" aria-expanded="{{ item.sel ?  'true' : 'false' }}">
-                                      <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
-                                  </button>
+                                    <button
+                                        type="button"
+                                        class="btn menubtn hairline"
+                                        aria-controls="{{ item.id }}-subnav"
+                                        aria-expanded="{{ item.sel ?  'true' : 'false' }}"
+                                    >
+                                        <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
+                                    </button>
                                 </craft-disclosure>
                                 <ul class="nav-item__subnav {{ item.sel ? 'is-open' : '' -}}" id="{{ item.id }}-subnav">
                                     {% for itemId, item in item.subnav %}
