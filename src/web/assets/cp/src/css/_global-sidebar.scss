@@ -57,7 +57,6 @@
 
 .global-nav > ul > li {
   position: relative;
-  padding-block: var(--xs);
 }
 
 .nav-icon {
@@ -87,6 +86,7 @@
   grid-template-areas: '. action trigger .' 'subnav subnav subnav subnav';
   align-items: center;
   width: 100%;
+  padding-block: var(--xs);
 
   > .sidebar-action {
     grid-area: action;
@@ -96,6 +96,10 @@
     color: var(--nav-item-fgColor-active);
     background-color: var(--nav-item-bgColor-active);
   }
+}
+
+.nav-item--sub {
+  padding-block: 0;
 }
 
 .nav-item__trigger {

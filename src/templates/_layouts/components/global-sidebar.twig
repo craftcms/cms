@@ -69,30 +69,34 @@
                         {% set itemAttributes = {
                             id: item.id,
                             class: [
-                                'nav-item',
-                                item.sel ? 'sel',
                                 item.subnav ? 'has-subnav'
                             ],
                         } %}
                         <li {{ attr(itemAttributes) }}>
-                            {{ _self.action(item) }}
+                            <div class="nav-item {% if item.sel %}sel{% endif %}">
+                                {{ _self.action(item) }}
+
+                                {% if item.subnav %}
+                                    <craft-disclosure class="nav-item__trigger">
+                                        <button
+                                            type="button"
+                                            class="btn menubtn hairline"
+                                            aria-controls="{{ item.id }}-subnav"
+                                            aria-expanded="{{ item.sel ?  'true' : 'false' }}"
+                                        >
+                                            <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
+                                        </button>
+                                    </craft-disclosure>
+                                {% endif %}
+                            </div>
 
                             {% if item.subnav %}
-                                <craft-disclosure class="nav-item__trigger">
-                                    <button
-                                        type="button"
-                                        class="btn menubtn hairline"
-                                        aria-controls="{{ item.id }}-subnav"
-                                        aria-expanded="{{ item.sel ?  'true' : 'false' }}"
-                                    >
-                                        <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
-                                    </button>
-                                </craft-disclosure>
                                 <ul class="nav-item__subnav {{ item.sel ? 'is-open' : '' -}}" id="{{ item.id }}-subnav">
                                     {% for itemId, item in item.subnav %}
                                         {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId -%}
 
-                                        <li class="nav-item nav-item--sub">
+                                        <li>
+                                            <div class="nav-item nav-item--sub {% if itemIsSelected %}sel{% endif %}">
                                             {{ _self.action(item|merge({
                                                 linkAttributes:  {
                                                     class: ['sidebar-action--sub'],
@@ -101,6 +105,7 @@
                                                     },
                                                 }
                                             }), itemIsSelected, false, ) }}
+                                            </div>
                                         </li>
                                     {% endfor %}
                                 </ul>
