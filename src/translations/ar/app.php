@@ -533,7 +533,7 @@ return [
     'Display in a structured table' => 'العرض في جدول منظَّم',
     'Display in a table' => 'عرض في جدول',
     'District' => 'الحي',
-    'Do Si' => 'Do Si',
+    'Do Si' => 'المقاطعة',
     'Documentation' => 'التوثيق',
     'Done' => 'تم',
     'Download backup' => 'تنزيل نسخة احتياطية',
