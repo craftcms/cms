@@ -550,7 +550,7 @@ return [
     'Display in a structured table' => 'Yapılandırılmış bir tabloda göster',
     'Display in a table' => 'Tabloda göster',
     'District' => 'İlçe',
-    'Do Si' => 'İdari Bölge',
+    'Do Si' => 'Do Si',
     'Documentation' => 'Dokümentasyon',
     'Done' => 'Bitti',
     'Don’t require a password reset on next login' => 'Bir sonraki girişte şifre sıfırlamaya gerek yok',
