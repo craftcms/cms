@@ -1131,7 +1131,7 @@ return [
     'Permissions' => 'Tilladelser',
     'Phone' => 'Telefon',
     'Photo' => 'Foto',
-    'Pin' => 'Pin',
+    'Pin' => 'Postnummer',
     'Pink' => 'Pink',
     'Placeholder Text' => 'Eksempeltekst',
     'Plain Text' => 'Ren tekst',
