@@ -1179,6 +1179,7 @@ abstract class Element extends Component implements ElementInterface
         bool $includeContainer,
         bool $selectable,
         bool $sortable,
+        bool $prevalidate = false,
     ): string {
         $variables = [
             'viewMode' => $viewState['mode'],
@@ -1275,6 +1276,15 @@ abstract class Element extends Component implements ElementInterface
 
         // See if there are any provisional drafts we should swap these out with
         ElementHelper::swapInProvisionalDrafts($elements);
+
+        if ($prevalidate) {
+            foreach ($elements as $element) {
+                if ($element->enabled && $element->getEnabledForSite()) {
+                    $element->setScenario(Element::SCENARIO_LIVE);
+                }
+                $element->validate();
+            }
+        }
 
         $variables['elements'] = $elements;
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');

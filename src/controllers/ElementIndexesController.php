@@ -850,6 +850,7 @@ class ElementIndexesController extends BaseElementsController
             empty($this->viewState['inlineEditing'])
         );
         $sortable = $this->isAdministrative() && $this->request->getParam('sortable');
+        $prevalidate = $this->isAdministrative() && $this->request->getParam('prevalidate');
 
         if ($this->sourceKey) {
             $responseData['html'] = $elementType::indexHtml(
@@ -861,6 +862,7 @@ class ElementIndexesController extends BaseElementsController
                 $includeContainer,
                 $selectable,
                 $sortable,
+                $prevalidate,
             );
 
             $responseData['headHtml'] = $view->getHeadHtml();

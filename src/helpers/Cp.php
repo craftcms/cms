@@ -548,10 +548,15 @@ class Cp
 
         $color = $element instanceof Colorable ? $element->getColor() : null;
 
+        $classes = ['card'];
+        if ($element->hasErrors()) {
+            $classes[] = 'error';
+        }
+
         $attributes = ArrayHelper::merge(
             self::baseElementAttributes($element, $config),
             [
-                'class' => ['card'],
+                'class' => $classes,
                 'style' => array_filter([
                     '--custom-bg-color' => $color?->cssVar(50),
                     '--custom-text-color' => $color?->cssVar(900),
@@ -1208,6 +1213,7 @@ JS, [
                     [
                         'context' => $config['context'],
                         'namespace' => $view->getNamespace(),
+                        'prevalidate' => $config['prevalidate'] ?? false,
                     ],
                     $config['jsSettings']
                 ),

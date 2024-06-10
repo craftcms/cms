@@ -531,6 +531,7 @@ class NestedElementManager extends Component
                     'defaultTableColumns' => $config['defaultTableColumns'],
                     'registerJs' => false,
                     'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
+                    'prevalidate' => $config['prevalidate'] ?? false,
                 ]);
             },
         );
@@ -600,6 +601,7 @@ class NestedElementManager extends Component
                 'ownerIdParam' => $this->ownerIdParam,
                 'fieldHandle' => $this->field?->handle,
                 'baseInputName' => $view->getNamespace(),
+                'prevalidate' => $config['prevalidate'] ?? false,
             ];
 
             if (!empty($config['createAttributes'])) {

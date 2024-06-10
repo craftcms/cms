@@ -1561,6 +1561,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         paginated: this.paginated,
         selectable: this.selectable,
         sortable: this.sortable,
+        prevalidate: this.settings.prevalidate,
       };
 
       params.viewState.showHeaderColumn = this.settings.showHeaderColumn;
@@ -3760,6 +3761,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       onBeforeDeleteElements: async (selectedItems) => {},
       onDeleteElements: async (selectedItems) => {},
       sortable: false,
+      prevalidate: false,
       inlineEditable: null,
       actions: null,
       buttonContainer: null,
