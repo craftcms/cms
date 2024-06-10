@@ -1996,7 +1996,7 @@ return [
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} n\'est pas une source structurée. Seules les sources structurées peuvent être utilisées lors de la relation des ancêtres.',
     '{step, number} of {total, number}' => '{step, number} de {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, one {}=1{{article}} other{{articles}}}',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{totalItems, plural, =1{Item} other{Items}} moved.' => '{totalItems, plural, one {}=1{Élément déplacé} other{Éléments déplacés}}.',
     '{total} jobs' => '{total} tâches',
     '{total} updates available!' => '{total} mises à jour disponibles!',
