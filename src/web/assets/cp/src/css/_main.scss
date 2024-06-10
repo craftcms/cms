@@ -267,6 +267,13 @@ fieldset:last-child,
   margin-bottom: var(--xl) !important;
 }
 
+.center-absolute {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .pointer {
   cursor: pointer !important;
 }
@@ -1639,6 +1646,14 @@ ul.icons {
     }
   }
 
+  &.hairline-dark {
+    border: 1px solid var(--dark-hairline-color);
+
+    &:not(:hover):not(:active):not([aria-expanded='true']) {
+      background-color: transparent;
+    }
+  }
+
   &.link-btn {
     color: var(--link-color);
 
@@ -1949,7 +1964,7 @@ ul.icons {
     height: 17px;
     &:after {
       top: -2px;
-      border-color: var(--link-color);
+      border-color: currentColor;
     }
   }
 
@@ -3276,6 +3291,10 @@ table {
     [data-icon-after] {
       --icon-color: var(--white) !important;
     }
+
+    .status-label .status-label-text {
+      --status-label-text-color: var(--white) !important;
+    }
   }
 
   & > .thumb {
@@ -3514,7 +3533,8 @@ table {
 
     & > .action-btn,
     & > .move {
-      @include touch-target;
+      height: var(--touch-target-size);
+      width: var(--touch-target-size);
       margin: 0 -4px;
       &:before {
         color: var(--custom-text-color, var(--ui-control-color));
@@ -5566,7 +5586,11 @@ $min2ColWidth: 400px;
     --neg-padding: -14px;
   }
 
-  &:not(.so-mobile) {
+  &.so-lp {
+    border-radius: var(--large-border-radius);
+  }
+
+  &:not(.so-mobile):not(.so-lp) {
     @include border-radius(
       var(--large-border-radius),
       0,

@@ -134,7 +134,7 @@ class TemplateCaches extends Component
      *
      * @param string $key The template cache key.
      * @param bool $global Whether the cache should be stored globally.
-     * @param string|null $duration How long the cache should be stored for. Should be a [relative time format](https://php.net/manual/en/datetime.formats.relative.php).
+     * @param string|null $duration How long the cache should be stored for. Should be a [relative time statement](https://www.php.net/manual/en/datetime.formats.php#datetime.formats.relative).
      * @param mixed $expiration When the cache should expire.
      * @param string $body The contents of the cache.
      * @param bool $withResources Whether JS and CSS code registered with [[\craft\web\View::registerJs()]],

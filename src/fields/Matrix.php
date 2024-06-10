@@ -557,11 +557,6 @@ class Matrix extends Field implements
             return false;
         }
 
-        // If this is a new entry, make sure we aren't hitting the Max Entries limit
-        if (!$element->id && $element->getIsCanonical() && $this->maxEntriesReached($element->getOwner())) {
-            return false;
-        }
-
         return true;
     }
 
@@ -600,14 +595,7 @@ class Matrix extends Field implements
      */
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): ?bool
     {
-        $owner = $element->getOwner();
-
-        if (!$owner || !Craft::$app->getElements()->canSave($owner, $user)) {
-            return false;
-        }
-
-        // Make sure we aren't hitting the Min Entries limit
-        return !$this->minEntriesReached($owner);
+        return false;
     }
 
     private function minEntriesReached(ElementInterface $owner): bool
@@ -740,7 +728,7 @@ class Matrix extends Field implements
 
         foreach ($value->all() as $entry) {
             /** @var Entry $entry */
-            $entryId = $entry->id ?? 'new' . ++$new;
+            $entryId = $entry->id ?? sprintf('new%s', ++$new);
             $serialized[$entryId] = [
                 'title' => $entry->title,
                 'slug' => $entry->slug,
@@ -995,6 +983,7 @@ JS;
     {
         /** @var EntryQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
+        $new = 0;
 
         if ($value instanceof EntryQuery) {
             /** @var Entry[] $entries */
@@ -1015,7 +1004,8 @@ JS;
                 }
 
                 if (!$entry->validate()) {
-                    $element->addModelErrors($entry, "$this->handle[$entry->uid]");
+                    $key = $entry->uid ?? sprintf('new%s', ++$new);
+                    $element->addModelErrors($entry, sprintf('%s[%s]', $this->handle, $key));
                     $allEntriesValidate = false;
                 }
             }

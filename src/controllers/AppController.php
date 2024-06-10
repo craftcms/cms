@@ -22,6 +22,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Search;
@@ -762,17 +763,20 @@ class AppController extends Controller
                 ->id($id)
                 ->fixedOrder()
                 ->drafts(null)
-                ->provisionalDrafts(null)
                 ->revisions(null)
                 ->siteId($siteId)
                 ->status(null)
                 ->all();
 
+            // See if there are any provisional drafts we should swap these out with
+            ElementHelper::swapInProvisionalDrafts($elements);
+
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
+                    $id = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
                     /** @var 'chip'|'card' $ui */
                     $ui = $instance['ui'] ?? 'chip';
-                    $elementHtml[$element->id][$key] = match ($ui) {
+                    $elementHtml[$id][$key] = match ($ui) {
                         'chip' => Cp::elementChipHtml($element, $instance),
                         'card' => Cp::elementCardHtml($element, $instance),
                     };

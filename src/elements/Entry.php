@@ -795,7 +795,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         $names = array_flip($this->traitAttributes());
         unset($names['deletedWithEntryType']);
-        unset($names['saveOwnership']);
         $names['authorId'] = true;
         $names['authorIds'] = true;
         $names['typeId'] = true;
@@ -2192,8 +2191,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function beforeValidate(): bool
     {
-        if (!isset($this->_authorIds) && !isset($this->fieldId) && $this->getSection()->type !== Section::TYPE_SINGLE) {
-            $this->setAuthor(Craft::$app->getUser()->getIdentity());
+        if (
+            (!isset($this->_authorIds) || empty($this->_authorIds)) &&
+            !isset($this->fieldId) &&
+            $this->getSection()->type !== Section::TYPE_SINGLE
+        ) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if ($user) {
+                $this->setAuthor($user);
+            }
         }
 
         if (

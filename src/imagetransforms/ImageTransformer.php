@@ -770,7 +770,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      */
     protected function getTransformBasePath(Asset $asset): string
     {
-        $subPath = $asset->getVolume()->transformSubpath;
+        $subPath = $asset->getVolume()->getTransformSubpath();
         $subPath = StringHelper::removeRight($subPath, '/');
         return ($subPath ? $subPath . DIRECTORY_SEPARATOR : '') . $asset->folderPath;
     }

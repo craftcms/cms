@@ -1273,6 +1273,9 @@ abstract class Element extends Component implements ElementInterface
             ]);
         }
 
+        // See if there are any provisional drafts we should swap these out with
+        ElementHelper::swapInProvisionalDrafts($elements);
+
         $variables['elements'] = $elements;
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
@@ -1397,7 +1400,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'dateCreated' => ['label' => Craft::t('app', 'Date Uploaded')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
@@ -2409,7 +2412,9 @@ abstract class Element extends Component implements ElementInterface
             $names['propagating'],
             $names['propagatingFrom'],
             $names['resaving'],
+            $names['saveOwnership'],
             $names['searchScore'],
+            $names['updateSearchIndexForOwner'],
             $names['updatingFromDerivative'],
         );
 
@@ -2585,7 +2590,6 @@ abstract class Element extends Component implements ElementInterface
             'max' => 255,
             'disallowMb4' => true,
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-            'when' => fn() => $this->shouldValidateTitle(),
         ];
         $rules[] = [
             ['title'],

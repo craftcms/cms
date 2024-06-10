@@ -7,6 +7,7 @@
     {% set external = item.external ?? false %}
 
     {% set linkAttributes = {
+        id: (item.id ?? null) ? "#{item.id}-link" : null,
         href: (item.url ?? false) ? url(item.url) : null,
         class: [
             'sidebar-action',
@@ -82,7 +83,7 @@
                                             type="button"
                                             class="btn menubtn hairline"
                                             aria-controls="{{ item.id }}-subnav"
-                                            aria-expanded="{{ item.sel ?  'true' : 'false' }}"
+                                           aria-describedby="{{ item.id }}-link" aria-expanded="{{ item.sel ?  'true' : 'false' }}"
                                         >
                                             <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
                                         </button>

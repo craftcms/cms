@@ -75,9 +75,9 @@
 .nav-item {
   --nav-item-gutter-width: calc(10rem / 16);
   display: grid;
-  grid-template-columns: var(--nav-item-gutter-width) minmax(0, 1fr) var(
-      --nav-item-prefix-width
-    ) var(--nav-item-gutter-width);
+  grid-template-columns:
+    var(--nav-item-gutter-width) minmax(0, 1fr) var(--nav-item-prefix-width)
+    var(--nav-item-gutter-width);
   grid-template-areas: '. action trigger .' 'subnav subnav subnav subnav';
   align-items: center;
   width: 100%;
@@ -323,9 +323,9 @@ States
 
     .nav-item {
       grid-template-areas: '. action .' '. trigger .' 'subnav subnav subnav';
-      grid-template-columns: var(--nav-item-gutter-width) var(
-          --nav-item-prefix-width
-        ) var(--nav-item-gutter-width);
+      grid-template-columns:
+        var(--nav-item-gutter-width) var(--nav-item-prefix-width)
+        var(--nav-item-gutter-width);
     }
 
     .nav-item__indicator {
