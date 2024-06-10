@@ -562,13 +562,14 @@ class ImageTransforms extends Component
             ImageTransformer::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $transformers,
-        ]);
+        // Fire a 'registerImageTransformers' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_IMAGE_TRANSFORMERS)) {
+            $event = new RegisterComponentTypesEvent(['types' => $transformers]);
+            $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
+            return $event->types;
+        }
 
-        $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
-
-        return $event->types;
+        return $transformers;
     }
 
     /**

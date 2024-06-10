@@ -7,6 +7,7 @@
     {% set external = item.external ?? false %}
 
     {% set linkAttributes = {
+        id: (item.id ?? null) ? "#{item.id}-link" : null,
         href: (item.url ?? false) ? url(item.url) : null,
         class: [
             'sidebar-action',
@@ -79,7 +80,7 @@
 
                             {% if item.subnav %}
                                 <craft-disclosure class="nav-item__trigger">
-                                  <button type="button" class="btn menubtn hairline" aria-controls="{{ item.id }}-subnav" aria-expanded="{{ item.sel ?  'true' : 'false' }}">
+                                  <button type="button" class="btn menubtn hairline" aria-controls="{{ item.id }}-subnav" aria-describedby="{{ item.id }}-link" aria-expanded="{{ item.sel ?  'true' : 'false' }}">
                                       <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
                                   </button>
                                 </craft-disclosure>
@@ -137,10 +138,11 @@
             {% if currentUser.admin and devMode %}
                 {% set devModeText = 'Craft CMS is running in Dev Mode.'|t('app') %}
                 <div id="devmode">
-                    {{ tag('span', {
+                    {% tag 'span' with {
                         class: 'visually-hidden',
-                        text: devModeText
-                    }) }}
+                    } %}
+                        {{ devModeText|raw }}
+                    {% endtag %}
                 </div>
             {% endif %}
         </div>

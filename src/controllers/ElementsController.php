@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
+use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\elements\User;
@@ -87,6 +88,7 @@ class ElementsController extends Controller
     private bool $_addAnother;
     private array $_visibleLayoutElements;
     private ?string $_selectedTab = null;
+    private bool $_applyParams;
     private bool $_prevalidate;
 
     /**
@@ -123,6 +125,7 @@ class ElementsController extends Controller
         $this->_addAnother = (bool)$this->_param('addAnother');
         $this->_visibleLayoutElements = $this->_param('visibleLayoutElements') ?? [];
         $this->_selectedTab = $this->_param('selectedTab');
+        $this->_applyParams = (bool)$this->_param('applyParams', true);
         $this->_prevalidate = (bool)$this->_param('prevalidate');
 
         unset($this->_attributes['failMessage']);
@@ -840,7 +843,6 @@ class ElementsController extends Controller
                         ],
                     ]) .
                     Html::tag('span', Craft::t('app', 'Preview'), ['class' => 'label']) .
-                    Html::tag('span', options: ['class' => ['spinner', 'spinner-absolute']]) .
                     Html::endTag('button')
                     : '') .
                 Html::endTag('div');
@@ -965,11 +967,24 @@ class ElementsController extends Controller
         $behavior->contentHtml($contentHtml);
         $behavior->metaSidebarHtml($sidebarHtml);
 
-        $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
-new Craft.ElementEditor($('#$containerId'), $settingsJs);
+        $settings = $jsSettingsFn($form);
+
+        $isSlideout = Craft::$app->getRequest()->getHeaders()->has('X-Craft-Container-Id');
+        if ($isSlideout) {
+            $this->view->registerJsWithVars(fn($settings) => <<<JS
+$('#$containerId').data('elementEditorSettings', $settings);
 JS, [
-            $jsSettingsFn($form),
-        ]);
+                $settings,
+            ]);
+        } else {
+            $this->view->registerJsWithVars(fn($settings) => <<<JS
+new Craft.ElementEditor($('#$containerId'), $settings);
+JS, [
+                $settings,
+            ]);
+        }
+
+
 
         // Give the element a chance to do things here too
         $element->prepareEditScreen($response, $containerId);
@@ -982,7 +997,7 @@ JS, [
     ): string {
         $html = $form?->render() ?? '';
 
-        // Trigger a defineEditorContent event
+        // Fire a 'defineEditorContent' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_EDITOR_CONTENT)) {
             $event = new DefineElementEditorHtmlEvent([
                 'element' => $element,
@@ -1208,6 +1223,10 @@ JS, [
             if (!$mutex->acquire($lockKey, 15)) {
                 throw new ServerErrorHttpException('Could not acquire a lock to save the element.');
             }
+        }
+
+        if ($element instanceof NestedElementInterface && property_exists($element, 'updateSearchIndexForOwner')) {
+            $element->updateSearchIndexForOwner = true;
         }
 
         try {
@@ -1672,8 +1691,13 @@ JS, [
             }
         }
 
+        $attributes = [];
+        if ($element instanceof NestedElementInterface) {
+            $attributes['updateSearchIndexForOwner'] = true;
+        }
+
         try {
-            $canonical = Craft::$app->getDrafts()->applyDraft($element);
+            $canonical = Craft::$app->getDrafts()->applyDraft($element, $attributes);
         } catch (InvalidElementException) {
             return $this->_asAppyDraftFailure($element);
         } finally {
@@ -1839,6 +1863,12 @@ JS, [
             $element = $this->_element();
         } else {
             $element = $this->_createElement();
+        }
+
+        // Prevalidate?
+        if ($this->_prevalidate && $element->enabled && $element->getEnabledForSite()) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+            $element->validate();
         }
 
         /** @var Element|DraftBehavior|null $element */
@@ -2213,6 +2243,10 @@ JS, [
      */
     private function _applyParamsToElement(ElementInterface $element): void
     {
+        if (!$this->_applyParams) {
+            return;
+        }
+
         if (isset($this->_enabledForSite)) {
             if (is_array($this->_enabledForSite)) {
                 // Make sure they are allowed to edit all of the posted site IDs

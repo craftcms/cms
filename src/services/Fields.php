@@ -235,12 +235,14 @@ class Fields extends Component
             UsersField::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $fieldTypes,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_FIELD_TYPES, $event);
+        // Fire a 'registerFieldTypes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_FIELD_TYPES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $fieldTypes]);
+            $this->trigger(self::EVENT_REGISTER_FIELD_TYPES, $event);
+            return $event->types;
+        }
 
-        return $event->types;
+        return $fieldTypes;
     }
 
     /**
@@ -298,6 +300,7 @@ class Fields extends Component
             $types[] = get_class($field);
         }
 
+        // Fire a 'defineCompatibleFieldTypes' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
             $event = new DefineCompatibleFieldTypesEvent([
                 'field' => $field,
@@ -322,12 +325,14 @@ class Fields extends Component
             MatrixField::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $fieldTypes,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, $event);
+        // Fire a 'registerNestedEntryFieldTypes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $fieldTypes]);
+            $this->trigger(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, $event);
+            return $event->types;
+        }
 
-        return $event->types;
+        return $fieldTypes;
     }
 
     /**

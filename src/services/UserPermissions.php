@@ -99,15 +99,14 @@ class UserPermissions extends Component
         $this->_volumePermissions($permissions);
         $this->_utilityPermissions($permissions);
 
-        // Let plugins customize them and add new ones
-        // ---------------------------------------------------------------------
+        // Fire a 'registerPermissions' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_PERMISSIONS)) {
+            $event = new RegisterUserPermissionsEvent(['permissions' => $permissions]);
+            $this->trigger(self::EVENT_REGISTER_PERMISSIONS, $event);
+            return $event->permissions;
+        }
 
-        $event = new RegisterUserPermissionsEvent([
-            'permissions' => $permissions,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_PERMISSIONS, $event);
-
-        return $event->permissions;
+        return $permissions;
     }
 
     /**
@@ -223,7 +222,7 @@ class UserPermissions extends Component
         $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
         Craft::$app->getProjectConfig()->set($path, $permissions, "Update permissions for user group “{$group->handle}”");
 
-        // Trigger an afterSaveGroupPermissions event
+        // Fire an 'afterSaveGroupPermissions' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS)) {
             $this->trigger(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS, new UserGroupPermissionsEvent([
                 'groupId' => $groupId,
@@ -320,7 +319,7 @@ class UserPermissions extends Component
         // Cache the new permissions
         $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $permissions));
 
-        // Trigger an afterSaveUserPermissions event
+        // Fire an 'afterSaveUserPermissions' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_PERMISSIONS)) {
             $this->trigger(self::EVENT_AFTER_SAVE_USER_PERMISSIONS, new UserPermissionsEvent([
                 'userId' => $userId,

@@ -96,14 +96,15 @@ abstract class Model extends \yii\base\Model implements ModelInterface
     public function behaviors(): array
     {
         $behaviors = $this->defineBehaviors();
-        
-        // Give plugins a chance to modify them
-        $event = new DefineBehaviorsEvent([
-            'behaviors' => $behaviors,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
 
-        return $event->behaviors;
+        // Fire a 'defineBehaviors' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
+            $event = new DefineBehaviorsEvent(['behaviors' => $behaviors]);
+            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+            return $event->behaviors;
+        }
+
+        return $behaviors;
     }
 
     /**
@@ -113,17 +114,18 @@ abstract class Model extends \yii\base\Model implements ModelInterface
     {
         $rules = $this->defineRules();
 
-        // Give plugins a chance to modify them
-        $event = new DefineRulesEvent([
-            'rules' => $rules,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_RULES, $event);
+        // Fire a 'defineRules' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_RULES)) {
+            $event = new DefineRulesEvent(['rules' => $rules]);
+            $this->trigger(self::EVENT_DEFINE_RULES, $event);
+            $rules = $event->rules;
+        }
 
-        foreach ($event->rules as &$rule) {
+        foreach ($rules as &$rule) {
             $this->_normalizeRule($rule);
         }
 
-        return $event->rules;
+        return $rules;
     }
 
     /**
@@ -251,11 +253,14 @@ abstract class Model extends \yii\base\Model implements ModelInterface
             };
         }
 
-        $event = new DefineFieldsEvent([
-            'fields' => $fields,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_FIELDS, $event);
-        return $event->fields;
+        // Fire a 'defineFields' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_FIELDS)) {
+            $event = new DefineFieldsEvent(['fields' => $fields]);
+            $this->trigger(self::EVENT_DEFINE_FIELDS, $event);
+            return $event->fields;
+        }
+
+        return $fields;
     }
 
     /**
@@ -264,11 +269,15 @@ abstract class Model extends \yii\base\Model implements ModelInterface
     public function extraFields(): array
     {
         $fields = parent::extraFields();
-        $event = new DefineFieldsEvent([
-            'fields' => $fields,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_EXTRA_FIELDS, $event);
-        return $event->fields;
+
+        // Fire a 'defineExtraFields' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_EXTRA_FIELDS)) {
+            $event = new DefineFieldsEvent(['fields' => $fields]);
+            $this->trigger(self::EVENT_DEFINE_EXTRA_FIELDS, $event);
+            return $event->fields;
+        }
+
+        return $fields;
     }
 
     /**

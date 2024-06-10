@@ -119,23 +119,23 @@ class User extends Element implements IdentityInterface
     public const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     private static array $photoColors = [
-        'red-100',
-        'orange-200',
-        'amber-200',
-        'yellow-200',
-        'lime-200',
-        'green-200',
-        'emerald-200',
-        'teal-200',
-        'cyan-200',
-        'sky-200',
-        'blue-200',
-        'indigo-200',
-        'violet-200',
-        'purple-200',
-        'fuchsia-200',
-        'pink-100',
-        'rose-200',
+        'red',
+        'orange',
+        'amber',
+        'yellow',
+        'lime',
+        'green',
+        'emerald',
+        'teal',
+        'cyan',
+        'sky',
+        'blue',
+        'indigo',
+        'violet',
+        'purple',
+        'fuchsia',
+        'pink',
+        'rose',
     ];
 
     // User statuses
@@ -454,7 +454,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineTableAttributes(): array
     {
-        return [
+        return array_merge(parent::defineTableAttributes(), [
             'email' => ['label' => Craft::t('app', 'Email')],
             'username' => ['label' => Craft::t('app', 'Username')],
             'fullName' => ['label' => Craft::t('app', 'Full Name')],
@@ -463,12 +463,8 @@ class User extends Element implements IdentityInterface
             'groups' => ['label' => Craft::t('app', 'Groups')],
             'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
             'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
-            'id' => ['label' => Craft::t('app', 'ID')],
-            'uid' => ['label' => Craft::t('app', 'UID')],
             'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
-            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
-        ];
+        ]);
     }
 
     /**
@@ -477,6 +473,7 @@ class User extends Element implements IdentityInterface
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
+            'status',
             'fullName',
             'email',
             'dateCreated',
@@ -1190,17 +1187,15 @@ class User extends Element implements IdentityInterface
         $this->authError = null;
 
         // Fire a 'beforeAuthenticate' event
-        $event = new AuthenticateUserEvent([
-            'password' => $password,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
-
-        if (isset($this->authError)) {
-            return false;
-        }
-
-        if (!$event->performAuthentication) {
-            return true;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_AUTHENTICATE)) {
+            $event = new AuthenticateUserEvent(['password' => $password]);
+            $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
+            if (isset($this->authError)) {
+                return false;
+            }
+            if (!$event->performAuthentication) {
+                return true;
+            }
         }
 
         // Validate the password
@@ -1241,15 +1236,17 @@ class User extends Element implements IdentityInterface
         $this->authError = null;
 
         // Fire a 'beforeAuthenticate' event
-        $event = new AuthenticateUserEvent();
-        $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_AUTHENTICATE)) {
+            $event = new AuthenticateUserEvent();
+            $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
 
-        if (isset($this->authError)) {
-            return false;
-        }
+            if (isset($this->authError)) {
+                return false;
+            }
 
-        if (!$event->performAuthentication) {
-            return true;
+            if (!$event->performAuthentication) {
+                return true;
+            }
         }
 
         // make sure the passkey exists and belongs to this user
@@ -1368,8 +1365,10 @@ class User extends Element implements IdentityInterface
      */
     private function _defineName(): string
     {
+        // Fire a 'defineName' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_NAME)) {
-            $this->trigger(self::EVENT_DEFINE_NAME, $event = new DefineValueEvent());
+            $event = new DefineValueEvent();
+            $this->trigger(self::EVENT_DEFINE_NAME, $event);
             if ($event->value !== null) {
                 return $event->value;
             }
@@ -1408,8 +1407,10 @@ class User extends Element implements IdentityInterface
      */
     private function _defineFriendlyName(): ?string
     {
+        // Fire a 'defineFriendlyName' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_FRIENDLY_NAME)) {
-            $this->trigger(self::EVENT_DEFINE_FRIENDLY_NAME, $event = new DefineValueEvent());
+            $event = new DefineValueEvent();
+            $this->trigger(self::EVENT_DEFINE_FRIENDLY_NAME, $event);
             if ($event->handled || $event->value !== null) {
                 return $event->value;
             }
@@ -1502,13 +1503,12 @@ class User extends Element implements IdentityInterface
 <svg version="1.1" baseProfile="full" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="$gradientId" x1="0" y1="1" x2="1"  y2="0">
-        <stop offset="0%" style="stop-color:var(--$color1)" />
-        <stop offset="100%" style="stop-color:var(--$color2)" />
+        <stop offset="0%" style="stop-color:var(--$color1-500)" />
+        <stop offset="100%" style="stop-color:var(--$color2-500)" />
       </linearGradient>
     </defs>
-    <circle cx="50" cy="50" r="50" fill="url(#$gradientId)"/>
-    <text x="50" y="69" font-size="46" font-family="sans-serif" text-anchor="middle" fill="var(--white)" fill-opacity="0.4">$initials</text>
-    <text x="50" y="66" font-size="46" font-family="sans-serif" text-anchor="middle" fill="var(--black)" fill-opacity="0.65">$initials</text>
+    <circle cx="50" cy="50" r="50" fill="url(#$gradientId)" opacity="0.25"/>
+    <text x="50" y="66" font-size="46" font-weight="500" font-family="sans-serif" text-anchor="middle" fill="var(--text-color)">$initials</text>
 </svg>
 XML;
     }

@@ -102,14 +102,16 @@ trait EditUserTrait
             $screens[self::SCREEN_PREFERENCES] = ['label' => Craft::t('app', 'Preferences')];
         }
 
-        $event = new DefineEditUserScreensEvent([
-            'currentUser' => $currentUser,
-            'editedUser' => $user,
-            'screens' => $screens,
-        ]);
-        Event::trigger(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, $event);
-
-        $screens = $event->screens;
+        // Fire a 'defineEditScreens' event
+        if (Event::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS)) {
+            $event = new DefineEditUserScreensEvent([
+                'currentUser' => $currentUser,
+                'editedUser' => $user,
+                'screens' => $screens,
+            ]);
+            Event::trigger(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, $event);
+            $screens = $event->screens;
+        }
 
         if ($user->getIsCurrent()) {
             $screens[self::SCREEN_PASSWORD] = ['label' => Craft::t('app', 'Password & Verification')];
@@ -120,11 +122,19 @@ trait EditUserTrait
             throw new ForbiddenHttpException('User not authorized to perform this action.');
         }
 
+        $pageName = $screens[$screen]["label"];
         $response = $this->asCpScreen();
         if ($user->getIsCurrent()) {
             $response->title(Craft::t('app', 'My Account'));
+            $response->docTitle($pageName);
         } else {
-            $response->title($user->getUiLabel());
+            $username = $user->getUiLabel();
+            $extendedTitle = Craft::t('app', 'User {page}', [
+                'page' => $pageName,
+            ]);
+            $docTitle = "$username - $extendedTitle";
+            $response->title($username);
+            $response->docTitle($docTitle);
         }
 
         $navItems = [];
