@@ -2109,7 +2109,7 @@ return [
     '{step, number} of {total, number}' => '{step, number} de {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.' => '{total, number} {total, plural, one {}=1{erreur trouvée} other{erreurs trouvées}} dans {num, number} {num, plural, one {}=1{onglet} other{onglets}}.',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, one {}=1{{article}} other{{articles}}}',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, one {}=1{{item}} other{{items}}}',
     '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}' => '{total, number} {total, plural, one {disposition des champs}=1{} other{dispositions des champs}} de {type}',
     '{totalItems, plural, =1{Item} other{Items}} moved.' => '{totalItems, plural, one {}=1{Élément déplacé} other{Éléments déplacés}}.',
     '{total} jobs' => '{total} tâches',
