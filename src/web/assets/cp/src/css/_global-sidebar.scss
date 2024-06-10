@@ -105,8 +105,10 @@
 .nav-item__trigger {
   --icon-size: 10px;
   --trigger-size: var(--touch-target-size);
+  width: var(--trigger-size);
   grid-area: trigger;
   display: flex;
+  justify-content: center;
   z-index: 1;
 
   .menubtn {
@@ -119,7 +121,7 @@
     border: transparent;
 
     &:hover {
-      background-color: var(--nav-item-background-hover);
+      background-color: var(--nav-item-bgColor-hover);
     }
 
     &[aria-expanded='true']:not(:hover) {
@@ -140,9 +142,12 @@
   --prefix-ratio: 4/3;
   display: none;
   grid-area: subnav;
+  gap: 1px;
+  margin-block: 1px;
+  flex-direction: column;
 
   &[data-state='expanded'] {
-    display: block;
+    display: flex;
   }
 }
 
@@ -155,9 +160,9 @@
   min-width: 1.1rem;
   height: 1rem;
   padding: 0 var(--xs);
-  border-radius: var(--s);
-  background-color: var(--medium-text-color);
-  color: var(--white);
+  border-radius: 8px;
+  background-color: var(--nav-item-badge-bgColor);
+  color: var(--nav-item-badge-fgColor);
 }
 
 .sidebar-actions {

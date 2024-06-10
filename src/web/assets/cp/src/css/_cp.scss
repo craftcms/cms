@@ -27,6 +27,8 @@ $badgeColor: var(--gray-800);
   --details-width: #{$detailsWidth};
 
   --nav-item-indicator-size: var(--xs);
+  --nav-item-badge-bgColor: var(--medium-text-color);
+  --nav-item-badge-fgColor: var(--white);
   --nav-item-fgColor-active: var(--text-color);
   --nav-item-bgColor-active: var(--gray-200);
   --nav-item-fgColor-hover: var(--text-color);
