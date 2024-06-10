@@ -2816,7 +2816,7 @@ class Elements extends Component
     }
 
     /**
-     * Parses a string for element [reference tags](http://craftcms.com/docs/reference-tags).
+     * Parses a string for element [reference tags](https://craftcms.com/docs/5.x/system/reference-tags.html).
      *
      * @param string $str The string to parse
      * @param int|null $defaultSiteId The default site ID to query the elements in
