@@ -73,7 +73,6 @@
 }
 
 .nav-item {
-  --nav-item-gutter-width: calc(10rem / 16);
   display: grid;
   grid-template-columns:
     var(--nav-item-gutter-width) minmax(0, 1fr) var(--nav-item-prefix-width)
@@ -99,8 +98,7 @@
 
 .nav-item__trigger {
   --icon-size: 10px;
-  --trigger-size: var(--touch-target-size);
-  width: var(--trigger-size);
+  width: var(--nav-item-trigger-size);
   grid-area: trigger;
   display: flex;
   justify-content: center;
@@ -111,8 +109,8 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: var(--trigger-size);
-    height: var(--trigger-size);
+    width: var(--nav-item-trigger-size);
+    height: var(--nav-item-trigger-size);
     border: transparent;
 
     &:hover {
