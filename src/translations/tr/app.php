@@ -533,7 +533,7 @@ return [
     'Display in a structured table' => 'Yapılandırılmış bir tabloda göster',
     'Display in a table' => 'Tabloda göster',
     'District' => 'İlçe',
-    'Do Si' => 'İdari Bölge',
+    'Do Si' => 'Do Si',
     'Documentation' => 'Dokümentasyon',
     'Done' => 'Bitti',
     'Download backup' => 'Yedeği indir',
