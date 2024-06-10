@@ -1,10 +1,5 @@
 .global-sidebar {
   --is-always-visible: true;
-  --prefix-width: calc(30rem / 16);
-  --prefix-ratio: 1;
-  --gutter-width: calc(10rem / 16); // Left and right padding
-  --sidebar-bgColor: var(--gray-150);
-
   position: sticky;
   top: 0;
   z-index: $sidebarZIndex;
@@ -78,11 +73,11 @@
 }
 
 .nav-item {
-  --gutter-width: calc(10rem / 16);
+  --nav-item-gutter-width: calc(10rem / 16);
   display: grid;
-  grid-template-columns: var(--gutter-width) minmax(0, 1fr) var(--prefix-width) var(
-      --gutter-width
-    );
+  grid-template-columns: var(--nav-item-gutter-width) minmax(0, 1fr) var(
+      --nav-item-prefix-width
+    ) var(--nav-item-gutter-width);
   grid-template-areas: '. action trigger .' 'subnav subnav subnav subnav';
   align-items: center;
   width: 100%;
@@ -139,7 +134,7 @@
 }
 
 .nav-item__subnav {
-  --prefix-ratio: 4/3;
+  --nav-item-prefix-ratio: 4/3;
   display: none;
   grid-area: subnav;
   gap: 1px;
@@ -166,13 +161,13 @@
 }
 
 .sidebar-actions {
-  padding: 10px var(--gutter-width); // match padding of #system-info
+  padding: 10px var(--nav-item-gutter-width); // match padding of #system-info
 }
 
 .sidebar-action {
   --thumb-size: 0.75rem;
   display: grid;
-  grid-template-columns: var(--prefix-width) minmax(0, 1fr) auto;
+  grid-template-columns: var(--nav-item-prefix-width) minmax(0, 1fr) auto;
   width: 100%;
   align-items: center;
   position: relative;
@@ -216,7 +211,7 @@
   &:before {
     transform: translateY(-50%);
     inset-inline-start: calc(
-      var(--xs) + calc(var(--prefix-width) / 2) -
+      var(--xs) + calc(var(--nav-item-prefix-width) / 2) -
         (var(--nav-item-indicator-size) / 2)
     );
     width: var(--nav-item-indicator-size);
@@ -287,8 +282,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--prefix-width);
-  aspect-ratio: var(--prefix-ratio);
+  width: var(--nav-item-prefix-width);
+  aspect-ratio: var(--nav-item-prefix-ratio);
   line-height: 0;
   flex-shrink: 0;
 }
@@ -328,9 +323,9 @@ States
 
     .nav-item {
       grid-template-areas: '. action .' '. trigger .' 'subnav subnav subnav';
-      grid-template-columns: var(--gutter-width) var(--prefix-width) var(
-          --gutter-width
-        );
+      grid-template-columns: var(--nav-item-gutter-width) var(
+          --nav-item-prefix-width
+        ) var(--nav-item-gutter-width);
     }
 
     .nav-item__indicator {
@@ -338,9 +333,9 @@ States
     }
 
     .sidebar-action {
-      width: var(--prefix-width);
+      width: var(--nav-item-prefix-width);
       padding-inline: 0;
-      min-height: var(--prefix-width);
+      min-height: var(--nav-item-prefix-width);
 
       &:focus-visible,
       &:hover {
