@@ -1995,7 +1995,7 @@ return [
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} אינו מקור מובנה. ניתן להשתמש במקורות מובנים בלבד בעת קישור אבות השושלת.',
     '{step, number} of {total, number}' => '{step, number} מה-{total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{פריט}} other{{פריטים}}}',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{totalItems, plural, =1{Item} other{Items}} moved.' => '{totalItems, plural, =1{Item} other{Items}} הועברו.',
     '{total} jobs' => '{total} עבודות',
     '{total} updates available!' => '{total} עדכונים זמינים!',
