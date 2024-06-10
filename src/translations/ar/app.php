@@ -549,7 +549,7 @@ return [
     'Display in a structured table' => 'العرض في جدول منظَّم',
     'Display in a table' => 'عرض في جدول',
     'District' => 'الحي',
-    'Do Si' => 'Do Si',
+    'Do Si' => 'المقاطعة',
     'Documentation' => 'التوثيق',
     'Done' => 'تم',
     'Don’t require a password reset on next login' => 'عدم طلب إعادة تعيين كلمة المرور في عملية تسجيل الدخول التالية',
