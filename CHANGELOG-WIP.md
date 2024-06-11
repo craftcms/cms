@@ -19,6 +19,7 @@
 - The meta sidebar toggle has been moved into the gutter between the content pane and meta sidebar. ([#15117](https://github.com/craftcms/cms/pull/15117))
 - Element indexes will now show a confirmation dialog when cancelling a bulk inline edit. ([#15139](https://github.com/craftcms/cms/issues/15139), [#15142](https://github.com/craftcms/cms/pull/15142))
 - Matrix fields in cards view and Addresses fields now show which nested entries/addresses contain validation errors. ([#15161](https://github.com/craftcms/cms/issues/15161))
+- Nested entry edit pages now redirect to their owner element’s edit page. ([#15169](https://github.com/craftcms/cms/issues/15169))
 
 ### Accessibility
 - Added the “Status” column option to category, entry, and user indexes. ([#14968](https://github.com/craftcms/cms/pull/14968))
@@ -79,6 +80,7 @@
 - Added `craft\helpers\DateTimeHelper::relativeTimeStatement()`.
 - Added `craft\helpers\DateTimeHelper::relativeTimeToSeconds()`.
 - Added `craft\helpers\ElementHelper::swapInProvisionalDrafts()`.
+- Added `craft\helpers\ElementHelper::postEditUrl()`.
 - Added `craft\helpers\StringHelper::indent()`.
 - Added `craft\models\Volume::getTransformSubpath()`.
 - Added `craft\models\Volume::setTransformSubpath()`.

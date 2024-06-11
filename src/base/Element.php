@@ -3620,7 +3620,7 @@ JS, [
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
         $isCurrent = $isCanonical || $this->isProvisionalDraft;
         $canonical = $this->getCanonical(true);
-        $redirectUrl = $this->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+        $redirectUrl = ElementHelper::postEditUrl($this);
 
         // Site info
         $supportedSites = ElementHelper::supportedSitesForElement($this, true);
