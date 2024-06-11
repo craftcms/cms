@@ -8,6 +8,7 @@
 - Fixed a styling bug with entry cards within CKEditor fields.
 - Fixed a bug where validation errors weren’t being shown within slideouts.
 - Fixed a bug where exceptions due to missing templates weren’t being thrown when rendering an element partial. ([#15176](https://github.com/craftcms/cms/issues/15176))
+- Fixed a bug where error summaries were bleeding out of their containers. ([#15181](https://github.com/craftcms/cms/pull/15181))
 
 ## 5.2.0-beta.5 - 2024-06-08
 
