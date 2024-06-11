@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## 4.9.7 - 2024-06-05
+
+- Fixed a bug where the `db/backup` command could fail on Windows. ([#15090](https://github.com/craftcms/cms/issues/15090))
+- Fixed an error that could occur when applying project config changes if a site was deleted. ([#14373](https://github.com/craftcms/cms/issues/14373))
+
 ## 4.9.6 - 2024-06-03
 
 - Added `craft\helpers\Gql::isIntrospectionQuery()`.
