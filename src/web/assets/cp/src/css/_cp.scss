@@ -25,6 +25,22 @@ $badgeColor: var(--gray-800);
   --global-sidebar-width: #{$sidebarWidth};
   --header-height: calc(44rem / 16);
   --details-width: #{$detailsWidth};
+
+  // Sidebar
+  --sidebar-bgColor: var(--gray-150);
+
+  // Nav items
+  --nav-item-indicator-size: var(--xs);
+  --nav-item-badge-bgColor: var(--medium-text-color);
+  --nav-item-badge-fgColor: var(--white);
+  --nav-item-fgColor-active: var(--text-color);
+  --nav-item-bgColor-active: var(--gray-200);
+  --nav-item-fgColor-hover: var(--text-color);
+  --nav-item-bgColor-hover: var(--gray-200);
+  --nav-item-prefix-width: calc(30rem / 16);
+  --nav-item-prefix-ratio: 1;
+  --nav-item-trigger-size: var(--touch-target-size);
+  --nav-item-gutter-width: calc(10rem / 16); // Left and right padding
 }
 
 html {
@@ -113,10 +129,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #system-info {
   display: grid;
-  grid-template-columns: var(--prefix-width) auto;
+  grid-template-columns: var(--nav-item-prefix-width) auto;
   gap: 10px;
   height: calc(45rem / 16);
-  padding: 0 var(--gutter-width);
+  padding: 0 var(--nav-item-gutter-width);
   position: relative;
   flex: 0 0 calc(45rem / 16);
   flex-direction: row;
@@ -137,7 +153,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #site-icon {
-  --size: var(--prefix-width); // Matches .sidebar-action__prefix
+  --size: var(--nav-item-prefix-width); // Matches .sidebar-action__prefix
   height: var(--size);
 
   img,
