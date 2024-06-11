@@ -1132,7 +1132,7 @@ return [
     'Permissions' => 'Permessi',
     'Phone' => 'N. telefono',
     'Photo' => 'Foto',
-    'Pin' => 'Pin',
+    'Pin' => 'CAP',
     'Pink' => 'Rosa',
     'Placeholder Text' => 'Testo Placeholder',
     'Plain Text' => 'Testo semplice',
