@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.2.0-beta.6 - 2024-06-11
 
 - Nested entry edit pages now redirect to their owner element’s edit page. ([#15169](https://github.com/craftcms/cms/issues/15169))
 - Improved the styling of selected global nav items. ([#15061](https://github.com/craftcms/cms/pull/15061))
