@@ -19,6 +19,7 @@
 - The meta sidebar toggle has been moved into the gutter between the content pane and meta sidebar. ([#15117](https://github.com/craftcms/cms/pull/15117))
 - Element indexes will now show a confirmation dialog when cancelling a bulk inline edit. ([#15139](https://github.com/craftcms/cms/issues/15139), [#15142](https://github.com/craftcms/cms/pull/15142))
 - Matrix fields in cards view and Addresses fields now show which nested entries/addresses contain validation errors. ([#15161](https://github.com/craftcms/cms/issues/15161))
+- Nested entry edit pages now redirect to their owner element’s edit page. ([#15169](https://github.com/craftcms/cms/issues/15169))
 
 ### Accessibility
 - Added the “Status” column option to category, entry, and user indexes. ([#14968](https://github.com/craftcms/cms/pull/14968))
@@ -32,6 +33,7 @@
 - Improved the accessibility of global nav items with subnavs. ([#15006](https://github.com/craftcms/cms/issues/15006))
 - The secondary nav is now kept open during source selection for mobile viewports, preventing focus from being dropped. ([#14946](https://github.com/craftcms/cms/pull/14946))
 - User edit screens’ document titles have been updated to describe the page purpose. ([#14946](https://github.com/craftcms/cms/pull/14946))
+- Improved the styling of selected global nav items. ([#15061](https://github.com/craftcms/cms/pull/15061))
 
 ### Administration
 - Added the `--format` option to the `db/backup` and `db/restore` commands for PostgreSQL installs. ([#14931](https://github.com/craftcms/cms/pull/14931))
@@ -79,6 +81,7 @@
 - Added `craft\helpers\DateTimeHelper::relativeTimeStatement()`.
 - Added `craft\helpers\DateTimeHelper::relativeTimeToSeconds()`.
 - Added `craft\helpers\ElementHelper::swapInProvisionalDrafts()`.
+- Added `craft\helpers\ElementHelper::postEditUrl()`.
 - Added `craft\helpers\StringHelper::indent()`.
 - Added `craft\models\Volume::getTransformSubpath()`.
 - Added `craft\models\Volume::setTransformSubpath()`.
@@ -100,3 +103,4 @@
 - Updated Yii to 2.0.50. ([#15124](https://github.com/craftcms/cms/issues/15124))
 - Updated inputmask to 5.0.9.
 - Fixed a bug where the `users/login` action wasn’t checking if someone was already logged in. ([#15168](https://github.com/craftcms/cms/issues/15168))
+- Fixed a bug where exceptions due to missing templates weren’t being thrown when rendering an element partial. ([#15176](https://github.com/craftcms/cms/issues/15176))
