@@ -2254,7 +2254,7 @@ JS, [
      */
     private function _applyParamsToElement(ElementInterface $element): void
     {
-        if (!$this->_applyParams) {
+        if (!$this->_applyParams && $this->request->getIsPost()) {
             return;
         }
 
