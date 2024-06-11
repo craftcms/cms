@@ -2412,7 +2412,7 @@ $.extend(Craft, {
             )
             .detach();
           const $inputs = $element.find('input,button').detach();
-          $element.html($replacement.html());
+          $element.html($replacement.html()).removeClass('error');
 
           if ($actions.length) {
             const $oldStatus = $actions.find('span.status');
