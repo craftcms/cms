@@ -38,6 +38,9 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
               handleSubmitResponse: (response) => {
                 this.handleSubmitResponse(response);
               },
+              handleSubmitError: (error) => {
+                this.handleSubmitError(error);
+              },
             },
             this.$container.data('elementEditorSettings')
           )
