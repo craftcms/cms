@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a styling bug with entry cards within CKEditor fields.
+- Fixed a bug where validation errors weren’t being shown within slideouts.
 
 ## 5.2.0-beta.5 - 2024-06-08
 
