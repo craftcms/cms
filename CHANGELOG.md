@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Nested entry edit pages now redirect to their owner element’s edit page. ([#15169](https://github.com/craftcms/cms/issues/15169))
+- Improved the styling of selected global nav items. ([#15061](https://github.com/craftcms/cms/pull/15061))
 - Added `craft\helpers\ElementHelper::postEditUrl()`.
 - Fixed a styling bug with entry cards within CKEditor fields.
 - Fixed a bug where validation errors weren’t being shown within slideouts.
