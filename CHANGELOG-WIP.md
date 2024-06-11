@@ -103,3 +103,4 @@
 - Updated Yii to 2.0.50. ([#15124](https://github.com/craftcms/cms/issues/15124))
 - Updated inputmask to 5.0.9.
 - Fixed a bug where the `users/login` action wasn’t checking if someone was already logged in. ([#15168](https://github.com/craftcms/cms/issues/15168))
+- Fixed a bug where exceptions due to missing templates weren’t being thrown when rendering an element partial. ([#15176](https://github.com/craftcms/cms/issues/15176))
