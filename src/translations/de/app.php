@@ -1997,7 +1997,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} ist keine strukturierte Quelle. Nur strukturierte Quellen dürfen verwendet werden, wenn Sie Vorfahren in Beziehung setzen.',
     '{step, number} of {total, number}' => '{step, number} von {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, one {}=1{{Element}} other{{Elemente}}}',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, one {}=1{{item}} other{{items}}}',
     '{totalItems, plural, =1{Item} other{Items}} moved.' => '{totalItems, plural, one {}=1{Element} other{Elemente}} verschoben.',
     '{total} jobs' => '{total} Aufgaben',
     '{total} updates available!' => '{total} Aktualisierungen verfügbar!',

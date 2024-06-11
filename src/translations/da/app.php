@@ -1089,7 +1089,7 @@ return [
     'Permissions' => 'Tilladelser',
     'Phone' => 'Telefon',
     'Photo' => 'Foto',
-    'Pin' => 'Pin',
+    'Pin' => 'Postnummer',
     'Placeholder Text' => 'Eksempeltekst',
     'Plain Text' => 'Ren tekst',
     'Plane' => 'Plan',
