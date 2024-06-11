@@ -1089,7 +1089,7 @@ return [
     'Permissions' => 'Permessi',
     'Phone' => 'N. telefono',
     'Photo' => 'Foto',
-    'Pin' => 'Pin',
+    'Pin' => 'CAP',
     'Placeholder Text' => 'Testo Placeholder',
     'Plain Text' => 'Testo semplice',
     'Plane' => 'Piano',
