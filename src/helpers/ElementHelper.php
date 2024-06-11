@@ -908,7 +908,10 @@ class ElementHelper
             $variables[$refHandle] = $element;
             try {
                 $output[] = $view->renderTemplate($template, $variables, View::TEMPLATE_MODE_SITE);
-            } catch (TwigLoaderError) {
+            } catch (TwigLoaderError $error) {
+                if ($error->getSourceContext() !== null) {
+                    throw $error;
+                }
                 // fallback to the string representation of the element
                 $output[] = Html::tag('p', Html::encode((string)$element));
             }
