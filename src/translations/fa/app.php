@@ -413,7 +413,7 @@ return [
     'County' => 'کشور',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS بازگشت به این نسخه را پشتیبانی نمی نماید. لطفا به نسخه {version} یا بالاتر Craft CMS بروزرسانی نمایید.',
     'Craft CMS edition changed.' => 'نسخه CMS Craft تغییر کرد.',
-    'Craft CMS is running in Dev Mode.' => '<span lang="en">Craft CMS</span> در حال توسعه است.',
+    'Craft CMS is running in Dev Mode.' => 'Craft CMS در حالت توسعه در حال اجرا می باشد.',
     'Craft Support' => 'پشتیبانی Craft',
     'Craft isn’t installed yet.' => 'Craft تا این لحظه نصب نشده است.',
     'Craft {version} Upgrade' => 'ارتقا به Craft {version}',
