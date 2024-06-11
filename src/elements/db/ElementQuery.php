@@ -2570,7 +2570,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             /** @var FieldInterface[][][] $fieldsByHandle */
             $fieldsByHandle = [];
             foreach ($this->customFields as $field) {
-                $fieldsByHandle[$field->handle][$field->uid] = $field;
+                $fieldsByHandle[$field->handle][$field->uid][] = $field;
             }
 
             foreach ($fieldsByHandle as $handle => $instancesByUid) {

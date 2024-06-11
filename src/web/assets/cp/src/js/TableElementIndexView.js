@@ -89,7 +89,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this._broadcastListener = (ev) => {
         if (ev.data.event === 'saveElement') {
           const $rows = this.$table.find(
-            `> tbody > tr[data-id="${ev.data.id}"],> tbody > tr[data-canonical-id="${ev.data.id}"]`
+            `> tbody > tr[data-id="${ev.data.id}"]`
           );
           if ($rows.length) {
             const data = {
@@ -186,11 +186,18 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       });
 
       this.addListener(this.$cancelBtn, 'activate', () => {
-        this.$cancelBtn.addClass('loading');
-        this.elementIndex.inlineEditing = false;
-        this.elementIndex.updateElements(true, false).then(() => {
-          this.elementIndex.$elements.removeClass('inline-editing');
-        });
+        if (
+          !this.getDeltaInputChanges() ||
+          confirm(
+            Craft.t('app', 'Are you sure you want to discard your changes?')
+          )
+        ) {
+          this.$cancelBtn.addClass('loading');
+          this.elementIndex.inlineEditing = false;
+          this.elementIndex.updateElements(true, false).then(() => {
+            this.elementIndex.$elements.removeClass('inline-editing');
+          });
+        }
       });
 
       this.addListener(this.$elementContainer, 'keydown', (event) => {

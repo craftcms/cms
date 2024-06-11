@@ -1400,7 +1400,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'dateCreated' => ['label' => Craft::t('app', 'Date Uploaded')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
@@ -3620,7 +3620,7 @@ JS, [
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
         $isCurrent = $isCanonical || $this->isProvisionalDraft;
         $canonical = $this->getCanonical(true);
-        $redirectUrl = $this->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+        $redirectUrl = ElementHelper::postEditUrl($this);
 
         // Site info
         $supportedSites = ElementHelper::supportedSitesForElement($this, true);

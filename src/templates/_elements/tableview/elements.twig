@@ -20,14 +20,13 @@
     {% set showInputs = (inlineEditing ?? false) and elementsService.canSave(element, currentUser) %}
     {% tag 'tr' with {
       data: {
-        id: element.id,
-        'canonical-id': element.getCanonicalId(),
+        id: element.isProvisionalDraft ? element.getCanonicalId() : element.id,
         title: elementTitle,
         level: structure ? element.level : false,
         descendants: structure ? (totalDescendants ?? 0) : false,
       },
       class: {
-        disabled: element.id in disabledElementIds,
+        disabled: (element.isProvisionalDraft ? element.getCanonicalId() : element.id) in disabledElementIds,
       }|filter|keys,
     } %}
         {% if selectable %}

@@ -203,7 +203,13 @@ class UsersController extends Controller
      */
     public function actionLogin(): ?Response
     {
-        if (!$this->request->getIsPost()) {
+        if ($this->request->getIsGet()) {
+            // see if they're already logged in
+            $user = static::currentUser();
+            if ($user) {
+                return $this->_handleSuccessfulLogin($user);
+            }
+
             return null;
         }
 
