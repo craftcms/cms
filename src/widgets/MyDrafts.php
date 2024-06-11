@@ -12,7 +12,6 @@ use craft\base\Widget;
 use craft\elements\Entry;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\models\Section;
 
 /**
  * MyDrafts represents a My Drafts dashboard widget.
@@ -81,24 +80,17 @@ class MyDrafts extends Widget
      */
     public function getBodyHtml(): ?string
     {
-        $sectionHandles = array_map(
-            fn(Section $section) => $section->handle,
-            Craft::$app->getEntries()->getAllSections(),
-        );
-
-        if (!empty($sectionHandles)) {
-            /** @var Entry[] $drafts */
-            $drafts = Entry::find()
-                ->drafts()
-                ->status(null)
-                ->draftCreator(Craft::$app->getUser()->getId())
-                ->section($sectionHandles)
-                ->site('*')
-                ->unique()
-                ->orderBy(['dateUpdated' => SORT_DESC])
-                ->limit($this->limit)
-                ->all();
-        }
+        /** @var Entry[] $drafts */
+        $drafts = Entry::find()
+            ->drafts()
+            ->status(null)
+            ->draftCreator(Craft::$app->getUser()->getId())
+            ->section('*')
+            ->site('*')
+            ->unique()
+            ->orderBy(['dateUpdated' => SORT_DESC])
+            ->limit($this->limit)
+            ->all();
 
         if (empty($drafts)) {
             return Html::tag('div', Craft::t('app', 'You don’t have any active drafts.'), [

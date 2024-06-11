@@ -858,6 +858,26 @@ class ElementHelper
     }
 
     /**
+     * Returns the URL that users should be redirected to after editing the given element.
+     *
+     * @param ElementInterface $element
+     * @return string
+     * @since 5.2.0
+     */
+    public static function postEditUrl(ElementInterface $element): string
+    {
+        if ($element instanceof NestedElementInterface) {
+            // redirect to the owner's edit page, if possible
+            $ownerEditUrl = $element->getOwner()?->getCpEditUrl();
+            if ($ownerEditUrl) {
+                return $ownerEditUrl;
+            }
+        }
+
+        return $element->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+    }
+
+    /**
      * Returns an element action’s JavaScript configuration.
      *
      * @param ElementActionInterface $action
@@ -918,5 +938,45 @@ class ElementHelper
         }
 
         return new Markup(implode("\n", $output), Craft::$app->charset);
+    }
+
+    /**
+     * Swaps out any canonical elements with provisional drafts, when they exist.
+     *
+     * @param ElementInterface[] $elements
+     * @since 5.2.0
+     */
+    public static function swapInProvisionalDrafts(array &$elements): void
+    {
+        $canonicalElements = array_filter($elements, fn(ElementInterface $element) => $element->getIsCanonical());
+
+        if (empty($canonicalElements)) {
+            return;
+        }
+
+        $first = reset($canonicalElements);
+
+        if (!$first::hasDrafts()) {
+            return;
+        }
+
+        $drafts = $first::find()
+            ->draftOf($canonicalElements)
+            ->provisionalDrafts()
+            ->siteId($first->siteId)
+            ->status(null)
+            ->indexBy('canonicalId')
+            ->all();
+
+        if (empty($drafts)) {
+            return;
+        }
+
+        // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
+        foreach ($canonicalElements as $i => $element) {
+            if (isset($drafts[$element->id])) {
+                $elements[$i] = $drafts[$element->id];
+            }
+        }
     }
 }

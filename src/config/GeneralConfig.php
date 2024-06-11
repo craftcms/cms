@@ -452,7 +452,7 @@ class GeneralConfig extends BaseConfig
     public string|null|false|Closure $backupCommand = null;
 
     /**
-     * @var string|null The output format to pass to `pg_dump` when backing up the database.
+     * @var string|null The output format that database backups should use (PostgreSQL only).
      *
      * This setting has no effect with MySQL databases.
      *
@@ -3668,7 +3668,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The output format to pass to `pg_dump` when backing up the database.
+     * The output format that database backups should use (PostgreSQL only).
      *
      * This setting has no effect with MySQL databases.
      *

@@ -91,6 +91,7 @@ Craft.CP = Garnish.Base.extend(
       this.$header = $('#header');
       this.$mainContent = $('#main-content');
       this.$details = $('#details');
+      this.$detailsContainer = $('#details-container');
       this.$sidebarContainer = $('#sidebar-container');
       this.$sidebarToggle = $('#sidebar-toggle');
       this.$sidebar = $('#sidebar');
@@ -99,7 +100,7 @@ Craft.CP = Garnish.Base.extend(
 
       this.isMobile = Garnish.isMobileBrowser();
 
-      this.updateContentHeading();
+      //this.updateContentHeading();
 
       // Swap any instruction text with info icons
       let $allInstructions = this.$details.find(
@@ -496,17 +497,6 @@ Craft.CP = Garnish.Base.extend(
       Craft.submitForm(this.$primaryForm, options);
     },
 
-    updateSidebarMenuLabel: function () {
-      this.updateContentHeading();
-    },
-
-    updateContentHeading: function () {
-      const $item = this.$sidebar.find('a.sel:first');
-      const $label = $item.children('.label');
-      $('#content-heading').text($label.length ? $label.text() : $item.text());
-      Garnish.$bod.removeClass('showing-sidebar');
-    },
-
     toggleNav: function () {
       const isExpanded = this.navIsExpanded();
 
@@ -867,14 +857,14 @@ Craft.CP = Garnish.Base.extend(
         }
 
         this._setFixedTopPos(this.$sidebar, headerHeight);
-        this._setFixedTopPos(this.$details, headerHeight);
+        this.$detailsContainer.css('top', headerHeight + 14);
       } else if (this.fixedHeader) {
         this.$headerContainer.height('auto');
         this.$header.width('auto');
         Garnish.$bod.removeClass('fixed-header');
         this.$contentContainer.css('min-height', '');
         this.$sidebar.removeClass('fixed').css('top', '');
-        this.$details.removeClass('fixed').css('top', '');
+        this.$detailsContainer.css('top', '');
         this.fixedHeader = false;
       }
     },

@@ -203,7 +203,13 @@ class UsersController extends Controller
      */
     public function actionLogin(): ?Response
     {
-        if (!$this->request->getIsPost()) {
+        if ($this->request->getIsGet()) {
+            // see if they're already logged in
+            $user = static::currentUser();
+            if ($user) {
+                return $this->_handleSuccessfulLogin($user);
+            }
+
             return null;
         }
 
@@ -302,19 +308,28 @@ class UsersController extends Controller
 
     private function _findLoginUser(string $loginName): ?User
     {
-        $event = new FindLoginUserEvent([
-            'loginName' => $loginName,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_FIND_LOGIN_USER, $event);
+        // Fire a 'beforeFindLoginUser' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_FIND_LOGIN_USER)) {
+            $event = new FindLoginUserEvent(['loginName' => $loginName]);
+            $this->trigger(self::EVENT_BEFORE_FIND_LOGIN_USER, $event);
+            $user = $event->user;
+        } else {
+            $user = null;
+        }
 
-        $user = $event->user ?? Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+        $user ??= Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
-        $event = new FindLoginUserEvent([
-            'loginName' => $loginName,
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_AFTER_FIND_LOGIN_USER, $event);
-        return $event->user;
+        // Fire an 'afterFindLoginUser' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_FIND_LOGIN_USER)) {
+            $event = new FindLoginUserEvent([
+                'loginName' => $loginName,
+                'user' => $user,
+            ]);
+            $this->trigger(self::EVENT_AFTER_FIND_LOGIN_USER, $event);
+            return $event->user;
+        }
+
+        return $user;
     }
 
     /**
@@ -1902,14 +1917,17 @@ JS);
             }
         }
 
-        // Fire a 'defineUserContentSummary' event
-        $event = new DefineUserContentSummaryEvent([
-            'userId' => $userId,
-            'contentSummary' => $summary,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_CONTENT_SUMMARY, $event);
+        // Fire a 'defineContentSummary' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_CONTENT_SUMMARY)) {
+            $event = new DefineUserContentSummaryEvent([
+                'userId' => $userId,
+                'contentSummary' => $summary,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_CONTENT_SUMMARY, $event);
+            $summary = $event->contentSummary;
+        }
 
-        return $this->asJson($event->contentSummary);
+        return $this->asJson($summary);
     }
 
     /**
@@ -2217,15 +2235,19 @@ JS);
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 
         // Fire a 'loginFailure' event
-        $event = new LoginFailureEvent([
-            'authError' => $authError,
-            'message' => $message,
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
+        if ($this->hasEventHandlers(self::EVENT_LOGIN_FAILURE)) {
+            $event = new LoginFailureEvent([
+                'authError' => $authError,
+                'message' => $message,
+                'user' => $user,
+            ]);
+            $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
+            $message = $event->message;
+        }
+
 
         return $this->asFailure(
-            $event->message,
+            $message,
             data: [
                 'errorCode' => $authError,
             ],
@@ -2233,7 +2255,7 @@ JS);
                 'loginName' => $this->request->getBodyParam('loginName'),
                 'rememberMe' => (bool)$this->request->getBodyParam('rememberMe'),
                 'errorCode' => $authError,
-                'errorMessage' => $event->message,
+                'errorMessage' => $message,
             ]
         );
     }
