@@ -1094,9 +1094,13 @@ li.breadcrumb-toggle-wrapper {
       --touch-target-size
     );
 
-  &:has(#details-toggle) {
+  &:has(.content-grid__toggle) {
     --size-main-content: calc(100% - var(--touch-target-size));
   }
+}
+
+.content-grid__main {
+  grid-column: 1/1;
 }
 
 .content-pane {
@@ -1412,7 +1416,8 @@ li.breadcrumb-toggle-wrapper {
     min-height: 0 !important;
   }
 
-  .content-grid {
+  .content-grid,
+  .content-grid:has(.content-grid__toggle) {
     --size-main-content: 100%;
   }
 
@@ -1423,7 +1428,7 @@ li.breadcrumb-toggle-wrapper {
     display: block;
   }
 
-  #details-toggle {
+  .content-grid__toggle {
     display: none;
   }
 
