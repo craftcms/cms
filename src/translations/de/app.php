@@ -2115,7 +2115,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{step, number} of {total, number}' => '{step, number} von {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.' => '{total, number} {total, plural, one {}=1{Fehler} other{Fehler}} gefunden in {num, number} {num, plural, one {}=1{Tab} other{Tabs}}.',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, one {}=1{{Element}} other{{Elemente}}}',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, one {}=1{{item}} other{{items}}}',
     '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}' => '{total, number} {type} {total, plural, one {}=1{Feld-Layout} other{Feld-Layouts}}',
     '{totalItems, plural, =1{Item} other{Items}} moved.' => '{totalItems, plural, one {}=1{Element} other{Elemente}} verschoben.',
     '{total} jobs' => '{total} Aufgaben',
