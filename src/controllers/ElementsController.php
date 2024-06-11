@@ -337,7 +337,7 @@ class ElementsController extends Controller
         $type = $element::lowerDisplayName();
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-        $redirectUrl = ElementHelper::rootElement($element)->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+        $redirectUrl = ElementHelper::postEditUrl($element);
 
         // Site statuses
         if ($canEditMultipleSites) {

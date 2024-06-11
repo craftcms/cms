@@ -858,6 +858,26 @@ class ElementHelper
     }
 
     /**
+     * Returns the URL that users should be redirected to after editing the given element.
+     *
+     * @param ElementInterface $element
+     * @return string
+     * @since 5.2.0
+     */
+    public static function postEditUrl(ElementInterface $element): string
+    {
+        if ($element instanceof NestedElementInterface) {
+            // redirect to the owner's edit page, if possible
+            $ownerEditUrl = $element->getOwner()?->getCpEditUrl();
+            if ($ownerEditUrl) {
+                return $ownerEditUrl;
+            }
+        }
+
+        return $element->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+    }
+
+    /**
      * Returns an element action’s JavaScript configuration.
      *
      * @param ElementActionInterface $action

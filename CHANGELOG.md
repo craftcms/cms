@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Nested entry edit pages now redirect to their owner element’s edit page. ([#15169](https://github.com/craftcms/cms/issues/15169))
+- Added `craft\helpers\ElementHelper::postEditUrl()`.
+- Fixed a styling bug with entry cards within CKEditor fields.
+- Fixed a bug where validation errors weren’t being shown within slideouts.
+
 ## 5.2.0-beta.5 - 2024-06-08
 
 - Fixed an error that occurred when using a multi-environment config. ([#15154](https://github.com/craftcms/cms/issues/15154))
