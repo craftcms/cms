@@ -3297,6 +3297,14 @@ table {
     }
   }
 
+  .ck-content & {
+    ul {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      list-style-type: none;
+    }
+  }
+
   & > .thumb {
     position: relative;
     display: flex;
