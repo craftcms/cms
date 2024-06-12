@@ -80,8 +80,8 @@
 - Added `craft\helpers\Cp::statusLabelHtml()`.
 - Added `craft\helpers\DateTimeHelper::relativeTimeStatement()`.
 - Added `craft\helpers\DateTimeHelper::relativeTimeToSeconds()`.
-- Added `craft\helpers\ElementHelper::swapInProvisionalDrafts()`.
 - Added `craft\helpers\ElementHelper::postEditUrl()`.
+- Added `craft\helpers\ElementHelper::swapInProvisionalDrafts()`.
 - Added `craft\helpers\StringHelper::indent()`.
 - Added `craft\models\Volume::getTransformSubpath()`.
 - Added `craft\models\Volume::setTransformSubpath()`.
