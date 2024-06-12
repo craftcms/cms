@@ -1978,7 +1978,7 @@ return [
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{минута} other{минуты}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{месяц} other{месяцы}}
 ',
-    '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{notification} other{notifications}}',
+    '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, one {уведомление} few {уведомления} many {уведомлений} other{уведомления}}',
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, =1{секунда} other{секунды}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{неделя} other{недели}}',
     '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, one {} few {года} many {лет}=1{год} other{года}} обновлений',
@@ -1990,7 +1990,7 @@ return [
     '{source} is not a structured source. Only structured sources may be used when relating ancestors.' => '{source} не является структурированным источником. При установке связей с предками можно использовать только структурированные источники.',
     '{step, number} of {total, number}' => '{step, number} из {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, one {} few {{items}} many {{items}}=1{{item}} other{{items}}}',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{totalItems, plural, =1{Item} other{Items}} moved.' => 'Перемещен(-о) {totalItems, plural, =1{объект} other{объектов}}.',
     '{total} jobs' => '{total} заданий',
     '{total} updates available!' => 'Доступно {total} обновлений!',
