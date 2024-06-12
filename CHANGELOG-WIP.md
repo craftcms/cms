@@ -86,6 +86,7 @@
 - Added `craft\models\Volume::getTransformSubpath()`.
 - Added `craft\models\Volume::setTransformSubpath()`.
 - Added `craft\queue\Queue::getJobId()`.
+- Added `craft\web\twig\SafeHtml`, which can be implemented by classes whose `__toString()` method should be considered HTML-safe by Twig.
 - `craft\base\Element::defineTableAttributes()` now returns common attribute definitions used by most element types.
 - `craft\elements\ElementCollection::with()` now supports collections made up of multiple element types.
 - `craft\models\Volume::getSubpath()` now has a `$parse` argument.
