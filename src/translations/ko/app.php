@@ -1286,7 +1286,7 @@ return [
     'Resaving {type}' => '{type} 재저장',
     'Reserved' => '예약됨',
     'Reset password' => '비밀번호 재설정',
-    'Resolve now' => '지금 확인',
+    'Resolve now' => '지금 해결',
     'Response:' => '응답:',
     'Restart job' => '작업 다시 시작',
     'Restart' => '다시 시작',
