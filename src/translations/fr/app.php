@@ -822,7 +822,7 @@ return [
     'Last login' => 'Dernière connexion',
     'Last release' => 'Dernière version',
     'Last saved {timestamp}' => 'Dernier enregistrement {timestamp}',
-    'Last {num, number} {num, plural, =1{day} other{days}}' => '{num, plural, =0{Dernier jour} =1{Dernier jour} other{{num, number} derniers jours}}',
+    'Last {num, number} {num, plural, =1{day} other{days}}' => 'Last {num, number} {num, plural, =1{day} other{days}}',
     'Latitude' => 'Latitude',
     'Latitude/Longitude' => 'Latitude/Longitude',
     'Layout element types' => 'Types d’éléments de mise en page',
