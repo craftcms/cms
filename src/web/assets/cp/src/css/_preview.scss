@@ -4,13 +4,14 @@
 .lp-editor-container,
 .lp-preview-container {
   position: fixed;
-  top: 0;
+  inset-block-start: 0;
   height: 100%;
   background-color: var(--white);
   z-index: 100;
 
   & > header {
-    padding: 5px var(--pane-padding, var(--xl));
+    padding-block: 5px;
+    padding-inline: var(--pane-padding, var(--xl));
     background-color: var(--gray-100);
     box-shadow: 0 1px 0 transparentize($grey700, 0.8);
     box-sizing: border-box;
@@ -22,14 +23,14 @@
       & {
         position: absolute;
         z-index: 2;
-        top: 0;
-        left: 0;
+        inset-block-start: 0;
+        inset-inline-start: 0;
         width: 100%;
         background-color: transparentize($grey100, 0.25);
         backdrop-filter: blur(10px);
 
         & + .lp-content {
-          padding-top: #{44 + 24}px;
+          padding-block-start: #{44 + 24}px;
         }
       }
     }
@@ -37,13 +38,13 @@
     .btn,
     .spinner,
     .checkmark-icon {
-      margin-bottom: 0;
+      margin-block-end: 0;
     }
 
     .btn[data-icon='xmark'] {
-      margin-inline-start: calc(-12rem / 16);
-      margin-inline-end: calc(var(--s) * -1);
-      &:not(:hover):not(:active):not([aria-expanded='true']) {
+      margin-inline: calc(-12rem / 16) calc(var(--s) * -1);
+
+      &:not(:hover, :active, [aria-expanded='true']) {
         background-color: transparent;
       }
     }
@@ -56,15 +57,16 @@
         margin-inline: 0 !important;
 
         [role='tablist'] {
-          padding: 0 12px;
+          padding-block: 0;
+          padding-inline: 12px;
 
           &.scrollable {
             mask-image: linear-gradient(
               to right,
-              rgba(0, 0, 0, 0),
-              rgba(0, 0, 0) 12px,
-              rgba(0, 0, 0) calc(100% - 12px),
-              rgba(0, 0, 0, 0) 100%
+              rgb(0 0 0 / 0%),
+              rgb(0 0 0) 12px,
+              rgb(0 0 0) calc(100% - 12px),
+              rgb(0 0 0 / 0%) 100%
             );
           }
 
@@ -77,7 +79,7 @@
           --focus-ring: var(--inner-focus-ring);
           margin-inline: 0;
 
-          &:not(:empty):not(.btn-empty)::after {
+          &:not(:empty, .btn-empty)::after {
             margin-inline-start: 0;
           }
         }
@@ -116,7 +118,7 @@
   .lp-draghandle {
     position: absolute;
     z-index: 101;
-    top: 0;
+    inset-block-start: 0;
     @include right(-2px);
     width: 4px;
     height: 100%;
@@ -124,7 +126,8 @@
   }
 
   & > footer {
-    padding: 5px var(--pane-padding, var(--xl));
+    padding-block: 5px;
+    padding-inline: var(--pane-padding, var(--xl));
     box-shadow: inset 0 1px 0 var(--hairline-color);
     background-color: var(--gray-100);
     justify-content: end;
@@ -137,10 +140,10 @@
   flex-direction: column;
   box-shadow: -1px 0 0 transparentize($grey700, 0.8);
 
-  &.dragging:after {
+  &.dragging::after {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset-block-start: 0;
+    inset-inline-start: 0;
     width: 100%;
     height: 100%;
     content: '';
@@ -163,10 +166,10 @@
     }
 
     & + .lp-iframe-container {
-      padding-top: 0;
+      padding-block-start: 0;
 
       @supports (backdrop-filter: blur(10px)) {
-        padding-top: 44px;
+        padding-block-start: 44px;
       }
     }
 
@@ -185,13 +188,15 @@
 
         // SVGs
         &.lp-device-type-btn--phone::before {
-          background-image: url(../images/preview/icon-phone.svg);
+          background-image: url('../images/preview/icon-phone.svg');
         }
+
         &.lp-device-type-btn--tablet::before {
-          background-image: url(../images/preview/icon-tablet.svg);
+          background-image: url('../images/preview/icon-tablet.svg');
         }
+
         &.lp-device-type-btn--desktop::before {
-          background-image: url(../images/preview/icon-desktop.svg);
+          background-image: url('../images/preview/icon-desktop.svg');
         }
       }
     }
@@ -211,19 +216,20 @@
 
     // SVGs
     &.lp-device-type__label--phone::before {
-      background-image: url(../images/preview/icon-phone.svg);
+      background-image: url('../images/preview/icon-phone.svg');
     }
+
     &.lp-device-type__label--tablet::before {
-      background-image: url(../images/preview/icon-tablet.svg);
+      background-image: url('../images/preview/icon-tablet.svg');
     }
+
     &.lp-device-type__label--desktop::before {
-      background-image: url(../images/preview/icon-desktop.svg);
+      background-image: url('../images/preview/icon-desktop.svg');
     }
   }
 
   .lp-preview-container__bumper-link {
-    top: unset;
-    bottom: 0;
+    inset-block: unset 0;
   }
 
   .lp-device-mask {
@@ -252,22 +258,22 @@
 
     &--has-device-preview {
       flex: none;
-      padding-top: 0 !important;
+      padding-block-start: 0 !important;
       position: relative;
-      top: 0;
+      inset-block-start: 0;
       height: calc(100% - 44px);
       width: 100%;
       background-color: var(--gray-100);
 
       @supports (backdrop-filter: blur(10px)) {
-        top: 44px;
+        inset-block-start: 44px;
       }
 
       // Preview container
       .lp-device-preview-container {
         position: absolute;
-        top: 50%;
-        left: 50%;
+        inset-block-start: 50%;
+        inset-inline-start: 50%;
         z-index: 2;
         overflow: auto;
         opacity: 1;
@@ -278,26 +284,26 @@
       .lp-device-mask {
         display: block;
         position: absolute;
-        top: 50%;
-        left: 50%;
+        inset-block-start: 50%;
+        inset-inline-start: 50%;
         z-index: 1;
-        background-image: url(../images/preview/chrome-phone-top.svg),
-          url(../images/preview/chrome-phone-bottom.svg);
+        background-image: url('../images/preview/chrome-phone-top.svg'),
+          url('../images/preview/chrome-phone-bottom.svg');
         background-position:
           top center,
           bottom center;
         background-repeat: no-repeat;
         background-size: contain;
         background-color: #fff;
-        box-shadow: 0 0 58px rgba(6, 67, 117, 0.3);
+        box-shadow: 0 0 58px rgb(6 67 117 / 30%);
         border-radius: 18px;
       }
 
       // Tablet
       &.lp-iframe-container--tablet {
         .lp-device-mask {
-          background-image: url(../images/preview/chrome-tablet-top.svg),
-            url(../images/preview/chrome-tablet-bottom.svg);
+          background-image: url('../images/preview/chrome-tablet-top.svg'),
+            url('../images/preview/chrome-tablet-bottom.svg');
         }
       }
     }
@@ -309,6 +315,7 @@
           transition-duration: 0.3s;
           transition-property: transform;
         }
+
         .lp-device-preview-container {
           opacity: 0;
           transition: opacity 0s;

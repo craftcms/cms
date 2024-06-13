@@ -34,6 +34,8 @@
         ]
       }
     ],
+    "scss/operator-no-newline-after": null,
+    "scss/operator-no-unspaced": null,
     "scss/dollar-variable-pattern": null,
     "scss/no-global-function-names": null,
     "prettier/prettier": true

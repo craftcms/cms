@@ -1,7 +1,7 @@
 .global-sidebar {
   --is-always-visible: true;
   position: sticky;
-  top: 0;
+  inset-block-start: 0;
   z-index: $sidebarZIndex;
   display: grid;
   grid-template-columns: var(--global-sidebar-width);
@@ -32,9 +32,9 @@
 }
 
 .global-sidebar__nav {
-  padding: var(--s) 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  padding-block: var(--s);
+  padding-inline: 0;
+  overflow: hidden auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   overscroll-behavior: contain;
@@ -121,11 +121,11 @@
       background-color: transparent;
     }
 
-    &[aria-expanded='true']:after {
+    &[aria-expanded='true']::after {
       @include angle(up);
     }
 
-    &:after {
+    &::after {
       margin-inline-start: 0 !important;
     }
   }
@@ -152,14 +152,16 @@
   line-height: 1rem;
   min-width: 1.1rem;
   height: 1rem;
-  padding: 0 var(--xs);
+  padding-block: 0;
+  padding-inline: var(--xs);
   border-radius: 8px;
   background-color: var(--nav-item-badge-bgColor);
   color: var(--nav-item-badge-fgColor);
 }
 
 .sidebar-actions {
-  padding: 10px var(--nav-item-gutter-width); // match padding of #system-info
+  padding-block: 10px;
+  padding-inline: var(--nav-item-gutter-width); // match padding of #system-info
 }
 
 .sidebar-action {
@@ -169,15 +171,15 @@
   width: 100%;
   align-items: center;
   position: relative;
-  text-align: left;
+  text-align: start;
   border-radius: var(--medium-border-radius);
-  color: currentColor;
+  color: currentcolor;
   cursor: pointer;
   min-height: 30px;
   padding-inline: var(--xs);
   font-weight: 500;
 
-  &:before {
+  &::before {
     content: '';
     position: absolute;
     inset-inline-start: 0;
@@ -196,7 +198,7 @@
 
   &[aria-current='page'],
   &[aria-current='true'] {
-    &:before {
+    &::before {
       background-color: var(--nav-item-fgColor-active);
     }
   }
@@ -206,7 +208,7 @@
   font-size: 0.9em;
   min-height: 26px;
 
-  &:before {
+  &::before {
     transform: translateY(-50%);
     inset-inline-start: calc(
       var(--xs) + calc(var(--nav-item-prefix-width) / 2) -
@@ -215,8 +217,8 @@
     width: var(--nav-item-indicator-size);
     height: var(--nav-item-indicator-size);
     border-radius: 100%;
-    top: 50%;
-    background-color: currentColor;
+    inset-block-start: 50%;
+    background-color: currentcolor;
   }
 
   &[aria-current='page'],
@@ -290,7 +292,8 @@
   display: flex;
   gap: var(--s);
   align-items: center;
-  padding: 0 var(--xs);
+  padding-block: 0;
+  padding-inline: var(--xs);
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -306,7 +309,8 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 0 var(--s);
+  padding-block: 0;
+  padding-inline: var(--s);
   margin-inline-start: auto;
 }
 
@@ -327,7 +331,7 @@ States
     }
 
     .nav-item__indicator {
-      right: -1px;
+      inset-inline-end: -1px;
     }
 
     .sidebar-action {
@@ -361,8 +365,8 @@ States
     .sidebar-action__badge {
       z-index: 100;
       position: absolute;
-      right: calc(var(--xs) * -1);
-      bottom: var(--xs);
+      inset-inline-end: calc(var(--xs) * -1);
+      inset-block-end: var(--xs);
       transform: translateY(25%);
       padding: 0;
     }
@@ -370,7 +374,7 @@ States
     .sidebar-action--sub {
       min-height: 26px;
 
-      &:before {
+      &::before {
         inset-inline-start: 50%;
         inset-block-start: 50%;
         transform: translateX(-50%) translateY(-50%);
@@ -380,7 +384,7 @@ States
     .global-nav > ul > li + li {
       --separator-width: calc(28rem / 16);
 
-      &:before {
+      &::before {
         position: absolute;
         inset-block-start: calc(var(--s) / -2);
         inset-inline-start: calc(
@@ -389,7 +393,8 @@ States
         content: '';
         width: var(--separator-width);
         height: 1px;
-        margin: 0 auto;
+        margin-block: 0;
+        margin-inline: auto;
         background-color: var(--hairline-color);
       }
     }

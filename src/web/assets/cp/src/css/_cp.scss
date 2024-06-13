@@ -44,7 +44,7 @@ $badgeColor: var(--gray-800);
 }
 
 html {
-  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   min-height: 100vh;
 }
 
@@ -76,15 +76,15 @@ body {
 .skip-link {
   position: absolute;
   margin: 5px;
-  left: -10000px;
-  top: 0;
+  inset-inline-start: -10000px;
+  inset-block-start: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;
   z-index: $sidebarZIndex + 1;
 
   &:focus {
-    left: unset;
+    inset-inline-start: unset;
     @include left(0);
     width: auto;
     height: auto;
@@ -105,11 +105,11 @@ body {
 
   @media screen and (prefers-reduced-motion: no-preference) {
     body.ltr & {
-      transition: left 100ms cubic-bezier(0.33, 1, 0.68, 1);
+      transition: inset-inline-start 100ms cubic-bezier(0.33, 1, 0.68, 1);
     }
 
     body.rtl & {
-      transition: right 100ms cubic-bezier(0.33, 1, 0.68, 1);
+      transition: inset-inline-end 100ms cubic-bezier(0.33, 1, 0.68, 1);
     }
   }
 }
@@ -123,7 +123,6 @@ body {
 /* global sidebar */
 $sidebarLinkStaticColor: var(--gray-100);
 $sidebarLinkSecondaryColor: var(--gray-200);
-
 $systemInfoBgColor: darken($grey800, 5%);
 $systemInfoHoverBgColor: darken($grey800, 10%);
 
@@ -132,16 +131,17 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   grid-template-columns: var(--nav-item-prefix-width) auto;
   gap: 10px;
   height: calc(45rem / 16);
-  padding: 0 var(--nav-item-gutter-width);
+  padding-block: 0;
+  padding-inline: var(--nav-item-gutter-width);
   position: relative;
   flex: 0 0 calc(45rem / 16);
   flex-direction: row;
   align-items: center;
-  color: currentColor;
-  border-bottom: 1px solid var(--hairline-color);
+  color: currentcolor;
+  border-block-end: 1px solid var(--hairline-color);
   background-clip: padding-box;
 
-  &:after {
+  &::after {
     display: none;
   }
 
@@ -195,14 +195,15 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
     #system-name {
       position: absolute;
-      left: calc(100% + (var(--s) * 2));
-      top: 50%;
+      inset-inline-start: calc(100% + (var(--s) * 2));
+      inset-block-start: 50%;
       transform: translateY(-50%) translateX(-5px);
       opacity: 0;
       @include pane;
       color: var(--text-color);
       border-radius: var(--medium-border-radius);
-      padding: var(--xs) var(--s);
+      padding-block: var(--xs);
+      padding-inline: var(--s);
       white-space: nowrap;
       pointer-events: none;
 
@@ -220,11 +221,12 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--m) var(--m) var(--xl);
+  padding-block: var(--m) var(--xl);
+  padding-inline: var(--m);
   gap: var(--m);
 
   body.has-debug-toolbar & {
-    padding-bottom: calc(var(--xl) + 42px);
+    padding-block-end: calc(var(--xl) + 42px);
   }
 
   a {
@@ -240,12 +242,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #trial-info {
-  padding: 16px var(--xl);
+  padding-block: 16px;
+  padding-inline: var(--xl);
   border-radius: var(--large-border-radius);
   background-color: var(--gray-150);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 0 0 1px hsl(212, 30%, 80%),
+    inset 0 1px 0 rgb(255 255 255 / 50%),
+    0 0 0 1px hsl(212deg 30% 80%),
     0 2px 12px transparentize($grey200, 0.5);
   text-align: center;
 }
@@ -263,7 +266,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     color: var(--gray-600);
     text-decoration: underline;
 
-    &.go:hover:after {
+    &.go:hover::after {
       color: var(--gray-600);
     }
   }
@@ -271,28 +274,29 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #edition-logo {
   position: relative;
-  top: -1px;
+  inset-block-start: -1px;
   user-select: none;
   border: 1px solid var(--gray-600);
   border-radius: 3px;
   display: inline-flex;
   box-sizing: content-box;
   font-size: 11px;
-  padding: 6px 7px;
+  padding-block: 6px;
+  padding-inline: 7px;
   line-height: 8px;
   font-weight: 600;
   letter-spacing: 1.7px;
-  padding-right: 5px;
+  padding-inline-end: 5px;
   text-transform: uppercase;
 }
 
 #devmode {
-  margin-top: auto;
+  margin-block-start: auto;
   flex: 0 0 4px;
   width: 100%;
   min-height: 4px; // fixes Windows scaling bug (https://github.com/craftcms/cms/issues/3259)
   background:
-    url(../images/dev-mode.svg) repeat-x 21px 0,
+    url('../images/dev-mode.svg') repeat-x 21px 0,
     var(--gray-900);
   cursor: help;
 }
@@ -306,15 +310,16 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #alerts {
   position: relative; // to keep it above #global-header's shadow
   background-color: var(--red-050);
-  border-left: 6px solid var(--error-color);
+  border-inline-start: 6px solid var(--error-color);
   color: var(--error-color);
 
   & > li {
-    padding: 10px 24px;
+    padding-block: 10px;
+    padding-inline: 24px;
     box-shadow: inset 0 -1px 0 0 var(--red-100);
 
     .resolvable-alert-buttons {
-      margin-top: var(--m);
+      margin-block-start: var(--m);
     }
 
     .btn,
@@ -323,8 +328,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       align-items: center;
       border: 1px solid transparentize($errorColor, 0.5);
       border-radius: var(--medium-border-radius);
-      padding: 4px 5px;
-      margin: 0 2px;
+      padding-block: 4px;
+      padding-inline: 5px;
+      margin-block: 0;
+      margin-inline: 2px;
       color: var(--error-color);
       height: calc(30rem / 16);
 
@@ -345,10 +352,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
         text-decoration: none;
         white-space: nowrap;
 
-        &:after {
+        &::after {
           color: var(--error-color);
           font-size: 15px;
-          margin-top: 1px;
+          margin-block-start: 1px;
         }
       }
     }
@@ -366,15 +373,15 @@ li.crumb .btn.menubtn,
   width: var(--touch-target-size);
   height: var(--touch-target-size);
 
-  &:not(:hover):not(:active):not([aria-expanded='true']) {
+  &:not(:hover, :active, [aria-expanded='true']) {
     background-color: transparent;
   }
 }
 
 #global-header {
   width: 100%;
-  margin-bottom: var(--m);
-  border-bottom: 1px solid var(--hairline-color);
+  margin-block-end: var(--m);
+  border-block-end: 1px solid var(--hairline-color);
 
   .flex {
     height: var(--header-height);
@@ -399,12 +406,12 @@ li.crumb .btn.menubtn,
   width: 44px;
   min-width: 44px;
   height: var(--header-height);
-  border-right: 1px solid var(--medium-hairline-color);
+  border-inline-end: 1px solid var(--medium-hairline-color);
   line-height: 26px;
-  color: currentColor;
+  color: currentcolor;
   text-align: center;
 
-  &:before {
+  &::before {
     @include icon;
     content: 'menu';
     font-size: 16px;
@@ -442,9 +449,8 @@ li.crumb .btn.menubtn,
 
 #crumb-list {
   display: flex;
-  flex-direction: row;
+  flex-flow: row nowrap;
   align-items: stretch;
-  flex-wrap: nowrap;
   max-width: 100%;
   height: var(--header-height);
 
@@ -467,8 +473,8 @@ li.crumb .btn.menubtn,
     &:not(.current) {
       @include padding-right(calc(var(--arrow-width) * 1.125rem / 16));
 
-      &:before,
-      &:after {
+      &::before,
+      &::after {
         display: block;
         content: '';
         width: 1px;
@@ -479,13 +485,17 @@ li.crumb .btn.menubtn,
         pointer-events: none;
       }
 
-      &:before {
-        top: calc((var(--arrow-height) - var(--arrow-c)) / 2 * 1rem / 16);
+      &::before {
+        inset-block-start: calc(
+          (var(--arrow-height) - var(--arrow-c)) / 2 * 1rem / 16
+        );
         transform: rotate(calc(var(--arrow-angle) * -1deg));
       }
 
-      &:after {
-        bottom: calc((var(--arrow-height) - var(--arrow-c)) / 2 * 1rem / 16);
+      &::after {
+        inset-block-end: calc(
+          (var(--arrow-height) - var(--arrow-c)) / 2 * 1rem / 16
+        );
         transform: rotate(calc(var(--arrow-angle) * 1deg));
       }
     }
@@ -505,7 +515,7 @@ li.crumb .btn.menubtn,
 #crumb-menu-trigger {
   min-width: var(--touch-target-size);
 
-  &:before {
+  &::before {
     width: 100%;
   }
 }
@@ -524,22 +534,24 @@ li.crumb {
 
   [data-icon] {
     position: relative;
-    top: -1px;
+    inset-block-start: -1px;
   }
 
   .menubtn {
     position: relative;
-    margin: 0 calc(var(--xs) * -1 / 2);
+    margin-block: 0;
+    margin-inline: calc(var(--xs) * -1 / 2);
   }
 
-  [data-icon='ellipsis']:before {
-    margin-top: 3px;
+  [data-icon='ellipsis']::before {
+    margin-block-start: 3px;
     font-size: 17px;
   }
 
   .chip {
     padding: 0;
     background-color: transparent;
+
     --custom-bg-color: initial !important;
     --custom-text-color: initial !important;
     --custom-sel-bg-color: initial !important;
@@ -561,8 +573,8 @@ li.crumb {
   }
 
   &:has(.menubtn) > a {
-    margin-right: 0 !important;
-    padding-right: var(--xs) !important;
+    margin-inline-end: 0 !important;
+    padding-inline-end: var(--xs) !important;
   }
 
   & > a {
@@ -627,11 +639,11 @@ li.breadcrumb-toggle-wrapper {
   width: calc(28rem / 16 + 10px);
   position: relative;
 
-  &.unread:after {
+  &.unread::after {
     content: '';
     display: block;
     position: absolute;
-    top: calc(3rem / 16);
+    inset-block-start: calc(3rem / 16);
     @include right(5px);
     width: calc(7rem / 16);
     height: calc(7rem / 16);
@@ -659,14 +671,13 @@ li.breadcrumb-toggle-wrapper {
 
   .announcement {
     &:not(:first-child) {
-      margin-top: 20px;
+      margin-block-start: 20px;
     }
 
     .announcement-label-container {
-      margin-top: -3px;
+      margin-block: -3px 3px;
       display: flex;
       align-items: center;
-      margin-bottom: 3px;
 
       .announcement-icon svg {
         display: block;
@@ -675,17 +686,17 @@ li.breadcrumb-toggle-wrapper {
       }
 
       .announcement-label {
-        margin-left: 5px;
+        margin-inline-start: 5px;
         font-size: 12px;
         color: var(--light-text-color);
       }
     }
 
-    &.unread .announcement__heading:after {
+    &.unread .announcement__heading::after {
       content: '';
       display: block;
       position: absolute;
-      top: 7px;
+      inset-block-start: 7px;
       @include left(-13px);
       width: 7px;
       height: 7px;
@@ -704,7 +715,8 @@ li.breadcrumb-toggle-wrapper {
 
   .announcement__heading {
     position: relative;
-    margin: 0 0 3px;
+    margin-block: 0 3px;
+    margin-inline: 0;
     order: 1;
   }
 }
@@ -715,22 +727,21 @@ li.breadcrumb-toggle-wrapper {
   align-items: center;
   @include padding-left(var(--s));
   @include padding-right(calc(var(--padding) + 1px));
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-block: 5px;
   height: 100%;
   background-color: transparent;
   border-radius: 0;
 
-  &:after {
+  &::after {
     border-color: var(--ui-control-color);
     transition: border-color linear 100ms;
   }
 
-  &:hover:after {
+  &:hover::after {
     border-color: var(--ui-control-hover-color);
   }
 
-  &[aria-expanded='true']:after {
+  &[aria-expanded='true']::after {
     border-color: var(--ui-control-active-color);
   }
 }
@@ -764,13 +775,13 @@ li.breadcrumb-toggle-wrapper {
 
 #notifications {
   position: fixed;
-  bottom: 8px;
+  inset-block-end: 8px;
   @include left(8px);
   width: calc(100% - 16px);
   z-index: 101;
 
   body.has-debug-toolbar & {
-    bottom: 50px;
+    inset-block-end: 50px;
   }
 
   @media only screen and (min-width: $minHorizontalUiWidth) {
@@ -781,11 +792,13 @@ li.breadcrumb-toggle-wrapper {
     display: flex;
     position: relative;
     @include pane;
-    padding: 10px 14px;
+    padding-block: 10px;
+    padding-inline: 14px;
     border-radius: var(--large-border-radius);
     box-shadow:
       0 0 0 1px transparentize($grey1000, 0.85),
       0 2px 12px transparentize($grey1000, 0.85);
+
     --color: var(--notice-color);
 
     &[data-type='success'] {
@@ -797,12 +810,12 @@ li.breadcrumb-toggle-wrapper {
     }
 
     & + .notification {
-      margin-top: 12px;
+      margin-block-start: 12px;
     }
 
     .notification-icon {
       width: 18px;
-      margin-top: -2px;
+      margin-block-start: -2px;
       @include margin-right(10px);
       font-size: 18px;
       color: var(--color);
@@ -825,7 +838,7 @@ li.breadcrumb-toggle-wrapper {
       }
 
       .notification-details {
-        margin-top: var(--xs);
+        margin-block-start: var(--xs);
 
         .chip {
           border: 1px solid $hairlineColor;
@@ -835,14 +848,14 @@ li.breadcrumb-toggle-wrapper {
 
     .notification-close-btn {
       position: relative;
-      top: -2px;
+      inset-block-start: -2px;
       @include margin-left(10px);
     }
   }
 }
 
 #header-container {
-  margin-bottom: var(--m);
+  margin-block-end: var(--m);
 }
 
 @media only screen and (min-width: $minFullUiWidth) {
@@ -871,11 +884,11 @@ li.breadcrumb-toggle-wrapper {
 #header {
   display: flex;
   align-items: flex-start;
-  align-content: stretch;
+  place-content: stretch space-between;
   flex-wrap: nowrap;
-  justify-content: space-between;
   gap: var(--s);
-  padding: 5px var(--padding);
+  padding-block: 5px;
+  padding-inline: var(--padding);
   position: relative;
   z-index: 2;
   box-sizing: border-box;
@@ -888,7 +901,7 @@ li.breadcrumb-toggle-wrapper {
   body.fixed-header & {
     position: fixed;
     z-index: 12;
-    top: 0;
+    inset-block-start: 0;
     background-color: var(--gray-100);
     box-shadow: 0 1px 0 transparentize($grey700, 0.9);
   }
@@ -909,14 +922,13 @@ li.breadcrumb-toggle-wrapper {
 
   h1 {
     line-height: 34px;
-    margin-top: 0;
-    margin-bottom: 0;
+    margin-block: 0;
     min-width: 0;
   }
 
   .buttons,
   .btngroup {
-    margin-top: 0;
+    margin-block-start: 0;
   }
 }
 
@@ -932,7 +944,7 @@ li.breadcrumb-toggle-wrapper {
   font-size: 0.875rem;
   font-weight: normal;
 
-  &:before {
+  &::before {
     content: '/';
     display: inline-block;
     margin-inline: 0.5rem;
@@ -948,37 +960,17 @@ li.breadcrumb-toggle-wrapper {
   align-items: flex-start;
   justify-content: space-between;
 
-  .icon:before,
-  .texticon:before,
-  .menubtn:after,
-  [data-icon]:before,
-  [data-icon-after]:after {
-    color: currentColor;
+  .icon::before,
+  .texticon::before,
+  .menubtn::after,
+  [data-icon]::before,
+  [data-icon-after]::after {
+    color: currentcolor;
     opacity: 0.8;
   }
 
   .text {
     border-radius: var(--large-border-radius);
-
-    &::-webkit-input-placeholder {
-      color: var(--light-text-color);
-    }
-
-    &:-ms-input-placeholder {
-      color: var(--light-text-color);
-    }
-
-    &::-ms-input-placeholder {
-      color: var(--light-text-color);
-    }
-
-    &:-moz-placeholder {
-      color: var(--light-text-color);
-    }
-
-    &::-moz-placeholder {
-      color: var(--light-text-color);
-    }
 
     &::placeholder {
       color: var(--light-text-color);
@@ -996,16 +988,16 @@ li.breadcrumb-toggle-wrapper {
     height: var(--ui-control-height);
   }
 
-  @media only screen and (max-width: 400px) {
+  @media only screen and (width <= 400px) {
     .btngroup .btn:first-child {
       flex-basis: 100%;
     }
   }
 
-  @media only screen and (max-width: $minHorizontalUiWidth - calc(1rem/16)) {
+  @media only screen and (max-width: $minHorizontalUiWidth - calc(1rem / 16)) {
     flex-direction: row-reverse;
     justify-content: start;
-    margin-top: 10px;
+    margin-block-start: 10px;
   }
 }
 
@@ -1013,7 +1005,8 @@ li.breadcrumb-toggle-wrapper {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  padding: 0 var(--padding) 48px;
+  padding-block: 0 48px;
+  padding-inline: var(--padding);
   box-sizing: border-box;
 
   // for the Dashboard and any other full-page grids:
@@ -1039,7 +1032,8 @@ li.breadcrumb-toggle-wrapper {
 #sidebar {
   position: relative;
   box-sizing: border-box;
-  padding: 0 40px var(--m);
+  padding-block: 0 var(--m);
+  padding-inline: 40px;
   width: $sidebarWidth;
   background-color: transparent;
 
@@ -1048,8 +1042,7 @@ li.breadcrumb-toggle-wrapper {
   }
 
   nav {
-    margin-left: -31px;
-    margin-right: -31px;
+    margin-inline: -31px;
 
     li {
       a {
@@ -1067,17 +1060,21 @@ li.breadcrumb-toggle-wrapper {
       }
     }
   }
+
   .skip-link {
-    margin: 0 var(--s);
+    margin-block: 0;
+    margin-inline: var(--s);
   }
 
   @media only screen and (min-width: $minFullUiWidth) {
-    padding: 0 31px var(--m);
+    padding-block: 0 var(--m);
+    padding-inline: 31px;
   }
 }
 
 #content-container {
   flex: 1 1 auto;
+
   /*
   Admittedly I'm not totally sure why this is necessary, but it seems to be.
   We have to give #content-container some kind of "hard" width for it to properly
@@ -1108,18 +1105,19 @@ li.breadcrumb-toggle-wrapper {
   border-radius: var(--large-border-radius);
   position: relative;
   background-clip: padding-box;
-  padding: var(--xl) var(--padding);
+  padding-block: var(--xl);
+  padding-inline: var(--padding);
   word-wrap: break-word;
 
   & > hr {
-    margin-left: calc(var(--xl) * -1);
-    margin-right: calc(var(--xl) * -1);
+    margin-inline: calc(var(--xl) * -1);
   }
 }
 
 #footer,
 .footer {
-  padding: 6px var(--pane-padding, var(--xl));
+  padding-block: 6px;
+  padding-inline: var(--pane-padding, var(--xl));
   min-height: 44px;
   line-height: calc(32rem / 16);
 
@@ -1130,22 +1128,21 @@ li.breadcrumb-toggle-wrapper {
   }
 
   .btn {
-    padding-top: 4px;
-    padding-bottom: 4px;
+    padding-block: 4px;
     height: var(--ui-control-height--small);
   }
 }
 
 #footer {
   position: sticky;
-  bottom: 0;
+  inset-block-end: 0;
   z-index: 1;
-  margin: calc(var(--s) + 1px) calc(var(--padding) * -1 + 2px)
-    calc(var(--xl) * -1 + 2px);
+  margin-block: calc(var(--s) + 1px) calc(var(--xl) * -1 + 2px);
+  margin-inline: calc(var(--padding) * -1 + 2px);
   background-color: var(--gray-050);
   border-radius: var(--small-border-radius);
   box-sizing: border-box;
-  border-top: 2px solid var(--white);
+  border-block-start: 2px solid var(--white);
 
   &:empty {
     display: none;
@@ -1166,13 +1163,13 @@ li.breadcrumb-toggle-wrapper {
     transition: padding linear 100ms;
 
     &.stuck {
-      padding-bottom: 52px;
+      padding-block-end: 52px;
     }
   }
 
   & > *,
   .flex > * {
-    margin-bottom: 0;
+    margin-block-end: 0;
   }
 }
 
@@ -1186,7 +1183,7 @@ li.breadcrumb-toggle-wrapper {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  top: 0;
+  inset-block-start: 0;
   height: 100%;
   max-height: 100vh;
   width: var(--touch-target-size);
@@ -1205,11 +1202,10 @@ li.breadcrumb-toggle-wrapper {
     z-index: 10;
   }
 
-  &:before {
+  &::before {
     content: '';
     position: absolute;
-    top: 0;
-    bottom: 0;
+    inset-block: 0;
     height: 100%;
     width: 1px;
     background-color: var(--hairline-color);
@@ -1222,7 +1218,7 @@ li.breadcrumb-toggle-wrapper {
       background-color: var(--gray-200);
     }
 
-    &:before {
+    &::before {
       transform: scaleX(300%);
     }
   }
@@ -1256,7 +1252,7 @@ li.breadcrumb-toggle-wrapper {
   flex: 0 1 auto;
   width: calc(var(--details-width));
   position: sticky;
-  top: 0;
+  inset-block-start: 0;
 }
 
 #details {
@@ -1276,7 +1272,7 @@ li.breadcrumb-toggle-wrapper {
     .meta {
       border-radius: var(--large-border-radius);
 
-      &:not(.read-only):not(.warning) {
+      &:not(.read-only, .warning) {
         @include pane;
       }
 
@@ -1290,19 +1286,19 @@ li.breadcrumb-toggle-wrapper {
         &:first-child {
           &,
           & > .status-badge {
-            border-top-left-radius: var(--large-border-radius);
+            border-start-start-radius: var(--large-border-radius);
           }
 
-          border-top-right-radius: var(--large-border-radius);
+          border-start-end-radius: var(--large-border-radius);
         }
 
         &:last-child {
           &,
           & > .status-badge {
-            border-bottom-left-radius: var(--large-border-radius);
+            border-end-start-radius: var(--large-border-radius);
           }
 
-          border-bottom-right-radius: var(--large-border-radius);
+          border-end-end-radius: var(--large-border-radius);
         }
       }
     }
@@ -1315,8 +1311,7 @@ li.breadcrumb-toggle-wrapper {
 
     .notes {
       border-radius: var(--large-border-radius);
-      padding-top: var(--m);
-      padding-bottom: var(--m);
+      padding-block: var(--m);
     }
   }
 }
@@ -1328,11 +1323,11 @@ li.breadcrumb-toggle-wrapper {
     width: calc(100vw + #{$sidebarWidth});
 
     body.ltr.showing-nav & {
-      left: 0;
+      inset-inline-start: 0;
     }
 
     body.rtl.showing-nav & {
-      right: 0;
+      inset-inline-end: 0;
     }
   }
 
@@ -1346,8 +1341,9 @@ li.breadcrumb-toggle-wrapper {
 
   #main-content {
     width: 100vw;
+
     &.has-sidebar {
-      padding-left: 0;
+      padding-inline-start: 0;
     }
   }
 }
@@ -1358,7 +1354,7 @@ li.breadcrumb-toggle-wrapper {
     display: block;
 
     .flex:not(#toolbar) {
-      margin-top: 10px;
+      margin-block-start: 10px;
     }
   }
 
@@ -1366,44 +1362,46 @@ li.breadcrumb-toggle-wrapper {
     flex-wrap: wrap !important;
 
     & > * {
-      margin-top: 10px !important;
+      margin-block-start: 10px !important;
     }
   }
 
   body.fixed-header #header .flex:first-child {
-    margin-top: 0;
+    margin-block-start: 0;
   }
 
   #main-content {
     display: block;
+
     &.has-sidebar {
-      padding: 0 var(--padding) 48px;
+      padding-block: 0 48px;
+      padding-inline: var(--padding);
     }
   }
 
   #sidebar {
     nav {
-      margin-left: -40px;
-      margin-right: -40px;
+      margin-inline: -40px;
     }
+
     .skip-link {
       margin: 0;
     }
   }
 
   #source-actions {
-    margin-top: var(--s);
-    margin-left: -9px;
+    margin-block-start: var(--s);
+    margin-inline-start: -9px;
   }
 
   #sidebar-toggle-container {
     display: block;
-    margin-bottom: var(--s);
+    margin-block-end: var(--s);
   }
 
   #sidebar-toggle {
-    &:after {
-      top: 0;
+    &::after {
+      inset-block-start: 0;
       transform: rotate(45deg);
 
       body.rtl & {
@@ -1424,7 +1422,7 @@ li.breadcrumb-toggle-wrapper {
   #sidebar-container,
   #details-container {
     width: auto !important;
-    padding-left: 0 !important;
+    padding-inline-start: 0 !important;
     display: block;
   }
 
@@ -1441,7 +1439,7 @@ li.breadcrumb-toggle-wrapper {
   }
 
   #sidebar {
-    margin-bottom: var(--m);
+    margin-block-end: var(--m);
 
     body.showing-sidebar & {
       @include pane;
@@ -1465,16 +1463,16 @@ li.breadcrumb-toggle-wrapper {
 
   #details {
     padding: 0 !important;
-    margin-top: var(--m);
+    margin-block-start: var(--m);
 
     .details {
-      margin-bottom: auto;
+      margin-block-end: auto;
     }
   }
 }
 
 // Tighten up the padding at < 768
-@media only screen and (max-width: 767px) {
+@media only screen and (width <= 767px) {
   :root {
     --padding: var(--s);
     --neg-padding: calc(var(--s) * -1);
@@ -1482,8 +1480,7 @@ li.breadcrumb-toggle-wrapper {
 
   #tabs ul li {
     a {
-      padding-left: var(--m);
-      padding-right: var(--m);
+      padding-inline: var(--m);
     }
 
     & + li {
@@ -1497,13 +1494,10 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-@media print {
-}
-
 #settingsmenu ul li a {
   @include padding-left(46px);
 
-  &:before {
+  &::before {
     @include margin(1px, 0, 0, -22px);
     font-size: 15px;
   }
@@ -1512,8 +1506,8 @@ li.breadcrumb-toggle-wrapper {
     width: 16px;
     height: 16px;
     position: absolute;
-    margin-left: -23px;
-    margin-top: 1px;
+    margin-inline-start: -23px;
+    margin-block-start: 1px;
   }
 }
 
@@ -1522,7 +1516,7 @@ li.breadcrumb-toggle-wrapper {
   position: relative;
   min-height: 1px; // Required for Grid.js to run
 
-  &:after {
+  &::after {
     @include clearafter;
   }
 
@@ -1539,24 +1533,28 @@ li.breadcrumb-toggle-wrapper {
   font-size: 13px;
 
   &:not(.drag-helper) {
-    padding: var(--m) 0;
+    padding-block: var(--m);
+    padding-inline: 0;
     background-color: var(--gray-050);
   }
 
   .heading {
     position: relative;
-    margin: 0 var(--xl);
+    margin-block: 0;
+    margin-inline: var(--xl);
 
     &:not(:first-child) {
-      margin-top: var(--m);
+      margin-block-start: var(--m);
     }
 
     & > span {
       display: inline-block;
       position: relative;
       z-index: 1;
-      padding: 0 5px;
-      margin: 0 -5px;
+      padding-block: 0;
+      padding-inline: 5px;
+      margin-block: 0;
+      margin-inline: -5px;
       text-transform: uppercase;
       color: var(--medium-text-color);
       font-size: 11px;
@@ -1564,7 +1562,8 @@ li.breadcrumb-toggle-wrapper {
     }
 
     & > ul {
-      margin: 2px calc(var(--xl) * -1);
+      margin-block: 2px;
+      margin-inline: calc(var(--xl) * -1);
     }
   }
 
@@ -1579,7 +1578,8 @@ li.breadcrumb-toggle-wrapper {
   }
 
   nav {
-    padding: 0 var(--s);
+    padding-block: 0;
+    padding-inline: var(--s);
 
     & > ul {
       & > li:not(.heading),
@@ -1630,11 +1630,12 @@ li.breadcrumb-toggle-wrapper {
 
       a {
         position: relative;
-        margin-bottom: 1px;
+        margin-block-end: 1px;
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding: 7px var(--xl);
+        padding-block: 7px;
+        padding-inline: var(--xl);
         min-height: var(--xl);
         box-sizing: border-box;
         color: var(--text-color);
@@ -1649,15 +1650,15 @@ li.breadcrumb-toggle-wrapper {
 
         .icon {
           position: relative;
-          top: 1px;
+          inset-block-start: 1px;
           @include margin-right(10px);
           flex-shrink: 1;
-          width: toRem(18);
-          height: toRem(18);
+          width: torem(18);
+          height: torem(18);
           word-break: normal;
           transition:
-            margin-left linear 150ms,
-            margin-right linear 150ms;
+            margin-inline-start linear 150ms,
+            margin-inline-end linear 150ms;
           opacity: 0.85;
 
           &.icon-mask {
@@ -1666,7 +1667,7 @@ li.breadcrumb-toggle-wrapper {
             }
 
             span[data-icon] {
-              color: currentColor;
+              color: currentcolor;
             }
           }
 
@@ -1691,7 +1692,8 @@ li.breadcrumb-toggle-wrapper {
         .badge {
           @include margin(0, -4px, 0, 10px);
           flex-shrink: 1;
-          padding: 0 6px;
+          padding-block: 0;
+          padding-inline: 6px;
           font-size: calc(11rem / 16);
           line-height: 16px;
           border-radius: var(--s);
@@ -1704,7 +1706,7 @@ li.breadcrumb-toggle-wrapper {
         position: absolute;
         z-index: 1;
         height: 34px;
-        top: 0;
+        inset-block-start: 0;
         width: var(--xl);
         display: flex;
         align-items: center;
@@ -1727,19 +1729,21 @@ li.breadcrumb-toggle-wrapper {
 
 .error-summary {
   @include pane;
-  margin-bottom: var(--l);
-  padding: var(--l) var(--xl);
+  margin-block-end: var(--l);
+  padding-block: var(--l);
+  padding-inline: var(--xl);
   border-radius: var(--large-border-radius);
   background-color: var(--gray-050);
 
   .notification-icon {
     color: var(--error-color);
-    margin: -2px 6px 0 0;
-    float: left;
+    margin-block: -2px 0;
+    margin-inline: 0 6px;
+    float: inline-start;
   }
 
   h2 {
-    margin-top: 0;
+    margin-block-start: 0;
   }
 
   & > ul.errors li,
@@ -1760,13 +1764,14 @@ li.breadcrumb-toggle-wrapper {
   .error-summary {
     border: 1px solid var(--error-color);
     box-shadow: none;
-    background-color: rgba(var(--error-color-rgb), 0.03);
+    background-color: rgb(var(--error-color-rgb) 0.03);
     padding: var(--m);
   }
 
   // Slideouts with tabs need slightly different margins
   .flex-fields .error-summary {
-    margin: 0 var(--row-gap) var(--row-gap);
+    margin-block: 0 var(--row-gap);
+    margin-inline: var(--row-gap);
   }
 }
 
@@ -1775,13 +1780,15 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #content-notice {
-  margin: 0 calc(var(--xl) * -1);
-  padding: 0 var(--xl);
+  margin-block: 0;
+  margin-inline: calc(var(--xl) * -1);
+  padding-block: 0;
+  padding-inline: var(--xl);
 
   &:not(:last-child) {
-    padding-bottom: 5px;
-    border-bottom: 1px solid var(--hairline-color);
-    margin-bottom: 5px;
+    padding-block-end: 5px;
+    border-block-end: 1px solid var(--hairline-color);
+    margin-block-end: 5px;
   }
 }
 
@@ -1795,12 +1802,15 @@ li.breadcrumb-toggle-wrapper {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 calc(var(--row-gap) * -1) calc(var(--row-gap) * -1);
+  margin-block: 0 calc(var(--row-gap) * -1);
+  margin-inline: calc(var(--row-gap) * -1);
   width: calc(100% + var(--row-gap) * 2);
 
   & > :not(.error-summary) {
-    margin: 0 0 var(--row-gap) !important;
-    padding: 0 var(--row-gap);
+    margin-block: 0 var(--row-gap) !important;
+    margin-inline: 0 !important;
+    padding-block: 0;
+    padding-inline: var(--row-gap);
     box-sizing: border-box;
   }
 
@@ -1808,8 +1818,8 @@ li.breadcrumb-toggle-wrapper {
     flex: 4 0 100%;
 
     &:not(:nth-child(-n + 1 of :not(.hidden))) {
-      padding-top: var(--xl);
-      border-top: 1px solid var(--hairline-color);
+      padding-block-start: var(--xl);
+      border-block-start: 1px solid var(--hairline-color);
     }
   }
 
@@ -1819,22 +1829,23 @@ li.breadcrumb-toggle-wrapper {
   }
 
   & > .line-break:not(:first-child) {
-    margin-bottom: 0 !important;
+    margin-block-end: 0 !important;
   }
 
-  & > :not(h2):not(hr):not(.line-break) {
+  & > :not(h2, hr, .line-break) {
     &,
     &:last-child {
       position: relative;
       width: 100%;
 
-      &:before {
+      &::before {
         position: absolute;
-        top: 0;
+        inset-block-start: 0;
         @include left(-1px);
         width: 1px;
         height: 100%;
         content: '';
+
         // same BG color as the hairline around the content pane’s 1px shadow
         background-color: transparentize($grey200, 0.5);
       }
@@ -1845,7 +1856,7 @@ li.breadcrumb-toggle-wrapper {
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields,
 .draghelper.drag-in-content .flex-fields {
-  & > :not(h2):not(hr):not(.line-break) {
+  & > :not(h2, hr, .line-break) {
     &,
     &:last-child {
       // 4 cols for >= 1536px
@@ -1853,9 +1864,11 @@ li.breadcrumb-toggle-wrapper {
         &.width-25 {
           width: 25%;
         }
+
         &.width-50 {
           width: 50%;
         }
+
         &.width-75 {
           width: 75%;
         }
@@ -1875,7 +1888,7 @@ li.breadcrumb-toggle-wrapper {
 .so-content .flex-fields,
 .lp-content .flex-fields,
 .draghelper.drag-in-slideout .flex-fields {
-  & > :not(h2):not(hr):not(.line-break) {
+  & > :not(h2, hr, .line-break) {
     &,
     &:last-child {
       // 2 cols for >= 1200
