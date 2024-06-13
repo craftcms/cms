@@ -1913,6 +1913,7 @@ return [
     'on {date}' => 'dňa {date}',
     'on {day}' => 'dňa {day}',
     'one' => 'jeden',
+    'or <a href="{url}">try before buying</a>' => 'alebo<a href="{url}">vyskúšajte pred kúpou</a>',
     'or <a>send to Developer Support</a>' => 'alebo <a>odošlite podpore pre vývojárov</a>',
     'path/to/subfolder' => 'cesta/do/podadresara',
     'revision' => 'revízia',
