@@ -358,194 +358,116 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 // RTL stuff
+// RTL stuff
 
 @mixin left($left) {
-  body.ltr & {
-    left: $left;
-  }
-  body.rtl & {
-    right: $left;
-  }
+  @warn "left mixin is deprecated. Use inset-inline-start instead.";
+  inset-inline-start: $left;
 }
 
 @mixin right($right) {
-  body.ltr & {
-    right: $right;
-  }
-  body.rtl & {
-    left: $right;
-  }
+  @warn "right mixin is deprecated. Use inset-inline-end instead.";
+  inset-inline-end: $right;
 }
 
 @mixin alignleft {
-  body.ltr & {
-    text-align: left;
-  }
-  body.rtl & {
-    text-align: right;
-  }
+  @warn "alignleft mixin is deprecated. Use text-align: start instead.";
+  text-align: start;
 }
 
 @mixin alignright {
-  body.ltr & {
-    text-align: right;
-  }
-  body.rtl & {
-    text-align: left;
-  }
+  @warn "alignright mixin is deprecated. Use text-align: end instead.";
+  text-align: end;
 }
 
 @mixin border-left($params...) {
-  body.ltr & {
-    border-left: $params;
-  }
-  body.rtl & {
-    border-right: $params;
-  }
+  @warn "border-left mixin is deprecated. Use border-inline-start instead.";
+  border-inline-start: $params;
 }
 
 @mixin border-right($params...) {
-  body.ltr & {
-    border-right: $params;
-  }
-  body.rtl & {
-    border-left: $params;
-  }
+  @warn "border-right mixin is deprecated. Use border-inline-end instead.";
+  border-inline-end: $params;
 }
 
 @mixin border-left-width($param) {
-  body.ltr & {
-    border-left-width: $param;
-  }
-  body.rtl & {
-    border-right-width: $param;
-  }
+  @warn "border-left-width mixin is deprecated. Use border-inline-start-width instead.";
+  border-inline-start-width: $param;
 }
 
 @mixin border-right-width($param) {
-  body.ltr & {
-    border-right-width: $param;
-  }
-  body.rtl & {
-    border-left-width: $param;
-  }
+  @warn "border-right-width mixin is deprecated. Use border-inline-end-width instead.";
+  border-inline-end-width: $param;
 }
 
 @mixin border-radius($tl, $tr, $br, $bl) {
-  body.ltr & {
-    border-radius: $tl $tr $br $bl;
-  }
-  body.rtl & {
-    border-radius: $tr $tl $bl $br;
-  }
+  @warn "border-radius mixin is deprecated. Use logical border properties instead.";
+  border-start-start-radius: $tl;
+  border-end-start-radius: $tr;
+  border-end-end-radius: $br;
+  border-start-end-radius: $bl;
 }
 
 @mixin border-top-left-radius($params...) {
-  body.ltr & {
-    border-top-left-radius: $params;
-  }
-  body.rtl & {
-    border-top-right-radius: $params;
-  }
+  @warn "border-top-left-radius mixin is deprecated. Use border-start-start-radius instead.";
+  border-start-start-radius: $params;
 }
 
 @mixin border-top-right-radius($params...) {
-  body.ltr & {
-    border-top-right-radius: $params;
-  }
-  body.rtl & {
-    border-top-left-radius: $params;
-  }
+  @warn "border-top-right-radius mixin is deprecated. Use border-end-start-radius instead.";
+  border-end-start-radius: $params;
 }
 
 @mixin border-bottom-left-radius($params...) {
-  body.ltr & {
-    border-bottom-left-radius: $params;
-  }
-  body.rtl & {
-    border-bottom-right-radius: $params;
-  }
+  @warn "border-bottom-left-radius mixin is deprecated. Use border-start-end-radius instead.";
+  border-start-end-radius: $params;
 }
 
 @mixin border-bottom-right-radius($params...) {
-  body.ltr & {
-    border-bottom-right-radius: $params;
-  }
-  body.rtl & {
-    border-bottom-left-radius: $params;
-  }
+  @warn "border-bottom-right-radius mixin is deprecated. Use border-end-end-radius instead.";
+  border-end-end-radius: $params;
 }
 
 @mixin floatleft {
-  body.ltr & {
-    float: left;
-  }
-  body.rtl & {
-    float: right;
-  }
+  @warn "floatleft mixin is deprecated. Use float: inline-start instead.";
+  float: inline-start;
 }
 
 @mixin floatright {
-  body.ltr & {
-    float: right;
-  }
-  body.rtl & {
-    float: left;
-  }
+  @warn "floatright mixin is deprecated. Use float: inline-end instead.";
+  float: inline-end;
 }
 
 @mixin margin($t, $r, $b, $l, $important: '') {
-  body.ltr & {
-    margin: $t $r $b $l unquote($important);
-  }
-  body.rtl & {
-    margin: $t $l $b $r unquote($important);
-  }
+  @warn "margin mixin is deprecated. Use logical margin properties instead.";
+  margin-block: $t $b unquote($important);
+  margin-inline: $l $r unquote($important);
 }
 
 @mixin margin-left($margin...) {
-  body.ltr & {
-    margin-left: $margin;
-  }
-  body.rtl & {
-    margin-right: $margin;
-  }
+  @warn "margin-left mixin is deprecated. Use margin-inline-start instead.";
+  margin-inline-start: $margin;
 }
 
 @mixin margin-right($margin...) {
-  body.ltr & {
-    margin-right: $margin;
-  }
-  body.rtl & {
-    margin-left: $margin;
-  }
+  @warn "margin-left mixin is deprecated. Use margin-inline-end instead.";
+  margin-inline-end: $margin;
 }
 
 @mixin padding($t, $r, $b, $l, $important: '') {
-  body.ltr & {
-    padding: $t $r $b $l unquote($important);
-  }
-  body.rtl & {
-    padding: $t $l $b $r unquote($important);
-  }
+  @warn "padding mixin is deprecated. Use padding logical properties instead.";
+  padding-block: $t $b unquote($important);
+  padding-inline: $l $r unquote($important);
 }
 
 @mixin padding-left($padding...) {
-  body.ltr & {
-    padding-left: $padding;
-  }
-  body.rtl & {
-    padding-right: $padding;
-  }
+  @warn "padding-left mixin is deprecated. Use padding-inline-start properties instead.";
+  padding-inline-start: $padding;
 }
 
 @mixin padding-right($padding...) {
-  body.ltr & {
-    padding-right: $padding;
-  }
-  body.rtl & {
-    padding-left: $padding;
-  }
+  @warn "padding-right mixin is deprecated. Use padding-inline-end properties instead.";
+  padding-inline-end: $padding;
 }
 
 // Misc
