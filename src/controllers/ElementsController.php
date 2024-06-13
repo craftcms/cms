@@ -126,7 +126,7 @@ class ElementsController extends Controller
         $this->_addAnother = (bool)$this->_param('addAnother');
         $this->_visibleLayoutElements = $this->_param('visibleLayoutElements') ?? [];
         $this->_selectedTab = $this->_param('selectedTab');
-        $this->_applyParams = (bool)$this->_param('applyParams', true);
+        $this->_applyParams = $this->_param('applyParams', true) || !$this->request->getIsPost();
         $this->_prevalidate = (bool)$this->_param('prevalidate');
 
         unset($this->_attributes['failMessage']);

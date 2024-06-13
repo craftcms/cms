@@ -24,6 +24,7 @@ use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\FeExtension;
 use craft\web\twig\GlobalsExtension;
+use craft\web\twig\SafeHtml;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use LogicException;
@@ -32,6 +33,7 @@ use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
+use Twig\Extension\EscaperExtension;
 use Twig\Extension\ExtensionInterface;
 use Twig\Extension\StringLoaderExtension;
 use Twig\Template as TwigTemplate;
@@ -369,6 +371,10 @@ class View extends \yii\web\View
         }
 
         $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
+
+        // Mark SafeHtml as a safe interface
+        $escaper = $twig->getExtension(EscaperExtension::class);
+        $escaper->addSafeClass(SafeHtml::class, ['html']);
 
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
