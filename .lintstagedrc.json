@@ -3,6 +3,6 @@
     "./vendor/bin/ecs check --ansi --fix",
     "./vendor/bin/phpstan analyse --memory-limit=1G"
   ],
-  "*.{css,scss,html,json}": "prettier --ignore-unknown --write",
-  "*.{css,scss}": "stylelint --fix"
+  "*.{css,scss}": ["stylelint --fix", "prettier --write"],
+  "*.{html,json}": "prettier --ignore-unknown --write"
 }
