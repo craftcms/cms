@@ -1,7 +1,8 @@
 {
-  "**/*.php": [
+  "*.{php}": [
     "./vendor/bin/ecs check --ansi --fix",
     "./vendor/bin/phpstan analyse --memory-limit=1G"
   ],
-  "*": "prettier --ignore-unknown --write"
+  "*.{css,scss,html,json}": "prettier --ignore-unknown --write",
+  "*.{css,scss}": "stylelint --fix"
 }
