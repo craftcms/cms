@@ -1516,7 +1516,7 @@ JS;
     }
 
     /**
-     * Returns all of the registered delta input names.
+     * Returns all the registered delta input names.
      *
      * @return string[]
      * @see registerDeltaName()
