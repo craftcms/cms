@@ -174,7 +174,6 @@
   color: currentColor;
   cursor: pointer;
   min-height: 30px;
-  padding-inline: var(--xs);
   font-weight: 500;
 
   &:before {
@@ -182,7 +181,7 @@
     position: absolute;
     inset-inline-start: 0;
     inset-block-start: 50%;
-    transform: translateY(-50%) translateX(-100%);
+    transform: translateY(-50%) translateX(-150%);
     height: 95%;
     width: var(--nav-item-indicator-size);
     border-radius: var(--small-border-radius);
@@ -324,6 +323,7 @@ States
       grid-template-columns:
         var(--nav-item-gutter-width) var(--nav-item-prefix-width)
         var(--nav-item-gutter-width);
+      justify-items: center;
     }
 
     .nav-item__indicator {
@@ -332,7 +332,6 @@ States
 
     .sidebar-action {
       width: var(--nav-item-prefix-width);
-      padding-inline: 0;
       min-height: var(--nav-item-prefix-width);
 
       &:focus-visible,
@@ -382,7 +381,7 @@ States
 
       &:before {
         position: absolute;
-        inset-block-start: calc(var(--s) / -2);
+        inset-block-start: 0;
         inset-inline-start: calc(
           (var(--global-sidebar-width) - var(--separator-width)) / 2
         );

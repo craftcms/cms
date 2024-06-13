@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a styling issue with the global sidebar when collapsed. ([#15186](https://github.com/craftcms/cms/issues/15186))
+
 ## 5.2.0 - 2024-06-12
 
 ### Content Management
