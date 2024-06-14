@@ -235,9 +235,7 @@ class MatrixBlockQuery extends ElementQuery
      * | Value | Fetches Matrix blocks…
      * | - | -
      * | `1` | created for an element with an ID of 1.
-     * | `'not 1'` | not created for an element with an ID of 1.
      * | `[1, 2]` | created for an element with an ID of 1 or 2.
-     * | `['not', 1, 2]` | not created for an element with an ID of 1 or 2.
      *
      * ---
      *
