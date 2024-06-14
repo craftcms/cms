@@ -4457,7 +4457,12 @@ ul.tree,
 }
 
 .status.disabled {
-  box-shadow: inset 0 0 0 2px var(--gray-300);
+  --outline-color: var(--gray-500);
+  box-shadow: inset 0 0 0 2px var(--outline-color);
+
+  .sel & {
+    --outline-color: var(--gray-200);
+  }
 }
 
 .status.white {
