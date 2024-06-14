@@ -850,7 +850,7 @@ return [
     'List all tabs' => 'Répertorier tous les onglets',
     'List empty folders' => 'Répertorier les dossiers vides',
     'List' => 'Liste',
-    'Live' => 'En direct',
+    'Live' => 'Activé',
     'Load this template' => 'Charger ce template',
     'Loaded Project Config Data' => 'Configuration du projet chargée',
     'Loading Plugin Store…' => 'Chargement de la boutique de plugins…',
