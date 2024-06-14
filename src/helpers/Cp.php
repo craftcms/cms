@@ -791,18 +791,14 @@ class Cp
         if (is_string($config)) {
             $config = ['label' => $config];
         }
-        if ($status === 'disabled') {
-            $config['indicatorClass'] = 'disabled';
-        } else {
-            $config['color'] ??= Color::tryFromStatus($status) ?? Color::Gray;
-            $config['indicatorClass'] = match ($status) {
-                'pending', 'off', 'suspended', 'expired' => $status,
-                default => $config['color']->value,
-            };
-        }
+        $config['color'] ??= Color::tryFromStatus($status) ?? Color::Gray;
         $config['label'] ??= match ($status) {
             'draft' => Craft::t('app', 'Draft'),
             default => ucfirst($status),
+        };
+        $config['indicatorClass'] = match ($status) {
+            'pending', 'off', 'suspended', 'expired', 'disabled' => $status,
+            default => $config['color']->value,
         };
 
         return self::statusLabelHtml($config);
