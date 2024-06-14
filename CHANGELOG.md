@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Improved the styling of disabled status indicators. ([#15195](https://github.com/craftcms/cms/issues/15195), [#15206](https://github.com/craftcms/cms/pull/15206))
 - Added `craft\web\View::getModifiedDeltaNames()`.
 - `craft\web\View::registerDeltaName()` now has a `$forceModified` argument.
 - Fixed a bug where changed field values could be forgotten within Matrix fields, if a validation error occurred. ([#15190](https://github.com/craftcms/cms/issues/15190))

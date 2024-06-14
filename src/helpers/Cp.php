@@ -797,7 +797,7 @@ class Cp
             default => ucfirst($status),
         };
         $config['indicatorClass'] = match ($status) {
-            'pending', 'off', 'suspended', 'expired' => $status,
+            'pending', 'off', 'suspended', 'expired', 'disabled' => $status,
             default => $config['color']->value,
         };
 

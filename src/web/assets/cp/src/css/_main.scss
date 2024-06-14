@@ -4306,7 +4306,6 @@ ul.tree,
   @include margin-right(10px);
   width: calc(12rem / 16);
   height: calc(12rem / 16);
-  border: 1px solid transparent;
   border-radius: 100%;
   box-sizing: border-box;
   background-clip: border-box;
@@ -4450,12 +4449,20 @@ ul.tree,
   background-color: var(--gray-800);
 }
 .status.gray,
-.status.disabled,
 .status.inactive,
 .bg-gray,
 .status.grey,
 .bg-grey {
   background-color: var(--gray-300);
+}
+
+.status.disabled {
+  --outline-color: var(--gray-500);
+  box-shadow: inset 0 0 0 2px var(--outline-color);
+
+  .sel & {
+    --outline-color: var(--gray-200);
+  }
 }
 
 .status.white {
