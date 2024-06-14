@@ -15,6 +15,7 @@ use craft\cache\ElementQueryTagDependency;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
+use craft\events\DeleteKeywordsEvent;
 use craft\events\IndexKeywordsEvent;
 use craft\events\SearchEvent;
 use craft\helpers\ArrayHelper;
@@ -48,6 +49,11 @@ class Search extends Component
      * @since 4.2.0
      */
     public const EVENT_BEFORE_INDEX_KEYWORDS = 'beforeIndexKeywords';
+
+    /**
+     * @event DeleteKeywordsEvent The event that is triggered before keywords are deleted for an element.
+     */
+    public const EVENT_BEFORE_DELETE_KEYWORDS = 'beforeDeleteKeywords';
 
     /**
      * @event SearchEvent The event that is triggered before a search is performed.
@@ -166,6 +172,18 @@ class Search extends Component
                     }
                 }
             }
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_KEYWORDS)) {
+            $event = new DeleteKeywordsEvent([
+                'element' => $element,
+                'updateFields' => $updateFields,
+                'ignoreFieldIds' => $ignoreFieldIds,
+            ]);
+
+            $this->trigger(self::EVENT_BEFORE_DELETE_KEYWORDS, $event);
+            $updateFields = $event->updateFields;
+            $ignoreFieldIds = $event->ignoreFieldIds;
         }
 
         // Clear the element’s current search keywords
