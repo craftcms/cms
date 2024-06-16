@@ -948,6 +948,11 @@ class ElementHelper
      */
     public static function swapInProvisionalDrafts(array &$elements): void
     {
+        $user = Craft::$app->getUser()->getIdentity();
+        if (!$user) {
+            return;
+        }
+
         $canonicalElements = array_filter($elements, fn(ElementInterface $element) => $element->getIsCanonical());
 
         if (empty($canonicalElements)) {
@@ -962,6 +967,7 @@ class ElementHelper
 
         $drafts = $first::find()
             ->draftOf($canonicalElements)
+            ->draftCreator($user)
             ->provisionalDrafts()
             ->siteId($first->siteId)
             ->status(null)
