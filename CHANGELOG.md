@@ -6,6 +6,7 @@
 - `craft\web\View::registerDeltaName()` now has a `$forceModified` argument.
 - Fixed a bug where changed field values could be forgotten within Matrix fields, if a validation error occurred. ([#15190](https://github.com/craftcms/cms/issues/15190))
 - Fixed a bug where the `graphql/create-token` command was prompting for the schema name, when it meant the token name. ([#15205](https://github.com/craftcms/cms/pull/15205))
+- Fixed an error that could occur when applying a draft. ([#15212](https://github.com/craftcms/cms/pull/15212))
 
 ## 4.10.0 - 2024-06-12
 
