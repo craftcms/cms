@@ -1454,6 +1454,7 @@ JS, [
         /** @var Element|DraftBehavior|Response|null $element */
         $element = $this->_element();
 
+        // this can happen if creating element via slideout, and we hit "create entry" before the autosave kicks in
         if ($element instanceof Response) {
             return $element;
         }
