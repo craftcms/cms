@@ -981,7 +981,16 @@ class ElementHelper
         // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
         foreach ($canonicalElements as $i => $element) {
             if (isset($drafts[$element->id])) {
-                $elements[$i] = $drafts[$element->id];
+                $draft = $drafts[$element->id];
+                // retain canonical element structure data => ['root', 'lft', 'rgt', 'level']
+                if ($element->structureId !== null) {
+                    $draft->root = $element->root;
+                    $draft->lft = $element->lft;
+                    $draft->rgt = $element->rgt;
+                    $draft->level = $element->level;
+                }
+
+                $elements[$i] = $draft;
             }
         }
     }
