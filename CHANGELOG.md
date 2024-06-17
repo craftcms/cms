@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.10.1 - 2024-06-17
 
 - Added `craft\web\View::getModifiedDeltaNames()`.
 - `craft\web\View::registerDeltaName()` now has a `$forceModified` argument.
