@@ -11,6 +11,7 @@
 - Fixed a bug where it wasn’t possible to query for authors via GraphQL on the Team edition. ([#15187](https://github.com/craftcms/cms/issues/15187))
 - Fixed a bug where it wasn’t possible to close elevated session modals. ([#15202](https://github.com/craftcms/cms/issues/15202))
 - Fixed a bug where element chips and cards were displaying provisional draft data even if the current user didn’t create the draft. ([#15208](https://github.com/craftcms/cms/issues/15208))
+- Fixed a bug where element indexes weren’t displaying structured elements correctly if they had a provisional draft. ([#15214](https://github.com/craftcms/cms/issues/15214))
 
 ## 5.2.0 - 2024-06-12
 
