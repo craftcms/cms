@@ -982,6 +982,7 @@ class ElementHelper
         foreach ($canonicalElements as $i => $element) {
             if (isset($drafts[$element->id])) {
                 $draft = $drafts[$element->id];
+                $draft->setCanonical($element);
 
                 // retain canonical element structure data => ['root', 'lft', 'rgt', 'level']
                 if ($element->structureId !== null) {
