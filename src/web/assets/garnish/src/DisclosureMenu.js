@@ -31,6 +31,8 @@ export default Base.extend(
     searchStr: '',
     clearSearchStrTimeout: null,
 
+    currentUiLayer: null,
+
     /**
      * Constructor
      */
@@ -329,6 +331,7 @@ export default Base.extend(
           this.hide();
         }.bind(this)
       );
+      this.currentUiLayer = Garnish.uiLayerManager.layer;
     },
 
     hide: function () {
@@ -353,7 +356,7 @@ export default Base.extend(
       this.clearSearchStr();
       this.removeListener(Garnish.$scrollContainer, 'scroll');
       this.removeListener(Garnish.$win, 'resize');
-      Garnish.uiLayerManager.removeLayer();
+      Garnish.uiLayerManager.removeLayer(this.currentUiLayer);
     },
 
     focusIsInMenu: function () {
