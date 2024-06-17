@@ -7,6 +7,7 @@
 - `craft\web\View::registerDeltaName()` now has a `$forceModified` argument.
 - Fixed a bug where changed field values could be forgotten within Matrix fields, if a validation error occurred. ([#15190](https://github.com/craftcms/cms/issues/15190))
 - Fixed a bug where the `graphql/create-token` command was prompting for the schema name, when it meant the token name. ([#15205](https://github.com/craftcms/cms/pull/15205))
+- Fixed a bug where keyboard shortcuts weren’t getting registered properly for modals and slideouts opened via a disclosure menu. ([#15209](https://github.com/craftcms/cms/issues/15209))
 - Fixed a styling issue with the global sidebar when collapsed. ([#15186](https://github.com/craftcms/cms/issues/15186))
 - Fixed a bug where it wasn’t possible to query for authors via GraphQL on the Team edition. ([#15187](https://github.com/craftcms/cms/issues/15187))
 - Fixed a bug where it wasn’t possible to close elevated session modals. ([#15202](https://github.com/craftcms/cms/issues/15202))
