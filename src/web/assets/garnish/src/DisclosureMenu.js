@@ -266,7 +266,7 @@ export default Base.extend(
       this.trigger('hide');
       this.removeListener(Garnish.$scrollContainer, 'scroll');
       this.removeListener(Garnish.$win, 'resize');
-      Garnish.uiLayerManager.removeLayer();
+      Garnish.uiLayerManager.removeLayer(this.$container);
     },
 
     focusIsInMenu: function () {

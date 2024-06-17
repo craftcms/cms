@@ -7,6 +7,7 @@
 - Fixed a bug where changed field values could be forgotten within Matrix fields, if a validation error occurred. ([#15190](https://github.com/craftcms/cms/issues/15190))
 - Fixed a bug where the `graphql/create-token` command was prompting for the schema name, when it meant the token name. ([#15205](https://github.com/craftcms/cms/pull/15205))
 - Fixed an error that could occur when applying a draft. ([#15211](https://github.com/craftcms/cms/issues/15211))
+- Fixed a bug where keyboard shortcuts weren’t getting registered properly for modals and slideouts opened via a disclosure menu. ([#15209](https://github.com/craftcms/cms/issues/15209))
 
 ## 4.10.0 - 2024-06-12
 
