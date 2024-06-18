@@ -1637,6 +1637,8 @@ $('#' + $id).on('activate', () => {
         if (result.error) {
           $('#' + Craft.namespaceId('thumb-container', $namespace)).removeClass('loading');
           alert(result.error);
+        } else {
+          Craft.cp.displayNotice(Craft.t('app', 'New file uploaded.'));
         }
       },
       fileuploadfail: (event, data) => {
