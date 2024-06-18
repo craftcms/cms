@@ -309,6 +309,13 @@ JS;
      */
     public function getElementConditionRuleType(): array|string|null
     {
+        if ($this->decimals) {
+            return [
+                'class' => NumberFieldConditionRule::class,
+                'step' => null,
+            ];
+        }
+
         return NumberFieldConditionRule::class;
     }
 
