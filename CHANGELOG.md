@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.2.2 - 2024-06-18
 
 - Added `craft\base\conditions\BaseNumberConditionRule::$step`.
 - Added `craft\helpers\Db::parseColumnPrecisionAndScale()`.
