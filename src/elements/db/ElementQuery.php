@@ -1878,10 +1878,21 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             try {
                 $subquery = $this->prepareSubquery();
-                $subquery->select = [$selectExpression];
-                $subquery->orderBy = null;
-                $subquery->limit = null;
-                $subquery->offset = null;
+
+                // we can only do this if the subquery doesn't have distinct, groupBy, having or union
+                // see https://github.com/craftcms/cms/issues/15001#issuecomment-2174563927
+                if (
+                    !$subquery->distinct
+                    && empty($subquery->groupBy)
+                    && empty($subquery->having)
+                    && empty($subquery->union)
+                ) {
+                    $subquery->select = [$selectExpression];
+                    $subquery->orderBy = null;
+                    $subquery->limit = null;
+                    $subquery->offset = null;
+                }
+
                 $command = $subquery->createCommand($db);
             } catch (QueryAbortedException) {
                 return false;
