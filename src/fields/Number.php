@@ -191,6 +191,28 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
     }
 
     /**
+     * Set the precision to max allowed (65).
+     * Set the scale to the number of decimal points specified for this field.
+     *
+     * @param string $castType
+     * @return string
+     */
+    protected function castPrecision(string $castType): string
+    {
+        $db = Craft::$app->getDb();
+
+        if ($db->getIsPgsql()) {
+            return $castType;
+        }
+
+        if ($this->decimals > 0) {
+            return sprintf('%s(65,%s)', $castType, min($this->decimals, 30));
+        }
+
+        return $castType;
+    }
+
+    /**
      * @inheritdoc
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
