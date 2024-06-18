@@ -862,14 +862,6 @@ abstract class Field extends SavableComponent implements FieldInterface
                     $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
                 }
 
-                // if length attributes were specified, replace the defaults with that
-                if ($lengthAttributes = Db::parseColumnLengthAttributes($dbType)) {
-                    if (count($lengthAttributes) === 2) {
-                        $lengthAttributes = implode(',',$lengthAttributes);
-                        $castType = preg_replace('/\(\d+,\d+\)/', "($lengthAttributes)", $castType);
-                    }
-                }
-
                 // finally, check for any cast precision overrides
                 if (method_exists($this, 'castPrecision')) {
                     $castType = $this->castPrecision($castType);

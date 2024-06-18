@@ -395,22 +395,6 @@ class Db
     }
 
     /**
-     * Parses a column type definition and returns just the column length attributes.
-     * To be used in cases where there more than one length/size attribute is used, e.g. decimals(10,5)
-     *
-     * @param string $columnType
-     * @return array|null
-     */
-    public static function parseColumnLengthAttributes(string $columnType): ?array
-    {
-        if (!preg_match('/^\w+\((\d+),(\d+)\)/', $columnType, $matches)) {
-            return null;
-        }
-
-        return [(int)$matches[1], (int)$matches[2]];
-    }
-
-    /**
      * Returns a simplified version of a given column type.
      *
      * @param string $columnType
