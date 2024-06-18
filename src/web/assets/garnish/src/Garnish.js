@@ -41,6 +41,7 @@ Garnish.ltr = !Garnish.rtl;
 
 Garnish = $.extend(Garnish, {
   $scrollContainer: Garnish.$win,
+  resizeEventsMuted: false,
 
   // Key code constants
   BACKSPACE_KEY: 8,
@@ -904,6 +905,13 @@ Garnish = $.extend(Garnish, {
         }
       }
     }
+  },
+
+  muteResizeEvents: function (callback) {
+    const resizeEventsMuted = Garnish.resizeEventsMuted;
+    Garnish.resizeEventsMuted = true;
+    callback();
+    Garnish.resizeEventsMuted = resizeEventsMuted;
   },
 });
 
