@@ -72,7 +72,8 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
      */
     public static function dbType(): string
     {
-        return Schema::TYPE_DECIMAL;
+        $db = Craft::$app->getDb();
+        return $db->getIsMysql() ? sprintf('%s(65,16)', Schema::TYPE_DECIMAL) : Schema::TYPE_DECIMAL;
     }
 
     /**

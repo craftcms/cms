@@ -858,9 +858,16 @@ abstract class Field extends SavableComponent implements FieldInterface
             };
             if ($castType !== null) {
                 // if a length was specified, replace the default with that
-                if ($length = Db::parseColumnLength($dbType)) {
+                $length = Db::parseColumnLength($dbType);
+                if ($length) {
                     $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
+                } elseif ($castType === 'DECIMAL') {
+                    [$precision, $scale] = Db::parseColumnPrecisionAndScale($dbType) ?? [null, null];
+                    if ($precision && $scale) {
+                        $castType .= "($precision,$scale)";
+                    }
                 }
+
                 $sql = "CAST($sql AS $castType)";
             }
         }
