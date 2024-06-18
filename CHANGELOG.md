@@ -4,6 +4,7 @@
 
 - Added `Garnish.muteResizeEvents()`.
 - Fixed a JavaScript performance degradation bug. ([#14510](https://github.com/craftcms/cms/issues/14510))
+- Fixed a bug where scalar element queries weren’t working if `distinct`, `groupBy`, `having,` or `union` params were set on them during query preparation. ([#15001](https://github.com/craftcms/cms/issues/15001))
 
 ## 5.2.1 - 2024-06-17
 
