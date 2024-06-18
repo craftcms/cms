@@ -1527,8 +1527,6 @@ $('#replace-btn').on('click', () => {
                 if (result.error) {
                     $('#thumb-container').removeClass('loading');
                     alert(result.error);
-                } else {
-
                 }
             },
             fileuploadfail: (event, data = null) => {
