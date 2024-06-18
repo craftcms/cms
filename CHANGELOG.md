@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.10.2 - 2024-06-18
 
 - Added `craft\base\conditions\BaseNumberConditionRule::$step`.
 - Added `Garnish.muteResizeEvents()`.
