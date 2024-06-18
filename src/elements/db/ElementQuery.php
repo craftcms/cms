@@ -1879,7 +1879,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             try {
                 $subquery = $this->prepareSubquery();
 
-                // we can only do this if the subquery doesn't have distinct, groupBy, having or union
+                // If distinct, et al. were set by prepare(), don't mess with it
                 // see https://github.com/craftcms/cms/issues/15001#issuecomment-2174563927
                 if (
                     !$subquery->distinct
@@ -1891,9 +1891,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $subquery->orderBy = null;
                     $subquery->limit = null;
                     $subquery->offset = null;
+                    return $subquery->createCommand($db)->queryScalar();
                 }
-
-                $command = $subquery->createCommand($db);
             } catch (QueryAbortedException) {
                 return false;
             } finally {
@@ -1902,8 +1901,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->limit = $limit;
                 $this->offset = $offset;
             }
-
-            return $command->queryScalar();
         }
 
         return parent::queryScalar($selectExpression, $db);
