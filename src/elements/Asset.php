@@ -1538,6 +1538,13 @@ $('#replace-btn').on('click', () => {
                     \$dimensionsVal.parent().remove();
                 }
 
+                // Update the timestamp on the element editor
+                const elementEditor = form.data('elementEditor');
+                if (elementEditor && result.updatedTimestamp) {
+                  elementEditor.settings.updatedTimestamp = result.updatedTimestamp;
+                  elementEditor.settings.canonicalUpdatedTimestamp = result.updatedTimestamp;
+                }
+
                 $updatePreviewThumbJs
                 Craft.cp.runQueue();
                 if (result.error) {
