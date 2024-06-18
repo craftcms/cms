@@ -2,11 +2,13 @@
 
 ## Unreleased
 
+- Added `craft\base\conditions\BaseNumberConditionRule::$step`.
 - Added `Garnish.muteResizeEvents()`.
 - Fixed a JavaScript performance degradation bug. ([#14510](https://github.com/craftcms/cms/issues/14510))
 - Fixed a bug where scalar element queries weren’t working if `distinct`, `groupBy`, `having,` or `union` params were set on them during query preparation. ([#15001](https://github.com/craftcms/cms/issues/15001))
 - Fixed a bug where Edit Asset pages would warn about losing unsaved changes when navigating away, if the file was replaced but nothing else had changed.
 - Fixed a bug where Edit Asset pages would show a notification with a “Reload” button after the file was replaced.
+- Fixed a bug where Number fields’ condition rules weren’t allowing decimal values. ([#15222](https://github.com/craftcms/cms/issues/15222))
 
 ## 4.10.1 - 2024-06-17
 
