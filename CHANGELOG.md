@@ -1,5 +1,22 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Added `Garnish.muteResizeEvents()`.
+- Fixed a JavaScript performance degradation bug. ([#14510](https://github.com/craftcms/cms/issues/14510))
+- Fixed a bug where scalar element queries weren’t working if `distinct`, `groupBy`, `having,` or `union` params were set on them during query preparation. ([#15001](https://github.com/craftcms/cms/issues/15001))
+- Fixed a bug where Edit Asset pages would warn about losing unsaved changes when navigating away, if the file was replaced but nothing else had changed.
+- Fixed a bug where Edit Asset pages would show a notification with a “Reload” button after the file was replaced.
+
+## 4.10.1 - 2024-06-17
+
+- Added `craft\web\View::getModifiedDeltaNames()`.
+- `craft\web\View::registerDeltaName()` now has a `$forceModified` argument.
+- Fixed a bug where changed field values could be forgotten within Matrix fields, if a validation error occurred. ([#15190](https://github.com/craftcms/cms/issues/15190))
+- Fixed a bug where the `graphql/create-token` command was prompting for the schema name, when it meant the token name. ([#15205](https://github.com/craftcms/cms/pull/15205))
+- Fixed an error that could occur when applying a draft. ([#15211](https://github.com/craftcms/cms/issues/15211))
+- Fixed a bug where keyboard shortcuts weren’t getting registered properly for modals and slideouts opened via a disclosure menu. ([#15209](https://github.com/craftcms/cms/issues/15209))
+
 ## 4.10.0 - 2024-06-12
 
 ### Content Management

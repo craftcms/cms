@@ -112,7 +112,7 @@
         delta: view.getIsDeltaRegistrationActive(),
         'delta-names': view.getDeltaNames(),
         'initial-delta-values': view.getInitialDeltaValues(),
-        'modified-delta-names': craft.app.request.getBodyParam('modifiedDeltaNames') ?? [],
+        'modified-delta-names': view.getModifiedDeltaNames()|merge(craft.app.request.getBodyParam('modifiedDeltaNames') ?? [])|unique,
     },
 }|merge(mainFormAttributes ?? [], recursive=true) %}
 

@@ -1502,11 +1502,26 @@ $('#replace-btn').on('click', () => {
             },
             fileuploaddone: (event, data = null) => {
                 const result = event instanceof CustomEvent ? event.detail : data.result;
-                
-                $('#new-filename').val(result.filename);
+
+                // Update the filename input and serialized param value
+                const filenameInput = $('#new-filename');
+                const oldFilenameValue = encodeURIComponent(filenameInput.val());
+                filenameInput.val(result.filename);
+                const form = filenameInput.closest('form');
+                const initialSerializedData = form.data('initialSerializedValue');
+                if (initialSerializedData) {
+                  const inputName = encodeURIComponent(filenameInput.attr('name'));
+                  const newFilenameValue = encodeURIComponent(result.filename);
+                  form.data('initialSerializedValue', initialSerializedData
+                    .replace(inputName + '=' + oldFilenameValue, inputName + '=' + newFilenameValue));
+                }
+
+                // Update the file size value
                 $('#file-size-value')
                     .text(result.formattedSize)
                     .attr('title', result.formattedSizeInBytes);
+
+                // Update the dimensions value
                 let \$dimensionsVal = $('#dimensions-value');
                 if (result.dimensions) {
                     if (!\$dimensionsVal.length) {
@@ -1522,13 +1537,19 @@ $('#replace-btn').on('click', () => {
                 } else if (\$dimensionsVal.length) {
                     \$dimensionsVal.parent().remove();
                 }
+
+                // Update the timestamp on the element editor
+                const elementEditor = form.data('elementEditor');
+                if (elementEditor && result.updatedTimestamp) {
+                  elementEditor.settings.updatedTimestamp = result.updatedTimestamp;
+                  elementEditor.settings.canonicalUpdatedTimestamp = result.updatedTimestamp;
+                }
+
                 $updatePreviewThumbJs
                 Craft.cp.runQueue();
                 if (result.error) {
                     $('#thumb-container').removeClass('loading');
                     alert(result.error);
-                } else {
-
                 }
             },
             fileuploadfail: (event, data = null) => {

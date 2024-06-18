@@ -262,7 +262,8 @@ class CustomField extends BaseField
         }
 
         $view = Craft::$app->getView();
-        $view->registerDeltaName($this->_field->handle);
+        $isDirty = $element?->isFieldDirty($this->_field->handle);
+        $view->registerDeltaName($this->_field->handle, $isDirty);
 
         $required = $this->_field->required;
         $describedBy = $this->_field->describedBy;

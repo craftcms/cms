@@ -1057,7 +1057,7 @@ $.extend(Craft, {
    * @param {Object} deltaNames
    * @param {findDeltaDataCallback} [callback] Callback function that should be called whenever a new group of modified params has been found
    * @param {Object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
-   * @param {Object} [modifiedDeltaNames} List of delta names that should be considered modified regardles of their param values
+   * @param {Object} [modifiedDeltaNames] List of delta names that should be considered modified regardless of their param values
    * @returns {string}
    */
   findDeltaData: function (
