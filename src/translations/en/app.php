@@ -961,6 +961,7 @@ return [
     'New entry' => 'New entry',
     'New entry, choose a section' => 'New entry, choose a section',
     'New field' => 'New field',
+    'New file uploaded.' => 'New file uploaded.',
     'New filesystem' => 'New filesystem',
     'New global set' => 'New global set',
     'New group' => 'New group',

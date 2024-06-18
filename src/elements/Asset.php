@@ -1550,6 +1550,8 @@ $('#replace-btn').on('click', () => {
                 if (result.error) {
                     $('#thumb-container').removeClass('loading');
                     alert(result.error);
+                } else {
+                  Craft.cp.displayNotice(Craft.t('app', 'New file uploaded.'));
                 }
             },
             fileuploadfail: (event, data = null) => {
