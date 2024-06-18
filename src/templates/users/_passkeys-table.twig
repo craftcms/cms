@@ -6,15 +6,15 @@
     <table class="data fullwidth">
       <thead>
       <tr>
-        <th>{{ 'Name'|t('app') }}</th>
-        <th>{{ 'Last Used'|t('app') }}</th>
-        <td></td>
+        <th scope="col">{{ 'Name'|t('app') }}</th>
+        <th scope="col">{{ 'Last Used'|t('app') }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'Actions'|t('app') }}</span></th>
       </tr>
       </thead>
       <tbody>
       {% for passkey in passkeys %}
         <tr>
-          <td data-name="credentialName">{{ passkey.credentialName }}</td>
+          <th scope="row" data-name="credentialName">{{ passkey.credentialName }}</th>
           <td>{{ passkey.dateLastUsed|timestamp }}</td>
           <td>
             {{ tag('a', {
