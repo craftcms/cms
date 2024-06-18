@@ -30,6 +30,10 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
       });
     },
 
+    focusMethodButton(method) {
+      this.methodListings[method].querySelector('button').focus();
+    },
+
     showSetupSlideout(method) {
       const button = this.methodListings[method].querySelector(
         '.auth-method-setup-btn'
@@ -54,6 +58,7 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
                 'activate',
                 () => {
                   slideout.close();
+                  this.focusMethodButton(method);
                 }
               );
 
