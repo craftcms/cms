@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Added `Garnish.muteResizeEvents()`.
+- Fixed a JavaScript performance degradation bug. ([#14510](https://github.com/craftcms/cms/issues/14510))
+
 ## 5.2.1 - 2024-06-17
 
 - Element index table views now show provisional drafts’ canonical elements’ values for the “Ancestors”, “Parent”, “Link”, “URI”, “Revision Notes”, “Last Edited By”, and “Drafts” columns.
