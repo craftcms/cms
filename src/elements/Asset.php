@@ -1596,6 +1596,13 @@ $('#' + $id).on('activate', () => {
         $updatePreviewThumbJs
         Craft.cp.runQueue();
 
+        if (Craft.broadcaster) {
+          Craft.broadcaster.postMessage({
+            event: 'saveElement',
+            id: $assetId,
+          });
+        }
+        
         if (result.error) {
           $('#' + Craft.namespaceId('thumb-container', $namespace)).removeClass('loading');
           alert(result.error);
