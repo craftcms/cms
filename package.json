@@ -21,6 +21,7 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
+    "@awesome.me/kit-ddaed3f5c5": "^1.0.35",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@playwright/test": "^1.19.2",
     "husky": "^8.0.3",
