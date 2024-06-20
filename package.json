@@ -70,5 +70,8 @@
     "vuex": "^3.6.2",
     "xregexp": "^5.1.1",
     "yii2-pjax": "~2.0.1"
+  },
+  "optionalDependencies": {
+    "@awesome.me/kit-ddaed3f5c5": "^1.0.41"
   }
 }
