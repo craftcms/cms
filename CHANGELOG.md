@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Previewing PDF/video assets without public URLs now displays a “Preview not supported.” message. ([#15235](https://github.com/craftcms/cms/pull/15235))
+- Fixed a bug where Edit Asset pages showed a “View” button for assets without URLs. ([#15235](https://github.com/craftcms/cms/pull/15235))
+- Fixed a bug where asset indexes attempted to link to assets without URLs. ([#15235](https://github.com/craftcms/cms/pull/15235))
+
 ## 4.10.2 - 2024-06-18
 
 - Added `craft\base\conditions\BaseNumberConditionRule::$step`.
