@@ -1,9 +1,9 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.2.3 - 2024-06-20
 
 - Fixed MariaDB support. ([#15232](https://github.com/craftcms/cms/issues/15232))
-- Fixed a potential TOTP authentication security bug.
+- Fixed a potential vulnerability with TOTP authentication.
 - Deprecated `craft\helpers\Db::prepareForJsonColumn()`.
 
 ## 5.2.2 - 2024-06-18
