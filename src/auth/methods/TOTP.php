@@ -159,6 +159,12 @@ JS, [
         ]);
     }
 
+    /**
+     * Gets User's 2FA secret from the database
+     * and returns as a string formatted into a 4 character chunks.
+     *
+     * @return string
+     */
     private function secret(): string
     {
         $google2fa = new Google2FA();
@@ -176,6 +182,12 @@ JS, [
         return chunk_split($secret, 4, ' ');
     }
 
+    /**
+     * Returns user's 2fa secret from the database.
+     *
+     * @param int $userId
+     * @return string|null
+     */
     private static function secretFromDb(int $userId): ?string
     {
         $record = AuthenticatorRecord::find()
@@ -186,6 +198,14 @@ JS, [
         return $record ? $record['auth2faSecret'] : null;
     }
 
+    /**
+     * Stores user's 2fa secret in the database.
+     *
+     * @param int $userId
+     * @param string $secret
+     * @return void
+     * @throws ForbiddenHttpException
+     */
     private function storeSecret(int $userId, string $secret): void
     {
         // Make sure they have an elevated session first
@@ -254,6 +274,12 @@ JS, [
         $record->save();
     }
 
+    /**
+     * Generates and returns a QR code based on given 2fa secret.
+     *
+     * @param string $secret
+     * @return string
+     */
     private function generateQrCode(string $secret): string
     {
         $qrCodeUrl = (new Google2FA())->getQRCodeUrl(
