@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed MariaDB support. ([#15232](https://github.com/craftcms/cms/issues/15232))
 - Fixed a potential TOTP authentication security bug.
 
 ## 5.2.2 - 2024-06-18
