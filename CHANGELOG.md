@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a potential TOTP authentication security bug.
+
 ## 5.2.2 - 2024-06-18
 
 - Added `craft\base\conditions\BaseNumberConditionRule::$step`.
