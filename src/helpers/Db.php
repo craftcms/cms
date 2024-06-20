@@ -395,6 +395,22 @@ class Db
     }
 
     /**
+     * Parses a decimal column type definition and returns just the column precision and scale.
+     *
+     * @param string $columnType
+     * @return array{0:int,1:int}|null
+     * @since 5.2.2
+     */
+    public static function parseColumnPrecisionAndScale(string $columnType): ?array
+    {
+        if (!preg_match('/^\w+\((\d+),\s*(\d+)\)/', $columnType, $matches)) {
+            return null;
+        }
+
+        return [(int)$matches[1], (int)$matches[2]];
+    }
+
+    /**
      * Returns a simplified version of a given column type.
      *
      * @param string $columnType
