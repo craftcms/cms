@@ -18,6 +18,7 @@ use craft\web\Session;
 use craft\web\View;
 use PragmaRX\Google2FA\Exceptions\Google2FAException;
 use PragmaRX\Google2FA\Google2FA;
+use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
 
 /**
@@ -126,8 +127,10 @@ JS, [
             return false;
         }
 
+        $google2fa = new Google2FA();
         try {
-            $verified = (new Google2FA())->verifyKey($secret, $code);
+            $lastUsedTimestamp = $this->lastUsedTimestamp($this->user->id);
+            $verified = $google2fa->verifyKeyNewer($secret, $code, $lastUsedTimestamp);
         } catch (Google2FAException) {
             return false;
         }
@@ -139,6 +142,8 @@ JS, [
         if (!$storedSecret) {
             $this->storeSecret($this->user->id, $secret);
             Craft::$app->getSession()->remove($this->secretParam);
+        } else {
+            $this->storeLastUsedTimestamp($this->user->id, $verified === true ? $google2fa->getTimestamp() : $verified);
         }
 
         return true;
@@ -199,6 +204,53 @@ JS, [
         }
 
         $record->auth2faSecret = $secret;
+        // whenever we store the secret, we should ensure the oldTimestamp is accurate too
+        $record->oldTimestamp = (new Google2FA())->getTimestamp();
+        $record->save();
+    }
+
+    /**
+     * Returns the totp's old timestamp.
+     *
+     * @param int $userId
+     * @return int|null
+     */
+    private function lastUsedTimestamp(int $userId): ?int
+    {
+        $record = AuthenticatorRecord::find()
+            ->select(['oldTimestamp'])
+            ->where(['userId' => $userId])
+            ->one();
+
+        if (!$record) {
+            return null;
+        }
+
+        // old timestamp is the current Unix Timestamp divided by the $keyRegeneration period
+        // so we store it as int and don't mess with it
+        return $record['oldTimestamp'];
+    }
+
+    /**
+     * Saves totp's old timestamp.
+     *
+     * @param int $userId
+     * @param int $timestamp
+     * @return void
+     */
+    private function storeLastUsedTimestamp(int $userId, int $timestamp): void
+    {
+        /** @var AuthenticatorRecord|null $record */
+        $record = AuthenticatorRecord::find()
+            ->where(['userId' => $userId])
+            ->one();
+
+        if (!$record) {
+            // you shouldn't be able to get here without having a record, so let's throw an exception
+            throw new Exception('Couldn\'t find authenticator record.');
+        }
+
+        $record->oldTimestamp = $timestamp;
         $record->save();
     }
 
