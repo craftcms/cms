@@ -1573,10 +1573,35 @@ $('#' + $id).on('activate', () => {
       },
       fileuploaddone: (event, data) => {
         const result = event instanceof CustomEvent ? event.detail : data.result;
-        $('#' + Craft.namespaceId('new-filename', $namespace)).val(result.filename);
+
+        // Update the filename input and serialized param value
+        const filenameInput = $('#' + Craft.namespaceId('new-filename', $namespace));
+        const oldFilenameValue = encodeURIComponent(filenameInput.val());
+        filenameInput.val(result.filename);
+
+        let form = filenameInput.closest('form');
+
+        // Make sure the form is for this asset
+        let elementEditor = form.data('elementEditor');
+        if (elementEditor?.settings.elementId !== $assetId) {
+          form = null;
+          elementEditor = null;
+        }
+
+        const initialSerializedData = form?.data('initialSerializedValue');
+        if (initialSerializedData) {
+          const inputName = encodeURIComponent(filenameInput.attr('name'));
+          const newFilenameValue = encodeURIComponent(result.filename);
+          form.data('initialSerializedValue', initialSerializedData
+            .replace(inputName + '=' + oldFilenameValue, inputName + '=' + newFilenameValue));
+        }
+
+        // Update the file size value
         $('#' + Craft.namespaceId('file-size-value', $namespace))
           .text(result.formattedSize)
           .attr('title', result.formattedSizeInBytes);
+
+        // Update the dimensions value
         let dimensionsVal = $('#' + Craft.namespaceId('dimensions-value', $namespace));
         if (result.dimensions) {
           if (!dimensionsVal.length) {
@@ -1593,12 +1618,27 @@ $('#' + $id).on('activate', () => {
           dimensionsVal.parent().remove();
         }
 
+        // Update the timestamp on the element editor
+        if (elementEditor && result.updatedTimestamp) {
+          elementEditor.settings.updatedTimestamp = result.updatedTimestamp;
+          elementEditor.settings.canonicalUpdatedTimestamp = result.updatedTimestamp;
+        }
+
         $updatePreviewThumbJs
         Craft.cp.runQueue();
 
+        if (Craft.broadcaster) {
+          Craft.broadcaster.postMessage({
+            event: 'saveElement',
+            id: $assetId,
+          });
+        }
+        
         if (result.error) {
           $('#' + Craft.namespaceId('thumb-container', $namespace)).removeClass('loading');
           alert(result.error);
+        } else {
+          Craft.cp.displayNotice(Craft.t('app', 'New file uploaded.'));
         }
       },
       fileuploadfail: (event, data) => {
