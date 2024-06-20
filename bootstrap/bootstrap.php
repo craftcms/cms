@@ -160,20 +160,20 @@ error_reporting($errorLevel);
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
 
-$devMode = App::env('CRAFT_DEV_MODE') ?? $generalConfig['devMode'] ?? false;
-
-if ($devMode) {
-    ini_set('display_errors', '1');
-    defined('YII_DEBUG') || define('YII_DEBUG', true);
-    defined('YII_ENV') || define('YII_ENV', 'dev');
-} else {
+// $devMode = App::env('CRAFT_DEV_MODE') ?? $generalConfig['devMode'] ?? false;
+//
+// if ($devMode) {
+//     ini_set('display_errors', '1');
+//     defined('YII_DEBUG') || define('YII_DEBUG', true);
+//     defined('YII_ENV') || define('YII_ENV', 'dev');
+// } else {
     ini_set('display_errors', '0');
     defined('YII_DEBUG') || define('YII_DEBUG', false);
     defined('YII_ENV') || define('YII_ENV', 'prod');
 
     // don't let PHP warnings & notices halt execution
     error_reporting($errorLevel & ~E_WARNING & ~E_NOTICE);
-}
+// }
 
 // Load the Composer dependencies and the app
 // -----------------------------------------------------------------------------
