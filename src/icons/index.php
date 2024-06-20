@@ -514,7 +514,7 @@ return array(
   'boot-heeled' =>
   array(
     'name' => ' boot heeled ',
-    'terms' => ' boot clothing cowboy cowgirl knee high shoe woman womas boot ',
+    'terms' => ' boot clothing cowboy cowgirl knee high shoe woman womans boot ',
   ),
   'bottle-droplet' =>
   array(
@@ -3986,6 +3986,11 @@ return array(
     'name' => ' pen ',
     'terms' => ' ballpoint design edit modify pen update write ',
   ),
+  'pen-circle' =>
+  array(
+    'name' => ' pen circle ',
+    'terms' => ' draw edit modify pencil write ',
+  ),
   'pen-to-square' =>
   array(
     'name' => ' pen to square ',
@@ -5339,12 +5344,12 @@ return array(
   'table-cells' =>
   array(
     'name' => ' table cells ',
-    'terms' => ' blocks boxes category grid squares ',
+    'terms' => ' excel blocks boxes category grid spreadsheet squares ',
   ),
   'table-cells-large' =>
   array(
     'name' => ' table cells large ',
-    'terms' => ' blocks boxes category grid squares ',
+    'terms' => ' excel blocks boxes category grid spreadsheet squares ',
   ),
   'table-columns' =>
   array(
@@ -6234,7 +6239,7 @@ return array(
   'wifi' =>
   array(
     'name' => ' wifi ',
-    'terms' => ' connection hotspot internet network wireless www ',
+    'terms' => ' connection hotspot internet network signal wireless www ',
   ),
   'wind' =>
   array(
