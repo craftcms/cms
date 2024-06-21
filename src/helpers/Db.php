@@ -194,17 +194,10 @@ class Db
      * @param Connection|null $db The database connection
      * @return array|string
      * @since 5.0.0
+     * @deprecated in 5.2.3
      */
     public static function prepareForJsonColumn(array $value, ?Connection $db = null): array|string
     {
-        if ($db === null) {
-            $db = self::db();
-        }
-
-        if ($db->getIsMaria()) {
-            return Json::encode($value);
-        }
-
         return $value;
     }
 
