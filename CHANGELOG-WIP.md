@@ -7,4 +7,5 @@
 - Improved the accessibility of two-step verification setup. ([#15229](https://github.com/craftcms/cms/pull/15229))
 
 ### Extensibility
+- `Craft.ElementEditor` now triggers a `checkActivity` event each time author activity is fetched. ([#15237](https://github.com/craftcms/cms/discussions/15237))
 - Added `Garnish.once()`, for handling a class-level event only once.
