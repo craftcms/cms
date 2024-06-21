@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Improved the styling of inactive users’ status indicators. ([#15195](https://github.com/craftcms/cms/issues/15195))
+- Fixed a bug where other author indicators weren’t shown for Craft Team.
+- Fixed a bug where the Recent Entries widget wasn’t showing authors’ usernames for Craft Team.
 
 ## 5.2.3 - 2024-06-20
 
