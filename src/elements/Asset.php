@@ -1452,7 +1452,7 @@ class Asset extends Element
             return null;
         }
 
-        $filename = $this->getFilename(false);
+        $filename = preg_replace('/\s+/', '-', $this->getFilename(false));
         $path = "assets/edit/$this->id-$filename";
 
         return UrlHelper::cpUrl($path);
