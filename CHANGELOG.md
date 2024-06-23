@@ -6,6 +6,7 @@
 - Fixed a bug where other author indicators weren’t shown for Craft Team.
 - Fixed a bug where the Recent Entries widget wasn’t showing authors’ usernames for Craft Team.
 - Fixed a bug where asset edit page URLs contained spaces if the asset filename contained spaces. ([#15236](https://github.com/craftcms/cms/issues/15236))
+- Fixed a bug where element select inputs with `single` set to `true` would set existing elements’ input names ending in `[]`.
 
 ## 5.2.3 - 2024-06-20
 
