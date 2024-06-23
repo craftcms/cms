@@ -15,7 +15,7 @@
         {% set element = elementChip(element, {
           context: context ?? 'index',
           size: size ?? (viewMode == 'large' ? 'large' : 'small'),
-          inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
+          inputName: inputName ?? ((name ?? false) ? ((single ?? false) ? name : "#{name}[]") : null),
           showActionMenu: showActionMenu ?? false,
           checkbox: selectable ?? false,
         }) %}
