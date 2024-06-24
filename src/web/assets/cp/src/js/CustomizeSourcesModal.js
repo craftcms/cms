@@ -29,6 +29,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   elementTypeName: null,
   baseSortOptions: null,
   availableTableAttributes: null,
+  availableCardAttributes: null,
   customFieldAttributes: null,
 
   conditionBuilderHtml: null,
@@ -113,6 +114,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.baseSortOptions = response.baseSortOptions;
     this.defaultSortOptions = response.defaultSortOptions;
     this.availableTableAttributes = response.availableTableAttributes;
+    this.availableCardAttributes = response.availableCardAttributes;
     this.customFieldAttributes = response.customFieldAttributes;
     this.elementTypeName = response.elementTypeName;
     this.conditionBuilderHtml = response.conditionBuilderHtml;
@@ -195,6 +197,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         defaultSort: [sortOptions[0].attr, sortOptions[1].defaultDir],
         tableAttributes: [],
         availableTableAttributes: [],
+        cardAttributes: [],
+        availableCardAttributes: [],
       });
       this.focusLabelInput();
     });
@@ -627,6 +631,7 @@ Craft.CustomizeSourcesModal.Source =
         .appendTo($container);
       this.createSortField($container);
       this.createTableAttributesField($container);
+      this.createCardAttributesField($container);
     },
 
     createSortField: function ($container) {
@@ -792,6 +797,46 @@ Craft.CustomizeSourcesModal.Source =
       return attributes;
     },
 
+    createCardAttributesField: function ($container) {
+      const availableCardAttributes = this.modal.availableCardAttributes
+        .slice(0)
+        .sort((a, b) => {
+          return a[1] === b[1] ? 0 : a[1] < b[1] ? -1 : 1;
+        });
+
+      if (
+        !this.sourceData.cardAttributes.length &&
+        !availableCardAttributes.length
+      ) {
+        return;
+      }
+
+      const name = `sources[${this.sourceData.key}][cardAttributes][]`;
+
+      $('<input/>', {
+        type: 'hidden',
+        name,
+        value: '',
+      }).appendTo($container);
+
+      Craft.ui
+        .createCheckboxSelectField({
+          label: Craft.t('app', 'Default Card Attributes'),
+          instructions: Craft.t(
+            'app',
+            'Choose which card attributes should be visible for this source by default.'
+          ),
+          name,
+          options: availableCardAttributes.map(([key, label]) => ({
+            label,
+            value: key,
+          })),
+          values: this.sourceData.cardAttributes.map(([key]) => key),
+          sortable: true,
+        })
+        .appendTo($container);
+    },
+
     getIndexSourceItem: function () {
       const $source = this.modal.elementIndex.getSourceByKey(
         this.sourceData.key
@@ -849,6 +894,7 @@ Craft.CustomizeSourcesModal.CustomSource =
 
       this.createSortField($container);
       this.createTableAttributesField($container);
+      this.createCardAttributesField($container);
 
       if (Craft.sites.length > 1) {
         Craft.ui

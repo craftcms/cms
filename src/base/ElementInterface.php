@@ -502,6 +502,28 @@ interface ElementInterface extends
      */
     public static function defaultTableAttributes(string $source): array;
 
+
+    /**
+     * Defines all of the available attributes that can be shown in card views.
+     *
+     * This method should return an array whose keys represent element attribute names, and whose values make
+     * up the card’s attribute headings.
+     *
+     * @return array The card attributes.
+     */
+    public static function cardAttributes(): array;
+
+    /**
+     * Returns the list of card attribute keys that should be shown by default.
+     *
+     * This method should return an array where each element in the array maps to one of the keys of the array returned
+     * by [[cardAttributes()]].
+     *
+     * @param string $source The selected source’s key
+     * @return string[] The card attribute keys
+     */
+    public static function defaultCardAttributes(string $source): array;
+
     /**
      * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
      *
@@ -797,6 +819,15 @@ interface ElementInterface extends
      * @since 5.0.0
      */
     public function getCardBodyHtml(): ?string;
+
+    /**
+     * Returns the attributes HTML for element cards.
+     *
+     * @param array|null $uiAttributes Attributes to display
+     * @return string|null
+     * @since 5.3.0
+     */
+    public function getCardAttributesHtml(?array $uiAttributes): ?string;
 
     /**
      * Returns the reference string to this element.

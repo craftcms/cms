@@ -1606,6 +1606,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         params.viewState.tableColumns = this.getDefaultTableColumns();
       }
 
+      if (
+        this.hasImplicitSource &&
+        typeof params.viewState.cardColumns === 'undefined'
+      ) {
+        params.viewState.cardColumns = this.getDefaultCardColumns();
+      }
+
       // Give plugins a chance to hook in here
       this.trigger('registerViewParams', {
         params: params,
@@ -2461,6 +2468,72 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Update the view menu
       if (this.activeViewMenu) {
         this.activeViewMenu.updateTableColumnField();
+      }
+    },
+
+    /**
+     * Returns the available card columns for a source (or the selected root source)
+     * @param {jQuery} [$source]
+     * @returns {Object[]}
+     */
+    getCardColumnOptions: function ($source) {
+      return this.getSourceData($source, 'card-col-opts') || [];
+    },
+
+    /**
+     * Returns info about a card attribute.
+     * @param {string} attribute
+     * @param {jQuery} [$source]
+     * @returns {?Object}
+     */
+    getCardColumnOption: function (attribute, $source) {
+      return (
+        this.getCardColumnOptions($source).find((o) => o.attr === attribute) ||
+        null
+      );
+    },
+
+    /**
+     * Returns the default card atrributes for a source (or the selected root source)
+     * @param {jQuery} [$source]
+     * @returns {string[]}
+     */
+    getDefaultCardColumns: function ($source) {
+      return this.getSourceData($source, 'default-card-cols') || [];
+    },
+
+    /**
+     * Returns the selected table attribute for a source
+     * @param {jQuery} [$source]
+     * @returns {string[]}
+     */
+    getSelectedCardColumns: function ($source) {
+      $source ||= this.$source;
+      if ($source) {
+        const attributes = this.getSourceState(
+          $source.data('key'),
+          'cardColumns'
+        );
+
+        if (attributes) {
+          // Only return the valid ones
+          return attributes.filter(
+            (a) => !!this.getCardColumnOption(a, $source)
+          );
+        }
+      }
+
+      return this.getDefaultCardColumns($source);
+    },
+
+    setSelectedCardColumns: function (attributes) {
+      this.setSelecetedSourceState({
+        cardColumns: attributes,
+      });
+
+      // Update the view menu
+      if (this.activeViewMenu) {
+        this.activeViewMenu.updateCardColumnField();
       }
     },
 
@@ -3962,6 +4035,8 @@ const ViewMenu = Garnish.Base.extend({
   sortDirectionListbox: null,
   $tableColumnsField: null,
   $tableColumnsContainer: null,
+  $cardColumnsField: null,
+  $cardColumnsContainer: null,
   $revertContainer: null,
   $revertBtn: null,
   $closeBtn: null,
@@ -4007,6 +4082,7 @@ const ViewMenu = Garnish.Base.extend({
       // Move all checked table column checkboxes to the top once it's fully faded out
       setTimeout(() => {
         this.tidyTableColumnField();
+        this.tidyCardColumnField();
       }, Garnish.FX_DURATION);
     });
   },
@@ -4022,7 +4098,8 @@ const ViewMenu = Garnish.Base.extend({
   },
 
   updateTableFieldVisibility: function () {
-    // we only want to show the "Table Columns" checkboxes and "Use defaults" btn in table and structure views
+    // we only want to show the "Table Columns" checkboxes in table and structure views,
+    // and "Card Columns" checkboxes in the remaining views (cards and embedded-index)
     if (
       this.elementIndex.viewMode !== 'table' &&
       this.elementIndex.viewMode !== 'structure'
@@ -4032,17 +4109,21 @@ const ViewMenu = Garnish.Base.extend({
           .closest('.table-columns-field')
           .addClass('hidden');
       }
-      if (this.$revertBtn) {
-        this.$revertBtn.addClass('hidden');
+      if (this.$cardColumnsContainer) {
+        this.$cardColumnsContainer
+          .closest('.card-columns-field')
+          .removeClass('hidden');
       }
     } else {
+      if (this.$cardColumnsContainer) {
+        this.$cardColumnsContainer
+          .closest('.card-columns-field')
+          .addClass('hidden');
+      }
       if (this.$tableColumnsContainer) {
         this.$tableColumnsContainer
           .closest('.table-columns-field')
           .removeClass('hidden');
-      }
-      if (this.$revertBtn) {
-        this.$revertBtn.removeClass('hidden');
       }
     }
   },
@@ -4166,19 +4247,110 @@ const ViewMenu = Garnish.Base.extend({
       .appendTo(this.$tableColumnsContainer);
   },
 
-  revert: function () {
-    this.elementIndex.setSelecetedSourceState({
-      order: null,
-      sort: null,
-      tableColumns: null,
+  updateCardColumnField: function () {
+    if (!this.$cardColumnsContainer) {
+      return;
+    }
+
+    const attributes = this.elementIndex.getSelectedCardColumns();
+    let $lastContainer, lastIndex;
+
+    attributes.forEach((attribute) => {
+      const $checkbox = this.$cardColumnsContainer.find(
+        `input[value="${attribute}"]`
+      );
+      if (!$checkbox.prop('checked')) {
+        $checkbox.prop('checked', true);
+      }
+      const $container = $checkbox.parent();
+
+      // Do we need to move it up?
+      if ($lastContainer && $container.index() < lastIndex) {
+        $container.insertAfter($lastContainer);
+      }
+
+      $lastContainer = $container;
+      lastIndex = $container.index();
     });
 
-    this.updateSortField();
-    this.updateTableColumnField();
-    this.tidyTableColumnField();
+    // See if we need to uncheck any checkboxes
+    const $checkboxes = this._getCardColumnCheckboxes();
+    for (let i = 0; i < $checkboxes.length; i++) {
+      const $checkbox = $checkboxes.eq(i);
+      if ($checkbox.prop('checked') && !attributes.includes($checkbox.val())) {
+        $checkbox.prop('checked', false);
+      }
+    }
+  },
 
-    this.$revertBtn.remove();
-    this.$revertBtn = null;
+  tidyCardColumnField: function () {
+    if (!this.$cardColumnsContainer) {
+      return;
+    }
+
+    const defaultOrder = this.elementIndex
+      .getCardColumnOptions(this.$source)
+      .map((column) => column.attr)
+      .reduce((obj, attr, index) => {
+        return {...obj, [attr]: index};
+      }, {});
+
+    this.$cardColumnsContainer
+      .children()
+      .sort((a, b) => {
+        const checkboxA = $(a).children('input[type="checkbox"]')[0];
+        const checkboxB = $(b).children('input[type="checkbox"]')[0];
+        if (checkboxA.checked && checkboxB.checked) {
+          return 0;
+        }
+        if (checkboxA.checked || checkboxB.checked) {
+          return checkboxA.checked ? -1 : 1;
+        }
+        return defaultOrder[checkboxA.value] < defaultOrder[checkboxB.value]
+          ? -1
+          : 1;
+      })
+      .appendTo(this.$cardColumnsContainer);
+  },
+
+  revert: function () {
+    if (
+      this.elementIndex.viewMode !== 'table' &&
+      this.elementIndex.viewMode !== 'structure'
+    ) {
+      this.elementIndex.setSelecetedSourceState({
+        order: null,
+        sort: null,
+        cardColumns: null,
+      });
+    } else {
+      this.elementIndex.setSelecetedSourceState({
+        order: null,
+        sort: null,
+        tableColumns: null,
+      });
+    }
+
+    this.updateSortField();
+
+    if (
+      this.elementIndex.viewMode !== 'table' &&
+      this.elementIndex.viewMode !== 'structure'
+    ) {
+      this.updateCardColumnField();
+      this.tidyCardColumnField();
+    } else {
+      this.updateTableColumnField();
+      this.tidyTableColumnField();
+    }
+
+    let tableColumns = this.elementIndex.getSelectedSourceState('tableColumns');
+    let cardColumns = this.elementIndex.getSelectedSourceState('cardColumns');
+
+    if (tableColumns === null && cardColumns === null) {
+      this.$revertBtn.remove();
+      this.$revertBtn = null;
+    }
 
     this.$closeBtn.focus();
     this.elementIndex.updateElements();
@@ -4194,6 +4366,8 @@ const ViewMenu = Garnish.Base.extend({
     if (!Garnish.isMobileBrowser(true)) {
       this.$tableColumnsField =
         this._createTableColumnsField().appendTo($metaContainer);
+      this.$cardColumnsField =
+        this._createCardColumnsField().appendTo($metaContainer);
     }
 
     this.updateSortField();
@@ -4214,19 +4388,10 @@ const ViewMenu = Garnish.Base.extend({
     if (
       this.elementIndex.getSelectedSourceState('order') ||
       this.elementIndex.getSelectedSourceState('sort') ||
-      this.elementIndex.getSelectedSourceState('tableColumns')
+      this.elementIndex.getSelectedSourceState('tableColumns') ||
+      this.elementIndex.getSelectedSourceState('cardColumns')
     ) {
       this._createRevertBtn();
-    }
-
-    // we only want to show the "Use defaults" btn in table and structure views
-    if (
-      this.elementIndex.viewMode !== 'table' &&
-      this.elementIndex.viewMode !== 'structure'
-    ) {
-      if (this.$revertBtn) {
-        this.$revertBtn.addClass('hidden');
-      }
     }
 
     this.$closeBtn = $('<button/>', {
@@ -4427,6 +4592,82 @@ const ViewMenu = Garnish.Base.extend({
     }
 
     this.elementIndex.setSelectedTableColumns(columns, false);
+    this.elementIndex.updateElements();
+    this._createRevertBtn();
+  },
+
+  _getCardColumnCheckboxes: function () {
+    if (!this.$cardColumnsContainer) {
+      return $();
+    }
+
+    return this.$cardColumnsContainer.find('input[type="checkbox"]');
+  },
+
+  _createCardColumnsField: function () {
+    const columns = this.elementIndex
+      .getCardColumnOptions(this.$source)
+      .sort((a, b) => {
+        return a.label === b.label ? 0 : a.label < b.label ? -1 : 1;
+      });
+
+    if (!columns.length) {
+      return $();
+    }
+
+    this.$cardColumnsContainer = Craft.ui.createCheckboxSelect({
+      options: columns.map((c) => ({
+        label: c.label,
+        value: c.attr,
+      })),
+      sortable: true,
+    });
+
+    this.updateCardColumnField();
+    this.tidyCardColumnField();
+
+    this.$cardColumnsContainer.data('dragSort').on('sortChange', () => {
+      this._onCardColumnChange();
+    });
+
+    this._getCardColumnCheckboxes().on('change', (ev) => {
+      this._onCardColumnChange();
+    });
+
+    const $field = Craft.ui.createField(this.$cardColumnsContainer, {
+      label: Craft.t('app', 'Card Columns'),
+      fieldset: true,
+    });
+    $field.addClass('card-columns-field');
+
+    // we only want to show the "Table Columns" checkboxes in table and structure views
+    if (this.elementIndex.viewMode !== 'card') {
+      $field.addClass('hidden');
+    }
+
+    return $field;
+  },
+
+  _onCardColumnChange: function () {
+    const columns = [];
+    const $selectedCheckboxes =
+      this._getCardColumnCheckboxes().filter(':checked');
+    for (let i = 0; i < $selectedCheckboxes.length; i++) {
+      columns.push($selectedCheckboxes.eq(i).val());
+    }
+
+    // Only commit the change if it's different from the current column selections
+    // (maybe an unchecked column was dragged, etc.)
+    if (
+      Craft.compare(
+        columns,
+        this.elementIndex.getSelectedCardColumns(this.$source)
+      )
+    ) {
+      return;
+    }
+
+    this.elementIndex.setSelectedCardColumns(columns, false);
     this.elementIndex.updateElements();
     this._createRevertBtn();
   },

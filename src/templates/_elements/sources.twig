@@ -2,17 +2,24 @@
 {% set keyPrefix = keyPrefix ?? '' %}
 {% set isTopLevel = not keyPrefix %}
 
-{% if isTopLevel and (baseSortOptions is not defined or tableColumns is not defined) %}
+{% if isTopLevel and baseSortOptions is not defined %}
     {% set elementInstance = craft.app.elements.createElement(elementType) %}
     {% set baseSortOptions = baseSortOptions ?? elementInstance.sortOptions()|map((option, key) => {
         label: option.label ?? option,
         attr: option.attribute ?? option.orderBy ?? key,
         defaultDir: option.defaultDir ?? 'asc',
     })|values %}
+{% endif %}
+
+{% if isTopLevel and tableColumns is not defined %}
     {% set tableColumns = tableColumns ?? craft.app.elementSources.getAvailableTableAttributes(elementType) %}
 {% endif %}
 
-{% macro sourceLink(key, source, isTopLevel, elementType, baseSortOptions, tableColumns, defaultTableColumns) %}
+{% if isTopLevel and cardColumns is not defined %}
+    {% set cardColumns = cardColumns ?? craft.app.elementSources.getAvailableCardAttributes(elementType) %}
+{% endif %}
+
+{% macro sourceLink(key, source, isTopLevel, elementType, baseSortOptions, tableColumns, defaultTableColumns, cardColumns, defaultCardColumns) %}
     {{ tag('a', {
         role: 'button',
         tabindex: '0',
@@ -39,6 +46,17 @@
                 : false,
             'default-table-cols': isTopLevel
                 ? (defaultTableColumns ?? craft.app.elementSources.getTableAttributes(elementType, key))
+                    |map(a => a[0])
+                    |filter(a => a != 'title')
+                    |values
+                : false,
+            'card-col-opts': isTopLevel
+                ? cardColumns
+                    |map((a, key) => a|merge({attr: key}))
+                    |values
+                : false,
+            'default-card-cols': isTopLevel
+                ? (defaultCardColumns ?? craft.app.elementSources.getCardAttributes(elementType, key))
                     |map(a => a[0])
                     |filter(a => a != 'title')
                     |values
@@ -108,7 +126,7 @@
                     (source.disabled ?? false) ? 'hidden' : null,
                 ]|filter,
             } %}
-                {{ _self.sourceLink(key, source, isTopLevel, elementType, baseSortOptions ?? null, tableColumns ?? null, defaultTableColumns ?? null) }}
+                {{ _self.sourceLink(key, source, isTopLevel, elementType, baseSortOptions ?? null, tableColumns ?? null, defaultTableColumns ?? null, cardColumns ?? null, defaultCardColumns ?? null) }}
                 {% if source.nested is defined and source.nested is not empty %}
                     <button class="toggle" aria-expanded="false" aria-label="{{ 'Show nested sources'|t('app') }}"></button>
                     {% include "_elements/sources" with {

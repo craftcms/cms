@@ -1,4 +1,8 @@
 {% apply spaceless %}
+  {% set uiAttributes = null %}
+  {% if viewMode == 'cards' and attributes is not empty %}
+    {% set uiAttributes = attributes %}
+  {% endif %}
   {% for element in elements %}
     {% tag 'li' with {
       class: (element.isProvisionalDraft ? element.getCanonicalId() : element.id) in disabledElementIds ? 'disabled' : null,
@@ -10,7 +14,7 @@
         context: context ?? 'index',
         selectable: selectable,
         sortable: sortable,
-      }) }}
+      }, uiAttributes) }}
     {% endtag %}
   {% endfor %}
 {% endapply -%}

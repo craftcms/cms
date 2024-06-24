@@ -3407,6 +3407,27 @@ table {
         margin-inline-start: 5px;
       }
     }
+
+    .card-ui-attributes {
+      margin-top: 10px;
+      border-top-width: 1px;
+      padding-top: 10px;
+
+      table {
+        th,
+        td {
+          padding-top: 0px;
+          padding-bottom: 0px;
+        }
+        th {
+          font-weight: normal;
+          font-style: italic;
+        }
+        .chip {
+          padding: 0;
+        }
+      }
+    }
   }
 
   & > .card-actions-container {

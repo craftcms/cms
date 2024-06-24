@@ -130,6 +130,10 @@ class ElementIndexSettingsController extends BaseElementsController
             array_shift($tableAttributes);
             $source['tableAttributes'] = array_map(fn($a) => [$a[0], $a[1]['label']], $tableAttributes);
 
+            // Selected card attributes
+            $cardAttributes = $sourcesService->getCardAttributes($elementType, $source['key']);
+            $source['cardAttributes'] = array_map(fn($a) => [$a[0], $a[1]['label']], $cardAttributes);
+
             if ($source['type'] === ElementSources::TYPE_CUSTOM) {
                 if (isset($source['condition'])) {
                     /** @var ElementConditionInterface $condition */
@@ -167,6 +171,13 @@ class ElementIndexSettingsController extends BaseElementsController
             $availableTableAttributes[] = [$key, $labelInfo['label']];
         }
 
+        // Get the available card attributes
+        $availableCardAttributes = [];
+
+        foreach ($sourcesService->getAvailableCardAttributes($elementType) as $key => $labelInfo) {
+            $availableCardAttributes[] = [$key, $labelInfo['label']];
+        }
+
         // Get previewable custom fields that should be available for all custom sources
         $customFieldAttributes = [];
 
@@ -202,6 +213,7 @@ class ElementIndexSettingsController extends BaseElementsController
             'baseSortOptions' => $baseSortOptions,
             'defaultSortOptions' => $defaultSortOptions,
             'availableTableAttributes' => $availableTableAttributes,
+            'availableCardAttributes' => $availableCardAttributes,
             'customFieldAttributes' => $customFieldAttributes,
             'elementTypeName' => $elementType::displayName(),
             'conditionBuilderHtml' => $conditionBuilderHtml,
@@ -251,6 +263,7 @@ class ElementIndexSettingsController extends BaseElementsController
                 if (isset($sourceSettings[$source['key']])) {
                     $postedSettings = $sourceSettings[$source['key']];
                     $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? [])) ?: '-';
+                    $sourceConfig['cardAttributes'] = array_values(array_filter($postedSettings['cardAttributes'] ?? [])) ?: '-';
 
                     if (isset($postedSettings['defaultSort'])) {
                         $sourceConfig['defaultSort'] = $postedSettings['defaultSort'];

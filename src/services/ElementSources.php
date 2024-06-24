@@ -266,6 +266,71 @@ class ElementSources extends Component
     }
 
     /**
+     * Returns the common card attributes that are available for a given element type, across all its sources.
+     *
+     * @param string $elementType The element type class
+     * @phpstan-param class-string<ElementInterface> $elementType
+     * @return array[]
+     */
+    public function getAvailableCardAttributes(string $elementType): array
+    {
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
+        $attributes = $elementType::cardAttributes();
+
+        // Normalize
+        foreach ($attributes as $key => $info) {
+            if (!is_array($info)) {
+                $attributes[$key] = ['label' => $info];
+            } elseif (!isset($info['label'])) {
+                $attributes[$key]['label'] = '';
+            }
+
+            if (isset($attributes[$key]['icon']) && in_array($attributes[$key]['icon'], ['world', 'earth'])) {
+                $attributes[$key]['icon'] = Cp::earthIcon();
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Returns the card attributes that should be shown for a given element type source.
+     *
+     * @param string $elementType The element type class
+     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param string $sourceKey The element type source key
+     * @param string[]|null $customAttributes Custom attributes to show rather than the defaults
+     * @return array[]
+     */
+    public function getCardAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null): array
+    {
+        /** @var ElementInterface|string $elementType */
+        // If this is a source path, use the first segment
+        if (($slash = strpos($sourceKey, '/')) !== false) {
+            $sourceKey = substr($sourceKey, 0, $slash);
+        }
+
+        $availableAttributes = $this->getAvailableCardAttributes($elementType);
+
+        $attributeKeys = $customAttributes
+            ?? $this->_sourceConfig($elementType, $sourceKey)['cardAttributes']
+            ?? $elementType::defaultCardAttributes($sourceKey);
+
+        $attributes = [];
+
+        if (is_array($attributeKeys)) {
+            foreach ($attributeKeys as $key) {
+                if (isset($availableAttributes[$key])) {
+                    $attributes[] = [$key, $availableAttributes[$key]];
+                }
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
      * @var array
      * @see getFieldLayoutsForSource()
      */

@@ -530,10 +530,11 @@ class Cp
      *
      * @param ElementInterface $element The element to be rendered
      * @param array $config Card configuration
+     * @param array|null $uiAttributes additional attributes to show in the Cards view mode
      * @return string
      * @since 5.0.0
      */
-    public static function elementCardHtml(ElementInterface $element, array $config = []): string
+    public static function elementCardHtml(ElementInterface $element, array $config = [], ?array $uiAttributes = null): string
     {
         $config += [
             'attributes' => [],
@@ -598,11 +599,17 @@ class Cp
             }
         }
 
+        $uiAttributesContent = '';
+        if ($uiAttributes) {
+            $uiAttributesContent = $element->getCardAttributesHtml($uiAttributes) ?? '';
+        }
+
         $html = Html::beginTag('div', $attributes) .
             ($thumb ?? '') .
             Html::beginTag('div', ['class' => 'card-content']) .
             ($headingContent !== '' ? Html::tag('div', $headingContent, ['class' => 'card-heading']) : '') .
             ($bodyContent !== '' ? Html::tag('div', $bodyContent, ['class' => 'card-body']) : '') .
+            ($uiAttributesContent !== '' ? Html::tag('div', $uiAttributesContent, ['class' => 'card-ui-attributes']) : '') .
             Html::endTag('div') . // .card-content
             Html::beginTag('div', ['class' => 'card-actions-container']) .
             Html::beginTag('div', ['class' => 'card-actions']) .

@@ -635,6 +635,46 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public static function cardAttributes(): array
+    {
+        if (self::isFolderIndex()) {
+            return [];
+        }
+
+        return parent::cardAttributes();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineCardAttributes(): array
+    {
+        $attributes = array_merge(parent::defineCardAttributes(), [
+            'dateCreated' => ['label' => Craft::t('app', 'Date Uploaded')],
+            'filename' => ['label' => Craft::t('app', 'Filename')],
+            'size' => ['label' => Craft::t('app', 'File Size')],
+            'kind' => ['label' => Craft::t('app', 'File Kind')],
+            'imageSize' => ['label' => Craft::t('app', 'Dimensions')],
+            'width' => ['label' => Craft::t('app', 'Image Width')],
+            'height' => ['label' => Craft::t('app', 'Image Height')],
+            'alt' => ['label' => Craft::t('app', 'Alternative Text')],
+            'location' => ['label' => Craft::t('app', 'Location')],
+            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
+            'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
+            'uploader' => ['label' => Craft::t('app', 'Uploaded By')],
+        ]);
+
+        // Hide Author from Craft Solo
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            unset($attributes['uploader']);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         if ($attribute === 'uploader') {

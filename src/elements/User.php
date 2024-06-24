@@ -481,6 +481,26 @@ class User extends Element implements IdentityInterface
         ];
     }
 
+
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineCardAttributes(): array
+    {
+        return array_merge(parent::defineCardAttributes(), [
+            'email' => ['label' => Craft::t('app', 'Email')],
+            'username' => ['label' => Craft::t('app', 'Username')],
+            'fullName' => ['label' => Craft::t('app', 'Full Name')],
+            'firstName' => ['label' => Craft::t('app', 'First Name')],
+            'lastName' => ['label' => Craft::t('app', 'Last Name')],
+            'groups' => ['label' => Craft::t('app', 'Groups')],
+            'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
+            'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
+            'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
+        ]);
+    }
+
     /**
      * @inheritdoc
      */
