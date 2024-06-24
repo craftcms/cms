@@ -657,7 +657,6 @@ class Asset extends Element
             'imageSize' => ['label' => Craft::t('app', 'Dimensions')],
             'width' => ['label' => Craft::t('app', 'Image Width')],
             'height' => ['label' => Craft::t('app', 'Image Height')],
-            'alt' => ['label' => Craft::t('app', 'Alternative Text')],
             'location' => ['label' => Craft::t('app', 'Location')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
