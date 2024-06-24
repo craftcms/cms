@@ -1409,6 +1409,14 @@ Craft.CP = Garnish.Base.extend(
     },
 
     _trackJobProgressInternal: function () {
+      if (!Craft.remainingSessionTime) {
+        // Try again after login
+        Garnish.once(Craft.AuthManager, 'login', () => {
+          this._trackJobProgressInternal();
+        });
+        return;
+      }
+
       this.trackingJobProgress = true;
 
       Craft.queue.push(async () => {
@@ -1437,10 +1445,16 @@ Craft.CP = Garnish.Base.extend(
           );
           data = response.data;
         } catch (e) {
-          // only throw if we weren't expecting this
-          if (this.trackingJobProgress) {
+          if (e?.response?.status === 400) {
+            // Try again after login
+            Garnish.once(Craft.AuthManager, 'login', () => {
+              this._trackJobProgressInternal();
+            });
+          } else if (this.trackingJobProgress) {
+            // only throw if we weren't expecting this
             throw e;
           }
+          return;
         } finally {
           this.trackingJobProgress = false;
           this.trackJobProgressTimeout = null;
