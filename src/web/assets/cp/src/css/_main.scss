@@ -3363,7 +3363,8 @@ table {
   }
 
   .card-content,
-  .card-content .card-body {
+  .card-content .card-body,
+  .card-content .card-ui-attributes {
     display: flex;
     flex-direction: column;
     gap: var(--xs);
@@ -3419,10 +3420,12 @@ table {
           padding-top: 0px;
           padding-bottom: 0px;
         }
+
         th {
           font-weight: normal;
           font-style: italic;
         }
+
         .chip {
           padding: 0;
         }
