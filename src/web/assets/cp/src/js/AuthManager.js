@@ -137,7 +137,7 @@ Craft.AuthManager = Garnish.Base.extend(
         this.hideLogoutWarningModal();
         this.hideLoginModal();
 
-        // Will be be within the minSafeSessionTime before the next update?
+        // Will we be within the minSafeSessionTime before the next update?
         if (
           Craft.remainingSessionTime !== -1 &&
           Craft.remainingSessionTime <
