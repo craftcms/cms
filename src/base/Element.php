@@ -231,13 +231,13 @@ abstract class Element extends Component implements ElementInterface
      * @event ElementIndexTableAttributeEvent The event that is triggered when preparing an element query for an element index, for each
      * attribute present in the table.
      *
-     * Paired with [[EVENT_REGISTER_TABLE_ATTRIBUTES]] and [[EVENT_SET_TABLE_ATTRIBUTE_HTML]], this allows optimization of queries on element indexes.
+     * Paired with [[EVENT_REGISTER_TABLE_ATTRIBUTES]] and [[EVENT_DEFINE_ATTRIBUTE_HTML]], this allows optimization of queries on element indexes.
      *
      * ```php
      * use craft\base\Element;
      * use craft\elements\Entry;
      * use craft\events\DefineAttributeHtmlEvent;
-     * use craft\events\PrepareElementQueryForTableAttributeEvent;
+     * use craft\events\ElementIndexTableAttributeEvent;
      * use craft\events\RegisterElementTableAttributesEvent;
      * use craft\helpers\Cp;
      * use yii\base\Event;
@@ -253,7 +253,7 @@ abstract class Element extends Component implements ElementInterface
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE,
-     *     function(PrepareElementQueryForTableAttributeEvent $e) {
+     *     function(ElementIndexTableAttributeEvent $e) {
      *         $query = $e->query;
      *         $attr = $e->attribute;
      *
@@ -265,7 +265,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * Event::on(
      *     Entry::class,
-     *     Element::EVENT_SET_TABLE_ATTRIBUTE_HTML,
+     *     Element::EVENT_DEFINE_ATTRIBUTE_HTML,
      *     function(DefineAttributeHtmlEvent $e) {
      *         $attribute = $e->attribute;
      *
