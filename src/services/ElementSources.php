@@ -202,19 +202,7 @@ class ElementSources extends Component
         $attributes = $elementType::tableAttributes();
 
         // Normalize
-        foreach ($attributes as $key => $info) {
-            if (!is_array($info)) {
-                $attributes[$key] = ['label' => $info];
-            } elseif (!isset($info['label'])) {
-                $attributes[$key]['label'] = '';
-            }
-
-            if (isset($attributes[$key]['icon']) && in_array($attributes[$key]['icon'], ['world', 'earth'])) {
-                $attributes[$key]['icon'] = Cp::earthIcon();
-            }
-        }
-
-        return $attributes;
+        return $this->normalizeAvailableViewAttributes($attributes);
     }
 
     /**
@@ -278,20 +266,7 @@ class ElementSources extends Component
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $attributes = $elementType::cardAttributes();
 
-        // Normalize
-        foreach ($attributes as $key => $info) {
-            if (!is_array($info)) {
-                $attributes[$key] = ['label' => $info];
-            } elseif (!isset($info['label'])) {
-                $attributes[$key]['label'] = '';
-            }
-
-            if (isset($attributes[$key]['icon']) && in_array($attributes[$key]['icon'], ['world', 'earth'])) {
-                $attributes[$key]['icon'] = Cp::earthIcon();
-            }
-        }
-
-        return $attributes;
+        return $this->normalizeAvailableViewAttributes($attributes);
     }
 
     /**
@@ -324,6 +299,29 @@ class ElementSources extends Component
                 if (isset($availableAttributes[$key])) {
                     $attributes[] = [$key, $availableAttributes[$key]];
                 }
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Normalize available card/table attributes.
+     *
+     * @param array $attributes
+     * @return array
+     */
+    private function normalizeAvailableViewAttributes(array $attributes): array
+    {
+        foreach ($attributes as $key => $info) {
+            if (!is_array($info)) {
+                $attributes[$key] = ['label' => $info];
+            } elseif (!isset($info['label'])) {
+                $attributes[$key]['label'] = '';
+            }
+
+            if (isset($attributes[$key]['icon']) && in_array($attributes[$key]['icon'], ['world', 'earth'])) {
+                $attributes[$key]['icon'] = Cp::earthIcon();
             }
         }
 

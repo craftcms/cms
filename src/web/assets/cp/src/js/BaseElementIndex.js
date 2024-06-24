@@ -1599,18 +1599,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.filterHuds[this.siteId][this.sourceKey].serialized;
       }
 
-      if (
-        this.hasImplicitSource &&
-        typeof params.viewState.tableColumns === 'undefined'
-      ) {
-        params.viewState.tableColumns = this.getDefaultTableColumns();
-      }
+      if (this.hasImplicitSource) {
+        if (typeof params.viewState.tableColumns === 'undefined') {
+          params.viewState.tableColumns = this.getDefaultTableColumns();
+        }
 
-      if (
-        this.hasImplicitSource &&
-        typeof params.viewState.cardColumns === 'undefined'
-      ) {
-        params.viewState.cardColumns = this.getDefaultCardColumns();
+        if (typeof params.viewState.cardColumns === 'undefined') {
+          params.viewState.cardColumns = this.getDefaultCardColumns();
+        }
       }
 
       // Give plugins a chance to hook in here
@@ -4100,10 +4096,7 @@ const ViewMenu = Garnish.Base.extend({
   updateTableFieldVisibility: function () {
     // we only want to show the "Table Columns" checkboxes in table and structure views,
     // and "Card Columns" checkboxes in the remaining views (cards and embedded-index)
-    if (
-      this.elementIndex.viewMode !== 'table' &&
-      this.elementIndex.viewMode !== 'structure'
-    ) {
+    if (this.elementIndex.viewMode === 'cards') {
       if (this.$tableColumnsContainer) {
         this.$tableColumnsContainer
           .closest('.table-columns-field')
@@ -4112,6 +4105,20 @@ const ViewMenu = Garnish.Base.extend({
       if (this.$cardColumnsContainer) {
         this.$cardColumnsContainer
           .closest('.card-columns-field')
+          .removeClass('hidden');
+      }
+    } else if (
+      this.elementIndex.viewMode === 'table' ||
+      this.elementIndex.viewMode === 'structure'
+    ) {
+      if (this.$cardColumnsContainer) {
+        this.$cardColumnsContainer
+          .closest('.card-columns-field')
+          .addClass('hidden');
+      }
+      if (this.$tableColumnsContainer) {
+        this.$tableColumnsContainer
+          .closest('.table-columns-field')
           .removeClass('hidden');
       }
     } else {
@@ -4123,7 +4130,7 @@ const ViewMenu = Garnish.Base.extend({
       if (this.$tableColumnsContainer) {
         this.$tableColumnsContainer
           .closest('.table-columns-field')
-          .removeClass('hidden');
+          .addClass('hidden');
       }
     }
   },
@@ -4314,32 +4321,37 @@ const ViewMenu = Garnish.Base.extend({
   },
 
   revert: function () {
-    if (
-      this.elementIndex.viewMode !== 'table' &&
-      this.elementIndex.viewMode !== 'structure'
-    ) {
+    if (this.elementIndex.viewMode === 'cards') {
       this.elementIndex.setSelecetedSourceState({
         order: null,
         sort: null,
         cardColumns: null,
       });
-    } else {
+    } else if (
+      this.elementIndex.viewMode === 'table' ||
+      this.elementIndex.viewMode === 'structure'
+    ) {
       this.elementIndex.setSelecetedSourceState({
         order: null,
         sort: null,
         tableColumns: null,
       });
+    } else {
+      this.elementIndex.setSelecetedSourceState({
+        order: null,
+        sort: null,
+      });
     }
 
     this.updateSortField();
 
-    if (
-      this.elementIndex.viewMode !== 'table' &&
-      this.elementIndex.viewMode !== 'structure'
-    ) {
+    if (this.elementIndex.viewMode === 'cards') {
       this.updateCardColumnField();
       this.tidyCardColumnField();
-    } else {
+    } else if (
+      this.elementIndex.viewMode === 'table' ||
+      this.elementIndex.viewMode === 'structure'
+    ) {
       this.updateTableColumnField();
       this.tidyTableColumnField();
     }
@@ -4635,13 +4647,13 @@ const ViewMenu = Garnish.Base.extend({
     });
 
     const $field = Craft.ui.createField(this.$cardColumnsContainer, {
-      label: Craft.t('app', 'Card Columns'),
+      label: Craft.t('app', 'Card Attributes'),
       fieldset: true,
     });
     $field.addClass('card-columns-field');
 
-    // we only want to show the "Table Columns" checkboxes in table and structure views
-    if (this.elementIndex.viewMode !== 'card') {
+    // we only want to show the "Card Attributes" checkboxes in table and structure views
+    if (this.elementIndex.viewMode !== 'cards') {
       $field.addClass('hidden');
     }
 

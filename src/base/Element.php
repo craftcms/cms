@@ -1249,38 +1249,21 @@ abstract class Element extends Component implements ElementInterface
                 $viewState['tableColumns'] ?? null
             );
 
-            // Prepare the element query for each of the table attributes
-            $hasHandlers = Event::hasHandlers(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE);
-            foreach ($variables['attributes'] as $attribute) {
-                if ($hasHandlers) {
-                    // Fire a 'prepQueryForTableAttribute' event
-                    $event = new ElementIndexTableAttributeEvent([
-                        'query' => $elementQuery,
-                        'attribute' => $attribute[0],
-                    ]);
-                    Event::trigger(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $event);
-                    if ($event->handled) {
-                        continue;
-                    }
-                }
-
-                static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
-            }
-
             if (!$variables['showHeaderColumn'] && count($variables['attributes']) <= 1) {
                 $variables['showHeaderColumn'] = true;
             }
         }
 
-        ///
         if ($viewState['mode'] === 'cards') {
-            // Get the table columns
+            // Get the card ui attributes
             $variables['attributes'] = Craft::$app->getElementSources()->getCardAttributes(
                 static::class,
                 $sourceKey,
                 $viewState['cardColumns'] ?? null
             );
+        }
 
+        if (!empty($variables['attributes'])) {
             // Prepare the element query for each of the table attributes
             $hasHandlers = Event::hasHandlers(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE);
             foreach ($variables['attributes'] as $attribute) {
@@ -1299,7 +1282,6 @@ abstract class Element extends Component implements ElementInterface
                 static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
             }
         }
-        ///
 
         // Only cache if there's no search term
         if (!$elementQuery->search) {
