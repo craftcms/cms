@@ -11,15 +11,14 @@ use craft\elements\db\ElementQueryInterface;
 use yii\base\Event;
 
 /**
- * Table attribute Element Query preparation event
+ * Element Index View attribute Element Query preparation event
  *
- * Triggered while preparing an element query for an element index, for each attribute present in the table.
+ * Triggered while preparing an element query for an element index, for each attribute present in the view (e.g. table, card, structure).
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.7.14
- * @deprecated in 5.3.0. [[ElementIndexViewAttributeEvent]] should be used instead.
+ * @since 5.3.0
  */
-class ElementIndexTableAttributeEvent extends Event
+class ElementIndexViewAttributeEvent extends Event
 {
     /**
      * @var ElementQueryInterface The Element query being built
@@ -27,7 +26,7 @@ class ElementIndexTableAttributeEvent extends Event
     public ElementQueryInterface $query;
 
     /**
-     * @var string The table attribute name, as registered by the Element, and not implicitly a native field or attribute name.
+     * @var string The attribute name, as registered by the Element, and not implicitly a native field or attribute name.
      */
     public string $attribute;
 }

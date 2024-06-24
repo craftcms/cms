@@ -43,6 +43,7 @@ use craft\events\DefineMetadataEvent;
 use craft\events\DefineUrlEvent;
 use craft\events\DefineValueEvent;
 use craft\events\ElementIndexTableAttributeEvent;
+use craft\events\ElementIndexViewAttributeEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
@@ -283,8 +284,68 @@ abstract class Element extends Component implements ElementInterface
      * ```
      *
      * @since 3.7.14
+     * @deprecated in 5.3.0. [[EVENT_PREP_QUERY_FOR_VIEW_ATTRIBUTE]] should be used instead.
      */
     public const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
+
+    /**
+     * @event ElementIndexViewAttributeEvent The event that is triggered when preparing an element query for an element index, for each
+     * attribute present in the view (table, card etc).
+     *
+     * Paired with [[EVENT_REGISTER_TABLE_ATTRIBUTES]], [[EVENT_REGISTER_CARD_ATTRIBUTES]] and [[EVENT_DEFINE_ATTRIBUTE_HTML]], this allows optimization of queries on element indexes.
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\elements\Entry;
+     * use craft\events\DefineAttributeHtmlEvent;
+     * use craft\events\ElementIndexViewAttributeEvent;
+     * use craft\events\RegisterElementTableAttributesEvent;
+     * use craft\helpers\Cp;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
+     *     function(RegisterElementTableAttributesEvent $e) {
+     *         $e->attributes[] = 'authorExpertise';
+     *     }
+     * );
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_PREP_QUERY_FOR_VIEW_ATTRIBUTE,
+     *     function(ElementIndexViewAttributeEvent $e) {
+     *         $query = $e->query;
+     *         $attr = $e->attribute;
+     *
+     *         if ($attr === 'authorExpertise') {
+     *             $query->andWith(['author.areasOfExpertiseCategoryField']);
+     *         }
+     *     }
+     * );
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_DEFINE_ATTRIBUTE_HTML,
+     *     function(DefineAttributeHtmlEvent $e) {
+     *         $attribute = $e->attribute;
+     *
+     *         if ($attribute !== 'authorExpertise') {
+     *             return;
+     *         }
+     *
+     *         // The field data is eager-loaded!
+     *         $author = $e->sender->getAuthor();
+     *         $categories = $author->areasOfExpertiseCategoryField;
+     *
+     *         $e->html = Cp::elementPreviewHtml($categories);
+     *     }
+     * );
+     * ```
+     *
+     * @since 5.3.0
+     */
+    public const EVENT_PREP_QUERY_FOR_VIEW_ATTRIBUTE = 'prepQueryForViewAttribute';
 
     /**
      * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
@@ -1265,6 +1326,7 @@ abstract class Element extends Component implements ElementInterface
 
         if (!empty($variables['attributes'])) {
             // Prepare the element query for each of the table attributes
+            // todo: remove after next breakpoint
             $hasHandlers = Event::hasHandlers(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE);
             foreach ($variables['attributes'] as $attribute) {
                 if ($hasHandlers) {
@@ -1280,6 +1342,23 @@ abstract class Element extends Component implements ElementInterface
                 }
 
                 static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
+            }
+            // end todo;
+            $hasHandlers = Event::hasHandlers(static::class, self::EVENT_PREP_QUERY_FOR_VIEW_ATTRIBUTE);
+            foreach ($variables['attributes'] as $attribute) {
+                if ($hasHandlers) {
+                    // Fire a 'prepQueryForViewAttribute' event
+                    $event = new ElementIndexViewAttributeEvent([
+                        'query' => $elementQuery,
+                        'attribute' => $attribute[0],
+                    ]);
+                    Event::trigger(static::class, self::EVENT_PREP_QUERY_FOR_VIEW_ATTRIBUTE, $event);
+                    if ($event->handled) {
+                        continue;
+                    }
+                }
+
+                static::prepElementQueryForViewAttribute($elementQuery, $attribute[0]);
             }
         }
 
@@ -1310,8 +1389,21 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param ElementQueryInterface $elementQuery
      * @param string $attribute
+     * @deprecated in 5.3.0. Use [[prepElementQueryForViewAttribute]] instead.
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
+    {
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Element `prepElementQueryForTableAttribute` method has been deprecated. Use `prepElementQueryForViewAttribute` instead.');
+        self::prepElementQueryForViewAttribute($elementQuery, $attribute);
+    }
+
+    /**
+     * Prepares an element query for an element index that includes a given view attribute.
+     *
+     * @param ElementQueryInterface $elementQuery
+     * @param string $attribute
+     */
+    protected static function prepElementQueryForViewAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         switch ($attribute) {
             case 'ancestors':
