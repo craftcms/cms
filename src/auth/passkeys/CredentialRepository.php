@@ -26,6 +26,17 @@ use Webauthn\PublicKeyCredentialUserEntity;
 class CredentialRepository implements PublicKeyCredentialSourceRepository
 {
     /**
+     * @var WebauthnServer
+     */
+    private WebauthnServer $_webauthnServer;
+
+
+    public function __construct()
+    {
+        $this->_webauthnServer = new WebauthnServer();
+    }
+
+    /**
      * @inheritdoc
      */
     public function findOneByCredentialId(string $publicKeyCredentialId): ?PublicKeyCredentialSource
@@ -33,7 +44,13 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
         $record = $this->_findByCredentialId($publicKeyCredentialId);
 
         if ($record) {
-            return PublicKeyCredentialSource::createFromArray(Json::decodeIfJson($record->credential));
+            $serializer = $this->_webauthnServer->getSerializer();
+
+            return $serializer->deserialize(
+                $record->credential,
+                PublicKeyCredentialSource::class,
+                'json',
+            );
         }
 
         return null;
@@ -50,8 +67,13 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
         $keySources = [];
         if ($user && $user->id) {
             $records = WebAuthn::findAll(['userId' => $user->id]);
+            $serializer = $this->_webauthnServer->getSerializer();
             foreach ($records as $record) {
-                $keySources[] = PublicKeyCredentialSource::createFromArray(Json::decodeIfJson($record->credential));
+                $keySources[] = $serializer->deserialize(
+                    $record->credential,
+                    PublicKeyCredentialSource::class,
+                    'json',
+                );
             }
         }
 
@@ -66,7 +88,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
      */
     public function savedNamedCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource, ?string $credentialName = null): void
     {
-        $publicKeyCredentialId = $publicKeyCredentialSource->getPublicKeyCredentialId();
+        $publicKeyCredentialId = $publicKeyCredentialSource->publicKeyCredentialId;
         $record = $this->_findByCredentialId($publicKeyCredentialId);
 
         if (!$record) {
