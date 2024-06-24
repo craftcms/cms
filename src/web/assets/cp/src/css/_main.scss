@@ -7096,6 +7096,75 @@ textarea.text.fullwidth {
   }
 }
 
+.link-input {
+  container-type: inline-size;
+
+  & > .flex {
+    border: 1px solid transparentize($inputColor, 0.75);
+
+    &:has(.text:focus) {
+      box-shadow: var(--focus-ring);
+    }
+
+    & > .select select,
+    & > div {
+      --focus-ring: var(--inner-focus-ring);
+    }
+
+    & > div {
+      &.text-link {
+        cursor: text;
+
+        & > .text,
+        & > .chip {
+          background-color: transparent;
+        }
+
+        & > .text {
+          margin-inline-start: -1px;
+          border: none;
+
+          &:focus {
+            position: relative;
+          }
+
+          &:focus {
+            box-shadow: none !important;
+          }
+        }
+      }
+    }
+  }
+
+  &:not(.has-link-type-select) {
+    & > .flex {
+      border-radius: var(--small-border-radius);
+      padding: 0 2px;
+    }
+  }
+
+  &.has-link-type-select {
+    @container (max-width: 399px) {
+      & {
+        flex-direction: column;
+        align-items: start;
+
+        & > .select,
+        & > .select select,
+        & > div > .text {
+          width: 100%;
+        }
+      }
+    }
+
+    & > .flex {
+      border-radius: calc(var(--large-border-radius) + 3px);
+      padding: 2px;
+      gap: 2px;
+    }
+  }
+}
+
 .chars-left {
   position: relative;
   @include floatright;
