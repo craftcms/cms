@@ -992,6 +992,7 @@ return [
     'New entry type' => 'New entry type',
     'New entry, choose a section' => 'New entry, choose a section',
     'New field' => 'New field',
+    'New file uploaded.' => 'New file uploaded.',
     'New filesystem' => 'New filesystem',
     'New group' => 'New group',
     'New heading' => 'New heading',

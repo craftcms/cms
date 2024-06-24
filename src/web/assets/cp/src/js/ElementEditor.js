@@ -2209,9 +2209,13 @@ Craft.ElementEditor = Garnish.Base.extend(
                     window.location.reload();
                   });
                 }
+
                 this.settings.updatedTimestamp = data.updatedTimestamp;
                 this.settings.canonicalUpdatedTimestamp =
                   data.canonicalUpdatedTimestamp;
+
+                this.trigger('checkActivity', data);
+
                 setTimeout(() => {
                   this._checkActivity();
                 }, 15000);

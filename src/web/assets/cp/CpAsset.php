@@ -266,6 +266,7 @@ JS;
             'New entry in the {section} section',
             'New entry, choose a section',
             'New field',
+            'New file uploaded.',
             'New heading',
             'New order saved.',
             'New position saved.',
