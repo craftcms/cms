@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Improved the styling of inactive users’ status indicators. ([#15195](https://github.com/craftcms/cms/issues/15195))
+- Added `Garnish.once()` and `Garnish.Base::once()`, for registering event handlers that should only be triggered one time.
+- Fixed a bug where Ajax requests stopped working after a user session expired and then was reauthenticated.
 - Fixed a bug where other author indicators weren’t shown for Craft Team.
 - Fixed a bug where the Recent Entries widget wasn’t showing authors’ usernames for Craft Team.
 - Fixed a bug where asset edit page URLs contained spaces if the asset filename contained spaces. ([#15236](https://github.com/craftcms/cms/issues/15236))

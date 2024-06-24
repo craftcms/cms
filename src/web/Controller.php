@@ -357,7 +357,11 @@ abstract class Controller extends \yii\web\Controller
                     'notificationSettings' => $notificationSettings,
                 ];
             }
-            return $this->asJson($data);
+            $response = $this->asJson($data);
+            if ($this->request->isCpRequest && Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+                $response->getHeaders()->setDefault('X-CSRF-Token', $this->request->getCsrfToken());
+            }
+            return $response;
         }
 
         $this->setSuccessFlash($message, $notificationSettings);
