@@ -344,6 +344,18 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
           let $newElements = $(response.data.html);
 
+          // if it's not a paginated view (e.g. lazy-loading),
+          // and it's an administrative view,
+          // and there are already visible elements in the index - don't return "nothing yet" message
+          // see https://github.com/craftcms/cms/issues/15241
+          if (
+            $newElements.hasClass('zilch') &&
+            !this.elementIndex.paginated &&
+            this.getTotalVisible() > 0
+          ) {
+            $newElements = '';
+          }
+
           this.appendElements($newElements);
           await Craft.appendHeadHtml(response.data.headHtml);
           await Craft.appendBodyHtml(response.data.bodyHtml);
