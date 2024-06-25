@@ -349,6 +349,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           // and there are already visible elements in the index - don't return "nothing yet" message
           // see https://github.com/craftcms/cms/issues/15241
           if (
+            $newElements.length === 1 &&
             $newElements.hasClass('zilch') &&
             !this.elementIndex.paginated &&
             this.getTotalVisible() > 0
