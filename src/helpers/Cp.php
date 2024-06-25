@@ -489,8 +489,11 @@ class Cp
                 fn() => $element->getChipLabelHtml(),
             );
 
-            if ($element->isProvisionalDraft) {
+            // $config['isProvisionalDraft'] is used by the crumbs
+            // see https://github.com/craftcms/cms/issues/15244
+            if ($element->isProvisionalDraft || (isset($config['isProvisionalDraft']) && $config['isProvisionalDraft'])) {
                 $config['labelHtml'] .= self::changeStatusLabelHtml();
+                unset($config['isProvisionalDraft']);
             }
         }
 

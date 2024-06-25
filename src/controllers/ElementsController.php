@@ -615,6 +615,7 @@ class ElementsController extends Controller
 
     private function _crumbs(ElementInterface $element, bool $current = true): array
     {
+        $isProvisionalDraft = $element->isProvisionalDraft;
         if ($element->isProvisionalDraft) {
             $element = $element->getCanonical(true);
         }
@@ -622,7 +623,10 @@ class ElementsController extends Controller
         return [
             ...$element->getCrumbs(),
             [
-                'html' => Cp::elementChipHtml($element, ['showDraftName' => !$current]),
+                'html' => Cp::elementChipHtml($element, [
+                    'showDraftName' => !$current,
+                    'isProvisionalDraft' => $isProvisionalDraft,
+                ]),
                 'current' => $current,
             ],
         ];
