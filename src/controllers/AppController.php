@@ -868,11 +868,12 @@ class AppController extends Controller
         $this->requireAcceptsJson();
 
         $search = $this->request->getRequiredBodyParam('search');
+        $freeOnly = (bool)($this->request->getBodyParam('freeOnly') ?? false);
         $noSearch = $search === '';
 
         if ($noSearch) {
             $cache = Craft::$app->getCache();
-            $cacheKey = 'icon-picker-options-list-html';
+            $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
             $listHtml = $cache->get($cacheKey);
             if ($listHtml !== false) {
                 return $this->asJson([
@@ -890,6 +891,10 @@ class AppController extends Controller
         $scores = [];
 
         foreach ($icons as $name => $icon) {
+            if ($freeOnly && $icon['pro']) {
+                continue;
+            }
+
             if ($searchTerms) {
                 $score = $this->matchTerms($searchTerms, $icon['name']) * 5 + $this->matchTerms($searchTerms, $icon['terms']);
                 if ($score === 0) {
