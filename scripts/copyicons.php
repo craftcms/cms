@@ -1333,6 +1333,7 @@ foreach ($icons as $icon) {
             $index[$name] = [
                 'name' => sprintf(" %s ", Search::normalizeKeywords($name)),
                 'terms' => sprintf(" %s ", Search::normalizeKeywords($terms)),
+                'pro' => empty($meta[$name]['free']),
             ];
         }
     }
