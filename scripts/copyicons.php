@@ -1320,7 +1320,6 @@ foreach ($icons as $icon) {
     }
 
     $contents = file_get_contents($npmPath);
-    $contents = preg_replace('/<!--.*?-->/', '', $contents);
     $iconPath = "$iconsDir/$icon";
     echo "Writing $icon ... ";
     file_put_contents($iconPath, $contents);
