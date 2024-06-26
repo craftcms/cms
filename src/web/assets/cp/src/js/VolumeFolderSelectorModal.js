@@ -25,7 +25,12 @@ Craft.VolumeFolderSelectorModal = Craft.BaseElementSelectorModal.extend(
     },
 
     shouldEnableSelectBtn: function () {
-      // Allow selecting the current folder, as long as it’s not disabled
+      if (this.base()) {
+        return true;
+      }
+
+      // If nothing's selected, allow selecting the current folder,
+      // as long as it’s not disabled
       return (
         this.elementIndex?.sourcePath.length &&
         typeof this.elementIndex.sourcePath[
@@ -39,6 +44,11 @@ Craft.VolumeFolderSelectorModal = Craft.BaseElementSelectorModal.extend(
     },
 
     selectElements: function (ev) {
+      if (this.hasSelection()) {
+        this.base();
+        return;
+      }
+
       if (
         this.$selectBtn &&
         ev?.currentTarget === this.$selectBtn[0] &&
@@ -54,9 +64,25 @@ Craft.VolumeFolderSelectorModal = Craft.BaseElementSelectorModal.extend(
       }
     },
 
+    getElementInfo: function ($selectedElements) {
+      const info = [];
+      for (let i = 0; i < $selectedElements.length; i++) {
+        const $element = $selectedElements.eq(i).find('.element:first');
+        const folderId = parseInt($element.data('folder-id'));
+        info.push({folderId});
+      }
+      return info;
+    },
+
     getIndexSettings: function () {
       return Object.assign(this.base(), {
         foldersOnly: true,
+        viewSettings: () => ({
+          canSelectElement: ($element) => {
+            $element = $element.find('.element:first');
+            return Garnish.hasAttr($element, 'data-folder-id');
+          },
+        }),
       });
     },
   },

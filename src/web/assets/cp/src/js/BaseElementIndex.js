@@ -2920,7 +2920,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           checkboxMode: !!this.actions,
           onSelectionChange: this._handleSelectionChange.bind(this),
         },
-        this.getViewSettings()
+        this.getViewSettings(),
+        this.settings.viewSettings()
       );
 
       this.view = this.createView(this.getSelectedViewMode(), settings);
@@ -3325,6 +3326,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       preferStoredSource: false,
       showSourcePath: true,
       canHaveDrafts: false,
+      viewSettings: $.noop,
 
       elementTypeName: Craft.t('app', 'Element'),
       elementTypePluralName: Craft.t('app', 'Elements'),
