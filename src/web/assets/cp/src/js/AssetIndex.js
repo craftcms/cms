@@ -205,6 +205,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         this.initForFiles();
       }
 
+      // Double-clicking or double-tapping on folders should open them
+      this.addListener(this.$elements, 'doubletap', function (ev, touchData) {
+        // Make sure the touch targets are the same
+        // (they may be different if Command/Ctrl/Shift-clicking on multiple elements quickly)
+        if (touchData.firstTap.target === touchData.secondTap.target) {
+          const $element = $(touchData.firstTap.target)
+            .closest('tr,ul.thumbsview > li')
+            .find('.element:first');
+          if (Garnish.hasAttr($element, 'data-is-folder')) {
+            $element.find('a').trigger('activate');
+          }
+        }
+      });
+
       this.base();
     },
 

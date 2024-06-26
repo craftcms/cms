@@ -2,6 +2,7 @@
 
 ### Content Management
 - “Replace file” actions now display success notices on complete. ([#15217](https://github.com/craftcms/cms/issues/15217))
+- Double-clicking on folders within asset indexes and folder selection modals now navigates the index/modal into the folder. ([#15238](https://github.com/craftcms/cms/discussions/15238))
 
 ### Accessibility
 - Improved the accessibility of two-step verification setup. ([#15229](https://github.com/craftcms/cms/pull/15229))
