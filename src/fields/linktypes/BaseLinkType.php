@@ -64,6 +64,13 @@ abstract class BaseLinkType extends BaseObject
     }
 
     /**
+     * Returns the default link label for [[\craft\fields\data\LinkData::getLabel()]].
+     *
+     * @return string
+     */
+    abstract public static function linkLabel(string $value): string;
+
+    /**
      * Returns the input HTML that should be shown when this link type is selected.
      *
      * @param Link $field The Link field

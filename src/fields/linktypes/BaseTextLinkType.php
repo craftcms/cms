@@ -52,6 +52,14 @@ abstract class BaseTextLinkType extends BaseLinkType
         return static::validate($normalized) ? $normalized : $value;
     }
 
+    public static function linkLabel(string $value): string
+    {
+        foreach ((array)static::urlPrefix() as $prefix) {
+            $value = StringHelper::removeLeft($value, $prefix);
+        }
+        return $value;
+    }
+
     public static function inputHtml(Link $field, ?string $value, string $containerId): string
     {
         $name = 'value';
@@ -80,10 +88,7 @@ JS, [
         ]);
 
         if ($value && static::validate($value)) {
-            $linkText = $value;
-            foreach ((array)static::urlPrefix() as $prefix) {
-                $linkText = StringHelper::removeLeft($linkText, $prefix);
-            }
+            $linkText = self::linkLabel($value);
             $html =
                 Html::beginTag('div', [
                     'class' => ['chip', 'small'],

@@ -23,6 +23,12 @@ use craft\services\ElementSources;
 abstract class BaseElementLinkType extends BaseLinkType
 {
     /**
+     * @var array<string,ElementInterface|false>
+     * @see element()
+     */
+    private static array $fetchedElements = [];
+
+    /**
      * Returns the element type this link type is for.
      *
      * @return ElementInterface|string
@@ -47,37 +53,18 @@ abstract class BaseElementLinkType extends BaseLinkType
 
     public static function render(string $value): string
     {
-        return Craft::$app->getElements()->parseRefs($value);
+        return self::element($value)?->getUrl() ?? '';
+    }
+
+    public static function linkLabel(string $value): string
+    {
+        $element = self::element($value);
+        return $element ? (string)$element : '';
     }
 
     public static function inputHtml(Link $field, ?string $value, string $containerId): string
     {
-        $elements = [];
-
-        if ($value && preg_match(sprintf('/^\{%s:(\d+)(?:@(\d+))?:url\}$/', static::elementType()::refHandle()), $value, $match)) {
-            $id = $match[1];
-            $siteId = $match[2] ?? null;
-            $query = static::elementType()::find()
-                ->id((int)$id)
-                ->status(null)
-                ->drafts(null)
-                ->revisions(null);
-
-            if ($siteId) {
-                $query->siteId((int)$siteId);
-            } else {
-                $query
-                    ->site('*')
-                    ->unique()
-                    ->preferSites([Craft::$app->getSites()->getCurrentSite()->id]);
-            }
-
-            $element = $query->one();
-            if ($element) {
-                $elements[] = $element;
-            }
-        }
-
+        $elements = array_filter([self::element($value)]);
         $id = sprintf('elementselect%s', mt_rand());
 
         $view = Craft::$app->getView();
@@ -140,5 +127,39 @@ JS, [
     public static function validate(string $value, ?string &$error = null): bool
     {
         return true;
+    }
+
+    public static function element(?string $value): ?ElementInterface
+    {
+        if (
+            !$value ||
+            !preg_match(sprintf('/^\{%s:(\d+)(?:@(\d+))?:url\}$/', static::elementType()::refHandle()), $value, $match)
+        ) {
+            return null;
+        }
+
+        if (!isset(self::$fetchedElements[$value])) {
+            $id = $match[1];
+            $siteId = $match[2] ?? null;
+
+            $query = static::elementType()::find()
+                ->id((int)$id)
+                ->status(null)
+                ->drafts(null)
+                ->revisions(null);
+
+            if ($siteId) {
+                $query->siteId((int)$siteId);
+            } else {
+                $query
+                    ->site('*')
+                    ->unique()
+                    ->preferSites([Craft::$app->getSites()->getCurrentSite()->id]);
+            }
+
+            self::$fetchedElements[$value] = $query->one() ?? false;
+        }
+
+        return self::$fetchedElements[$value] ?: null;
     }
 }
