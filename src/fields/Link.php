@@ -272,7 +272,7 @@ class Link extends Field implements InlineEditableFieldInterface
         /** @var LinkData|null $value */
         /** @var BaseLinkType|string|null $type */
         /** @phpstan-var class-string<BaseLinkType>|null $type */
-        $type = $types[$value?->type];
+        $type = $value ? $types[$value->type] : null;
         $valueTypeId = $type ? $type::id() : 'url';
         $allowedTypeIds = in_array($valueTypeId, $this->types) ? $this->types : array_merge($this->types, [$valueTypeId]);
         $allowedTypeIds = array_filter($allowedTypeIds, fn(string $typeId) => isset($types[$typeId]));
