@@ -488,7 +488,7 @@ Garnish = $.extend(Garnish, {
   setFocusWithin: function (container) {
     const $container = $(container);
     let $firstFocusable = $(container).find(
-      ':focusable:not(.checkbox):not(.selectized):first'
+      ':focusable:not(.checkbox):not(.manage-autofocus):first'
     );
 
     // if the first visible .field container is not the parent of the first focusable element we found
@@ -497,8 +497,8 @@ Garnish = $.extend(Garnish, {
     // in such case the second (or further) element would get focus on initial load, which can be confusing
     // see https://github.com/craftcms/cms/issues/15245
     if (
-      $container.find('.field:visible:first') !==
-      $firstFocusable.parents('.field')
+      $container.find('.field:visible:first')[0] !==
+      $firstFocusable.parents('.field')[0]
     ) {
       $firstFocusable = [];
     }
