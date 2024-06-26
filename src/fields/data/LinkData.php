@@ -26,11 +26,14 @@ class LinkData extends BaseObject implements Serializable
      * @param string $value
      * @param string $type
      * @phpstan-param class-string<BaseLinkType> $type
+     * @param array $config
      */
     public function __construct(
         private readonly string $value,
         private readonly string $type,
+        array $config = [],
     ) {
+        parent::__construct($config);
     }
 
     public function __toString(): string
