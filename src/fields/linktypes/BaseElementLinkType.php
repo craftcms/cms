@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\fields\Link;
 use craft\helpers\Cp;
+use craft\helpers\Html;
 use craft\services\ElementSources;
 
 /**
@@ -41,16 +42,7 @@ abstract class BaseElementLinkType extends BaseLinkType
 
     public static function supports(string $value): bool
     {
-        return (bool)preg_match(sprintf('/^\{%s:(\d+):url\}$/', static::elementType()::refHandle()), $value);
-    }
-
-    public static function normalize(string $value): string
-    {
-        if (is_numeric($value)) {
-            return sprintf('{%s:%s:url}', static::elementType()::refHandle(), $value);
-        }
-
-        return $value;
+        return (bool)preg_match(sprintf('/^\{%s:(\d+)(@(\d+))?:url\}$/', static::elementType()::refHandle()), $value);
     }
 
     public static function render(string $value): string
@@ -62,28 +54,63 @@ abstract class BaseElementLinkType extends BaseLinkType
     {
         $elements = [];
 
-        if ($value && preg_match(sprintf('/^\{%s:(\d+):url\}$/', static::elementType()::refHandle()), $value, $match)) {
+        if ($value && preg_match(sprintf('/^\{%s:(\d+)(?:@(\d+))?:url\}$/', static::elementType()::refHandle()), $value, $match)) {
             $id = $match[1];
-            $element = static::elementType()::find()
-                ->id($id)
+            $siteId = $match[2] ?? null;
+            $query = static::elementType()::find()
+                ->id((int)$id)
                 ->status(null)
                 ->drafts(null)
-                ->revisions(null)
-                ->one();
+                ->revisions(null);
+
+            if ($siteId) {
+                $query->siteId((int)$siteId);
+            } else {
+                $query
+                    ->site('*')
+                    ->unique()
+                    ->preferSites([Craft::$app->getSites()->getCurrentSite()->id]);
+            }
+
+            $element = $query->one();
             if ($element) {
                 $elements[] = $element;
             }
         }
 
-        return Cp::elementSelectHtml([
-            'name' => 'value',
-            'elementType' => static::elementType(),
-            'limit' => 1,
-            'single' => true,
-            'elements' => $elements,
-            'sources' => array_merge(static::selectionSources(), self::customSources()),
-            'criteria' => static::selectionCriteria(),
+        $id = sprintf('elementselect%s', mt_rand());
+
+        $view = Craft::$app->getView();
+        $view->registerJsWithVars(fn($id, $refHandle) => <<<JS
+(() => {
+  const container = $('#' + $id);
+  const input = container.next('input');
+  const elementSelect = container.data('elementSelect');
+  const refHandle = $refHandle;
+  elementSelect.on('selectElements', (ev) => {
+    const element = ev.elements[0];
+    input.val(`{\${refHandle}:\${element.id}@\${element.siteId}:url}`);
+  });
+  elementSelect.on('removeElements', () => {
+    input.val('');
+  });
+})();
+JS, [
+            'id' => $view->namespaceInputId($id),
+            'refHandle' => static::elementType()::refHandle(),
         ]);
+
+        return
+            Cp::elementSelectHtml([
+                'id' => $id,
+                'elementType' => static::elementType(),
+                'limit' => 1,
+                'single' => true,
+                'elements' => $elements,
+                'sources' => array_merge(static::selectionSources(), self::customSources()),
+                'criteria' => static::selectionCriteria(),
+            ]) .
+            Html::hiddenInput('value', $value);
     }
 
     protected static function selectionSources(): array
