@@ -1519,7 +1519,6 @@ return [
     'Teal' => 'Teal',
     'Team permissions can be managed from {link}.' => 'Team permissions can be managed from {link}.',
     'Team permissions can be managed from {path} on a development environment.' => 'Team permissions can be managed from {path} on a development environment.',
-    'Telephone' => 'Telephone',
     'Temp files' => 'Temp files',
     'Template caches' => 'Template caches',
     'Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.' => 'Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.',

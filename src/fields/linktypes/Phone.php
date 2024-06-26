@@ -11,21 +11,21 @@ use Craft;
 use craft\fields\Link;
 
 /**
- * Telephone link type.
+ * Phone number link type.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-class Telephone extends BaseTextLinkType
+class Phone extends BaseTextLinkType
 {
     public static function id(): string
     {
-        return 'tel';
+        return 'phone';
     }
 
     public static function label(): string
     {
-        return Craft::t('app', 'Telephone');
+        return Craft::t('app', 'Phone');
     }
 
     protected static function urlPrefix(): string|array

@@ -20,7 +20,7 @@ use craft\fields\linktypes\BaseTextLinkType;
 use craft\fields\linktypes\Category;
 use craft\fields\linktypes\Email as EmailType;
 use craft\fields\linktypes\Entry;
-use craft\fields\linktypes\Telephone;
+use craft\fields\linktypes\Phone;
 use craft\fields\linktypes\Url as UrlType;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -95,7 +95,7 @@ class Link extends Field implements InlineEditableFieldInterface
                 Category::class,
                 EmailType::class,
                 Entry::class,
-                Telephone::class,
+                Phone::class,
             ];
 
             // Fire a registerLinkTypes event
