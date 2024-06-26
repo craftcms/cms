@@ -325,6 +325,7 @@ class Images extends Component
             }
 
             $sanitizer = new Sanitizer();
+            $sanitizer->removeRemoteReferences(Craft::$app->getConfig()->getGeneral()->sanitizeSvgRemoteRefs);
             $sanitizer->setAllowedAttrs(new SvgAllowedAttributes());
             $svgContents = file_get_contents($filePath);
             $svgContents = $sanitizer->sanitize($svgContents);
