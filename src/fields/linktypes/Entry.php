@@ -17,7 +17,7 @@ use craft\models\Section;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-abstract class Entry extends BaseElementLinkType
+class Entry extends BaseElementLinkType
 {
     protected static function elementType(): string
     {

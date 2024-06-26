@@ -17,7 +17,7 @@ use yii\validators\EmailValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-abstract class Email extends BaseTextLinkType
+class Email extends BaseTextLinkType
 {
     public static function id(): string
     {

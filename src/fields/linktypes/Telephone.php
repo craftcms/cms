@@ -16,7 +16,7 @@ use craft\fields\Link;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-abstract class Telephone extends BaseTextLinkType
+class Telephone extends BaseTextLinkType
 {
     public static function id(): string
     {

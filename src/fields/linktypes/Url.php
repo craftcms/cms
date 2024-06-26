@@ -17,7 +17,7 @@ use craft\validators\UrlValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-abstract class Url extends BaseTextLinkType
+class Url extends BaseTextLinkType
 {
     public static function id(): string
     {

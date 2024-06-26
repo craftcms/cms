@@ -19,7 +19,7 @@ use Illuminate\Support\Collection;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-abstract class Category extends BaseElementLinkType
+class Category extends BaseElementLinkType
 {
     protected static function elementType(): string
     {
