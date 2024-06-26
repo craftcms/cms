@@ -7,6 +7,7 @@
 - Fixed a bug where Edit Asset pages showed a “View” button for assets without URLs. ([#15235](https://github.com/craftcms/cms/pull/15235))
 - Fixed a bug where asset indexes attempted to link to assets without URLs. ([#15235](https://github.com/craftcms/cms/pull/15235))
 - Fixed a bug where queue job tracking and element activity tracking could stop working after a user session expired and then was reauthenticated.
+- Fixed an error that occurred if an element select input was initialized without a `name` value.
 
 ## 4.10.2 - 2024-06-18
 
