@@ -1437,7 +1437,7 @@ class Asset extends Element
 
         $html = Html::beginTag('div', ['class' => 'btngroup']);
 
-        if (($url = $this->getUrl()) !== null) {
+        if ($volume->getFs()->hasUrls && ($url = $this->getUrl()) !== null) {
             $html .= Html::a(Craft::t('app', 'View'), $url, [
                 'class' => 'btn',
                 'target' => '_blank',
@@ -2523,6 +2523,11 @@ JS;
 
             case 'location':
                 return $this->locationHtml();
+
+            case 'link':
+                if (!$this->getVolume()->getFs()->hasUrls) {
+                    return '';
+                }
         }
 
         return parent::tableAttributeHtml($attribute);

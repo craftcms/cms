@@ -907,6 +907,24 @@ Garnish = $.extend(Garnish, {
     }
   },
 
+  once: function (target, events, data, handler) {
+    if (typeof target === 'undefined') {
+      console.warn('Garnish.once() called for an invalid target class.');
+      return;
+    }
+
+    if (typeof data === 'function') {
+      handler = data;
+      data = {};
+    }
+
+    const onceler = (event) => {
+      this.off(target, events, onceler);
+      handler(event);
+    };
+    this.on(target, events, data, onceler);
+  },
+
   muteResizeEvents: function (callback) {
     const resizeEventsMuted = Garnish.resizeEventsMuted;
     Garnish.resizeEventsMuted = true;
