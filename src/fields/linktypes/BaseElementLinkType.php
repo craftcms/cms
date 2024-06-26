@@ -38,7 +38,7 @@ abstract class BaseElementLinkType extends BaseLinkType
 
     public static function id(): string
     {
-        return sprintf('element-%s', static::elementType()::refHandle());
+        return static::elementType()::refHandle();
     }
 
     public static function label(): string
