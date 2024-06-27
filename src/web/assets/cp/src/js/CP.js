@@ -830,7 +830,9 @@ Craft.CP = Garnish.Base.extend(
     },
 
     updateFixedHeader: function () {
-      if (this.isMobile) {
+      // Checking if the sidebar toggle is visible
+      // https://stackoverflow.com/a/21696585
+      if (this.isMobile || this.$sidebarToggle[0].offsetParent !== null) {
         return;
       }
 
