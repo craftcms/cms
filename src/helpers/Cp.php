@@ -2249,6 +2249,73 @@ JS, [
         ]);
     }
 
+    public static function cardViewDesignerHtml(FieldLayout $fieldLayout, array $config = []): string
+    {
+        $config += [
+            'id' => 'cvd' . mt_rand(),
+        ];
+
+        $elementType = new ($fieldLayout['type']);
+        $cardAttributes = $elementType::cardAttributes();
+        array_walk($cardAttributes, function(&$item, $key) {
+            $item['value'] = $key;
+        });
+        ksort($cardAttributes);
+
+
+        $fldOptions = [];
+        //$values = [];
+        $bodyFields = $fieldLayout->getCardBodyFields(null);
+        foreach ($bodyFields as $bodyField) {
+            $fldOptions[] = [
+                'label' => $bodyField->label(),
+                'value' => 'layoutElement:' . $bodyField->uid,
+                'checked' => true,
+            ];
+            //$values[] = 'layoutElement:' . $bodyField->uid;
+        }
+
+        $options = array_values(array_merge($fldOptions, $cardAttributes));
+        $labels = array_column($options, 'label');
+        array_multisort($labels, SORT_ASC, $options);
+
+        $checkboxes = [];
+        foreach ($options as $option) {
+            $option['checkboxLabel'] = $option['label'];
+            //unset($option['label']);
+            $option['name'] = 'cardView[]';
+            $checkbox = Html::beginTag('div', [
+                'class' => ['draggable'],
+            ]) .
+                Html::tag('a', '', [
+                    'class' => ['move', 'icon', 'draggable-handle'],
+                ]) .
+                self::checkboxFieldHtml($option) .
+                Html::endTag('div');
+            $checkboxes[] = $checkbox;
+        }
+        $checkboxes = implode("\n", $checkboxes);
+
+        $view = Craft::$app->getView();
+        //$jsSettings = Json::encode([]);
+        $namespacedId = $view->namespaceInputId($config['id']);
+
+        $js = <<<JS
+new Craft.CardViewDesigner("#$namespacedId");
+JS;
+        $view->registerJs($js);
+
+        return
+            Html::beginTag('div', [
+                'id' => $config['id'],
+                'class' => 'card-view-designer',
+            ]) .
+            Html::beginTag('div', ['class' => 'cvd-container']) .
+            $checkboxes .
+            Html::endTag('div') . // .cvd-container
+            Html::endTag('div'); // .card-view-designer
+    }
+
     /**
      * Renders a field layout designer.
      *

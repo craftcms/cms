@@ -47,6 +47,7 @@ import './js/AssetsFieldSettings';
 import './js/AuthManager.js';
 import './js/CP.js';
 import './js/CardsElementIndexView.js';
+import './js/CardViewDesigner.js';
 import './js/CategoryIndex.js';
 import './js/CategorySelectInput.js';
 import './js/Chart.js';

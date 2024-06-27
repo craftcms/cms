@@ -46,6 +46,8 @@ use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
+use craft\events\RegisterElementCardAttributesEvent;
+use craft\events\RegisterElementDefaultCardAttributesEvent;
 use craft\events\RegisterElementDefaultTableAttributesEvent;
 use craft\events\RegisterElementExportersEvent;
 use craft\events\RegisterElementFieldLayoutsEvent;
@@ -273,6 +275,17 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.7.14
      */
     public const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
+
+
+    /**
+     * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
+     */
+    public const EVENT_REGISTER_CARD_ATTRIBUTES = 'registerCardAttributes';
+
+    /**
+     * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
+     */
+    public const EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES = 'registerDefaultCardAttributes';
 
     /**
      * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
@@ -1455,6 +1468,81 @@ abstract class Element extends Component implements ElementInterface
         $availableTableAttributes = static::tableAttributes();
 
         return array_keys($availableTableAttributes);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function cardAttributes(): array
+    {
+        $cardAttributes = static::defineCardAttributes();
+
+        // Fire a 'registerCardAttributes' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_CARD_ATTRIBUTES)) {
+            $event = new RegisterElementCardAttributesEvent(['cardAttributes' => $cardAttributes]);
+            Event::trigger(static::class, self::EVENT_REGISTER_CARD_ATTRIBUTES, $event);
+            return $event->cardAttributes;
+        }
+
+        return $cardAttributes;
+    }
+
+    /**
+     * Defines all the available attributes that can be shown in card views.
+     *
+     * @return array The card attributes.
+     * @see cardAttributes()
+     */
+    protected static function defineCardAttributes(): array
+    {
+        // we're intentionally not including statuses as those already show in cards
+        $attributes = [
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
+        ];
+
+        if (static::hasUris()) {
+            $attributes = array_merge($attributes, [
+                'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
+                'slug' => ['label' => Craft::t('app', 'Slug')],
+                'uri' => ['label' => Craft::t('app', 'URI')],
+            ]);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function defaultCardAttributes(): array
+    {
+        $cardAttributes = static::defineDefaultCardAttributes();
+
+        // Fire a 'registerDefaultCardAttributes' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES)) {
+            $event = new RegisterElementDefaultCardAttributesEvent([
+                'cardAttributes' => $cardAttributes,
+            ]);
+            Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES, $event);
+            return $event->cardAttributes;
+        }
+
+        return $cardAttributes;
+    }
+
+    /**
+     * Returns the list of card attribute keys that should be shown by default.
+     *
+     * @return string[] The card attributes.
+     * @see defaultCardAttributes()
+     * @see cardAttributes()
+     */
+    protected static function defineDefaultCardAttributes(): array
+    {
+        return [];
     }
 
     // Methods for customizing element queries

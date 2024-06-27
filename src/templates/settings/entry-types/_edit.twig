@@ -188,6 +188,12 @@
     fieldLayout: entryType.getFieldLayout(),
 }) }}
 
+
+{{ forms.cardViewDesignerField({
+    id: 'card-view',
+    fieldLayout: entryType.getFieldLayout(),
+}) }}
+
 {% if not entryType.handle %}
     {% js "new Craft.HandleGenerator('##{'name'|namespaceInputId}', '##{'handle'|namespaceInputId}');" %}
 {% endif %}

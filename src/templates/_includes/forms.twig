@@ -470,6 +470,13 @@
     }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
 {% endmacro %}
 
+{% macro cardViewDesignerField(config) %}
+    {{ _self.field({
+        label: 'Card View'|t('app'),
+        errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
+    }|merge(config), 'template:_includes/forms/cardViewDesigner') }}
+{% endmacro %}
+
 
 {% macro moneyField(config) %}
     {% set config = config|merge({id: config.id ?? "money#{random()}"}) %}

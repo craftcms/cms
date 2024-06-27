@@ -628,6 +628,33 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    protected static function defineCardAttributes(): array
+    {
+        $attributes = array_merge(parent::defineCardAttributes(), [
+            'section' => ['label' => Craft::t('app', 'Section')],
+            // todo: iwona - type is currently set to show if no fields are selected
+            'type' => ['label' => Craft::t('app', 'Entry Type')],
+            'authors' => ['label' => Craft::t('app', 'Authors')],
+            'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
+            'parent' => ['label' => Craft::t('app', 'Parent')],
+            'postDate' => ['label' => Craft::t('app', 'Post Date')],
+            'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
+            'revisionNotes' => ['label' => Craft::t('app', 'Revision Notes')],
+            'revisionCreator' => ['label' => Craft::t('app', 'Last Edited By')],
+            'drafts' => ['label' => Craft::t('app', 'Drafts')],
+        ]);
+
+        // Hide Author & Last Edited By from Craft Solo
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            unset($attributes['authors'], $attributes['revisionCreator']);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         switch ($handle) {
