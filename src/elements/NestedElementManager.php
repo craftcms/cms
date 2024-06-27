@@ -746,7 +746,8 @@ JS, [
                         $element->getPrimaryOwnerId() === $owner->id &&
                         $element->getIsDraft() &&
                         !$element->getIsUnpublishedDraft() &&
-                        $owner->getIsDraft() &&
+                        // $owner could be a draft or a non-canonical Matrix entry, etc.
+                        (!$owner->getIsCanonical()) &&
                         !$owner->getIsUnpublishedDraft()
                     ) {
                         /** @var NestedElementInterface $canonical */

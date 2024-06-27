@@ -14,6 +14,7 @@
 - Fixed a bug where element indexes could display “Nothing yet” at the bottom of populated table views. ([#15241](https://github.com/craftcms/cms/issues/15241))
 - Fixed a bug where element edit pages initially showed the canonical element’s chip in the crumb bar, for provisional drafts. ([#15244](https://github.com/craftcms/cms/issues/15244))
 - Fixed an error that occurred when opening an element’s editor slideout via its “Edit” action menu item, if the element had provisional changes. ([#15248](https://github.com/craftcms/cms/pull/15248))
+- Fixed a bug where recursively-nested Matrix entries could be lost if multiple of them were edited, and not immediately saved. ([#15256](https://github.com/craftcms/cms/issues/15256))
 
 ## 5.2.3 - 2024-06-20
 
