@@ -488,7 +488,7 @@ Garnish = $.extend(Garnish, {
   setFocusWithin: function (container) {
     const $container = $(container);
     let $firstFocusable = $(container).find(
-      ':focusable:not(.checkbox):not(.manage-autofocus):first'
+      ':focusable:not(.checkbox):not(.prevent-autofocus):first'
     );
 
     // if the first visible .field container is not the parent of the first focusable element we found
