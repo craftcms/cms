@@ -5,10 +5,13 @@
 - Improved the styling of inactive users’ status indicators. ([#15195](https://github.com/craftcms/cms/issues/15195))
 - Added `Garnish.once()` and `Garnish.Base::once()`, for registering event handlers that should only be triggered one time.
 - Fixed a bug where Ajax requests stopped working after a user session expired and then was reauthenticated.
+- Fixed an error that occurred if an element select input was initialized without a `name` value.
 - Fixed a bug where other author indicators weren’t shown for Craft Team.
 - Fixed a bug where the Recent Entries widget wasn’t showing authors’ usernames for Craft Team.
 - Fixed a bug where asset edit page URLs contained spaces if the asset filename contained spaces. ([#15236](https://github.com/craftcms/cms/issues/15236))
 - Fixed a bug where element select inputs with `single` set to `true` would set existing elements’ input names ending in `[]`.
+- Fixed a bug where element indexes could display “Nothing yet” at the bottom of populated table views. ([#15241](https://github.com/craftcms/cms/issues/15241))
+- Fixed a bug where element edit pages initially showed the canonical element’s chip in the crumb bar, for provisional drafts. ([#15244](https://github.com/craftcms/cms/issues/15244))
 
 ## 5.2.3 - 2024-06-20
 
