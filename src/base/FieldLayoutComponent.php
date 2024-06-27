@@ -28,9 +28,9 @@ use craft\models\FieldLayout;
 abstract class FieldLayoutComponent extends Model
 {
     /**
-     * @event SectionEvent The event that is triggered when determining whether the component should be shown in a field layout.
+     * @event DefineShowFieldLayoutComponentInFormEvent The event that is triggered when determining whether the component should be shown in a field layout.
      * @see showInForm()
-     * @since 5.0.0
+     * @since 5.3.0
      */
     public const EVENT_DEFINE_SHOW_IN_FORM = 'defineShowInForm';
 
