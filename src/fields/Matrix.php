@@ -1442,7 +1442,14 @@ JS;
                 $forceSave = !empty($entryData);
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                if ($forceSave && $element->getIsDerivative() && $entry->getPrimaryOwnerId() === $element->getCanonicalId()) {
+                if (
+                    $forceSave &&
+                    $element->getIsDerivative() &&
+                    $entry->getPrimaryOwnerId() === $element->getCanonicalId() &&
+                    // this is so that extra drafts don't get created for matrix in matrix scenario
+                    // where both are set to inline-editable blocks view mode
+                    Craft::$app->getRequest()->actionSegments !== ['elements', 'update-field-layout']
+                ) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
                     $entry = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [
                         'canonicalId' => $entry->id,
