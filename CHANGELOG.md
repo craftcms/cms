@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.10.3 - 2024-06-27
 
 - Previewing PDF/video assets without public URLs now displays a “Preview not supported.” message. ([#15235](https://github.com/craftcms/cms/pull/15235))
 - Added `Garnish.once()` and `Garnish.Base::once()`, for registering event handlers that should only be triggered one time.
@@ -8,6 +8,7 @@
 - Fixed a bug where asset indexes attempted to link to assets without URLs. ([#15235](https://github.com/craftcms/cms/pull/15235))
 - Fixed a bug where queue job tracking and element activity tracking could stop working after a user session expired and then was reauthenticated.
 - Fixed an error that occurred if an element select input was initialized without a `name` value.
+- Fixed a bug where Selectize inputs could be immediately focused and marked as dirty when opening an element editor slideout, if they were the first focusable element in the field layout. ([#15245](https://github.com/craftcms/cms/issues/15245))
 
 ## 4.10.2 - 2024-06-18
 

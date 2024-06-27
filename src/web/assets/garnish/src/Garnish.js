@@ -487,9 +487,21 @@ Garnish = $.extend(Garnish, {
    */
   setFocusWithin: function (container) {
     const $container = $(container);
-    const $firstFocusable = $(container).find(
-      ':focusable:not(.checkbox):first'
+    let $firstFocusable = $(container).find(
+      ':focusable:not(.checkbox):not(.prevent-autofocus):first'
     );
+
+    // if the first visible .field container is not the parent of the first focusable element we found
+    // just focus on the container;
+    // this can happen if e.g. you have an entry without a title and the first field is a ckeditor field;
+    // in such case the second (or further) element would get focus on initial load, which can be confusing
+    // see https://github.com/craftcms/cms/issues/15245
+    if (
+      $container.find('.field:visible:first')[0] !==
+      $firstFocusable.parents('.field')[0]
+    ) {
+      $firstFocusable = [];
+    }
 
     if ($firstFocusable.length > 0) {
       $firstFocusable.trigger('focus');
