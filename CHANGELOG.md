@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.10.3 - 2024-06-27
 
 - Previewing PDF/video assets without public URLs now displays a “Preview not supported.” message. ([#15235](https://github.com/craftcms/cms/pull/15235))
 - Added `Garnish.once()` and `Garnish.Base::once()`, for registering event handlers that should only be triggered one time.
