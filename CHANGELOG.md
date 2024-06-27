@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## 5.2.4.1 - 2024-06-27
+
+- Fixed a JavaScript error. ([#15266](https://github.com/craftcms/cms/issues/15266))
+
 ## 5.2.4 - 2024-06-27
 
 - Improved the styling of inactive users’ status indicators. ([#15195](https://github.com/craftcms/cms/issues/15195))
