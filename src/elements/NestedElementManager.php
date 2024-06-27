@@ -746,7 +746,7 @@ JS, [
                         $element->getPrimaryOwnerId() === $owner->id &&
                         $element->getIsDraft() &&
                         !$element->getIsUnpublishedDraft() &&
-                        $owner->getIsDraft() &&
+                        ($owner->getIsDraft() || !$owner->isCanonical) &&
                         !$owner->getIsUnpublishedDraft()
                     ) {
                         /** @var NestedElementInterface $canonical */
