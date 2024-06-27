@@ -6,6 +6,7 @@
 - Added `Garnish.once()` and `Garnish.Base::once()`, for registering event handlers that should only be triggered one time.
 - Fixed a bug where Ajax requests stopped working after a user session expired and then was reauthenticated.
 - Fixed an error that occurred if an element select input was initialized without a `name` value.
+- Fixed a bug where Selectize inputs could be immediately focused and marked as dirty when opening an element editor slideout, if they were the first focusable element in the field layout. ([#15245](https://github.com/craftcms/cms/issues/15245))
 - Fixed a bug where other author indicators weren’t shown for Craft Team.
 - Fixed a bug where the Recent Entries widget wasn’t showing authors’ usernames for Craft Team.
 - Fixed a bug where asset edit page URLs contained spaces if the asset filename contained spaces. ([#15236](https://github.com/craftcms/cms/issues/15236))
