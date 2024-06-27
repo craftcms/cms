@@ -1268,6 +1268,11 @@ abstract class Element extends Component implements ElementInterface
         $elements = static::indexElements($elementQuery, $sourceKey);
 
         if (empty($elements)) {
+            if ($elementQuery->offset) {
+                // load-more request
+                return '';
+            }
+
             return Html::tag('div', Craft::t('app', 'Nothing yet.'), [
                 'class' => ['zilch', 'small'],
             ]);
@@ -3585,8 +3590,8 @@ JS, [
                 $view->namespaceInputId($editId),
                 static::class,
                 [
-                    'elementId' => $this->id,
-                    'draftId' => $this->draftId,
+                    'elementId' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
+                    'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
                     'revisionId' => $this->revisionId,
                     'siteId' => $this->siteId,
                 ],
