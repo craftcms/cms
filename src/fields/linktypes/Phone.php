@@ -20,7 +20,7 @@ class Phone extends BaseTextLinkType
 {
     public static function id(): string
     {
-        return 'phone';
+        return 'tel';
     }
 
     public static function label(): string
