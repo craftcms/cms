@@ -26,7 +26,7 @@ class Category extends BaseElementLinkType
         return CategoryElement::class;
     }
 
-    protected static function selectionSources(): array
+    protected function selectionSources(): array
     {
         return Collection::make(Craft::$app->getCategories()->getAllGroups())
             ->filter(fn(CategoryGroup $group) => $group->getSiteSettings()[Cp::requestedSite()->id]?->hasUrls ?? false)

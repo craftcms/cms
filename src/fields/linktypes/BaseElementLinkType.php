@@ -41,30 +41,42 @@ abstract class BaseElementLinkType extends BaseLinkType
         return static::elementType()::refHandle();
     }
 
-    public static function label(): string
+    public static function displayName(): string
     {
         return static::elementType()::displayName();
     }
 
-    public static function supports(string $value): bool
+    private static function customSources(): array
+    {
+        $customSources = [];
+        $elementSources = Craft::$app->getElementSources()->getSources(static::elementType(), 'modal');
+        foreach ($elementSources as $elementSource) {
+            if ($elementSource['type'] === ElementSources::TYPE_CUSTOM && isset($elementSource['key'])) {
+                $customSources[] = $elementSource['key'];
+            }
+        }
+        return $customSources;
+    }
+
+    public function supports(string $value): bool
     {
         return (bool)preg_match(sprintf('/^\{%s:(\d+)(@(\d+))?:url\}$/', static::elementType()::refHandle()), $value);
     }
 
-    public static function render(string $value): string
+    public function renderValue(string $value): string
     {
-        return self::element($value)?->getUrl() ?? '';
+        return $this->element($value)?->getUrl() ?? '';
     }
 
-    public static function linkLabel(string $value): string
+    public function linkLabel(string $value): string
     {
-        $element = self::element($value);
+        $element = $this->element($value);
         return $element ? (string)$element : '';
     }
 
-    public static function inputHtml(Link $field, ?string $value, string $containerId): string
+    public function inputHtml(Link $field, ?string $value, string $containerId): string
     {
-        $elements = array_filter([self::element($value)]);
+        $elements = array_filter([$this->element($value)]);
         $id = sprintf('elementselect%s', mt_rand());
 
         $view = Craft::$app->getView();
@@ -94,42 +106,30 @@ JS, [
                 'limit' => 1,
                 'single' => true,
                 'elements' => $elements,
-                'sources' => array_merge(static::selectionSources(), self::customSources()),
-                'criteria' => static::selectionCriteria(),
+                'sources' => array_merge($this->selectionSources(), self::customSources()),
+                'criteria' => $this->selectionCriteria(),
             ]) .
             Html::hiddenInput('value', $value);
     }
 
-    protected static function selectionSources(): array
+    protected function selectionSources(): array
     {
         return [];
     }
 
-    private static function customSources(): array
-    {
-        $customSources = [];
-        $elementSources = Craft::$app->getElementSources()->getSources(static::elementType(), 'modal');
-        foreach ($elementSources as $elementSource) {
-            if ($elementSource['type'] === ElementSources::TYPE_CUSTOM && isset($elementSource['key'])) {
-                $customSources[] = $elementSource['key'];
-            }
-        }
-        return $customSources;
-    }
-
-    protected static function selectionCriteria(): array
+    protected function selectionCriteria(): array
     {
         return [
             'uri' => 'not :empty:',
         ];
     }
 
-    public static function validate(string $value, ?string &$error = null): bool
+    public function validateValue(string $value, ?string &$error = null): bool
     {
         return true;
     }
 
-    public static function element(?string $value): ?ElementInterface
+    public function element(?string $value): ?ElementInterface
     {
         if (
             !$value ||

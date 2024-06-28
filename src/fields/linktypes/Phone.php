@@ -23,23 +23,23 @@ class Phone extends BaseTextLinkType
         return 'tel';
     }
 
-    public static function label(): string
+    public static function displayName(): string
     {
         return Craft::t('app', 'Phone');
     }
 
-    protected static function urlPrefix(): string|array
+    protected function urlPrefix(): string|array
     {
         return 'tel:';
     }
 
-    public static function normalize(string $value): string
+    public function normalizeValue(string $value): string
     {
         $value = str_replace(' ', '-', $value);
-        return parent::normalize($value);
+        return parent::normalizeValue($value);
     }
 
-    protected static function inputAttributes(): array
+    protected function inputAttributes(): array
     {
         return [
             'type' => 'tel',
@@ -47,7 +47,7 @@ class Phone extends BaseTextLinkType
         ];
     }
 
-    protected static function pattern(): string
+    protected function pattern(): string
     {
         return "^tel:[\d\+\(\)\-,;]+$";
     }

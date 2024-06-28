@@ -27,12 +27,12 @@ abstract class BaseTextLinkType extends BaseLinkType
      *
      * @return string|string[]
      */
-    abstract protected static function urlPrefix(): string|array;
+    abstract protected function urlPrefix(): string|array;
 
-    public static function supports(string $value): bool
+    public function supports(string $value): bool
     {
         $value = mb_strtolower($value);
-        foreach ((array)static::urlPrefix() as $prefix) {
+        foreach ((array)$this->urlPrefix() as $prefix) {
             if (str_starts_with($value, $prefix)) {
                 return true;
             }
@@ -40,27 +40,27 @@ abstract class BaseTextLinkType extends BaseLinkType
         return false;
     }
 
-    public static function normalize(string $value): string
+    public function normalizeValue(string $value): string
     {
-        if (static::supports($value)) {
+        if ($this->supports($value)) {
             return $value;
         }
 
         // Only add a prefix if the end result validates
-        $prefix = ArrayHelper::firstValue((array)static::urlPrefix());
+        $prefix = ArrayHelper::firstValue((array)$this->urlPrefix());
         $normalized = "$prefix$value";
-        return static::validate($normalized) ? $normalized : $value;
+        return $this->validateValue($normalized) ? $normalized : $value;
     }
 
-    public static function linkLabel(string $value): string
+    public function linkLabel(string $value): string
     {
-        foreach ((array)static::urlPrefix() as $prefix) {
+        foreach ((array)$this->urlPrefix() as $prefix) {
             $value = StringHelper::removeLeft($value, $prefix);
         }
         return $value;
     }
 
-    public static function inputHtml(Link $field, ?string $value, string $containerId): string
+    public function inputHtml(Link $field, ?string $value, string $containerId): string
     {
         $name = 'value';
         $textInputAttributes = array_merge([
@@ -71,7 +71,7 @@ abstract class BaseTextLinkType extends BaseLinkType
                     'label' => Craft::t('site', $field->name),
                 ],
             ],
-        ], static::inputAttributes());
+        ], $this->inputAttributes());
 
         $view = Craft::$app->getView();
         $view->registerJsWithVars(fn($id, $settings) => <<<JS
@@ -81,14 +81,14 @@ abstract class BaseTextLinkType extends BaseLinkType
 JS, [
             $containerId,
             [
-                'prefixes' => (array)static::urlPrefix(),
-                'pattern' => static::pattern(),
+                'prefixes' => (array)$this->urlPrefix(),
+                'pattern' => $this->pattern(),
                 'inputAttributes' => $textInputAttributes,
             ],
         ]);
 
-        if ($value && static::validate($value)) {
-            $linkText = self::linkLabel($value);
+        if ($value && $this->validateValue($value)) {
+            $linkText = $this->linkLabel($value);
             $html =
                 Html::beginTag('div', [
                     'class' => ['chip', 'small'],
@@ -124,14 +124,14 @@ JS, [
      *
      * @return array
      */
-    protected static function inputAttributes(): array
+    protected function inputAttributes(): array
     {
         return [];
     }
 
-    public static function validate(string $value, ?string &$error = null): bool
+    public function validateValue(string $value, ?string &$error = null): bool
     {
-        $pattern = sprintf('/%s/i', static::pattern());
+        $pattern = sprintf('/%s/i', $this->pattern());
         return (bool)preg_match($pattern, $value);
     }
 
@@ -140,9 +140,9 @@ JS, [
      *
      * @return string
      */
-    protected static function pattern(): string
+    protected function pattern(): string
     {
-        $prefixes = array_map(fn(string $prefix) => preg_quote($prefix, '/'), (array)static::urlPrefix());
+        $prefixes = array_map(fn(string $prefix) => preg_quote($prefix, '/'), (array)$this->urlPrefix());
         return sprintf('^(%s)', implode('|', $prefixes));
     }
 }

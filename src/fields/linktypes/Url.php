@@ -24,17 +24,17 @@ class Url extends BaseTextLinkType
         return 'url';
     }
 
-    public static function label(): string
+    public static function displayName(): string
     {
         return Craft::t('app', 'URL');
     }
 
-    protected static function urlPrefix(): array
+    protected function urlPrefix(): array
     {
         return ['https://', 'http://'];
     }
 
-    protected static function inputAttributes(): array
+    protected function inputAttributes(): array
     {
         return [
             'type' => 'url',
@@ -42,7 +42,7 @@ class Url extends BaseTextLinkType
         ];
     }
 
-    protected static function pattern(): string
+    protected function pattern(): string
     {
         return str_replace(UrlValidator::URL_PATTERN, '{schemes}', '(https|http)');
     }

@@ -7,8 +7,8 @@
 
 namespace craft\fields\linktypes;
 
+use craft\base\Component;
 use craft\fields\Link;
-use yii\base\BaseObject;
 
 /**
  * Base link type.
@@ -16,7 +16,7 @@ use yii\base\BaseObject;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-abstract class BaseLinkType extends BaseObject
+abstract class BaseLinkType extends Component
 {
     /**
      * Returns the link type’s unique identifier, which will be stored within
@@ -27,19 +27,12 @@ abstract class BaseLinkType extends BaseObject
     abstract public static function id(): string;
 
     /**
-     * Returns the link type’s human-facing label.
-     *
-     * @return string
-     */
-    abstract public static function label(): string;
-
-    /**
      * Returns whether the given value is supported by this link type.
      *
      * @param string $value
      * @return bool
      */
-    abstract public static function supports(string $value): bool;
+    abstract public function supports(string $value): bool;
 
     /**
      * Normalizes a posted link value.
@@ -47,7 +40,7 @@ abstract class BaseLinkType extends BaseObject
      * @param string $value
      * @return string
      */
-    public static function normalize(string $value): string
+    public function normalizeValue(string $value): string
     {
         return $value;
     }
@@ -58,7 +51,7 @@ abstract class BaseLinkType extends BaseObject
      * @param string $value
      * @return string
      */
-    public static function render(string $value): string
+    public function renderValue(string $value): string
     {
         return $value;
     }
@@ -68,7 +61,7 @@ abstract class BaseLinkType extends BaseObject
      *
      * @return string
      */
-    abstract public static function linkLabel(string $value): string;
+    abstract public function linkLabel(string $value): string;
 
     /**
      * Returns the input HTML that should be shown when this link type is selected.
@@ -78,7 +71,7 @@ abstract class BaseLinkType extends BaseObject
      * @param string $containerId The ID of the input’s container div.
      * @return string
      */
-    abstract public static function inputHtml(Link $field, ?string $value, string $containerId): string;
+    abstract public function inputHtml(Link $field, ?string $value, string $containerId): string;
 
     /**
      * Validates the given value.
@@ -87,5 +80,5 @@ abstract class BaseLinkType extends BaseObject
      * @param string|null $error
      * @return bool
      */
-    abstract public static function validate(string $value, ?string &$error = null): bool;
+    abstract public function validateValue(string $value, ?string &$error = null): bool;
 }

@@ -24,17 +24,17 @@ class Email extends BaseTextLinkType
         return 'email';
     }
 
-    public static function label(): string
+    public static function displayName(): string
     {
         return Craft::t('app', 'Email');
     }
 
-    protected static function urlPrefix(): string|array
+    protected function urlPrefix(): string|array
     {
         return 'mailto:';
     }
 
-    protected static function inputAttributes(): array
+    protected function inputAttributes(): array
     {
         return [
             'type' => 'email',
@@ -42,7 +42,7 @@ class Email extends BaseTextLinkType
         ];
     }
 
-    protected static function pattern(): string
+    protected function pattern(): string
     {
         $emailPattern = trim((new EmailValidator())->pattern, '/^$');
         return "^mailto:$emailPattern(\?.*)?$";

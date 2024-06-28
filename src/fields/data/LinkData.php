@@ -31,15 +31,9 @@ class LinkData extends BaseObject implements Serializable
 {
     private string $renderedValue;
 
-    /**
-     * @param string $value
-     * @param string $type
-     * @phpstan-param class-string<BaseLinkType> $type
-     * @param array $config
-     */
     public function __construct(
         private readonly string $value,
-        private readonly string $type,
+        private readonly BaseLinkType $linkType,
         array $config = [],
     ) {
         parent::__construct($config);
@@ -57,7 +51,7 @@ class LinkData extends BaseObject implements Serializable
      */
     public function getType(): string
     {
-        return $this->type::id();
+        return $this->linkType::id();
     }
 
     /**
@@ -66,7 +60,7 @@ class LinkData extends BaseObject implements Serializable
     public function getValue(): string
     {
         if (!isset($this->renderedValue)) {
-            $this->renderedValue = $this->type::render($this->value);
+            $this->renderedValue = $this->linkType->renderValue($this->value);
         }
         return $this->renderedValue;
     }
@@ -78,7 +72,7 @@ class LinkData extends BaseObject implements Serializable
      */
     public function getLabel(): string
     {
-        return $this->type::linkLabel($this->value);
+        return $this->linkType->linkLabel($this->value);
     }
 
     /**
@@ -106,10 +100,10 @@ class LinkData extends BaseObject implements Serializable
      */
     public function getElement(): ?ElementInterface
     {
-        if (!is_subclass_of($this->type, BaseElementLinkType::class)) {
+        if (!$this->linkType instanceof BaseElementLinkType) {
             return null;
         }
-        return $this->type::element($this->value);
+        return $this->linkType->element($this->value);
     }
 
     public function serialize(): mixed
