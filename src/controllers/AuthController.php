@@ -44,8 +44,11 @@ class AuthController extends Controller
             return false;
         }
 
-        $this->requireCpRequest();
-        ;
+        // @TODO Is this the best way to do this?
+        if (!in_array($action->id, array_keys($this->allowAnonymous))) {
+            $this->requireCpRequest();
+        }
+
         return true;
     }
 

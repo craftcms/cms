@@ -1,0 +1,28 @@
+<craft-login-form>
+    <form method="post" accept-charset="UTF-8">
+        {{ csrfInput() }}
+        {{ actionInput('users/login') }}
+
+        <label for="loginName">Username or email</label>
+        {{ input('text', 'loginName', craft.app.user.rememberedUsername, {
+            id: 'loginName',
+            autocomplete: 'username'
+        }) }}
+
+        <label for="password">Password</label>
+        {{ input('password', 'password', null, {
+            id: 'password',
+        }) }}
+
+        <label>
+            {{ input('checkbox', 'rememberMe', '1') }}
+            Remember me
+        </label>
+
+        <button type="submit">Login</button>
+
+        {% if errorMessage is defined %}
+            <p>{{ errorMessage }}</p>
+        {% endif %}
+    </form>
+</craft-login-form>

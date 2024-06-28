@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\Asset;
 use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;
+use craft\web\assets\login\LoginAsset;
 use craft\web\View;
 use enshrined\svgSanitize\Sanitizer;
 use Throwable;
@@ -1191,5 +1192,11 @@ class Html extends \yii\helpers\Html
         }
 
         return $svg;
+    }
+
+    public static function loginForm(array $options = [])
+    {
+        Craft::$app->getView()->registerAssetBundle(LoginAsset::class);
+        return Cp::renderTemplate('_special/login-form.twig', $options);
     }
 }
