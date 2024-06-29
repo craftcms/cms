@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a JavaScript error that occurred when creating a new custom element source, preventing the Default Sort and Default Table Columns fields from showing up.
+
 ## 5.2.4.1 - 2024-06-27
 
 - Fixed a JavaScript error. ([#15266](https://github.com/craftcms/cms/issues/15266))
