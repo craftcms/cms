@@ -2124,6 +2124,7 @@ return [
     '{type} ID' => '{type} ID',
     '{type} Per Page' => '{type} Per Page',
     '{type} Settings' => '{type} Settings',
+    '{type} Sources' => '{type} Sources',
     '{type} created.' => '{type} created.',
     '{type} deleted for site.' => '{type} deleted for site.',
     '{type} deleted.' => '{type} deleted.',

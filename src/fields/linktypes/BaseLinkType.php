@@ -7,7 +7,7 @@
 
 namespace craft\fields\linktypes;
 
-use craft\base\Component;
+use craft\base\ConfigurableComponent;
 use craft\fields\Link;
 
 /**
@@ -16,7 +16,7 @@ use craft\fields\Link;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-abstract class BaseLinkType extends Component
+abstract class BaseLinkType extends ConfigurableComponent
 {
     /**
      * Returns the link type’s unique identifier, which will be stored within

@@ -13,6 +13,7 @@ use craft\fields\Link;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\services\ElementSources;
+use Illuminate\Support\Collection;
 
 /**
  * Base element link type.
@@ -46,16 +47,57 @@ abstract class BaseElementLinkType extends BaseLinkType
         return static::elementType()::displayName();
     }
 
-    private static function customSources(): array
+    /**
+     * @return string|string[] The element sources elements can be linked from
+     */
+    public string|array|null $sources = '*';
+
+    public function __construct($config = [])
     {
-        $customSources = [];
-        $elementSources = Craft::$app->getElementSources()->getSources(static::elementType(), 'modal');
-        foreach ($elementSources as $elementSource) {
-            if ($elementSource['type'] === ElementSources::TYPE_CUSTOM && isset($elementSource['key'])) {
-                $customSources[] = $elementSource['key'];
-            }
+        if (array_key_exists('sources', $config) && empty($config['sources'])) {
+            // Not possible to have no sources selected, so go with the default
+            unset($config['sources']);
         }
-        return $customSources;
+
+        parent::__construct($config);
+    }
+
+    public function getSettingsHtml(): ?string
+    {
+        return $this->sourcesSettingHtml();
+    }
+
+    /**
+     * Returns the HTML for the “Sources” setting
+     * @return string|null
+     */
+    protected function sourcesSettingHtml(): ?string
+    {
+        $availableSourceKeys = array_flip($this->availableSources());
+        $sources = Collection::make(Craft::$app->getElementSources()->getSources(
+            static::elementType(),
+            ElementSources::CONTEXT_FIELD
+        ))
+            ->filter(fn(array $source) => (
+                ($source['type'] === ElementSources::TYPE_NATIVE && isset($availableSourceKeys[$source['key']])) ||
+                $source['type'] === ElementSources::TYPE_CUSTOM
+            ))
+            ->keyBy(fn(array $source) => $source['key'])
+            ->map(fn(array $source) => $source['label']);
+
+        if ($sources->isEmpty()) {
+            return null;
+        }
+
+        return Cp::checkboxSelectFieldHtml([
+            'label' => Craft::t('app', '{type} Sources', [
+                'type' => static::elementType()::displayName(),
+            ]),
+            'name' => 'sources',
+            'options' => $sources->all(),
+            'values' => $this->sources,
+            'showAllOption' => true,
+        ]);
     }
 
     public function supports(string $value): bool
@@ -106,13 +148,18 @@ JS, [
                 'limit' => 1,
                 'single' => true,
                 'elements' => $elements,
-                'sources' => array_merge($this->selectionSources(), self::customSources()),
+                'sources' => $this->sources,
                 'criteria' => $this->selectionCriteria(),
             ]) .
             Html::hiddenInput('value', $value);
     }
 
-    protected function selectionSources(): array
+    /**
+     * Returns an array of source keys for the element type, filtering out any sources that can’t be linked to.
+     *
+     * @return string[]
+     */
+    protected function availableSources(): array
     {
         return [];
     }

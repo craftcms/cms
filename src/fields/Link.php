@@ -143,6 +143,7 @@ class Link extends Field implements InlineEditableFieldInterface
                 if (isset($types[$typeId])) {
                     $this->_linkTypes[$typeId] = Component::createComponent([
                         'type' => $types[$typeId],
+                        'settings' => $this->typeSettings[$typeId] ?? [],
                     ], BaseLinkType::class);
                 }
             }
@@ -171,6 +172,11 @@ class Link extends Field implements InlineEditableFieldInterface
     ];
 
     /**
+     * @var array<string,array> Settings for the allowed types
+     */
+    public array $typeSettings = [];
+
+    /**
      * @var int The maximum length (in bytes) the field can hold
      */
     public int $maxLength = 255;
@@ -180,6 +186,15 @@ class Link extends Field implements InlineEditableFieldInterface
      */
     public function __construct($config = [])
     {
+        if (isset($config['types'], $config['typeSettings'])) {
+            // Filter out any unneeded type settings
+            foreach (array_keys($config['typeSettings']) as $typeId) {
+                if (!in_array($typeId, $config)) {
+                    unset($config['typeSettings'][$typeId]);
+                }
+            }
+        }
+
         if (array_key_exists('placeholder', $config)) {
             unset($config['placeholder']);
         }
@@ -214,10 +229,11 @@ class Link extends Field implements InlineEditableFieldInterface
      */
     public function getSettingsHtml(): ?string
     {
+        $types = self::types();
         $linkTypeOptions = array_map(fn(string $type) => [
             'label' => $type::displayName(),
             'value' => $type::id(),
-        ], self::types());
+        ], $types);
 
         // Sort them by label, with URL at the top
         $urlOption = $linkTypeOptions[UrlType::id()];
@@ -225,15 +241,34 @@ class Link extends Field implements InlineEditableFieldInterface
         usort($linkTypeOptions, fn(array $a, array $b) => $a['label'] <=> $b['label']);
         $linkTypeOptions = [$urlOption, ...$linkTypeOptions];
 
-        return
-            Cp::checkboxSelectFieldHtml([
-                'label' => Craft::t('app', 'Allowed Link Types'),
-                'id' => 'types',
-                'name' => 'types',
-                'options' => $linkTypeOptions,
-                'values' => $this->types,
-                'required' => true,
-            ]) .
+        $html = Cp::checkboxSelectFieldHtml([
+            'label' => Craft::t('app', 'Allowed Link Types'),
+            'id' => 'types',
+            'name' => 'types',
+            'options' => $linkTypeOptions,
+            'values' => $this->types,
+            'required' => true,
+            'targetPrefix' => 'types-',
+        ]);
+
+        $linkTypes = $this->getLinkTypes();
+        $view = Craft::$app->getView();
+
+        foreach ($types as $typeId => $typeClass) {
+            $linkType = $linkTypes[$typeId] ?? Component::createComponent($typeClass, BaseLinkType::class);
+            $typeSettingsHtml = $view->namespaceInputs(fn() => $linkType->getSettingsHtml(), "typeSettings[$typeId]");
+            if ($typeSettingsHtml) {
+                $html .= Html::tag('div', $typeSettingsHtml, [
+                    'id' => "types-$typeId",
+                    'class' => array_keys(array_filter([
+                        'hidden' => !isset($linkTypes[$typeId]),
+                    ])),
+                ]);
+            }
+        }
+
+        return $html .
+            Html::tag('hr') .
             Cp::textFieldHtml([
                 'label' => Craft::t('app', 'Max Length'),
                 'instructions' => Craft::t('app', 'The maximum length (in bytes) the field can hold.'),
