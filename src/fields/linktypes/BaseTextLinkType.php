@@ -66,7 +66,7 @@ abstract class BaseTextLinkType extends BaseLinkType
         $textInputAttributes = array_merge([
             'describedBy' => $field->describedBy,
             'class' => ['fullwidth', 'text-link-input'],
-            'textInputAttributes' => [
+            'inputAttributes' => [
                 'aria' => [
                     'label' => Craft::t('site', $field->name),
                 ],
