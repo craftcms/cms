@@ -258,7 +258,9 @@ class Link extends Field implements InlineEditableFieldInterface
             $linkType = $linkTypes[$typeId] ?? Component::createComponent($typeClass, BaseLinkType::class);
             $typeSettingsHtml = $view->namespaceInputs(fn() => $linkType->getSettingsHtml(), "typeSettings[$typeId]");
             if ($typeSettingsHtml) {
-                $html .= Html::tag('div', $typeSettingsHtml, [
+                $html .=
+                    Html::tag('hr') .
+                    Html::tag('div', $typeSettingsHtml, [
                     'id' => "types-$typeId",
                     'class' => array_keys(array_filter([
                         'hidden' => !isset($linkTypes[$typeId]),
