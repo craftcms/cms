@@ -8,8 +8,6 @@
 namespace craft\fields\linktypes;
 
 use Craft;
-use craft\fields\Link;
-use craft\validators\UrlValidator;
 
 /**
  * URL link type.
@@ -44,6 +42,7 @@ class Url extends BaseTextLinkType
 
     protected function pattern(): string
     {
-        return str_replace(UrlValidator::URL_PATTERN, '{schemes}', '(https|http)');
+        // Don't use the URL validator's pattern, as that doesn't require a TLD
+        return 'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)';
     }
 }
