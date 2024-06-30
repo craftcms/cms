@@ -50,12 +50,14 @@ abstract class BaseElementLinkType extends BaseLinkType
     /**
      * @return string|string[] The element sources elements can be linked from
      */
-    public string|array|null $sources = '*';
+    public ?array $sources = null;
 
     public function __construct($config = [])
     {
-        if (array_key_exists('sources', $config) && empty($config['sources'])) {
-            // Not possible to have no sources selected, so go with the default
+        if (
+            isset($config['sources']) &&
+            (!is_array($config['sources']) || empty($config['sources']) || $config['sources'] === ['*'])
+        ) {
             unset($config['sources']);
         }
 
@@ -73,15 +75,7 @@ abstract class BaseElementLinkType extends BaseLinkType
      */
     protected function sourcesSettingHtml(): ?string
     {
-        $availableSourceKeys = array_flip($this->availableSources());
-        $sources = Collection::make(Craft::$app->getElementSources()->getSources(
-            static::elementType(),
-            ElementSources::CONTEXT_FIELD
-        ))
-            ->filter(fn(array $source) => (
-                ($source['type'] === ElementSources::TYPE_NATIVE && isset($availableSourceKeys[$source['key']])) ||
-                $source['type'] === ElementSources::TYPE_CUSTOM
-            ))
+        $sources = Collection::make($this->availableSources())
             ->keyBy(fn(array $source) => $source['key'])
             ->map(fn(array $source) => $source['label']);
 
@@ -95,7 +89,7 @@ abstract class BaseElementLinkType extends BaseLinkType
             ]),
             'name' => 'sources',
             'options' => $sources->all(),
-            'values' => $this->sources,
+            'values' => $this->sources ?? '*',
             'showAllOption' => true,
         ]);
     }
@@ -118,7 +112,6 @@ abstract class BaseElementLinkType extends BaseLinkType
 
     public function inputHtml(Link $field, ?string $value, string $containerId): string
     {
-        $elements = array_filter([$this->element($value)]);
         $id = sprintf('elementselect%s', mt_rand());
 
         $view = Craft::$app->getView();
@@ -142,16 +135,31 @@ JS, [
         ]);
 
         return
-            Cp::elementSelectHtml([
+            Cp::elementSelectHtml(array_merge($this->elementSelectConfig(), [
                 'id' => $id,
-                'elementType' => static::elementType(),
-                'limit' => 1,
-                'single' => true,
-                'elements' => $elements,
-                'sources' => $this->sources,
-                'criteria' => $this->selectionCriteria(),
-            ]) .
+                'elements' => array_filter([$this->element($value)]),
+            ])) .
             Html::hiddenInput('value', $value);
+    }
+
+    /**
+     * Returns all sources available to the field, based on
+     * [[availableSources()]] plus any custom sources for the element type.
+     *
+     * @return array
+     */
+    protected function availableSources(): array
+    {
+        $availableSourceKeys = array_flip($this->availableSourceKeys());
+        return Collection::make(Craft::$app->getElementSources()->getSources(
+            static::elementType(),
+            ElementSources::CONTEXT_FIELD,
+        ))
+            ->filter(fn(array $source) => (
+                ($source['type'] === ElementSources::TYPE_NATIVE && isset($availableSourceKeys[$source['key']])) ||
+                $source['type'] === ElementSources::TYPE_CUSTOM
+            ))
+            ->all();
     }
 
     /**
@@ -159,9 +167,25 @@ JS, [
      *
      * @return string[]
      */
-    protected function availableSources(): array
+    protected function availableSourceKeys(): array
     {
         return [];
+    }
+
+    /**
+     * Returns the config array that will be passed to [[Cp::elementSelectHtml()]].
+     *
+     * @return array
+     */
+    protected function elementSelectConfig(): array
+    {
+        return [
+            'elementType' => static::elementType(),
+            'limit' => 1,
+            'single' => true,
+            'sources' => $this->sources ?? '*',
+            'criteria' => $this->selectionCriteria(),
+        ];
     }
 
     protected function selectionCriteria(): array

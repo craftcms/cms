@@ -24,7 +24,7 @@ class Entry extends BaseElementLinkType
         return EntryElement::class;
     }
 
-    protected function availableSources(): array
+    protected function availableSourceKeys(): array
     {
         $sources = [];
         $sections = Craft::$app->getEntries()->getAllSections();
