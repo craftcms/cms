@@ -3228,6 +3228,12 @@ table {
 .chips {
   align-items: flex-start;
   gap: var(--xs);
+
+  &.chips-small {
+    li {
+      height: calc(34rem / 16);
+    }
+  }
 }
 
 .inline-chips {

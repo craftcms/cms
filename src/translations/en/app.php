@@ -98,6 +98,7 @@ return [
     'Allow self relations' => 'Allow self relations',
     'Allow subfolders' => 'Allow subfolders',
     'Allow uploading directly to the field' => 'Allow uploading directly to the field',
+    'Allowed File Types' => 'Allowed File Types',
     'Allowed Link Types' => 'Allowed Link Types',
     'Allows creating drafts of new {type}.' => 'Allows creating drafts of new {type}.',
     'Allows fully saving canonical {type} (directly or by applying drafts).' => 'Allows fully saving canonical {type} (directly or by applying drafts).',

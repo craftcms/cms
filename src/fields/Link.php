@@ -15,6 +15,7 @@ use craft\base\InlineEditableFieldInterface;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\fields\data\LinkData;
+use craft\fields\linktypes\Asset;
 use craft\fields\linktypes\BaseLinkType;
 use craft\fields\linktypes\BaseTextLinkType;
 use craft\fields\linktypes\Category;
@@ -95,6 +96,7 @@ class Link extends Field implements InlineEditableFieldInterface
             /** @var array<BaseLinkType|string> $types */
             /** @phpstan-var class-string<BaseLinkType>[] $types */
             $types = [
+                Asset::class,
                 Category::class,
                 EmailType::class,
                 Entry::class,
