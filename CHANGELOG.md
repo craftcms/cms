@@ -4,6 +4,7 @@
 
 - Fixed a JavaScript error that occurred when creating a new custom element source, preventing the Default Sort and Default Table Columns fields from showing up.
 - Fixed a bug where assets that the user wasn’t permitted to view could have a “Show in folder” action.
+- Fixed focus management with element select inputs after elements were added or removed.
 
 ## 5.2.4.1 - 2024-06-27
 
