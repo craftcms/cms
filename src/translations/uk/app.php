@@ -1983,7 +1983,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, one {година} few {години} many {годин} =1{година} other{години}}',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, one {хвилина} few {хвилини} many {хвилин} =1{хвилина} other{хвилини}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, one {місяць} few {місяця} many {місяців} =1{місяць} other{місяці}}',
-    '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, one {сповіщення} few {сповіщення} many {сповіщень} other{сповіщення}}',
+    '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{notification} other{notifications}}',
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, one {секунда} few {секунди} many {секунд} =1{секунда} other{секунди}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, one {тиждень} few {тижня} many {тижнів} =1{тиждень} other{тижня}}',
     '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, one {рік} few {роки} many {років} =1{рік} other{року}} оновлень',
