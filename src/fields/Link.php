@@ -329,7 +329,7 @@ class Link extends Field implements InlineEditableFieldInterface
      */
     public function useFieldset(): bool
     {
-        return count($this->types) > 1;
+        return true;
     }
 
     /**
@@ -358,7 +358,6 @@ class Link extends Field implements InlineEditableFieldInterface
 
         if (count($allowedTypeIds) === 1) {
             $innerHtml = Html::hiddenInput($typeInputName, $valueTypeId);
-            $hasSelect = false;
         } else {
             $namespacedId = $view->namespaceInputId($id);
             $js = <<<JS
@@ -388,8 +387,6 @@ JS;
                 'toggle' => true,
                 'targetPrefix' => "$id-",
             ]);
-
-            $hasSelect = true;
         }
 
         foreach ($allowedTypeIds as $typeId) {
@@ -419,7 +416,6 @@ JS;
                 'id' => $id,
                 'class' => array_keys(array_filter([
                     'link-input' => true,
-                    'has-link-type-select' => $hasSelect,
                 ])),
             ]) .
             Html::tag('div', $innerHtml, [

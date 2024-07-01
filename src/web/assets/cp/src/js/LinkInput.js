@@ -128,6 +128,7 @@ Craft.LinkInput = Garnish.Base.extend(
       this.addListener(this.$textInput, 'keydown', (ev) => {
         if (ev.keyCode === Garnish.ESC_KEY && this.maybeSwitchToChip()) {
           ev.stopPropagation();
+          this.$chip.find('a').focus();
         }
       });
     },
@@ -160,6 +161,10 @@ Craft.LinkInput = Garnish.Base.extend(
     },
 
     initChip: function () {
+      const viewAction = this.menu.addItem({
+        label: Craft.t('app', 'View in a new tab'),
+        icon: 'share',
+      });
       const editAction = this.menu.addItem({
         label: Craft.t('app', 'Edit'),
         icon: 'pencil',
@@ -170,6 +175,10 @@ Craft.LinkInput = Garnish.Base.extend(
         label: 'Remove',
         icon: 'xmark',
         destructive: true,
+      });
+
+      this.addListener(viewAction, 'activate', () => {
+        window.open(this.$chip.find('a').attr('href'));
       });
 
       this.addListener(editAction, 'activate', () => {
