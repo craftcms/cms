@@ -18,6 +18,7 @@ use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\db\Connection as YiiConnection;
+use yii\db\ExpressionInterface;
 
 /**
  * Class Query
@@ -212,6 +213,22 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
         }
 
         return parent::orWhere($condition, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function normalizeSelect($columns)
+    {
+        if ($columns instanceof ExpressionInterface) {
+            $columns = [$columns];
+        } elseif (!is_array($columns)) {
+            // match colons that are not preceded by an opening parenthesis and two digits
+            // e.g. the colon in "DECIMAL(65,15)" shouldn't be matched, but on in "test12, test13" should
+            $columns = preg_split('/(?<!\(\d{2})\s*,\s*/', trim((string)$columns), -1, PREG_SPLIT_NO_EMPTY);
+        }
+
+        return parent::normalizeSelect($columns);
     }
 
     // Execution functions
