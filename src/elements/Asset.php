@@ -1558,7 +1558,7 @@ JS, [
         ]);
 
         // Show in Folder
-        if ($user->can("viewAssets:{$this->getVolume()->uid}")) {
+        if ($this->canView($user)) {
             $viewItems[] = [
                 'type' => MenuItemType::Link,
                 'icon' => 'magnifying-glass',

@@ -97,6 +97,12 @@ Craft.ui = {
     if (!config.size) {
       $input.addClass('fullwidth');
     }
+    if (config.describedBy) {
+      $input.attr('aria-describedby', config.describedBy);
+    }
+    if (config.inputAttributes) {
+      this.addAttributes($input, config.inputAttributes);
+    }
 
     if (config.showCharsLeft && config.maxlength) {
       $input
@@ -1237,6 +1243,38 @@ Craft.ui = {
     }
 
     return $field;
+  },
+
+  addAttributes: function ($element, attributes) {
+    for (const name in attributes) {
+      const value = attributes[name];
+      if (typeof value === 'boolean') {
+        if (value) {
+          $element.attr(name, '');
+        }
+      } else if ($.isPlainObject(value)) {
+        if (['aria', 'data', 'data-ng', 'ng'].includes(name)) {
+          for (const n in value) {
+            let v = value[n];
+            if (typeof v === 'object') {
+              $element.attr(`${name}-${n}`, JSON.stringify(v));
+            } else if (typeof v === 'boolean') {
+              if (v) {
+                $element.attr(`${name}-${n}`, '');
+              }
+            } else if (v !== null) {
+              $element.attr(`${name}-${n}`, v);
+            }
+          }
+        } else if (name === 'class') {
+          $element.addClass(value);
+        } else if (name === 'style') {
+          $element.css(value);
+        } else {
+          $element.attr(name, value);
+        }
+      }
+    }
   },
 
   createErrorList: function (errors, fieldErrorsId) {

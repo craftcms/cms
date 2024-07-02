@@ -3228,6 +3228,12 @@ table {
 .chips {
   align-items: flex-start;
   gap: var(--xs);
+
+  &.chips-small {
+    li {
+      height: calc(34rem / 16);
+    }
+  }
 }
 
 .inline-chips {
@@ -7093,6 +7099,58 @@ textarea.text.fullwidth {
   .selectize.multiselect .selectize-input.focus {
     position: relative;
     z-index: 2;
+  }
+}
+
+.link-input {
+  container-type: inline-size;
+
+  & > .flex {
+    & > div {
+      &.text-link {
+        border: 1px solid transparentize($inputColor, 0.75);
+        border-radius: var(--large-border-radius);
+        cursor: text;
+
+        &:has(.text:focus) {
+          box-shadow: var(--focus-ring);
+        }
+
+        & > .text,
+        & > .chip {
+          margin-top: -1px;
+          margin-bottom: -1px;
+          background-color: transparent;
+        }
+
+        & > .text {
+          border: none;
+          margin-left: -1px;
+          margin-right: -1px;
+
+          &:focus {
+            position: relative;
+          }
+
+          &:focus {
+            box-shadow: none !important;
+          }
+        }
+      }
+    }
+  }
+
+  @container (max-width: 399px) {
+    & {
+      flex-direction: column;
+      align-items: start;
+
+      & > .select,
+      & > .select select,
+      & > div > .text {
+        width: 100%;
+      }
+    }
   }
 }
 

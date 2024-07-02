@@ -19,7 +19,7 @@ use craft\helpers\StringHelper;
 /**
  * CustomField represents a custom field that can be included in field layouts.
  *
- * @property-write FieldInterface $field The custom field this layout field is based on
+ * @property FieldInterface $field The custom field this layout field is based on
  * @property string $fieldUid The UID of the field this layout field is based on
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

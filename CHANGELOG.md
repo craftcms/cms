@@ -2,14 +2,35 @@
 
 ## Unreleased
 
+- Fixed a JavaScript error that occurred when creating a new custom element source, preventing the Default Sort and Default Table Columns fields from showing up.
+- Fixed a bug where the control panel was getting asynchronous CSRF inputs if the `asyncCsrfInputs` config setting was enabled.
+- Fixed a bug where assets that the user wasn’t permitted to view could have a “Show in folder” action.
+- Fixed focus management with element select inputs after elements were added or removed.
+- Fixed a bug where it wasn’t possible to set `title` values on nested Matrix entries, when saving section entries via GraphQL. ([#15270](https://github.com/craftcms/cms/issues/15270))
+- Fixed a SQL error that could occur if a `DECIMAL()` expression was passed into a query’s `select()` or `groupBy()` methods. ([#15271](https://github.com/craftcms/cms/issues/15271))
+- Fixed a bug where the “Delete (with descendants)” element action wasn’t deleting descendants. ([#15273](https://github.com/craftcms/cms/issues/15273))
+
+## 5.2.4.1 - 2024-06-27
+
+- Fixed a JavaScript error. ([#15266](https://github.com/craftcms/cms/issues/15266))
+
+## 5.2.4 - 2024-06-27
+
 - Improved the styling of inactive users’ status indicators. ([#15195](https://github.com/craftcms/cms/issues/15195))
 - Added `Garnish.once()` and `Garnish.Base::once()`, for registering event handlers that should only be triggered one time.
 - Fixed a bug where Ajax requests stopped working after a user session expired and then was reauthenticated.
 - Fixed an error that occurred if an element select input was initialized without a `name` value.
+- Fixed a bug where Selectize inputs could be immediately focused and marked as dirty when opening an element editor slideout, if they were the first focusable element in the field layout. ([#15245](https://github.com/craftcms/cms/issues/15245))
 - Fixed a bug where other author indicators weren’t shown for Craft Team.
 - Fixed a bug where the Recent Entries widget wasn’t showing authors’ usernames for Craft Team.
 - Fixed a bug where asset edit page URLs contained spaces if the asset filename contained spaces. ([#15236](https://github.com/craftcms/cms/issues/15236))
 - Fixed a bug where element select inputs with `single` set to `true` would set existing elements’ input names ending in `[]`.
+- Fixed a bug where element indexes could display “Nothing yet” at the bottom of populated table views. ([#15241](https://github.com/craftcms/cms/issues/15241))
+- Fixed a bug where element edit pages initially showed the canonical element’s chip in the crumb bar, for provisional drafts. ([#15244](https://github.com/craftcms/cms/issues/15244))
+- Fixed an error that occurred when opening an element’s editor slideout via its “Edit” action menu item, if the element had provisional changes. ([#15248](https://github.com/craftcms/cms/pull/15248))
+- Fixed a bug where recursively-nested Matrix entries could be lost if multiple of them were edited, and not immediately saved. ([#15256](https://github.com/craftcms/cms/issues/15256))
+- Fixed an error that could occur when upgrading to Craft 5 if the database user didn’t have permission to disable foreign key constraints. ([#15262](https://github.com/craftcms/cms/issues/15262))
+- Fixed a bug where expanded sidebar navigations could overlap the main content on small screens. ([#15253](https://github.com/craftcms/cms/issues/15253))
 
 ## 5.2.3 - 2024-06-20
 
