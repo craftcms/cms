@@ -6,6 +6,7 @@
 - Fixed a bug where the control panel was getting asynchronous CSRF inputs if the `asyncCsrfInputs` config setting was enabled.
 - Fixed a bug where assets that the user wasn’t permitted to view could have a “Show in folder” action.
 - Fixed focus management with element select inputs after elements were added or removed.
+- Fixed a bug where it wasn’t possible to set `title` values on nested Matrix entries, when saving section entries via GraphQL. ([#15270](https://github.com/craftcms/cms/issues/15270))
 
 ## 5.2.4.1 - 2024-06-27
 

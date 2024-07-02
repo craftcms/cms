@@ -58,6 +58,14 @@ class Matrix extends InputObjectType
                                             ],
                                         ];
 
+                                        if ($entryType->hasTitleField) {
+                                            $entryTypeFields['title'] = [
+                                                'name' => 'title',
+                                                'type' => Type::string(),
+                                                'description' => 'The entry title',
+                                            ];
+                                        }
+
                                         // Get the field input types
                                         foreach ($entryType->getCustomFields() as $field) {
                                             /** @var Field $field */
@@ -109,9 +117,11 @@ class Matrix extends InputObjectType
                     $type = array_key_first($entry);
                     $entry = reset($entry);
                     $entryId = ArrayHelper::remove($entry, 'id') ?? sprintf('new:%s', $entryCounter++);
+                    $title = ArrayHelper::remove($entry, 'title');
 
                     $preparedEntries[$entryId] = [
                         'type' => $type,
+                        'title' => $title,
                         'fields' => $entry,
                     ];
                 }
