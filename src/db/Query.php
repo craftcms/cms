@@ -241,15 +241,6 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
         return parent::normalizeSelect($columns);
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function normalizeOrderBy($columns): array
-    {
-        $this->splitColumns($columns);
-        return parent::normalizeOrderBy($columns);
-    }
-
     private function splitColumns(mixed &$columns): void
     {
         if (is_string($columns)) {
