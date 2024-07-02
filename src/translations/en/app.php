@@ -709,6 +709,7 @@ return [
     'Guest Required' => 'Guest Required',
     'HTML Email Template' => 'HTML Email Template',
     'Handle' => 'Handle',
+    'Has Descendants' => 'Has Descendants',
     'Has URL' => 'Has URL',
     'Has alternative text' => 'Has alternative text',
     'Heading' => 'Heading',
