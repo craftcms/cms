@@ -2301,8 +2301,9 @@ JS, [
         );
 
 
-        // sort the remaining attributes alphabetically
-        ksort($remainingCardAttributes);
+        // sort the remaining attributes alphabetically, by label
+        $labels = array_column($remainingCardAttributes, 'label');
+        array_multisort($labels, SORT_ASC, $remainingCardAttributes);
 
         // and now that both parts are sorted, merge them
         $options = array_values(array_merge($selectedOptions, $remainingCardAttributes));
