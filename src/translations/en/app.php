@@ -1820,6 +1820,7 @@ return [
     'Validate custom fields on public registration' => 'Validate custom fields on public registration',
     'Validate related {type}' => 'Validate related {type}',
     'Validation errors for site: “{siteName}“' => 'Validation errors for site: “{siteName}“',
+    'Validation errors found in the “{title}“ entry in the *{fieldName}* field. Please fix them.' => 'Validation errors found in the “{title}“ entry in the *{fieldName}* field. Please fix them.',
     'Validation errors found in {attribute} {type}; please fix them.' => 'Validation errors found in {attribute} {type}; please fix them.',
     'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
     'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
