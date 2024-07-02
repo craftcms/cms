@@ -2,6 +2,7 @@
 
 ### Content Management
 - Added the “Link” field type, which replaces “URL”, and can store URLs, `mailto` and `tel` URIs, and entry/asset/category references. ([#15251](https://github.com/craftcms/cms/pull/15251)) 
+- Entry and category conditions now have a “Has Descendants” rule. ([#15276](https://github.com/craftcms/cms/discussions/15276))
 - “Replace file” actions now display success notices on complete. ([#15217](https://github.com/craftcms/cms/issues/15217))
 - Double-clicking on folders within asset indexes and folder selection modals now navigates the index/modal into the folder. ([#15238](https://github.com/craftcms/cms/discussions/15238))
 
