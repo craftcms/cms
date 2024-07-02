@@ -103,6 +103,7 @@ class InputTypeTest extends TestCase
                                     'one',
                                     'two',
                                 ],
+                                'title' => null,
                             ],
                             'new:1' => [
                                 'type' => 'blockTypeA',
@@ -111,6 +112,7 @@ class InputTypeTest extends TestCase
                                     'crackle' => 2,
                                     'pop' => 3,
                                 ],
+                                'title' => null,
                             ],
                         ],
                 ],
@@ -132,12 +134,14 @@ class InputTypeTest extends TestCase
                                     'one',
                                     'two',
                                 ],
+                                'title' => null,
                             ],
                             88 => [
                                 'type' => 'blockTypeB',
                                 'fields' => [
                                     'stuff' => 'ok',
                                 ],
+                                'title' => null,
                             ],
                         ],
                 ],
@@ -158,18 +162,22 @@ class InputTypeTest extends TestCase
                             'new:1' => [
                                 'type' => 'blockType',
                                 'fields' => ['one'],
+                                'title' => null,
                             ],
                             'new:2' => [
                                 'type' => 'blockType',
                                 'fields' => ['two'],
+                                'title' => null,
                             ],
                             'new:3' => [
                                 'type' => 'blockType',
                                 'fields' => ['three'],
+                                'title' => null,
                             ],
                             'new:4' => [
                                 'type' => 'blockType',
                                 'fields' => ['four'],
+                                'title' => null,
                             ],
                         ],
                 ],
