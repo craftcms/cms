@@ -223,9 +223,9 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
         if ($columns instanceof ExpressionInterface) {
             $columns = [$columns];
         } elseif (!is_array($columns)) {
-            // match colons that are not preceded by an opening parenthesis and two digits
-            // e.g. the colon in "DECIMAL(65,15)" shouldn't be matched, but on in "test12, test13" should
-            $columns = preg_split('/(?<!\(\d{2})\s*,\s*/', trim((string)$columns), -1, PREG_SPLIT_NO_EMPTY);
+            // match commas that are not preceded by `DECIMAL(` and one or two digits
+            // e.g. the comma in `DECIMAL(65,15)` shouldn't be matched, but the one in `test12, test13` should
+            $columns = preg_split('/(?<!DECIMAL\(\d)(?<!DECIMAL\(\d\d)\s*,\s*/', trim((string)$columns), -1, PREG_SPLIT_NO_EMPTY);
         }
 
         return parent::normalizeSelect($columns);
