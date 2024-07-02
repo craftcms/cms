@@ -2249,6 +2249,14 @@ JS, [
         ]);
     }
 
+    /**
+     * Renders a card view designer.
+     *
+     * @param FieldLayout $fieldLayout
+     * @param array $config
+     * @return string
+     * @since 5.3.0
+     */
     public static function cardViewDesignerHtml(FieldLayout $fieldLayout, array $config = []): string
     {
         $config += [
@@ -2316,7 +2324,6 @@ JS, [
         $checkboxes = implode("\n", $checkboxes);
 
         $view = Craft::$app->getView();
-        //$jsSettings = Json::encode([]);
         $namespacedId = $view->namespaceInputId($config['id']);
 
         $js = <<<JS
@@ -2329,9 +2336,6 @@ JS;
                 'id' => $config['id'],
                 'class' => 'card-view-designer',
             ]) .
-//            Html::hiddenInput('cardView', Json::encode([]), [
-//                'data' => ['config-input' => true],
-//            ]) .
             Html::beginTag('div', ['class' => 'cvd-container']) .
             $checkboxes .
             Html::endTag('div') . // .cvd-container

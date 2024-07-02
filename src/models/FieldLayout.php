@@ -786,7 +786,7 @@ class FieldLayout extends Model
      * @return array
      * @since 5.3.0
      */
-    public function getCardBodyItems(?ElementInterface $element): array
+    public function getCardBodyElements(?ElementInterface $element): array
     {
         $attributes = $this->getCardBodyAttributes();
         $bodyFields = $this->getCardBodyFields($element);

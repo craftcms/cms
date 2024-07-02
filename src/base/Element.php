@@ -3362,7 +3362,7 @@ abstract class Element extends Component implements ElementInterface
 
                 return $this->attributeHtml($item['value']);
             },
-            $this->getFieldLayout()?->getCardBodyItems($this) ?? [],
+            $this->getFieldLayout()?->getCardBodyElements($this) ?? [],
         ));
 
         return implode("\n", array_map(fn(string $preview) => Html::tag('div', $preview), $previews));
