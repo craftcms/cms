@@ -471,6 +471,11 @@
         }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
 
         {% if config.withCardViewDesigner is defined and config.withCardViewDesigner %}
+            {# we need to unset the id or we'll have two fields with the same one #}
+            {% if config.id is defined %}
+                {% set config = config|filter((v, k) => k != 'id') %}
+            {% endif %}
+
             {{ _self.field({
                 label: 'Card View'|t('app'),
             }|merge(config), 'template:_includes/forms/cardViewDesigner') }}
