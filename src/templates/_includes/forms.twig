@@ -464,17 +464,18 @@
 
 
 {% macro fieldLayoutDesignerField(config) %}
-    {{ _self.field({
-        label: 'Field Layout'|t('app'),
-        errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
-    }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
-{% endmacro %}
+    <div class="fld-cvd">
+        {{ _self.field({
+            label: 'Field Layout'|t('app'),
+            errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
+        }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
 
-{% macro cardViewDesignerField(config) %}
-    {{ _self.field({
-        label: 'Card View'|t('app'),
-        errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
-    }|merge(config), 'template:_includes/forms/cardViewDesigner') }}
+        {% if config.withCardViewDesigner is defined and config.withCardViewDesigner %}
+            {{ _self.field({
+                label: 'Card View'|t('app'),
+            }|merge(config), 'template:_includes/forms/cardViewDesigner') }}
+        {% endif %}
+    </div>
 {% endmacro %}
 
 
