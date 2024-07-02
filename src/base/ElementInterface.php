@@ -509,6 +509,7 @@ interface ElementInterface extends
      * up the table’s column headers.
      *
      * @return array The card attributes.
+     * @since 5.3.0
      */
     public static function cardAttributes(): array;
 
@@ -519,6 +520,7 @@ interface ElementInterface extends
      * by [[cardAttributes()]].
      *
      * @return string[] The card attribute keys
+     * @since 5.3.0
      */
     public static function defaultCardAttributes(): array;
 

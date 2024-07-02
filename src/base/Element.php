@@ -279,11 +279,13 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
+     * @since 5.3.0
      */
     public const EVENT_REGISTER_CARD_ATTRIBUTES = 'registerCardAttributes';
 
     /**
      * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
+     * @since 5.3.0
      */
     public const EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES = 'registerDefaultCardAttributes';
 
@@ -1497,6 +1499,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return array The card attributes.
      * @see cardAttributes()
+     * @since 5.3.0
      */
     protected static function defineCardAttributes(): array
     {
@@ -1544,6 +1547,7 @@ abstract class Element extends Component implements ElementInterface
      * @return string[] The card attributes.
      * @see defaultCardAttributes()
      * @see cardAttributes()
+     * @since 5.3.0
      */
     protected static function defineDefaultCardAttributes(): array
     {
