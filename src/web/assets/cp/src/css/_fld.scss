@@ -393,3 +393,15 @@ $gridColor: var(--gray-100);
     }
   }
 }
+
+// card view designer
+.card-view-designer {
+  .draggable {
+    display: flex;
+
+    .field {
+      margin-top: 0.2em;
+      margin-inline-start: 0.5em;
+    }
+  }
+}

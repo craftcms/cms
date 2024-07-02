@@ -1049,6 +1049,7 @@ class Fields extends Component
     {
         $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
         $config = Json::decode(Craft::$app->getRequest()->getBodyParam($paramPrefix . 'fieldLayout'));
+        $config['cardView'] = Craft::$app->getRequest()->getBodyParam($paramPrefix . 'cardView');
         return $this->createLayout($config);
     }
 

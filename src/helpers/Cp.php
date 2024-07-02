@@ -2255,34 +2255,50 @@ JS, [
             'id' => 'cvd' . mt_rand(),
         ];
 
-        $elementType = new ($fieldLayout['type']);
-        $cardAttributes = $elementType::cardAttributes();
-        array_walk($cardAttributes, function(&$item, $key) {
-            $item['value'] = $key;
+        // get the attributes that are set to be visible in the card body
+        $selectedCardAttributes = $fieldLayout->getCardBodyAttributes();
+        // ensure they have checked and value keys
+        array_walk($selectedCardAttributes, function(&$attribute) {
+            $attribute['checked'] = true;
         });
-        ksort($cardAttributes);
 
+        // get remaining attributes
+        $elementType = new ($fieldLayout['type']);
+        $remainingCardAttributes = $elementType::cardAttributes();
+        foreach ($remainingCardAttributes as $key => $cardAttributes) {
+            if (isset($selectedCardAttributes[$key])) {
+                unset($remainingCardAttributes[$key]);
+            } else {
+                $remainingCardAttributes[$key]['value'] = $key;
+            }
+        }
 
+        // get all the custom fields that are set to be visible in the card body
+        // todo: maybe we need to exclude thumbs from here cause changing a position of such field has no effect?
         $fldOptions = [];
-        //$values = [];
-        $bodyFields = $fieldLayout->getCardBodyFields(null);
-        foreach ($bodyFields as $bodyField) {
+        foreach ($fieldLayout->getCardBodyFields(null) as $bodyField) {
             $fldOptions[] = [
                 'label' => $bodyField->label(),
                 'value' => 'layoutElement:' . $bodyField->uid,
-                'checked' => true,
+                'fieldClass' => ['disabled'],
+                'checked' => true, // all fields that are set to show in the card are selected and cannot be unchecked
             ];
-            //$values[] = 'layoutElement:' . $bodyField->uid;
         }
 
-        $options = array_values(array_merge($fldOptions, $cardAttributes));
-        $labels = array_column($options, 'label');
-        array_multisort($labels, SORT_ASC, $options);
+        // merge selected card attributes with selected fields and sort them by the cardView order
+        $selectedOptions = array_values(array_merge($fldOptions, $selectedCardAttributes));
+        $cardViewValues = $fieldLayout->getCardView();
+        array_multisort($cardViewValues, SORT_ASC, $selectedOptions);
+
+        // sort the remaining attributes alphabetically
+        ksort($remainingCardAttributes);
+
+        // and now that both parts are sorted, merge them
+        $options = array_values(array_merge($selectedOptions, $remainingCardAttributes));
 
         $checkboxes = [];
         foreach ($options as $option) {
             $option['checkboxLabel'] = $option['label'];
-            //unset($option['label']);
             $option['name'] = 'cardView[]';
             $checkbox = Html::beginTag('div', [
                 'class' => ['draggable'],
@@ -2310,6 +2326,9 @@ JS;
                 'id' => $config['id'],
                 'class' => 'card-view-designer',
             ]) .
+//            Html::hiddenInput('cardView', Json::encode([]), [
+//                'data' => ['config-input' => true],
+//            ]) .
             Html::beginTag('div', ['class' => 'cvd-container']) .
             $checkboxes .
             Html::endTag('div') . // .cvd-container
