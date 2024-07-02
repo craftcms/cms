@@ -2250,6 +2250,109 @@ JS, [
     }
 
     /**
+     * Renders a card view designer.
+     *
+     * @param FieldLayout $fieldLayout
+     * @param array $config
+     * @return string
+     * @since 5.3.0
+     */
+    public static function cardViewDesignerHtml(FieldLayout $fieldLayout, array $config = []): string
+    {
+        $config += [
+            'id' => 'cvd' . mt_rand(),
+        ];
+
+        // get the attributes that are set to be visible in the card body
+        $selectedCardAttributes = $fieldLayout->getCardBodyAttributes();
+        // ensure they have checked and value keys
+        array_walk($selectedCardAttributes, function(&$attribute) {
+            $attribute['checked'] = true;
+            $attribute['fieldClass'] = ['cvd-field'];
+        });
+
+        // get remaining attributes
+        $elementType = new ($fieldLayout['type']);
+        $remainingCardAttributes = $elementType::cardAttributes();
+        foreach ($remainingCardAttributes as $key => $cardAttributes) {
+            if (isset($selectedCardAttributes[$key])) {
+                unset($remainingCardAttributes[$key]);
+            } else {
+                $remainingCardAttributes[$key]['value'] = $key;
+                $remainingCardAttributes[$key]['fieldClass'] = ['cvd-field'];
+            }
+        }
+
+        // get all the custom fields that are set to be visible in the card body
+        $fldOptions = [];
+        foreach ($fieldLayout->getCardBodyFields(null) as $bodyField) {
+            $fldOptions['layoutElement:' . $bodyField->uid] = [
+                'label' => $bodyField->label(),
+                'value' => 'layoutElement:' . $bodyField->uid,
+                'fieldClass' => ['disabled', 'cvd-field'],
+                'checked' => true, // all fields that are set to show in the card are selected and cannot be unchecked
+            ];
+        }
+
+        // merge selected card attributes with selected fields
+        $selectedOptions = array_merge($fldOptions, $selectedCardAttributes);
+        $cardViewValues = $fieldLayout->getCardView();
+
+        // make sure we don't have any cardViewValues that are no longer allowed to show in cards
+        $cardViewValues = array_filter($cardViewValues, function($value) use ($selectedOptions) {
+            return isset($selectedOptions[$value]);
+        });
+
+        // sort all selected options by the cardView order
+        $selectedOptions = array_replace(
+            array_flip($cardViewValues),
+            $selectedOptions
+        );
+
+
+        // sort the remaining attributes alphabetically, by label
+        $labels = array_column($remainingCardAttributes, 'label');
+        array_multisort($labels, SORT_ASC, $remainingCardAttributes);
+
+        // and now that both parts are sorted, merge them
+        $options = array_values(array_merge($selectedOptions, $remainingCardAttributes));
+
+        $checkboxes = [];
+        foreach ($options as $option) {
+            $option['checkboxLabel'] = $option['label'];
+            $option['name'] = 'cardView[]';
+            $checkbox = Html::beginTag('div', [
+                'class' => ['draggable'],
+            ]) .
+                Html::tag('a', '', [
+                    'class' => ['move', 'icon', 'draggable-handle'],
+                ]) .
+                self::checkboxFieldHtml($option) .
+                Html::endTag('div');
+            $checkboxes[] = $checkbox;
+        }
+        $checkboxes = implode("\n", $checkboxes);
+
+        $view = Craft::$app->getView();
+        $namespacedId = $view->namespaceInputId($config['id']);
+
+        $js = <<<JS
+new Craft.CardViewDesigner("#$namespacedId");
+JS;
+        $view->registerJs($js);
+
+        return
+            Html::beginTag('div', [
+                'id' => $config['id'],
+                'class' => 'card-view-designer',
+            ]) .
+            Html::beginTag('div', ['class' => 'cvd-container']) .
+            $checkboxes .
+            Html::endTag('div') . // .cvd-container
+            Html::endTag('div'); // .card-view-designer
+    }
+
+    /**
      * Renders a field layout designer.
      *
      * @param FieldLayout $fieldLayout

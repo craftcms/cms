@@ -341,6 +341,16 @@ class Category extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    protected static function defineCardAttributes(): array
+    {
+        return array_merge(parent::defineCardAttributes(), [
+            'parent' => ['label' => Craft::t('app', 'Parent')],
+        ]);
+    }
+
+    /**
      * @var int|null Group ID
      */
     public ?int $groupId = null;
