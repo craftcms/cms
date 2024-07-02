@@ -97,7 +97,8 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
-        $async = (bool)(ArrayHelper::remove($options, 'async') ?? Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
+        $async = ArrayHelper::remove($options, 'async')
+            ?? ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
 
         if (!$async) {
             Craft::$app->getResponse()->setNoCacheHeaders();
