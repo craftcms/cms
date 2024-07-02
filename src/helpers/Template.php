@@ -14,6 +14,7 @@ use craft\web\twig\variables\Paginate;
 use craft\web\View;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
+use Twig\Extension\SandboxExtension;
 use Twig\Markup;
 use Twig\Source;
 use Twig\Template as TwigTemplate;
@@ -127,7 +128,13 @@ class Template
             $object instanceof BaseObject &&
             $object->canGetProperty($item)
         ) {
-            return $isDefinedTest ? true : $object->$item;
+            if ($isDefinedTest) {
+                return true;
+            }
+            if ($sandboxed) {
+                $env->getExtension(SandboxExtension::class)->checkPropertyAllowed($object, $item, $lineno, $source);
+            }
+            return $object->$item;
         }
 
         // Convert any \Twig\Markup arguments back to strings (unless the class *extends* \Twig\Markup)
