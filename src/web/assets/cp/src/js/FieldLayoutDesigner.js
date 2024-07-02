@@ -1145,6 +1145,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   async showInCards() {
     await this.applyConfig((config) => {
       config.includeInCards = true;
+      this.addCheckbox(config);
       return config;
     });
   },
@@ -1152,8 +1153,40 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   async omitFromCards() {
     await this.applyConfig((config) => {
       config.includeInCards = false;
+      this.removeCheckbox(config);
       return config;
     });
+  },
+
+  addCheckbox(config) {
+    const $cvdContainer = $('.cvd-container');
+    const $cvd = $cvdContainer.parent('.card-view-designer');
+
+    let $draggable = $('<div class="draggable"/>');
+    let $moveIcon = $('<a class="move icon draggable-handle"/>').appendTo(
+      $draggable
+    );
+    let $checkboxContainer = Craft.ui
+      .createCheckboxField({
+        name: 'cardView[]',
+        value: 'layoutElement:' + this.uid,
+        label: this.attribute,
+        checked: true,
+        fieldClass: ['disabled', 'cvd-field'],
+      })
+      .appendTo($draggable);
+
+    $draggable.appendTo($cvdContainer);
+
+    new Craft.CardViewDesigner('#' + $cvd.attr('id') + '');
+  },
+
+  removeCheckbox(config) {
+    const $cvdContainer = $('.cvd-container');
+    let $draggable = $cvdContainer
+      .find('input[value="layoutElement:' + this.uid + '"]')
+      .parents('.draggable');
+    $draggable.remove();
   },
 
   moveUp() {

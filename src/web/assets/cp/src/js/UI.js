@@ -457,7 +457,11 @@ Craft.ui = {
       config.id = 'checkbox' + Math.floor(Math.random() * 1000000000);
     }
 
-    var $field = $('<div class="field checkboxfield"/>', {
+    var fieldClass = ['field', 'checkboxfield'];
+    if (config.fieldClass.length > 0) {
+      fieldClass = fieldClass.concat(config.fieldClass);
+    }
+    var $field = $('<div class="' + fieldClass.join(' ') + '"/>', {
       id: `${config.id}-field`,
     });
 

@@ -409,12 +409,14 @@ class FieldLayout extends Model
      *
      * @param array $items An array of the layout’s card view items
      */
-    public function setCardView(array $items): void
+    public function setCardView(?array $items): void
     {
         $this->_cardView = [];
 
-        foreach ($items as $item) {
-            $this->_cardView[] = $item;
+        if ($items !== null) {
+            foreach ($items as $item) {
+                $this->_cardView[] = $item;
+            }
         }
 
         // Clear caches
@@ -786,8 +788,6 @@ class FieldLayout extends Model
      */
     public function getCardBodyItems(?ElementInterface $element): array
     {
-        $cardViewValues = $this->getCardView();
-
         $attributes = $this->getCardBodyAttributes();
         $bodyFields = $this->getCardBodyFields($element);
 
@@ -796,10 +796,10 @@ class FieldLayout extends Model
             $fields['layoutElement:' . $field->uid] = $field;
         }
 
-        $selectedOptions = array_merge($fields, $attributes);
-        array_multisort($cardViewValues, SORT_ASC, $selectedOptions);
-
-        return $selectedOptions;
+        return array_replace(
+            array_flip($this->getCardView()),
+            array_merge($fields, $attributes)
+        );
     }
 
     /**

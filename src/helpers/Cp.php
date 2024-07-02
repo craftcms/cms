@@ -2260,6 +2260,7 @@ JS, [
         // ensure they have checked and value keys
         array_walk($selectedCardAttributes, function(&$attribute) {
             $attribute['checked'] = true;
+            $attribute['fieldClass'] = ['cvd-field'];
         });
 
         // get remaining attributes
@@ -2270,25 +2271,27 @@ JS, [
                 unset($remainingCardAttributes[$key]);
             } else {
                 $remainingCardAttributes[$key]['value'] = $key;
+                $remainingCardAttributes[$key]['fieldClass'] = ['cvd-field'];
             }
         }
 
         // get all the custom fields that are set to be visible in the card body
-        // todo: maybe we need to exclude thumbs from here cause changing a position of such field has no effect?
         $fldOptions = [];
         foreach ($fieldLayout->getCardBodyFields(null) as $bodyField) {
-            $fldOptions[] = [
+            $fldOptions['layoutElement:' . $bodyField->uid] = [
                 'label' => $bodyField->label(),
                 'value' => 'layoutElement:' . $bodyField->uid,
-                'fieldClass' => ['disabled'],
+                'fieldClass' => ['disabled', 'cvd-field'],
                 'checked' => true, // all fields that are set to show in the card are selected and cannot be unchecked
             ];
         }
 
         // merge selected card attributes with selected fields and sort them by the cardView order
-        $selectedOptions = array_values(array_merge($fldOptions, $selectedCardAttributes));
-        $cardViewValues = $fieldLayout->getCardView();
-        array_multisort($cardViewValues, SORT_ASC, $selectedOptions);
+        $selectedOptions = array_replace(
+            array_flip($fieldLayout->getCardView()),
+            array_merge($fldOptions, $selectedCardAttributes)
+        );
+
 
         // sort the remaining attributes alphabetically
         ksort($remainingCardAttributes);

@@ -398,10 +398,10 @@ $gridColor: var(--gray-100);
 .card-view-designer {
   .draggable {
     display: flex;
-
-    .field {
-      margin-top: 0.2em;
-      margin-inline-start: 0.5em;
-    }
   }
+}
+
+.field.cvd-field {
+  margin-top: 0.2em !important;
+  margin-inline-start: 0.5em;
 }
