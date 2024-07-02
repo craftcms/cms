@@ -502,7 +502,6 @@ class User extends Element implements IdentityInterface
         return array_merge(parent::defineCardAttributes(), [
             'email' => ['label' => Craft::t('app', 'Email')],
             'username' => ['label' => Craft::t('app', 'Username')],
-            'fullName' => ['label' => Craft::t('app', 'Full Name')],
             'firstName' => ['label' => Craft::t('app', 'First Name')],
             'lastName' => ['label' => Craft::t('app', 'Last Name')],
             'groups' => ['label' => Craft::t('app', 'Groups')],

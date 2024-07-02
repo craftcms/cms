@@ -225,6 +225,7 @@ return [
     'Canton' => 'Canton',
     'Can’t run Craft CMS' => 'Can’t run Craft CMS',
     'Captions/Subtitles' => 'Captions/Subtitles',
+    'Card View' => 'Card View',
     'Cards' => 'Cards',
     'Cart' => 'Cart',
     'Categories' => 'Categories',

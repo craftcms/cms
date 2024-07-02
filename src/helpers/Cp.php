@@ -2294,10 +2294,19 @@ JS, [
             ];
         }
 
-        // merge selected card attributes with selected fields and sort them by the cardView order
+        // merge selected card attributes with selected fields
+        $selectedOptions = array_merge($fldOptions, $selectedCardAttributes);
+        $cardViewValues = $fieldLayout->getCardView();
+
+        // make sure we don't have any cardViewValues that are no longer allowed to show in cards
+        $cardViewValues = array_filter($cardViewValues, function($value) use ($selectedOptions) {
+            return isset($selectedOptions[$value]);
+        });
+
+        // sort all selected options by the cardView order
         $selectedOptions = array_replace(
-            array_flip($fieldLayout->getCardView()),
-            array_merge($fldOptions, $selectedCardAttributes)
+            array_flip($cardViewValues),
+            $selectedOptions
         );
 
 

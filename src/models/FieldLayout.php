@@ -796,9 +796,17 @@ class FieldLayout extends Model
             $fields['layoutElement:' . $field->uid] = $field;
         }
 
+        $elements = array_merge($fields, $attributes);
+        $cardViewValues = $this->getCardView();
+
+        // make sure we don't have any cardViewValues that are no longer allowed to show in cards
+        $cardViewValues = array_filter($cardViewValues, function($value) use ($elements) {
+            return isset($elements[$value]);
+        });
+
         return array_replace(
-            array_flip($this->getCardView()),
-            array_merge($fields, $attributes)
+            array_flip($cardViewValues),
+            $elements
         );
     }
 

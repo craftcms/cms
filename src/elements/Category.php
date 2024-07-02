@@ -346,7 +346,6 @@ class Category extends Element
     protected static function defineCardAttributes(): array
     {
         return array_merge(parent::defineCardAttributes(), [
-            'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
             'parent' => ['label' => Craft::t('app', 'Parent')],
         ]);
     }
