@@ -417,7 +417,6 @@ interface ElementInterface extends
      * @param bool $includeContainer
      * @param bool $selectable
      * @param bool $sortable
-     * @param bool $prevalidate
      * @return string The element index HTML
      */
     public static function indexHtml(
@@ -429,7 +428,6 @@ interface ElementInterface extends
         bool $includeContainer,
         bool $selectable,
         bool $sortable,
-        bool $prevalidate = false,
     ): string;
 
     /**

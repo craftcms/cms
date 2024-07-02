@@ -1179,13 +1179,13 @@ abstract class Element extends Component implements ElementInterface
         bool $includeContainer,
         bool $selectable,
         bool $sortable,
-        bool $prevalidate = false,
     ): string {
+        $request = Craft::$app->getRequest();
         $variables = [
             'viewMode' => $viewState['mode'],
             'context' => $context,
             'disabledElementIds' => $disabledElementIds,
-            'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
+            'collapsedElementIds' => $request->getParam('collapsedElementIds'),
             'selectable' => $selectable,
             'sortable' => $sortable,
             'showHeaderColumn' => $viewState['showHeaderColumn'] ?? false,
@@ -1282,7 +1282,7 @@ abstract class Element extends Component implements ElementInterface
         // See if there are any provisional drafts we should swap these out with
         ElementHelper::swapInProvisionalDrafts($elements);
 
-        if ($prevalidate) {
+        if ($request->getParam('prevalidate')) {
             foreach ($elements as $element) {
                 if ($element->enabled && $element->getEnabledForSite()) {
                     $element->setScenario(Element::SCENARIO_LIVE);
