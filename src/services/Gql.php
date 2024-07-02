@@ -1720,7 +1720,7 @@ class Gql extends Component
      */
     private function userSchemaComponents(): array
     {
-        if (Craft::$app->edition !== CmsEdition::Pro) {
+        if (Craft::$app->edition === CmsEdition::Solo) {
             return [[], []];
         }
 

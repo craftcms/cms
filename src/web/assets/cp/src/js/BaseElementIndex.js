@@ -3329,7 +3329,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           onSelectionChange: this._handleSelectionChange.bind(this),
           onSortChange: this.settings.onSortChange,
         },
-        this.getViewSettings()
+        this.getViewSettings(),
+        this.settings.viewSettings()
       );
 
       // Kill the old view class
@@ -3777,6 +3778,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       preferStoredSource: false,
       showSourcePath: true,
       canHaveDrafts: false,
+      viewSettings: $.noop,
 
       elementTypeName: Craft.t('app', 'Element'),
       elementTypePluralName: Craft.t('app', 'Elements'),

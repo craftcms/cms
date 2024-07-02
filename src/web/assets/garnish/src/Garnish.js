@@ -41,6 +41,7 @@ Garnish.ltr = !Garnish.rtl;
 
 Garnish = $.extend(Garnish, {
   $scrollContainer: Garnish.$win,
+  resizeEventsMuted: false,
 
   // Key code constants
   BACKSPACE_KEY: 8,
@@ -489,9 +490,21 @@ Garnish = $.extend(Garnish, {
    */
   setFocusWithin: function (container) {
     const $container = $(container);
-    const $firstFocusable = $(container).find(
-      ':focusable:not(.checkbox):first'
+    let $firstFocusable = $(container).find(
+      ':focusable:not(.checkbox):not(.prevent-autofocus):first'
     );
+
+    // if the first visible .field container is not the parent of the first focusable element we found
+    // just focus on the container;
+    // this can happen if e.g. you have an entry without a title and the first field is a ckeditor field;
+    // in such case the second (or further) element would get focus on initial load, which can be confusing
+    // see https://github.com/craftcms/cms/issues/15245
+    if (
+      $container.find('.field:visible:first')[0] !==
+      $firstFocusable.parents('.field')[0]
+    ) {
+      $firstFocusable = [];
+    }
 
     if ($firstFocusable.length > 0) {
       $firstFocusable.trigger('focus');
@@ -908,6 +921,31 @@ Garnish = $.extend(Garnish, {
       }
     }
   },
+
+  once: function (target, events, data, handler) {
+    if (typeof target === 'undefined') {
+      console.warn('Garnish.once() called for an invalid target class.');
+      return;
+    }
+
+    if (typeof data === 'function') {
+      handler = data;
+      data = {};
+    }
+
+    const onceler = (event) => {
+      this.off(target, events, onceler);
+      handler(event);
+    };
+    this.on(target, events, data, onceler);
+  },
+
+  muteResizeEvents: function (callback) {
+    const resizeEventsMuted = Garnish.resizeEventsMuted;
+    Garnish.resizeEventsMuted = true;
+    callback();
+    Garnish.resizeEventsMuted = resizeEventsMuted;
+  },
 });
 
 Object.assign(Garnish, {
@@ -957,7 +995,9 @@ function getErd() {
 }
 
 function triggerResizeEvent(elem) {
-  $(elem).trigger('resize');
+  if (!Garnish.resizeEventsMuted) {
+    $(elem).trigger('resize');
+  }
 }
 
 // Work them into jQuery's event system

@@ -196,7 +196,7 @@ JS, [static::class]);
                             $elementsService->canView($descendant, $user) &&
                             $elementsService->canDelete($descendant, $user)
                         ) {
-                            $this->deleteElement($element, $elementsService, $deleteOwnership);
+                            $this->deleteElement($descendant, $elementsService, $deleteOwnership);
                             $deletedElementIds[$descendant->id] = true;
                         }
                     }

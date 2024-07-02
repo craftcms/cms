@@ -1049,6 +1049,7 @@ class ElementIndexesController extends BaseElementsController
         /** @var ElementInterface|null $element */
         $element = $elementType::find()
             ->draftOf($id)
+            ->draftCreator(static::currentUser())
             ->provisionalDrafts()
             ->siteId($siteId)
             ->status(null)

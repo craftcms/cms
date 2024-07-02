@@ -858,6 +858,26 @@ class ElementHelper
     }
 
     /**
+     * Returns the URL that users should be redirected to after editing the given element.
+     *
+     * @param ElementInterface $element
+     * @return string
+     * @since 5.2.0
+     */
+    public static function postEditUrl(ElementInterface $element): string
+    {
+        if ($element instanceof NestedElementInterface) {
+            // redirect to the owner's edit page, if possible
+            $ownerEditUrl = $element->getOwner()?->getCpEditUrl();
+            if ($ownerEditUrl) {
+                return $ownerEditUrl;
+            }
+        }
+
+        return $element->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+    }
+
+    /**
      * Returns an element action’s JavaScript configuration.
      *
      * @param ElementActionInterface $action
@@ -908,7 +928,10 @@ class ElementHelper
             $variables[$refHandle] = $element;
             try {
                 $output[] = $view->renderTemplate($template, $variables, View::TEMPLATE_MODE_SITE);
-            } catch (TwigLoaderError) {
+            } catch (TwigLoaderError $error) {
+                if ($error->getSourceContext() !== null) {
+                    throw $error;
+                }
                 // fallback to the string representation of the element
                 $output[] = Html::tag('p', Html::encode((string)$element));
             }
@@ -925,6 +948,11 @@ class ElementHelper
      */
     public static function swapInProvisionalDrafts(array &$elements): void
     {
+        $user = Craft::$app->getUser()->getIdentity();
+        if (!$user) {
+            return;
+        }
+
         $canonicalElements = array_filter($elements, fn(ElementInterface $element) => $element->getIsCanonical());
 
         if (empty($canonicalElements)) {
@@ -939,6 +967,7 @@ class ElementHelper
 
         $drafts = $first::find()
             ->draftOf($canonicalElements)
+            ->draftCreator($user)
             ->provisionalDrafts()
             ->siteId($first->siteId)
             ->status(null)
@@ -952,7 +981,19 @@ class ElementHelper
         // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
         foreach ($canonicalElements as $i => $element) {
             if (isset($drafts[$element->id])) {
-                $elements[$i] = $drafts[$element->id];
+                $draft = $drafts[$element->id];
+                $draft->setCanonical($element);
+
+                // retain canonical element structure data => ['root', 'lft', 'rgt', 'level']
+                if ($element->structureId !== null) {
+                    $draft->structureId = $element->structureId;
+                    $draft->root = $element->root;
+                    $draft->lft = $element->lft;
+                    $draft->rgt = $element->rgt;
+                    $draft->level = $element->level;
+                }
+
+                $elements[$i] = $draft;
             }
         }
     }

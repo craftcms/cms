@@ -272,12 +272,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
     },
 
+    /** @deprecated */
     focusLastRemoveBtn: function () {
-      const $removeBtns = this.$container.find('.delete');
+      this.focusLastActionBtn();
+    },
 
-      if (!$removeBtns.length) return;
-
-      $removeBtns.last()[0].focus();
+    focusLastActionBtn: function () {
+      this.$container.find('.action-btn').last().focus();
     },
 
     resetElements: function () {
@@ -586,7 +587,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       if ($nextElement?.length) {
         $nextElement.focus();
       } else {
-        this.focusNextLogicalElement();
+        setTimeout(() => {
+          this.focusNextLogicalElement();
+        }, 200);
       }
 
       this.$elements = this.$elements.not($elements);
@@ -624,36 +627,32 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       } else {
         for (let i = 0; i < $elements.length; i++) {
           const $element = $elements.eq(i);
-          this.animateElementAway($element, () => {
-            $element.parent('li').remove();
-          });
+          const $li = $element.parent('li');
+          this.animateElementAway($element);
+          $li.remove();
         }
       }
     },
 
     animateElementAway: function ($element, callback) {
-      $element.css('z-index', 0);
+      const offset = $element.offset();
+      $element.appendTo(Garnish.$bod).css({
+        'z-index': 0,
+        position: 'absolute',
+        top: offset.top,
+        left: offset.left,
+      });
 
-      var animateCss = {
+      const animateCss = {
         opacity: -1,
+        left: offset.left + 100 * (Craft.orientation === 'ltr' ? -1 : 1),
       };
-      animateCss['margin-' + Craft.left] = -(
-        $element.outerWidth() + parseInt($element.css('margin-' + Craft.right))
-      );
-
-      if (
-        ['list', 'cards'].includes(this.settings.viewMode) ||
-        this.$elements.length === 0
-      ) {
-        animateCss['margin-bottom'] = -(
-          $element.outerHeight() + parseInt($element.css('margin-bottom'))
-        );
-      }
 
       $element.velocity(
         animateCss,
         Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
         () => {
+          $element.remove();
           if (callback) {
             callback();
           }
@@ -998,10 +997,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       // Is this the last one?
       if (i === $allElements.length - 1) {
+        const $li = $allElements.first().parent().parent();
+        const $ul = $li.parent();
         callback = () => {
-          const $li = $allElements.first().parent().parent();
-          const $ul = $li.parent();
-
           if ($ul[0] === this.$elementsContainer[0] || $li.siblings().length) {
             $li.remove();
           } else {

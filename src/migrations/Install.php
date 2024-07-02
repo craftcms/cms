@@ -224,6 +224,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
             'auth2faSecret' => $this->string()->defaultValue(null),
+            'oldTimestamp' => $this->integer()->unsigned()->defaultValue(null),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
         ]);

@@ -1269,6 +1269,11 @@ abstract class Element extends Component implements ElementInterface
         $elements = static::indexElements($elementQuery, $sourceKey);
 
         if (empty($elements)) {
+            if ($elementQuery->offset) {
+                // load-more request
+                return '';
+            }
+
             return Html::tag('div', Craft::t('app', 'Nothing yet.'), [
                 'class' => ['zilch', 'small'],
             ]);
@@ -3595,8 +3600,8 @@ JS, [
                 $view->namespaceInputId($editId),
                 static::class,
                 [
-                    'elementId' => $this->id,
-                    'draftId' => $this->draftId,
+                    'elementId' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
+                    'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
                     'revisionId' => $this->revisionId,
                     'siteId' => $this->siteId,
                 ],
@@ -3630,7 +3635,7 @@ JS, [
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
         $isCurrent = $isCanonical || $this->isProvisionalDraft;
         $canonical = $this->getCanonical(true);
-        $redirectUrl = $this->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+        $redirectUrl = ElementHelper::postEditUrl($this);
 
         // Site info
         $supportedSites = ElementHelper::supportedSitesForElement($this, true);
@@ -5230,7 +5235,8 @@ JS, [
     {
         switch ($attribute) {
             case 'ancestors':
-                $ancestors = $this->getAncestors();
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                $ancestors = $element->getAncestors();
                 if (!$ancestors instanceof ElementCollection || $ancestors->isEmpty()) {
                     return '';
                 }
@@ -5241,18 +5247,20 @@ JS, [
                 return $html . Html::endTag('ul');
 
             case 'parent':
-                $parent = $this->getParent();
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                $parent = $element->getParent();
                 return $parent ? Cp::elementChipHtml($parent) : '';
 
             case 'status':
                 return Cp::componentStatusLabelHtml($this);
 
             case 'link':
-                if (ElementHelper::isDraftOrRevision($this)) {
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                if (ElementHelper::isDraftOrRevision($element)) {
                     return '';
                 }
 
-                $url = $this->getUrl();
+                $url = $element->getUrl();
 
                 if ($url !== null) {
                     return Html::beginTag('a', [
@@ -5271,14 +5279,15 @@ JS, [
                 return '';
 
             case 'uri':
-                if ($this->getIsDraft() && ElementHelper::isTempSlug($this->slug)) {
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                if ($element->getIsDraft() && ElementHelper::isTempSlug($element->slug)) {
                     return '';
                 }
 
-                $url = $this->getUrl();
+                $url = $element->getUrl();
 
                 if ($url !== null) {
-                    if ($this->getIsHomepage()) {
+                    if ($element->getIsHomepage()) {
                         $value = Html::tag('span', '', [
                             'data-icon' => 'home',
                             'title' => Craft::t('app', 'Homepage'),
@@ -5295,7 +5304,7 @@ JS, [
                             $replace[] = $wordSeparator . '<wbr>';
                         }
 
-                        $value = str_replace($find, $replace, $this->uri);
+                        $value = str_replace($find, $replace, $element->uri);
                     }
 
                     return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
@@ -5317,7 +5326,8 @@ JS, [
                 return Html::encode($this->slug);
 
             case 'revisionNotes':
-                $revision = $this->getCurrentRevision();
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                $revision = $element->getCurrentRevision();
                 if (!$revision) {
                     return '';
                 }
@@ -5329,7 +5339,8 @@ JS, [
                 return Html::encode($behavior->revisionNotes);
 
             case 'revisionCreator':
-                $revision = $this->getCurrentRevision();
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                $revision = $element->getCurrentRevision();
                 if (!$revision) {
                     return '';
                 }
@@ -5342,11 +5353,12 @@ JS, [
                 return $creator ? Cp::elementChipHtml($creator) : '';
 
             case 'drafts':
-                if (!$this->hasEagerLoadedElements('drafts')) {
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                if (!$element->hasEagerLoadedElements('drafts')) {
                     return '';
                 }
 
-                $drafts = $this->getEagerLoadedElements('drafts')->all();
+                $drafts = $element->getEagerLoadedElements('drafts')->all();
 
                 foreach ($drafts as $draft) {
                     /** @var ElementInterface|DraftBehavior $draft */

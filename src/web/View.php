@@ -24,6 +24,7 @@ use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\FeExtension;
 use craft\web\twig\GlobalsExtension;
+use craft\web\twig\SafeHtml;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use LogicException;
@@ -32,6 +33,7 @@ use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
+use Twig\Extension\EscaperExtension;
 use Twig\Extension\ExtensionInterface;
 use Twig\Extension\StringLoaderExtension;
 use Twig\Template as TwigTemplate;
@@ -229,6 +231,12 @@ class View extends \yii\web\View
     private array $_deltaNames = [];
 
     /**
+     * @var string[] The registered modified delta input names.
+     * @see registerDeltaName()
+     */
+    private array $_modifiedDeltaNames = [];
+
+    /**
      * @var array The initial delta input values.
      * @see setInitialDeltaValue()
      */
@@ -369,6 +377,10 @@ class View extends \yii\web\View
         }
 
         $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
+
+        // Mark SafeHtml as a safe interface
+        $escaper = $twig->getExtension(EscaperExtension::class);
+        $escaper->addSafeClass(SafeHtml::class, ['html']);
 
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
@@ -1455,12 +1467,18 @@ JS;
      * (see [[getIsDeltaRegistrationActive()]]).
      *
      * @param string $inputName
+     * @param bool $forceModified Whether the name should be considered modified regardless of the initial form value
      * @since 3.4.0
      */
-    public function registerDeltaName(string $inputName): void
+    public function registerDeltaName(string $inputName, bool $forceModified = false): void
     {
         if ($this->_registerDeltaNames) {
-            $this->_deltaNames[] = $this->namespaceInputName($inputName);
+            $inputName = $this->namespaceInputName($inputName);
+            $this->_deltaNames[] = $inputName;
+
+            if ($forceModified) {
+                $this->_modifiedDeltaNames[] = $inputName;
+            }
         }
     }
 
@@ -1516,7 +1534,7 @@ JS;
     }
 
     /**
-     * Returns all of the registered delta input names.
+     * Returns all the registered delta input names.
      *
      * @return string[]
      * @see registerDeltaName()
@@ -1525,6 +1543,18 @@ JS;
     public function getDeltaNames(): array
     {
         return $this->_deltaNames;
+    }
+
+    /**
+     * Returns all the registered delta input names that should be considered modified.
+     *
+     * @return string[]
+     * @see registerDeltaName()
+     * @since 4.10.1
+     */
+    public function getModifiedDeltaNames(): array
+    {
+        return $this->_modifiedDeltaNames;
     }
 
     /**

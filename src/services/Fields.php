@@ -38,6 +38,7 @@ use craft\fields\Email;
 use craft\fields\Entries as EntriesField;
 use craft\fields\Icon;
 use craft\fields\Lightswitch;
+use craft\fields\Link;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
 use craft\fields\Money;
@@ -48,7 +49,6 @@ use craft\fields\RadioButtons;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Time;
-use craft\fields\Url;
 use craft\fields\Users as UsersField;
 use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
@@ -222,6 +222,7 @@ class Fields extends Component
             EntriesField::class,
             Icon::class,
             Lightswitch::class,
+            Link::class,
             MatrixField::class,
             Money::class,
             MultiSelect::class,
@@ -231,7 +232,6 @@ class Fields extends Component
             TableField::class,
             TagsField::class,
             Time::class,
-            Url::class,
             UsersField::class,
         ];
 
