@@ -1391,6 +1391,9 @@ class Request extends \yii\web\Request
      */
     protected function generateCsrfToken(): string
     {
+        // Ensure the response is not cached by the browser or static cache proxies.
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         $existingToken = $this->loadCsrfToken();
 
         // They have an existing CSRF token.
