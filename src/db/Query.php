@@ -18,7 +18,6 @@ use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\db\Connection as YiiConnection;
-use yii\db\ExpressionInterface;
 
 /**
  * Class Query
@@ -218,17 +217,46 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
     /**
      * @inheritdoc
      */
-    protected function normalizeSelect($columns)
+    public function groupBy($columns): static
     {
-        if ($columns instanceof ExpressionInterface) {
-            $columns = [$columns];
-        } elseif (!is_array($columns)) {
+        $this->splitColumns($columns);
+        return parent::groupBy($columns);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addGroupBy($columns): static
+    {
+        $this->splitColumns($columns);
+        return parent::addGroupBy($columns);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function normalizeSelect($columns): array
+    {
+        $this->splitColumns($columns);
+        return parent::normalizeSelect($columns);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function normalizeOrderBy($columns): array
+    {
+        $this->splitColumns($columns);
+        return parent::normalizeOrderBy($columns);
+    }
+
+    private function splitColumns(mixed &$columns): void
+    {
+        if (is_string($columns)) {
             // match commas that are not preceded by `DECIMAL(` and one or two digits
             // e.g. the comma in `DECIMAL(65,15)` shouldn't be matched, but the one in `test12, test13` should
-            $columns = preg_split('/(?<!DECIMAL\(\d)(?<!DECIMAL\(\d\d)\s*,\s*/', trim((string)$columns), -1, PREG_SPLIT_NO_EMPTY);
+            $columns = preg_split('/(?<!DECIMAL\(\d)(?<!DECIMAL\(\d\d)\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
         }
-
-        return parent::normalizeSelect($columns);
     }
 
     // Execution functions
