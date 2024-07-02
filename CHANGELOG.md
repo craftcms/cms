@@ -10,6 +10,7 @@
 - Fixed a bug where it wasn’t possible to set `title` values on nested Matrix entries, when saving section entries via GraphQL. ([#15270](https://github.com/craftcms/cms/issues/15270))
 - Fixed a SQL error that could occur if a `DECIMAL()` expression was passed into a query’s `select()` or `groupBy()` methods. ([#15271](https://github.com/craftcms/cms/issues/15271))
 - Fixed a bug where the “Delete (with descendants)” element action wasn’t deleting descendants. ([#15273](https://github.com/craftcms/cms/issues/15273))
+- Fixed an error that could occur when upgrading to Craft 5 if the database user didn’t have permission to disable foreign key constraints. ([#15262](https://github.com/craftcms/cms/issues/15262))
 
 ## 5.2.4.1 - 2024-06-27
 
