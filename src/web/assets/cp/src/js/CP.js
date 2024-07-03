@@ -26,6 +26,7 @@ Craft.CP = Garnish.Base.extend(
     $crumbMenuList: null,
     $crumbMenuItems: null,
     $notificationContainer: null,
+    $notificationHeading: null,
     $main: null,
     $primaryForm: null,
     $headerContainer: null,
@@ -44,6 +45,8 @@ Craft.CP = Garnish.Base.extend(
 
     isMobile: null,
     fixedHeader: false,
+
+    hasActiveNotifications: false,
 
     tabManager: null,
 
@@ -85,6 +88,7 @@ Craft.CP = Garnish.Base.extend(
       this.$crumbList = $('#crumb-list');
       this.$crumbItems = this.$crumbList.children('li');
       this.$notificationContainer = $('#notifications');
+      this.$notificationHeading = $('#cp-notification-heading');
       this.$main = $('#main');
       this.$primaryForm = $('#main-form');
       this.$headerContainer = $('#header-container');
@@ -357,6 +361,11 @@ Craft.CP = Garnish.Base.extend(
 
       // Load any element thumbs
       this.elementThumbLoader.load(this.$pageContainer);
+
+      // Add notification close listeners
+      this.on('notificationClose', () => {
+        this._updateNotificationHeadingDisplay();
+      });
     },
 
     get $contentHeader() {
@@ -378,6 +387,10 @@ Craft.CP = Garnish.Base.extend(
       return $('<div id="content-notice"/>')
         .attr('role', 'status')
         .prependTo(this.$contentHeader);
+    },
+
+    get notificationCount() {
+      return this.$notificationContainer.find('.notification').length;
     },
 
     initSpecialForms: function () {
@@ -875,6 +888,17 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
+    /**
+     * Updates display property of "Notifications" heading based on whether there are active notifications
+     **/
+    updateNotificationHeadingDisplay() {
+      if (this.notificationCount > 0) {
+        this.$notificationHeading.removeClass('hidden');
+      } else {
+        this.$notificationHeading.addClass('hidden');
+      }
+    },
+
     _setFixedTopPos: function ($element, headerHeight) {
       if (!$element.length || !this.$contentContainer.length) {
         return;
@@ -918,6 +942,8 @@ Craft.CP = Garnish.Base.extend(
         message,
         notification,
       });
+
+      this._updateNotificationHeadingDisplay();
 
       return notification;
     },
@@ -1817,6 +1843,7 @@ Craft.CP.Notification = Garnish.Base.extend({
         duration: 'fast',
         complete: () => {
           this.destroy();
+          Craft.cp.trigger('notificationClose');
         },
       }
     );
