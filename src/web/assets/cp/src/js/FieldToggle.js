@@ -156,9 +156,6 @@ Craft.FieldToggle = Garnish.Base.extend({
             this.$toggle.hasClass('collapsed') ||
             !this.$toggle.hasClass('expanded');
           break;
-        case 'checkbox':
-          this.onToggleChange._show = this.$toggle.prop('checked');
-          break;
         default:
           this.onToggleChange._show = !!this.getToggleVal();
       }
