@@ -893,6 +893,7 @@ JS;
         $entryTypes = $this->getEntryTypes();
         $config = [
             'showInGrid' => $this->showCardsInGrid,
+            'prevalidate' => false,
         ];
 
         if (!$static) {
@@ -912,6 +913,10 @@ JS;
                 'minElements' => $this->minEntries,
                 'maxElements' => $this->maxEntries,
             ];
+
+            if ($owner->hasErrors($this->handle)) {
+                $config['prevalidate'] = true;
+            }
         }
 
         if ($this->viewMode === self::VIEW_MODE_CARDS) {
@@ -1005,7 +1010,20 @@ JS;
 
                 if (!$entry->validate()) {
                     $key = $entry->uid ?? sprintf('new%s', ++$new);
-                    $element->addModelErrors($entry, sprintf('%s[%s]', $this->handle, $key));
+                    // we only want to show the nested entries errors when the matrix field is in blocks view mode;
+                    if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+                        $element->addModelErrors($entry, sprintf('%s[%s]', $this->handle, $key));
+                    } else {
+                        // in other modes, we want to show a top level error to let users know
+                        // that there are validation errors in the nested element
+                        $element->addError(
+                            $this->handle,
+                            Craft::t('app', 'Validation errors found in the “{title}“ entry in the *{fieldName}* field. Please fix them.', [
+                                'title' => $entry->title,
+                                'fieldName' => $this->getUiLabel(),
+                            ])
+                        );
+                    }
                     $allEntriesValidate = false;
                 }
             }
