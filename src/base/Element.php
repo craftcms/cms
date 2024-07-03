@@ -47,7 +47,6 @@ use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterElementCardAttributesEvent;
-use craft\events\RegisterElementDefaultCardAttributesEvent;
 use craft\events\RegisterElementDefaultTableAttributesEvent;
 use craft\events\RegisterElementExportersEvent;
 use craft\events\RegisterElementFieldLayoutsEvent;
@@ -282,12 +281,6 @@ abstract class Element extends Component implements ElementInterface
      * @since 5.3.0
      */
     public const EVENT_REGISTER_CARD_ATTRIBUTES = 'registerCardAttributes';
-
-    /**
-     * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
-     * @since 5.3.0
-     */
-    public const EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES = 'registerDefaultCardAttributes';
 
     /**
      * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
@@ -1520,38 +1513,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function defaultCardAttributes(): array
-    {
-        $cardAttributes = static::defineDefaultCardAttributes();
-
-        // Fire a 'registerDefaultCardAttributes' event
-        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES)) {
-            $event = new RegisterElementDefaultCardAttributesEvent([
-                'cardAttributes' => $cardAttributes,
-            ]);
-            Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES, $event);
-            return $event->cardAttributes;
-        }
-
-        return $cardAttributes;
-    }
-
-    /**
-     * Returns the list of card attribute keys that should be shown by default.
-     *
-     * @return string[] The card attributes.
-     * @see defaultCardAttributes()
-     * @see cardAttributes()
-     * @since 5.3.0
-     */
-    protected static function defineDefaultCardAttributes(): array
-    {
-        return [];
     }
 
     // Methods for customizing element queries
