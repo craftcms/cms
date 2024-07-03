@@ -1804,6 +1804,10 @@ li.breadcrumb-toggle-wrapper {
     box-sizing: border-box;
   }
 
+  & > .field .status-badge {
+    left: calc(var(--row-gap) - var(--padding));
+  }
+
   & > h2 {
     flex: 4 0 100%;
 
