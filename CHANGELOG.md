@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Craft now sends no-cache headers for any request that gets a CSRF token. ([#15293](https://github.com/craftcms/cms/pull/15293))
+
 ## 4.10.4 - 2024-07-02
 
 - Craft now sends no-cache headers for any request that generates a CSRF token. ([#15281](https://github.com/craftcms/cms/pull/15281), [verbb/formie#1963](https://github.com/verbb/formie/issues/1963))
