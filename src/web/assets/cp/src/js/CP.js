@@ -46,8 +46,6 @@ Craft.CP = Garnish.Base.extend(
     isMobile: null,
     fixedHeader: false,
 
-    hasActiveNotifications: false,
-
     tabManager: null,
 
     enableQueue: true,
