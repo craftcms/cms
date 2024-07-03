@@ -150,14 +150,14 @@ Craft.FieldToggle = Garnish.Base.extend({
     } else {
       this.findTargets();
 
-      switch (this.type) {
-        case 'link':
-          this.onToggleChange._show =
-            this.$toggle.hasClass('collapsed') ||
-            !this.$toggle.hasClass('expanded');
-          break;
-        default:
-          this.onToggleChange._show = !!this.getToggleVal();
+      if (this.type === 'link') {
+        this.onToggleChange._show =
+          this.$toggle.hasClass('collapsed') ||
+          !this.$toggle.hasClass('expanded');
+      } else if (this.type === 'checkbox' && this.targetPrefix !== null) {
+        this.onToggleChange._show = this.$toggle.prop('checked');
+      } else {
+        this.onToggleChange._show = !!this.getToggleVal();
       }
 
       if (this.onToggleChange._show) {
