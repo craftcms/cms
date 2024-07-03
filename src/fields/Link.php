@@ -246,6 +246,7 @@ class Link extends Field implements InlineEditableFieldInterface
         $html = Cp::checkboxSelectFieldHtml([
             'label' => Craft::t('app', 'Allowed Link Types'),
             'id' => 'types',
+            'fieldClass' => 'mb-0',
             'name' => 'types',
             'options' => $linkTypeOptions,
             'values' => $this->types,
@@ -261,13 +262,16 @@ class Link extends Field implements InlineEditableFieldInterface
             $typeSettingsHtml = $view->namespaceInputs(fn() => $linkType->getSettingsHtml(), "typeSettings[$typeId]");
             if ($typeSettingsHtml) {
                 $html .=
+                    Html::beginTag('div', [
+                        'id' => "types-$typeId",
+                        'class' => array_keys(array_filter([
+                            'pt-xl' => true,
+                            'hidden' => !isset($linkTypes[$typeId]),
+                        ])),
+                    ]) .
                     Html::tag('hr') .
-                    Html::tag('div', $typeSettingsHtml, [
-                    'id' => "types-$typeId",
-                    'class' => array_keys(array_filter([
-                        'hidden' => !isset($linkTypes[$typeId]),
-                    ])),
-                ]);
+                    $typeSettingsHtml .
+                    Html::endTag('div');
             }
         }
 
