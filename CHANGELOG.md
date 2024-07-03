@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Craft now sends no-cache headers for any request that gets a CSRF token. ([#15293](https://github.com/craftcms/cms/pull/15293))
+- Craft now sends no-cache headers for any request that calls `craft\web\Request::getCsrfToken()`. ([#15293](https://github.com/craftcms/cms/pull/15293), [#15281](https://github.com/craftcms/cms/pull/15281))
 
 ## 4.10.4 - 2024-07-02
 
