@@ -3364,7 +3364,7 @@ abstract class Element extends Component implements ElementInterface
                     return $item->previewHtml($this);
                 }
 
-                return $this->attributeHtml($item['value']);
+                return $this->getAttributeHtml($item['value']);
             },
             $this->getFieldLayout()?->getCardBodyElements($this) ?? [],
         ));
