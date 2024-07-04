@@ -269,6 +269,18 @@ trait NestedElementTrait
     /**
      * @inheritdoc
      */
+    public function addInvalidNestedElementIds(array $ids): void
+    {
+        parent::addInvalidNestedElementIds($ids);
+
+        if (isset($this->_owner)) {
+            $this->_owner->addInvalidNestedElementIds($ids);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
         switch ($plan->handle) {

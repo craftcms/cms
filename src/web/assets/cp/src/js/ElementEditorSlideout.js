@@ -138,6 +138,35 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       }
     },
 
+    handleSubmitError: function (e) {
+      this.base(e);
+
+      // update the `error` class in nested cards
+      if (e?.response?.data?.invalidNestedElementIds) {
+        const $cards = this.$content.find('.element.card').removeClass('error');
+        $cards
+          .find('craft-element-label > span[icon=triangle-exclamation]')
+          .remove();
+        if (e.response.data.invalidNestedElementIds.length) {
+          const $errorCards = $cards
+            .filter(
+              e.response.data.invalidNestedElementIds
+                .map((id) => `[data-id=${id}]`)
+                .join(',')
+            )
+            .addClass('error');
+          for (let i = 0; i < $errorCards.length; i++) {
+            const $label = $errorCards.eq(i).find('craft-element-label');
+            $('<span/>', {
+              'data-icon': 'triangle-exclamation',
+              'aria-label': Craft.t('app', 'Error'),
+              role: 'img',
+            }).appendTo($label);
+          }
+        }
+      }
+    },
+
     destroy: function () {
       this.elementEditor.destroy();
       delete this.elementEditor;

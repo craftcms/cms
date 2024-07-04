@@ -536,8 +536,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         .then((response) => {
           this.handleSubmitResponse(response);
         })
-        .catch((error) => {
-          this.handleSubmitError(error);
+        .catch((e) => {
+          this.handleSubmitError(e);
         })
         .finally(() => {
           this.hideSubmitSpinner();
@@ -562,17 +562,13 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       }
     },
 
-    handleSubmitError: function (error) {
-      if (
-        !error.isAxiosError ||
-        !error.response ||
-        !error.response.status === 400
-      ) {
+    handleSubmitError: function (e) {
+      if (!e.isAxiosError || !e.response || !e.response.status === 400) {
         Craft.cp.displayError();
-        throw error;
+        throw e;
       }
 
-      const data = error.response.data || {};
+      const data = e.response.data || {};
       Craft.cp.displayError(data.message);
       if (data.errors) {
         this.showErrors(data.errors);
