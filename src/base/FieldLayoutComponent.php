@@ -329,7 +329,7 @@ abstract class FieldLayoutComponent extends Model
         // Fire a 'defineShowInForm' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_SHOW_IN_FORM)) {
             $event = new DefineShowFieldLayoutComponentInFormEvent([
-                'fieldLayout' => $this->_layout,
+                'fieldLayout' => $this->getLayout(),
                 'element' => $element,
             ]);
             $this->trigger(self::EVENT_DEFINE_SHOW_IN_FORM, $event);
