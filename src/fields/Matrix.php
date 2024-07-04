@@ -1019,7 +1019,7 @@ JS;
                         $element->addError(
                             $this->handle,
                             Craft::t('app', 'Validation errors found in the “{title}“ entry in the *{fieldName}* field. Please fix them.', [
-                                'title' => $entry->title,
+                                'title' => !empty($entry->title) ? $entry->title : $entry->id,
                                 'fieldName' => $this->getUiLabel(),
                             ])
                         );
