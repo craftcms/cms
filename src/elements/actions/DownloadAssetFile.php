@@ -35,6 +35,16 @@ class DownloadAssetFile extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
+        validateSelection: (selectedItems, elementIndex) => {
+          for (let i = 0; i < selectedItems.length; i++) {
+            const element = selectedItems.eq(i).find('.element');
+            if (Garnish.hasAttr(element, 'data-is-folder')) {
+              return false;
+            }
+          }
+          
+          return true;
+        },
         activate: (selectedItems, elementIndex) => {
             var \$form = Craft.createForm().appendTo(Garnish.\$bod);
             $(Craft.getCsrfInput()).appendTo(\$form);

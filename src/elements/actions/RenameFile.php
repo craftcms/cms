@@ -37,7 +37,10 @@ class RenameFile extends ElementAction
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: false,
-        validateSelection: (selectedItems, elementIndex) => Garnish.hasAttr(selectedItems.find('.element'), 'data-movable'),
+        validateSelection: (selectedItems, elementIndex) => {
+          return !Garnish.hasAttr(selectedItems.find('.element'), 'data-is-folder') && 
+            Garnish.hasAttr(selectedItems.find('.element'), 'data-movable')
+        },
         activate: (selectedItems, elementIndex) => {
             const \$element = selectedItems.find('.element')
             const assetId = \$element.data('id');

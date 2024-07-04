@@ -51,7 +51,13 @@ class PreviewAsset extends ElementAction
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: false,
-        validateSelection: (selectedItems, elementIndex) => selectedItems.length === 1,
+        validateSelection: (selectedItems, elementIndex) => {
+          if (Garnish.hasAttr(selectedItems.find('.element'), 'data-is-folder')) {
+            return false;
+          }
+          
+          return true;
+        },
         activate: (selectedItems, elementIndex) => {
             const \$element = selectedItems.find('.element');
             const settings = {};

@@ -46,6 +46,13 @@ class CopyReferenceTag extends ElementAction
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: false,
+        validateSelection: (selectedItems, elementIndex) => {
+          if (Garnish.hasAttr(selectedItems.find('.element'), 'data-is-folder')) {
+            return false;
+          }
+          
+          return true;
+        },
         activate: (selectedItems, elementIndex) => {
             Craft.ui.createCopyTextPrompt({
                 label: Craft.t('app', 'Copy the reference tag'),
