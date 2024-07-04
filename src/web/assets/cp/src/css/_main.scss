@@ -267,6 +267,132 @@ fieldset:last-child,
   margin-bottom: var(--xl) !important;
 }
 
+.pt-0 {
+  padding-top: 0 !important;
+}
+.pt-xs {
+  padding-top: var(--xs) !important;
+}
+.pt-s {
+  padding-top: var(--s) !important;
+}
+.pt-m {
+  padding-top: var(--m) !important;
+}
+.pt-l {
+  padding-top: var(--l) !important;
+}
+.pt-xl {
+  padding-top: var(--xl) !important;
+}
+
+.pb-0 {
+  padding-bottom: 0 !important;
+}
+.pb-xs {
+  padding-bottom: var(--xs) !important;
+}
+.pb-s {
+  padding-bottom: var(--s) !important;
+}
+.pb-m {
+  padding-bottom: var(--m) !important;
+}
+.pb-l {
+  padding-bottom: var(--l) !important;
+}
+.pb-xl {
+  padding-bottom: var(--xl) !important;
+}
+
+.pl-0 {
+  padding-left: 0 !important;
+}
+.pl-xs {
+  padding-left: var(--xs) !important;
+}
+.pl-s {
+  padding-left: var(--s) !important;
+}
+.pl-m {
+  padding-left: var(--m) !important;
+}
+.pl-l {
+  padding-left: var(--l) !important;
+}
+.pl-xl {
+  padding-left: var(--xl) !important;
+}
+
+.pr-0 {
+  padding-right: 0 !important;
+}
+.pr-xs {
+  padding-right: var(--xs) !important;
+}
+.pr-s {
+  padding-right: var(--s) !important;
+}
+.pr-m {
+  padding-right: var(--m) !important;
+}
+.pr-l {
+  padding-right: var(--l) !important;
+}
+.pr-xl {
+  padding-right: var(--xl) !important;
+}
+
+.px-0 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.px-xs {
+  padding-left: var(--xs) !important;
+  padding-right: var(--xs) !important;
+}
+.px-s {
+  padding-left: var(--s) !important;
+  padding-right: var(--s) !important;
+}
+.px-m {
+  padding-left: var(--m) !important;
+  padding-right: var(--m) !important;
+}
+.px-l {
+  padding-left: var(--l) !important;
+  padding-right: var(--l) !important;
+}
+.px-xl {
+  padding-left: var(--xl) !important;
+  padding-right: var(--xl) !important;
+}
+
+.py-0 {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.py-xs {
+  padding-top: var(--xs) !important;
+  padding-bottom: var(--xs) !important;
+}
+.py-s {
+  padding-top: var(--s) !important;
+  padding-bottom: var(--s) !important;
+}
+.py-m {
+  padding-top: var(--m) !important;
+  padding-bottom: var(--m) !important;
+}
+.py-l {
+  padding-top: var(--l) !important;
+  padding-bottom: var(--l) !important;
+}
+.py-xl {
+  padding-top: var(--xl) !important;
+  padding-bottom: var(--xl) !important;
+}
+
 .center-absolute {
   position: absolute;
   top: 50%;

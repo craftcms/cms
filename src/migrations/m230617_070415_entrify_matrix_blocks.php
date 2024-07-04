@@ -196,7 +196,9 @@ class m230617_070415_entrify_matrix_blocks extends Migration
         if (!empty($typeIdMap)) {
             // disable FK checks for all of this
             try {
-                $this->db->createCommand()->checkIntegrity(false)->execute();
+                $this->db->transaction(function() {
+                    $this->db->createCommand()->checkIntegrity(false)->execute();
+                });
                 $disabledFkChecks = true;
             } catch (DbException) {
                 // the DB user probably didn't have permission

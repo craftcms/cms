@@ -17,6 +17,7 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
         settings,
         {
           showHeader: true,
+          prevalidate: this.$element.parents('.prevalidate').length > 0,
         }
       );
       this.base('elements/edit', settings);
