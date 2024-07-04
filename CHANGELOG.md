@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Craft now sends no-cache headers for any request that calls `craft\web\Request::getCsrfToken()`. ([#15293](https://github.com/craftcms/cms/pull/15293), [#15281](https://github.com/craftcms/cms/pull/15281))
+- Fixed a bug where field status indicators weren’t visible on mobile viewports.
 
 ## 5.2.5 - 2024-07-02
 
