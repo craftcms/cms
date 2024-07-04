@@ -362,7 +362,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Add notification close listeners
       this.on('notificationClose', () => {
-        this._updateNotificationHeadingDisplay();
+        this.updateNotificationHeadingDisplay();
       });
     },
 
@@ -941,7 +941,7 @@ Craft.CP = Garnish.Base.extend(
         notification,
       });
 
-      this._updateNotificationHeadingDisplay();
+      this.updateNotificationHeadingDisplay();
 
       return notification;
     },

@@ -1300,7 +1300,7 @@ Craft.ui = {
     this.clearErrorsFromField($field);
 
     $field.addClass('has-errors');
-    $field.children('.input').addClass('errors');
+    $field.children('.input').addClass('errors prevalidate');
 
     const fieldId = $field.attr('id');
     let fieldErrorsId = '';
@@ -1319,7 +1319,7 @@ Craft.ui = {
 
   clearErrorsFromField: function ($field) {
     $field.removeClass('has-errors');
-    $field.children('.input').removeClass('errors');
+    $field.children('.input').removeClass('errors prevalidate');
     $field.children('ul.errors').remove();
   },
 

@@ -2173,6 +2173,13 @@ abstract class Element extends Component implements ElementInterface
     private ElementInterface|false|null $_nextSibling = null;
 
     /**
+     * @var int[]
+     * @see getInvalidNestedElementIds()
+     * @see addInvalidNestedElementIds()
+     */
+    private array $_invalidNestedElementIds = [];
+
+    /**
      * @var array<string,ElementCollection>
      * @see getEagerLoadedElements()
      * @see setEagerLoadedElements()
@@ -2650,6 +2657,7 @@ abstract class Element extends Component implements ElementInterface
     public function validate($attributeNames = null, $clearErrors = true)
     {
         $this->_attributeNames = $attributeNames ? array_flip((array)$attributeNames) : null;
+        $this->_invalidNestedElementIds = [];
         $result = parent::validate($attributeNames, $clearErrors);
         $this->_attributeNames = null;
         return $result;
@@ -4970,6 +4978,22 @@ JS, [
     public function getFieldContext(): string
     {
         return Craft::$app->getFields()->fieldContext;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getInvalidNestedElementIds(): array
+    {
+        return $this->_invalidNestedElementIds;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addInvalidNestedElementIds(array $ids): void
+    {
+        array_push($this->_invalidNestedElementIds, ...$ids);
     }
 
     /**
