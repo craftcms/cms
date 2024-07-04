@@ -1307,6 +1307,9 @@ class Request extends \yii\web\Request
      */
     public function getCsrfToken($regenerate = false): string
     {
+        // Ensure the response is not cached by the browser or static cache proxies.
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         if (!isset($this->_craftCsrfToken) || $regenerate) {
             $token = $this->loadCsrfToken();
 
