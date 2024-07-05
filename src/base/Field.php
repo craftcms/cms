@@ -749,10 +749,14 @@ abstract class Field extends SavableComponent implements FieldInterface
             throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
         }
 
+        // The attribute name should match the table attribute name,
+        // per ElementSources::getTableAttributesForFieldLayouts()
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => [$this->getValueSql(), 'id'],
-            'attribute' => "field:{$this->layoutElement->uid}",
+            'orderBy' => $this->getValueSql(),
+            'attribute' => isset($this->layoutElement->handle)
+                ? "fieldInstance:{$this->layoutElement->uid}"
+                : "field:$this->uid",
         ];
     }
 
