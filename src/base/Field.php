@@ -740,7 +740,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * [[\craft\base\ElementInterface::sortOptions()|sortOptions()]] response.
      *
      * @return array
-     * @see \craft\base\SortableFieldInterface::getSortOption()
+     * @see SortableFieldInterface::getSortOption
      * @since 3.2.0
      */
     public function getSortOption(): array
