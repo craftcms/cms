@@ -2267,6 +2267,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       enabled: false,
       enabledForSite: false,
       hashedCpEditUrl: null,
+      hasDrafts: true,
       isLive: false,
       isProvisionalDraft: false,
       isUnpublishedDraft: false,

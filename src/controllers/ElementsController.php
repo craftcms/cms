@@ -420,6 +420,7 @@ class ElementsController extends Controller
                         'enablePreview' => $enablePreview,
                         'enabledForSite' => $element->enabled && $enabledForSite,
                         'hashedCpEditUrl' => $security->hashData('{cpEditUrl}'),
+                        'hasDrafts' => $element::hasDrafts(),
                         'isLive' => $isCurrent && !$element->getIsDraft() && $element->enabled && $enabledForSite && $hasRoute,
                         'isProvisionalDraft' => $element->isProvisionalDraft,
                         'isUnpublishedDraft' => $isUnpublishedDraft,

@@ -123,7 +123,7 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
     },
 
     handleSubmit: function (ev) {
-      if (ev.type === 'submit') {
+      if (ev.type === 'submit' || !this.elementEditor.settings.hasDrafts) {
         this.elementEditor.handleSubmit(ev);
       } else {
         // first, we have to save the draft and then fully save;
