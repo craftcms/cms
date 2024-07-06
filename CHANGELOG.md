@@ -7,6 +7,7 @@
 - Fixed a bug where sorting elements by custom field within element indexes wasn’t always working. ([#15297](https://github.com/craftcms/cms/issues/15297))
 - Fixed a bug where asset bulk element actions were available when folders were selected. ([#15301](https://github.com/craftcms/cms/issues/15301))
 - Fixed a bug where `craft\helpers\ElementHelper::isDraft()`, `isRevision()`, and `isDraftOrRevision()` weren’t returning `true` if a nested draft/revision element was passed in, but the root element was canonical. ([#15303](https://github.com/craftcms/cms/issues/15303))
+- Fixed a bug where element thumbnails weren’t always getting loaded. ([#15299](https://github.com/craftcms/cms/issues/15299))
 
 ## 5.2.5 - 2024-07-02
 
