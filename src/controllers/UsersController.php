@@ -203,6 +203,13 @@ class UsersController extends Controller
      */
     public function actionLogin(): ?Response
     {
+        if ($this->request->getIsOptions()) {
+            // This is just a preflight request, no need to route to the real controller action yet.
+            $this->response->format = Response::FORMAT_RAW;
+            $this->response->data = '';
+            return $this->response;
+        }
+
         if ($this->request->getIsGet()) {
             // see if they're already logged in
             $user = static::currentUser();
