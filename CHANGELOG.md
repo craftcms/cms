@@ -4,6 +4,7 @@
 
 - Craft now sends no-cache headers for any request that calls `craft\web\Request::getCsrfToken()`. ([#15293](https://github.com/craftcms/cms/pull/15293), [#15281](https://github.com/craftcms/cms/pull/15281))
 - Fixed a bug where `craft\helpers\ElementHelper::isDraft()`, `isRevision()`, and `isDraftOrRevision()` weren’t returning `true` if a nested draft/revision element was passed in, but the root element was canonical. ([#15303](https://github.com/craftcms/cms/issues/15303))
+- Fixed a bug where preflight requests to `users/login` could return a 404 response. ([#15309](https://github.com/craftcms/cms/pull/15309))
 
 ## 4.10.4 - 2024-07-02
 
