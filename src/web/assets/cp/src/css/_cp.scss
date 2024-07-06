@@ -1795,12 +1795,12 @@ li.breadcrumb-toggle-wrapper {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 calc(var(--row-gap) * -1) calc(var(--row-gap) * -1);
-  width: calc(100% + var(--row-gap) * 2);
+  margin: 0 calc(var(--padding) * -1) calc(var(--row-gap) * -1);
+  width: calc(100% + var(--padding) * 2);
 
   & > :not(.error-summary) {
     margin: 0 0 var(--row-gap) !important;
-    padding: 0 var(--row-gap);
+    padding: 0 var(--padding);
     box-sizing: border-box;
   }
 
