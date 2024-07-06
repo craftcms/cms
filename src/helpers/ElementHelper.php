@@ -487,7 +487,19 @@ class ElementHelper
      */
     public static function isDraft(ElementInterface $element): bool
     {
-        return static::rootElement($element)->getIsDraft();
+        if ($element->getIsDraft()) {
+            return true;
+        }
+
+        // Defer to the owner element, if there is one
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::isDraft($owner);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -499,7 +511,19 @@ class ElementHelper
      */
     public static function isRevision(ElementInterface $element): bool
     {
-        return static::rootElement($element)->getIsRevision();
+        if ($element->getIsRevision()) {
+            return true;
+        }
+
+        // Defer to the owner element, if there is one
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::isRevision($owner);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -511,8 +535,19 @@ class ElementHelper
      */
     public static function isDraftOrRevision(ElementInterface $element): bool
     {
-        $root = static::rootElement($element);
-        return $root->getIsDraft() || $root->getIsRevision();
+        if ($element->getIsDraft() || $element->getIsRevision()) {
+            return true;
+        }
+
+        // Defer to the owner element, if there is one
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::isDraftOrRevision($owner);
+            }
+        }
+
+        return false;
     }
 
     /**
