@@ -145,7 +145,7 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       if (e?.response?.data?.invalidNestedElementIds) {
         const $cards = this.$content.find('.element.card').removeClass('error');
         $cards
-          .find('craft-element-label > span[icon=triangle-exclamation]')
+          .find('craft-element-label > span[data-icon="triangle-exclamation"]')
           .remove();
         if (e.response.data.invalidNestedElementIds.length) {
           const $errorCards = $cards
