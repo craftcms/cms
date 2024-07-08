@@ -14,6 +14,7 @@
             .drafts(null)
             .draftOf(false)
             .savedDraftsOnly()
+            .withCustomFields(false)
             .count() ?? 0)
         : 0 %}
     {% set elementTitle = element.title ?: element.id %}

@@ -1083,6 +1083,15 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function andWith(array|string|null $value): self;
 
     /**
+     * Sets whether custom fields should be factored into the query.
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     * @since 4.11.0
+     */
+    public function withCustomFields(bool $value = true): static;
+
+    /**
      * Explicitly determines whether the query should join in the structure data.
      *
      * @param bool $value The property value (defaults to true)
