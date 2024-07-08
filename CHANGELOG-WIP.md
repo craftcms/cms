@@ -10,3 +10,4 @@
 
 ### System
 - Improved the performance of element indexes in structure view.
+- The control panel now displays Ajax response-defined error messages when provided, rather than a generic “server error” message. ([#15292](https://github.com/craftcms/cms/issues/15292))

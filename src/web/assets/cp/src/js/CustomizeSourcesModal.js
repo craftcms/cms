@@ -450,8 +450,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
         window.location.reload();
       })
-      .catch(() => {
-        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+      .catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
       })
       .finally(() => {
         this.$saveBtn.removeClass('loading');
