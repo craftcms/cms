@@ -83,8 +83,8 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
       // and does it look like this draggee has descendants we don't know about yet?
       if (
         this.settings.maxLevels &&
-        this.draggingLastElements &&
-        this.tableView.getMorePending()
+        ($draggee.has('> th button.toggle[aria-expanded=false]').length ||
+          (this.draggingLastElements && this.tableView.getMorePending()))
       ) {
         // Only way to know the true descendant level delta is to ask PHP
         this._loadingDraggeeLevelDelta = true;
@@ -98,6 +98,7 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
 
           if (this.dragging) {
             this._draggeeLevelDelta = response.data.delta;
+            this._setTargetLevelBounds();
             this.drag(false);
           }
         });
@@ -159,10 +160,6 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
      * Returns whether the draggee can be inserted before a given item.
      */
     canInsertBefore: function ($item) {
-      if (this._loadingDraggeeLevelDelta) {
-        return false;
-      }
-
       return this._getLevelBounds($item.prev(), $item) !== false;
     },
 
@@ -170,10 +167,6 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
      * Returns whether the draggee can be inserted after a given item.
      */
     canInsertAfter: function ($item) {
-      if (this._loadingDraggeeLevelDelta) {
-        return false;
-      }
-
       return this._getLevelBounds($item, $item.next()) !== false;
     },
 
@@ -369,6 +362,10 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
      * two given rows, or false if it’s not going to work out.
      */
     _getLevelBounds: function ($prevRow, $nextRow) {
+      if (this._loadingDraggeeLevelDelta) {
+        return false;
+      }
+
       // Can't go any lower than the next row, if there is one
       if ($nextRow && $nextRow.length) {
         this._getLevelBounds._minLevel = this._level($nextRow);
