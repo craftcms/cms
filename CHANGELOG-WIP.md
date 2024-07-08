@@ -44,3 +44,6 @@
 - `Craft.startsWith()` is no longer deprecated, and now has a `caseInsensitive` argument.
 - Added `Garnish.once()`, for handling a class-level event only once.
 - Checkbox selects now support passing a `targetPrefix`.
+
+### System
+- The control panel now displays Ajax response-defined error messages when provided, rather than a generic “server error” message. ([#15292](https://github.com/craftcms/cms/issues/15292))

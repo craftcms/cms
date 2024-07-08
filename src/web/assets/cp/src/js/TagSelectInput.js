@@ -313,9 +313,9 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
             $element.removeClass('loading disabled');
           })
-          .catch(({response}) => {
+          .catch((e) => {
             this.removeElement($element);
-            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+            Craft.cp.displayError(e?.response?.data?.message);
           });
       }
     },
