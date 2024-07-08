@@ -123,19 +123,14 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       return params;
     },
 
-    handleSubmit: function (ev) {
-      if (ev.type === 'submit') {
-        this.elementEditor.handleSubmit(ev);
-      } else {
+    handleSubmit: async function (ev) {
+      if (ev.type !== 'submit' && this.elementEditor.settings.canCreateDrafts) {
         // first, we have to save the draft and then fully save;
         // otherwise we'll have tab error indicator issues;
-        this.elementEditor
-          .saveDraft()
-          .then(() => {
-            this.elementEditor.handleSubmit(ev);
-          })
-          .catch();
+        await this.elementEditor.saveDraft();
       }
+
+      this.elementEditor.handleSubmit(ev);
     },
 
     handleSubmitError: function (e) {

@@ -12,6 +12,7 @@ use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\db\CoalesceColumnsExpression;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
@@ -2006,6 +2007,11 @@ abstract class Element extends Component implements ElementInterface
         // See if it's a source-specific sort option
         foreach (Craft::$app->getElementSources()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
             if ($sortOption['attribute'] === $attribute) {
+                if ($sortOption['orderBy'] instanceof CoalesceColumnsExpression) {
+                    $params = [];
+                    $sql = $sortOption['orderBy']->getSql($params);
+                    return new Expression(sprintf('%s %s', $sql, $dir === SORT_ASC ? 'ASC' : 'DESC'), $params);
+                }
                 return $sortOption['orderBy'];
             }
         }
