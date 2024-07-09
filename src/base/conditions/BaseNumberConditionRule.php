@@ -28,7 +28,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
 
     /**
      * @var int|float|null The `step` value the input should have.
-     * @since 4.10.2
+     * @since 5.2.2
      */
     public int|float|null $step = 1;
 

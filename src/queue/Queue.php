@@ -224,7 +224,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      * Returns the ID of the current job being handled.
      *
      * @return string
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public function getJobId(): string
     {

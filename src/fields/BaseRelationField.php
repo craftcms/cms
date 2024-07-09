@@ -160,7 +160,7 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
      * @param bool $enabledOnly Whether to only
      * @param bool $inTargetSiteOnly
      * @return array
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public static function existsQueryCondition(self $field, bool $enabledOnly = true, bool $inTargetSiteOnly = true): array
     {

@@ -470,7 +470,7 @@ class GeneralConfig extends BaseConfig
      *  :::
      *
      * @group Environment
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public ?string $backupCommandFormat = null;
 
@@ -1052,7 +1052,7 @@ class GeneralConfig extends BaseConfig
      *  :::
      *
      * @group Security
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public bool $asyncCsrfInputs = false;
 
@@ -2604,7 +2604,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public bool $safeMode = false;
 
@@ -3680,7 +3680,7 @@ class GeneralConfig extends BaseConfig
      * @param string $value
      * @return self
      * @see $backupCommandFormat
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public function backupCommandFormat(string $value): self
     {
@@ -4360,7 +4360,7 @@ class GeneralConfig extends BaseConfig
      * @param bool $value
      * @return self
      * @see $asyncCsrfInputs
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public function asyncCsrfInputs(bool $value = true): self
     {
@@ -6135,7 +6135,7 @@ class GeneralConfig extends BaseConfig
      * @param bool $value
      * @return self
      * @see $safeMode
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public function safeMode(bool $value = false): self
     {

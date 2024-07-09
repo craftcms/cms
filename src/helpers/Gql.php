@@ -654,7 +654,7 @@ class Gql
      *
      * @param string $query
      * @return bool
-     * @since 4.9.6
+     * @since 5.1.8
      */
     public static function isIntrospectionQuery(string $query): bool
     {
