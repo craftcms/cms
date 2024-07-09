@@ -971,7 +971,7 @@ Craft.CustomizeSourcesModal.Heading =
 
       $container.append('<hr/>');
 
-      this.$deleteBtn = $('<a class="error delete"/>')
+      this.$deleteBtn = $('<a class="error delete pointer"/>')
         .text(Craft.t('app', 'Delete heading'))
         .attr({
           role: 'button',
