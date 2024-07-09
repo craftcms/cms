@@ -39,6 +39,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     ignoreFailedRequest: false,
     fieldsWithErrors: null,
 
+    get showExpandedView() {
+      return this.$container.width() > 700;
+    },
+
     init: function (action, settings) {
       this.action = action;
       this.setSettings(settings, Craft.CpScreenSlideout.defaults);
@@ -344,7 +348,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           this.hasSidebar = true;
 
           // is the slideout wide enough to show it alongside the content?
-          if (this.$container.width() > 700) {
+          if (this.showExpandedView) {
             this.showSidebar();
           } else {
             this.hideSidebar();
@@ -435,7 +439,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         });
       }
 
-      Craft.trapFocusWithin(this.$sidebar);
+      if (!this.showExpandedView) {
+        Craft.trapFocusWithin(this.$sidebar);
+      }
 
       this.$sidebarBtn.addClass('active').attr({
         'aria-expanded': 'true',
@@ -469,6 +475,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           this.$sidebar.addClass('hidden');
           this.$sidebarBtn.focus();
         });
+
+      Craft.releaseFocusWithin(this.$sidebar);
 
       this.$sidebarBtn.removeClass('active').attr({
         'aria-expanded': 'false',
