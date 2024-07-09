@@ -636,6 +636,8 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin menu-item-active-styles {
   color: var(--white) !important;
+  --medium-text-color: rgba(255, 255, 255, 0.8);
+  --light-text-color: rgba(255, 255, 255, 0.8);
   background-color: var(--dark-sel-color);
 
   svg {
