@@ -491,6 +491,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     hideSidebarIfOverlapping() {
       if (this.sidebarIsOverlapping()) {
         this.hideSidebar();
+        Garnish.removeFocusTrap(this.$sidebar);
         return true;
       } else {
         return false;

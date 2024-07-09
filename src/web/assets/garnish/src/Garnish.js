@@ -485,6 +485,15 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
+   * Removes focus trap from a container
+   * @param {Object} container
+   */
+  removeFocusTrap: function (container) {
+    const $container = $(container);
+    $container.off('keydown.focus-trap');
+  },
+
+  /**
    * Sets focus to the first focusable element within a container, or on the container itself.
    * @param {Object} container The container element. Can be either an actual element or a jQuery collection.
    */
