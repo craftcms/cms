@@ -72,9 +72,9 @@ import './upgrade.scss';
         $(`
           <thead>
             <tr>
-              <th>${Craft.t('app', 'Plugin')}</th>
-              <th>${Craft.t('app', 'Status')}</th>
-              <th>${Craft.t('app', 'Notes')}</th>
+              <th style="width: 20%">${Craft.t('app', 'Plugin')}</th>
+              <th style="width: 40%">${Craft.t('app', 'Status')}</th>
+              <th style="width: 40%">${Craft.t('app', 'Notes')}</th>
             </tr>
           </thead>
         `).appendTo($table);
@@ -163,7 +163,11 @@ import './upgrade.scss';
           }
 
           if (plugin.note) {
-            noteHtml = Craft.escapeHtml(plugin.note);
+            if (!plugin.note.endsWith('.')) {
+              plugin.note += '.';
+            }
+
+            noteHtml = `${Craft.escapeHtml(plugin.note)} ${noteHtml}`;
           }
 
           $('<td/>', {
