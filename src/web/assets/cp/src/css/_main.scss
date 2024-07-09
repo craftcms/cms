@@ -6840,6 +6840,11 @@ $min2ColWidth: 400px;
 .menu:not(.menu--disclosure):not(:hover) ul li .menu-option:not(.sel):not(.disabled).hover {
   @include menu-item-active-styles;
 
+  // For field handles in disclosure menus
+  .light {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
   // Pretty gnarly, but needs to override the default hover styles with this selector
   .status:not(.on):not(.live):not(.active):not(.enabled):not(.all) {
     &:not(.pending):not(.warning):not(.off):not(.suspended):not(.expired) {
