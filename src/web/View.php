@@ -1550,7 +1550,7 @@ JS;
      *
      * @return string[]
      * @see registerDeltaName()
-     * @since 4.10.1
+     * @since 5.2.1
      */
     public function getModifiedDeltaNames(): array
     {

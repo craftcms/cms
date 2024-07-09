@@ -60,7 +60,7 @@ class DateTimeHelper
      * @var string[] Supported relative time units.
      * @see relativeTimeStatement()
      * @see relativeTimeToSeconds()
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public const RELATIVE_TIME_UNITS = [
         'sec',
@@ -847,7 +847,7 @@ class DateTimeHelper
      * @param int $number
      * @param string $unit
      * @return string
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public static function relativeTimeStatement(int $number, string $unit): string
     {
@@ -870,7 +870,7 @@ class DateTimeHelper
      * @param int $number
      * @param string $unit
      * @return int
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public static function relativeTimeToSeconds(int $number, string $unit): int
     {
