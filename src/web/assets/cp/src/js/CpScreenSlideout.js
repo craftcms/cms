@@ -168,6 +168,12 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.load();
     },
 
+    sidebarIsOverlapping: function () {
+      return (
+        this.showingSidebar && this.$sidebar.css('position') === 'absolute'
+      );
+    },
+
     /**
      * @param {Object} [data={}]
      * @param {boolean} [refreshInitialData=true]
@@ -275,6 +281,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
      * @returns {Promise}
      */
     update: function (data) {
+      console.log('update');
       return new Promise((resolve) => {
         this.namespace = data.namespace;
 
@@ -429,13 +436,15 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       this.$sidebar.css(this._openedSidebarStyles());
 
-      if (!Garnish.isMobileBrowser()) {
-        this.$sidebar.one('transitionend.so', () => {
+      this.$sidebar.one('transitionend.so', () => {
+        if (!Garnish.isMobileBrowser()) {
           Craft.setFocusWithin(this.$sidebar);
-        });
-      }
+        }
 
-      Craft.trapFocusWithin(this.$sidebar);
+        if (this.sidebarIsOverlapping()) {
+          Craft.trapFocusWithin(this.$sidebar);
+        }
+      });
 
       this.$sidebarBtn.addClass('active').attr({
         'aria-expanded': 'true',
@@ -480,7 +489,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     hideSidebarIfOverlapping() {
-      if (this.showingSidebar && this.$sidebar.css('position') === 'absolute') {
+      if (this.sidebarIsOverlapping()) {
         this.hideSidebar();
         return true;
       } else {
