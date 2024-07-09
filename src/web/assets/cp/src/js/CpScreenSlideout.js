@@ -281,7 +281,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
      * @returns {Promise}
      */
     update: function (data) {
-      console.log('update');
       return new Promise((resolve) => {
         this.namespace = data.namespace;
 
@@ -470,6 +469,11 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       this.$container.removeClass('showing-sidebar');
       this.$body.removeClass('no-scroll');
+
+      // If there's no transition due to overlapping sidebar, add hidden class immediately
+      if (!this.sidebarIsOverlapping()) {
+        this.$sidebar.addClass('hidden');
+      }
 
       this.$sidebar
         .off('transitionend.so')
