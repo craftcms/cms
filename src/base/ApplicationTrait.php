@@ -917,8 +917,9 @@ trait ApplicationTrait
      */
     public function getSystemName(): string
     {
-        if (($name = Craft::$app->getProjectConfig()->get('system.name')) !== null) {
-            return App::parseEnv($name);
+        $name = App::parseEnv(Craft::$app->getProjectConfig()->get('system.name'));
+        if ($name !== null) {
+            return $name;
         }
 
         try {
