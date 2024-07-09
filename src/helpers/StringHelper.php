@@ -2041,7 +2041,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str
      * @return string
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public static function indent(string $str, string $indent = '    '): string
     {

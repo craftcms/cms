@@ -39,7 +39,7 @@ class DbController extends Controller
      *
      * The `backupCommandFormat` config setting will be used by default.
      *
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public ?string $format = null;
 

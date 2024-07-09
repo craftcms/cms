@@ -15,7 +15,7 @@ use Twig\Node\Node;
  * Class ExpiresNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.10.0
+ * @since 5.2.0
  */
 class ExpiresNode extends Node
 {

@@ -1242,7 +1242,7 @@ class Request extends \yii\web\Request
      * Returns the `Bearer` token value from the `X-Craft-Authorization` or `Authorization` header, if present.
      *
      * @return string|null
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public function getBearerToken(): ?string
     {
