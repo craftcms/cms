@@ -39,6 +39,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     ignoreFailedRequest: false,
     fieldsWithErrors: null,
 
+    /**
+     * @returns {boolean} Whether the slideout is wide enough to show the sidebar alongside the content
+     */
     get showExpandedView() {
       return this.$container.width() > 700;
     },
@@ -353,7 +356,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
           this.hasSidebar = true;
 
-          // is the slideout wide enough to show it alongside the content?
           if (this.showExpandedView) {
             this.showSidebar();
           } else {
@@ -474,9 +476,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.$container.removeClass('showing-sidebar');
       this.$body.removeClass('no-scroll');
 
-      // If there's no transition due to overlapping sidebar, add hidden class immediately
+      // Do the same thing when there are no transitions
       if (!this.sidebarIsOverlapping()) {
         this.$sidebar.addClass('hidden');
+        this.$sidebarBtn.focus();
       }
 
       this.$sidebar
