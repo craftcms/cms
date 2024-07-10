@@ -172,6 +172,12 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.load();
     },
 
+    sidebarIsOverlapping: function () {
+      return (
+        this.showingSidebar && this.$sidebar.css('position') === 'absolute'
+      );
+    },
+
     /**
      * @param {Object} [data={}]
      * @param {boolean} [refreshInitialData=true]
@@ -467,6 +473,11 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       this.$container.removeClass('showing-sidebar');
       this.$body.removeClass('no-scroll');
+
+      // If there's no transition due to overlapping sidebar, add hidden class immediately
+      if (!this.sidebarIsOverlapping()) {
+        this.$sidebar.addClass('hidden');
+      }
 
       this.$sidebar
         .off('transitionend.so')
