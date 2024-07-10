@@ -2,14 +2,21 @@
 
 ## Unreleased
 
+> [!NOTE]
+> Craft now sends no-cache headers for requests that generate/retrieve a CSRF token. If your Craft install is behind a static caching service like Cloudflare, enable the [asyncCsrfInputs](https://craftcms.com/docs/5.x/reference/config/general.html#asynccsrfinputs) config setting to avoid a significant cache hit reduction. ([#15293](https://github.com/craftcms/cms/pull/15293), [#15281](https://github.com/craftcms/cms/pull/15281))
+
 - Craft now sends no-cache headers for any request that calls `craft\web\Request::getCsrfToken()`. ([#15293](https://github.com/craftcms/cms/pull/15293), [#15281](https://github.com/craftcms/cms/pull/15281))
 - Fixed a bug where structures’ Max Levels settings weren’t being enforced when dragging elements with collapsed descendants. ([#15310](https://github.com/craftcms/cms/issues/15310))
 - Fixed a bug where `craft\helpers\ElementHelper::isDraft()`, `isRevision()`, and `isDraftOrRevision()` weren’t returning `true` if a nested draft/revision element was passed in, but the root element was canonical. ([#15303](https://github.com/craftcms/cms/issues/15303))
+- Fixed a bug where focus could be trapped within slideout sidebars. ([#15314](https://github.com/craftcms/cms/issues/15314))
 - Fixed a bug where field status indicators weren’t visible on mobile viewports.
 - Fixed a bug where sorting elements by custom field within element indexes wasn’t always working. ([#15297](https://github.com/craftcms/cms/issues/15297))
 - Fixed a bug where asset bulk element actions were available when folders were selected. ([#15301](https://github.com/craftcms/cms/issues/15301))
 - Fixed a bug where element thumbnails weren’t always getting loaded. ([#15299](https://github.com/craftcms/cms/issues/15299))
 - Fixed an error that occurred when attempting to save a user via the <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut within a slideout. ([#15307](https://github.com/craftcms/cms/issues/15307))
+- Fixed a bug where “Delete heading” buttons within Customize Sources modals were getting text cursors. ([#15317](https://github.com/craftcms/cms/issues/15317))
+- Fixed a bug where disclosure hint text wasn’t legible on hover. ([#15316](https://github.com/craftcms/cms/issues/15316))
+- Fixed an error that occurred if the System Name was set to a nonexistent environment variable.
 
 ## 5.2.5 - 2024-07-02
 
