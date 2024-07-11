@@ -46,6 +46,12 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       return this.$container.width() > 700;
     },
 
+    get sidebarIsOverlapping() {
+      return (
+        this.showingSidebar && this.$sidebar.css('position') === 'absolute'
+      );
+    },
+
     init: function (action, settings) {
       this.action = action;
       this.setSettings(settings, Craft.CpScreenSlideout.defaults);
@@ -173,12 +179,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.addListener(this.$container, 'submit', 'handleSubmit');
 
       this.load();
-    },
-
-    sidebarIsOverlapping: function () {
-      return (
-        this.showingSidebar && this.$sidebar.css('position') === 'absolute'
-      );
     },
 
     /**
@@ -477,7 +477,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.$body.removeClass('no-scroll');
 
       // Do the same thing when there are no transitions
-      if (!this.sidebarIsOverlapping()) {
+      if (!this.sidebarIsOverlapping) {
         this.$sidebar.addClass('hidden');
         this.$sidebarBtn.focus();
       }
@@ -502,7 +502,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     hideSidebarIfOverlapping() {
-      if (this.showingSidebar && this.$sidebar.css('position') === 'absolute') {
+      if (this.sidebarIsOverlapping) {
         this.hideSidebar();
         return true;
       } else {
