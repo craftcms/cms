@@ -170,7 +170,11 @@ trait FieldConditionRuleTrait
      */
     public function getLabel(): string
     {
-        return $this->fieldInstances()[0]->layoutElement->label();
+        $instances = $this->fieldInstances();
+        if (empty($instances)) {
+            throw new InvalidConfigException('No field instances for this condition rule.');
+        }
+        return $instances[0]->layoutElement->label();
     }
 
     /**
