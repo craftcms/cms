@@ -2320,6 +2320,14 @@ $.extend(Craft, {
   },
 
   /**
+   * Releases focus within a container.
+   * @param {Object} container
+   */
+  releaseFocusWithin: function (container) {
+    Garnish.releaseFocusWithin(container);
+  },
+
+  /**
    * Sets focus to the first focusable element within a container.
    * @param {Object} container
    */

@@ -460,6 +460,7 @@ Garnish = $.extend(Garnish, {
    */
   trapFocusWithin: function (container) {
     const $container = $(container);
+    this.releaseFocusWithin($container);
     $container.on('keydown.focus-trap', function (ev) {
       if (ev.keyCode === Garnish.TAB_KEY) {
         const $focusableElements = $container.find(':focusable');
@@ -479,6 +480,14 @@ Garnish = $.extend(Garnish, {
         }
       }
     });
+  },
+
+  /**
+   * Releases focus within a container.
+   * @param {Object} container
+   */
+  releaseFocusWithin: function (container) {
+    $(container).off('.focus-trap');
   },
 
   /**
