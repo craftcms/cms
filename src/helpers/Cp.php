@@ -393,7 +393,7 @@ class Cp
             $html .= self::componentStatusIndicatorHtml($component) ?? '';
         }
 
-        if ($config['showLabel']) {
+        if ($config['showLabel'] || isset($config['labelHtml'])) {
             $html .= $config['labelHtml'] ?? Html::encode($label);
         }
 
@@ -460,6 +460,7 @@ class Cp
             'showActionMenu' => false,
             'showDraftName' => true,
             'showLabel' => true,
+            'showProvisionalDraftLabel' => null,
             'showStatus' => true,
             'showThumb' => true,
             'size' => self::CHIP_SIZE_SMALL,
@@ -473,6 +474,7 @@ class Cp
                     'settings' => $config['autoReload'] ? [
                         'context' => $config['context'],
                         'showDraftName' => $config['showDraftName'],
+                        'showProvisionalDraftLabel' => $config['showProvisionalDraftLabel'],
                     ] : false,
                 ]),
             ],
@@ -488,10 +490,10 @@ class Cp
                 $config['attributes'],
                 fn() => $element->getChipLabelHtml(),
             );
+        }
 
-            if ($element->isProvisionalDraft) {
-                $config['labelHtml'] .= self::changeStatusLabelHtml();
-            }
+        if ($element->isProvisionalDraft && ($config['showProvisionalDraftLabel'] ?? $config['showLabel'])) {
+            $config['labelHtml'] = ($config['labelHtml'] ?? '') . self::changeStatusLabelHtml();
         }
 
         if ($config['inputName'] !== null && $element->isProvisionalDraft) {
