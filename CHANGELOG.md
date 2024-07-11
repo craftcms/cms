@@ -19,6 +19,7 @@
 - Fixed an error that occurred if the System Name was set to a nonexistent environment variable.
 - Fixed a bug where custom table columns within element indexes weren’t getting updated automatically when table rows were refreshed.
 - Fixed a bug where nested element indexes weren’t passing the `ownerId` param, when refreshing elements’ table rows.
+- Fixed a bug where it wasn’t possible to tell if an element had been edited, if it was displayed within a nested element index table without a header column.
 
 ## 5.2.5 - 2024-07-02
 
