@@ -5,6 +5,7 @@
 {% set padding = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% set elementsService = craft.app.elements %}
 {% set hasStatusCol = attributes|contains(0, 'status') %}
+{% set showHeaderColumn = showHeaderColumn ?? false %}
 
 {% for element in elements %}
     {% set totalDescendants = structure
@@ -67,11 +68,14 @@
                             aria-expanded="{{  element.id not in collapsedElementIds ? 'true' : 'false' }}"></button>
                         {% endif %}
                         {% set chip = elementChip(element, {
-                          context: context ?? 'index',
-                          showStatus: not hasStatusCol,
+                            context: context ?? 'index',
+                            showThumb: showHeaderColumn,
+                            showLabel: showHeaderColumn,
+                            showProvisionalDraftLabel: true,
+                            showStatus: showHeaderColumn and not hasStatusCol,
                         }) %}
-                        {% if not (showHeaderColumn ?? false) %}
-                            {% set chip = chip|attr({class: 'hidden'}) %}
+                        {% if not showHeaderColumn %}
+                            {% set chip = chip|attr({class: 'hide-label'}) %}
                         {% endif %}
                         {{ chip|raw }}
 
