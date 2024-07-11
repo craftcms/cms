@@ -9,6 +9,7 @@
 - Fixed a bug where structures’ Max Levels settings weren’t being enforced when dragging elements with collapsed descendants. ([#15310](https://github.com/craftcms/cms/issues/15310))
 - Fixed a bug where `craft\helpers\ElementHelper::isDraft()`, `isRevision()`, and `isDraftOrRevision()` weren’t returning `true` if a nested draft/revision element was passed in, but the root element was canonical. ([#15303](https://github.com/craftcms/cms/issues/15303))
 - Fixed a bug where focus could be trapped within slideout sidebars. ([#15314](https://github.com/craftcms/cms/issues/15314))
+- Fixed a bug where element slideout sidebars were included in the focus order when hidden. ([#15332](https://github.com/craftcms/cms/pull/15332))
 - Fixed a bug where field status indicators weren’t visible on mobile viewports.
 - Fixed a bug where sorting elements by custom field within element indexes wasn’t always working. ([#15297](https://github.com/craftcms/cms/issues/15297))
 - Fixed a bug where asset bulk element actions were available when folders were selected. ([#15301](https://github.com/craftcms/cms/issues/15301))
@@ -17,6 +18,10 @@
 - Fixed a bug where “Delete heading” buttons within Customize Sources modals were getting text cursors. ([#15317](https://github.com/craftcms/cms/issues/15317))
 - Fixed a bug where disclosure hint text wasn’t legible on hover. ([#15316](https://github.com/craftcms/cms/issues/15316))
 - Fixed an error that occurred if the System Name was set to a nonexistent environment variable.
+- Fixed a bug where custom table columns within element indexes weren’t getting updated automatically when table rows were refreshed.
+- Fixed a bug where nested element indexes weren’t passing the `ownerId` param, when refreshing elements’ table rows.
+- Fixed a bug where it wasn’t possible to tell if an element had been edited, if it was displayed within a nested element index table without a header column.
+- Fixed an error that could occur if a field was removed from a field layout, if another field had been conditional based on it. ([#15328](https://github.com/craftcms/cms/issues/15328))
 
 ## 5.2.5 - 2024-07-02
 
