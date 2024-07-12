@@ -71,7 +71,7 @@ class ElementHelper
      *
      * @param string $str The string
      * @param bool|null $ascii Whether the slug should be converted to ASCII. If null, it will depend on
-     * the <config4:limitAutoSlugsToAscii> config setting value.
+     * the <config5:limitAutoSlugsToAscii> config setting value.
      * @param string|null $language The language to pull ASCII character mappings for, if needed
      * @return string
      * @since 3.5.0

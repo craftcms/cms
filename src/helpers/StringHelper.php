@@ -125,7 +125,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Returns ASCII character mappings, merging in any custom defined mappings
-     * from the <config4:customAsciiCharMappings> config setting.
+     * from the <config5:customAsciiCharMappings> config setting.
      *
      * @param bool $flat Whether the mappings should be returned as a flat array (é => e)
      * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
