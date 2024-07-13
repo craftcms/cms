@@ -1459,7 +1459,7 @@ return [
     'The Reply-To email address Craft CMS should use when sending email.' => 'The Reply-To email address Craft CMS should use when sending email.',
     'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
     'The URL/URI to use for this target.' => 'The URL/URI to use for this target.',
-    'The `@web` alias is not recommended if it is determined automatically.' => 'The `@web` alias is not recommended if it is determined automatically.',
+    'The `@web` alias is not recommended.' => 'The `@web` alias is not recommended.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'The `Authorization` header that should be sent with GraphQL API requests to use this token.',
     'The allowed values are [{values}]' => 'The allowed values are [{values}]',
     'The asset you’re trying to download does not exist.' => 'The asset you’re trying to download does not exist.',
