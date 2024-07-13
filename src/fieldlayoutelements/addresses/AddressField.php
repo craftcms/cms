@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\Cp;
+use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -65,7 +66,9 @@ class AddressField extends BaseField
     public function previewHtml(ElementInterface $element): string
     {
         /** @var Address $element */
-        return Craft::$app->getAddresses()->formatAddress($element);
+        return Html::tag('div', Craft::$app->getAddresses()->formatAddress($element), [
+            'class' => 'no-truncate',
+        ]);
     }
 
     /**
