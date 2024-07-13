@@ -5,8 +5,15 @@
 - “Replace file” actions now display success notices on complete. ([#15217](https://github.com/craftcms/cms/issues/15217))
 - Double-clicking on folders within asset indexes and folder selection modals now navigates the index/modal into the folder. ([#15238](https://github.com/craftcms/cms/discussions/15238))
 
+### Administration
+- New sites’ Base URL settings now default to an environment variable name based on the site name. ([#15347](https://github.com/craftcms/cms/pull/15347))
+- Craft now warns against using the `@web` alias for URL settings, regardless of whether it was explicitly defined. ([#15347](https://github.com/craftcms/cms/pull/15347))
+
 ### Development
 - Added the `withCustomFields` element query param.
+
+### Extensibility
+- Added `Craft.EnvVarGenerator`.
 
 ### System
 - Improved the performance of element indexes in structure view.
