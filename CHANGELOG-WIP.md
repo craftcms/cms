@@ -15,6 +15,8 @@
 
 ### Administration
 - Icon fields now have an “Include Pro icons” setting, which determines whether Font Awesome Pro icon should be selectable. ([#15242](https://github.com/craftcms/cms/issues/15242))
+- New sites’ Base URL settings now default to an environment variable name based on the site name. ([#15347](https://github.com/craftcms/cms/pull/15347))
+- Craft now warns against using the `@web` alias for URL settings, regardless of whether it was explicitly defined. ([#15347](https://github.com/craftcms/cms/pull/15347))
 
 ### Development
 - GraphQL mutations for saving drafts of nested entries are now named with `Field` after the Matrix/CKEditor field handle. ([#15269](https://github.com/craftcms/cms/issues/15269))
@@ -35,6 +37,7 @@
 - Added `craft\fields\linktypes\Phone`.
 - Added `craft\fields\linktypes\Url`.
 - Deprecated `craft\fields\Url`, which is now an alias for `craft\fields\Link`.
+- Added `Craft.EnvVarGenerator`.
 - Added `Craft.endsWith()`.
 - Added `Craft.removeLeft()`.
 - Added `Craft.removeRight()`.

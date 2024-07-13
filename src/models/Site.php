@@ -81,7 +81,7 @@ class Site extends Model
      * @see getBaseUrl()
      * @see setBaseUrl()
      */
-    private ?string $_baseUrl = '@web/';
+    private ?string $_baseUrl = null;
 
     /**
      * @var string|null Name
