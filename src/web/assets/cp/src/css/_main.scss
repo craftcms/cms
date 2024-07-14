@@ -3227,6 +3227,20 @@ $checkboxPadding: $checkboxSize + 4;
     .enabled-label {
       margin-left: var(--xs);
     }
+
+    tr.disabled {
+      opacity: 1;
+
+      & > th > *,
+      & > td {
+        opacity: 0.25;
+      }
+
+      & > th > button.toggle {
+        opacity: 1;
+        pointer-events: all;
+      }
+    }
   }
 
   // thumbs views
