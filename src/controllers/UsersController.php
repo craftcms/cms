@@ -1015,6 +1015,12 @@ class UsersController extends Controller
             'element' => $element,
         ]);
 
+        if ($element->getIsUnpublishedDraft() && $this->showPermissionsScreen()) {
+            $this->response
+                ->submitButtonLabel(Craft::t('app', 'Create and set permissions'))
+                ->redirectUrl($this->editUserScreenUrl($element, self::SCREEN_PERMISSIONS));
+        }
+
         return $this->asEditUserScreen($element, self::SCREEN_PROFILE);
     }
 

@@ -86,14 +86,7 @@ trait EditUserTrait
             self::SCREEN_PROFILE => ['label' => Craft::t('app', 'Profile')],
         ];
 
-        if (
-            Craft::$app->edition->value >= CmsEdition::Team->value &&
-            (
-                (Craft::$app->edition === CmsEdition::Team && $currentUser->admin) ||
-                (Craft::$app->edition === CmsEdition::Pro && $currentUser->can('assignUserPermissions')) ||
-                $currentUser->canAssignUserGroups()
-            )
-        ) {
+        if ($this->showPermissionsScreen()) {
             $screens[self::SCREEN_PERMISSIONS] = ['label' => Craft::t('app', 'Permissions')];
         }
 
@@ -187,6 +180,19 @@ trait EditUserTrait
         }
 
         return $response;
+    }
+
+    private function showPermissionsScreen(): bool
+    {
+        $currentUser = static::currentUser();
+        return (
+            Craft::$app->edition->value >= CmsEdition::Team->value &&
+            (
+                (Craft::$app->edition === CmsEdition::Team && $currentUser->admin) ||
+                (Craft::$app->edition === CmsEdition::Pro && $currentUser->can('assignUserPermissions')) ||
+                $currentUser->canAssignUserGroups()
+            )
+        );
     }
 
     private function editUserScreenUrl(User $user, string $screen): string

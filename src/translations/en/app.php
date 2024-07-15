@@ -443,6 +443,7 @@ return [
     'Create a one-time password.' => 'Create a one-time password.',
     'Create and add another' => 'Create and add another',
     'Create and continue editing' => 'Create and continue editing',
+    'Create and set permissions' => 'Create and set permissions',
     'Create assets in the “{volume}” volume' => 'Create assets in the “{volume}” volume',
     'Create entries in the “{section}” section' => 'Create entries in the “{section}” section',
     'Create entries in the “{section}” {type} field' => 'Create entries in the “{section}” {type} field',
