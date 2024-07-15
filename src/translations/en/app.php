@@ -1333,6 +1333,7 @@ return [
     'Savable' => 'Savable',
     'Save and add another' => 'Save and add another',
     'Save and continue editing' => 'Save and continue editing',
+    'Save and send activation email' => 'Save and send activation email',
     'Save as a new asset' => 'Save as a new asset',
     'Save as a new {type}' => 'Save as a new {type}',
     'Save assets uploaded by other users' => 'Save assets uploaded by other users',

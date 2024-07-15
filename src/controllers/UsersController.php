@@ -1077,6 +1077,18 @@ class UsersController extends Controller
             'currentGroupIds' => array_map(fn(UserGroup $group) => $group->id, $user->getGroups()),
         ]);
 
+        if (!$user->getIsCredentialed() && static::currentUser()->can('administrateUsers')) {
+            $response->additionalButtonsHtml(
+                Html::button(Craft::t('app', 'Save and send activation email'), [
+                    'class' => ['btn', 'secondary', 'formsubmit'],
+                    'data' => [
+                        'param' => 'sendActivationEmail',
+                        'value' => '1',
+                    ],
+                ])
+            );
+        }
+
         return $response;
     }
 
@@ -1122,6 +1134,22 @@ class UsersController extends Controller
             if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
                 $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
                     'user' => $user,
+                ]));
+            }
+        }
+
+        if (
+            !$user->getIsCredentialed() &&
+            $currentUser->can('administrateUsers') &&
+            $this->request->getBodyParam('sendActivationEmail')
+        ) {
+            try {
+                if (!Craft::$app->getUsers()->sendActivationEmail($user)) {
+                    $this->setFailFlash(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
+                }
+            } catch (InvalidElementException $e) {
+                $this->setFailFlash(Craft::t('app', 'Couldn’t send the activation email: {error}', [
+                    'error' => $e->getMessage(),
                 ]));
             }
         }
