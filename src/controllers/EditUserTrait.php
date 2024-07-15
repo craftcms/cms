@@ -171,6 +171,12 @@ trait EditUserTrait
                 ],
             ]);
 
+            $response->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => $this->request->getPathInfo(),
+                'shortcut' => true,
+                'retainScroll' => true,
+            ]);
+
             $response->actionMenuItems(fn() => array_filter(
                 $user->getActionMenuItems(),
                 fn(array $item) => !str_starts_with($item['id'] ?? '', 'action-edit-'),
