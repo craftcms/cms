@@ -11,8 +11,11 @@
 
 ### Development
 - Added the `withCustomFields` element query param.
+- Added support for application-type based `general` and `db` configs (e.g. `config/general.web.php`). ([#15346](https://github.com/craftcms/cms/pull/15346))
+- `general` and `db` config files can now return a callable that modifies an existing config object. ([#15346](https://github.com/craftcms/cms/pull/15346))
 
 ### Extensibility
+- Added `craft\config\GeneralConfig::addAlias()`. ([#15346](https://github.com/craftcms/cms/pull/15346))
 - Added `Craft.EnvVarGenerator`.
 
 ### System
