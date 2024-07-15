@@ -172,7 +172,7 @@ trait EditUserTrait
             ]);
 
             $response->addAltAction(Craft::t('app', 'Save and continue editing'), [
-                'redirect' => $this->request->getPathInfo(),
+                'redirect' => $this->editUserScreenUrl($user, $screen),
                 'shortcut' => true,
                 'retainScroll' => true,
             ]);
