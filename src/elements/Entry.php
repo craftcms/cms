@@ -910,6 +910,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return $this->getField()->getSupportedSitesForElement($this);
         }
 
+        if (!isset($this->sectionId)) {
+            throw new InvalidConfigException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
+        }
+
         $section = $this->getSection();
         /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(true), 'id');
@@ -1025,6 +1029,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         if (isset($this->fieldId)) {
             return $this->getField()->getUriFormatForElement($this);
+        }
+
+        if (!isset($this->sectionId)) {
+            throw new InvalidConfigException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
         }
 
         $sectionSiteSettings = $this->getSection()->getSiteSettings();

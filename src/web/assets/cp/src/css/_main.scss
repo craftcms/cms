@@ -3525,7 +3525,7 @@ table {
         display: none;
       }
 
-      & > * {
+      & > *:not(:has(> .no-truncate)) {
         --max-lines: 2;
         margin: 0;
         max-height: calc(var(--lh) * var(--max-lines));
@@ -3935,6 +3935,20 @@ table {
 
     .chip {
       background-color: transparent;
+    }
+
+    tr.disabled {
+      opacity: 1;
+
+      & > th > div > *,
+      & > td {
+        opacity: 0.25;
+      }
+
+      & > th > div > button.toggle {
+        opacity: 1;
+        pointer-events: all;
+      }
     }
   }
 
