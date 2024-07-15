@@ -51,6 +51,7 @@
   --ui-control-border-radius: var(--large-border-radius);
   --ui-control-height: calc(34rem / 16);
   --ui-control-height--small: calc(30rem / 16);
+  --focus-alpha: 0.85;
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -58,7 +59,10 @@
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)},
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
+    0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-alpha));
+  --focus-ring-offset: 0 0 0 1px rgba(255, 255, 255, 0.8),
+    0 0 0 2px hsl(var(--dark-focus-hsl)),
+    0 0 0 4px hsla(var(--dark-focus-hsl), var(--focus-alpha));
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: calc(
@@ -2220,6 +2224,7 @@ ul.icons {
   }
 
   &.submit {
+    --focus-ring: var(--focus-ring-offset);
     background-color: var(--primary-color) !important;
 
     &:not(.disabled):not(.inactive):not(.loading) {

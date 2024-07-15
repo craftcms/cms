@@ -1625,6 +1625,7 @@ li.breadcrumb-toggle-wrapper {
 
         &.sel {
           @include light-on-dark-text;
+          --focus-ring: var(--focus-ring-offset);
         }
       }
 
