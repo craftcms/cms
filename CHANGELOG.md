@@ -9,6 +9,7 @@
 - Fixed a bug where TOTP setup keys included an extra space at the end. ([#15349](https://github.com/craftcms/cms/issues/15349))
 - Fixed a bug where input focus could automatically jump to slideout sidebars shortly after they were shown. ([#15314](https://github.com/craftcms/cms/issues/15314))
 - Fixed an error that occurred if the SMTP mailer transport type was used, and the Hostname value was blank. ([#15342](https://github.com/craftcms/cms/discussions/15342))
+- Fixed a bug where setting `transaction: true` in the Codeception configuration wasn’t rolling back database DML changes after a test. ([#7615](https://github.com/craftcms/cms/issues/7615)) 
 
 ## 5.2.6 - 2024-07-11
 
