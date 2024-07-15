@@ -84,23 +84,17 @@ trait EditUserTrait
 
         $screens = [
             self::SCREEN_PROFILE => ['label' => Craft::t('app', 'Profile')],
-            self::SCREEN_ADDRESSES => ['label' => Craft::t('app', 'Addresses')],
         ];
 
-        if (
-            Craft::$app->edition->value >= CmsEdition::Team->value &&
-            (
-                (Craft::$app->edition === CmsEdition::Team && $currentUser->admin) ||
-                (Craft::$app->edition === CmsEdition::Pro && $currentUser->can('assignUserPermissions')) ||
-                $currentUser->canAssignUserGroups()
-            )
-        ) {
+        if ($this->showPermissionsScreen()) {
             $screens[self::SCREEN_PERMISSIONS] = ['label' => Craft::t('app', 'Permissions')];
         }
 
         if ($user->getIsCurrent()) {
             $screens[self::SCREEN_PREFERENCES] = ['label' => Craft::t('app', 'Preferences')];
         }
+
+        $screens[self::SCREEN_ADDRESSES] = ['label' => Craft::t('app', 'Addresses')];
 
         // Fire a 'defineEditScreens' event
         if (Event::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS)) {
@@ -186,6 +180,19 @@ trait EditUserTrait
         }
 
         return $response;
+    }
+
+    private function showPermissionsScreen(): bool
+    {
+        $currentUser = static::currentUser();
+        return (
+            Craft::$app->edition->value >= CmsEdition::Team->value &&
+            (
+                (Craft::$app->edition === CmsEdition::Team && $currentUser->admin) ||
+                (Craft::$app->edition === CmsEdition::Pro && $currentUser->can('assignUserPermissions')) ||
+                $currentUser->canAssignUserGroups()
+            )
+        );
     }
 
     private function editUserScreenUrl(User $user, string $screen): string
