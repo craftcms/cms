@@ -145,7 +145,7 @@ class GeneralConfig extends BaseConfig
     public bool $addTrailingSlashesToUrls = false;
 
     /**
-     * @var array Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
+     * @var array<string,string|null> Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
      *
      * ```php Static Config
      * ->aliases([
@@ -3386,14 +3386,40 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param array $value
+     * @param array<string,string|null> $value
      * @return self
      * @see $aliases
      * @since 4.2.0
      */
     public function aliases(array $value): self
     {
-        $this->aliases = $value;
+        $this->aliases = [];
+        foreach ($value as $name => $path) {
+            $this->addAlias($name, $path);
+        }
+        return $this;
+    }
+
+    /**
+     * Adds a custom Yii [alias](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
+     *
+     * ```php
+     * ->addAlias('@webroot', '/var/www/')
+     * ```
+     *
+     * @group Environment
+     * @param string $name
+     * @param string|null $path
+     * @return self
+     * @see $aliases
+     * @since 4.2.0
+     */
+    public function addAlias(string $name, ?string $path): self
+    {
+        if (!str_starts_with($name, '@')) {
+            $name = "@$name";
+        }
+        $this->aliases[$name] = $path;
         return $this;
     }
 
