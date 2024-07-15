@@ -182,7 +182,7 @@ class Application extends \yii\web\Application
             $headers = $this->getResponse()->getHeaders();
             $generalConfig = $this->getConfig()->getGeneral();
 
-            if ($generalConfig->permissionsPolicyHeader) {
+            if ($generalConfig->permissionsPolicyHeader && $request->getIsSiteRequest()) {
                 $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
             }
 
