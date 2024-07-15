@@ -800,6 +800,25 @@ class UsersController extends Controller
     }
 
     /**
+     * User index
+     *
+     * @param string|null $source
+     * @return Response
+     * @since 4.11.0
+     */
+    public function actionIndex(?string $source = null): Response
+    {
+        $this->requirePermission('editUsers');
+        return $this->renderTemplate('users/_index.twig', [
+            'title' => Craft::t('app', 'Users'),
+            'buttonLabel' => Craft::t('app', 'New {type}', [
+                'type' => User::lowerDisplayName(),
+            ]),
+            'source' => $source,
+        ]);
+    }
+
+    /**
      * Edit a user account.
      *
      * @param int|string|null $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
@@ -1032,7 +1051,9 @@ class UsersController extends Controller
                 ]);
             }
         } else {
-            $title = Craft::t('app', 'Create a new user');
+            $title = Craft::t('app', 'Create a new {type}', [
+                'type' => User::lowerDisplayName(),
+            ]);
         }
 
         // Trigger EVENT_DEFINE_ADDITIONAL_BUTTONS

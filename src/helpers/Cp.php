@@ -1211,7 +1211,15 @@ JS, [
                     'title' => Craft::t('app', 'Actions'),
                     'aria' => [
                         'controls' => $actionMenuId,
-                        'label' => sprintf('%s %s', $address->title ? Html::encode($address->title) : Craft::t('app', 'New Address'), Craft::t('app', 'Settings')),
+                        'label' => sprintf(
+                            '%s %s',
+                            $address->title
+                                ? Html::encode($address->title)
+                                : Craft::t('app', 'New {type}', [
+                                    'type' => Address::displayName(),
+                            ]),
+                            Craft::t('app', 'Settings'),
+                        ),
                     ],
                     'data' => [
                         'icon' => 'settings',
