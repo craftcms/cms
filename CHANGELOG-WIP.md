@@ -1,17 +1,17 @@
 # Release Notes for Craft CMS 5.3 (WIP)
 
 ### Content Management
-- Added the “Link” field type, which replaces “URL”, and can store URLs, `mailto` and `tel` URIs, and entry/asset/category references. ([#15251](https://github.com/craftcms/cms/pull/15251)) 
+- Added the “Link” field type, which replaces “URL”, and can store URLs, `mailto` and `tel` URIs, and entry/asset/category references. ([#15251](https://github.com/craftcms/cms/pull/15251))
 - Entry and category conditions now have a “Has Descendants” rule. ([#15276](https://github.com/craftcms/cms/discussions/15276))
 - “Replace file” actions now display success notices on complete. ([#15217](https://github.com/craftcms/cms/issues/15217))
 - Double-clicking on folders within asset indexes and folder selection modals now navigates the index/modal into the folder. ([#15238](https://github.com/craftcms/cms/discussions/15238))
 - Matrix fields now show validation errors when nested entries don’t validate. ([#15161](https://github.com/craftcms/cms/issues/15161), [#15165](https://github.com/craftcms/cms/pull/15165))
-- Matrix fields set to inline-editable blocks view now support selecting all blocks by pressing <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>A</kbd> when a checkbox is focused. ([#15326](https://github.com/craftcms/cms/issues/15326)) 
+- Matrix fields set to inline-editable blocks view now support selecting all blocks by pressing <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>A</kbd> when a checkbox is focused. ([#15326](https://github.com/craftcms/cms/issues/15326))
 - Users’ Permissions, Preferences, and Password & Verification screens now have “Save and continue editing” actions, as well as support for <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcuts.
 
 ### Accessibility
 - Improved the accessibility of two-step verification setup. ([#15229](https://github.com/craftcms/cms/pull/15229))
-- The notification heading is no longer read to screen readers when no notifications are active. ([#15294](https://github.com/craftcms/cms/pull/15294)) 
+- The notification heading is no longer read to screen readers when no notifications are active. ([#15294](https://github.com/craftcms/cms/pull/15294))
 - The login modal that appears once a user’s session has ended now has a `lang` attribute, in case it differs from the user’s preferred language.
 
 ### Administration
