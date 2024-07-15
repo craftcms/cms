@@ -956,6 +956,25 @@ class UsersController extends Controller
     }
 
     /**
+     * User index
+     *
+     * @param string|null $source
+     * @return Response
+     * @since 5.3.0
+     */
+    public function actionIndex(?string $source = null): Response
+    {
+        $this->requirePermission('editUsers');
+        return $this->renderTemplate('users/_index.twig', [
+            'title' => Craft::t('app', 'Users'),
+            'buttonLabel' => Craft::t('app', 'New {type}', [
+                'type' => User::lowerDisplayName(),
+            ]),
+            'source' => $source,
+        ]);
+    }
+
+    /**
      * Creates a new unpublished draft of a user and redirects to its edit page.
      *
      * @return Response
