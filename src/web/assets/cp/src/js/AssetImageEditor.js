@@ -1026,7 +1026,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           'aria-selected': 'true',
           tabindex: '0',
         })
-        .trigger('focus');
+        .focus();
       this.showView(view);
     },
 

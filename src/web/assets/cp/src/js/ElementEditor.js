@@ -1884,7 +1884,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       if (!Garnish.isMobileBrowser(true)) {
-        this.$nameTextInput.trigger('focus');
+        this.$nameTextInput.focus();
       }
     },
 
@@ -1940,7 +1940,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$editMetaBtn.attr('aria-expanded', 'false');
 
       if (Garnish.focusIsInside(this.metaHud.$body)) {
-        this.$editMetaBtn.trigger('focus');
+        this.$editMetaBtn.focus();
       }
     },
 

@@ -183,7 +183,7 @@ import './install.scss';
           this.showInstallScreen();
         } else if (i !== 1) {
           // Give focus to the first input
-          this.$currentScreen.find('input[type=text]:first').trigger('focus');
+          this.$currentScreen.find('input[type=text]:first').focus();
         }
       },
 

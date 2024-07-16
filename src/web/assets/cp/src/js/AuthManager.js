@@ -204,7 +204,7 @@ Craft.AuthManager = Garnish.Base.extend(
             if (!Garnish.isMobileBrowser(true)) {
               // Auto-focus the renew button
               setTimeout(function () {
-                $renewSessionBtn.trigger('focus');
+                $renewSessionBtn.focus();
               }, 100);
             }
           },
@@ -335,7 +335,7 @@ Craft.AuthManager = Garnish.Base.extend(
             if (!Garnish.isMobileBrowser(true)) {
               // Auto-focus the password input
               setTimeout(() => {
-                this.$passwordInput.trigger('focus');
+                this.$passwordInput.focus();
               }, 100);
             }
           },
@@ -444,7 +444,7 @@ Craft.AuthManager = Garnish.Base.extend(
           Garnish.shake(this.loginModal.$container);
 
           if (!Garnish.isMobileBrowser(true)) {
-            this.$passwordInput.trigger('focus');
+            this.$passwordInput.focus();
           }
         });
     },

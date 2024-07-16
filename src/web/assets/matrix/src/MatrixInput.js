@@ -430,7 +430,7 @@
                 // Scroll to the block
                 Garnish.scrollContainerToElement($block);
                 // Focus on the first focusable element
-                $block.find('.flex-fields :focusable').first().trigger('focus');
+                $block.find('.flex-fields :focusable').first().focus();
               }
 
               // Resume the draft editor
