@@ -13,6 +13,7 @@
 - Fixed an error that occurred if the SMTP mailer transport type was used, and the Hostname value was blank. ([#15342](https://github.com/craftcms/cms/discussions/15342))
 - Fixed a bug where database DML changes weren’t getting rolled back after tests were run if the Codeception config had `transaction: true`. ([#7615](https://github.com/craftcms/cms/issues/7615))
 - Fixed an error that could occur when saving recursively-nested elements. ([#15362](https://github.com/craftcms/cms/issues/15362))
+- Fixed a styling issue. ([#15315](https://github.com/craftcms/cms/issues/15315))
 
 ## 5.2.6 - 2024-07-11
 
