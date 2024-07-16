@@ -3874,6 +3874,8 @@ class Elements extends Component
 
         $updateForOwner = (
             $element instanceof NestedElementInterface &&
+            ($field = $element->getField()) &&
+            $field->searchable &&
             ($updateForOwner ??
                 $element->getIsCanonical() &&
                 isset($element->fieldId) &&
@@ -3886,12 +3888,8 @@ class Elements extends Component
             /** @var NestedElementInterface $element */
             $owner = $element->getOwner();
             if ($owner) {
-                /** @phpstan-ignore-next-line */
-                $field = $owner->getFieldLayout()?->getFieldById($element->fieldId);
-                if ($field?->searchable) {
-                    $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
-                    $this->invalidateCachesForElement($owner);
-                }
+                $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
+                $this->invalidateCachesForElement($owner);
             }
         }
     }
