@@ -282,7 +282,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
       this.killSearchMenu();
       this.$addTagInput.val('');
-      this.$addTagInput.trigger('focus');
+      this.$addTagInput.focus();
 
       if (!id) {
         // We need to create the tag first

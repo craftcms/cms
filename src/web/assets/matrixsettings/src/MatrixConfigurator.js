@@ -343,7 +343,7 @@
 
       if (!Garnish.isMobileBrowser()) {
         setTimeout(() => {
-          this.$nameInput.trigger('focus');
+          this.$nameInput.focus();
         }, 100);
       }
 
@@ -693,7 +693,7 @@
 
       if (!Garnish.isMobileBrowser()) {
         setTimeout(() => {
-          this.$nameInput.trigger('focus');
+          this.$nameInput.focus();
         }, 100);
       }
     },

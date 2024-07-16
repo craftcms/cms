@@ -338,7 +338,7 @@
       }
 
       setTimeout(() => {
-        this.optionsTable.$tbody.find('textarea').first().trigger('focus');
+        this.optionsTable.$tbody.find('textarea').first().focus();
       }, 100);
     },
 

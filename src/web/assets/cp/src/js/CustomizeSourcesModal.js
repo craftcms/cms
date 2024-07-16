@@ -218,7 +218,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   focusLabelInput: function () {
-    this.selectedSource.$labelInput.trigger('focus');
+    this.selectedSource.$labelInput.focus();
   },
 
   getSourceName: function () {
@@ -298,7 +298,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     this.addListener(this.$sidebarCloseBtn, 'click', () => {
       this.toggleSidebar();
-      this.$sidebarToggleBtn.trigger('focus');
+      this.$sidebarToggleBtn.focus();
     });
   },
 

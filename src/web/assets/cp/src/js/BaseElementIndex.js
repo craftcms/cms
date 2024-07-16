@@ -291,13 +291,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.clearSearch(true);
 
         if (!Garnish.isMobileBrowser(true)) {
-          this.$search.trigger('focus');
+          this.$search.focus();
         }
       });
 
       // Auto-focus the Search box
       if (!Garnish.isMobileBrowser(true)) {
-        this.$search.trigger('focus');
+        this.$search.focus();
       }
 
       // View menus
@@ -1449,7 +1449,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (pageChanged) {
               const $elementContainer = this.view.getElementContainer();
-              Garnish.firstFocusableElement($elementContainer).trigger('focus');
+              Garnish.firstFocusableElement($elementContainer).focus();
             }
 
             resolve();

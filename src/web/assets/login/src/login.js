@@ -182,7 +182,7 @@ import './login.scss';
 
     onSwitchForm: function (event) {
       if (!Garnish.isMobileBrowser()) {
-        this.$loginNameInput.trigger('focus');
+        this.$loginNameInput.focus();
       }
 
       this.clearErrors();
