@@ -475,11 +475,11 @@ Garnish = $.extend(Garnish, {
         if (index === 0 && ev.shiftKey) {
           ev.preventDefault();
           ev.stopPropagation();
-          $focusableElements.last().trigger('focus');
+          $focusableElements.last().focus();
         } else if (index === $focusableElements.length - 1 && !ev.shiftKey) {
           ev.preventDefault();
           ev.stopPropagation();
-          $focusableElements.first().trigger('focus');
+          $focusableElements.first().focus();
         }
       }
     });
@@ -516,9 +516,9 @@ Garnish = $.extend(Garnish, {
     }
 
     if ($firstFocusable.length > 0) {
-      $firstFocusable.trigger('focus');
+      $firstFocusable.focus();
     } else {
-      $container.attr('tabindex', '-1').trigger('focus');
+      $container.attr('tabindex', '-1').focus();
     }
   },
 

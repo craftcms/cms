@@ -178,7 +178,7 @@ Craft.AuthManager = Garnish.Base.extend(
             if (!Garnish.isMobileBrowser(true)) {
               // Auto-focus the renew button
               setTimeout(function () {
-                $renewSessionBtn.trigger('focus');
+                $renewSessionBtn.focus();
               }, 100);
             }
           },
