@@ -63,7 +63,7 @@
   --focus-ring-outset: inset 0 0 0 1px currentColor,
     0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+    inset 0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
   --touch-target-size: calc(
     24rem / 16
   ); /* Minimum recommended touch target size */
@@ -7021,8 +7021,7 @@ $min2ColWidth: 400px;
   & > a:not(.crumb-link),
   & > .menu-item,
   & > .menu-option {
-    --focus-ring: inset 0 0 0 3px
-      hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
+    --focus-ring: var(--inner-focus-ring);
 
     &:hover {
       @include disclosure-link-hover-styles;
