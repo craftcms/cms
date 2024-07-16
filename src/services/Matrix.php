@@ -821,7 +821,9 @@ class Matrix extends Component
                         }
 
                         // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
+                        foreach ($sourceSupportedSiteIds as $siteId) {
+                            $handledSiteIds[$siteId] = true;
+                        }
                     }
 
                     if ($value instanceof MatrixBlockQuery) {

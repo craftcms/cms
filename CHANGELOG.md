@@ -3,6 +3,9 @@
 ## Unreleased
 
 - `craft\helpers\UrlHelper::actionUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `@web` alias wasn’t explicitly defined.
+- Fixed a bug where it wasn’t possible to expand/collapse descendants of disabled table rows within element select modals. ([#15337](https://github.com/craftcms/cms/issues/15337))
+- Fixed a bug where PhpStorm autocomplete wasn’t working when chaining custom field methods defined by `CustomFieldBehavior`. ([#15336](https://github.com/craftcms/cms/issues/15336))
+- Fixed a bug where new Matrix blocks created on newly-created elements weren’t getting duplicated to all other sites for the owner element. ([#15321](https://github.com/craftcms/cms/issues/15321))
 
 ## 4.10.5 - 2024-07-11
 
