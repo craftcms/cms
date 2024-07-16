@@ -357,7 +357,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           this.hasSidebar = true;
 
           if (this.showExpandedView) {
-            this.showSidebar();
+            this.showSidebar(false);
           } else {
             this.hideSidebar();
           }
@@ -423,7 +423,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       }
     },
 
-    showSidebar: function () {
+    showSidebar: function (focus = true) {
       if (this.showingSidebar) {
         return;
       }
@@ -441,7 +441,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       this.$sidebar.css(this._openedSidebarStyles());
 
-      if (!Garnish.isMobileBrowser()) {
+      if (focus && !Garnish.isMobileBrowser()) {
         this.$sidebar.one('transitionend.so', () => {
           Craft.setFocusWithin(this.$sidebar);
         });

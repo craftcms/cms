@@ -164,6 +164,9 @@ class Craft extends Yii2
 
         parent::_before($test);
 
+        // transaction events are registered now, so it's ok to open the connection
+        \Craft::$app->db->open();
+
         // If full mock, create the mock app and don't perform to any further actions
         if ($this->_getConfig('fullMock') === true) {
             /** @var ConsoleApplication|WebApplication|MockObject $mockApp */
