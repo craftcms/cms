@@ -3510,6 +3510,11 @@ table {
       }
     }
 
+    // label links inside cards and chip should be coloured as regular a tags despite not having href attribute
+    a.label-link {
+      color: var(--link-color);
+    }
+
     .segment:after {
       display: inline-flex !important;
       position: relative;
