@@ -3359,7 +3359,7 @@ table {
   }
 
   & > .cp-icon {
-    @include margin(0, -4px, 0, -2px);
+    @include margin(3px, -4px, 0, -2px);
   }
 
   .card-content,
