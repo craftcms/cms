@@ -499,6 +499,10 @@ Garnish = $.extend(Garnish, {
    */
   setFocusWithin: function (container) {
     const $container = $(container);
+    if ($container.has(document.activeElement).length) {
+      return;
+    }
+
     let $firstFocusable = $(container).find(
       ':focusable:not(.checkbox):not(.prevent-autofocus):first'
     );
