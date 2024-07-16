@@ -73,6 +73,7 @@ Craft.ui = {
               : 'off'
             : config.autocomplete,
         disabled: this.getDisabledValue(config.disabled),
+        'aria-describedby': this.getDescribedByValue(config),
         readonly: config.readonly,
         title: config.title,
         placeholder: config.placeholder,
@@ -1209,6 +1210,7 @@ Craft.ui = {
     if (config.instructions) {
       $('<div class="instructions"/>')
         .text(config.instructions)
+        .attr('id', config.id ? `${config.id}-instructions` : null)
         .appendTo($field);
     }
 
@@ -1429,5 +1431,19 @@ Craft.ui = {
 
   getDisabledValue: function (disabled) {
     return disabled ? 'disabled' : null;
+  },
+
+  getDescribedByValue: function (config) {
+    let value = '';
+
+    if (config.instructions) {
+      value += config.id ? `${config.id}-instructions` : '';
+    }
+
+    if (value.length) {
+      return value;
+    }
+
+    return null;
   },
 };
