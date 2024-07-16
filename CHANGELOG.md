@@ -16,6 +16,7 @@
 - Fixed an error that could occur when saving recursively-nested elements. ([#15362](https://github.com/craftcms/cms/issues/15362))
 - Fixed a styling issue. ([#15315](https://github.com/craftcms/cms/issues/15315))
 - Fixed a bug where field status indicators within Matrix fields weren’t positioned correctly.
+- Fixed a bug where Matrix changes could be lost if the `autosaveDrafts` config setting was set to `false`. ([#15353](https://github.com/craftcms/cms/issues/15353))
 
 ## 5.2.6 - 2024-07-11
 
