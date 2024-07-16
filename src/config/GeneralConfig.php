@@ -2007,7 +2007,7 @@ class GeneralConfig extends BaseConfig
     public ?string $pathParam = 'p';
 
     /**
-     * @var string|null The `Permissions-Policy` header that should be sent for web responses.
+     * @var string|null The `Permissions-Policy` header that should be sent for site responses.
      *
      * ::: code
      * ```php Static Config

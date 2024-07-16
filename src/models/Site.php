@@ -137,7 +137,12 @@ class Site extends Model
     public function getBaseUrl(bool $parse = true): ?string
     {
         if ($this->_baseUrl) {
-            return $parse ? rtrim(App::parseEnv($this->_baseUrl), '/') . '/' : $this->_baseUrl;
+            if ($parse) {
+                $parsed = App::parseEnv($this->_baseUrl);
+                return $parsed ? rtrim($parsed, '/') . '/' : null;
+            }
+
+            return $this->_baseUrl;
         }
 
         return null;
