@@ -3872,12 +3872,14 @@ class Elements extends Component
             ]), 2048);
         }
 
-        $updateForOwner ??= (
+        $updateForOwner = (
             $element instanceof NestedElementInterface &&
-            $element->getIsCanonical() &&
-            isset($element->fieldId) &&
-            isset($element->updateSearchIndexForOwner) &&
-            $element->updateSearchIndexForOwner
+            ($updateForOwner ??
+                $element->getIsCanonical() &&
+                isset($element->fieldId) &&
+                isset($element->updateSearchIndexForOwner) &&
+                $element->updateSearchIndexForOwner
+            )
         );
 
         if ($updateForOwner) {
