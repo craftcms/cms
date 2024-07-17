@@ -53,7 +53,6 @@ class UpController extends Controller
     {
         try {
             $projectConfig = Craft::$app->getProjectConfig();
-            $pendingChanges = $projectConfig->areChangesPending(force: true);
             $writeYamlAutomatically = $projectConfig->writeYamlAutomatically;
 
             // Craft + plugin migrations
@@ -72,13 +71,11 @@ class UpController extends Controller
             $projectConfig->reset();
 
             // Project Config
-            if ($pendingChanges) {
-                $res = $this->run('project-config/apply');
-                if ($res !== ExitCode::OK) {
-                    return $res;
-                }
-                $this->stdout("\n");
+            $res = $this->run('project-config/apply');
+            if ($res !== ExitCode::OK) {
+                return $res;
             }
+            $this->stdout("\n");
 
             // Content migration
             $res = $this->run('migrate/up', [
