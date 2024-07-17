@@ -69,9 +69,7 @@ $generalConfig = $configService->getGeneral();
 // -----------------------------------------------------------------------------
 
 $createFolder = function($path) use ($generalConfig) {
-    if (!is_dir($path)) {
-        FileHelper::createDirectory($path, $generalConfig->defaultDirMode ?? 0775);
-    }
+    FileHelper::createDirectory($path, $generalConfig->defaultDirMode ?? 0775);
 };
 
 $ensureFolderIsReadable = function($path, $writableToo = false) {
