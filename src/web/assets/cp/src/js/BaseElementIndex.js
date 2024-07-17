@@ -1419,8 +1419,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         if (preservePagination !== true) {
           this.setPage(1);
-          this._resetCount();
         }
+
+        this._resetCount();
 
         var params = this.getViewParams();
 

@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where element index result counts weren’t getting updated when the element list was refreshed but pagination was preserved. ([#15367](https://github.com/craftcms/cms/issues/15367))
+
 ## 4.10.6 - 2024-07-16
 
 - `craft\helpers\UrlHelper::actionUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `@web` alias wasn’t explicitly defined.
