@@ -141,7 +141,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
       if ($element) {
         this.elementSelect.focusItem($element);
       } else if (this.$triggerElement && this.$triggerElement.length) {
-        this.$triggerElement.trigger('focus');
+        this.$triggerElement.focus();
       }
 
       this.destroy();

@@ -3872,24 +3872,24 @@ class Elements extends Component
             ]), 2048);
         }
 
-        $updateForOwner ??= (
+        $updateForOwner = (
             $element instanceof NestedElementInterface &&
-            $element->getIsCanonical() &&
-            isset($element->fieldId) &&
-            isset($element->updateSearchIndexForOwner) &&
-            $element->updateSearchIndexForOwner
+            ($field = $element->getField()) &&
+            $field->searchable &&
+            ($updateForOwner ??
+                $element->getIsCanonical() &&
+                isset($element->fieldId) &&
+                isset($element->updateSearchIndexForOwner) &&
+                $element->updateSearchIndexForOwner
+            )
         );
 
         if ($updateForOwner) {
             /** @var NestedElementInterface $element */
             $owner = $element->getOwner();
             if ($owner) {
-                /** @phpstan-ignore-next-line */
-                $field = $owner->getFieldLayout()?->getFieldById($element->fieldId);
-                if ($field?->searchable) {
-                    $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
-                    $this->invalidateCachesForElement($owner);
-                }
+                $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
+                $this->invalidateCachesForElement($owner);
             }
         }
     }
