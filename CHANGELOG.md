@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where element index result counts weren’t getting updated when the element list was refreshed but pagination was preserved. ([#15367](https://github.com/craftcms/cms/issues/15367))
 - Fixed a SQL error that could occur when sorting by custom fields on MariaDB.
 - Fixed a bug where embedded element indexes could include table columns for all custom fields associated with the element type. ([#15373](https://github.com/craftcms/cms/issues/15373))
 
