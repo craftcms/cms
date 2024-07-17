@@ -1260,7 +1260,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * Starts a buffer for any Asset Bundles registered with [[registerAssetBundle()]].
+     * Starts a buffer for any asset bundles registered with [[registerAssetBundle()]].
      *
      * The buffer’s contents can be cleared and returned later via [[clearAssetBundleBuffer()]].
      *
@@ -1277,7 +1277,7 @@ class View extends \yii\web\View
      * Clears and ends a buffer started via [[startAssetBundleBuffer()]], returning any asset bundles that were registered
      * while the buffer was active.
      *
-     * @return array|false The asset bundles that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     * @return array|false The asset bundles that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
      * @see startAssetBundleBuffer()
      * @since 4.10.7
      */
