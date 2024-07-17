@@ -23,6 +23,7 @@ use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use Illuminate\Support\Collection;
 use yii\base\Component;
+use yii\db\Expression;
 
 /**
  * The Element Sources service provides APIs for managing element indexes.
@@ -327,10 +328,14 @@ class ElementSources extends Component
             ->groupBy('attribute')
             ->map(function(Collection $group) {
                 $orderBys = $group->pluck('orderBy');
-                if ($orderBys->count() === 1 || $orderBys->doesntContain(fn($orderBy) => is_string($orderBy))) {
+                if ($orderBys->doesntContain(fn($orderBy) => is_string($orderBy))) {
                     return $group->first();
                 }
-                $expression = new CoalesceColumnsExpression($orderBys->all());
+                if ($orderBys->count() === 1) {
+                    $expression = new Expression($orderBys->first());
+                } else {
+                    $expression = new CoalesceColumnsExpression($orderBys->all());
+                }
                 return array_merge($group->first(), [
                     'orderBy' => $expression,
                 ]);
