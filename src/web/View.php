@@ -291,6 +291,14 @@ class View extends \yii\web\View
     private array $_metaTagBuffers = [];
 
     /**
+     * @var array
+     * @see startAssetBundleBuffer()
+     * @see clearAssetBundleBuffer()
+     * @since 4.10.7
+     */
+    private array $_assetBundleBuffers = [];
+
+    /**
      * @var array|null the registered generic `<script>` code blocks
      * @see registerScript()
      */
@@ -1249,6 +1257,39 @@ class View extends \yii\web\View
         $bufferedMetaTags = $this->metaTags;
         $this->metaTags = array_pop($this->_metaTagBuffers);
         return $bufferedMetaTags;
+    }
+
+    /**
+     * Starts a buffer for any Asset Bundles registered with [[registerAssetBundle()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearAssetBundleBuffer()]].
+     *
+     * @see clearAssetBundleBuffer()
+     * @since 4.10.7
+     */
+    public function startAssetBundleBuffer(): void
+    {
+        $this->_assetBundleBuffers[] = $this->assetBundles;
+        $this->assetBundles = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startAssetBundleBuffer()]], returning any asset bundles that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The asset bundles that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     * @see startAssetBundleBuffer()
+     * @since 4.10.7
+     */
+    public function clearAssetBundleBuffer(): array|false
+    {
+        if (empty($this->_assetBundleBuffers)) {
+            return false;
+        }
+
+        $bufferedAssetBundles = $this->assetBundles;
+        $this->assetBundles = array_pop($this->_assetBundleBuffers);
+        return $bufferedAssetBundles;
     }
 
     /**

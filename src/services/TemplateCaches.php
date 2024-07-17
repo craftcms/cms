@@ -69,7 +69,7 @@ class TemplateCaches extends Component
             return null;
         }
 
-        [$body, $cacheInfo, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags] = array_pad($data, 9, null);
+        [$body, $cacheInfo, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags, $bufferedAssetBundles] = array_pad($data, 10, null);
 
         // If we're actively collecting element cache info, register this cache's tags and duration
         $elementsService = Craft::$app->getElements();
@@ -91,7 +91,8 @@ class TemplateCaches extends Component
                 $bufferedJsFiles ?? [],
                 $bufferedCssFiles ?? [],
                 $bufferedHtml ?? [],
-                $bufferedMetaTags ?? []
+                $bufferedMetaTags ?? [],
+                $bufferedAssetBundles ?? [],
             );
         }
 
@@ -126,6 +127,7 @@ class TemplateCaches extends Component
             $view->startCssFileBuffer();
             $view->startHtmlBuffer();
             $view->startMetaTagBuffer();
+            $view->startAssetBundleBuffer();
         }
     }
 
@@ -162,6 +164,7 @@ class TemplateCaches extends Component
             $bufferedCssFiles = $view->clearCssFileBuffer();
             $bufferedHtml = $view->clearHtmlBuffer();
             $bufferedMetaTags = $view->clearMetaTagBuffer();
+            $bufferedAssetBundles = $view->clearAssetBundleBuffer();
         }
 
         // If there are any transform generation URLs in the body, don't cache it.
@@ -198,11 +201,11 @@ class TemplateCaches extends Component
             $bufferedMetaTags = $this->_parseSelfClosingTags($bufferedMetaTags);
 
             if ($saveCache) {
-                array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags);
+                array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags, $bufferedAssetBundles);
             }
 
             // Re-register the JS and CSS
-            $this->_registerResources($bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags);
+            $this->_registerResources($bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags, $bufferedAssetBundles);
         }
 
         if (!$saveCache) {
@@ -279,6 +282,7 @@ class TemplateCaches extends Component
         array $bufferedCssFiles,
         array $bufferedHtml,
         array $bufferedMetaTags,
+        array $bufferedAssetBundles,
     ): void {
         $view = Craft::$app->getView();
 
@@ -317,6 +321,11 @@ class TemplateCaches extends Component
 
         foreach ($bufferedMetaTags as $key => $options) {
             $view->registerMetaTag($options, $key);
+        }
+
+        foreach ($bufferedAssetBundles as $key => $assetBundle) {
+            $position = $assetBundle->jsOptions['position'] ?? null;
+            $view->registerAssetBundle($key, $position);
         }
     }
 
