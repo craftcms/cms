@@ -3536,6 +3536,14 @@ class Elements extends Component
             $newSiteIds = $element->newSiteIds;
             $element->newSiteIds = [];
 
+            // if we're saving for the first time and there are fields marked as dirty,
+            // ensure we save & propagate the content
+            // see https://github.com/craftcms/cms/issues/15369
+            if ($originalFirstSave === true && $propagate === false && $saveContent === false && !empty($dirtyFields)) {
+                $propagate = true;
+                $saveContent = true;
+            }
+
             $transaction = Craft::$app->getDb()->beginTransaction();
 
             try {
