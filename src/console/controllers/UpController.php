@@ -58,8 +58,6 @@ class UpController extends Controller
     public function actionIndex(): int
     {
         try {
-            $pendingChanges = Craft::$app->getProjectConfig()->areChangesPending();
-
             // Craft + plugin migrations
             $res = $this->run('migrate/all', [
                 'noContent' => true,
@@ -72,13 +70,11 @@ class UpController extends Controller
             $this->stdout("\n");
 
             // Project Config
-            if ($pendingChanges) {
-                $res = $this->run('project-config/apply');
-                if ($res !== ExitCode::OK) {
-                    return $res;
-                }
-                $this->stdout("\n");
+            $res = $this->run('project-config/apply');
+            if ($res !== ExitCode::OK) {
+                return $res;
             }
+            $this->stdout("\n");
 
             // Content migration
             $res = $this->run('migrate/up', [

@@ -8,6 +8,7 @@
 ### Administration
 - New sites’ Base URL settings now default to an environment variable name based on the site name. ([#15347](https://github.com/craftcms/cms/pull/15347))
 - Craft now warns against using the `@web` alias for URL settings, regardless of whether it was explicitly defined. ([#15347](https://github.com/craftcms/cms/pull/15347))
+- The `up` command now runs `project-config/apply` regardless of whether the `dateModified` value had changed. ([#15322](https://github.com/craftcms/cms/issues/15322), [#15357](https://github.com/craftcms/cms/issues/15357))
 
 ### Development
 - Added the `withCustomFields` element query param.
