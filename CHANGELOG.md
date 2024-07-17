@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a SQL error that could occur when sorting by custom fields on MariaDB.
+- Fixed a bug where embedded element indexes could include table columns for all custom fields associated with the element type. ([#15373](https://github.com/craftcms/cms/issues/15373))
 
 ## 5.2.7 - 2024-07-16
 
