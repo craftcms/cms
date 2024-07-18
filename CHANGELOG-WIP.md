@@ -21,7 +21,6 @@
 - Icon fields now have an “Include Pro icons” setting, which determines whether Font Awesome Pro icon should be selectable. ([#15242](https://github.com/craftcms/cms/issues/15242))
 - New sites’ Base URL settings now default to an environment variable name based on the site name. ([#15347](https://github.com/craftcms/cms/pull/15347))
 - Craft now warns against using the `@web` alias for URL settings, regardless of whether it was explicitly defined. ([#15347](https://github.com/craftcms/cms/pull/15347))
-- The `up` command now runs `project-config/apply` regardless of whether the `dateModified` value had changed. ([#15322](https://github.com/craftcms/cms/issues/15322), [#15357](https://github.com/craftcms/cms/issues/15357))
 - Entry types created from Matrix block types no longer show the Slug field by default, after upgrading to Craft 5. ([#15379](https://github.com/craftcms/cms/issues/15379))
 
 ### Development
