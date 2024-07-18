@@ -98,6 +98,7 @@ class m230617_070415_entrify_matrix_blocks extends Migration
                     'handle' => $this->uniqueHandle($blockTypeConfig['handle'], $entryTypeHandles),
                     'hasTitleField' => false,
                     'titleFormat' => null,
+                    'showSlugField' => false,
                 ]);
 
                 $fieldLayoutUid = ArrayHelper::firstKey($blockTypeConfig['fieldLayouts'] ?? []);
