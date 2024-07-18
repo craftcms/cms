@@ -42,6 +42,7 @@ use yii\db\Exception as DbException;
  */
 class Connection extends \yii\db\Connection
 {
+    public bool $foo = false;
     use PrimaryReplicaTrait;
 
     public const DRIVER_MYSQL = 'mysql';

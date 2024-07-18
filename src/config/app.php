@@ -219,6 +219,12 @@ return [
             return Craft::createObject($config);
         },
 
+        'db2' => function() {
+            $config = craft\helpers\App::dbConfig();
+            $config['foo'] = true;
+            return Craft::createObject($config);
+        },
+
         'formatter' => function() {
             return Craft::$app->getFormattingLocale()->getFormatter();
         },
