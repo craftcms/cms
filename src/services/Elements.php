@@ -3451,23 +3451,11 @@ class Elements extends Component
             ]));
         }
 
-        // remember current firstSave and propagateAll properties
-        $currentFirstSave = $element->firstSave;
-        $currentPropagateAll = $element->propagateAll;
-
-        // set firstSave and propagateAll properties to the original values
-        $element->firstSave = $originalFirstSave;
-        $element->propagateAll = $originalPropagateAll;
-
         if (!$element->beforeSave($isNewElement)) {
             $element->firstSave = $originalFirstSave;
             $element->propagateAll = $originalPropagateAll;
             return false;
         }
-
-        // set firstSave and propagateAll back to the current values
-        $element->firstSave = $currentFirstSave;
-        $element->propagateAll = $currentPropagateAll;
 
         // Get the sites supported by this element
         $supportedSites = $supportedSites ?? ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');

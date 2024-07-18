@@ -1692,9 +1692,6 @@ JS, [
         }
 
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
-
-        $element->firstSave = $this->_isFirstSave($element);
-
         if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
         }
@@ -1753,31 +1750,6 @@ JS, [
         }
 
         return $this->_asSuccess($message, $canonical, supportsAddAnother: true);
-    }
-
-    /**
-     * Check if this is the first time we're fully saving the element when applying a draft.
-     *
-     * @param ElementInterface $element
-     * @return bool
-     */
-    private function _isFirstSave(ElementInterface $element): bool
-    {
-        $canonical = $element->getCanonical(true);
-
-        // If the canonical element ended up being from a different site than the element, get the element in that site
-        if ($canonical->siteId != $element->siteId) {
-            $element = $element::find()
-                ->drafts()
-                ->provisionalDrafts(null)
-                ->id($element->id)
-                ->siteId($canonical->siteId)
-                ->structureId($canonical->structureId)
-                ->status(null)
-                ->one();
-        }
-
-        return $canonical === $element;
     }
 
     private function _asAppyDraftFailure(ElementInterface $element): ?Response
