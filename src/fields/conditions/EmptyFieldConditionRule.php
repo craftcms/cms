@@ -50,11 +50,11 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
      */
     protected function matchFieldValue($value): bool
     {
-        /** @var ElementQueryInterface|Collection $value */
+        /** @var ElementQueryInterface|Collection|null $value */
         if ($value instanceof ElementQueryInterface) {
             $isEmpty = !$value->exists();
         } else {
-            $isEmpty = $value->isEmpty();
+            $isEmpty = $value === null ? true : $value->isEmpty();
         }
 
         if ($this->operator === self::OPERATOR_EMPTY) {
