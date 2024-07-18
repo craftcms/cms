@@ -1322,6 +1322,7 @@ return [
     'Route deleted.' => 'Route deleted.',
     'Routes' => 'Routes',
     'Row actions' => 'Row actions',
+    'Row {index}' => 'Row {index}',
     'Row could not be added. Maximum number of rows reached.' => 'Row could not be added. Maximum number of rows reached.',
     'Row could not be deleted. Minimum number of rows reached.' => 'Row could not be deleted. Minimum number of rows reached.',
     'Row heading' => 'Row heading',

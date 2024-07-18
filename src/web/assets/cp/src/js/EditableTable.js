@@ -172,6 +172,7 @@ Craft.EditableTable = Garnish.Base.extend(
       }
 
       const $deleteBtn = $row.find('button.delete');
+      const $actionsBtn = $row.find('button.action-btn');
 
       if ($deleteBtn.length) {
         $deleteBtn.attr(
@@ -185,6 +186,13 @@ Craft.EditableTable = Garnish.Base.extend(
         } else {
           $deleteBtn.attr('disabled', 'disabled').addClass('disabled');
         }
+      }
+
+      if ($actionsBtn.length) {
+        const name = `${Craft.t('app', 'Row {index}', {
+          index: $row.index() + 1,
+        })} ${Craft.t('app', 'Actions')}`;
+        $actionsBtn.attr('aria-label', name);
       }
     },
     /**
@@ -585,15 +593,17 @@ Craft.EditableTable = Garnish.Base.extend(
       }
 
       if (allowReorder) {
+        const containerId = `tablerow-menu-container--${rowId}`;
         const $actionsBtn = $('<button/>', {
+          id: `tablerow-action-menu--${rowId}`,
           class: 'btn menu-btn action-btn',
           type: 'button',
           title: Craft.t('app', 'Actions'),
-          'aria-controls': rowId,
+          'aria-controls': containerId,
           'data-disclosure-trigger': 'true',
         });
         const $menuContainer = $('<div/>', {
-          id: `menu-`,
+          id: containerId,
           class: 'menu menu--disclosure',
         });
 

@@ -13,8 +13,6 @@
 {%- set allowReorder = (allowReorder ?? false) and not staticRows %}
 {%- set allowDelete = (allowDelete ?? false) and not staticRows %}
 
-{% set actionBtnLabel = 'Actions'|t('app') %}
-
 {% set actionMenuItems = [
   {
     icon: 'arrow-up',
@@ -116,6 +114,8 @@
     <tbody>
         {% for rowId, row in rows %}
             {% set rowNumber = loop.index %}
+            {% set rowName = 'Row {index}'|t('app', {index: rowNumber}) %}
+            {% set actionBtnLabel = "#{rowName} #{'Actions'|t('app')}" %}
             {% set actionMenuId = "tablerow-action-menu--#{rowId}" %}
             <tr data-id="{{ rowId }}">
                 {% for colId, col in cols %}
@@ -238,6 +238,8 @@
                       <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" type="button" role="button"></a>
                       {{ disclosureMenu(actionMenuItems, {
                         buttonAttributes: {
+                          'aria-label': actionBtnLabel,
+                          id: actionMenuId,
                           class: ['action-btn'],
                           title: 'Actions'|t('app'),
                           data: {
