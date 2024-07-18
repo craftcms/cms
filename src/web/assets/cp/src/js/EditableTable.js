@@ -633,6 +633,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
     $textareas: null,
     $deleteBtn: null,
 
+    get prevRow() {
+      return this.$tr.prev('tr');
+    },
+
+    get nextRow() {
+      return this.$tr.next('tr');
+    },
+
     init: function (table, tr) {
       this.table = table;
       this.$tr = $(tr);
@@ -786,6 +794,45 @@ Craft.EditableTable.Row = Garnish.Base.extend(
       this.addListener($inputs, 'blur', function (ev) {
         $(ev.currentTarget).closest('td').removeClass('focus');
       });
+
+      // Action menu modification
+      const $actionMenuBtn = this.$tr.find('> .action .action-btn');
+
+      const actionDisclosure =
+        $actionMenuBtn.data('trigger') ||
+        new Garnish.DisclosureMenu($actionMenuBtn);
+
+      this.$actionMenu = actionDisclosure.$container;
+      this.actionDisclosure = actionDisclosure;
+
+      actionDisclosure.on('show', () => {
+        this.updateDisclosureMenu();
+      });
+    },
+
+    updateDisclosureMenu: function () {
+      if (this.prevRow.length) {
+        this.$actionMenu
+          .find('button[data-action=moveUp]:first')
+          .parent()
+          .removeClass('hidden');
+      } else {
+        this.$actionMenu
+          .find('button[data-action=moveUp]:first')
+          .parent()
+          .addClass('hidden');
+      }
+      if (this.nextRow.length) {
+        this.$actionMenu
+          .find('button[data-action=moveDown]:first')
+          .parent()
+          .removeClass('hidden');
+      } else {
+        this.$actionMenu
+          .find('button[data-action=moveDown]:first')
+          .parent()
+          .addClass('hidden');
+      }
     },
 
     onTextareaFocus: function (ev) {
