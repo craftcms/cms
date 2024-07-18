@@ -68,7 +68,8 @@ class ImageTransform extends Model
     public ?DateTime $parameterChangeTime = null;
 
     /**
-     * @var string 'crop'|'fit'|'stretch'|'letterbox' Mode
+     * @var string Mode
+     * @phpstan-var 'crop'|'fit'|'stretch'|'letterbox'
      */
     public string $mode = 'crop';
 
