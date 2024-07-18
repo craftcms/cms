@@ -585,6 +585,48 @@ Craft.EditableTable = Garnish.Base.extend(
       }
 
       if (allowReorder) {
+        const $actionsBtn = $('<button/>', {
+          class: 'btn menu-btn action-btn',
+          type: 'button',
+          title: Craft.t('app', 'Actions'),
+          'aria-controls': rowId,
+          'data-disclosure-trigger': 'true',
+        });
+        const $menuContainer = $('<div/>', {
+          id: `menu-`,
+          class: 'menu menu--disclosure',
+        });
+
+        const $ul = $('<ul/>').appendTo($menuContainer);
+
+        const reorderActions = [
+          {
+            icon: 'arrow-up',
+            label: Craft.t('app', 'Move up'),
+            value: 'moveUp',
+          },
+          {
+            icon: 'arrow-down',
+            label: Craft.t('app', 'Move down'),
+            value: 'moveDown',
+          },
+        ];
+
+        for (const action of reorderActions) {
+          const $li = $('<li/>');
+
+          $li.append(
+            $('<button/>', {
+              text: action.label,
+              class: 'menu-item',
+              'data-action': action.value,
+              'data-icon': action.icon,
+            })
+          );
+
+          $ul.append($li);
+        }
+
         $('<td/>', {
           class: 'thin action',
         })
@@ -596,6 +638,8 @@ Craft.EditableTable = Garnish.Base.extend(
               type: 'button',
             })
           )
+          .append($actionsBtn)
+          .append($menuContainer)
           .appendTo($tr);
       }
 
@@ -808,6 +852,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
       actionDisclosure.on('show', () => {
         this.updateDisclosureMenu();
       });
+
+      this.$actionMenuOptions = this.$actionMenu.find('button[data-action]');
+
+      this.addListener(
+        this.$actionMenuOptions,
+        'activate',
+        this.handleActionClick
+      );
     },
 
     updateDisclosureMenu: function () {
@@ -832,6 +884,44 @@ Craft.EditableTable.Row = Garnish.Base.extend(
           .find('button[data-action=moveDown]:first')
           .parent()
           .addClass('hidden');
+      }
+    },
+
+    handleActionClick: function (event) {
+      event.preventDefault();
+      this.onActionSelect(event.target);
+    },
+
+    onActionSelect: function (option) {
+      $option = $(option);
+      switch ($option.data('action')) {
+        case 'moveUp': {
+          this.moveUp();
+          break;
+        }
+
+        case 'moveDown': {
+          this.moveDown();
+          break;
+        }
+      }
+
+      this.actionDisclosure.hide();
+    },
+
+    moveUp: function () {
+      let $prev = this.prevRow;
+      if ($prev.length) {
+        this.$tr.insertBefore($prev);
+        this.table.updateAllRows();
+      }
+    },
+
+    moveDown: function () {
+      let $next = this.nextRow;
+      if ($next.length) {
+        this.$tr.insertAfter($next);
+        this.table.updateAllRows();
       }
     },
 
