@@ -101,25 +101,33 @@ Craft.EditableTable = Garnish.Base.extend(
 
       if (this.settings.lazyInitRows) {
         // Lazily create the row objects
+        const interactionCallback = (ev) => {
+          const $target = $(ev.target);
+          const $tr = $target.closest('tr');
+          if ($tr.length && !$tr.data('editable-table-row')) {
+            const $textarea = $target.hasClass('editable-table-preview')
+              ? $target.next()
+              : null;
+            this.createRowObj($tr);
+            setTimeout(() => {
+              if ($textarea && !$textarea.is(':focus')) {
+                $textarea.focus();
+              }
+            }, 100);
+          }
+        };
+
         this.addListener(
           this.$tbody,
           'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
-          (ev) => {
-            const $target = $(ev.target);
-            const $tr = $target.closest('tr');
-            if ($tr.length && !$tr.data('editable-table-row')) {
-              const $textarea = $target.hasClass('editable-table-preview')
-                ? $target.next()
-                : null;
-              this.createRowObj($tr);
-              setTimeout(() => {
-                if ($textarea && !$textarea.is(':focus')) {
-                  $textarea.focus();
-                }
-              }, 100);
-            }
-          }
+          interactionCallback
         );
+
+        const $actionMenus = this.$tbody.find('.action-btn');
+
+        if ($actionMenus.length) {
+          this.addListener($actionMenus, 'activate', interactionCallback);
+        }
       } else {
         const $rows = this.$tbody.children();
         for (let i = 0; i < $rows.length; i++) {
