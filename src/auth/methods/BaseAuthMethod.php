@@ -23,6 +23,11 @@ abstract class BaseAuthMethod extends Component implements AuthMethodInterface
      */
     protected User $user;
 
+    public function getSetupData(): array
+    {
+        return [];
+    }
+
     /**
      * @inheritdoc
      */

@@ -63,7 +63,7 @@ class RecoveryCodes extends BaseAuthMethod
 new Craft.RecoveryCodesSetup($containerId);
 JS, [$containerId]);
 
-        return $view->renderTemplate('_components/auth/methods/RecoveryCodes/setup.twig');
+        return $view->renderTemplate('_components/auth/methods/RecoveryCodes/setup.twig', $this->getSetupData(), View::TEMPLATE_MODE_CP);
     }
 
     /**
