@@ -236,7 +236,7 @@
                 {% if allowReorder -%}
                     <td class="thin action">
                       <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" type="button" role="button"></a>
-                      {{ disclosureMenu(actionMenuItems, {
+                      {{~ disclosureMenu(actionMenuItems, {
                         buttonAttributes: {
                           'aria-label': actionBtnLabel,
                           id: actionMenuId,
