@@ -1524,7 +1524,7 @@ JS, [
 
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
 
-            if (!$elementsService->saveElement($element)) {
+            if (!$elementsService->saveElement($element, saveContent: true)) {
                 $transaction->rollBack();
                 return $this->_asFailure($element, Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => Craft::t('app', 'draft'),
@@ -1681,7 +1681,7 @@ JS, [
         }
 
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
-        if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
+        if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()), saveContent: true)) {
             return $this->_asAppyDraftFailure($element);
         }
 
