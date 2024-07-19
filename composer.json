@@ -104,10 +104,7 @@
     "psr-4": {
       "craft\\": "src/",
       "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
-    },
-    "files": [
-      "lib/yii2/helpers/ArrayHelper.php"
-    ]
+    }
   },
   "autoload-dev": {
     "psr-4": {
