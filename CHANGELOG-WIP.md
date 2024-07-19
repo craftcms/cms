@@ -25,3 +25,4 @@
 - Craft no longer sets the `Permissions-Policy` header on control panel responses. ([#15348](https://github.com/craftcms/cms/issues/15348))
 - Control panel `resize` events now use ResizeObserver.
 - Craft no longer ensures that the `cpresources` folder is writable.
+- Updated Yii to 2.0.51.
