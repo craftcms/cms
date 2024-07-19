@@ -170,7 +170,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Plugins $plugins The plugins service
  * @property-read ProjectConfig $projectConfig The project config service
  * @property-read Queue|QueueInterface $queue The job queue
- * @property-read Relations $relations The relations service
+ * @property-read Relations $relations The relations service (deprecated)
  * @property-read Revisions $revisions The revisions service
  * @property-read Routes $routes The routes service
  * @property-read Search $search The search service
@@ -1343,6 +1343,7 @@ trait ApplicationTrait
      * Returns the relations service.
      *
      * @return Relations The relations service
+     * @deprecated in 5.3.0
      */
     public function getRelations(): Relations
     {
