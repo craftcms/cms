@@ -3664,12 +3664,11 @@ class Elements extends Component
                 }
 
                 // if we're supposed to save all the content
-                if ($saveContent) {
-                    // Set the field values
+                if ($saveContent || !empty($dirtyFields)) {
                     $content = [];
                     if ($fieldLayout) {
                         foreach ($fieldLayout->getCustomFields() as $field) {
-                            if ($field::dbType() !== null) {
+                            if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
                                 $serializedValue = $field->serializeValue($element->getFieldValue($field->handle), $element);
                                 if ($serializedValue !== null) {
                                     $content[$field->layoutElement->uid] = $serializedValue;
@@ -3678,22 +3677,6 @@ class Elements extends Component
                         }
                     }
                     $siteSettingsRecord->content = $content ?: null;
-                } else {
-                    if (!empty($dirtyFields)) {
-                        $content = [];
-                        if ($fieldLayout) {
-                            foreach ($fieldLayout->getCustomFields() as $field) {
-                                $a = $field->handle;
-                                if (in_array($field->handle, $dirtyFields) && $field::dbType() !== null) {
-                                    $serializedValue = $field->serializeValue($element->getFieldValue($field->handle), $element);
-                                    if ($serializedValue !== null) {
-                                        $content[$field->layoutElement->uid] = $serializedValue;
-                                    }
-                                }
-                            }
-                        }
-                        $siteSettingsRecord->content = $content ?: null;
-                    }
                 }
 
                 // Save the site settings record

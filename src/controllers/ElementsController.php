@@ -1237,6 +1237,7 @@ JS, [
             $success = $elementsService->saveElement(
                 $element,
                 crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite() && $elementsService->canCreateDrafts($element, $user)),
+                saveContent: true,
             );
         } catch (UnsupportedSiteException $e) {
             $element->addError('siteId', $e->getMessage());
