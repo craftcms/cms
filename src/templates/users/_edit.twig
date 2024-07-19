@@ -342,6 +342,7 @@
 {% endblock %}
 
 {% block details %}
+    {{ sidebarHtml|raw }}
     {% if not isNewUser %}
         {% if CraftEdition == CraftPro %}
             <form class="meta read-only" method="post" accept-charset="UTF-8">
@@ -427,6 +428,8 @@
             </form>
         {% endif %}
     {% endif %}
+
+    {{ metadataHtml|raw }}
 
     {# Give plugins a chance to add other stuff here #}
     {% hook "cp.users.edit.details" %}

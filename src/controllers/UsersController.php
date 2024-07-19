@@ -1197,6 +1197,13 @@ JS,
             View::POS_END
         );
 
+
+        // Trigger EVENT_DEFINE_SIDEBAR_HTML and EVENT_DEFINE_METADATA
+        // ---------------------------------------------------------------------
+        $sidebarHtml = $user->getEditPageSidebarHtml();
+        $metadataHtml = $user->getEditPageMetadata();
+
+
         return $this->renderTemplate('users/_edit.twig', compact(
             'user',
             'isNewUser',
@@ -1216,6 +1223,8 @@ JS,
             'canAssignUserGroups',
             'fieldsHtml',
             'additionalButtons',
+            'sidebarHtml',
+            'metadataHtml',
         ));
     }
 

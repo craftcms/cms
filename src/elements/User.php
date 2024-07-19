@@ -23,9 +23,12 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\events\AuthenticateUserEvent;
+use craft\events\DefineHtmlEvent;
+use craft\events\DefineMetadataEvent;
 use craft\events\DefineValueEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -1684,6 +1687,36 @@ XML;
                 'can-suspend' => $currentUser && Craft::$app->getUsers()->canSuspend($currentUser, $this),
             ],
         ];
+    }
+
+    /**
+     * Triggers the EVENT_DEFINE_SIDEBAR_HTML for a full edit user page
+     *
+     * @return string
+     */
+    public function getEditPageSidebarHtml(): string
+    {
+        $components = [];
+
+        // Fire a defineSidebarHtml event
+        $event = new DefineHtmlEvent([
+            'html' => implode("\n", $components),
+        ]);
+        $this->trigger(self::EVENT_DEFINE_SIDEBAR_HTML, $event);
+        return $event->html;
+    }
+
+    /**
+     * Triggers the EVENT_DEFINE_METADATA for a full edit user page
+     *
+     * @return string
+     */
+    public function getEditPageMetadata(): string
+    {
+        $event = new DefineMetadataEvent();
+        $this->trigger(User::EVENT_DEFINE_METADATA, $event);
+
+        return Cp::metadataHtml($event->metadata);
     }
 
     /**
