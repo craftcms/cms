@@ -1898,7 +1898,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       if (!Garnish.isMobileBrowser(true)) {
         setTimeout(() => {
-          this.$nameTextInput.trigger('focus');
+          this.$nameTextInput.focus();
         }, 100);
       }
     },

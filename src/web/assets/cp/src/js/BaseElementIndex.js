@@ -415,7 +415,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.clearSearch(true);
 
         if (!Garnish.isMobileBrowser(true)) {
-          this.$search.trigger('focus');
+          this.$search.focus();
         }
       });
 
@@ -425,7 +425,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         !Garnish.isMobileBrowser(true) &&
         Craft.disableAutofocus === false
       ) {
-        this.$search.trigger('focus');
+        this.$search.focus();
       }
 
       // View menus
@@ -1637,8 +1637,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         if (preservePagination !== true) {
           this.setPage(1);
-          this._resetCount();
         }
+
+        this._resetCount();
 
         this._previousViewParams = this._viewParams;
         this._viewParams = this.getViewParams();

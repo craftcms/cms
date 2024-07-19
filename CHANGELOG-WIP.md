@@ -21,6 +21,7 @@
 - Icon fields now have an “Include Pro icons” setting, which determines whether Font Awesome Pro icon should be selectable. ([#15242](https://github.com/craftcms/cms/issues/15242))
 - New sites’ Base URL settings now default to an environment variable name based on the site name. ([#15347](https://github.com/craftcms/cms/pull/15347))
 - Craft now warns against using the `@web` alias for URL settings, regardless of whether it was explicitly defined. ([#15347](https://github.com/craftcms/cms/pull/15347))
+- Entry types created from Matrix block types no longer show the Slug field by default, after upgrading to Craft 5. ([#15379](https://github.com/craftcms/cms/issues/15379))
 
 ### Development
 - Added support for application-type based `general` and `db` configs (e.g. `config/general.web.php`). ([#15346](https://github.com/craftcms/cms/pull/15346))
@@ -44,6 +45,7 @@
 - Added `craft\fields\linktypes\Phone`.
 - Added `craft\fields\linktypes\Url`.
 - Deprecated `craft\fields\Url`, which is now an alias for `craft\fields\Link`.
+- Deprecated `craft\web\assets\elementresizedetector\ElementResizeDetectorAsset`.
 - Added `Craft.EnvVarGenerator`.
 - Added `Craft.endsWith()`.
 - Added `Craft.removeLeft()`.
@@ -59,3 +61,5 @@
 ### System
 - The control panel now displays Ajax response-defined error messages when provided, rather than a generic “server error” message. ([#15292](https://github.com/craftcms/cms/issues/15292))
 - Craft no longer sets the `Permissions-Policy` header on control panel responses. ([#15348](https://github.com/craftcms/cms/issues/15348))
+- Control panel `resize` events now use ResizeObserver.
+- Craft no longer ensures that the `cpresources` folder is writable.

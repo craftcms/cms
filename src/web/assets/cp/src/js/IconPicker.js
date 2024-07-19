@@ -165,7 +165,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
         .attr('aria-label', name);
       this.$input.val(name);
       this.$chooseBtn.children('.label').text(Craft.t('app', 'Change'));
-      this.$chooseBtn.trigger('focus');
+      this.$chooseBtn.focus();
       this.$removeBtn.removeClass('hidden');
     },
 

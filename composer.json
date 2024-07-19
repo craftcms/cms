@@ -63,7 +63,7 @@
     "theiconic/name-parser": "^1.2",
     "twig/twig": "~3.8.0",
     "voku/stringy": "^6.4.0",
-    "web-auth/webauthn-lib": "~4.8.0",
+    "web-auth/webauthn-lib": "~4.9.0",
     "webonyx/graphql-php": "~14.11.5",
     "yiisoft/yii2": "~2.0.50",
     "yiisoft/yii2-debug": "~2.1.22.0",

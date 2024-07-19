@@ -3496,7 +3496,7 @@ table {
   }
 
   & > .cp-icon {
-    @include margin(0, -4px, 0, -2px);
+    @include margin(3px, -4px, 0, -2px);
   }
 
   .card-content,
@@ -3645,6 +3645,11 @@ table {
       &:focus {
         box-shadow: var(--inner-focus-ring);
       }
+    }
+
+    // label links inside cards and chip should be coloured as regular a tags despite not having href attribute
+    a.label-link {
+      color: var(--link-color);
     }
 
     .segment:after {
@@ -8712,6 +8717,7 @@ body.licensing-issues {
 
   .flex-fields {
     --row-gap: var(--m) !important;
+    --padding: var(--m);
   }
 
   // no margin when a .field comes after a hidden item.
