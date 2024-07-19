@@ -40,7 +40,7 @@
     "craftcms/server-check": "~2.1.2",
     "creocoder/yii2-nested-sets": "~0.9.0",
     "elvanto/litemoji": "~4.3.0",
-    "enshrined/svg-sanitize": "~0.16.0",
+    "enshrined/svg-sanitize": "~0.19.0",
     "guzzlehttp/guzzle": "^7.2.0",
     "illuminate/collections": "^9.1.0",
     "mikehaertl/php-shellcommand": "^1.6.3",

@@ -26,3 +26,4 @@
 - Control panel `resize` events now use ResizeObserver.
 - Craft no longer ensures that the `cpresources` folder is writable.
 - Updated Yii to 2.0.51.
+- Updated svg-sanitizer to 0.19.
