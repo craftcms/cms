@@ -487,7 +487,7 @@ Craft.ui = {
   },
 
   createCheckboxSelect: function (config) {
-    const $container = $('<fieldset class="checkbox-select"/>');
+    const $container = $('<div class="checkbox-select"/>');
 
     if (config.class) {
       $container.addClass(config.class);
@@ -1174,6 +1174,9 @@ Craft.ui = {
     const $field = $(config.fieldset ? '<fieldset/>' : '<div/>', {
       class: 'field',
       id: config.fieldId || (config.id ? config.id + '-field' : null),
+      'aria-describedby': config.fieldset
+        ? this.getDescribedByValue(config)
+        : null,
     });
 
     if (config.first) {
