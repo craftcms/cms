@@ -1210,7 +1210,7 @@ Craft.ui = {
     if (config.instructions) {
       $('<div class="instructions"/>')
         .text(config.instructions)
-        .attr('id', config.id ? `${config.id}-instructions` : null)
+        .attr('id', this.getInstructionsId(config))
         .appendTo($field);
     }
 
@@ -1425,6 +1425,13 @@ Craft.ui = {
     return fieldTabAnchors;
   },
 
+  getInstructionsId: function (config) {
+    console.log(config);
+    return config.id
+      ? `${config.id}-instructions`
+      : `${Math.floor(Math.random() * 1000000000)}-instructions`;
+  },
+
   getAutofocusValue: function (autofocus) {
     return autofocus && !Garnish.isMobileBrowser(true) ? 'autofocus' : null;
   },
@@ -1437,7 +1444,7 @@ Craft.ui = {
     let value = '';
 
     if (config.instructions) {
-      value += config.id ? `${config.id}-instructions` : '';
+      value += this.getInstructionsId(config);
     }
 
     if (value.length) {
