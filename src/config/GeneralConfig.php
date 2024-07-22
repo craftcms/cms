@@ -203,6 +203,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group GraphQL
      * @since 3.5.0
+     * @deprecated in 4.11.0 Use \yii\filters\Cors::class instead
+     * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
      */
     public array|null|false $allowedGraphqlOrigins = null;
 
@@ -3469,6 +3471,8 @@ class GeneralConfig extends BaseConfig
      * @return self
      * @see $allowedGraphqlOrigins
      * @since 4.2.0
+     * @deprecated in 4.11.0 Use \yii\filters\Cors::class instead
+     * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
      */
     public function allowedGraphqlOrigins(array|null|false $value): self
     {
