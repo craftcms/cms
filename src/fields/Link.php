@@ -13,6 +13,7 @@ use craft\base\Event;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\RelationalFieldInterface;
+use craft\base\RelationalFieldTrait;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\fields\data\LinkData;
@@ -40,6 +41,8 @@ use yii\db\Schema;
  */
 class Link extends Field implements InlineEditableFieldInterface, RelationalFieldInterface
 {
+    use RelationalFieldTrait;
+
     /**
      * @event DefineLinkOptionsEvent The event that is triggered when registering the link types for Link fields.
      * @see types()
@@ -478,22 +481,6 @@ JS;
         }
         $value = Html::encode((string)$value);
         return "<a href=\"$value\" target=\"_blank\">$value</a>";
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function localizeRelations(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function forceUpdateRelations(ElementInterface $element): bool
-    {
-        return false;
     }
 
     /**
