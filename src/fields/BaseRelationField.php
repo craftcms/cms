@@ -29,6 +29,7 @@ use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -41,9 +42,11 @@ use craft\services\Elements;
 use craft\services\ElementSources;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+use yii\db\Schema;
 use yii\validators\NumberValidator;
 
 /**
@@ -64,17 +67,6 @@ abstract class BaseRelationField extends Field implements
     public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
 
     private static bool $validatingRelatedElements = false;
-
-    /**
-     * @inheritdoc
-     */
-    public static function supportedTranslationMethods(): array
-    {
-        // Don't ever automatically propagate values to other sites.
-        return [
-            self::TRANSLATION_METHOD_SITE,
-        ];
-    }
 
     /**
      * Returns the element class associated with this field type.
@@ -107,7 +99,7 @@ abstract class BaseRelationField extends Field implements
      */
     public static function dbType(): array|string|null
     {
-        return null;
+        return Schema::TYPE_JSON;
     }
 
     /**
@@ -273,6 +265,7 @@ abstract class BaseRelationField extends Field implements
 
     /**
      * @var bool Whether each site should get its own unique set of relations
+     * @deprecated in 5.3.0
      */
     public bool $localizeRelations = false;
 
@@ -374,6 +367,12 @@ abstract class BaseRelationField extends Field implements
             unset($config['sources']);
         }
 
+        if (isset($config['localizeRelations'])) {
+            $config['translationMethod'] = $config['localizeRelations'] ? self::TRANSLATION_METHOD_SITE : self::TRANSLATION_METHOD_NONE;
+        } else {
+            $config['localizeRelations'] = ($config['translationMethod'] ?? self::TRANSLATION_METHOD_NONE) !== self::TRANSLATION_METHOD_NONE;
+        }
+
         parent::__construct($config);
     }
 
@@ -443,7 +442,6 @@ abstract class BaseRelationField extends Field implements
     {
         $attributes = parent::settingsAttributes();
         $attributes[] = 'allowSelfRelations';
-        $attributes[] = 'localizeRelations';
         $attributes[] = 'maxRelations';
         $attributes[] = 'minRelations';
         $attributes[] = 'selectionLabel';
@@ -658,12 +656,14 @@ JS, [
         $query = $class::find()
             ->siteId($this->targetSiteId($element));
 
-        // $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
         if (is_array($value)) {
             $query
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
-        } elseif ($value !== '' && $element && $element->id) {
+        } elseif ($value === null && $element?->id && $this->isFirstInstance($element)) {
+            // If $value is null, the element + field haven’t been saved since updatid to Craft 5.3+,
+            // or since the field was added to the field layout. So only actually look at the `relations` table
+            // if this is the first instance of the field that was ever added to the field layout.
             if (!$this->allowMultipleSources && $this->source) {
                 $source = ElementHelper::findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
 
@@ -752,6 +752,21 @@ JS, [
         return $query;
     }
 
+    private function isFirstInstance(?Elementinterface $element): bool
+    {
+        if ($this->layoutElement?->uid === null) {
+            return false;
+        }
+
+        /** @var CustomField|null $first */
+        $first = Collection::make($element?->getFieldLayout()?->getCustomFieldElements())
+            ->filter(fn(CustomField $layoutElement) => $layoutElement->getField()->id === $this->id)
+            ->sortBy(fn(CustomField $layoutElement) => $layoutElement->dateAdded)
+            ->first();
+
+        return $this->layoutElement->uid === $first?->uid;
+    }
+
     /**
      * @inheritdoc
      */
@@ -759,7 +774,7 @@ JS, [
     {
         /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementCollection) {
-            return $value->map(fn(ElementInterface $element) => $element->id)->all();
+            return $value->ids()->all();
         }
 
         return $this->_all($value, $element)->ids();
