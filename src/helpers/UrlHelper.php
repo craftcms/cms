@@ -514,7 +514,6 @@ class UrlHelper
         // Use @web as a fallback, unless it's a console request and @web was defined dynamically,
         // in which case it's totally unreliable so go with the base site URL
         return $request->getIsConsoleRequest() && $request->isWebAliasSetDynamically
-            // @web is totally unreliable, so go with the base site URL if possible
             ? static::baseSiteUrl()
             : Craft::getAlias('@web');
     }
