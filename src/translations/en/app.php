@@ -910,7 +910,6 @@ return [
     'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.' => 'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.',
     'Make this the primary site' => 'Make this the primary site',
     'Manage categories' => 'Manage categories',
-    'Manage relations on a per-site basis' => 'Manage relations on a per-site basis',
     'Manage your Craft Console account' => 'Manage your Craft Console account',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()',
     'Matrix field' => 'Matrix field',
