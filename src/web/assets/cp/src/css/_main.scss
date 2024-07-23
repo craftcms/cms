@@ -9009,6 +9009,7 @@ body.sitepicker {
   width: var(--width) !important;
   min-width: 0 !important;
   max-width: calc(100% - 20px) !important;
+  max-height: 200px;
 
   .body {
     .entry-mover-modal--list {

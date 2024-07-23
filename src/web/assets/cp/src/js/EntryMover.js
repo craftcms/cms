@@ -15,6 +15,7 @@ Craft.EntryMover = Garnish.Base.extend({
   $sectionsList: null,
   $cancelBtn: null,
   $selectBtn: null,
+  sectionSelect: null,
 
   init(entryIds, elementIndex) {
     this.entryIds = entryIds;
@@ -33,9 +34,7 @@ Craft.EntryMover = Garnish.Base.extend({
   createModal() {
     const $container = $('<div class="modal entry-mover-modal"/>');
     const $header = $('<div class="header"/>').appendTo($container);
-    const $h1 = $('<h1>' + Craft.t('app', 'Move to') + '</h1>').appendTo(
-      $header
-    );
+    $('<h1>' + Craft.t('app', 'Move to') + '</h1>').appendTo($header);
     const $body = $('<div class="body"/>').appendTo($container);
     const $footer = $('<div/>', {
       class: 'footer',
@@ -44,11 +43,11 @@ Craft.EntryMover = Garnish.Base.extend({
     this.$sectionsListContainer = $(
       '<div class="entry-mover-modal--list"/>'
     ).appendTo($body);
-    this.$sectionsList = $('<ul/>').appendTo(this.$sectionsListContainer);
+    this.$sectionsList = $('<ul/>', {
+      class: 'chips',
+    }).appendTo(this.$sectionsListContainer);
 
-    const $secondaryButtons = $(
-      '<div class="buttons left secondary-buttons"/>'
-    ).appendTo($footer);
+    $('<div class="buttons left secondary-buttons"/>').appendTo($footer);
     const $primaryButtons = $('<div class="buttons right"/>').appendTo($footer);
     this.$cancelBtn = $('<button/>', {
       type: 'button',
@@ -100,27 +99,23 @@ Craft.EntryMover = Garnish.Base.extend({
         if (listHtml) {
           this.$sectionsList.html(listHtml);
 
-          this.addListener(
-            this.$sectionsList.find('.entry-mover-modal--item'),
-            'activate',
-            (ev) => {
-              let $button = $(ev.target);
-
-              // reset all the links
-              this.$sectionsList
-                .find('a')
-                .removeClass('sel')
-                .attr('aria-pressed', 'false');
-
-              // mark as selected
-              $button.addClass('sel').attr('aria-pressed', 'true');
-
-              // enable submit btn
-              if (this.$selectBtn.hasClass('disabled')) {
-                this.$selectBtn
-                  .removeClass('disabled')
-                  .attr('aria-disabled', 'false');
-              }
+          this.sectionSelect = new Garnish.Select(
+            this.$sectionsList,
+            this.$sectionsList.find('.chip'),
+            {
+              vertical: true,
+              filter: (target) => {
+                return !$(target).closest('a[href],.toggle,.btn,[role=button]')
+                  .length;
+              },
+              checkboxMode: true,
+              onSelectionChange: () => {
+                if (this.sectionSelect.$selectedItems.length) {
+                  this.$selectBtn.removeClass('disabled');
+                } else {
+                  this.$selectBtn.addClass('disabled');
+                }
+              },
             }
           );
         }
@@ -136,13 +131,11 @@ Craft.EntryMover = Garnish.Base.extend({
   },
 
   selectSection() {
-    let $button = this.$sectionsList.find('.sel');
     this.$sectionsListContainer.addClass('loading');
     this.modal.updateLiveRegion(Craft.t('app', 'Loading'));
-    const sectionUid = $button.data('uid');
 
     let data = {
-      sectionUid: sectionUid,
+      sectionId: this.sectionSelect.$selectedItems.data('id'),
       entryIds: this.entryIds,
     };
 

@@ -24,6 +24,7 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use Exception;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\web\BadRequestHttpException;
@@ -398,9 +399,9 @@ class EntriesController extends BaseEntriesController
     {
         $this->requireCpRequest();
 
-        $entryIds = Craft::$app->getRequest()->getRequiredParam('entryIds');
-        $siteId = Craft::$app->getRequest()->getRequiredParam('siteId');
-        $currentSectionUid = Craft::$app->getRequest()->getRequiredParam('currentSectionUid');
+        $entryIds = $this->request->getRequiredParam('entryIds');
+        $siteId = $this->request->getRequiredParam('siteId');
+        $currentSectionUid = $this->request->getRequiredParam('currentSectionUid');
 
         // get entry types by entry IDs
         $entryTypes = (new Query())
@@ -442,7 +443,7 @@ class EntriesController extends BaseEntriesController
 
                 return !empty(array_intersect($entryTypes, $sectionEntryTypes));
             })
-            ->values()
+            ->sortBy(fn(Section $section) => $section->getUiLabel())
             ->all();
 
         if (empty($compatibleSections)) {
@@ -454,27 +455,12 @@ class EntriesController extends BaseEntriesController
         } else {
             $listHtml = '';
             foreach ($compatibleSections as $section) {
-                $listHtml .= Html::beginTag('li');
-                $listHtml .= Html::beginTag('a', [
-                    'class' => 'entry-mover-modal--item',
-                    'tabindex' => 0,
-                    'role' => 'button',
-                    'data' => [
-                        'uid' => $section->uid,
-                        'label' => $section->name,
-                        'type' => $section->type,
-                        'handle' => $section->handle,
-                        'criteria' => [
-                            'sectionId' => $section->id,
-                        ],
-                    ],
-                    'aria' => [
-                        'pressed' => 'false',
-                    ],
-                ]);
-                $listHtml .= Html::tag('span', $section->name, ['class' => 'label']);
-                $listHtml .= Html::endTag('a');
-                $listHtml .= Html::endTag('li');
+                $listHtml .= Html::beginTag('li', ['class' => 'fullwidth']) .
+                    Cp::chipHtml($section, [
+                        'selectable' => true,
+                        'class' => 'fullwidth',
+                    ]) .
+                    Html::endTag('li');
             }
         }
 
@@ -492,21 +478,22 @@ class EntriesController extends BaseEntriesController
     {
         $this->requireCpRequest();
 
-        $entryIds = Craft::$app->getRequest()->getRequiredParam('entryIds');
-        $sectionUid = Craft::$app->getRequest()->getRequiredParam('sectionUid');
-
-        $section = Craft::$app->getEntries()->getSectionByUid($sectionUid);
+        $sectionId = $this->request->getRequiredParam('sectionId');
+        $section = Craft::$app->getEntries()->getSectionById($sectionId);
         if (!$section) {
             throw new BadRequestHttpException('Cannot find the section to move the entries to.');
         }
 
+        $entryIds = $this->request->getRequiredParam('entryIds');
+        if (empty($entryIds)) {
+            throw new BadRequestHttpException('entryIds cannot be empty.');
+        }
         $entries = Entry::find()
             ->id($entryIds)
             ->status(null)
             ->drafts(null)
             ->all();
-
-        if (!$entries) {
+        if (empty($entries)) {
             throw new BadRequestHttpException('Cannot find the entries to move to the new section.');
         }
 
@@ -514,7 +501,7 @@ class EntriesController extends BaseEntriesController
         foreach ($entries as $entry) {
             try {
                 Craft::$app->getEntries()->moveEntryToSection($entry, $section);
-            } catch (\Exception|InvalidElementException|UnsupportedSiteException $e) {
+            } catch (Exception|InvalidElementException|UnsupportedSiteException $e) {
                 Craft::error('Could not delete move entry to a different section: ' . $e->getMessage(), __METHOD__);
                 $errors[] = $e->getMessage();
             }
