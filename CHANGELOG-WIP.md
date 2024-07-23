@@ -50,6 +50,7 @@
 - Added `craft\fields\linktypes\Phone`.
 - Added `craft\fields\linktypes\Url`.
 - `craft\helpers\DateTimeHelper::toIso8601()` now has a `$setToUtc` argument.
+- `craft\helpers\UrlHelper::cpUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `baseCpUrl` config setting isn’t set, and the `@web` alias wasn’t explicitly defined. ([#15374](https://github.com/craftcms/cms/issues/15374))
 - Deprecated `craft\fields\BaseRelationField::$localizeRelations`.
 - Deprecated `craft\fields\Url`, which is now an alias for `craft\fields\Link`.
 - Deprecated `craft\services\Relations`.
