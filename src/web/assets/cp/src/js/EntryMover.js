@@ -48,7 +48,7 @@ Craft.EntryMover = Garnish.Base.extend({
     this.$sectionsListContainer = $(
       '<div class="entry-mover-modal--list"/>'
     ).appendTo($body);
-    this.$sectionsList = $('<div/>', {
+    this.$sectionsList = $('<fieldset/>', {
       class: 'chips',
       role: 'radiogroup',
       'aria-labelledby': headingId,
@@ -71,13 +71,6 @@ Craft.EntryMover = Garnish.Base.extend({
       .attr('aria-disabled', 'true')
       .appendTo($primaryButtons);
 
-    const $spinner = $('<div class="spinner spinner-absolute"/>').appendTo(
-      this.$sectionsListContainer
-    );
-    $('<span class="visually-hidden"/>')
-      .text(Craft.t('app', 'Loading'))
-      .appendTo($spinner);
-
     this.addListener(this.$cancelBtn, 'activate', 'cancel');
     this.addListener(this.$selectBtn, 'activate', 'selectSection');
 
@@ -90,7 +83,7 @@ Craft.EntryMover = Garnish.Base.extend({
       this.cancelToken.cancel();
     }
 
-    this.$sectionsListContainer.addClass('loading');
+    this.$selectBtn.addClass('loading');
     this.cancelToken = axios.CancelToken.source();
 
     Craft.sendActionRequest('POST', 'entries/move-to-section-modal-data', {
@@ -134,13 +127,17 @@ Craft.EntryMover = Garnish.Base.extend({
         this.modal.hide();
       })
       .finally(() => {
-        this.$sectionsListContainer.removeClass('loading');
+        this.$selectBtn.removeClass('loading');
         this.cancelToken = null;
       });
   },
 
   selectSection() {
-    this.$sectionsListContainer.addClass('loading');
+    if (this.$selectBtn.hasClass('loading')) {
+      return;
+    }
+
+    this.$selectBtn.addClass('loading');
     this.modal.updateLiveRegion(Craft.t('app', 'Loading'));
 
     let data = {
@@ -164,7 +161,7 @@ Craft.EntryMover = Garnish.Base.extend({
         this.modal.updateLiveRegion(e?.response?.data?.message);
       })
       .finally(() => {
-        this.$sectionsListContainer.removeClass('loading');
+        this.$selectBtn.removeClass('loading');
       });
   },
 

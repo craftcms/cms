@@ -9022,53 +9022,6 @@ body.sitepicker {
       flex: 1;
       position: relative;
       overflow: hidden;
-
-      &:not(.loading) {
-        .spinner {
-          display: none;
-        }
-      }
-
-      &.loading {
-        &:after {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          content: '';
-          background-color: rgba(255, 255, 255, 0.75);
-        }
-
-        .spinner {
-          top: calc(50% - 10px);
-          z-index: 1;
-        }
-      }
-
-      ul {
-        max-height: 100%;
-        overflow: auto;
-
-        a {
-          display: inline-block;
-          cursor: pointer;
-          padding: 7px var(--xl);
-          margin: 3px;
-          width: calc(100% - 6px);
-          border-radius: var(--large-border-radius);
-
-          &:hover {
-            background-color: var(--gray-200);
-          }
-
-          &.sel {
-            background-color: var(--gray-500);
-            color: var(--white);
-            @include dark-btn-light-bg-focus-ring;
-          }
-        }
-      }
     }
   }
 
