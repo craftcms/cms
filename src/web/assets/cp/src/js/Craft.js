@@ -1191,6 +1191,17 @@ $.extend(Craft, {
       }
     }
 
+    // Sort the delta namespaces from least -> most specific
+    modifiedDeltaNames.sort((a, b) => {
+      if (a.length === b.length) {
+        return 0;
+      }
+      if (mostSpecific) {
+        return a.length < b.length ? 1 : -1;
+      }
+      return a.length > b.length ? 1 : -1;
+    });
+
     return [modifiedDeltaNames, groupedNewParams];
   },
 
@@ -1537,11 +1548,29 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @returns {boolean}
-   * @deprecated String.prototype.endsWith() should be used instead
    */
-  startsWith: function (str, substr) {
+  startsWith: function (str, substr, caseInsensitive = false) {
+    if (caseInsensitive) {
+      return str.toLowerCase().startsWith(substr.toLowerCase());
+    }
     return str.startsWith(substr);
+  },
+
+  /**
+   * Returns whether a string ends with another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @returns {boolean}
+   */
+  endsWith: function (str, substr, caseInsensitive = false) {
+    if (caseInsensitive) {
+      return str.toLowerCase().endsWith(substr.toLowerCase());
+    }
+    return str.endsWith(substr);
   },
 
   /**
@@ -1549,10 +1578,11 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @return {string}
    */
-  ensureStartsWith: function (str, substr) {
-    if (!str.startsWith(substr)) {
+  ensureStartsWith: function (str, substr, caseInsensitive = false) {
+    if (!Craft.startsWith(str, substr, caseInsensitive)) {
       str = substr + str;
     }
     return str;
@@ -1563,11 +1593,42 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @return {string}
    */
-  ensureEndsWith: function (str, substr) {
-    if (!str.endsWith(substr)) {
+  ensureEndsWith: function (str, substr, caseInsensitive = false) {
+    if (!Craft.endsWith(str, substr, caseInsensitive)) {
       str += substr;
+    }
+    return str;
+  },
+
+  /**
+   * Removes a string from the beginning of another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @return {string}
+   */
+  removeLeft: function (str, substr, caseInsensitive = false) {
+    if (Craft.startsWith(str, substr, caseInsensitive)) {
+      return str.slice(substr.length);
+    }
+    return str;
+  },
+
+  /**
+   * Removes a string from the end of another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @return {string}
+   */
+  removeRight: function (str, substr, caseInsensitive = false) {
+    if (Craft.endsWith(str, substr, caseInsensitive)) {
+      return str.slice(0, -substr.length);
     }
     return str;
   },

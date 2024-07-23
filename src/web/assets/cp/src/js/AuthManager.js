@@ -178,7 +178,7 @@ Craft.AuthManager = Garnish.Base.extend(
             if (!Garnish.isMobileBrowser(true)) {
               // Auto-focus the renew button
               setTimeout(function () {
-                $renewSessionBtn.trigger('focus');
+                $renewSessionBtn.focus();
               }, 100);
             }
           },
@@ -272,6 +272,14 @@ Craft.AuthManager = Garnish.Base.extend(
         }
       );
       const $container = $(data.html);
+
+      // Remove lang attr if it matches the one on html
+      const htmlLang = document.documentElement.lang;
+      const modalLang = $container.attr('lang');
+
+      if (modalLang === htmlLang && modalLang) {
+        $container.removeAttr('lang');
+      }
 
       this.loginModal = new Garnish.Modal($container, {
         closeOtherModals: false,

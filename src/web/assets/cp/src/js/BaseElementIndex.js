@@ -415,7 +415,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.clearSearch(true);
 
         if (!Garnish.isMobileBrowser(true)) {
-          this.$search.trigger('focus');
+          this.$search.focus();
         }
       });
 
@@ -425,7 +425,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         !Garnish.isMobileBrowser(true) &&
         Craft.disableAutofocus === false
       ) {
-        this.$search.trigger('focus');
+        this.$search.focus();
       }
 
       // View menus
@@ -742,7 +742,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         .catch((e) => {
           if (!axios.isCancel(e)) {
             this.setIndexAvailable();
-            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+            Craft.cp.displayError(e?.response?.data?.message);
           }
         });
     },
@@ -1561,6 +1561,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         paginated: this.paginated,
         selectable: this.selectable,
         sortable: this.sortable,
+        prevalidate: this.settings.prevalidate,
       };
 
       params.viewState.showHeaderColumn = this.settings.showHeaderColumn;
@@ -1636,8 +1637,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         if (preservePagination !== true) {
           this.setPage(1);
-          this._resetCount();
         }
+
+        this._resetCount();
 
         this._previousViewParams = this._viewParams;
         this._viewParams = this.getViewParams();
@@ -1708,7 +1710,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           .catch((e) => {
             if (!axios.isCancel(e)) {
               this.setIndexAvailable();
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              Craft.cp.displayError(e?.response?.data?.message);
             }
             reject(e);
           });
@@ -3328,7 +3330,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           onSelectionChange: this._handleSelectionChange.bind(this),
           onSortChange: this.settings.onSortChange,
         },
-        this.getViewSettings()
+        this.getViewSettings(),
+        this.settings.viewSettings()
       );
 
       // Kill the old view class
@@ -3636,7 +3639,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         )
           .catch((e) => {
             if (!axios.isCancel(e)) {
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              Craft.cp.displayError(e?.response?.data?.message);
             }
           })
           .finally(() => {
@@ -3760,6 +3763,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       onBeforeDeleteElements: async (selectedItems) => {},
       onDeleteElements: async (selectedItems) => {},
       sortable: false,
+      prevalidate: false,
       inlineEditable: null,
       actions: null,
       buttonContainer: null,
@@ -3775,6 +3779,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       preferStoredSource: false,
       showSourcePath: true,
       canHaveDrafts: false,
+      viewSettings: $.noop,
 
       elementTypeName: Craft.t('app', 'Element'),
       elementTypePluralName: Craft.t('app', 'Elements'),
@@ -4578,8 +4583,8 @@ const FilterHud = Garnish.HUD.extend({
           this.serialized = this.serialize();
         }
       })
-      .catch(() => {
-        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+      .catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
       });
 
     this.$hud.css('position', 'fixed');

@@ -57,6 +57,37 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
     }
 
     /**
+     * @var bool Whether icons exclusive to Font Awesome Pro should be selectable.
+     * @since 5.3.0
+     */
+    public bool $includeProIcons = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // Default includeProIcons to true for existing Icon fields
+        if (isset($config['id']) && !isset($config['includeProIcons'])) {
+            $config['includeProIcons'] = true;
+        }
+
+        parent::__construct($config);
+    }
+
+    public function getSettingsHtml(): ?string
+    {
+        return Cp::lightswitchFieldHtml([
+            'label' => Craft::t('app', 'Include Pro icons'),
+            'instructions' => Craft::t('app', 'Should icons that are exclusive to Font Awesome Pro be selectable? (<a href="{url}">View pricing</a>)', [
+                'url' => 'https://fontawesome.com/plans',
+            ]),
+            'name' => 'includeProIcons',
+            'on' => $this->includeProIcons,
+        ]);
+    }
+
+    /**
      * @inheritdoc
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
@@ -74,6 +105,7 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
+            'freeOnly' => !$this->includeProIcons,
         ]);
     }
 

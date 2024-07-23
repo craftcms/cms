@@ -2,6 +2,36 @@
 
 ## Unreleased
 
+- Fixed a bug where content changes created via `craft\base\Element::EVENT_AFTER_SAVE` weren’t getting saved, when an element was getting fully saved from an unsaved draft state. ([#15369](https://github.com/craftcms/cms/issues/15369))
+- Updated web-auth/webauthn-lib to 4.9. ([#15377](https://github.com/craftcms/cms/issues/15377))
+- Fixed a PHP error that occurred when making a field layout component conditional on a Time or CKEditor field. ([craftcms/ckeditor#267](https://github.com/craftcms/ckeditor/issues/267))
+
+## 5.2.8 - 2024-07-17
+
+- Fixed a bug where element index result counts weren’t getting updated when the element list was refreshed but pagination was preserved. ([#15367](https://github.com/craftcms/cms/issues/15367))
+- Fixed a SQL error that could occur when sorting by custom fields on MariaDB.
+- Fixed a bug where embedded element indexes could include table columns for all custom fields associated with the element type. ([#15373](https://github.com/craftcms/cms/issues/15373))
+
+## 5.2.7 - 2024-07-16
+
+- `craft\helpers\UrlHelper::actionUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `@web` alias wasn’t explicitly defined.
+- An exception is now thrown when attempting to save an entry that’s missing `sectionId` or `fieldId` + `ownerId` values. ([#15345](https://github.com/craftcms/cms/discussions/15345))
+- Fixed a bug where it wasn’t possible to expand/collapse descendants of disabled table rows within element select modals. ([#15337](https://github.com/craftcms/cms/issues/15337))
+- Fixed a bug where PhpStorm autocomplete wasn’t working when chaining custom field methods defined by `CustomFieldBehavior`. ([#15336](https://github.com/craftcms/cms/issues/15336))
+- Fixed a bug where new nested entries created on newly-created elements weren’t getting duplicated to all other sites for the owner element. ([#15321](https://github.com/craftcms/cms/issues/15321))
+- Fixed a bug where focus could jump unexpectedly when a slideout was opened. ([#15314](https://github.com/craftcms/cms/issues/15314))
+- Fixed a bug where addresses were getting truncated within address cards. ([#15338](https://github.com/craftcms/cms/issues/15338))
+- Fixed a bug where TOTP setup keys included an extra space at the end. ([#15349](https://github.com/craftcms/cms/issues/15349))
+- Fixed a bug where input focus could automatically jump to slideout sidebars shortly after they were shown. ([#15314](https://github.com/craftcms/cms/issues/15314))
+- Fixed an error that occurred if the SMTP mailer transport type was used, and the Hostname value was blank. ([#15342](https://github.com/craftcms/cms/discussions/15342))
+- Fixed a bug where database DML changes weren’t getting rolled back after tests were run if the Codeception config had `transaction: true`. ([#7615](https://github.com/craftcms/cms/issues/7615))
+- Fixed an error that could occur when saving recursively-nested elements. ([#15362](https://github.com/craftcms/cms/issues/15362))
+- Fixed a styling issue. ([#15315](https://github.com/craftcms/cms/issues/15315))
+- Fixed a bug where field status indicators within Matrix fields weren’t positioned correctly.
+- Fixed a bug where Matrix changes could be lost if the `autosaveDrafts` config setting was set to `false`. ([#15353](https://github.com/craftcms/cms/issues/15353))
+
+## 5.2.6 - 2024-07-11
+
 > [!NOTE]
 > Craft now sends no-cache headers for requests that generate/retrieve a CSRF token. If your Craft install is behind a static caching service like Cloudflare, enable the [asyncCsrfInputs](https://craftcms.com/docs/5.x/reference/config/general.html#asynccsrfinputs) config setting to avoid a significant cache hit reduction. ([#15293](https://github.com/craftcms/cms/pull/15293), [#15281](https://github.com/craftcms/cms/pull/15281))
 
@@ -9,6 +39,7 @@
 - Fixed a bug where structures’ Max Levels settings weren’t being enforced when dragging elements with collapsed descendants. ([#15310](https://github.com/craftcms/cms/issues/15310))
 - Fixed a bug where `craft\helpers\ElementHelper::isDraft()`, `isRevision()`, and `isDraftOrRevision()` weren’t returning `true` if a nested draft/revision element was passed in, but the root element was canonical. ([#15303](https://github.com/craftcms/cms/issues/15303))
 - Fixed a bug where focus could be trapped within slideout sidebars. ([#15314](https://github.com/craftcms/cms/issues/15314))
+- Fixed a bug where element slideout sidebars were included in the focus order when hidden. ([#15332](https://github.com/craftcms/cms/pull/15332))
 - Fixed a bug where field status indicators weren’t visible on mobile viewports.
 - Fixed a bug where sorting elements by custom field within element indexes wasn’t always working. ([#15297](https://github.com/craftcms/cms/issues/15297))
 - Fixed a bug where asset bulk element actions were available when folders were selected. ([#15301](https://github.com/craftcms/cms/issues/15301))
@@ -17,6 +48,10 @@
 - Fixed a bug where “Delete heading” buttons within Customize Sources modals were getting text cursors. ([#15317](https://github.com/craftcms/cms/issues/15317))
 - Fixed a bug where disclosure hint text wasn’t legible on hover. ([#15316](https://github.com/craftcms/cms/issues/15316))
 - Fixed an error that occurred if the System Name was set to a nonexistent environment variable.
+- Fixed a bug where custom table columns within element indexes weren’t getting updated automatically when table rows were refreshed.
+- Fixed a bug where nested element indexes weren’t passing the `ownerId` param, when refreshing elements’ table rows.
+- Fixed a bug where it wasn’t possible to tell if an element had been edited, if it was displayed within a nested element index table without a header column.
+- Fixed an error that could occur if a field was removed from a field layout, if another field had been conditional based on it. ([#15328](https://github.com/craftcms/cms/issues/15328))
 
 ## 5.2.5 - 2024-07-02
 

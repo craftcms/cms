@@ -182,7 +182,7 @@ class Application extends \yii\web\Application
             $headers = $this->getResponse()->getHeaders();
             $generalConfig = $this->getConfig()->getGeneral();
 
-            if ($generalConfig->permissionsPolicyHeader) {
+            if ($generalConfig->permissionsPolicyHeader && $request->getIsSiteRequest()) {
                 $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
             }
 
@@ -391,10 +391,8 @@ class Application extends \yii\web\Application
             return;
         }
 
-        @FileHelper::createDirectory($resourceBasePath);
-
-        if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
-            throw new InvalidConfigException($resourceBasePath . ' doesn’t exist or isn’t writable by PHP.');
+        if (!@FileHelper::createDirectory($resourceBasePath)) {
+            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
         }
     }
 

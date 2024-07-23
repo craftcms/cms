@@ -280,7 +280,7 @@ class ProjectConfig extends Component
     private array $_configFileList = [];
 
     /**
-     * @var int|null The project config cache duration. If null, the <config4:cacheDuration> config setting will be used.
+     * @var int|null The project config cache duration. If null, the <config5:cacheDuration> config setting will be used.
      * @since 4.5.0
      */
     public ?int $cacheDuration = null;

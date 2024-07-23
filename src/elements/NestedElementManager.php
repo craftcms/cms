@@ -429,6 +429,7 @@ class NestedElementManager extends Component
                         'class' => [
                             'elements',
                             $config['showInGrid'] ? 'card-grid' : 'cards',
+                            $config['prevalidate'] ? 'prevalidate' : '',
                         ],
                     ]);
                 }
@@ -529,6 +530,8 @@ class NestedElementManager extends Component
                     'fieldLayouts' => $config['fieldLayouts'],
                     'defaultTableColumns' => $config['defaultTableColumns'],
                     'registerJs' => false,
+                    'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
+                    'prevalidate' => $config['prevalidate'] ?? false,
                 ]);
             },
         );
@@ -598,6 +601,7 @@ class NestedElementManager extends Component
                 'ownerIdParam' => $this->ownerIdParam,
                 'fieldHandle' => $this->field?->handle,
                 'baseInputName' => $view->getNamespace(),
+                'prevalidate' => $config['prevalidate'] ?? false,
             ];
 
             if (!empty($config['createAttributes'])) {
@@ -849,7 +853,9 @@ JS, [
                         }
 
                         // Make sure we don't duplicate elements for any of the sites that were just propagated to
-                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
+                        foreach ($sourceSupportedSiteIds as $siteId) {
+                            $handledSiteIds[$siteId] = true;
+                        }
                     }
 
                     if ($value instanceof ElementQueryInterface) {

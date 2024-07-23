@@ -1840,6 +1840,7 @@ class Elements extends Component
                     }
                 }
 
+                $propagatedTo = [$mainClone->siteId => true];
                 $mainClone->newSiteIds = [];
 
                 // Propagate it
@@ -1916,8 +1917,23 @@ class Elements extends Component
                             throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site $siteElement->siteId: " . implode(', ', $siteClone->getFirstErrors()));
                         }
 
+                        $propagatedTo[$siteClone->siteId] = true;
                         if ($siteClone->isNewForSite) {
                             $mainClone->newSiteIds[] = $siteClone->siteId;
+                        }
+                    }
+
+                    // Now propagate $mainClone to any sites the source element didn’t already exist in
+                    foreach ($supportedSites as $siteId => $siteInfo) {
+                        if (!isset($propagatedTo[$siteId]) && $siteInfo['propagate']) {
+                            $siteClone = false;
+                            if (!$this->_propagateElement($mainClone, $supportedSites, $siteId, $siteClone)) {
+                                throw $siteClone
+                                    ? new InvalidElementException($siteClone, "Element $siteClone->id could not be propagated to site $siteId: " . implode(', ', $siteClone->getFirstErrors()))
+                                    : new InvalidElementException($mainClone, "Element $mainClone->id could not be propagated to site $siteId.");
+                            }
+                            $propagatedTo[$siteId] = true;
+                            $mainClone->newSiteIds[] = $siteId;
                         }
                     }
                 }
@@ -3856,24 +3872,24 @@ class Elements extends Component
             ]), 2048);
         }
 
-        $updateForOwner ??= (
+        $updateForOwner = (
             $element instanceof NestedElementInterface &&
-            $element->getIsCanonical() &&
-            isset($element->fieldId) &&
-            isset($element->updateSearchIndexForOwner) &&
-            $element->updateSearchIndexForOwner
+            ($field = $element->getField()) &&
+            $field->searchable &&
+            ($updateForOwner ??
+                $element->getIsCanonical() &&
+                isset($element->fieldId) &&
+                isset($element->updateSearchIndexForOwner) &&
+                $element->updateSearchIndexForOwner
+            )
         );
 
         if ($updateForOwner) {
             /** @var NestedElementInterface $element */
             $owner = $element->getOwner();
             if ($owner) {
-                /** @phpstan-ignore-next-line */
-                $field = $owner->getFieldLayout()?->getFieldById($element->fieldId);
-                if ($field?->searchable) {
-                    $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
-                    $this->invalidateCachesForElement($owner);
-                }
+                $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
+                $this->invalidateCachesForElement($owner);
             }
         }
     }

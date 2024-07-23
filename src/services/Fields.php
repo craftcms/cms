@@ -38,6 +38,7 @@ use craft\fields\Email;
 use craft\fields\Entries as EntriesField;
 use craft\fields\Icon;
 use craft\fields\Lightswitch;
+use craft\fields\Link;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
 use craft\fields\Money;
@@ -48,7 +49,6 @@ use craft\fields\RadioButtons;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Time;
-use craft\fields\Url;
 use craft\fields\Users as UsersField;
 use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
@@ -63,6 +63,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\records\Field as FieldRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
+use DateTime;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -222,6 +223,7 @@ class Fields extends Component
             EntriesField::class,
             Icon::class,
             Lightswitch::class,
+            Link::class,
             MatrixField::class,
             Money::class,
             MultiSelect::class,
@@ -231,7 +233,6 @@ class Fields extends Component
             TableField::class,
             TagsField::class,
             Time::class,
-            Url::class,
             UsersField::class,
         ];
 
@@ -1049,7 +1050,16 @@ class Fields extends Component
     {
         $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
         $config = Json::decode(Craft::$app->getRequest()->getBodyParam($paramPrefix . 'fieldLayout'));
-        return $this->createLayout($config);
+        $layout = $this->createLayout($config);
+
+        // Make sure all the elements have a dateAdded value set
+        foreach ($layout->getTabs() as $tab) {
+            foreach ($tab->getElements() as $layoutElement) {
+                $layoutElement->dateAdded ??= new DateTime();
+            }
+        }
+
+        return $layout;
     }
 
     /**

@@ -39,8 +39,17 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     ignoreFailedRequest: false,
     fieldsWithErrors: null,
 
+    /**
+     * @returns {boolean} Whether the slideout is wide enough to show the sidebar alongside the content
+     */
     get showExpandedView() {
       return this.$container.width() > 700;
+    },
+
+    get sidebarIsOverlapping() {
+      return (
+        this.showingSidebar && this.$sidebar.css('position') === 'absolute'
+      );
     },
 
     init: function (action, settings) {
@@ -347,9 +356,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
           this.hasSidebar = true;
 
-          // is the slideout wide enough to show it alongside the content?
           if (this.showExpandedView) {
-            this.showSidebar();
+            this.showSidebar(false);
           } else {
             this.hideSidebar();
           }
@@ -415,7 +423,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       }
     },
 
-    showSidebar: function () {
+    showSidebar: function (focus = true) {
       if (this.showingSidebar) {
         return;
       }
@@ -433,7 +441,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       this.$sidebar.css(this._openedSidebarStyles());
 
-      if (!Garnish.isMobileBrowser()) {
+      if (focus && !Garnish.isMobileBrowser()) {
         this.$sidebar.one('transitionend.so', () => {
           Craft.setFocusWithin(this.$sidebar);
         });
@@ -468,6 +476,12 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.$container.removeClass('showing-sidebar');
       this.$body.removeClass('no-scroll');
 
+      // Do the same thing when there are no transitions
+      if (!this.sidebarIsOverlapping) {
+        this.$sidebar.addClass('hidden');
+        this.$sidebarBtn.focus();
+      }
+
       this.$sidebar
         .off('transitionend.so')
         .css(this._closedSidebarStyles())
@@ -488,7 +502,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     hideSidebarIfOverlapping() {
-      if (this.showingSidebar && this.$sidebar.css('position') === 'absolute') {
+      if (this.sidebarIsOverlapping) {
         this.hideSidebar();
         return true;
       } else {
@@ -544,8 +558,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         .then((response) => {
           this.handleSubmitResponse(response);
         })
-        .catch((error) => {
-          this.handleSubmitError(error);
+        .catch((e) => {
+          this.handleSubmitError(e);
         })
         .finally(() => {
           this.hideSubmitSpinner();
@@ -570,17 +584,13 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       }
     },
 
-    handleSubmitError: function (error) {
-      if (
-        !error.isAxiosError ||
-        !error.response ||
-        !error.response.status === 400
-      ) {
+    handleSubmitError: function (e) {
+      if (!e.isAxiosError || !e.response || !e.response.status === 400) {
         Craft.cp.displayError();
-        throw error;
+        throw e;
       }
 
-      const data = error.response.data || {};
+      const data = e.response.data || {};
       Craft.cp.displayError(data.message);
       if (data.errors) {
         this.showErrors(data.errors);

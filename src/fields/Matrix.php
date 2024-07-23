@@ -893,6 +893,7 @@ JS;
         $entryTypes = $this->getEntryTypes();
         $config = [
             'showInGrid' => $this->showCardsInGrid,
+            'prevalidate' => false,
         ];
 
         if (!$static) {
@@ -912,6 +913,10 @@ JS;
                 'minElements' => $this->minEntries,
                 'maxElements' => $this->maxEntries,
             ];
+
+            if ($owner->hasErrors($this->handle)) {
+                $config['prevalidate'] = true;
+            }
         }
 
         if ($this->viewMode === self::VIEW_MODE_CARDS) {
@@ -989,7 +994,7 @@ JS;
             /** @var Entry[] $entries */
             $entries = $value->getCachedResult() ?? (clone $value)->status(null)->limit(null)->all();
 
-            $allEntriesValidate = true;
+            $invalidEntryIds = [];
             $scenario = $element->getScenario();
 
             foreach ($entries as $entry) {
@@ -1005,14 +1010,27 @@ JS;
 
                 if (!$entry->validate()) {
                     $key = $entry->uid ?? sprintf('new%s', ++$new);
-                    $element->addModelErrors($entry, sprintf('%s[%s]', $this->handle, $key));
-                    $allEntriesValidate = false;
+                    // we only want to show the nested entries errors when the matrix field is in blocks view mode;
+                    if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+                        $element->addModelErrors($entry, sprintf('%s[%s]', $this->handle, $key));
+                    }
+                    $invalidEntryIds[] = $entry->id;
                 }
             }
 
-            if (!$allEntriesValidate) {
+            if (!empty($invalidEntryIds)) {
                 // Just in case the entries weren't already cached
                 $value->setCachedResult($entries);
+                $element->addInvalidNestedElementIds($invalidEntryIds);
+
+                if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
+                    // in card/index modes, we want to show a top level error to let users know
+                    // that there are validation errors in the nested entries
+                    $element->addError($this->handle, Craft::t('app', 'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
+                        'count' => count($invalidEntryIds),
+                        'fieldName' => $this->getUiLabel(),
+                    ]));
+                }
             }
         } else {
             $entries = $value->all();

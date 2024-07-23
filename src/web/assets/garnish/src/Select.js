@@ -692,8 +692,11 @@ export default Base.extend(
      * On Key Down
      */
     onKeyDown: function (ev) {
-      // Ignore if the focus isn't on one of our items
-      if (ev.target !== ev.currentTarget) {
+      // Ignore if the focus isn't on one of our items or their handles
+      if (
+        ev.target !== ev.currentTarget &&
+        !$.data(ev.currentTarget, 'select-handle')?.filter(ev.target).length
+      ) {
         return;
       }
 
@@ -702,7 +705,7 @@ export default Base.extend(
 
       var anchor, $item;
 
-      if (!this.settings.checkboxMode || !this.$focusable.length) {
+      if (!this.settings.checkboxMode || !this.$focusable?.length) {
         anchor = ev.shiftKey ? this.last : this.first;
       } else {
         anchor = $.inArray(this.$focusable[0], this.$items);

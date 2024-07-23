@@ -22,7 +22,6 @@ use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
 use craft\events\DraftEvent;
 use craft\fieldlayoutelements\BaseField;
-use craft\fieldlayoutelements\CustomField;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
@@ -1059,16 +1058,6 @@ JS, [
                             foreach ($tab->getElements() as $layoutElement) {
                                 if ($layoutElement instanceof BaseField && $layoutElement->attribute() === $fieldKey) {
                                     $tabUid = $tab->uid;
-
-                                    if ($layoutElement instanceof CustomField) {
-                                        $field = $layoutElement->getField();
-                                        // if we're dealing with a Matrix field, we only want to show the errors
-                                        // if that field is set to inline blocks view mode;
-                                        if ($field instanceof Matrix && $field->viewMode !== $field::VIEW_MODE_BLOCKS) {
-                                            $error = null;
-                                        }
-                                    }
-
                                     continue 2;
                                 }
                             }
@@ -2022,6 +2011,7 @@ JS, [
                     'userId' => $record->user->id,
                     'userName' => $record->user->getName(),
                     'userThumb' => $record->user->getThumbHtml(26),
+                    'type' => $record->type,
                     'message' => $message,
                 ];
             }, $activity),
@@ -2415,6 +2405,7 @@ JS, [
             'element' => $element->toArray($element->attributes()),
             'errors' => $element->getErrors(),
             'errorSummary' => $this->_errorSummary($element),
+            'invalidNestedElementIds' => $element->getInvalidNestedElementIds(),
         ];
 
         return $this->asFailure($message, $data, ['element' => $element]);

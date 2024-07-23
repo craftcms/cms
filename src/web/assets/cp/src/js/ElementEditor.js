@@ -1898,7 +1898,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       if (!Garnish.isMobileBrowser(true)) {
         setTimeout(() => {
-          this.$nameTextInput.trigger('focus');
+          this.$nameTextInput.focus();
         }, 100);
       }
     },
@@ -2217,9 +2217,13 @@ Craft.ElementEditor = Garnish.Base.extend(
                     window.location.reload();
                   });
                 }
+
                 this.settings.updatedTimestamp = data.updatedTimestamp;
                 this.settings.canonicalUpdatedTimestamp =
                   data.canonicalUpdatedTimestamp;
+
+                this.trigger('checkActivity', data);
+
                 setTimeout(() => {
                   this._checkActivity();
                 }, 15000);

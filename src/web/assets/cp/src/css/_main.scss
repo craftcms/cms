@@ -51,6 +51,7 @@
   --ui-control-border-radius: var(--large-border-radius);
   --ui-control-height: calc(34rem / 16);
   --ui-control-height--small: calc(30rem / 16);
+  --focus-ring-alpha: 0.85;
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -58,9 +59,11 @@
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)},
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
+    0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
+  --focus-ring-outset: inset 0 0 0 1px currentColor,
+    0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+    inset 0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
   --touch-target-size: calc(
     24rem / 16
   ); /* Minimum recommended touch target size */
@@ -265,6 +268,132 @@ fieldset:last-child,
 .my-xl {
   margin-top: var(--xl) !important;
   margin-bottom: var(--xl) !important;
+}
+
+.pt-0 {
+  padding-top: 0 !important;
+}
+.pt-xs {
+  padding-top: var(--xs) !important;
+}
+.pt-s {
+  padding-top: var(--s) !important;
+}
+.pt-m {
+  padding-top: var(--m) !important;
+}
+.pt-l {
+  padding-top: var(--l) !important;
+}
+.pt-xl {
+  padding-top: var(--xl) !important;
+}
+
+.pb-0 {
+  padding-bottom: 0 !important;
+}
+.pb-xs {
+  padding-bottom: var(--xs) !important;
+}
+.pb-s {
+  padding-bottom: var(--s) !important;
+}
+.pb-m {
+  padding-bottom: var(--m) !important;
+}
+.pb-l {
+  padding-bottom: var(--l) !important;
+}
+.pb-xl {
+  padding-bottom: var(--xl) !important;
+}
+
+.pl-0 {
+  padding-left: 0 !important;
+}
+.pl-xs {
+  padding-left: var(--xs) !important;
+}
+.pl-s {
+  padding-left: var(--s) !important;
+}
+.pl-m {
+  padding-left: var(--m) !important;
+}
+.pl-l {
+  padding-left: var(--l) !important;
+}
+.pl-xl {
+  padding-left: var(--xl) !important;
+}
+
+.pr-0 {
+  padding-right: 0 !important;
+}
+.pr-xs {
+  padding-right: var(--xs) !important;
+}
+.pr-s {
+  padding-right: var(--s) !important;
+}
+.pr-m {
+  padding-right: var(--m) !important;
+}
+.pr-l {
+  padding-right: var(--l) !important;
+}
+.pr-xl {
+  padding-right: var(--xl) !important;
+}
+
+.px-0 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.px-xs {
+  padding-left: var(--xs) !important;
+  padding-right: var(--xs) !important;
+}
+.px-s {
+  padding-left: var(--s) !important;
+  padding-right: var(--s) !important;
+}
+.px-m {
+  padding-left: var(--m) !important;
+  padding-right: var(--m) !important;
+}
+.px-l {
+  padding-left: var(--l) !important;
+  padding-right: var(--l) !important;
+}
+.px-xl {
+  padding-left: var(--xl) !important;
+  padding-right: var(--xl) !important;
+}
+
+.py-0 {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.py-xs {
+  padding-top: var(--xs) !important;
+  padding-bottom: var(--xs) !important;
+}
+.py-s {
+  padding-top: var(--s) !important;
+  padding-bottom: var(--s) !important;
+}
+.py-m {
+  padding-top: var(--m) !important;
+  padding-bottom: var(--m) !important;
+}
+.py-l {
+  padding-top: var(--l) !important;
+  padding-bottom: var(--l) !important;
+}
+.py-xl {
+  padding-top: var(--xl) !important;
+  padding-bottom: var(--xl) !important;
 }
 
 .center-absolute {
@@ -1841,6 +1970,7 @@ ul.icons {
   .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not(
       [aria-disabled]
     ) {
+    --focus-ring: var(--focus-ring-outset);
     background-color: var(--gray-500);
     color: var(--white);
   }
@@ -2090,6 +2220,7 @@ ul.icons {
   &.secondary {
     color: var(--white) !important;
     --ui-control-active-color: var(--white);
+    --focus-ring: var(--focus-ring-outset);
     @include light-on-dark-text;
   }
 
@@ -3228,6 +3359,12 @@ table {
 .chips {
   align-items: flex-start;
   gap: var(--xs);
+
+  &.chips-small {
+    li {
+      height: calc(34rem / 16);
+    }
+  }
 }
 
 .inline-chips {
@@ -3359,7 +3496,7 @@ table {
   }
 
   & > .cp-icon {
-    @include margin(0, -4px, 0, -2px);
+    @include margin(3px, -4px, 0, -2px);
   }
 
   .card-content,
@@ -3393,7 +3530,7 @@ table {
         display: none;
       }
 
-      & > * {
+      & > *:not(:has(> .no-truncate)) {
         --max-lines: 2;
         margin: 0;
         max-height: calc(var(--lh) * var(--max-lines));
@@ -3508,6 +3645,11 @@ table {
       &:focus {
         box-shadow: var(--inner-focus-ring);
       }
+    }
+
+    // label links inside cards and chip should be coloured as regular a tags despite not having href attribute
+    a.label-link {
+      color: var(--link-color);
     }
 
     .segment:after {
@@ -3803,6 +3945,20 @@ table {
 
     .chip {
       background-color: transparent;
+    }
+
+    tr.disabled {
+      opacity: 1;
+
+      & > th > div > *,
+      & > td {
+        opacity: 0.25;
+      }
+
+      & > th > div > button.toggle {
+        opacity: 1;
+        pointer-events: all;
+      }
     }
   }
 
@@ -6870,12 +7026,10 @@ $min2ColWidth: 400px;
   & > a:not(.crumb-link),
   & > .menu-item,
   & > .menu-option {
+    --focus-ring: var(--inner-focus-ring);
+
     &:hover {
       @include disclosure-link-hover-styles;
-    }
-
-    @include focus-styles {
-      box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
     }
   }
 }
@@ -7093,6 +7247,58 @@ textarea.text.fullwidth {
   .selectize.multiselect .selectize-input.focus {
     position: relative;
     z-index: 2;
+  }
+}
+
+.link-input {
+  container-type: inline-size;
+
+  & > .flex {
+    & > div {
+      &.text-link {
+        border: 1px solid transparentize($inputColor, 0.75);
+        border-radius: var(--large-border-radius);
+        cursor: text;
+
+        &:has(.text:focus) {
+          box-shadow: var(--focus-ring);
+        }
+
+        & > .text,
+        & > .chip {
+          margin-top: -1px;
+          margin-bottom: -1px;
+          background-color: transparent;
+        }
+
+        & > .text {
+          border: none;
+          margin-left: -1px;
+          margin-right: -1px;
+
+          &:focus {
+            position: relative;
+          }
+
+          &:focus {
+            box-shadow: none !important;
+          }
+        }
+      }
+    }
+  }
+
+  @container (max-width: 399px) {
+    & {
+      flex-direction: column;
+      align-items: start;
+
+      & > .select,
+      & > .select select,
+      & > div > .text {
+        width: 100%;
+      }
+    }
   }
 }
 
@@ -8511,6 +8717,7 @@ body.licensing-issues {
 
   .flex-fields {
     --row-gap: var(--m) !important;
+    --padding: var(--m);
   }
 
   // no margin when a .field comes after a hidden item.
