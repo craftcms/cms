@@ -593,9 +593,8 @@ Craft.EditableTable = Garnish.Base.extend(
       }
 
       if (allowReorder) {
-        const containerId = `tablerow-menu-container--${rowId}`;
+        const containerId = `menu-${Craft.randomId()}`;
         const $actionsBtn = $('<button/>', {
-          id: `tablerow-action-menu--${rowId}`,
           class: 'btn menu-btn action-btn',
           type: 'button',
           title: Craft.t('app', 'Actions'),

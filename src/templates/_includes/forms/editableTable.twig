@@ -116,7 +116,6 @@
             {% set rowNumber = loop.index %}
             {% set rowName = 'Row {index}'|t('app', {index: rowNumber}) %}
             {% set actionBtnLabel = "#{rowName} #{'Actions'|t('app')}" %}
-            {% set actionMenuId = "tablerow-action-menu--#{rowId}" %}
             <tr data-id="{{ rowId }}">
                 {% for colId, col in cols %}
                     {% set cell = row[colId] is defined ? row[colId] : (defaultValues[colId] ?? null) %}
@@ -239,7 +238,6 @@
                       {{~ disclosureMenu(actionMenuItems, {
                         buttonAttributes: {
                           'aria-label': actionBtnLabel,
-                          id: actionMenuId,
                           class: ['action-btn'],
                           title: 'Actions'|t('app'),
                           data: {
