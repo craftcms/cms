@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\errors\SiteNotFoundException;
+use craft\web\Request;
 use yii\base\Exception;
 
 /**
@@ -504,8 +505,18 @@ class UrlHelper
             return rtrim($generalConfig->baseCpUrl, '/') . '/';
         }
 
-        // Use @web as a fallback
-        return Craft::getAlias('@web');
+        return self::fallbackBaseUrl();
+    }
+
+    private static function fallbackBaseUrl(?Request $request = null): string
+    {
+        $request ??= Craft::$app->getRequest();
+        // Use @web as a fallback, unless it's a console request and @web was defined dynamically,
+        // in which case it's totally unreliable so go with the base site URL
+        return $request->getIsConsoleRequest() && $request->isWebAliasSetDynamically
+            // @web is totally unreliable, so go with the base site URL if possible
+            ? static::baseSiteUrl()
+            : Craft::getAlias('@web');
     }
 
     /**
@@ -633,10 +644,7 @@ class UrlHelper
         }
 
         if ($useRequestHostInfo) {
-            $baseUrl = $request->getIsConsoleRequest() && $request->isWebAliasSetDynamically
-                // @web is totally unreliable, so go with the base site URL if possible
-                ? static::baseSiteUrl()
-                : Craft::getAlias('@web');
+            $baseUrl = self::fallbackBaseUrl($request);
         } elseif ($showScriptName) {
             $baseUrl = $request->getIsConsoleRequest() ? '/' : static::host();
         } elseif ($cpUrl) {
