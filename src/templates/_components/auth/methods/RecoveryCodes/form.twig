@@ -2,8 +2,8 @@
 
 {% set formId = formId ?? "recovery-codes-form-#{random()}" %}
 
-<form id="{{ formId }}">
-    {{ actionInput('auth/verify-totp') }}
+<form id="{{ formId }}" method="post">
+    {{ actionInput('auth/verify-recovery-code') }}
 
     {% if craft.app.config.general.enableCsrfProtection %}
         {{ csrfInput() }}
