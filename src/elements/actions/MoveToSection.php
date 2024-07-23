@@ -17,7 +17,7 @@ use yii\base\Exception;
  * MoveToSection represents a Move to Section element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.1.0
+ * @since 5.3.0
  */
 class MoveToSection extends ElementAction
 {

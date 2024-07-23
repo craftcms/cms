@@ -2723,7 +2723,7 @@ JS;
      *
      * @return bool
      * @throws InvalidConfigException
-     * @since 5.1.0
+     * @since 5.3.0
      */
     public function isEntryTypeCompatible(): bool
     {

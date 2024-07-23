@@ -392,7 +392,7 @@ class EntriesController extends BaseEntriesController
      *
      * @return Response
      * @throws BadRequestHttpException
-     * @since 5.1.0
+     * @since 5.3.0
      */
     public function actionMoveToSectionModalData(): Response
     {
@@ -486,7 +486,7 @@ class EntriesController extends BaseEntriesController
      *
      * @return Response
      * @throws BadRequestHttpException
-     * @since 5.1.0
+     * @since 5.3.0
      */
     public function actionMoveToSection(): Response
     {

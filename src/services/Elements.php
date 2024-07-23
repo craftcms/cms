@@ -1165,8 +1165,8 @@ class Elements extends Component
      * Ensures that we’re tracking element saves and deletes as part of a bulk operation, then executes the given
      * callback function.
      *
-     * @param callable $callback The
-     * @since 5.1.0
+     * @param callable $callback
+     * @since 5.3.0
      */
     public function ensureBulkOp(callable $callback): void
     {

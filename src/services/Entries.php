@@ -123,13 +123,13 @@ class Entries extends Component
 
     /**
      * @event EntryMoveEvent The event that is triggered before an entry is move to a different section.
-     * @since 5.1.0
+     * @since 5.3.0
      */
     public const EVENT_BEFORE_MOVE_TO_SECTION = 'beforeMoveToSection';
 
     /**
      * @event EntryMoveEvent The event that is triggered before an entry is move to a different section.
-     * @since 5.1.0
+     * @since 5.3.0
      */
     public const EVENT_AFTER_MOVE_TO_SECTION = 'afterMoveToSection';
 
@@ -1855,7 +1855,7 @@ SQL)->execute();
      * @throws InvalidElementException
      * @throws Throwable
      * @throws UnsupportedSiteException
-     * @since 5.1.0
+     * @since 5.3.0
      */
     public function moveEntryToSection(Entry $entry, Section $section): bool
     {

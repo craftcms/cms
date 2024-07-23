@@ -15,7 +15,7 @@ use yii\base\Event;
  * Entry move event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.1.0
+ * @since 5.3.0
  */
 class EntryMoveEvent extends Event
 {
