@@ -131,7 +131,7 @@ Craft.EditableTable = Garnish.Base.extend(
         );
 
         if ($actionMenus.length) {
-          this.addListener($actionMenus, 'activate', interactionCallback);
+          this.addListener($actionMenus, 'keypress,click', interactionCallback);
         }
       } else {
         const $rows = this.$tbody.children();
@@ -200,6 +200,7 @@ Craft.EditableTable = Garnish.Base.extend(
         $actionsBtn.attr('aria-label', name);
 
         if (this.rowCount === 1) {
+          $actionsBtn.attr('disabled', 'disabled').addClass('disabled');
           $actionsBtn.attr('disabled', 'disabled').addClass('disabled');
         } else {
           $actionsBtn.removeAttr('disabled').removeClass('disabled');
@@ -872,6 +873,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
       actionDisclosure.on('show', () => {
         this.updateDisclosureMenu();
+
+        // Fixes issue focusing caused by hiding button
+        const $focusableBtn = Garnish.firstFocusableElement(this.$actionMenu);
+        $focusableBtn.focus();
       });
 
       this.$actionMenuOptions = this.$actionMenu.find('button[data-action]');
