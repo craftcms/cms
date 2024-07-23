@@ -563,7 +563,7 @@ class Elements extends Component
      * that should be used to store element bulk op records.
      * @since 5.3.0
      */
-    public Connection|array|string $bulkOpDb = 'db';
+    public Connection|array|string $bulkOpDb = 'db2';
 
     // Element caches
     // -------------------------------------------------------------------------
