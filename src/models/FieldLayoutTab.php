@@ -217,9 +217,9 @@ class FieldLayoutTab extends FieldLayoutComponent
             }
             $elementConfig = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
             if (!isset($elementConfig['dateAdded'])) {
-                // Default `dateAdded` to a minute ago for GET requests, so there’s no chance that an element that
-                // predated 5.3 would get the same timestamp as a newly-added element, if the layout was saved within
-                // a minute of being edited, after updating to Craft 5.3+.
+                // Default `dateAdded` to a minute ago, so there’s no chance that an element that predated 5.3 would get
+                // the same timestamp as a newly-added element, if the layout was saved within a minute of being edited,
+                // after updating to Craft 5.3+.
                 $elementConfig['dateAdded'] = DateTimeHelper::toIso8601((new DateTime())->modify('-1 minute'));
             }
             $elementConfigs[] = $elementConfig;

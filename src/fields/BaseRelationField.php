@@ -661,7 +661,7 @@ JS, [
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
         } elseif ($value === null && $element?->id && $this->isFirstInstance($element)) {
-            // If $value is null, the element + field haven’t been saved since updatid to Craft 5.3+,
+            // If $value is null, the element + field haven’t been saved since updating to Craft 5.3+,
             // or since the field was added to the field layout. So only actually look at the `relations` table
             // if this is the first instance of the field that was ever added to the field layout.
             if (!$this->allowMultipleSources && $this->source) {
