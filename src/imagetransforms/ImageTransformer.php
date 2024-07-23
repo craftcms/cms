@@ -75,7 +75,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * @inheritdoc
      */
-    public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
+    public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately, ?ImageTransformIndex $imageTransformIndex = null): string
     {
         $fs = $asset->getVolume()->getTransformFs();
         $mimeType = $asset->getMimeType();
@@ -93,7 +93,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             throw new NotSupportedException('SVG files shouldn’t be transformed.');
         }
 
-        $index = $this->getTransformIndex($asset, $imageTransform);
+        $index = $imageTransformIndex ?? $this->getTransformIndex($asset, $imageTransform);
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate

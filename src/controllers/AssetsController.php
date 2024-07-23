@@ -1107,6 +1107,7 @@ class AssetsController extends Controller
     public function actionGenerateTransform(?int $transformId = null): Response
     {
         try {
+            $transformIndexModel = null;
             // If a transform ID was not passed in, see if a file ID and handle were.
             if ($transformId) {
                 $transformer = Craft::createObject(ImageTransformer::class);
@@ -1134,7 +1135,7 @@ class AssetsController extends Controller
             throw new NotFoundHttpException();
         }
 
-        $url = $transformer->getTransformUrl($asset, $transform, true);
+        $url = $transformer->getTransformUrl($asset, $transform, true, $transformIndexModel);
 
         if ($this->request->getAcceptsJson()) {
             return $this->asJson(['url' => $url]);
