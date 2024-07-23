@@ -63,6 +63,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\records\Field as FieldRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
+use DateTime;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -1049,7 +1050,16 @@ class Fields extends Component
     {
         $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
         $config = Json::decode(Craft::$app->getRequest()->getBodyParam($paramPrefix . 'fieldLayout'));
-        return $this->createLayout($config);
+        $layout = $this->createLayout($config);
+
+        // Make sure all the elements have a dateAdded value set
+        foreach ($layout->getTabs() as $tab) {
+            foreach ($tab->getElements() as $layoutElement) {
+                $layoutElement->dateAdded ??= new DateTime();
+            }
+        }
+
+        return $layout;
     }
 
     /**

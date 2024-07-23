@@ -15,6 +15,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\NestedElementInterface;
+use craft\base\RelationalFieldInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
 use craft\db\Table as DbTable;
@@ -28,6 +29,7 @@ use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -40,9 +42,11 @@ use craft\services\Elements;
 use craft\services\ElementSources;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+use yii\db\Schema;
 use yii\validators\NumberValidator;
 
 /**
@@ -51,7 +55,10 @@ use yii\validators\NumberValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class BaseRelationField extends Field implements InlineEditableFieldInterface, EagerLoadingFieldInterface
+abstract class BaseRelationField extends Field implements
+    InlineEditableFieldInterface,
+    EagerLoadingFieldInterface,
+    RelationalFieldInterface
 {
     /**
      * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
@@ -60,17 +67,6 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
     public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
 
     private static bool $validatingRelatedElements = false;
-
-    /**
-     * @inheritdoc
-     */
-    public static function supportedTranslationMethods(): array
-    {
-        // Don't ever automatically propagate values to other sites.
-        return [
-            self::TRANSLATION_METHOD_SITE,
-        ];
-    }
 
     /**
      * Returns the element class associated with this field type.
@@ -103,7 +99,7 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
      */
     public static function dbType(): array|string|null
     {
-        return null;
+        return Schema::TYPE_JSON;
     }
 
     /**
@@ -269,6 +265,7 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
 
     /**
      * @var bool Whether each site should get its own unique set of relations
+     * @deprecated in 5.3.0
      */
     public bool $localizeRelations = false;
 
@@ -370,6 +367,12 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
             unset($config['sources']);
         }
 
+        if (isset($config['localizeRelations'])) {
+            $config['translationMethod'] = $config['localizeRelations'] ? self::TRANSLATION_METHOD_SITE : self::TRANSLATION_METHOD_NONE;
+        } else {
+            $config['localizeRelations'] = ($config['translationMethod'] ?? self::TRANSLATION_METHOD_NONE) !== self::TRANSLATION_METHOD_NONE;
+        }
+
         parent::__construct($config);
     }
 
@@ -439,7 +442,6 @@ abstract class BaseRelationField extends Field implements InlineEditableFieldInt
     {
         $attributes = parent::settingsAttributes();
         $attributes[] = 'allowSelfRelations';
-        $attributes[] = 'localizeRelations';
         $attributes[] = 'maxRelations';
         $attributes[] = 'minRelations';
         $attributes[] = 'selectionLabel';
@@ -654,12 +656,14 @@ JS, [
         $query = $class::find()
             ->siteId($this->targetSiteId($element));
 
-        // $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
         if (is_array($value)) {
             $query
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
-        } elseif ($value !== '' && $element && $element->id) {
+        } elseif ($value === null && $element?->id && $this->isFirstInstance($element)) {
+            // If $value is null, the element + field haven’t been saved since updating to Craft 5.3+,
+            // or since the field was added to the field layout. So only actually look at the `relations` table
+            // if this is the first instance of the field that was ever added to the field layout.
             if (!$this->allowMultipleSources && $this->source) {
                 $source = ElementHelper::findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
 
@@ -748,6 +752,21 @@ JS, [
         return $query;
     }
 
+    private function isFirstInstance(?Elementinterface $element): bool
+    {
+        if ($this->layoutElement?->uid === null) {
+            return false;
+        }
+
+        /** @var CustomField|null $first */
+        $first = Collection::make($element?->getFieldLayout()?->getCustomFieldElements())
+            ->filter(fn(CustomField $layoutElement) => $layoutElement->getField()->id === $this->id)
+            ->sortBy(fn(CustomField $layoutElement) => $layoutElement->dateAdded)
+            ->first();
+
+        return $this->layoutElement->uid === $first?->uid;
+    }
+
     /**
      * @inheritdoc
      */
@@ -755,7 +774,7 @@ JS, [
     {
         /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementCollection) {
-            return $value->map(fn(ElementInterface $element) => $element->id)->all();
+            return $value->ids()->all();
         }
 
         return $this->_all($value, $element)->ids();
@@ -992,6 +1011,78 @@ JS, [
     /**
      * @inheritdoc
      */
+    public function localizeRelations(): bool
+    {
+        return $this->localizeRelations;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function forceUpdateRelations(ElementInterface $element): bool
+    {
+        return $this->maintainHierarchy;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRelationTargetIds(ElementInterface $element): array
+    {
+        /** @var ElementQueryInterface|ElementCollection $value */
+        $value = $element->getFieldValue($this->handle);
+
+        // $value will be an element query and its $id will be set if we're saving new relations
+        if ($value instanceof ElementCollection) {
+            $targetIds = $value->map(fn(ElementInterface $element) => $element->id)->all();
+        } elseif (
+            is_array($value->id) &&
+            ArrayHelper::isNumeric($value->id)
+        ) {
+            $targetIds = $value->id ?: [];
+        } else {
+            // just running $this->_all()->ids() will cause the query to get adjusted
+            // see https://github.com/craftcms/cms/issues/14674 for details
+            $targetIds = $this->_all($value, $element)
+                ->collect()
+                ->map(fn(ElementInterface $element) => $element->id)
+                ->all();
+        }
+
+        if ($this->maintainHierarchy) {
+            $structuresService = Craft::$app->getStructures();
+
+            /** @var ElementInterface $class */
+            $class = static::elementType();
+
+            /** @var ElementInterface[] $structureElements */
+            $structureElements = $class::find()
+                ->id($targetIds)
+                ->drafts(null)
+                ->revisions(null)
+                ->provisionalDrafts(null)
+                ->status(null)
+                ->site('*')
+                ->unique()
+                ->all();
+
+            // Fill in any gaps
+            $structuresService->fillGapsInElements($structureElements);
+
+            // Enforce the branch limit
+            if ($this->branchLimit) {
+                $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
+            }
+
+            $targetIds = array_map(fn(ElementInterface $element) => $element->id, $structureElements);
+        }
+
+        return $targetIds;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // Skip if nothing changed, or the element is just propagating and we're not localizing relations
@@ -999,57 +1090,6 @@ JS, [
             ($element->duplicateOf || $element->isFieldDirty($this->handle) || $this->maintainHierarchy) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
-            /** @var ElementQueryInterface|ElementCollection $value */
-            $value = $element->getFieldValue($this->handle);
-
-            // $value will be an element query and its $id will be set if we're saving new relations
-            if ($value instanceof ElementCollection) {
-                $targetIds = $value->map(fn(ElementInterface $element) => $element->id)->all();
-            } elseif (
-                is_array($value->id) &&
-                ArrayHelper::isNumeric($value->id)
-            ) {
-                $targetIds = $value->id ?: [];
-            } else {
-                // just running $this->_all()->ids() will cause the query to get adjusted
-                // see https://github.com/craftcms/cms/issues/14674 for details
-                $targetIds = $this->_all($value, $element)
-                    ->collect()
-                    ->map(fn(ElementInterface $element) => $element->id)
-                    ->all();
-            }
-
-            if ($this->maintainHierarchy) {
-                $structuresService = Craft::$app->getStructures();
-
-                /** @var ElementInterface $class */
-                $class = static::elementType();
-
-                /** @var ElementInterface[] $structureElements */
-                $structureElements = $class::find()
-                    ->id($targetIds)
-                    ->drafts(null)
-                    ->revisions(null)
-                    ->provisionalDrafts(null)
-                    ->status(null)
-                    ->site('*')
-                    ->unique()
-                    ->all();
-
-                // Fill in any gaps
-                $structuresService->fillGapsInElements($structureElements);
-
-                // Enforce the branch limit
-                if ($this->branchLimit) {
-                    $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
-                }
-
-                $targetIds = array_map(fn(ElementInterface $element) => $element->id, $structureElements);
-            }
-
-            /** @var int|int[]|false|null $targetIds */
-            Craft::$app->getRelations()->saveRelations($this, $element, $targetIds);
-
             // Reset the field value?
             if ($element->duplicateOf !== null || $element->mergingCanonicalChanges || $isNew) {
                 $element->setFieldValue($this->handle, null);
@@ -1083,22 +1123,6 @@ JS, [
         }
 
         parent::afterElementSave($element, $isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterElementDeleteForSite(ElementInterface $element): void
-    {
-        if ($this->localizeRelations) {
-            Db::delete(DbTable::RELATIONS, [
-                'fieldId' => $this->id,
-                'sourceSiteId' => $element->siteId,
-                'sourceId' => $element->id,
-            ]);
-        }
-
-        parent::afterElementDeleteForSite($element);
     }
 
     /**
