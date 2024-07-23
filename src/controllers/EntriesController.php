@@ -455,12 +455,10 @@ class EntriesController extends BaseEntriesController
         } else {
             $listHtml = '';
             foreach ($compatibleSections as $section) {
-                $listHtml .= Html::beginTag('li', ['class' => 'fullwidth']) .
-                    Cp::chipHtml($section, [
-                        'selectable' => true,
-                        'class' => 'fullwidth',
-                    ]) .
-                    Html::endTag('li');
+                $listHtml .= Cp::chipHtml($section, [
+                    'selectable' => true,
+                    'class' => 'fullwidth',
+                ]);
             }
         }
 

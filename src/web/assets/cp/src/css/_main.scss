@@ -9011,6 +9011,12 @@ body.sitepicker {
   max-width: calc(100% - 20px) !important;
   max-height: 200px;
 
+  .header {
+    padding-top: calc(var(--m));
+    padding-bottom: calc(var(--m));
+    text-align: center;
+  }
+
   .body {
     .entry-mover-modal--list {
       flex: 1;

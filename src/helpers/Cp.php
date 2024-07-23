@@ -399,7 +399,9 @@ class Cp
         }
 
         if ($config['showLabel'] || isset($config['labelHtml'])) {
-            $html .= $config['labelHtml'] ?? Html::encode($label);
+            $html .= $config['labelHtml'] ?? Html::tag('div', Html::encode($label), [
+                'id' => sprintf('%s-label', $config['id']),
+            ]);
         }
 
         $html .= Html::beginTag('div', ['class' => 'chip-actions']);

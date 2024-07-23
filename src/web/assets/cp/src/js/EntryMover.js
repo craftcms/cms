@@ -34,7 +34,12 @@ Craft.EntryMover = Garnish.Base.extend({
   createModal() {
     const $container = $('<div class="modal entry-mover-modal"/>');
     const $header = $('<div class="header"/>').appendTo($container);
-    $('<h1>' + Craft.t('app', 'Move to') + '</h1>').appendTo($header);
+    const headingId =
+      'sectionSelectorModalHeading-' + Math.floor(Math.random() * 1000000);
+    $('<h1/>', {
+      text: Craft.t('app', 'Move to'),
+      idd: headingId,
+    }).appendTo($header);
     const $body = $('<div class="body"/>').appendTo($container);
     const $footer = $('<div/>', {
       class: 'footer',
@@ -43,8 +48,10 @@ Craft.EntryMover = Garnish.Base.extend({
     this.$sectionsListContainer = $(
       '<div class="entry-mover-modal--list"/>'
     ).appendTo($body);
-    this.$sectionsList = $('<ul/>', {
+    this.$sectionsList = $('<div/>', {
       class: 'chips',
+      role: 'radiogroup',
+      'aria-labelledby': headingId,
     }).appendTo(this.$sectionsListContainer);
 
     $('<div class="buttons left secondary-buttons"/>').appendTo($footer);
@@ -99,6 +106,8 @@ Craft.EntryMover = Garnish.Base.extend({
         if (listHtml) {
           this.$sectionsList.html(listHtml);
 
+          this.$sectionsList.find('.checkbox').attr('role', 'radio');
+
           this.sectionSelect = new Garnish.Select(
             this.$sectionsList,
             this.$sectionsList.find('.chip'),
@@ -147,6 +156,7 @@ Craft.EntryMover = Garnish.Base.extend({
         this.modal.updateLiveRegion(response.data.message);
 
         this.elementIndex.updateElements();
+        this.elementIndex.$elements.attr('tabindex', '-1').focus();
         this.modal.hide();
       })
       .catch((e) => {
