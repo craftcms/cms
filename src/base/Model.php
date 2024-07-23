@@ -192,6 +192,10 @@ abstract class Model extends \yii\base\Model implements ModelInterface
             $attributes[] = 'dateCreated';
         }
 
+        if (property_exists($this, 'dateAdded')) {
+            $attributes[] = 'dateAdded';
+        }
+
         if (property_exists($this, 'dateUpdated')) {
             $attributes[] = 'dateUpdated';
         }
@@ -245,8 +249,9 @@ abstract class Model extends \yii\base\Model implements ModelInterface
         // Have all DateTime attributes converted to ISO-8601 strings
         foreach ($datetimeAttributes as $attribute) {
             $fields[$attribute] = function($model, $attribute) {
-                if (!empty($model->$attribute)) {
-                    return DateTimeHelper::toIso8601($model->$attribute);
+                $date = $model->$attribute;
+                if ($date) {
+                    return DateTimeHelper::toIso8601($date, true);
                 }
 
                 return $model->$attribute;
