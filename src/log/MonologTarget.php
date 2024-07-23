@@ -167,7 +167,7 @@ class MonologTarget extends PsrTarget
                 $level = $message[1];
                 $psrLevel = is_int($level) ? $levelMap->get($level) : $level;
 
-                return Logger::toMonologLevel($psrLevel) >= $monologLevel;
+                return Logger::toMonologLevel($psrLevel)->value >= $monologLevel->value;
             });
 
         return $messages->all();

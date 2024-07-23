@@ -165,6 +165,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           );
         }
       }
+
+      this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
     },
 
     _findDraggableItems: function ($items) {
@@ -202,6 +204,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (!this.settings.foldersOnly) {
         this.initForFiles();
       }
+
+      // Double-clicking or double-tapping on folders should open them
+      this.addListener(this.$elements, 'doubletap', function (ev, touchData) {
+        // Make sure the touch targets are the same
+        // (they may be different if Command/Ctrl/Shift-clicking on multiple elements quickly)
+        if (touchData.firstTap.target === touchData.secondTap.target) {
+          const $element = $(touchData.firstTap.target)
+            .closest('tr,ul.thumbsview > li')
+            .find('.element:first');
+          if (Garnish.hasAttr($element, 'data-is-folder')) {
+            $element.find('a').trigger('activate');
+          }
+        }
+      });
 
       this.base();
     },
@@ -644,15 +660,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @private
      */
     _onUpdateElements: function (append, $newElements) {
-      this.removeListener(this.$elements, 'keydown');
-      this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
-      if (this.view.elementSelect) {
-        this.view.elementSelect.on(
-          'focusItem',
-          this._onElementFocus.bind(this)
-        );
-      }
-
       this.$listedFolders = $newElements.find(
         '.element[data-is-folder][data-folder-name]'
       );
@@ -715,49 +722,24 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _onKeyDown: function (ev) {
       if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
         if (Craft.PreviewFileModal.openInstance) {
-          Craft.PreviewFileModal.openInstance.selfDestruct();
+          Craft.PreviewFileModal.openInstance.hide();
         } else if (this.view.elementSelect) {
-          var $element = this.view.elementSelect.$focusedItem.find('.element');
+          let $element = $(ev.target).closest('.element');
+          if (!$element.length) {
+            $element = $(ev.target).find('.element:first');
+          }
 
-          if ($element.length) {
-            this._loadPreview($element);
+          if ($element.length && !Garnish.hasAttr($element, 'data-folder-id')) {
+            Craft.PreviewFileModal.showForAsset(
+              $element,
+              this.view.elementSelect
+            );
           }
         }
 
         ev.stopPropagation();
         return false;
       }
-    },
-
-    /**
-     * Handle element being focused
-     * @private
-     */
-    _onElementFocus: function (ev) {
-      var $element = $(ev.item).find('.element');
-
-      if (Craft.PreviewFileModal.openInstance && $element.length) {
-        this._loadPreview($element);
-      }
-    },
-
-    /**
-     * Load the preview for an asset
-     * @private
-     */
-    _loadPreview: function ($element) {
-      var settings = {};
-
-      if ($element.data('image-width')) {
-        settings.startingWidth = $element.data('image-width');
-        settings.startingHeight = $element.data('image-height');
-      }
-
-      new Craft.PreviewFileModal(
-        $element.data('id'),
-        this.view.elementSelect,
-        settings
-      );
     },
 
     /**

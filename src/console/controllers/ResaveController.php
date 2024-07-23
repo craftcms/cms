@@ -170,6 +170,12 @@ class ResaveController extends Controller
     public ?string $section = null;
 
     /**
+     * @var bool Whether all sections’ entries should be saved.
+     * @since 5.2.0
+     */
+    public bool $allSections = false;
+
+    /**
      * @var string|null The type handle(s) of the elements to resave.
      * @since 3.1.16
      */
@@ -231,7 +237,7 @@ class ResaveController extends Controller
 
     /**
      * @var bool Whether the `--set` attribute should only be set if the current value doesn’t validate.
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public bool $ifInvalid = false;
 
@@ -266,6 +272,7 @@ class ResaveController extends Controller
                 break;
             case 'entries':
                 $options[] = 'section';
+                $options[] = 'allSections';
                 $options[] = 'field';
                 $options[] = 'ownerId';
                 $options[] = 'type';
@@ -375,7 +382,9 @@ class ResaveController extends Controller
     public function actionEntries(): int
     {
         $criteria = [];
-        if (isset($this->section)) {
+        if ($this->allSections) {
+            $criteria['section'] = '*';
+        } elseif (isset($this->section)) {
             $criteria['section'] = explode(',', $this->section);
         }
         if (isset($this->field)) {

@@ -56,6 +56,10 @@ use yii\db\QueryBuilder;
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of ElementInterface
+ * @extends Query<TKey,TElement>
+ *
  * @property-write string|string[]|Site $site The site(s) that resulting elements must be returned in
  * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -110,7 +114,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @var string The name of the [[ElementInterface]] class.
-     * @phpstan-var class-string<ElementInterface>
+     * @phpstan-var class-string<TElement>
      */
     public string $elementType;
 
@@ -181,6 +185,8 @@ class ElementQuery extends Query implements ElementQueryInterface
      * This can be set to one of the following:
      *
      * - A source element ID – matches drafts of that element
+     * - A source element
+     *  - An array of source elements or element IDs
      * - `'*'` – matches drafts of any source element
      * - `false` – matches unpublished drafts that have no source element
      *
@@ -406,6 +412,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public bool $eagerly = false;
 
+    /**
+     * @var bool Whether custom fields should be factored into the query.
+     * @used-by withCustomFields()
+     * @since 5.2.0
+     */
+    public bool $withCustomFields = true;
+
     // Structure parameters
     // -------------------------------------------------------------------------
 
@@ -557,7 +570,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Constructor
      *
      * @param string $elementType The element type class associated with this query
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @phpstan-param class-string<TElement> $elementType
      * @param array $config Configurations to be applied to the newly created query object
      */
     public function __construct(string $elementType, array $config = [])
@@ -690,11 +703,27 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function draftOf($value): static
     {
+        $valid = false;
         if ($value instanceof ElementInterface) {
             $this->draftOf = $value->getCanonicalId();
-        } elseif (is_numeric($value) || $value === '*' || $value === false || $value === null) {
+            $valid = true;
+        } elseif (
+            is_numeric($value) ||
+            (is_array($value) && ArrayHelper::isNumeric($value)) ||
+            $value === '*' ||
+            $value === false ||
+            $value === null
+        ) {
             $this->draftOf = $value;
-        } else {
+            $valid = true;
+        } elseif (is_array($value) && !empty($value)) {
+            $c = Collection::make($value);
+            if ($c->every(fn($v) => $v instanceof ElementInterface || is_numeric($v))) {
+                $this->draftOf = $c->map(fn($v) => $v instanceof ElementInterface ? $v->id : $v)->all();
+                $valid = true;
+            }
+        }
+        if (!$valid) {
             throw new InvalidArgumentException('Invalid draftOf value');
         }
         if ($value !== null && $this->drafts === false) {
@@ -1189,6 +1218,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $withCustomFields
+     */
+    public function withCustomFields(bool $value = true): static
+    {
+        $this->withCustomFields = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $withStructure
      */
     public function withStructure(bool $value = true): static
@@ -1646,7 +1685,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface[]|array The resulting elements.
+     * @return TElement[]|array The resulting elements.
      */
     public function populate($rows): array
     {
@@ -1719,64 +1758,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $eagerLoadedCount;
         }
 
-        try {
-            return $this->prepareSubquery()->count($q, $db) ?: 0;
-        } catch (QueryAbortedException) {
-            return 0;
-        }
+        return parent::count($q, $db) ?: 0;
     }
 
     /**
      * @inheritdoc
-     */
-    public function sum($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->sum($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function average($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->average($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function min($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->min($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function max($q, $db = null)
-    {
-        try {
-            return $this->prepareSubquery()->max($q, $db);
-        } catch (QueryAbortedException) {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     * @return ElementInterface[]|array
+     * @return TElement[]|array
      */
     public function all($db = null): array
     {
@@ -1793,11 +1780,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @param YiiConnection|null $db
-     * @return ElementCollection
+     * @return ElementCollection<TKey,TElement>
      */
     public function collect(?YiiConnection $db = null): ElementCollection
     {
-        /** @phpstan-ignore-next-line */
         return $this->eagerLoad() ?? ElementCollection::make($this->all($db));
     }
 
@@ -1807,15 +1793,19 @@ class ElementQuery extends Query implements ElementQueryInterface
             return null;
         }
 
-        $planHandle = $this->eagerLoadHandle;
-        if (str_contains($planHandle, ':')) {
-            $planHandle = explode(':', $planHandle, 2)[1];
+        if (isset($this->eagerLoadAlias)) {
+            $alias = $this->eagerLoadAlias;
+        } else {
+            $alias = $this->eagerLoadHandle;
+            if (str_contains($alias, ':')) {
+                $alias = explode(':', $alias, 2)[1];
+            }
         }
 
         // see if it was already eager-loaded
         $eagerLoaded = match ($count) {
-            true => $this->wasCountEagerLoaded($this->eagerLoadAlias),
-            false => $this->wasEagerLoaded($this->eagerLoadAlias),
+            true => $this->wasCountEagerLoaded($alias),
+            false => $this->wasEagerLoaded($alias),
         };
 
         if (!$eagerLoaded) {
@@ -1825,7 +1815,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 [
                     new EagerLoadPlan([
                         'handle' => $this->eagerLoadHandle,
-                        'alias' => $this->eagerLoadAlias ?? $planHandle,
+                        'alias' => $alias,
                         'criteria' => $criteria + $this->getCriteria() + ['with' => $this->with],
                         'all' => !$count,
                         'count' => $count,
@@ -1836,15 +1826,15 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($count) {
-            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($planHandle);
+            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($alias);
         }
 
-        return $this->eagerLoadSourceElement->getEagerLoadedElements($planHandle);
+        return $this->eagerLoadSourceElement->getEagerLoadedElements($alias);
     }
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null
+     * @return TElement|array|null
      */
     public function one($db = null): mixed
     {
@@ -1893,12 +1883,22 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function exists($db = null): bool
     {
-        return $this->getCachedResult() !== null || parent::exists($db);
+        $cachedResult = $this->getCachedResult();
+        if ($cachedResult !== null) {
+            return !empty($cachedResult);
+        }
+        try {
+            return $this->prepareSubquery()
+                ->select('elements.id')
+                ->exists($db);
+        } catch (QueryAbortedException) {
+            return false;
+        }
     }
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null
+     * @return TElement|array|null
      */
     public function nth(int $n, ?YiiConnection $db = null): mixed
     {
@@ -1952,7 +1952,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Returns the resulting elements set by [[setCachedResult()]], if the criteria params haven’t changed since then.
      *
-     * @return ElementInterface[]|null $elements The resulting elements, or null if setCachedResult() was never called or the criteria has changed
+     * @return TElement[]|null $elements The resulting elements, or null if setCachedResult() was never called or the criteria has changed
      * @see setCachedResult()
      */
     public function getCachedResult(): ?array
@@ -1976,7 +1976,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * If this is called, [[all()]] will return these elements rather than initiating a new SQL query,
      * as long as none of the parameters have changed since setCachedResult() was called.
      *
-     * @param ElementInterface[] $elements The resulting elements.
+     * @param TElement[] $elements The resulting elements.
      * @see getCachedResult()
      */
     public function setCachedResult(array $elements): void
@@ -2062,6 +2062,70 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         /** @var Query */
         return $this->prepare($builder)->from['subquery'];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function queryScalar($selectExpression, $db): bool|string|null
+    {
+        // Mostly copied from yii\db\Query::queryScalar(),
+        // except that createCommand() is called on the prepared subquery rather than this query.
+        // (We still temporarily override $select, $orderBy, $limit, and $offset on this query,
+        // so those values look right from EVENT_BEFORE_PREPARE/EVENT_AFTER_PREPARE listeners.)
+
+        if ($this->emulateExecution) {
+            return null;
+        }
+
+        if (
+            !$this->distinct
+            && empty($this->groupBy)
+            && empty($this->having)
+            && empty($this->union)
+        ) {
+            // Set $orderBy, $limit, and $offset on this query just so it more closely resembles the
+            // actual query that will be executed for `beforePrepare`/`afterPrepare` listeners
+            // (https://github.com/craftcms/cms/issues/15001)
+
+            // DON’T set $select though, in case this query ends up being cloned and executed from
+            // an event handler, like BaseRelationField does. (https://github.com/craftcms/cms/issues/15071)
+
+            $order = $this->orderBy;
+            $limit = $this->limit;
+            $offset = $this->offset;
+
+            $this->orderBy = null;
+            $this->limit = null;
+            $this->offset = null;
+
+            try {
+                $subquery = $this->prepareSubquery();
+
+                // If distinct, et al. were set by prepare(), don't mess with it
+                // see https://github.com/craftcms/cms/issues/15001#issuecomment-2174563927
+                if (
+                    !$subquery->distinct
+                    && empty($subquery->groupBy)
+                    && empty($subquery->having)
+                    && empty($subquery->union)
+                ) {
+                    $subquery->select = [$selectExpression];
+                    $subquery->orderBy = null;
+                    $subquery->limit = null;
+                    $subquery->offset = null;
+                    return $subquery->createCommand($db)->queryScalar();
+                }
+            } catch (QueryAbortedException) {
+                return false;
+            } finally {
+                $this->orderBy = $order;
+                $this->limit = $limit;
+                $this->offset = $offset;
+            }
+        }
+
+        return parent::queryScalar($selectExpression, $db);
     }
 
     // Arrayable methods
@@ -2214,7 +2278,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'row' => $row,
             ]);
             $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
-
             $row = $event->row ?? $row;
             if (isset($event->element)) {
                 $element = $event->element;
@@ -2255,10 +2318,14 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function beforePrepare(): bool
     {
-        $event = new CancelableEvent();
-        $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
+        // Fire a 'beforePrepare' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_PREPARE)) {
+            $event = new CancelableEvent();
+            $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -2273,11 +2340,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function afterPrepare(): bool
     {
-        $event = new CancelableEvent();
-        $this->trigger(self::EVENT_AFTER_PREPARE, $event);
-
-        if (!$event->isValid) {
-            return false;
+        // Fire an 'afterPrepare' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PREPARE)) {
+            $event = new CancelableEvent();
+            $this->trigger(self::EVENT_AFTER_PREPARE, $event);
+            if (!$event->isValid) {
+                return false;
+            }
         }
 
         $elementsService = Craft::$app->getElements();
@@ -2305,10 +2374,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             } else {
                 $queryTags = $this->cacheTags();
 
+                // Fire a 'defineCacheTags' event
                 if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
-                    $event = new DefineValueEvent([
-                        'value' => $queryTags,
-                    ]);
+                    $event = new DefineValueEvent(['value' => $queryTags]);
                     $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
                     $queryTags = $event->value;
                 }
@@ -2360,6 +2428,9 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
+        if (!$this->withCustomFields) {
+            return [];
+        }
         $fields = [];
         foreach ($this->fieldLayouts() as $fieldLayout) {
             array_push($fields, ...$fieldLayout->getCustomFields());
@@ -2505,10 +2576,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             // Group the fields by handle and field UUID
             /** @var FieldInterface[][][] $fieldsByHandle */
-            $fieldsByHandle = ArrayHelper::index($this->customFields, null, [
-                fn(FieldInterface $field) => $field->handle,
-                fn(FieldInterface $field) => $field->uid,
-            ]);
+            $fieldsByHandle = [];
+            foreach ($this->customFields as $field) {
+                $fieldsByHandle[$field->handle][$field->uid][] = $field;
+            }
 
             foreach ($fieldsByHandle as $handle => $instancesByUid) {
                 // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...

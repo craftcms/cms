@@ -30,7 +30,16 @@ class UrlHelper
         // From https://developer.apple.com/documentation/webkit/wkwebviewconfiguration/2875766-seturlschemehandler:
         // > Scheme names are case sensitive, must start with an ASCII letter, and may contain only ASCII letters,
         // > numbers, the “+” character, the “-” character, and the “.” character.
-        return (bool)preg_match('/^[a-z][a-z0-9+-.]*:/i', $url);
+        if (!preg_match('/^[a-z][a-z0-9+-.]*:/i', $url)) {
+            return false;
+        }
+
+        // Make sure it's not a Windows file path
+        if (preg_match('/^[a-z]:(?:$|\\\)/i', $url)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -624,7 +633,10 @@ class UrlHelper
         }
 
         if ($useRequestHostInfo) {
-            $baseUrl = Craft::getAlias('@web');
+            $baseUrl = $request->getIsConsoleRequest() && $request->isWebAliasSetDynamically
+                // @web is totally unreliable, so go with the base site URL if possible
+                ? static::baseSiteUrl()
+                : Craft::getAlias('@web');
         } elseif ($showScriptName) {
             $baseUrl = $request->getIsConsoleRequest() ? '/' : static::host();
         } elseif ($cpUrl) {

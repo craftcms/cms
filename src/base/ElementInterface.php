@@ -1480,6 +1480,22 @@ interface ElementInterface extends
     public function getFieldContext(): string;
 
     /**
+     * Returns the element’s invalid nested element IDs.
+     *
+     * @return int[]
+     * @since 5.3.0
+     */
+    public function getInvalidNestedElementIds(): array;
+
+    /**
+     * Registers invalid nested element IDs with the element, so an `error` class can be added on their cards.
+     *
+     * @param int[] $ids
+     * @since 5.3.0
+     */
+    public function addInvalidNestedElementIds(array $ids): void;
+
+    /**
      * Returns whether elements have been eager-loaded with a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements

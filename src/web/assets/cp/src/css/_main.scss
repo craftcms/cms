@@ -51,6 +51,7 @@
   --ui-control-border-radius: var(--large-border-radius);
   --ui-control-height: calc(34rem / 16);
   --ui-control-height--small: calc(30rem / 16);
+  --focus-ring-alpha: 0.85;
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -58,9 +59,11 @@
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)},
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
+    0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
+  --focus-ring-outset: inset 0 0 0 1px currentColor,
+    0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+    inset 0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
   --touch-target-size: calc(
     24rem / 16
   ); /* Minimum recommended touch target size */
@@ -265,6 +268,139 @@ fieldset:last-child,
 .my-xl {
   margin-top: var(--xl) !important;
   margin-bottom: var(--xl) !important;
+}
+
+.pt-0 {
+  padding-top: 0 !important;
+}
+.pt-xs {
+  padding-top: var(--xs) !important;
+}
+.pt-s {
+  padding-top: var(--s) !important;
+}
+.pt-m {
+  padding-top: var(--m) !important;
+}
+.pt-l {
+  padding-top: var(--l) !important;
+}
+.pt-xl {
+  padding-top: var(--xl) !important;
+}
+
+.pb-0 {
+  padding-bottom: 0 !important;
+}
+.pb-xs {
+  padding-bottom: var(--xs) !important;
+}
+.pb-s {
+  padding-bottom: var(--s) !important;
+}
+.pb-m {
+  padding-bottom: var(--m) !important;
+}
+.pb-l {
+  padding-bottom: var(--l) !important;
+}
+.pb-xl {
+  padding-bottom: var(--xl) !important;
+}
+
+.pl-0 {
+  padding-left: 0 !important;
+}
+.pl-xs {
+  padding-left: var(--xs) !important;
+}
+.pl-s {
+  padding-left: var(--s) !important;
+}
+.pl-m {
+  padding-left: var(--m) !important;
+}
+.pl-l {
+  padding-left: var(--l) !important;
+}
+.pl-xl {
+  padding-left: var(--xl) !important;
+}
+
+.pr-0 {
+  padding-right: 0 !important;
+}
+.pr-xs {
+  padding-right: var(--xs) !important;
+}
+.pr-s {
+  padding-right: var(--s) !important;
+}
+.pr-m {
+  padding-right: var(--m) !important;
+}
+.pr-l {
+  padding-right: var(--l) !important;
+}
+.pr-xl {
+  padding-right: var(--xl) !important;
+}
+
+.px-0 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.px-xs {
+  padding-left: var(--xs) !important;
+  padding-right: var(--xs) !important;
+}
+.px-s {
+  padding-left: var(--s) !important;
+  padding-right: var(--s) !important;
+}
+.px-m {
+  padding-left: var(--m) !important;
+  padding-right: var(--m) !important;
+}
+.px-l {
+  padding-left: var(--l) !important;
+  padding-right: var(--l) !important;
+}
+.px-xl {
+  padding-left: var(--xl) !important;
+  padding-right: var(--xl) !important;
+}
+
+.py-0 {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.py-xs {
+  padding-top: var(--xs) !important;
+  padding-bottom: var(--xs) !important;
+}
+.py-s {
+  padding-top: var(--s) !important;
+  padding-bottom: var(--s) !important;
+}
+.py-m {
+  padding-top: var(--m) !important;
+  padding-bottom: var(--m) !important;
+}
+.py-l {
+  padding-top: var(--l) !important;
+  padding-bottom: var(--l) !important;
+}
+.py-xl {
+  padding-top: var(--xl) !important;
+  padding-bottom: var(--xl) !important;
+}
+
+.center-absolute {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .pointer {
@@ -557,13 +693,19 @@ ol {
 
 /* code */
 code,
-.code,
-.code input,
-.code textarea {
+.code {
   @include fixed-width-font;
 
   &.smalltext {
     font-size: 0.8em !important;
+  }
+}
+
+.code {
+  input,
+  textarea {
+    @include fixed-width-font;
+    font-size: 1em !important;
   }
 }
 
@@ -1633,6 +1775,14 @@ ul.icons {
     }
   }
 
+  &.hairline-dark {
+    border: 1px solid var(--dark-hairline-color);
+
+    &:not(:hover):not(:active):not([aria-expanded='true']) {
+      background-color: transparent;
+    }
+  }
+
   &.link-btn {
     color: var(--link-color);
 
@@ -1718,9 +1868,13 @@ ul.icons {
       color: var(--gray-300);
     }
   }
+
+  .cp-icon svg {
+    @include svg-mask(currentColor); // Matches color of font icons
+  }
 }
 
-.disabled {
+.disabled:not(.status):not(.status-label) {
   opacity: 0.25;
   pointer-events: none;
   user-select: none;
@@ -1816,6 +1970,7 @@ ul.icons {
   .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not(
       [aria-disabled]
     ) {
+    --focus-ring: var(--focus-ring-outset);
     background-color: var(--gray-500);
     color: var(--white);
     @include dark-btn-light-bg-focus-ring;
@@ -1940,7 +2095,7 @@ ul.icons {
     height: 17px;
     &:after {
       top: -2px;
-      border-color: var(--link-color);
+      border-color: currentColor;
     }
   }
 
@@ -2066,6 +2221,7 @@ ul.icons {
   &.secondary {
     color: var(--white) !important;
     --ui-control-active-color: var(--white);
+    --focus-ring: var(--focus-ring-outset);
     @include light-on-dark-text;
   }
 
@@ -2648,7 +2804,6 @@ h2 + .actions {
       var(--pane-padding, var(--padding)) * -1 + var(--pane-padding, var(--m))
     );
   padding: 0 !important;
-  overscroll-behavior: contain;
   overflow-x: auto;
 
   table.data {
@@ -2861,10 +3016,21 @@ table {
             --ui-control-color: var(--white);
             @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
 
+            .status-label .status-label-text {
+              --status-label-text-color: var(--white) !important;
+            }
+
             th,
             td {
               color: var(--white);
               background-color: var(--selected-bg-color);
+            }
+
+            .icon,
+            .cp-icon,
+            [data-icon],
+            [data-icon-after] {
+              --icon-color: var(--white) !important;
             }
           }
         }
@@ -2874,7 +3040,6 @@ table {
       td {
         padding-top: 7px;
         padding-bottom: 7px;
-        background-clip: padding-box;
         max-width: 33vw;
       }
 
@@ -3057,9 +3222,14 @@ table {
     }
   }
 
+  &:has(.thumb):not(.large) .chip-content {
+    min-width: calc(100% - var(--thumb-size));
+  }
+
   &.sel,
   li.sel &,
-  li.active-drop-target & {
+  li.active-drop-target &,
+  .card.sel & {
     --text-color: var(--white);
     --custom-text-color: var(--white) !important;
     --medium-dark-text-color: var(--white);
@@ -3074,7 +3244,10 @@ table {
       var(--dark-sel-color)
     ) !important;
 
-    .cp-icon {
+    .icon,
+    .cp-icon,
+    [data-icon],
+    [data-icon-after] {
       --icon-color: var(--white) !important;
     }
   }
@@ -3127,6 +3300,9 @@ table {
       border-radius: var(--small-border-radius);
       max-width: 100%;
       max-height: 100%;
+    }
+
+    svg {
       width: 100%;
     }
   }
@@ -3184,6 +3360,12 @@ table {
 .chips {
   align-items: flex-start;
   gap: var(--xs);
+
+  &.chips-small {
+    li {
+      height: calc(34rem / 16);
+    }
+  }
 }
 
 .inline-chips {
@@ -3210,7 +3392,7 @@ table {
   flex-direction: row;
   align-items: stretch;
   padding: var(--m);
-  gap: var(--m);
+  gap: var(--s);
   border-radius: var(--large-border-radius);
   cursor: default;
   user-select: none;
@@ -3240,6 +3422,25 @@ table {
       background-color: var(--dark-sel-color) !important;
       filter: brightness(0.85);
     }
+
+    .icon,
+    .cp-icon,
+    [data-icon],
+    [data-icon-after] {
+      --icon-color: var(--white) !important;
+    }
+
+    .status-label .status-label-text {
+      --status-label-text-color: var(--white) !important;
+    }
+  }
+
+  .ck-content & {
+    ul {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      list-style-type: none;
+    }
   }
 
   & > .thumb {
@@ -3248,8 +3449,8 @@ table {
     align-items: stretch;
     margin: calc(var(--m) * -1);
     @include margin-right(0);
-    width: 120px;
-    min-width: 120px; // needed for flex
+    width: 128px;
+    min-width: 128px; // needed for flex
     min-height: calc(var(--m) * 2 + var(--lh) * 3 + var(--xs));
     background-color: var(--gray-100);
     overflow: hidden;
@@ -3286,13 +3487,17 @@ table {
     img,
     svg {
       width: 100%;
-      max-height: 120px;
+      max-height: 128px;
       object-fit: cover;
+    }
+
+    & + .card-content {
+      @include margin-left(calc(var(--m) - var(--s)));
     }
   }
 
   & > .cp-icon {
-    @include margin(0, -4px, 0, -2px);
+    @include margin(3px, -4px, 0, -2px);
   }
 
   .card-content,
@@ -3304,7 +3509,6 @@ table {
   }
 
   .card-content {
-    margin: calc((1rem - var(--lh)) / 2) 0;
     flex: 1 0 0 !important;
     overflow: hidden;
     position: relative;
@@ -3315,11 +3519,7 @@ table {
       flex-direction: row;
       align-items: center;
       gap: 5px;
-
-      .status {
-        margin: 0;
-        flex: 0 0 10px;
-      }
+      min-height: calc(22rem / 16);
 
       .label {
         font-weight: 600;
@@ -3331,7 +3531,7 @@ table {
         display: none;
       }
 
-      & > * {
+      & > *:not(:has(> .no-truncate)) {
         --max-lines: 2;
         margin: 0;
         max-height: calc(var(--lh) * var(--max-lines));
@@ -3384,7 +3584,7 @@ table {
   font-size: 11px;
   font-weight: normal;
   text-decoration: none !important;
-  color: var(--light-text-color);
+  color: var(--medium-dark-text-color);
   border-radius: calc(var(--touch-target-size) / 2);
   border: 1px solid var(--medium-hairline-color);
 }
@@ -3448,6 +3648,11 @@ table {
       }
     }
 
+    // label links inside cards and chip should be coloured as regular a tags despite not having href attribute
+    a.label-link {
+      color: var(--link-color);
+    }
+
     .segment:after {
       display: inline-flex !important;
       position: relative;
@@ -3467,7 +3672,7 @@ table {
     flex-direction: row;
     align-items: center;
     gap: var(--s);
-    min-height: 1rem;
+    min-height: calc(22rem / 16);
 
     &:empty {
       display: none;
@@ -3479,7 +3684,8 @@ table {
 
     & > .action-btn,
     & > .move {
-      @include touch-target;
+      height: var(--touch-target-size);
+      width: var(--touch-target-size);
       margin: 0 -4px;
       &:before {
         color: var(--custom-text-color, var(--ui-control-color));
@@ -3566,6 +3772,32 @@ table {
     .source-path {
       margin: -22px calc(var(--padding) * -1 + 2px) 24px;
     }
+
+    .inline-editing {
+      textarea,
+      input[type='email'],
+      input[type='text'].fullwidth,
+      input[type='url'] {
+        min-width: 10rem;
+      }
+
+      .money-container input[type='text'].fullwidth,
+      input[type='text'][inputmode].fullwidth {
+        min-width: 5rem;
+      }
+
+      .lightswitch-outer-container .lightswitch-inner-container span {
+        overflow: initial;
+      }
+
+      .selectize.select:not(.fullwidth) {
+        width: 10rem;
+      }
+
+      .flex:has(input[type='text'][inputmode].fullwidth) {
+        flex-wrap: nowrap;
+      }
+    }
   }
 
   .elementselectormodal & {
@@ -3615,6 +3847,12 @@ table {
       border-top: 1px solid var(--hairline-color);
       background: transparent;
     }
+  }
+
+  craft-proxy-scrollbar {
+    position: sticky;
+    width: calc(100% + var(--xl) * 2);
+    margin-inline: calc(var(--xl) * -1);
   }
 }
 
@@ -3709,6 +3947,20 @@ table {
     .chip {
       background-color: transparent;
     }
+
+    tr.disabled {
+      opacity: 1;
+
+      & > th > div > *,
+      & > td {
+        opacity: 0.25;
+      }
+
+      & > th > div > button.toggle {
+        opacity: 1;
+        pointer-events: all;
+      }
+    }
   }
 
   // thumbs views
@@ -3742,6 +3994,10 @@ table {
 
     .chip.large {
       width: 100%;
+    }
+
+    .chip-content {
+      max-width: 100%;
     }
   }
 }
@@ -3840,15 +4096,18 @@ table {
     li {
       @include padding-left(38px);
       background-repeat: no-repeat;
+      --background-position-x: 0;
+      --background-position-y: -6px;
+      background-position: var(--background-position-x)
+        var(--background-position-y);
 
       body.ltr & {
         background-image: url(../images/branch.png);
-        background-position: 0 0;
       }
 
       body.rtl & {
+        --background-position-x: 100%;
         background-image: url(../images/branch_rtl.png);
-        background-position: 100% 0;
       }
 
       &:not(:last-child):not(.last) {
@@ -3856,11 +4115,11 @@ table {
         @include border-left(1px solid var(--gray-200));
 
         body.ltr & {
-          background-position: -1px 0;
+          --background-position-x: -1px;
         }
 
         body.rtl & {
-          background-position: calc(100% + 1px) 0;
+          --background-position-x: calc(100% + 1px);
         }
       }
 
@@ -3916,7 +4175,7 @@ table {
       @include margin-left(14px);
 
       li {
-        background-position: 0 6px !important;
+        --background-position-y: 0;
       }
     }
   }
@@ -4115,6 +4374,7 @@ table.editable {
       box-shadow: none;
       border-radius: 0;
       padding: 7px 10px;
+      line-height: 20px;
       background-color: transparent;
       overflow: hidden;
       transition: none;
@@ -4195,7 +4455,7 @@ ul.tree,
   @include margin(7px, 0, 0, -15px);
 }
 
-/* status icons */
+/* status indicators */
 .status {
   flex: 0 0 auto;
   display: inline-block;
@@ -4203,7 +4463,6 @@ ul.tree,
   @include margin-right(10px);
   width: calc(12rem / 16);
   height: calc(12rem / 16);
-  border: 1px solid transparent;
   border-radius: 100%;
   box-sizing: border-box;
   background-clip: border-box;
@@ -4237,8 +4496,10 @@ ul.tree,
     &:not(.light):not(.gray):not(.red):not(.orange):not(.amber):not(.yellow) {
       &:not(.lime):not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky) {
         &:not(.blue):not(.indigo):not(.violet):not(.purple):not(.fuchsia) {
-          &:not(.pink):not(.rose):not(.grey):not(.black) {
-            border-color: var(--ui-control-color);
+          &:not(.pink):not(.rose):not(.grey):not(.black):not(.disabled) {
+            &:not(.inactive) {
+              border-color: var(--ui-control-color);
+            }
           }
         }
       }
@@ -4295,7 +4556,7 @@ ul.tree,
 .bg-teal,
 .status.turquoise,
 .bg-turquoise {
-  background-color: var(--teal-500);
+  background-color: var(--enabled-color);
 }
 .status.cyan,
 .bg-cyan {
@@ -4351,11 +4612,153 @@ ul.tree,
   background-color: var(--gray-300);
 }
 
-.status.white,
-.status.disabled {
+.status.disabled,
+.status.inactive {
+  --outline-color: var(--gray-500);
+  box-shadow: inset 0 0 0 2px var(--outline-color);
+
+  .sel & {
+    --outline-color: var(--gray-200);
+  }
+}
+
+.status.white {
   opacity: 1;
 }
 
+$statusLabelColorShade: '900';
+$statusLabelBgShade: '500';
+
+/* status labels */
+.status-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--xs);
+  height: calc(22rem / 16);
+  padding: 0 var(--s);
+
+  &:before {
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: var(--status-label-bg-color);
+    border-radius: calc(11rem / 16);
+    content: '';
+    opacity: 0.15;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .status,
+  .cp-icon {
+    @include margin(0, 0, 0, -3px);
+  }
+
+  .status-label-text {
+    position: relative;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--status-label-text-color);
+  }
+
+  &.red {
+    --status-label-text-color: var(--red-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--disabled-color);
+  }
+  &.amber {
+    --status-label-text-color: var(--amber-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--amber-#{$statusLabelBgShade});
+  }
+  &.orange {
+    --status-label-text-color: var(--orange-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--pending-color);
+  }
+  &.yellow {
+    --status-label-text-color: var(--yellow-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--yellow-#{$statusLabelBgShade});
+  }
+  &.lime {
+    --status-label-text-color: var(--lime-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--lime-#{$statusLabelBgShade});
+  }
+  &.green {
+    --status-label-text-color: var(--green-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--green-#{$statusLabelBgShade});
+  }
+  &.emerald {
+    --status-label-text-color: var(--emerald-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--emerald-#{$statusLabelBgShade});
+  }
+  &.teal {
+    --status-label-text-color: var(--teal-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--enabled-color);
+  }
+  &.cyan {
+    --status-label-text-color: var(--cyan-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--cyan-#{$statusLabelBgShade});
+  }
+  &.sky {
+    --status-label-text-color: var(--sky-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--sky-#{$statusLabelBgShade});
+  }
+  &.blue {
+    --status-label-text-color: var(--blue-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--blue-#{$statusLabelBgShade});
+  }
+  &.indigo {
+    --status-label-text-color: var(--indigo-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--indigo-#{$statusLabelBgShade});
+  }
+  &.violet {
+    --status-label-text-color: var(--violet-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--violet-#{$statusLabelBgShade});
+  }
+  &.purple {
+    --status-label-text-color: var(--purple-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--purple-#{$statusLabelBgShade});
+  }
+  &.fuchsia {
+    --status-label-text-color: var(--fuchsia-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--fuchsia-#{$statusLabelBgShade});
+  }
+  &.pink {
+    --status-label-text-color: var(--pink-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--pink-#{$statusLabelBgShade});
+  }
+  &.rose {
+    --status-label-text-color: var(--rose-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--rose-#{$statusLabelBgShade});
+  }
+  &.light {
+    --status-label-text-color: var(--gray-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--gray-#{$statusLabelBgShade});
+  }
+  &.gray {
+    --status-label-text-color: var(--gray-#{$statusLabelColorShade});
+    --status-label-bg-color: var(--gray-#{$statusLabelBgShade});
+  }
+}
+
+.card.sel,
+li.sel .card,
+table.data tbody tr:not(.disabled).sel,
+table.data tbody tr:not(.disabled).active-drop-target {
+  .status-label.gray {
+    --status-label-bg-color: var(--white);
+
+    &:before {
+      opacity: 0.075;
+    }
+  }
+}
+
+/* colors */
 .icon,
 .cp-icon,
 [data-icon],
@@ -4385,7 +4788,7 @@ ul.tree,
     --icon-color: var(--emerald-500);
   }
   &.teal {
-    --icon-color: var(--teal-500);
+    --icon-color: var(--enabled-color);
   }
   &.cyan {
     --icon-color: var(--cyan-500);
@@ -5181,10 +5584,6 @@ $min2ColWidth: 400px;
           & > .timewrapper {
             width: 45%;
           }
-
-          & > .clear-btn {
-            @include margin-right(-24px);
-          }
         }
 
         & > .datewrapper,
@@ -5359,14 +5758,23 @@ $min2ColWidth: 400px;
     --neg-padding: -14px;
   }
 
-  &:not(.so-mobile) {
+  &.so-lp {
     border-radius: var(--large-border-radius);
   }
 
   &:not(.so-mobile):not(.so-lp) {
-    top: 5px;
-    width: calc(55% - 5px);
-    height: calc(100% - 10px);
+    @include border-radius(
+      var(--large-border-radius),
+      0,
+      0,
+      var(--large-border-radius)
+    );
+  }
+
+  &:not(.so-mobile):not(.so-lp) {
+    top: 0;
+    width: 55%;
+    height: 100%;
 
     @media screen and (prefers-reduced-motion: no-preference) {
       body.ltr & {
@@ -5385,6 +5793,7 @@ $min2ColWidth: 400px;
     padding-left: var(--padding);
     padding-right: var(--padding);
     z-index: 2;
+    border-radius: 0;
 
     & > .so-toolbar {
       display: flex;
@@ -6049,9 +6458,7 @@ $min2ColWidth: 400px;
 
 /* recent activity container */
 .activity-container {
-  &:not(:last-child) {
-    @include margin-right(var(--s));
-  }
+  margin-inline: var(--s);
 
   ul {
     display: flex;
@@ -6596,8 +7003,10 @@ $min2ColWidth: 400px;
       &:not(.light):not(.gray):not(.red):not(.orange):not(.amber):not(.yellow) {
         &:not(.lime):not(.green):not(.emerald):not(.teal):not(.cyan):not(.sky) {
           &:not(.blue):not(.indigo):not(.violet):not(.purple):not(.fuchsia) {
-            &:not(.pink):not(.rose):not(.grey):not(.black) {
-              border-color: currentColor;
+            &:not(.pink):not(.rose):not(.grey):not(.black):not(.disabled) {
+              &:not(.inactive) {
+                border-color: currentColor;
+              }
             }
           }
         }
@@ -6618,12 +7027,10 @@ $min2ColWidth: 400px;
   & > a:not(.crumb-link),
   & > .menu-item,
   & > .menu-option {
+    --focus-ring: var(--inner-focus-ring);
+
     &:hover {
       @include disclosure-link-hover-styles;
-    }
-
-    @include focus-styles {
-      box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
     }
   }
 }
@@ -6656,15 +7063,6 @@ $min2ColWidth: 400px;
       position: absolute;
       top: 0;
       @include right(5px);
-    }
-  }
-
-  // todo: why are body.ltr and body.rtl needed here?
-  body.ltr &,
-  body.rtl & {
-    &.elementselect .chip {
-      float: none !important;
-      display: inline-block;
     }
   }
 }
@@ -6850,6 +7248,58 @@ textarea.text.fullwidth {
   .selectize.multiselect .selectize-input.focus {
     position: relative;
     z-index: 2;
+  }
+}
+
+.link-input {
+  container-type: inline-size;
+
+  & > .flex {
+    & > div {
+      &.text-link {
+        border: 1px solid transparentize($inputColor, 0.75);
+        border-radius: var(--large-border-radius);
+        cursor: text;
+
+        &:has(.text:focus) {
+          box-shadow: var(--focus-ring);
+        }
+
+        & > .text,
+        & > .chip {
+          margin-top: -1px;
+          margin-bottom: -1px;
+          background-color: transparent;
+        }
+
+        & > .text {
+          border: none;
+          margin-left: -1px;
+          margin-right: -1px;
+
+          &:focus {
+            position: relative;
+          }
+
+          &:focus {
+            box-shadow: none !important;
+          }
+        }
+      }
+    }
+  }
+
+  @container (max-width: 399px) {
+    & {
+      flex-direction: column;
+      align-items: start;
+
+      & > .select,
+      & > .select select,
+      & > div > .text {
+        width: 100%;
+      }
+    }
   }
 }
 
@@ -8268,6 +8718,7 @@ body.licensing-issues {
 
   .flex-fields {
     --row-gap: var(--m) !important;
+    --padding: var(--m);
   }
 
   // no margin when a .field comes after a hidden item.

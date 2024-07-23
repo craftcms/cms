@@ -250,6 +250,8 @@ export default Base.extend(
 
         this.$shade.velocity('stop');
         this.$shade.css('opacity', 0).hide();
+
+        this.onFadeOut();
       }
     },
 

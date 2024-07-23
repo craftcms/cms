@@ -227,7 +227,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
         // Auto-focus the Search box
         if (!Garnish.isMobileBrowser(true)) {
-          this.elementIndex.$search.trigger('focus');
+          this.elementIndex.$search.focus();
         }
       }
 
@@ -251,12 +251,16 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     updateSelectBtnState: function () {
       if (this.$selectBtn) {
-        if (this.hasSelection()) {
+        if (this.shouldEnableSelectBtn()) {
           this.enableSelectBtn();
         } else {
           this.disableSelectBtn();
         }
       }
+    },
+
+    shouldEnableSelectBtn: function () {
+      return this.hasSelection();
     },
 
     hasSelection: function () {
@@ -447,6 +451,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           disabledElementIds: this.settings.disabledElementIds,
           selectable: true,
           multiSelect: this.settings.multiSelect,
+          waitForDoubleClicks: true,
           buttonContainer: this.$secondaryButtons,
           onSelectionChange: () => {
             if (this.elementIndex) {

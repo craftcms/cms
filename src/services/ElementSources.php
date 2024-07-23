@@ -12,13 +12,18 @@ use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\db\CoalesceColumnsExpression;
+use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
+use Illuminate\Support\Collection;
 use yii\base\Component;
+use yii\db\Expression;
 
 /**
  * The Element Sources service provides APIs for managing element indexes.
@@ -127,6 +132,24 @@ class ElementSources extends Component
             }
         } else {
             $sources = $nativeSources;
+        }
+
+        // Normalize the site IDs
+        foreach ($sources as &$source) {
+            if (isset($source['sites'])) {
+                $sitesService = null;
+                $source['sites'] = array_filter(array_map(function(int|string $siteId) use (&$sitesService): ?int {
+                    if (is_string($siteId) && StringHelper::isUUID($siteId)) {
+                        $sitesService ??= Craft::$app->getSites();
+                        try {
+                            return $sitesService->getSiteByUid($siteId)->id;
+                        } catch (SiteNotFoundException) {
+                            return null;
+                        }
+                    }
+                    return (int)$siteId;
+                }, $source['sites']));
+            }
         }
 
         return $sources;
@@ -284,16 +307,40 @@ class ElementSources extends Component
      */
     public function getSourceSortOptions(string $elementType, string $sourceKey): array
     {
-        $event = new DefineSourceSortOptionsEvent([
-            'elementType' => $elementType,
-            'source' => $sourceKey,
-        ]);
-
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
-        $event->sortOptions = array_merge($event->sortOptions, $this->getSortOptionsForFieldLayouts($fieldLayouts));
+        $sortOptions = $this->getSortOptionsForFieldLayouts($fieldLayouts);
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
-        return $event->sortOptions;
+        // Fire a 'defineSourceSortOptions' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS)) {
+            $event = new DefineSourceSortOptionsEvent([
+                'elementType' => $elementType,
+                'source' => $sourceKey,
+                'sortOptions' => $sortOptions,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
+            $sortOptions = $event->sortOptions;
+        }
+
+        // Combine duplicate attributes. If any attributes map to multiple sort
+        // options and each option has a string orderBy value, cmobine them
+        // with a CoalesceColumnsExpression.
+        return Collection::make($sortOptions)
+            ->groupBy('attribute')
+            ->map(function(Collection $group) {
+                $orderBys = $group->pluck('orderBy');
+                if ($orderBys->doesntContain(fn($orderBy) => is_string($orderBy))) {
+                    return $group->first();
+                }
+                if ($orderBys->count() === 1) {
+                    $expression = new Expression($orderBys->first());
+                } else {
+                    $expression = new CoalesceColumnsExpression($orderBys->all());
+                }
+                return array_merge($group->first(), [
+                    'orderBy' => $expression,
+                ]);
+            })
+            ->all();
     }
 
     /**
@@ -306,16 +353,12 @@ class ElementSources extends Component
      */
     public function getSortOptionsForFieldLayouts(array $fieldLayouts): array
     {
-        $processedFieldIds = [];
         $sortOptions = [];
 
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
-                if (
-                    $field instanceof SortableFieldInterface &&
-                    !isset($processedFieldIds[$field->id])
-                ) {
+                if ($field instanceof SortableFieldInterface) {
                     $sortOption = $field->getSortOption();
                     if (!isset($sortOption['attribute'])) {
                         $sortOption['attribute'] = $sortOption['orderBy'];
@@ -324,7 +367,6 @@ class ElementSources extends Component
                         $sortOption['defaultDir'] = 'asc';
                     }
                     $sortOptions[] = $sortOption;
-                    $processedFieldIds[$field->id] = true;
                 }
             }
         }
@@ -342,16 +384,25 @@ class ElementSources extends Component
      */
     public function getSourceTableAttributes(string $elementType, string $sourceKey): array
     {
-        $event = new DefineSourceTableAttributesEvent([
-            'elementType' => $elementType,
-            'source' => $sourceKey,
-        ]);
+        if ($sourceKey === '__IMP__') {
+            return [];
+        }
 
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
-        $event->attributes = array_merge($event->attributes, $this->getTableAttributesForFieldLayouts($fieldLayouts));
+        $attributes = $this->getTableAttributesForFieldLayouts($fieldLayouts);
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
-        return $event->attributes;
+        // Fire a 'defineSourceTableAttributes' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES)) {
+            $event = new DefineSourceTableAttributesEvent([
+                'elementType' => $elementType,
+                'source' => $sourceKey,
+                'attributes' => $attributes,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
+            return $event->attributes;
+        }
+
+        return $attributes;
     }
 
     /**

@@ -570,7 +570,8 @@ $menuBorderRadius: $mediumBorderRadius;
     }
 
     &:active,
-    &.active {
+    &.active,
+    &[aria-expanded='true'] {
       background-color: darken($grey200, 10%);
     }
   }
@@ -590,10 +591,10 @@ $menuBorderRadius: $mediumBorderRadius;
   padding-left: 0;
   padding-right: 0;
 
-  &:not(:hover):not(:active):not(.active) {
+  &:not(:hover):not(:active):not(.active):not([aria-expanded='true']) {
     background-color: transparent;
   }
-  &:not(:active):not(.active):hover {
+  &:not(:active):not(.active):not([aria-expanded='true']):hover {
     background-color: transparentize($grey300, 0.85);
   }
 }
@@ -642,6 +643,8 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin menu-item-active-styles {
   color: var(--white) !important;
+  --medium-text-color: rgba(255, 255, 255, 0.8);
+  --light-text-color: rgba(255, 255, 255, 0.8);
   background-color: var(--dark-sel-color);
 
   svg {

@@ -111,14 +111,13 @@ abstract class ElementMutationResolver extends MutationResolver
             unset($arguments[$attribute]);
         }
 
+        // Fire a 'beforeMutationPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_POPULATE_ELEMENT)) {
             $event = new MutationPopulateElementEvent([
                 'arguments' => $arguments,
                 'element' => $element,
             ]);
-
             $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
-
             $arguments = $event->arguments;
             $element = $event->element;
         }
@@ -134,12 +133,12 @@ abstract class ElementMutationResolver extends MutationResolver
             }
         }
 
+        // Fire an 'afterMutationPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
             $event = new MutationPopulateElementEvent([
                 'arguments' => $arguments,
                 'element' => $element,
             ]);
-
             $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, $event);
             $element = $event->element;
         }

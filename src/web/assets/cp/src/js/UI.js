@@ -102,6 +102,12 @@ Craft.ui = {
     if (!config.size) {
       $input.addClass('fullwidth');
     }
+    if (config.describedBy) {
+      $input.attr('aria-describedby', config.describedBy);
+    }
+    if (config.inputAttributes) {
+      this.addAttributes($input, config.inputAttributes);
+    }
 
     if (config.showCharsLeft && config.maxlength) {
       $input
@@ -1240,6 +1246,38 @@ Craft.ui = {
     return $field;
   },
 
+  addAttributes: function ($element, attributes) {
+    for (const name in attributes) {
+      const value = attributes[name];
+      if (typeof value === 'boolean') {
+        if (value) {
+          $element.attr(name, '');
+        }
+      } else if ($.isPlainObject(value)) {
+        if (['aria', 'data', 'data-ng', 'ng'].includes(name)) {
+          for (const n in value) {
+            let v = value[n];
+            if (typeof v === 'object') {
+              $element.attr(`${name}-${n}`, JSON.stringify(v));
+            } else if (typeof v === 'boolean') {
+              if (v) {
+                $element.attr(`${name}-${n}`, '');
+              }
+            } else if (v !== null) {
+              $element.attr(`${name}-${n}`, v);
+            }
+          }
+        } else if (name === 'class') {
+          $element.addClass(value);
+        } else if (name === 'style') {
+          $element.css(value);
+        } else {
+          $element.attr(name, value);
+        }
+      }
+    }
+  },
+
   createErrorList: function (errors, fieldErrorsId) {
     const $list = $('<ul class="errors" tabindex="-1"/>');
     if (fieldErrorsId) {
@@ -1264,8 +1302,10 @@ Craft.ui = {
       return;
     }
 
+    this.clearErrorsFromField($field);
+
     $field.addClass('has-errors');
-    $field.children('.input').addClass('errors');
+    $field.children('.input').addClass('errors prevalidate');
 
     const fieldId = $field.attr('id');
     let fieldErrorsId = '';
@@ -1284,7 +1324,7 @@ Craft.ui = {
 
   clearErrorsFromField: function ($field) {
     $field.removeClass('has-errors');
-    $field.children('.input').removeClass('errors');
+    $field.children('.input').removeClass('errors prevalidate');
     $field.children('ul.errors').remove();
   },
 
@@ -1295,7 +1335,7 @@ Craft.ui = {
   setFocusOnErrorSummary: function ($body) {
     const errorSummaryContainer = $body.find('.error-summary');
     if (errorSummaryContainer.length > 0) {
-      errorSummaryContainer.trigger('focus');
+      errorSummaryContainer.focus();
 
       // start listening for clicks on summary errors
       errorSummaryContainer.find('a').on('click', (ev) => {
@@ -1362,11 +1402,11 @@ Craft.ui = {
       // focus on the field container that contains the error
       let $field = $fieldErrorsContainer.parents('.field:first');
       if ($field.is(':visible')) {
-        $field.attr('tabindex', '-1').trigger('focus');
+        $field.attr('tabindex', '-1').focus();
       } else {
         // wait in case the field isn't yet visible; (MatrixInput.expand() has a timeout of 200)
         setTimeout(() => {
-          $field.attr('tabindex', '-1').trigger('focus');
+          $field.attr('tabindex', '-1').focus();
         }, 201);
       }
     }

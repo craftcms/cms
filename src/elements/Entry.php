@@ -325,19 +325,17 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public static function modifyCustomSource(array $config): array
     {
-        try {
-            /** @var EntryCondition $condition */
-            $condition = Craft::$app->getConditions()->createCondition($config['condition']);
-        } catch (InvalidConfigException) {
+        if (empty($config['condition']['conditionRules'])) {
             return $config;
         }
 
-        $rules = $condition->getConditionRules();
-
         // see if it's limited to one section
         /** @var SectionConditionRule|null $sectionRule */
-        $sectionRule = ArrayHelper::firstWhere($rules, fn($rule) => $rule instanceof SectionConditionRule);
-        $sectionOptions = $sectionRule?->getValues();
+        $sectionRule = ArrayHelper::firstWhere(
+            $config['condition']['conditionRules'],
+            fn(array $rule) => $rule['class'] === SectionConditionRule::class,
+        );
+        $sectionOptions = $sectionRule['values'] ?? null;
 
         if ($sectionOptions && count($sectionOptions) === 1) {
             $section = Craft::$app->getEntries()->getSectionByUid(reset($sectionOptions));
@@ -348,8 +346,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // see if it specifies any entry types
         /** @var TypeConditionRule|null $entryTypeRule */
-        $entryTypeRule = ArrayHelper::firstWhere($rules, fn($rule) => $rule instanceof TypeConditionRule);
-        $entryTypeOptions = $entryTypeRule?->getValues();
+        $entryTypeRule = ArrayHelper::firstWhere(
+            $config['condition']['conditionRules'],
+            fn(array $rule) => $rule['class'] === TypeConditionRule::class,
+        );
+        $entryTypeOptions = $entryTypeRule['values'] ?? null;
 
         if ($entryTypeOptions) {
             $entryType = Craft::$app->getEntries()->getEntryTypeByUid(reset($entryTypeOptions));
@@ -584,25 +585,18 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected static function defineTableAttributes(): array
     {
-        $attributes = [
+        $attributes = array_merge(parent::defineTableAttributes(), [
             'section' => ['label' => Craft::t('app', 'Section')],
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'authors' => ['label' => Craft::t('app', 'Authors')],
-            'slug' => ['label' => Craft::t('app', 'Slug')],
             'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
             'parent' => ['label' => Craft::t('app', 'Parent')],
-            'uri' => ['label' => Craft::t('app', 'URI')],
             'postDate' => ['label' => Craft::t('app', 'Post Date')],
             'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
-            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
-            'id' => ['label' => Craft::t('app', 'ID')],
-            'uid' => ['label' => Craft::t('app', 'UID')],
-            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
             'revisionNotes' => ['label' => Craft::t('app', 'Revision Notes')],
             'revisionCreator' => ['label' => Craft::t('app', 'Last Edited By')],
             'drafts' => ['label' => Craft::t('app', 'Drafts')],
-        ];
+        ]);
 
         // Hide Author & Last Edited By from Craft Solo
         if (Craft::$app->edition === CmsEdition::Solo) {
@@ -617,7 +611,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected static function defineDefaultTableAttributes(string $source): array
     {
-        $attributes = [];
+        $attributes = ['status'];
 
         if ($source === '*') {
             $attributes[] = 'section';
@@ -804,7 +798,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         $names = array_flip($this->traitAttributes());
         unset($names['deletedWithEntryType']);
-        unset($names['saveOwnership']);
         $names['authorId'] = true;
         $names['authorIds'] = true;
         $names['typeId'] = true;
@@ -918,6 +911,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         if (isset($this->fieldId)) {
             return $this->getField()->getSupportedSitesForElement($this);
+        }
+
+        if (!isset($this->sectionId)) {
+            throw new InvalidConfigException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
         }
 
         $section = $this->getSection();
@@ -1035,6 +1032,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         if (isset($this->fieldId)) {
             return $this->getField()->getUriFormatForElement($this);
+        }
+
+        if (!isset($this->sectionId)) {
+            throw new InvalidConfigException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
         }
 
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
@@ -1371,9 +1372,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // Fire a 'defineEntryTypes' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
-            $event = new DefineEntryTypesEvent([
-                'entryTypes' => $entryTypes,
-            ]);
+            $event = new DefineEntryTypesEvent(['entryTypes' => $entryTypes]);
             $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
             $entryTypes = $event->entryTypes;
         }
@@ -2257,11 +2256,9 @@ JS;
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
         }
 
+        // Fire a 'defineParentSelectionCriteria' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA)) {
-            // Fire a defineParentSelectionCriteria event
-            $event = new ElementCriteriaEvent([
-                'criteria' => $parentOptionCriteria,
-            ]);
+            $event = new ElementCriteriaEvent(['criteria' => $parentOptionCriteria]);
             $this->trigger(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA, $event);
             return $event->criteria;
         }
@@ -2330,8 +2327,15 @@ JS;
      */
     public function beforeValidate(): bool
     {
-        if (!isset($this->_authorIds) && !isset($this->fieldId) && $this->getSection()->type !== Section::TYPE_SINGLE) {
-            $this->setAuthor(Craft::$app->getUser()->getIdentity());
+        if (
+            (!isset($this->_authorIds) || empty($this->_authorIds)) &&
+            !isset($this->fieldId) &&
+            $this->getSection()->type !== Section::TYPE_SINGLE
+        ) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if ($user) {
+                $this->setAuthor($user);
+            }
         }
 
         if (

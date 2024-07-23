@@ -97,7 +97,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         this.addListener(Garnish.$win, 'mousedown', (ev) => {
           if (
             !this.$container.is(ev.target) &&
-            !this.$container.find(ev.target).length
+            !this.$container.find(ev.target).length &&
+            !$(ev.target).closest('.menu').length
           ) {
             this.elementSelect.deselectAll();
           }
@@ -118,7 +119,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getElements: function () {
-      return this.$elementsContainer.find('> li > .element');
+      if (this.$elementsContainer.hasClass('structure')) {
+        return this.$elementsContainer.find('> li .row .element');
+      } else {
+        return this.$elementsContainer.find('> li > .element');
+      }
     },
 
     getAddElementsBtn: function () {
@@ -139,7 +144,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       return {
         multi: this.settings.sortable,
         filter: (target) => {
-          return !$(target).closest('a[href],button').length;
+          return !$(target).closest('a[href],button,[role=button]').length;
         },
         // prevent keyboard focus since element selection is only needed for drag-n-drop
         makeFocusable: false,
@@ -246,7 +251,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     updateButtonContainer: function () {
       const $container =
         this.$addElementBtn.length && this.$addElementBtn.parent('.flex');
-      if ($container && $container.length) {
+      if ($container?.length) {
         if ($container.children(':not(.hidden)').length) {
           $container.removeClass('hidden');
         } else {
@@ -267,12 +272,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
     },
 
+    /** @deprecated */
     focusLastRemoveBtn: function () {
-      const $removeBtns = this.$container.find('.delete');
+      this.focusLastActionBtn();
+    },
 
-      if (!$removeBtns.length) return;
-
-      $removeBtns.last()[0].focus();
+    focusLastActionBtn: function () {
+      this.$container.find('.action-btn').last().focus();
     },
 
     resetElements: function () {
@@ -434,7 +440,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         icon: 'remove',
         label: Craft.t('app', 'Remove'),
         callback: () => {
-          this.removeElement($element);
+          // If the element is selected, remove *all* the selected elements
+          if (this.elementSelect?.isSelected($element)) {
+            this.removeElement(this.elementSelect.getSelectedItems());
+          } else {
+            this.removeElement($element);
+          }
         },
         destructive: true,
       });
@@ -539,6 +550,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
     },
 
+    /**
+     * Removes elements from the field value, without actually removing their DOM nodes.
+     * @param $elements
+     */
     removeElements: function ($elements) {
       if (this.settings.selectable) {
         this.elementSelect.removeItems($elements);
@@ -569,10 +584,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         const lastElementIndex = this.$elements.index($elements.last());
         $nextElement = this.$elements.eq(lastElementIndex + 1);
       }
-      if ($nextElement.length) {
+      if ($nextElement?.length) {
         $nextElement.focus();
       } else {
-        this.focusNextLogicalElement();
+        setTimeout(() => {
+          this.focusNextLogicalElement();
+        }, 200);
       }
 
       this.$elements = this.$elements.not($elements);
@@ -581,56 +598,61 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.onRemoveElements();
     },
 
-    removeElement: function ($element) {
+    /**
+     * Completely removes an element(s) from the UI and field value.
+     * @param $elements
+     */
+    removeElement: function ($elements) {
       if (this.settings.maintainHierarchy) {
-        // Find any descendants this element might have
-        const $allElements = $element.add(
-          $element.parent().siblings('ul').find('.element')
-        );
+        // Find any descendants the elements have
+        let $descendants = $();
+        for (let i = 0; i < $elements.length; i++) {
+          $descendants = $descendants.add(
+            $elements.eq(i).parent().siblings('ul').find('.element')
+          );
+        }
+        $elements = $elements.add($descendants);
+      }
 
-        // Remove any inputs from the form data
-        $('[name]', $allElements).removeAttr('name');
+      // Remove any inputs from the form data
+      $('[name]', $elements).removeAttr('name');
 
-        // Remove our record of them all at once
-        this.removeElements($allElements);
+      // Remove our record of them all at once
+      this.removeElements($elements);
 
-        // Animate them away one at a time
-        for (let i = 0; i < $allElements.length; i++) {
-          this._animateStructureElementAway($allElements, i);
+      if (this.settings.maintainHierarchy) {
+        for (let i = 0; i < $elements.length; i++) {
+          this._animateStructureElementAway($elements, i);
         }
       } else {
-        // Remove any inputs from the form data
-        $('[name]', $element).removeAttr('name');
-        this.removeElements($element);
-        this.animateElementAway($element, () => {
-          $element.parent('li').remove();
-        });
+        for (let i = 0; i < $elements.length; i++) {
+          const $element = $elements.eq(i);
+          const $li = $element.parent('li');
+          this.animateElementAway($element);
+          $li.remove();
+        }
       }
     },
 
     animateElementAway: function ($element, callback) {
-      $element.css('z-index', 0);
+      const offset = $element.offset();
+      $element.appendTo(Garnish.$bod).css({
+        'z-index': 0,
+        position: 'absolute',
+        top: offset.top,
+        left: offset.left,
+      });
 
-      var animateCss = {
+      const animateCss = {
         opacity: -1,
+        left: offset.left + 100 * (Craft.orientation === 'ltr' ? -1 : 1),
       };
-      animateCss['margin-' + Craft.left] = -(
-        $element.outerWidth() + parseInt($element.css('margin-' + Craft.right))
-      );
-
-      if (
-        ['list', 'cards'].includes(this.settings.viewMode) ||
-        this.$elements.length === 0
-      ) {
-        animateCss['margin-bottom'] = -(
-          $element.outerHeight() + parseInt($element.css('margin-bottom'))
-        );
-      }
 
       $element.velocity(
         animateCss,
         Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
         () => {
+          $element.remove();
           if (callback) {
             callback();
           }
@@ -691,9 +713,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getSelectedElementIds: function () {
-      var ids = [];
+      const ids = [];
 
-      for (var i = 0; i < this.$elements.length; i++) {
+      for (let i = 0; i < this.$elements.length; i++) {
         ids.push(this.$elements.eq(i).data('id'));
       }
 
@@ -975,10 +997,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       // Is this the last one?
       if (i === $allElements.length - 1) {
+        const $li = $allElements.first().parent().parent();
+        const $ul = $li.parent();
         callback = () => {
-          const $li = $allElements.first().parent().parent();
-          const $ul = $li.parent();
-
           if ($ul[0] === this.$elementsContainer[0] || $li.siblings().length) {
             $li.remove();
           } else {

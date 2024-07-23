@@ -125,4 +125,20 @@ class CraftConnector extends Yii2
         Db::reset();
         Session::reset();
     }
+
+    /**
+     * Closes the db connection after initializing Craft. The Yii2 module will
+     * try to initialize transaction listeners before each test. If we don't
+     * close the connection first, those listeners will never get picked up.
+     * We'll open the connection after all of the transaction listeners are
+     * registered.
+     *
+     * @inheritDoc
+     */
+    public function startApp(\yii\log\Logger $logger = null)
+    {
+        parent::startApp($logger);
+
+        \Craft::$app->db->close();
+    }
 }

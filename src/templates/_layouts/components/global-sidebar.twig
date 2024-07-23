@@ -7,6 +7,7 @@
     {% set external = item.external ?? false %}
 
     {% set linkAttributes = {
+        id: (item.id ?? null) ? "#{item.id}-link" : null,
         href: (item.url ?? false) ? url(item.url) : null,
         class: [
             'sidebar-action',
@@ -19,14 +20,14 @@
     {% tag 'a' with linkAttributes %}
         <span class="sidebar-action__prefix">
             {% if showIcon %}
-            <span class="nav-icon" aria-hidden="true">
-                {%- if item.icon is defined -%}
-                    {{ iconSvg(item.icon) }}
-                {%- elseif item.fontIcon is defined -%}
-                    <span data-icon="{{ item.fontIcon }}"></span>
-                {%- else -%}
-                    {% include "_includes/fallback-icon.svg.twig" with { label: item.label } %}
-                {%- endif -%}
+                <span class="nav-icon" aria-hidden="true">
+                    {%- if item.icon is defined -%}
+                        {{ iconSvg(item.icon) }}
+                    {%- elseif item.fontIcon is defined -%}
+                        <span data-icon="{{ item.fontIcon }}"></span>
+                    {%- else -%}
+                        {% include "_includes/fallback-icon.svg.twig" with { label: item.label } %}
+                    {%- endif -%}
                 </span>
             {% endif %}
         </span>
@@ -34,7 +35,7 @@
         <span class="sidebar-action__label">
             <span class="label">{{ item.label }}</span>
             {% if external %}
-              {{ links.externalLinkIcon() }}
+                {{ links.externalLinkIcon() }}
             {% endif %}
         </span>
 
@@ -69,25 +70,34 @@
                         {% set itemAttributes = {
                             id: item.id,
                             class: [
-                                'nav-item',
-                                item.sel ? 'sel',
                                 item.subnav ? 'has-subnav'
                             ],
                         } %}
                         <li {{ attr(itemAttributes) }}>
-                            {{ _self.action(item) }}
+                            <div class="nav-item {% if item.sel %}sel{% endif %}">
+                                {{ _self.action(item) }}
+
+                                {% if item.subnav %}
+                                    <craft-disclosure class="nav-item__trigger">
+                                        <button
+                                            type="button"
+                                            class="btn menubtn hairline"
+                                            aria-controls="{{ item.id }}-subnav"
+                                           aria-describedby="{{ item.id }}-link" aria-expanded="{{ item.sel ?  'true' : 'false' }}"
+                                        >
+                                            <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
+                                        </button>
+                                    </craft-disclosure>
+                                {% endif %}
+                            </div>
 
                             {% if item.subnav %}
-                                <craft-disclosure class="nav-item__trigger">
-                                  <button type="button" class="btn menubtn hairline" aria-controls="{{ item.id }}-subnav" aria-expanded="{{ item.sel ?  'true' : 'false' }}">
-                                      <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
-                                  </button>
-                                </craft-disclosure>
                                 <ul class="nav-item__subnav {{ item.sel ? 'is-open' : '' -}}" id="{{ item.id }}-subnav">
                                     {% for itemId, item in item.subnav %}
                                         {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId -%}
 
-                                        <li class="nav-item nav-item--sub">
+                                        <li>
+                                            <div class="nav-item nav-item--sub {% if itemIsSelected %}sel{% endif %}">
                                             {{ _self.action(item|merge({
                                                 linkAttributes:  {
                                                     class: ['sidebar-action--sub'],
@@ -96,6 +106,7 @@
                                                     },
                                                 }
                                             }), itemIsSelected, false, ) }}
+                                            </div>
                                         </li>
                                     {% endfor %}
                                 </ul>
@@ -111,7 +122,11 @@
                 {% set toggleContent %}
                     <span class="sidebar-action__prefix">
                         <span class="nav-icon" aria-hidden="true" id="sidebar-toggle-icon">
-                            {{ iconSvg('angle-right') }}
+                            {% if craft.app.locale.getOrientation() == 'rtl' %}
+                                {{ iconSvg('angle-left') }}
+                            {% else %}
+                                {{ iconSvg('angle-right') }}
+                            {% endif %}
                         </span>
                     </span>
                     <span class="sidebar-action__label">
@@ -133,10 +148,11 @@
             {% if currentUser.admin and devMode %}
                 {% set devModeText = 'Craft CMS is running in Dev Mode.'|t('app') %}
                 <div id="devmode">
-                    {{ tag('span', {
+                    {% tag 'span' with {
                         class: 'visually-hidden',
-                        text: devModeText
-                    }) }}
+                    } %}
+                        {{ devModeText|raw }}
+                    {% endtag %}
                 </div>
             {% endif %}
         </div>

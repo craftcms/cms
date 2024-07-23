@@ -22,6 +22,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Search;
@@ -60,6 +61,7 @@ class AppController extends Controller
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'health-check' => self::ALLOW_ANONYMOUS_LIVE,
+        'resource-js' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -761,17 +763,20 @@ class AppController extends Controller
                 ->id($id)
                 ->fixedOrder()
                 ->drafts(null)
-                ->provisionalDrafts(null)
                 ->revisions(null)
                 ->siteId($siteId)
                 ->status(null)
                 ->all();
 
+            // See if there are any provisional drafts we should swap these out with
+            ElementHelper::swapInProvisionalDrafts($elements);
+
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
+                    $id = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
                     /** @var 'chip'|'card' $ui */
                     $ui = $instance['ui'] ?? 'chip';
-                    $elementHtml[$element->id][$key] = match ($ui) {
+                    $elementHtml[$id][$key] = match ($ui) {
                         'chip' => Cp::elementChipHtml($element, $instance),
                         'card' => Cp::elementCardHtml($element, $instance),
                     };
@@ -863,11 +868,12 @@ class AppController extends Controller
         $this->requireAcceptsJson();
 
         $search = $this->request->getRequiredBodyParam('search');
+        $freeOnly = (bool)($this->request->getBodyParam('freeOnly') ?? false);
         $noSearch = $search === '';
 
         if ($noSearch) {
             $cache = Craft::$app->getCache();
-            $cacheKey = 'icon-picker-options-list-html';
+            $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
             $listHtml = $cache->get($cacheKey);
             if ($listHtml !== false) {
                 return $this->asJson([
@@ -885,6 +891,10 @@ class AppController extends Controller
         $scores = [];
 
         foreach ($icons as $name => $icon) {
+            if ($freeOnly && $icon['pro']) {
+                continue;
+            }
+
             if ($searchTerms) {
                 $score = $this->matchTerms($searchTerms, $icon['name']) * 5 + $this->matchTerms($searchTerms, $icon['terms']);
                 if ($score === 0) {

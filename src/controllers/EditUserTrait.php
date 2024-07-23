@@ -84,13 +84,9 @@ trait EditUserTrait
 
         $screens = [
             self::SCREEN_PROFILE => ['label' => Craft::t('app', 'Profile')],
-            self::SCREEN_ADDRESSES => ['label' => Craft::t('app', 'Addresses')],
         ];
 
-        if (
-            Craft::$app->edition === CmsEdition::Pro &&
-            ($currentUser->can('assignUserPermissions') || $currentUser->canAssignUserGroups())
-        ) {
+        if ($this->showPermissionsScreen()) {
             $screens[self::SCREEN_PERMISSIONS] = ['label' => Craft::t('app', 'Permissions')];
         }
 
@@ -98,14 +94,18 @@ trait EditUserTrait
             $screens[self::SCREEN_PREFERENCES] = ['label' => Craft::t('app', 'Preferences')];
         }
 
-        $event = new DefineEditUserScreensEvent([
-            'currentUser' => $currentUser,
-            'editedUser' => $user,
-            'screens' => $screens,
-        ]);
-        Event::trigger(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, $event);
+        $screens[self::SCREEN_ADDRESSES] = ['label' => Craft::t('app', 'Addresses')];
 
-        $screens = $event->screens;
+        // Fire a 'defineEditScreens' event
+        if (Event::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS)) {
+            $event = new DefineEditUserScreensEvent([
+                'currentUser' => $currentUser,
+                'editedUser' => $user,
+                'screens' => $screens,
+            ]);
+            Event::trigger(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, $event);
+            $screens = $event->screens;
+        }
 
         if ($user->getIsCurrent()) {
             $screens[self::SCREEN_PASSWORD] = ['label' => Craft::t('app', 'Password & Verification')];
@@ -116,11 +116,19 @@ trait EditUserTrait
             throw new ForbiddenHttpException('User not authorized to perform this action.');
         }
 
+        $pageName = $screens[$screen]["label"];
         $response = $this->asCpScreen();
         if ($user->getIsCurrent()) {
             $response->title(Craft::t('app', 'My Account'));
+            $response->docTitle($pageName);
         } else {
-            $response->title($user->getUiLabel());
+            $username = $user->getUiLabel();
+            $extendedTitle = Craft::t('app', 'User {page}', [
+                'page' => $pageName,
+            ]);
+            $docTitle = "$username - $extendedTitle";
+            $response->title($username);
+            $response->docTitle($docTitle);
         }
 
         $navItems = [];
@@ -157,6 +165,12 @@ trait EditUserTrait
                 ],
             ]);
 
+            $response->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => $this->editUserScreenUrl($user, $screen),
+                'shortcut' => true,
+                'retainScroll' => true,
+            ]);
+
             $response->actionMenuItems(fn() => array_filter(
                 $user->getActionMenuItems(),
                 fn(array $item) => !str_starts_with($item['id'] ?? '', 'action-edit-'),
@@ -166,6 +180,19 @@ trait EditUserTrait
         }
 
         return $response;
+    }
+
+    private function showPermissionsScreen(): bool
+    {
+        $currentUser = static::currentUser();
+        return (
+            Craft::$app->edition->value >= CmsEdition::Team->value &&
+            (
+                (Craft::$app->edition === CmsEdition::Team && $currentUser->admin) ||
+                (Craft::$app->edition === CmsEdition::Pro && $currentUser->can('assignUserPermissions')) ||
+                $currentUser->canAssignUserGroups()
+            )
+        );
     }
 
     private function editUserScreenUrl(User $user, string $screen): string

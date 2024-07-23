@@ -38,5 +38,7 @@
 </div>
 
 {% js %}
-  new Craft.IconPicker('#{{ id|namespaceInputId }}');
+  new Craft.IconPicker('#{{ id|namespaceInputId }}', {
+    freeOnly: {{ (freeOnly ?? false)|json_encode }},
+  });
 {% endjs %}

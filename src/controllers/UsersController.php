@@ -203,7 +203,13 @@ class UsersController extends Controller
      */
     public function actionLogin(): ?Response
     {
-        if (!$this->request->getIsPost()) {
+        if ($this->request->getIsGet()) {
+            // see if they're already logged in
+            $user = static::currentUser();
+            if ($user) {
+                return $this->_handleSuccessfulLogin($user);
+            }
+
             return null;
         }
 
@@ -302,19 +308,28 @@ class UsersController extends Controller
 
     private function _findLoginUser(string $loginName): ?User
     {
-        $event = new FindLoginUserEvent([
-            'loginName' => $loginName,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_FIND_LOGIN_USER, $event);
+        // Fire a 'beforeFindLoginUser' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_FIND_LOGIN_USER)) {
+            $event = new FindLoginUserEvent(['loginName' => $loginName]);
+            $this->trigger(self::EVENT_BEFORE_FIND_LOGIN_USER, $event);
+            $user = $event->user;
+        } else {
+            $user = null;
+        }
 
-        $user = $event->user ?? Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+        $user ??= Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
-        $event = new FindLoginUserEvent([
-            'loginName' => $loginName,
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_AFTER_FIND_LOGIN_USER, $event);
-        return $event->user;
+        // Fire an 'afterFindLoginUser' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_FIND_LOGIN_USER)) {
+            $event = new FindLoginUserEvent([
+                'loginName' => $loginName,
+                'user' => $user,
+            ]);
+            $this->trigger(self::EVENT_AFTER_FIND_LOGIN_USER, $event);
+            return $event->user;
+        }
+
+        return $user;
     }
 
     /**
@@ -941,6 +956,25 @@ class UsersController extends Controller
     }
 
     /**
+     * User index
+     *
+     * @param string|null $source
+     * @return Response
+     * @since 5.3.0
+     */
+    public function actionIndex(?string $source = null): Response
+    {
+        $this->requirePermission('editUsers');
+        return $this->renderTemplate('users/_index.twig', [
+            'title' => Craft::t('app', 'Users'),
+            'buttonLabel' => Craft::t('app', 'New {type}', [
+                'type' => User::lowerDisplayName(),
+            ]),
+            'source' => $source,
+        ]);
+    }
+
+    /**
      * Creates a new unpublished draft of a user and redirects to its edit page.
      *
      * @return Response
@@ -1000,6 +1034,12 @@ class UsersController extends Controller
             'element' => $element,
         ]);
 
+        if ($element->getIsUnpublishedDraft() && $this->showPermissionsScreen()) {
+            $this->response
+                ->submitButtonLabel(Craft::t('app', 'Create and set permissions'))
+                ->redirectUrl($this->editUserScreenUrl($element, self::SCREEN_PERMISSIONS));
+        }
+
         return $this->asEditUserScreen($element, self::SCREEN_PROFILE);
     }
 
@@ -1056,6 +1096,18 @@ class UsersController extends Controller
             'currentGroupIds' => array_map(fn(UserGroup $group) => $group->id, $user->getGroups()),
         ]);
 
+        if (!$user->getIsCredentialed() && static::currentUser()->can('administrateUsers')) {
+            $response->additionalButtonsHtml(
+                Html::button(Craft::t('app', 'Save and send activation email'), [
+                    'class' => ['btn', 'secondary', 'formsubmit'],
+                    'data' => [
+                        'param' => 'sendActivationEmail',
+                        'value' => '1',
+                    ],
+                ])
+            );
+        }
+
         return $response;
     }
 
@@ -1085,22 +1137,40 @@ class UsersController extends Controller
             }
         }
 
-        // Fire an 'beforeAssignGroupsAndPermissions' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-            $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                'user' => $user,
-            ]));
+        if (Craft::$app->edition === CmsEdition::Pro) {
+            // Fire an 'beforeAssignGroupsAndPermissions' event
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                    'user' => $user,
+                ]));
+            }
+
+            // Assign user groups and permissions if the current user is allowed to do that
+            $this->_saveUserGroups($user, $currentUser);
+            $this->_saveUserPermissions($user, $currentUser);
+
+            // Fire an 'afterAssignGroupsAndPermissions' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                    'user' => $user,
+                ]));
+            }
         }
 
-        // Assign user groups and permissions if the current user is allowed to do that
-        $this->_saveUserGroups($user, $currentUser);
-        $this->_saveUserPermissions($user, $currentUser);
-
-        // Fire an 'afterAssignGroupsAndPermissions' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-            $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                'user' => $user,
-            ]));
+        if (
+            !$user->getIsCredentialed() &&
+            $currentUser->can('administrateUsers') &&
+            $this->request->getBodyParam('sendActivationEmail')
+        ) {
+            try {
+                if (!Craft::$app->getUsers()->sendActivationEmail($user)) {
+                    $this->setFailFlash(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
+                }
+            } catch (InvalidElementException $e) {
+                $this->setFailFlash(Craft::t('app', 'Couldn’t send the activation email: {error}', [
+                    'error' => $e->getMessage(),
+                ]));
+            }
         }
 
         return $this->asSuccess(Craft::t('app', 'Permissions saved.'));
@@ -1900,14 +1970,17 @@ JS);
             }
         }
 
-        // Fire a 'defineUserContentSummary' event
-        $event = new DefineUserContentSummaryEvent([
-            'userId' => $userId,
-            'contentSummary' => $summary,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_CONTENT_SUMMARY, $event);
+        // Fire a 'defineContentSummary' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_CONTENT_SUMMARY)) {
+            $event = new DefineUserContentSummaryEvent([
+                'userId' => $userId,
+                'contentSummary' => $summary,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_CONTENT_SUMMARY, $event);
+            $summary = $event->contentSummary;
+        }
 
-        return $this->asJson($event->contentSummary);
+        return $this->asJson($summary);
     }
 
     /**
@@ -2215,15 +2288,19 @@ JS);
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 
         // Fire a 'loginFailure' event
-        $event = new LoginFailureEvent([
-            'authError' => $authError,
-            'message' => $message,
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
+        if ($this->hasEventHandlers(self::EVENT_LOGIN_FAILURE)) {
+            $event = new LoginFailureEvent([
+                'authError' => $authError,
+                'message' => $message,
+                'user' => $user,
+            ]);
+            $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
+            $message = $event->message;
+        }
+
 
         return $this->asFailure(
-            $event->message,
+            $message,
             data: [
                 'errorCode' => $authError,
             ],
@@ -2231,7 +2308,7 @@ JS);
                 'loginName' => $this->request->getBodyParam('loginName'),
                 'rememberMe' => (bool)$this->request->getBodyParam('rememberMe'),
                 'errorCode' => $authError,
-                'errorMessage' => $event->message,
+                'errorMessage' => $message,
             ]
         );
     }

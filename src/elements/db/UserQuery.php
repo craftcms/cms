@@ -13,23 +13,21 @@ use craft\db\QueryAbortedException;
 use craft\db\QueryParam;
 use craft\db\Table;
 use craft\elements\Address;
-use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\helpers\Db;
 use craft\models\UserGroup;
-use yii\db\Connection;
 use yii\db\Expression;
 
 /**
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of User
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @property-write string|string[]|UserGroup|null $group The user group(s) that resulting users must belong to
- * @method User[]|array all($db = null)
- * @method User|array|null one($db = null)
- * @method User|array|null nth(int $n, ?Connection $db = null)
- * @method ElementCollection<User> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path users.md
@@ -134,15 +132,15 @@ class UserQuery extends ElementQuery
      * @var mixed The permission that the resulting users must have.
      * ---
      * ```php
-     * // fetch users with control panel access
+     * // fetch users who can access the front end when the system is offline
      * $admins = \craft\elements\User::find()
-     *     ->can('accessCp')
+     *     ->can('accessSiteWhenSystemIsOff')
      *     ->all();
      * ```
      * ```twig
-     * {# fetch users with control panel access #}
+     * {# fetch users who can access the front end when the system is offline #}
      * {% set admins = craft.users()
-     *   .can('accessCp')
+     *   .can('accessSiteWhenSystemIsOff')
      *   .all() %}
      * ```
      * @used-by can()
@@ -371,16 +369,16 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch users that can access the control panel #}
+     * {# Fetch users who can access the front end when the system is offline #}
      * {% set {elements-var} = {twig-method}
-     *   .can('accessCp')
+     *   .can('accessSiteWhenSystemIsOff')
      *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch users that can access the control panel
+     * // Fetch users who can access the front end when the system is offline
      * ${elements-var} = {element-class}::find()
-     *     ->can('accessCp')
+     *     ->can('accessSiteWhenSystemIsOff')
      *     ->all();
      * ```
      *
