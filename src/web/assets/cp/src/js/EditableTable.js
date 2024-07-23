@@ -97,6 +97,13 @@ Craft.EditableTable = Garnish.Base.extend(
 
       this.$addRowBtn = this.$table.next('.add');
       this.updateAddRowButton();
+
+      // If there's only one row, disable the action button
+      const $actionMenus = this.$tbody.find('.action-btn');
+      if (this.rowCount === 1) {
+        $actionMenus.attr('disabled', 'disabled').addClass('disabled');
+      }
+
       this.addListener(this.$addRowBtn, 'activate', 'addRow');
 
       if (this.settings.lazyInitRows) {
@@ -122,8 +129,6 @@ Craft.EditableTable = Garnish.Base.extend(
           'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
           interactionCallback
         );
-
-        const $actionMenus = this.$tbody.find('.action-btn');
 
         if ($actionMenus.length) {
           this.addListener($actionMenus, 'activate', interactionCallback);
@@ -193,6 +198,12 @@ Craft.EditableTable = Garnish.Base.extend(
           index: $row.index() + 1,
         })} ${Craft.t('app', 'Actions')}`;
         $actionsBtn.attr('aria-label', name);
+
+        if (this.rowCount === 1) {
+          $actionsBtn.attr('disabled', 'disabled').addClass('disabled');
+        } else {
+          $actionsBtn.removeAttr('disabled').removeClass('disabled');
+        }
       }
     },
     /**
