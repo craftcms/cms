@@ -2,7 +2,7 @@
 
 {% set formId = formId ?? "totp-form-#{random()}" %}
 
-<form id="{{ formId }}">
+<form id="{{ formId }}" method="post">
   {{ actionInput('auth/verify-totp') }}
 
   {% if craft.app.config.general.enableCsrfProtection %}
