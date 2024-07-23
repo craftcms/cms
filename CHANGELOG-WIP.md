@@ -17,6 +17,7 @@
 ### Extensibility
 - Added `craft\config\GeneralConfig::addAlias()`. ([#15346](https://github.com/craftcms/cms/pull/15346))
 - Added `Craft.EnvVarGenerator`.
+- `craft\helpers\UrlHelper::cpUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `baseCpUrl` config setting isn’t set, and the `@web` alias wasn’t explicitly defined. ([#15374](https://github.com/craftcms/cms/issues/15374))
 - Deprecated `craft\web\assets\elementresizedetector\ElementResizeDetectorAsset`.
 
 ### System
