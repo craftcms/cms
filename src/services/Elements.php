@@ -17,6 +17,7 @@ use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -77,6 +78,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\caching\TagDependency;
+use yii\di\Instance;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -514,6 +516,15 @@ class Elements extends Component
     private ?bool $_updateSearchIndex = null;
 
     /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->bulkOpDb = Instance::ensure($this->bulkOpDb, Connection::class);
+    }
+
+    /**
      * Creates an element with a given config.
      *
      * @template T of ElementInterface
@@ -547,6 +558,13 @@ class Elements extends Component
 
         return $elementType::find();
     }
+
+    /**
+     * @var Connection|array|string the DB connection object or the application component ID of the DB connection
+     * that should be used to store element bulk op records.
+     * @since 5.3.0
+     */
+    public Connection|array|string $bulkOpDb = 'db2';
 
     // Element caches
     // -------------------------------------------------------------------------
@@ -1135,7 +1153,7 @@ class Elements extends Component
             ]));
         }
 
-        Db::delete(Table::ELEMENTS_BULKOPS, ['key' => $key]);
+        Db::delete(Table::ELEMENTS_BULKOPS, ['key' => $key], db: $this->bulkOpDb);
     }
 
     /**
@@ -1157,7 +1175,7 @@ class Elements extends Component
                 'elementId' => $element->id,
                 'key' => $key,
                 'timestamp' => $timestamp,
-            ]);
+            ], db: $this->bulkOpDb);
         }
     }
 
