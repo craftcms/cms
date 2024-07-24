@@ -3298,6 +3298,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.$selectAllContainer.remove();
       }
 
+      if (this.selectable) {
+        const role = this.multiSelect ? 'checkbox' : 'radio';
+        this.$elements.find('.checkbox').attr('role', role);
+        if (!this.multiSelect) {
+          this.$elements.attr('role', 'radiogroup');
+        }
+      } else {
+        this.$elements.removeAttr('role');
+      }
+
       // Exporters setup
       // -------------------------------------------------------------
 

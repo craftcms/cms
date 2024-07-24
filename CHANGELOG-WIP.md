@@ -2,6 +2,7 @@
 
 ### Content Management
 - Added the “Link” field type, which replaces “URL”, and can store URLs, `mailto` and `tel` URIs, and entry/asset/category relations. ([#15251](https://github.com/craftcms/cms/pull/15251), [#15400](https://github.com/craftcms/cms/pull/15400))
+- Added the ability to move entries between sections that allow the same entry type, via a new “Move to…” bulk action. ([#8153](https://github.com/craftcms/cms/discussions/8153), [#14541](https://github.com/craftcms/cms/pull/14541))
 - Entry and category conditions now have a “Has Descendants” rule. ([#15276](https://github.com/craftcms/cms/discussions/15276))
 - “Replace file” actions now display success notices on complete. ([#15217](https://github.com/craftcms/cms/issues/15217))
 - Double-clicking on folders within asset indexes and folder selection modals now navigates the index/modal into the folder. ([#15238](https://github.com/craftcms/cms/discussions/15238))
@@ -16,6 +17,7 @@
 - The notification heading is no longer read to screen readers when no notifications are active. ([#15294](https://github.com/craftcms/cms/pull/15294))
 - The login modal that appears once a user’s session has ended now has a `lang` attribute, in case it differs from the user’s preferred language.
 - Improved the focus ring styling for dark buttons. ([#15364](https://github.com/craftcms/cms/pull/15364))
+- Single-select element selection modals now assign `role="radio"` to listed elements’ checkboxes.
 
 ### Administration
 - Relation fields are now multi-instance. ([#15400](https://github.com/craftcms/cms/pull/15400))
@@ -39,7 +41,10 @@
 - Added `craft\base\RelationFieldInterface`. ([#15400](https://github.com/craftcms/cms/pull/15400))
 - Added `craft\base\RelationFieldTrait`. ([#15400](https://github.com/craftcms/cms/pull/15400))
 - Added `craft\config\GeneralConfig::addAlias()`. ([#15346](https://github.com/craftcms/cms/pull/15346))
+- Added `craft\elements\Entry::isEntryTypeCompatible()`.
+- Added `craft\elements\actions\MoveToSection`.
 - Added `craft\events\DefineShowFieldLayoutComponentInFormEvent`. ([#15260](https://github.com/craftcms/cms/issues/15260))
+- Added `craft\events\MoveEntryEvent`.
 - Added `craft\fields\Link`.
 - Added `craft\fields\data\LinkData`.
 - Added `craft\fields\linktypes\Asset`.
@@ -50,6 +55,10 @@
 - Added `craft\fields\linktypes\Email`.
 - Added `craft\fields\linktypes\Phone`.
 - Added `craft\fields\linktypes\Url`.
+- Added `craft\services\Elements::ensureBulkOp()`.
+- Added `craft\services\Entries::EVENT_AFTER_MOVE_TO_SECTION`.
+- Added `craft\services\Entries::EVENT_BEFORE_MOVE_TO_SECTION`.
+- Added `craft\services\Entries::moveEntryToSection()`.
 - `craft\helpers\DateTimeHelper::toIso8601()` now has a `$setToUtc` argument.
 - `craft\helpers\UrlHelper::cpUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `baseCpUrl` config setting isn’t set, and the `@web` alias wasn’t explicitly defined. ([#15374](https://github.com/craftcms/cms/issues/15374))
 - Deprecated `craft\fields\BaseRelationField::$localizeRelations`.
