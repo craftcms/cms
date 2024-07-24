@@ -31,7 +31,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     init: function (elementType, settings) {
       this.elementType = elementType;
       this.setSettings(settings, Craft.BaseElementSelectorModal.defaults);
-      const headingId = 'elementSelectorModalHeading-' + Date.now();
+      const headingId =
+        'elementSelectorModalHeading-' + Math.floor(Math.random() * 1000000);
 
       // Build the modal
       const $container = $('<div/>', {

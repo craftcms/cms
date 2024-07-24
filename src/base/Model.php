@@ -75,7 +75,16 @@ abstract class Model extends \yii\base\Model implements ModelInterface
             }
         }
 
-        parent::__construct($config);
+        // Apply $config here rather than from BaseObject::__construct(),
+        // so we can avoid calling Yii::configure() in case \Yii isn't loaded yet.
+        // (Mainly an issue for GeneralConfig/DbConfig, if config/general.php
+        // or config/db.php return an array.)
+        foreach ($config as $name => $value) {
+            $this->$name = $value;
+        }
+
+        // Intentionally not passing $config along
+        parent::__construct();
     }
 
     /**
