@@ -1977,6 +1977,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      * @since 3.6.14
+     * @deprecated in 4.11.0 Use \craft\filters\Headers::class instead
      */
     public ?string $permissionsPolicyHeader = null;
 
@@ -5369,6 +5370,7 @@ class GeneralConfig extends BaseConfig
      * @return self
      * @see $permissionsPolicyHeader
      * @since 4.2.0
+     * @deprecated in 4.11.0 Use \craft\filters\Headers::class instead
      */
     public function permissionsPolicyHeader(?string $value): self
     {
