@@ -59,6 +59,7 @@
 - Added `craft\services\Entries::EVENT_AFTER_MOVE_TO_SECTION`.
 - Added `craft\services\Entries::EVENT_BEFORE_MOVE_TO_SECTION`.
 - Added `craft\services\Entries::moveEntryToSection()`.
+- Added `craft\base\ApplicationTrait::getDb2()`. ([#15384](https://github.com/craftcms/cms/pull/15384))
 - `craft\helpers\DateTimeHelper::toIso8601()` now has a `$setToUtc` argument.
 - `craft\helpers\UrlHelper::cpUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `baseCpUrl` config setting isn’t set, and the `@web` alias wasn’t explicitly defined. ([#15374](https://github.com/craftcms/cms/issues/15374))
 - Deprecated `craft\fields\BaseRelationField::$localizeRelations`.
@@ -85,3 +86,4 @@
 - Updated Yii to 2.0.51.
 - Updated yii2-debug to 2.1.25.
 - Updated svg-sanitizer to 0.19.
+- Fixed a bug where element operations could cause deadlocks when multiple authors were working simultaneously. ([#15329](https://github.com/craftcms/cms/issues/15329))
