@@ -38,7 +38,7 @@ Craft.EntryMover = Garnish.Base.extend({
       'sectionSelectorModalHeading-' + Math.floor(Math.random() * 1000000);
     $('<h1/>', {
       text: Craft.t('app', 'Move to'),
-      idd: headingId,
+      id: headingId,
     }).appendTo($header);
     const $body = $('<div class="body"/>').appendTo($container);
     const $footer = $('<div/>', {
@@ -50,7 +50,6 @@ Craft.EntryMover = Garnish.Base.extend({
     ).appendTo($body);
     this.$sectionsList = $('<fieldset/>', {
       class: 'chips',
-      role: 'radiogroup',
       'aria-labelledby': headingId,
     }).appendTo(this.$sectionsListContainer);
 
