@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\filters;
 
@@ -6,6 +11,13 @@ use Craft;
 use craft\models\Site;
 use yii\base\InvalidArgumentException;
 
+/**
+ * Trait to make a filter site-aware.
+ *
+ * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.11.0
+ */
 trait SiteFilterTrait
 {
     private null|array $siteIds = null;
