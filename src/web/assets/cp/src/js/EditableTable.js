@@ -99,40 +99,34 @@ Craft.EditableTable = Garnish.Base.extend(
       this.updateAddRowButton();
 
       // If there's only one row, disable the action button
-      const $actionMenus = this.$tbody.find('.action-btn');
+      const $actionButtons = this.$tbody.find('.action-btn');
       if (this.rowCount === 1) {
-        $actionMenus.attr('disabled', 'disabled').addClass('disabled');
+        $actionButtons.attr('disabled', 'disabled').addClass('disabled');
       }
 
       this.addListener(this.$addRowBtn, 'activate', 'addRow');
 
       if (this.settings.lazyInitRows) {
         // Lazily create the row objects
-        const interactionCallback = (ev) => {
-          const $target = $(ev.target);
-          const $tr = $target.closest('tr');
-          if ($tr.length && !$tr.data('editable-table-row')) {
-            const $textarea = $target.hasClass('editable-table-preview')
-              ? $target.next()
-              : null;
-            this.createRowObj($tr);
-            setTimeout(() => {
-              if ($textarea && !$textarea.is(':focus')) {
-                $textarea.focus();
-              }
-            }, 100);
-          }
-        };
-
         this.addListener(
-          this.$tbody,
+          this.$tbody.add($actionButtons),
           'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
-          interactionCallback
+          (ev) => {
+            const $target = $(ev.target);
+            const $tr = $target.closest('tr');
+            if ($tr.length && !$tr.data('editable-table-row')) {
+              const $textarea = $target.hasClass('editable-table-preview')
+                ? $target.next()
+                : null;
+              this.createRowObj($tr);
+              setTimeout(() => {
+                if ($textarea && !$textarea.is(':focus')) {
+                  $textarea.focus();
+                }
+              }, 100);
+            }
+          }
         );
-
-        if ($actionMenus.length) {
-          this.addListener($actionMenus, 'keypress,click', interactionCallback);
-        }
       } else {
         const $rows = this.$tbody.children();
         for (let i = 0; i < $rows.length; i++) {
@@ -605,7 +599,7 @@ Craft.EditableTable = Garnish.Base.extend(
       }
 
       if (allowReorder) {
-        const containerId = `menu-${Craft.randomId()}`;
+        const containerId = `menu-${Math.floor(Math.random() * 1000000)}`;
         const $actionsBtn = $('<button/>', {
           class: 'btn menu-btn action-btn',
           type: 'button',
@@ -617,36 +611,6 @@ Craft.EditableTable = Garnish.Base.extend(
           id: containerId,
           class: 'menu menu--disclosure',
         });
-
-        const $ul = $('<ul/>').appendTo($menuContainer);
-
-        const reorderActions = [
-          {
-            icon: 'arrow-up',
-            label: Craft.t('app', 'Move up'),
-            value: 'moveUp',
-          },
-          {
-            icon: 'arrow-down',
-            label: Craft.t('app', 'Move down'),
-            value: 'moveDown',
-          },
-        ];
-
-        for (const action of reorderActions) {
-          const $li = $('<li/>');
-
-          $li.append(
-            $('<button/>', {
-              text: action.label,
-              class: 'menu-item',
-              'data-action': action.value,
-              'data-icon': action.icon,
-            })
-          );
-
-          $ul.append($li);
-        }
 
         $('<td/>', {
           class: 'thin action',
@@ -663,6 +627,21 @@ Craft.EditableTable = Garnish.Base.extend(
           .append($actionsBtn)
           .append($menuContainer)
           .appendTo($tr);
+
+        const menu = $actionsBtn.disclosureMenu().data('disclosureMenu');
+
+        menu.addItems([
+          {
+            icon: 'arrow-up',
+            label: Craft.t('app', 'Move up'),
+            attributes: {'data-action': 'moveUp'},
+          },
+          {
+            icon: 'arrow-down',
+            label: Craft.t('app', 'Move down'),
+            attributes: {'data-action': 'moveDown'},
+          },
+        ]);
       }
 
       if (allowDelete) {

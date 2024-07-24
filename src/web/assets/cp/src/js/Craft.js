@@ -1963,15 +1963,6 @@ $.extend(Craft, {
   },
 
   /**
-   * Creates a random ID.
-   *
-   * @returns {string}
-   */
-  randomId: function () {
-    return Math.floor(Math.random() * 1000000000);
-  },
-
-  /**
    * Creates a validation error list.
    *
    * @param {Object} errors

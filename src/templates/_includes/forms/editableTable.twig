@@ -22,9 +22,10 @@
     },
   },
   {
+    icon: 'arrow-down',
     label: 'Move down'|t('app'),
     attributes: {
-      data: {icon: 'arrow-down', action: 'moveDown'},
+      data: {action: 'moveDown'},
     },
   },
 ] %}
@@ -234,17 +235,19 @@
                 {% endfor %}
                 {% if allowReorder -%}
                     <td class="thin action">
-                      <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" type="button" role="button"></a>
-                      {{~ disclosureMenu(actionMenuItems, {
-                        buttonAttributes: {
-                          'aria-label': actionBtnLabel,
-                          class: ['action-btn'],
-                          title: 'Actions'|t('app'),
-                          data: {
-                            'disclosure-trigger': true,
+                      <div class="flex flex-nowrap">
+                        <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" type="button" role="button"></a>
+                        {{~ disclosureMenu(actionMenuItems, {
+                          buttonAttributes: {
+                            'aria-label': actionBtnLabel,
+                            class: ['action-btn'],
+                            title: 'Actions'|t('app'),
+                            data: {
+                              'disclosure-trigger': true,
+                            },
                           },
-                        },
-                      }) }}
+                        }) }}
+                      </div>
                     </td>
                 {%- endif -%}
                 {%- if allowDelete -%}

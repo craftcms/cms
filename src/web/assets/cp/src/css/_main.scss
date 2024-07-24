@@ -4203,6 +4203,32 @@ table.editable {
     color: var(--medium-text-color);
     font-weight: normal;
     background-color: var(--gray-050);
+
+    button,
+    a {
+      display: inline-flex;
+      width: var(--touch-target-size);
+      height: var(--touch-target-size);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flex {
+      gap: 0;
+    }
+  }
+
+  td.action {
+    padding-left: var(--xs) !important;
+    padding-right: var(--xs) !important;
+
+    &:has(+ td.action) {
+      padding-right: 0 !important;
+    }
+
+    & + td.action {
+      padding-left: 0 !important;
+    }
   }
 
   thead,
