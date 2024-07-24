@@ -640,8 +640,8 @@ class Application extends \yii\web\Application
 
                 // Return the response for OPTIONS requests that return null
                 // to support the CORS filter: https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
-                return $response === null && $this->getRequest()->getIsOptions()
-                    ? $this->getResponse()
+                return $request->getIsOptions()
+                    ? ($response ?? $this->getResponse())
                     : $response;
             } catch (Throwable $e) {
                 $this->_unregisterDebugModule();

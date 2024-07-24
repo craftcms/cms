@@ -14,6 +14,7 @@ use yii\base\InvalidArgumentException;
 /**
  * Trait to make a filter site-aware.
  *
+ * @property-write int|string|Site|array<int|string|Site> $site
  * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.11.0
@@ -24,11 +25,11 @@ trait SiteFilterTrait
 
     protected function isActive(mixed $action): bool
     {
-        if (Craft::$app->getRequest()->isCpRequest || !$this->isCurrentSiteActive()) {
+        if (!parent::isActive($action)) {
             return false;
         }
 
-        return parent::isActive($action);
+        return !$this->isCurrentSiteActive();
     }
 
     protected function setSite(null|array|int|string|Site $value): void
@@ -59,6 +60,10 @@ trait SiteFilterTrait
 
     private function isCurrentSiteActive(): bool
     {
+        if (!Craft::$app->getRequest()->getIsSiteRequest()) {
+            return false;
+        }
+
         return $this->siteIds === null || in_array(Craft::$app->getSites()->getCurrentSite()->id, $this->siteIds, true);
     }
 }

@@ -8,6 +8,7 @@
 namespace craft\filters;
 
 use Craft;
+use yii\base\ActionFilter;
 
 /**
  * Filter for adding arbitrary headers to site responses and handling OPTIONS requests.
@@ -15,16 +16,22 @@ use Craft;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.11.0
  */
-class Headers extends \yii\base\ActionFilter
+class Headers extends ActionFilter
 {
     use SiteFilterTrait;
 
+    /**
+     * @var array<string,string|string[]> The headers that should be set on responses.
+     */
     public array $headers = [];
 
     public function beforeAction($action): bool
     {
-        foreach ($this->headers as $name => $value) {
-            Craft::$app->getResponse()->getHeaders()->set($name, $value);
+        if (!empty($this->headers)) {
+            $responseHeaders = Craft::$app->getResponse()->getHeaders();
+            foreach ($this->headers as $name => $value) {
+                $responseHeaders->set($name, $value);
+            }
         }
 
         return true;
