@@ -2719,7 +2719,7 @@ JS;
     }
 
     /**
-     * Check if entry's Entry Type is still allowed by its Section.
+     * Returns whether the entry’s type is allowed in its section.
      *
      * @return bool
      * @throws InvalidConfigException

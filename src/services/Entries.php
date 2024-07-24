@@ -21,8 +21,8 @@ use craft\errors\SectionNotFoundException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
-use craft\events\EntryMoveEvent;
 use craft\events\EntryTypeEvent;
+use craft\events\MoveEntryEvent;
 use craft\events\SectionEvent;
 use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
@@ -122,13 +122,13 @@ class Entries extends Component
     public const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
 
     /**
-     * @event EntryMoveEvent The event that is triggered before an entry is move to a different section.
+     * @event MoveEntryEvent The event that is triggered before an entry is move to a different section.
      * @since 5.3.0
      */
     public const EVENT_BEFORE_MOVE_TO_SECTION = 'beforeMoveToSection';
 
     /**
-     * @event EntryMoveEvent The event that is triggered before an entry is move to a different section.
+     * @event MoveEntryEvent The event that is triggered before an entry is move to a different section.
      * @since 5.3.0
      */
     public const EVENT_AFTER_MOVE_TO_SECTION = 'afterMoveToSection';
@@ -1861,7 +1861,7 @@ SQL)->execute();
     {
         // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
         if ($this->hasEventHandlers(self::EVENT_BEFORE_MOVE_TO_SECTION)) {
-            $this->trigger(self::EVENT_BEFORE_MOVE_TO_SECTION, new EntryMoveEvent([
+            $this->trigger(self::EVENT_BEFORE_MOVE_TO_SECTION, new MoveEntryEvent([
                 'entry' => $entry,
                 'section' => $section,
             ]));
@@ -1970,7 +1970,7 @@ SQL)->execute();
         });
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_TO_SECTION)) {
-            $this->trigger(self::EVENT_AFTER_MOVE_TO_SECTION, new EntryMoveEvent([
+            $this->trigger(self::EVENT_AFTER_MOVE_TO_SECTION, new MoveEntryEvent([
                 'entry' => $entry,
                 'section' => $section,
             ]));

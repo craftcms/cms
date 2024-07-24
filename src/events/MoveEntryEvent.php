@@ -12,12 +12,12 @@ use craft\models\Section;
 use yii\base\Event;
 
 /**
- * Entry move event class.
+ * Move entry event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-class EntryMoveEvent extends Event
+class MoveEntryEvent extends Event
 {
     /**
      * @var Entry The Entry that we're about to move to a different section.
