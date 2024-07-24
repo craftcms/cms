@@ -1436,7 +1436,7 @@ td.right {
   }
 
   &.sel {
-    @include light-focus-ring;
+    @include dark-btn-light-bg-focus-ring;
     --ui-control-color: var(--selected-item-color);
     background-color: var(--dark-sel-color);
     color: var(--selected-item-color);
@@ -1973,6 +1973,7 @@ ul.icons {
     --focus-ring: var(--focus-ring-outset);
     background-color: var(--gray-500);
     color: var(--white);
+    @include dark-btn-light-bg-focus-ring;
   }
 }
 
@@ -9000,6 +9001,37 @@ body.sitepicker {
         z-index: 1;
       }
     }
+  }
+}
+
+.entry-mover-modal {
+  --width: calc(var(--ui-control-height) * 10 + var(--s) * 9 + var(--xl) * 2);
+  width: var(--width) !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 20px) !important;
+  max-height: 200px;
+
+  .header {
+    padding-top: calc(var(--m));
+    padding-bottom: calc(var(--m));
+    text-align: center;
+  }
+
+  .body {
+    .entry-mover-modal--list {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+  }
+
+  .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
   }
 }
 

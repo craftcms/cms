@@ -59,6 +59,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\models\ElementActivity;
+use craft\models\Section;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\queue\jobs\UpdateSearchIndex;
@@ -1178,7 +1179,14 @@ class Elements extends Component
         }
     }
 
-    private function ensureBulkOp(callable $callback): void
+    /**
+     * Ensures that we’re tracking element saves and deletes as part of a bulk operation, then executes the given
+     * callback function.
+     *
+     * @param callable $callback
+     * @since 5.3.0
+     */
+    public function ensureBulkOp(callable $callback): void
     {
         if (empty($this->bulkKeys)) {
             $bulkKey = $this->beginBulkOp();
@@ -1403,6 +1411,12 @@ class Elements extends Component
     {
         if ($element->getIsCanonical()) {
             throw new InvalidArgumentException('Element was already canonical');
+        }
+
+        // we need to check if the entry type is still available for this element's section
+        /** @phpstan-ignore-next-line */
+        if ($element->hasMethod('isEntryTypeCompatible') && !$element->isEntryTypeCompatible()) {
+            throw new InvalidArgumentException('Entry Type is no longer allowed in this section.');
         }
 
         // "Duplicate" the derivative element with the canonical element’s ID and UID
