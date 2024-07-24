@@ -221,7 +221,6 @@ return [
 
         'db2' => function() {
             $config = craft\helpers\App::dbConfig();
-            $config['foo'] = true;
             return Craft::createObject($config);
         },
 
