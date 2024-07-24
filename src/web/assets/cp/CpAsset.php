@@ -305,6 +305,7 @@ JS;
             'Rotate',
             'Row could not be added. Maximum number of rows reached.',
             'Row could not be deleted. Minimum number of rows reached.',
+            'Row {index}',
             'Save as a new {type}',
             'Save',
             'Saved {timestamp} by {creator}',
