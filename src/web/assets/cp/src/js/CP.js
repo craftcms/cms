@@ -1950,8 +1950,6 @@ var JobProgressIcon = Garnish.Base.extend({
       'aria-label': this.$label.text(),
     }).appendTo(this.$a);
 
-    console.log(this.$tooltip);
-
     let m = window.devicePixelRatio > 1 ? 2 : 1;
     this._canvasSize = 18 * m;
     this._arcPos = this._canvasSize / 2;

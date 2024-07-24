@@ -60,7 +60,7 @@ class CraftTooltip extends HTMLElement {
     }
 
     if (!this.trigger) {
-      console.log('No trigger found for tooltip');
+      console.warn('No trigger found for tooltip');
       return false;
     }
 
