@@ -48,7 +48,20 @@ class ReplaceFile extends ElementAction
             settings.fileInput = \$fileInput;
             settings.paramName = 'replaceFile';
             settings.replace = true;
-            
+
+            const fileuploaddone = settings.events?.fileuploaddone;
+            settings.events = Object.assign({}, settings.events || {}, {
+                fileuploaddone: (event, data = null) => {
+                    const result = event instanceof CustomEvent ? event.detail : data.result;
+                    if (!result.error) {
+                        Craft.cp.displayNotice(Craft.t('app', 'New file uploaded.'));
+                    }
+                    if (fileuploaddone) {
+                        fileuploaddone(event, data);                      
+                    }
+                }
+            });
+
             const tempUploader = Craft.createUploader(Craft.elementIndex.uploader.fsType, \$fileInput, settings);
             tempUploader.setParams({
                 assetId: \$element.data('id')

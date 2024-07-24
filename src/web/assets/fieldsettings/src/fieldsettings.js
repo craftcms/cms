@@ -78,9 +78,9 @@
             Craft.appendHeadHtml(response.data.headHtml);
             Craft.appendBodyHtml(response.data.bodyHtml);
           })
-          .catch(() => {
+          .catch((e) => {
             if (!this._ignoreFailedRequest) {
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              Craft.cp.displayError(e?.response?.data?.message);
               this.$container.html('');
             }
           });

@@ -376,6 +376,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public $orderBy = '';
 
+    /**
+     * @var bool Whether custom fields should be factored into the query.
+     * @used-by withCustomFields()
+     * @since 4.11.0
+     */
+    public bool $withCustomFields = true;
+
     // Structure parameters
     // -------------------------------------------------------------------------
 
@@ -1157,6 +1164,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
             $this->with[] = $value;
         }
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $withCustomFields
+     */
+    public function withCustomFields(bool $value = true): static
+    {
+        $this->withCustomFields = $value;
         return $this;
     }
 
@@ -2230,6 +2247,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
+        if (!$this->withCustomFields) {
+            return [];
+        }
+
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'global';

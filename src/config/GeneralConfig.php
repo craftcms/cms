@@ -145,7 +145,7 @@ class GeneralConfig extends BaseConfig
     public bool $addTrailingSlashesToUrls = false;
 
     /**
-     * @var array Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
+     * @var array<string,string|null> Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
      *
      * ```php Static Config
      * ->aliases([
@@ -203,6 +203,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group GraphQL
      * @since 3.5.0
+     * @deprecated in 4.11.0. [[\craft\filters\Cors]] should be used instead.
+     * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
      */
     public array|null|false $allowedGraphqlOrigins = null;
 
@@ -1962,7 +1964,7 @@ class GeneralConfig extends BaseConfig
     public ?string $pathParam = 'p';
 
     /**
-     * @var string|null The `Permissions-Policy` header that should be sent for web responses.
+     * @var string|null The `Permissions-Policy` header that should be sent for site responses.
      *
      * ::: code
      * ```php Static Config
@@ -1975,6 +1977,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      * @since 3.6.14
+     * @deprecated in 4.11.0. [[\craft\filters\Headers]] should be used instead.
      */
     public ?string $permissionsPolicyHeader = null;
 
@@ -3386,14 +3389,40 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param array $value
+     * @param array<string,string|null> $value
      * @return self
      * @see $aliases
      * @since 4.2.0
      */
     public function aliases(array $value): self
     {
-        $this->aliases = $value;
+        $this->aliases = [];
+        foreach ($value as $name => $path) {
+            $this->addAlias($name, $path);
+        }
+        return $this;
+    }
+
+    /**
+     * Adds a custom Yii [alias](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
+     *
+     * ```php
+     * ->addAlias('@webroot', '/var/www/')
+     * ```
+     *
+     * @group Environment
+     * @param string $name
+     * @param string|null $path
+     * @return self
+     * @see $aliases
+     * @since 4.2.0
+     */
+    public function addAlias(string $name, ?string $path): self
+    {
+        if (!str_starts_with($name, '@')) {
+            $name = "@$name";
+        }
+        $this->aliases[$name] = $path;
         return $this;
     }
 
@@ -3443,6 +3472,8 @@ class GeneralConfig extends BaseConfig
      * @return self
      * @see $allowedGraphqlOrigins
      * @since 4.2.0
+     * @deprecated in 4.11.0. [[\craft\filters\Cors]] should be used instead.
+     * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
      */
     public function allowedGraphqlOrigins(array|null|false $value): self
     {
@@ -5339,6 +5370,7 @@ class GeneralConfig extends BaseConfig
      * @return self
      * @see $permissionsPolicyHeader
      * @since 4.2.0
+     * @deprecated in 4.11.0. [[\craft\filters\Headers]] should be used instead.
      */
     public function permissionsPolicyHeader(?string $value): self
     {
