@@ -5,6 +5,7 @@
 - Fixed a bug where content changes created via `craft\base\Element::EVENT_AFTER_SAVE` weren’t getting saved, when an element was getting fully saved from an unsaved draft state. ([#15369](https://github.com/craftcms/cms/issues/15369))
 - Updated web-auth/webauthn-lib to 4.9. ([#15377](https://github.com/craftcms/cms/issues/15377))
 - Fixed a PHP error that occurred when making a field layout component conditional on a Time or CKEditor field. ([craftcms/ckeditor#267](https://github.com/craftcms/ckeditor/issues/267))
+- Fixed a bug where element exports were only including the first 100 results when no elements were selected. ([#15389](https://github.com/craftcms/cms/issues/15389))
 
 ## 5.2.8 - 2024-07-17
 
