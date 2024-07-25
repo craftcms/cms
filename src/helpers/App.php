@@ -1005,21 +1005,17 @@ class App
      */
     public static function dbMutexConfig(): array
     {
-        // Use a dedicated connection, to avoid erratic behavior when locks are used during transactions
-        // https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions
-        $dbConfig = static::dbConfig();
-
         if (Craft::$app->getDb()->getIsMysql()) {
             return [
                 'class' => MysqlMutex::class,
-                'db' => $dbConfig,
+                'db' => 'db2',
                 'keyPrefix' => Craft::$app->id,
             ];
         }
 
         return [
             'class' => PgsqlMutex::class,
-            'db' => $dbConfig,
+            'db' => 'db2',
         ];
     }
 

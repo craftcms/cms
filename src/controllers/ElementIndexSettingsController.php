@@ -146,6 +146,13 @@ class ElementIndexSettingsController extends BaseElementsController
                     $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
                 }
 
+                if (isset($source['sites'])) {
+                    $sitesService = Craft::$app->getSites();
+                    $source['sites'] = array_values(array_filter(array_map(
+                        fn(int $siteId) => $sitesService->getSiteById($siteId)?->uid,
+                        $source['sites'] ?: [],
+                    )));
+                }
                 if (isset($source['sites']) && $source['sites'] === false) {
                     $source['sites'] = [];
                 }

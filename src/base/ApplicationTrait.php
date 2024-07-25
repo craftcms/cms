@@ -144,6 +144,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
+ * @property-read Connection $db2 The database connection component used for mutex locks and element bulk op records
  * @property-read Dashboard $dashboard The dashboard service
  * @property-read Deprecator $deprecator The deprecator service
  * @property-read Drafts $drafts The drafts service
@@ -1102,6 +1103,20 @@ trait ApplicationTrait
     public function getDashboard(): Dashboard
     {
         return $this->get('dashboard');
+    }
+
+    /**
+     * Returns the database connection used for mutex locks and element bulk op records.
+     *
+     * This helps avoid erratic behavior when locks are used during transactions
+     * (see https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions).
+     *
+     * @return Connection
+     * @since 5.3.0
+     */
+    public function getDb2(): Connection
+    {
+        return $this->get('db2');
     }
 
     /**

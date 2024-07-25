@@ -888,7 +888,7 @@ class ElementsController extends Controller
         // Apply draft
         if ($isDraft && !$isCurrent && $canSave && $canSaveCanonical) {
             $components[] = Html::button(Craft::t('app', 'Apply draft'), [
-                'class' => ['btn', 'secondary', 'formsubmit'],
+                'class' => ['btn', 'secondary', 'formsubmit', 'tooltip-draft-btn'],
                 'data' => [
                     'action' => 'elements/apply-draft',
                     'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
@@ -904,7 +904,7 @@ class ElementsController extends Controller
                 Html::hiddenInput('elementId', (string)$canonical->id) .
                 Html::hiddenInput('revisionId', (string)$element->revisionId) .
                 Html::button(Craft::t('app', 'Revert content from this revision'), [
-                    'class' => ['btn', 'formsubmit'],
+                    'class' => ['btn', 'formsubmit', 'revision-draft-btn'],
                 ]) .
                 Html::endForm();
         }
@@ -2040,24 +2040,8 @@ JS, [
         $elementId = $elementId ?? $this->_elementId;
         $elementUid = $elementUid ?? $this->_elementUid;
 
-        $sitesService = Craft::$app->getSites();
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
-
-        if ($this->_siteId) {
-            $site = $sitesService->getSiteById($this->_siteId, true);
-            if (!$site) {
-                throw new BadRequestHttpException("Invalid side ID: $this->_siteId");
-            }
-            if (Craft::$app->getIsMultiSite() && !$user->can("editSite:$site->uid")) {
-                throw new ForbiddenHttpException('User not authorized to edit content for this site.');
-            }
-        } else {
-            $site = Cp::requestedSite();
-            if (!$site) {
-                throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
-            }
-        }
 
         if ($this->_elementType) {
             $elementType = $this->_elementType;
@@ -2078,12 +2062,31 @@ JS, [
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $this->_validateElementType($elementType);
 
-        if ($strictSite) {
-            $siteId = $site->id;
-            $preferSites = null;
+        if ($elementType::isLocalized()) {
+            if ($this->_siteId) {
+                $site = Craft::$app->getSites()->getSiteById($this->_siteId, true);
+                if (!$site) {
+                    throw new BadRequestHttpException("Invalid side ID: $this->_siteId");
+                }
+                if (Craft::$app->getIsMultiSite() && !$user->can("editSite:$site->uid")) {
+                    throw new ForbiddenHttpException('User not authorized to edit content for this site.');
+                }
+            } else {
+                $site = Cp::requestedSite();
+                if (!$site) {
+                    throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
+                }
+            }
+
+            if ($strictSite) {
+                $siteId = $site->id;
+                $preferSites = null;
+            } else {
+                $siteId = Craft::$app->getSites()->getEditableSiteIds();
+                $preferSites = [$site->id];
+            }
         } else {
-            $siteId = $sitesService->getEditableSiteIds();
-            $preferSites = [$site->id];
+            $siteId = $preferSites = null;
         }
 
         // Loading an existing element?
@@ -2119,7 +2122,7 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
-        if (!$strictSite && $element->siteId !== $site->id) {
+        if (!$strictSite && isset($site) && $element->siteId !== $site->id) {
             return $this->redirect($element->getCpEditUrl());
         }
 
@@ -2132,7 +2135,7 @@ JS, [
         bool $checkForProvisionalDraft,
         string $elementType,
         User $user,
-        int|array $siteId,
+        int|array|null $siteId,
         ?array $preferSites,
     ): ?ElementInterface {
         /** @var string|ElementInterface $elementType */
