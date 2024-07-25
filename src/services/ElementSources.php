@@ -148,7 +148,7 @@ class ElementSources extends Component
                         }
                     }
                     return (int)$siteId;
-                }, $source['sites']));
+                }, $source['sites'] ?: []));
             }
         }
 
