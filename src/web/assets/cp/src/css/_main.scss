@@ -5397,7 +5397,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   }
 
   & > fieldset {
-    margin: 0 0 var(--spacing);
+    margin: var(--spacing) 0 !important;
 
     & > legend {
       margin-bottom: 5px;
