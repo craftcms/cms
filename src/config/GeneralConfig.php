@@ -1040,7 +1040,7 @@ class GeneralConfig extends BaseConfig
 
 
     /**
-     * @var bool Whether CSRF values should be injected via JavaScript for greater cache-ability.
+     * @var bool Whether CSRF values should be injected via JavaScript for greater cache-ability. This setting can be overridden by passing an `async` option into the `csrfInput()` function.
      *
      *  ::: code
      *  ```php Static Config
