@@ -11,6 +11,7 @@
 - Fixed an error that occurred if a custom element source wasn’t enabled for any sites. ([#15406](https://github.com/craftcms/cms/issues/15406))
 - Fixed a bug where custom sources that weren’t enabled for any sites would be shown for all sites.
 - Fixed a SQL error that could occur when upgrading to Craft 5. ([#15407](https://github.com/craftcms/cms/pull/15407))
+- Fixed an error that occurred when editing a user, if the current user didn’t have permission to edit the primary site. ([#15408](https://github.com/craftcms/cms/issues/15408))
 
 ## 5.2.8 - 2024-07-17
 
