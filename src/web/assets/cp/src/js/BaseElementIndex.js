@@ -3635,6 +3635,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           var limit = parseInt($limitField.find('input').val());
           if (limit && !isNaN(limit)) {
             params.criteria.limit = limit;
+          } else {
+            // don't set the default limit of 100
+            delete params.criteria.limit;
           }
         }
 
