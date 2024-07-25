@@ -10,6 +10,7 @@
 - Fixed a bug where custom element sources’ Sites settings were getting cleared out. ([#15406](https://github.com/craftcms/cms/issues/15406))
 - Fixed an error that occurred if a custom element source wasn’t enabled for any sites. ([#15406](https://github.com/craftcms/cms/issues/15406))
 - Fixed a bug where custom sources that weren’t enabled for any sites would be shown for all sites.
+- Fixed a SQL error that could occur when upgrading to Craft 5. ([#15407](https://github.com/craftcms/cms/pull/15407))
 
 ## 5.2.8 - 2024-07-17
 
