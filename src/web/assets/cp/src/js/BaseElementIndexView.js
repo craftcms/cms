@@ -253,7 +253,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     getElementCheckbox: function (element) {
-      return $(element).find('[role="checkbox"]');
+      return $(element).find('.checkbox');
     },
 
     isVerticalList: function () {
@@ -343,6 +343,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           }
 
           let $newElements = $(response.data.html);
+
+          if (this.elementIndex.selectable) {
+            const role = this.elementIndex.multiSelect ? 'checkbox' : 'radio';
+            $newElements.find('.checkbox').attr('role', role);
+          }
 
           this.appendElements($newElements);
           await Craft.appendHeadHtml(response.data.headHtml);

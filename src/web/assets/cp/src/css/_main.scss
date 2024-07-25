@@ -1437,7 +1437,7 @@ td.right {
   }
 
   &.sel {
-    @include light-focus-ring;
+    @include dark-btn-light-bg-focus-ring;
     --ui-control-color: var(--selected-item-color);
     background-color: var(--dark-sel-color);
     color: var(--selected-item-color);
@@ -1974,6 +1974,7 @@ ul.icons {
     --focus-ring: var(--focus-ring-outset);
     background-color: var(--gray-500);
     color: var(--white);
+    @include dark-btn-light-bg-focus-ring;
   }
 }
 
@@ -4203,6 +4204,32 @@ table.editable {
     color: var(--medium-text-color);
     font-weight: normal;
     background-color: var(--gray-050);
+
+    button,
+    a {
+      display: inline-flex;
+      width: var(--touch-target-size);
+      height: var(--touch-target-size);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flex {
+      gap: 0;
+    }
+  }
+
+  td.action {
+    padding-left: var(--xs) !important;
+    padding-right: var(--xs) !important;
+
+    &:has(+ td.action) {
+      padding-right: 0 !important;
+    }
+
+    & + td.action {
+      padding-left: 0 !important;
+    }
   }
 
   thead,
@@ -9001,6 +9028,37 @@ body.sitepicker {
         z-index: 1;
       }
     }
+  }
+}
+
+.entry-mover-modal {
+  --width: calc(var(--ui-control-height) * 10 + var(--s) * 9 + var(--xl) * 2);
+  width: var(--width) !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 20px) !important;
+  max-height: 200px;
+
+  .header {
+    padding-top: calc(var(--m));
+    padding-bottom: calc(var(--m));
+    text-align: center;
+  }
+
+  .body {
+    .entry-mover-modal--list {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+  }
+
+  .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
   }
 }
 

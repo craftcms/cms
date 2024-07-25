@@ -323,6 +323,7 @@ class Cp
             'attributes' => [],
             'autoReload' => true,
             'id' => sprintf('chip-%s', mt_rand()),
+            'class' => null,
             'inputName' => null,
             'inputValue' => null,
             'labelHtml' => null,
@@ -344,7 +345,11 @@ class Cp
 
         $attributes = ArrayHelper::merge([
             'id' => $config['id'],
-            'class' => ['chip', $config['size']],
+            'class' => [
+                'chip',
+                $config['size'],
+                ...Html::explodeClass($config['class']),
+            ],
             'style' => array_filter([
                 '--custom-bg-color' => $color?->cssVar(50),
                 '--custom-text-color' => $color?->cssVar(900),
@@ -394,7 +399,9 @@ class Cp
         }
 
         if ($config['showLabel'] || isset($config['labelHtml'])) {
-            $html .= $config['labelHtml'] ?? Html::encode($label);
+            $html .= $config['labelHtml'] ?? Html::tag('div', Html::encode($label), [
+                'id' => sprintf('%s-label', $config['id']),
+            ]);
         }
 
         $html .= Html::beginTag('div', ['class' => 'chip-actions']);
