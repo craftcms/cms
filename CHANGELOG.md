@@ -2,16 +2,17 @@
 
 ## Unreleased
 
-- Fixed a bug where content changes created via `craft\base\Element::EVENT_AFTER_SAVE` weren’t getting saved, when an element was getting fully saved from an unsaved draft state. ([#15369](https://github.com/craftcms/cms/issues/15369))
 - Updated web-auth/webauthn-lib to 4.9. ([#15377](https://github.com/craftcms/cms/issues/15377))
 - Fixed a PHP error that occurred when making a field layout component conditional on a Time or CKEditor field. ([craftcms/ckeditor#267](https://github.com/craftcms/ckeditor/issues/267))
+- Fixed an error that occurred when editing a user, if the current user didn’t have permission to edit the primary site. ([#15408](https://github.com/craftcms/cms/issues/15408))
+- Fixed a bug where editable tables with single-select checkbox columns weren’t deselecting the selected option automatically. ([#15415](https://github.com/craftcms/cms/issues/15415))
+- Fixed a bug where content changes created via `craft\base\Element::EVENT_AFTER_SAVE` weren’t getting saved, when an element was getting fully saved from an unsaved draft state. ([#15369](https://github.com/craftcms/cms/issues/15369))
 - Fixed a bug where element exports were only including the first 100 results when no elements were selected. ([#15389](https://github.com/craftcms/cms/issues/15389))
 - Fixed a stying bug. ([#15405](https://github.com/craftcms/cms/issues/15405))
 - Fixed a bug where custom element sources’ Sites settings were getting cleared out. ([#15406](https://github.com/craftcms/cms/issues/15406))
 - Fixed an error that occurred if a custom element source wasn’t enabled for any sites. ([#15406](https://github.com/craftcms/cms/issues/15406))
 - Fixed a bug where custom sources that weren’t enabled for any sites would be shown for all sites.
 - Fixed a SQL error that could occur when upgrading to Craft 5. ([#15407](https://github.com/craftcms/cms/pull/15407))
-- Fixed an error that occurred when editing a user, if the current user didn’t have permission to edit the primary site. ([#15408](https://github.com/craftcms/cms/issues/15408))
 - Fixed a bug where user edit forms included a Username field if had been saved to the user field layout before `useEmailAsUsername` was enabled. ([#15401](https://github.com/craftcms/cms/issues/15401))
 
 ## 5.2.8 - 2024-07-17
