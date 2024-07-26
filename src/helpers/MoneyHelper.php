@@ -121,7 +121,7 @@ class MoneyHelper
      * @return string
      * @since 5.2.9
      */
-    public static function normalizeString(string $value, Currency|null $fallbackCurrency = null): string
+    public static function normalizeString(string $value, ?Currency $fallbackCurrency = null): string
     {
         $locale = Craft::$app->getFormattingLocale()->id;
         $numberFormatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);

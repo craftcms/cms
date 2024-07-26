@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-- Updated web-auth/webauthn-lib to 4.9. ([#15377](https://github.com/craftcms/cms/issues/15377))
 - Added `craft\helpers\Money::normalizeString()`.
+- Updated web-auth/webauthn-lib to 4.9. ([#15377](https://github.com/craftcms/cms/issues/15377))
 - Fixed a PHP error that occurred when making a field layout component conditional on a Time or CKEditor field. ([craftcms/ckeditor#267](https://github.com/craftcms/ckeditor/issues/267))
 - Fixed an error that occurred when editing a user, if the current user didn’t have permission to edit the primary site. ([#15408](https://github.com/craftcms/cms/issues/15408))
 - Fixed a bug where editable tables with single-select checkbox columns weren’t deselecting the selected option automatically. ([#15415](https://github.com/craftcms/cms/issues/15415))
@@ -16,7 +16,7 @@
 - Fixed a SQL error that could occur when upgrading to Craft 5. ([#15407](https://github.com/craftcms/cms/pull/15407))
 - Fixed a bug where user edit forms included a Username field if had been saved to the user field layout before `useEmailAsUsername` was enabled. ([#15401](https://github.com/craftcms/cms/issues/15401))
 - Fixed a bug where Assets field buttons weren’t wrapping for narrow containers. ([#15419](https://github.com/craftcms/cms/issues/15419))
-- Fixed a PHP error that could occur when converting a custom field to a Money field. ([#15413](https://github.com/craftcms/cms/issues/15413))
+- Fixed a PHP error that could occur after converting a custom field to a Money field. ([#15413](https://github.com/craftcms/cms/issues/15413))
 
 ## 5.2.8 - 2024-07-17
 

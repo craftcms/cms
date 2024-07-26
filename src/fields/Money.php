@@ -210,14 +210,12 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
             return null;
         }
 
-        $currency = new Currency($this->currency);
-
         // Fail-safe if the value is not in the correct format
         // Try to normalize the value if there are any non-numeric characters
-        if (is_string($value) && !preg_match('/^[\d]+$/', $value)) {
+        if (is_string($value) && !preg_match('/^\d+$/', $value)) {
             try {
                 $value = MoneyHelper::normalizeString($value);
-            } catch (ParserException $exception) {
+            } catch (ParserException) {
                 // Catch a parse and return appropriately
                 if (isset($this->defaultValue) && $this->isFresh($element)) {
                     $value = $this->defaultValue;
@@ -228,7 +226,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
             }
         }
 
-        return new MoneyLibrary($value, $currency);
+        return new MoneyLibrary($value, new Currency($this->currency));
     }
 
     /**
