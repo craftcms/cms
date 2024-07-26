@@ -582,6 +582,7 @@ return [
     'Elements duplicated.' => 'Elements duplicated.',
     'Elements' => 'Elements',
     'Email Settings' => 'Email Settings',
+    'Email is required.' => 'Email is required.',
     'Email sent successfully! Check your inbox.' => 'Email sent successfully! Check your inbox.',
     'Email settings saved.' => 'Email settings saved.',
     'Email verified' => 'Email verified',
