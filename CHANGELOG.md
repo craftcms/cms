@@ -14,6 +14,7 @@
 - Fixed a bug where custom sources that weren’t enabled for any sites would be shown for all sites.
 - Fixed a SQL error that could occur when upgrading to Craft 5. ([#15407](https://github.com/craftcms/cms/pull/15407))
 - Fixed a bug where user edit forms included a Username field if had been saved to the user field layout before `useEmailAsUsername` was enabled. ([#15401](https://github.com/craftcms/cms/issues/15401))
+- Fixed a bug where Assets field buttons weren’t wrapping for narrow containers. ([#15419](https://github.com/craftcms/cms/issues/15419))
 
 ## 5.2.8 - 2024-07-17
 
