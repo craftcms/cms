@@ -21,6 +21,7 @@ use craft\validators\MoneyValidator;
 use GraphQL\Type\Definition\Type;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
+use Money\Exception\ParserException;
 use Money\Money as MoneyLibrary;
 use yii\db\Schema;
 
@@ -202,6 +203,27 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
             ];
 
             return MoneyHelper::toMoney($value);
+        }
+
+        // If it's not a string, bail
+        if (!is_string($value) && !is_int($value) && !is_float($value)) {
+            return null;
+        }
+
+        // Fail-safe if the value is not in the correct format
+        // Try to normalize the value if there are any non-numeric characters
+        if (is_string($value) && !preg_match('/^\d+$/', $value)) {
+            try {
+                $value = MoneyHelper::normalizeString($value);
+            } catch (ParserException) {
+                // Catch a parse and return appropriately
+                if (isset($this->defaultValue) && $this->isFresh($element)) {
+                    $value = $this->defaultValue;
+                } else {
+                    // Allow a `null` value
+                    return null;
+                }
+            }
         }
 
         return new MoneyLibrary($value, new Currency($this->currency));
