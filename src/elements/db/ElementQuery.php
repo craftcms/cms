@@ -330,6 +330,15 @@ class ElementQuery extends Query implements ElementQueryInterface
     public mixed $relatedTo = null;
 
     /**
+     * @var mixed The element relation criteria.
+     *
+     * See [Relations](https://craftcms.com/docs/4.x/relations.html) for supported syntax options.
+     *
+     * @used-by notRelatedTo()
+     */
+    public mixed $notRelatedTo = null;
+
+    /**
      * @var mixed The title that resulting elements must have.
      * @used-by title()
      */
@@ -1082,6 +1091,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $notRelatedTo
+     */
+    public function notRelatedTo($value): static
+    {
+        $this->notRelatedTo = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $relatedTo
      */
     public function relatedTo($value): static
@@ -1105,6 +1124,24 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $this->relatedTo($value);
         }
 
+        // If this is a `not` query we first need to remove it from the criteria
+        // $isNotQuery = false;
+        // // Normalize to an array so it is easier to pluck out the `not` keyword
+        // if (!is_array($value)) {
+        //     if (is_string($value)) {
+        //         $value = StringHelper::split($value);
+        //     } elseif ($value instanceof Collection) {
+        //         $value = $value->all();
+        //     } else {
+        //         $value = [$value];
+        //     }
+        // }
+        //
+        // if (!empty($value) && isset($value[0]) && $value[0] === 'not') {
+        //     $isNotQuery = true;
+        //     array_shift($value);
+        // }
+
         // Normalize so element/targetElement/sourceElement values get pushed down to the 2nd level
         $relatedTo = ElementRelationParamParser::normalizeRelatedToParam($this->relatedTo);
         $criteriaCount = count($relatedTo) - 1;
@@ -1116,6 +1153,11 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $relatedTo[0] = $criteriaCount > 0 ? 'and' : 'or';
         $relatedTo[] = ElementRelationParamParser::normalizeRelatedToCriteria($value);
+
+        // if ($isNotQuery) {
+        //     $relatedTo = ['not', $relatedTo];
+        // }
+
         return $this->relatedTo($relatedTo);
     }
 
@@ -1646,6 +1688,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $this->_applyRelatedToParam();
+        $this->_applyNotRelatedToParam();
         $this->_applyStructureParams($class);
         $this->_applyRevisionParams();
         $this->_applySearchParam();
@@ -2699,6 +2742,45 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $this->subQuery->andWhere($condition);
+    }
+
+    /**
+     * Applies the 'notRelatedTo' param to the query being prepared.
+     *
+     * @throws QueryAbortedException
+     */
+    private function _applyNotRelatedToParam(): void
+    {
+        if (!$this->notRelatedTo) {
+            return;
+        }
+
+        $notRelatedToParam = $this->notRelatedTo;
+
+        // Prepend `not` as this is not expect to be provided
+        if (!is_array($notRelatedToParam)) {
+            if (is_string($notRelatedToParam)) {
+                $notRelatedToParam = 'not,' . $notRelatedToParam;
+            } else {
+                // Simply nest the params if it is already an array or collection
+                $notRelatedToParam = ['not', $notRelatedToParam];
+            }
+        }
+
+        $parser = new ElementRelationParamParser([
+            'fields' => $this->customFields ? ArrayHelper::index(
+                $this->customFields,
+                fn(FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
+            ) : [],
+        ]);
+        $condition = $parser->parse($notRelatedToParam, $this->siteId !== '*' ? $this->siteId : null);
+
+        if ($condition === false) {
+            throw new QueryAbortedException();
+        }
+
+        // $this->subQuery->andWhere($condition);
+        $this->subQuery->andWhere(['not',  $condition]);
     }
 
     /**

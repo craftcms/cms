@@ -834,6 +834,33 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function preferSites(?array $value = null): static;
 
     /**
+     * Narrows the query results to only {elements} that are not related to certain other elements.
+     *
+     * See [Relations](https://craftcms.com/docs/4.x/relations.html) for a full explanation of how to work with this parameter.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all {elements} that are related to myEntry #}
+     * {% set {elements-var} = {twig-method}
+     *   .notRelatedTo(myEntry)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all {elements} that are related to $myEntry
+     * ${elements-var} = {php-method}
+     *     ->notRelatedTo($myEntry)
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     * @since 5.3.0
+     */
+    public function notRelatedTo(mixed $value): static;
+
+    /**
      * Narrows the query results to only {elements} that are related to certain other elements.
      *
      * See [Relations](https://craftcms.com/docs/4.x/relations.html) for a full explanation of how to work with this parameter.
