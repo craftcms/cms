@@ -18,6 +18,7 @@ use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Iconic;
+use craft\elements\GlobalSet;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
@@ -256,7 +257,12 @@ JS, [
                             /** @var FieldLayoutProviderInterface&Chippable $provider */
                             $provider = $layout->provider;
                             $label = $labels[] = $provider->getUiLabel();
-                            $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
+                            // special case for global sets, where we should link to the settings rather than the edit page
+                            if ($provider instanceof GlobalSet) {
+                                $url = "settings/globals/$provider->id";
+                            } else {
+                                $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
+                            }
                             $icon = $provider instanceof Iconic ? $provider->getIcon() : null;
 
                             $labelHtml = Html::beginTag('span', [
