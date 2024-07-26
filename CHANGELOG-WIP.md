@@ -97,3 +97,4 @@
 - Updated svg-sanitizer to 0.19.
 - Fixed a bug where element operations could cause deadlocks when multiple authors were working simultaneously. ([#15329](https://github.com/craftcms/cms/issues/15329))
 - Fixed a bug where newly-created Matrix blocks could lose their disabled status if the owner element had validation errors and `autosaveDrafts` was disabled. ([#15418](https://github.com/craftcms/cms/issues/15418))
+- Fixed a bug where customized settings for assets’ Temporary Uploads source were only being retained for the current user. ([#15424](https://github.com/craftcms/cms/issues/15424))

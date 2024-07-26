@@ -383,7 +383,22 @@ class Asset extends Element
             !Craft::$app->getRequest()->getIsConsoleRequest()
         ) {
             $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
-            $sources[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder);
+            $temporaryUploadFs = Craft::$app->getAssets()->getTempAssetUploadFs();
+            $sources[] = [
+                'key' => 'temp',
+                'label' => Craft::t('app', 'Temporary Uploads'),
+                'hasThumbs' => true,
+                'criteria' => ['folderId' => $temporaryUploadFolder->id],
+                'defaultSort' => ['dateCreated', 'desc'],
+                'data' => [
+                    'volume-handle' => false,
+                    'folder-id' => $temporaryUploadFolder->id,
+                    'can-upload' => false,
+                    'can-move-to' => false,
+                    'can-move-peer-files-to' => false,
+                    'fs-type' => $temporaryUploadFs::class,
+                ],
+            ];
         }
 
         return $sources;
