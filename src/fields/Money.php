@@ -206,7 +206,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
         }
 
         // If it's not a string, bail
-        if (!is_string($value)) {
+        if (!is_string($value) && !is_int($value) && !is_float($value)) {
             return null;
         }
 
@@ -214,12 +214,17 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
 
         // Fail-safe if the value is not in the correct format
         // Try to normalize the value if there are any non-numeric characters
-        if (!preg_match('/^[\d]+$/', $value)) {
+        if (is_string($value) && !preg_match('/^[\d]+$/', $value)) {
             try {
                 $value = MoneyHelper::normalizeString($value);
             } catch (ParserException $exception) {
-                // Return nothing if the value is unable to be parsed
-                return null;
+                // Catch a parse and return appropriately
+                if (isset($this->defaultValue) && $this->isFresh($element)) {
+                    $value = $this->defaultValue;
+                } else {
+                    // Allow a `null` value
+                    return null;
+                }
             }
         }
 
