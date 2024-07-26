@@ -1530,7 +1530,7 @@ JS, [
         ]);
 
         // Show in Folder
-        if ($this->canView($user)) {
+        if ($this->volumeId && $this->canView($user)) {
             $viewItems[] = [
                 'type' => MenuItemType::Link,
                 'icon' => 'magnifying-glass',
