@@ -24,7 +24,11 @@ class CraftGlobalSidebar extends HTMLElement {
       this.items.forEach((item) => {
         const tooltip = document.createElement('craft-tooltip');
         tooltip.setAttribute('placement', 'right');
-        tooltip.innerText = item.querySelector('.label')?.innerText;
+        tooltip.setAttribute('self-managed', 'true');
+        tooltip.setAttribute(
+          'aria-label',
+          item.querySelector('.label')?.innerText
+        );
         item.append(tooltip);
       });
     }

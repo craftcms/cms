@@ -31,6 +31,11 @@ Craft.ui = {
     if (config.controls) {
       $btn.attr('aria-controls', config.controls);
     }
+    if (config.data) {
+      Object.entries(config.data).forEach((item) => {
+        $btn.attr('data-' + item[0], item[1]);
+      });
+    }
     if (config.spinner) {
       $btn.append($('<div class="spinner spinner-absolute"/>'));
     }
@@ -73,6 +78,7 @@ Craft.ui = {
               : 'off'
             : config.autocomplete,
         disabled: this.getDisabledValue(config.disabled),
+        'aria-describedby': this.getDescribedByValue(config),
         readonly: config.readonly,
         title: config.title,
         placeholder: config.placeholder,
@@ -486,7 +492,7 @@ Craft.ui = {
   },
 
   createCheckboxSelect: function (config) {
-    const $container = $('<fieldset class="checkbox-select"/>');
+    const $container = $('<div class="checkbox-select"/>');
 
     if (config.class) {
       $container.addClass(config.class);
@@ -1173,6 +1179,9 @@ Craft.ui = {
     const $field = $(config.fieldset ? '<fieldset/>' : '<div/>', {
       class: 'field',
       id: config.fieldId || (config.id ? config.id + '-field' : null),
+      'aria-describedby': config.fieldset
+        ? this.getDescribedByValue(config)
+        : null,
     });
 
     if (config.first) {
@@ -1209,6 +1218,7 @@ Craft.ui = {
     if (config.instructions) {
       $('<div class="instructions"/>')
         .text(config.instructions)
+        .attr('id', this.getInstructionsId(config))
         .appendTo($field);
     }
 
@@ -1423,11 +1433,32 @@ Craft.ui = {
     return fieldTabAnchors;
   },
 
+  getInstructionsId: function (config) {
+    console.log(config);
+    return config.id
+      ? `${config.id}-instructions`
+      : `${Math.floor(Math.random() * 1000000000)}-instructions`;
+  },
+
   getAutofocusValue: function (autofocus) {
     return autofocus && !Garnish.isMobileBrowser(true) ? 'autofocus' : null;
   },
 
   getDisabledValue: function (disabled) {
     return disabled ? 'disabled' : null;
+  },
+
+  getDescribedByValue: function (config) {
+    let value = '';
+
+    if (config.instructions) {
+      value += this.getInstructionsId(config);
+    }
+
+    if (value.length) {
+      return value;
+    }
+
+    return null;
   },
 };
