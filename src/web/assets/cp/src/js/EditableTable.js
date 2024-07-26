@@ -106,6 +106,13 @@ Craft.EditableTable = Garnish.Base.extend(
 
       this.addListener(this.$addRowBtn, 'activate', 'addRow');
 
+      // don't allow lazyInitRows if any of the columns are radio checkboxes
+      this.settings.lazyInitRows =
+        this.settings.lazyInitRows &&
+        !Object.entries(this.columns).some(
+          ([colId, col]) => col.type === 'checkbox' && col.radioMode
+        );
+
       if (this.settings.lazyInitRows) {
         // Lazily create the row objects
         this.addListener(
