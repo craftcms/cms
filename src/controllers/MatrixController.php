@@ -118,8 +118,7 @@ class MatrixController extends Controller
         }
 
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-
-        if (!$elementsService->saveElement($entry, false)) {
+        if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, $user->id, markAsSaved: false)) {
             return $this->asFailure(Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => Entry::lowerDisplayName(),
             ]));

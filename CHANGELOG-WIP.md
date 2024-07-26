@@ -90,7 +90,9 @@
 - Control panel `resize` events now use ResizeObserver.
 - Craft no longer ensures that the `cpresources` folder is writable.
 - Front-end queue runner scripts are now injected before the `</body>` tag, rather than at the end of the response HTML.
+- Nested entries created for Matrix fields set to inline-editable block mode now begin life as unpublished drafts. ([#15418](https://github.com/craftcms/cms/issues/15418))
 - Updated Yii to 2.0.51.
 - Updated yii2-debug to 2.1.25.
 - Updated svg-sanitizer to 0.19.
 - Fixed a bug where element operations could cause deadlocks when multiple authors were working simultaneously. ([#15329](https://github.com/craftcms/cms/issues/15329))
+- Fixed a bug where newly-created Matrix blocks could lose their disabled status if the owner element had validation errors and `autosaveDrafts` was disabled. ([#15418](https://github.com/craftcms/cms/issues/15418))

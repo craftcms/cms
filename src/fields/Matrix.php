@@ -801,7 +801,7 @@ class Matrix extends Field implements
         }
 
         if ($value instanceof EntryQuery) {
-            $value = $value->getCachedResult() ?? $value->limit(null)->status(null)->all();
+            $value = $value->getCachedResult() ?? $value->drafts(null)->status(null)->limit(null)->all();
         }
 
         $view = Craft::$app->getView();
