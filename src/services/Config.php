@@ -43,6 +43,11 @@ class Config extends Component
     public const CATEGORY_GENERAL = 'general';
 
     /**
+     * @var string The application type (`web` or `console`).
+     */
+    public string $appType;
+
+    /**
      * @var string|null The environment ID Craft is currently running in.
      *
      * ---
@@ -94,21 +99,27 @@ class Config extends Component
     public function getConfigSettings(string $category): object
     {
         if (!isset($this->_configSettings[$category])) {
-            $this->_configSettings[$category] = $this->_createConfigObj($category);
+            $config = $this->_createConfigObj($category, $category, null);
+
+            if (isset($this->appType)) {
+                // See if an application type-specific config exists (general.web.php / general.console.php)
+                /** @var GeneralConfig|DbConfig $config */
+                $config = $this->_createConfigObj($category, "$category.$this->appType", $config);
+            }
+
+            $this->_configSettings[$category] = $config;
         }
 
         return $this->_configSettings[$category];
     }
 
-    /**
-     * Creates a new config object.
-     *
-     * @param string $category The config category
-     * @return object
-     */
-    private function _createConfigObj(string $category): object
+    private function _createConfigObj(string $category, string $filename, ?BaseConfig $existingConfig): object
     {
-        $config = $this->getConfigFromFile($category);
+        $config = $this->getConfigFromFile($filename);
+
+        if ($existingConfig && empty($config)) {
+            return $existingConfig;
+        }
 
         switch ($category) {
             case self::CATEGORY_CUSTOM:
@@ -123,6 +134,10 @@ class Config extends Component
                 break;
             default:
                 throw new InvalidArgumentException("Invalid config category: $category");
+        }
+
+        if (is_callable($config)) {
+            $config = $config($existingConfig ?? $configClass::create());
         }
 
         // Get any environment value overrides
@@ -148,12 +163,18 @@ class Config extends Component
         }
 
         $loadingConfig = $this->_loadingConfigFile;
-        $this->_loadingConfigFile = $category;
+        $this->_loadingConfigFile = $filename;
 
         $config = array_merge($config, $envConfig);
         Typecast::properties($configClass, $config);
-        /** @var BaseObject $config */
-        $config = new $configClass($config);
+
+        if ($existingConfig !== null) {
+            Craft::configure($existingConfig, $config);
+            $config = $existingConfig;
+        } else {
+            /** @var BaseObject $config */
+            $config = new $configClass($config);
+        }
 
         $this->_loadingConfigFile = $loadingConfig;
         return $config;
@@ -244,9 +265,9 @@ class Config extends Component
      * ```
      *
      * @param string $filename
-     * @return array|BaseConfig
+     * @return array|callable|BaseConfig
      */
-    public function getConfigFromFile(string $filename): array|BaseConfig
+    public function getConfigFromFile(string $filename): array|callable|BaseConfig
     {
         $path = $this->getConfigFilePath($filename);
 
@@ -263,11 +284,11 @@ class Config extends Component
         return $config;
     }
 
-    private function _configFromFileInternal(string $path): array|BaseConfig
+    private function _configFromFileInternal(string $path): array|callable|BaseConfig
     {
         $config = @include $path;
 
-        if ($config instanceof BaseConfig) {
+        if ($config instanceof BaseConfig || is_callable($config)) {
             return $config;
         }
 
@@ -317,13 +338,13 @@ class Config extends Component
     }
 
     /**
-     * Sets an environment variable value in the project's .env file.
+     * Sets an environment variable value in the project's `.env` file.
      *
      * @param string $name The environment variable name
-     * @param string $value The environment variable value
+     * @param string|false $value The environment variable value, or `false` if it should be removed.
      * @throws Exception if the .env file doesn't exist
      */
-    public function setDotEnvVar(string $name, string $value): void
+    public function setDotEnvVar(string $name, string|false $value): void
     {
         $path = $this->getDotEnvPath();
 
@@ -333,28 +354,36 @@ class Config extends Component
 
         $contents = file_get_contents($path);
         $qName = preg_quote($name, '/');
-        $slashedValue = addslashes($value);
 
-        // Only surround with quotes if the value contains a space
-        if (str_contains($slashedValue, ' ') || str_contains($slashedValue, '#')) {
-            $slashedValue = "\"$slashedValue\"";
-        }
-
-        $def = "$name=$slashedValue";
-        $token = StringHelper::randomString();
-        $contents = preg_replace("/^(\s*)$qName=.*/m", $token, $contents, -1, $count);
-
-        if ($count !== 0) {
-            $contents = str_replace($token, $def, $contents);
+        if ($value === false) {
+            $contents = preg_replace("/\s*^\s*$qName=.*/m", '', $contents);
         } else {
-            $contents = rtrim($contents);
-            $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . $def . PHP_EOL;
+            $slashedValue = addslashes($value);
+            // Only surround with quotes if the value contains a space
+            if (str_contains($slashedValue, ' ') || str_contains($slashedValue, '#')) {
+                $slashedValue = "\"$slashedValue\"";
+            }
+            $def = "$name=$slashedValue";
+
+            $token = StringHelper::randomString();
+            $contents = preg_replace("/^\s*$qName=.*/m", $token, $contents, -1, $count);
+
+            if ($count !== 0) {
+                $contents = str_replace($token, $def, $contents);
+            } else {
+                $contents = rtrim($contents);
+                $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . $def . PHP_EOL;
+            }
         }
 
         FileHelper::writeToFile($path, $contents);
 
         // Now actually set the environment variable
-        $_SERVER[$name] = $value;
+        if ($value === false) {
+            unset($_SERVER[$name]);
+        } else {
+            $_SERVER[$name] = $value;
+        }
     }
 
     /**

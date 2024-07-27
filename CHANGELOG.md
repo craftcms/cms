@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where element index result counts weren’t getting updated when the element list was refreshed but pagination was preserved. ([#15367](https://github.com/craftcms/cms/issues/15367))
+- Fixed a PHP error that occurred when making a field layout component conditional on a Time or CKEditor field. ([craftcms/ckeditor#267](https://github.com/craftcms/ckeditor/issues/267))
+- Fixed an error that occurred when editing a user via a slideout, if the current user didn’t have permission to edit the primary site. ([#15408](https://github.com/craftcms/cms/issues/15408))
+- Fixed a bug where editable tables with single-select checkbox columns weren’t deselecting the selected option automatically. ([#15415](https://github.com/craftcms/cms/issues/15415))
+- Fixed a styling issue. ([#15422](https://github.com/craftcms/cms/issues/15422))
+
 ## 4.10.6 - 2024-07-16
 
 - `craft\helpers\UrlHelper::actionUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `@web` alias wasn’t explicitly defined.
