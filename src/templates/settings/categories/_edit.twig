@@ -137,12 +137,20 @@
 
 
 {% if brandNewGroup %}
-    {% js %}
+    {% js on ready %}
         new Craft.HandleGenerator('#name', '#handle');
 
         {% for site in craft.app.sites.getAllSites() %}
-            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]', { suffix: '/{slug}' });
-            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[template]"]', { suffix: '/_category' });
+            new Craft.UriFormatGenerator(
+                '#name',
+                '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]',
+                { suffix: '/{slug}' }
+            );
+            new Craft.UriFormatGenerator(
+                '#name',
+                '#sites tr[data-id="{{ site.handle }}"] input[name$="[template]"]',
+                { suffix: '/_category' }
+            );
         {% endfor %}
     {% endjs %}
 {% endif %}
