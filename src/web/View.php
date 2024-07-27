@@ -294,7 +294,6 @@ class View extends \yii\web\View
      * @var array
      * @see startAssetBundleBuffer()
      * @see clearAssetBundleBuffer()
-     * @since 4.10.7
      */
     private array $_assetBundleBuffers = [];
 
@@ -1265,7 +1264,7 @@ class View extends \yii\web\View
      * The buffer’s contents can be cleared and returned later via [[clearAssetBundleBuffer()]].
      *
      * @see clearAssetBundleBuffer()
-     * @since 4.10.7
+     * @since 4.11.0
      */
     public function startAssetBundleBuffer(): void
     {
@@ -1279,7 +1278,7 @@ class View extends \yii\web\View
      *
      * @return array|false The asset bundles that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
      * @see startAssetBundleBuffer()
-     * @since 4.10.7
+     * @since 4.11.0
      */
     public function clearAssetBundleBuffer(): array|false
     {
