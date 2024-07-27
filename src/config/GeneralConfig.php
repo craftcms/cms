@@ -136,7 +136,7 @@ class GeneralConfig extends BaseConfig
      * ->addTrailingSlashesToUrls(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_ADD_TRAILING_SLASHES_TO_URLS=1
+     * CRAFT_ADD_TRAILING_SLASHES_TO_URLS=true
      * ```
      * :::
      *
@@ -347,7 +347,7 @@ class GeneralConfig extends BaseConfig
      * ->allowSimilarTags(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_ALLOW_SIMILAR_TAGS=1
+     * CRAFT_ALLOW_SIMILAR_TAGS=true
      * ```
      * :::
      *
@@ -363,7 +363,7 @@ class GeneralConfig extends BaseConfig
      * ->allowUppercaseInSlug(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_ALLOW_UPPERCASE_IN_SLUG=1
+     * CRAFT_ALLOW_UPPERCASE_IN_SLUG=true
      * ```
      * :::
      *
@@ -1013,7 +1013,7 @@ class GeneralConfig extends BaseConfig
      * ->disallowRobots(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_DISALLOW_ROBOTS=1
+     * CRAFT_DISALLOW_ROBOTS=true
      * ```
      * :::
      *
@@ -1030,7 +1030,7 @@ class GeneralConfig extends BaseConfig
      * ->disableGraphqlTransformDirective(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_DISABLE_GRAPHQL_TRANSFORM_DIRECTIVE=1
+     * CRAFT_DISABLE_GRAPHQL_TRANSFORM_DIRECTIVE=true
      * ```
      * :::
      *
@@ -1048,7 +1048,7 @@ class GeneralConfig extends BaseConfig
      *  ->asyncCsrfInputs(true)
      *  ```
      *  ```shell Environment Override
-     *  CRAFT_ASYNC_CSRF_INPUTS=1
+     *  CRAFT_ASYNC_CSRF_INPUTS=true
      *  ```
      *  :::
      *
@@ -1065,7 +1065,7 @@ class GeneralConfig extends BaseConfig
      * ->enableBasicHttpAuth(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_ENABLE_BASIC_HTTP_AUTH=1
+     * CRAFT_ENABLE_BASIC_HTTP_AUTH=true
      * ```
      * :::
      *
@@ -1199,7 +1199,7 @@ class GeneralConfig extends BaseConfig
      * ->setGraphqlDatesToSystemTimeZone(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_SET_GRAPHQL_DATES_TO_SYSTEM_TIMEZONE=1
+     * CRAFT_SET_GRAPHQL_DATES_TO_SYSTEM_TIMEZONE=true
      * ```
      * :::
      *
@@ -1380,7 +1380,7 @@ class GeneralConfig extends BaseConfig
      * ->generateTransformsBeforePageLoad(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD=1
+     * CRAFT_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD=true
      * ```
      * :::
      *
@@ -1451,7 +1451,7 @@ class GeneralConfig extends BaseConfig
      * ->headlessMode(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_HEADLESS_MODE=1
+     * CRAFT_HEADLESS_MODE=true
      * ```
      * :::
      *
@@ -1633,7 +1633,7 @@ class GeneralConfig extends BaseConfig
      * ->limitAutoSlugsToAscii(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_LIMIT_AUTO_SLUGS_TO_ASCII=1
+     * CRAFT_LIMIT_AUTO_SLUGS_TO_ASCII=true
      * ```
      * :::
      *
@@ -1878,7 +1878,7 @@ class GeneralConfig extends BaseConfig
      * ->omitScriptNameInUrls(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_OMIT_SCRIPT_NAME_IN_URLS=1
+     * CRAFT_OMIT_SCRIPT_NAME_IN_URLS=true
      * ```
      * :::
      *
@@ -1901,7 +1901,7 @@ class GeneralConfig extends BaseConfig
      * ->optimizeImageFilesize(false)
      * ```
      * ```shell Environment Override
-     * CRAFT_OPTIMIZE_IMAGE_FILESIZE=1
+     * CRAFT_OPTIMIZE_IMAGE_FILESIZE=false
      * ```
      * :::
      *
@@ -2132,7 +2132,7 @@ class GeneralConfig extends BaseConfig
      * ->preserveCmykColorspace(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_PRESERVE_CMYK_COLORSPACE=1
+     * CRAFT_PRESERVE_CMYK_COLORSPACE=true
      * ```
      * :::
      *
@@ -2153,7 +2153,7 @@ class GeneralConfig extends BaseConfig
      * ->preserveExifData(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_PRESERVE_EXIF_DATA=1
+     * CRAFT_PRESERVE_EXIF_DATA=true
      * ```
      * :::
      *
@@ -2192,7 +2192,7 @@ class GeneralConfig extends BaseConfig
      * ->preventUserEnumeration(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_PREVENT_USER_ENUMERATION=1
+     * CRAFT_PREVENT_USER_ENUMERATION=true
      * ```
      * :::
      *
@@ -2341,7 +2341,7 @@ class GeneralConfig extends BaseConfig
      * ->rasterizeSvgThumbs(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_RASTERIZE_SVG_THUMBS=1
+     * CRAFT_RASTERIZE_SVG_THUMBS=true
      * ```
      * :::
      *
@@ -2493,7 +2493,7 @@ class GeneralConfig extends BaseConfig
      * ->revAssetUrls(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_REV_ASSET_URLS=1
+     * CRAFT_REV_ASSET_URLS=true
      * ```
      * :::
      *
@@ -2642,7 +2642,7 @@ class GeneralConfig extends BaseConfig
      * ->sendContentLengthHeader(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_SEND_CONTENT_LENGTH_HEADER=1
+     * CRAFT_SEND_CONTENT_LENGTH_HEADER=true
      * ```
      * :::
      *
@@ -2871,7 +2871,7 @@ class GeneralConfig extends BaseConfig
      * ->storeUserIps(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_STORE_USER_IPS=1
+     * CRAFT_STORE_USER_IPS=true
      * ```
      * :::
      *
@@ -2961,7 +2961,7 @@ class GeneralConfig extends BaseConfig
      * ->translationDebugOutput(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_TRANSLATION_DEBUG_OUTPUT=1
+     * CRAFT_TRANSLATION_DEBUG_OUTPUT=true
      * ```
      * :::
      *
@@ -3036,7 +3036,7 @@ class GeneralConfig extends BaseConfig
      * ->useEmailAsUsername(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_USE_EMAIL_AS_USERNAME=1
+     * CRAFT_USE_EMAIL_AS_USERNAME=true
      * ```
      * :::
      *
@@ -3067,7 +3067,7 @@ class GeneralConfig extends BaseConfig
      * ->useIframeResizer(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_USE_IFRAME_RESIZER=1
+     * CRAFT_USE_IFRAME_RESIZER=true
      * ```
      * :::
      *
@@ -3086,7 +3086,7 @@ class GeneralConfig extends BaseConfig
      * ->usePathInfo(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_USE_PATH_INFO=1
+     * CRAFT_USE_PATH_INFO=true
      * ```
      * :::
      *
@@ -3105,7 +3105,7 @@ class GeneralConfig extends BaseConfig
      * ->useSecureCookies(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_USE_SECURE_COOKIES=1
+     * CRAFT_USE_SECURE_COOKIES=true
      * ```
      * :::
      *
@@ -3125,7 +3125,7 @@ class GeneralConfig extends BaseConfig
      * ->useSslOnTokenizedUrls(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_USE_SSL_ON_TOKENIZED_URLS=1
+     * CRAFT_USE_SSL_ON_TOKENIZED_URLS=true
      * ```
      * :::
      *
