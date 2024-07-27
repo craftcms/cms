@@ -39,8 +39,10 @@
 - GraphQL mutations for saving drafts of nested entries are now named with `Field` after the Matrix/CKEditor field handle. ([#15269](https://github.com/craftcms/cms/issues/15269))
 - The `allowedGraphqlOrigins` config setting is now deprecated. `craft\filters\Cors` should be used instead. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - The `permissionsPolicyHeader` config settings is now deprecated. `craft\filters\Headers` should be used instead. ([#15397](https://github.com/craftcms/cms/pull/15397))
+- `{% cache %}` tags now cache any asset bundles registered within them.
 
 ### Extensibility
+- Added `craft\base\ApplicationTrait::getDb2()`. ([#15384](https://github.com/craftcms/cms/pull/15384))
 - Added `craft\base\ElementInterface::addInvalidNestedElementIds()`.
 - Added `craft\base\ElementInterface::getInvalidNestedElementIds()`.
 - Added `craft\base\FieldLayoutComponent::EVENT_DEFINE_SHOW_IN_FORM`. ([#15260](https://github.com/craftcms/cms/issues/15260))
@@ -68,7 +70,8 @@
 - Added `craft\services\Entries::EVENT_AFTER_MOVE_TO_SECTION`.
 - Added `craft\services\Entries::EVENT_BEFORE_MOVE_TO_SECTION`.
 - Added `craft\services\Entries::moveEntryToSection()`.
-- Added `craft\base\ApplicationTrait::getDb2()`. ([#15384](https://github.com/craftcms/cms/pull/15384))
+- Added `craft\web\View::clearAssetBundleBuffer()`.
+- Added `craft\web\View::startAssetBundleBuffer()`.
 - `craft\helpers\DateTimeHelper::toIso8601()` now has a `$setToUtc` argument.
 - `craft\helpers\UrlHelper::cpUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `baseCpUrl` config setting isn’t set, and the `@web` alias wasn’t explicitly defined. ([#15374](https://github.com/craftcms/cms/issues/15374))
 - `craft\services\Config::setDotEnvVar()` now accepts `false` for its `value` argument, which removes the environment variable from the `.env` file.
