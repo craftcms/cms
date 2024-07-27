@@ -13,10 +13,12 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\caching\TagDependency;
+use yii\web\AssetBundle;
 
 /**
  * Template Caches service.
@@ -200,6 +202,11 @@ class TemplateCaches extends Component
             $bufferedCssFiles = $this->_parseExternalResourceTags($bufferedCssFiles, 'href');
             $bufferedMetaTags = $this->_parseSelfClosingTags($bufferedMetaTags);
 
+            $bufferedAssetBundles = Collection::make($bufferedAssetBundles)
+                ->map(fn(AssetBundle $bundle, string $name) => [$name, $bundle->jsOptions['position'] ?? null])
+                ->values()
+                ->all();
+
             if ($saveCache) {
                 array_push(
                     $cacheValue,
@@ -342,9 +349,8 @@ class TemplateCaches extends Component
             $view->registerMetaTag($options, $key);
         }
 
-        foreach ($bufferedAssetBundles as $key => $assetBundle) {
-            $position = $assetBundle->jsOptions['position'] ?? null;
-            $view->registerAssetBundle($key, $position);
+        foreach ($bufferedAssetBundles as [$name, $position]) {
+            $view->registerAssetBundle($name, $position);
         }
     }
 
