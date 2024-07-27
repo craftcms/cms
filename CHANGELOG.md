@@ -7,6 +7,7 @@
 - Fixed an error that occurred when editing a user via a slideout, if the current user didn’t have permission to edit the primary site. ([#15408](https://github.com/craftcms/cms/issues/15408))
 - Fixed a bug where editable tables with single-select checkbox columns weren’t deselecting the selected option automatically. ([#15415](https://github.com/craftcms/cms/issues/15415))
 - Fixed a styling issue. ([#15422](https://github.com/craftcms/cms/issues/15422))
+- Fixed a bug where category groups’ Template settings weren’t being auto-populated for new groups.
 
 ## 4.10.6 - 2024-07-16
 
