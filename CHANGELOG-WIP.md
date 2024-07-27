@@ -40,6 +40,7 @@
 - The `allowedGraphqlOrigins` config setting is now deprecated. `craft\filters\Cors` should be used instead. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - The `permissionsPolicyHeader` config settings is now deprecated. `craft\filters\Headers` should be used instead. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - `{% cache %}` tags now cache any asset bundles registered within them.
+- Auto-populated section and category group Template settings are now suffixed with `.twig`.
 
 ### Extensibility
 - Added `craft\base\ApplicationTrait::getDb2()`. ([#15384](https://github.com/craftcms/cms/pull/15384))
