@@ -17,11 +17,14 @@
 - Added the `lazyGqlTypes` config setting. ([#15429](https://github.com/craftcms/cms/issues/15429))
 - The `allowedGraphqlOrigins` config setting is now deprecated. `craft\filters\Cors` should be used instead. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - The `permissionsPolicyHeader` config settings is now deprecated. `craft\filters\Headers` should be used instead. ([#15397](https://github.com/craftcms/cms/pull/15397))
+- `{% cache %}` tags now cache any asset bundles registered within them.
 
 ### Extensibility
 - Added `craft\config\GeneralConfig::addAlias()`. ([#15346](https://github.com/craftcms/cms/pull/15346))
 - Added `craft\filters\Cors`. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - Added `craft\filters\Headers`. ([#15397](https://github.com/craftcms/cms/pull/15397))
+- Added `craft\web\View::clearAssetBundleBuffer()`.
+- Added `craft\web\View::startAssetBundleBuffer()`.
 - Added `Craft.EnvVarGenerator`.
 - `craft\helpers\UrlHelper::cpUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `baseCpUrl` config setting isn’t set, and the `@web` alias wasn’t explicitly defined. ([#15374](https://github.com/craftcms/cms/issues/15374))
 - `craft\services\Config::setDotEnvVar()` now accepts `false` for its `value` argument, which removes the environment variable from the `.env` file.
