@@ -201,11 +201,30 @@ class TemplateCaches extends Component
             $bufferedMetaTags = $this->_parseSelfClosingTags($bufferedMetaTags);
 
             if ($saveCache) {
-                array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags, $bufferedAssetBundles);
+                array_push(
+                    $cacheValue,
+                    $bufferedJs,
+                    $bufferedScripts,
+                    $bufferedCss,
+                    $bufferedJsFiles,
+                    $bufferedCssFiles,
+                    $bufferedHtml,
+                    $bufferedMetaTags,
+                    $bufferedAssetBundles,
+                );
             }
 
             // Re-register the JS and CSS
-            $this->_registerResources($bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags, $bufferedAssetBundles);
+            $this->_registerResources(
+                $bufferedJs,
+                $bufferedScripts,
+                $bufferedCss,
+                $bufferedJsFiles,
+                $bufferedCssFiles,
+                $bufferedHtml,
+                $bufferedMetaTags,
+                $bufferedAssetBundles,
+            );
         }
 
         if (!$saveCache) {
