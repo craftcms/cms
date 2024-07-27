@@ -1622,6 +1622,23 @@ class GeneralConfig extends BaseConfig
     public ?bool $isSystemLive = null;
 
     /**
+     * @var bool Whether GraphQL types should be generated lazily.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->lazyGqlTypes(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_LAZY_GQL_TYPES=true
+     * ```
+     * :::
+     *
+     * @group GraphQL
+     * @since 4.11.0
+     */
+    public bool $lazyGqlTypes = false;
+
+    /**
      * @var bool Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
      *
      * ::: tip
@@ -4978,6 +4995,25 @@ class GeneralConfig extends BaseConfig
     public function isSystemLive(?bool $value): self
     {
         $this->isSystemLive = $value;
+        return $this;
+    }
+
+    /**
+     * Whether GraphQL types should be generated lazily.
+     *
+     * ```php
+     * ->lazyGqlTypes(true)
+     * ```
+     *
+     * @group GraphQL
+     * @param bool $value
+     * @return self
+     * @see $lazyGqlTypes
+     * @since 4.11.0
+     */
+    public function lazyGqlTypes(bool $value): self
+    {
+        $this->lazyGqlTypes = $value;
         return $this;
     }
 
