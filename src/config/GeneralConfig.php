@@ -1635,7 +1635,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @since 4.11.0
+     * @since 5.3.0
      */
     public bool $lazyGqlTypes = false;
 
@@ -5073,7 +5073,7 @@ class GeneralConfig extends BaseConfig
      * @param bool $value
      * @return self
      * @see $lazyGqlTypes
-     * @since 4.11.0
+     * @since 5.3.0
      */
     public function lazyGqlTypes(bool $value): self
     {

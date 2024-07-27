@@ -17,7 +17,7 @@ use yii\base\InvalidArgumentException;
  * @property-write int|string|Site|array<int|string|Site> $site
  * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.11.0
+ * @since 5.3.0
  */
 trait SiteFilterTrait
 {
