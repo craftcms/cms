@@ -33,6 +33,7 @@
 ### Development
 - Added support for application-type based `general` and `db` configs (e.g. `config/general.web.php`). ([#15346](https://github.com/craftcms/cms/pull/15346))
 - `general` and `db` config files can now return a callable that modifies an existing config object. ([#15346](https://github.com/craftcms/cms/pull/15346))
+- Added the `env`, `env/set`, and `env/remove` commands. ([#15431](https://github.com/craftcms/cms/pull/15431))
 - Color, Country, Email, Icon, Link, Plain Text, and Table fields’ element query params now support passing in an array with `value` and `caseInsensitive` keys. ([#15404](https://github.com/craftcms/cms/pull/15404))
 - GraphQL mutations for saving drafts of nested entries are now named with `Field` after the Matrix/CKEditor field handle. ([#15269](https://github.com/craftcms/cms/issues/15269))
 - The `allowedGraphqlOrigins` config setting is now deprecated. `craft\filters\Cors` should be used instead. ([#15397](https://github.com/craftcms/cms/pull/15397))
@@ -69,6 +70,7 @@
 - Added `craft\base\ApplicationTrait::getDb2()`. ([#15384](https://github.com/craftcms/cms/pull/15384))
 - `craft\helpers\DateTimeHelper::toIso8601()` now has a `$setToUtc` argument.
 - `craft\helpers\UrlHelper::cpUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `baseCpUrl` config setting isn’t set, and the `@web` alias wasn’t explicitly defined. ([#15374](https://github.com/craftcms/cms/issues/15374))
+- `craft\services\Config::setDotEnvVar()` now accepts `false` for its `value` argument, which removes the environment variable from the `.env` file.
 - Deprecated `craft\fields\BaseRelationField::$localizeRelations`.
 - Deprecated `craft\fields\Url`, which is now an alias for `craft\fields\Link`.
 - Deprecated `craft\services\Relations`.
