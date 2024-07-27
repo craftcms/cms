@@ -499,7 +499,7 @@ class Gql extends Component
                 $event->result = $cachedResult;
             } else {
                 $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($event->query);
-                $schemaDef = $this->getSchemaDef($schema, true);
+                $schemaDef = $this->getSchemaDef($schema, $debugMode || $isIntrospectionQuery);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
 
