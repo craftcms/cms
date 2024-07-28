@@ -1,5 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
+import postcssValueParser from 'tailwindcss/src/value-parser';
+
 /**
  * FieldToggle
  */
@@ -109,7 +111,7 @@ Craft.FieldToggle = Garnish.Base.extend({
 
   getToggleVal: function () {
     if (this.targetPrefix !== null) {
-      return this.$toggle.val();
+      return this.normalizeToggleVal(this.$toggle.val());
     }
 
     switch (this.type) {
@@ -136,10 +138,15 @@ Craft.FieldToggle = Garnish.Base.extend({
         }
 
         // Normalize the value
-        return typeof postVal === 'undefined' || postVal === null
-          ? null
-          : postVal.replace(/[^\w]+/g, '-');
+        return this.normalizeToggleVal(postVal);
     }
+  },
+
+  normalizeToggleVal: function (val) {
+    if (!val) {
+      return null;
+    }
+    return val.replace(/[^\w]+/g, '-');
   },
 
   onToggleChange: function () {
