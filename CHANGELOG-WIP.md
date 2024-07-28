@@ -68,6 +68,7 @@
 - Added `craft\fields\linktypes\Url`.
 - Added `craft\filters\Cors`. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - Added `craft\filters\Headers`. ([#15397](https://github.com/craftcms/cms/pull/15397))
+- Added `craft\helpers\App::configure()`.
 - Added `craft\services\Elements::ensureBulkOp()`.
 - Added `craft\services\Entries::EVENT_AFTER_MOVE_TO_SECTION`.
 - Added `craft\services\Entries::EVENT_BEFORE_MOVE_TO_SECTION`.

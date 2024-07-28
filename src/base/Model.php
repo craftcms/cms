@@ -11,6 +11,7 @@ use Closure;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
+use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
@@ -75,13 +76,12 @@ abstract class Model extends \yii\base\Model implements ModelInterface
             }
         }
 
-        // Apply $config here rather than from BaseObject::__construct(),
-        // so we can avoid calling Yii::configure() in case \Yii isn't loaded yet.
-        // (Mainly an issue for GeneralConfig/DbConfig, if config/general.php
+        // Call App::configure() rather than BaseYii::configure() (via BaseObject::__construct()),
+        // in case \Yii isn't loaded yet. (Mainly an issue for GeneralConfig/DbConfig, if config/general.php
         // or config/db.php return an array.)
-        foreach ($config as $name => $value) {
-            $this->$name = $value;
-        }
+        // Note that inlining the foreach loop is no good, because then private/protected properties will be
+        // set directly rather than going through __set().
+        App::configure($this, $config);
 
         // Intentionally not passing $config along
         parent::__construct();
