@@ -11,6 +11,7 @@
 - Users’ Permissions, Preferences, and Password & Verification screens now have “Save and continue editing” actions, as well as support for <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcuts.
 - User profile screens now have a “Create and set permissions” button for new users, if the current user has access to edit user permissions. ([#15356](https://github.com/craftcms/cms/pull/15356))
 - User permission screens now have a “Save and send activation email” button for inactive users, if the current user has the “Administrate users” permission. ([#15356](https://github.com/craftcms/cms/pull/15356))
+- Single section entries without a title are now labelled by their section’s name in the control panel.
 
 ### Accessibility
 - Improved the accessibility of two-step verification setup. ([#15229](https://github.com/craftcms/cms/pull/15229))
