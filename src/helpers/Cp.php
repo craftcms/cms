@@ -403,19 +403,17 @@ class Cp
             $html .= self::componentStatusIndicatorHtml($component) ?? '';
         }
 
-        if ($config['showLabel'] || isset($config['labelHtml'])) {
-            if (isset($config['labelHtml'])) {
-                $labelHtml = $config['labelHtml'];
-            } else {
-                $labelHtml = Html::encode($labelHtml);
-                if ($config['showHandle']) {
-                    /** @var Chippable&Grippable $component */
-                    $handle = $component->getHandle();
-                    if ($handle) {
-                        $labelHtml .= Html::tag('div', Html::encode($handle), [
-                            'class' => ['my-2xs', 'smalltext', 'light', 'code'],
-                        ]);
-                    }
+        if (isset($config['labelHtml'])) {
+            $html .= $config['labelHtml'];
+        } elseif ($config['showLabel']) {
+            $labelHtml = Html::encode($labelHtml);
+            if ($config['showHandle']) {
+                /** @var Chippable&Grippable $component */
+                $handle = $component->getHandle();
+                if ($handle) {
+                    $labelHtml .= Html::tag('div', Html::encode($handle), [
+                        'class' => ['my-2xs', 'smalltext', 'light', 'code'],
+                    ]);
                 }
             }
             $html .= Html::tag('div', $labelHtml, [
