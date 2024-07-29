@@ -551,7 +551,7 @@ li.crumb {
         box-shadow: var(--inner-focus-ring);
       }
 
-      span:not(.context-label) {
+      & > span:not(.context-label) {
         display: block;
         white-space: nowrap;
         overflow: hidden;

@@ -21,6 +21,7 @@
 - Fixed a PHP error that could occur after converting a custom field to a Money field. ([#15413](https://github.com/craftcms/cms/issues/15413))
 - Fixed a bug where temp assets had a “Show in folder” action.
 - Fixed a bug where edit pages didn’t have headings if the element didn’t have a title.
+- Fixed a bug where tooltips for truncated element chips in the breadcrumbs were also getting truncated.
 
 ## 5.2.8 - 2024-07-17
 
