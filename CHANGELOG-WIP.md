@@ -22,6 +22,7 @@
 
 ### Extensibility
 - Added `craft\config\GeneralConfig::addAlias()`. ([#15346](https://github.com/craftcms/cms/pull/15346))
+- Added `craft\elements\Asset::$sanitizeOnUpload`. ([#15430](https://github.com/craftcms/cms/discussions/15430))
 - Added `craft\filters\Cors`. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - Added `craft\filters\Headers`. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - Added `craft\web\View::clearAssetBundleBuffer()`.
