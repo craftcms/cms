@@ -682,6 +682,7 @@ JS, [
                         $structuresService = Craft::$app->getStructures();
 
                         $structureElements = (clone($query))
+                            ->select(['**' => '**'])
                             ->status(null)
                             ->all();
 

@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.2.9 - 2024-07-29
 
 - Added `craft\helpers\Money::normalizeString()`.
 - Updated web-auth/webauthn-lib to 4.9. ([#15377](https://github.com/craftcms/cms/issues/15377))
@@ -23,6 +23,8 @@
 - Fixed a bug where edit pages didn’t have headings if the element didn’t have a title.
 - Fixed a bug where tooltips for truncated element chips in the breadcrumbs were also getting truncated.
 - Fixed a bug where it wasn’t possible to sort elements by custom field values in descending order. ([#15434](https://github.com/craftcms/cms/issues/15434))
+- Fixed a PHP error that could occur when rendering an element partial template. ([#15426](https://github.com/craftcms/cms/issues/15426))
+- Fixed a bug where scalar/single-column queries weren’t returning any results if they originated from a relation field’s value, and the field’s “Maintain hierarchy” setting was enabled. ([#15414](https://github.com/craftcms/cms/issues/15414))
 
 ## 5.2.8 - 2024-07-17
 
