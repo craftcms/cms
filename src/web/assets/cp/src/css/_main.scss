@@ -1685,6 +1685,38 @@ ul.icons {
   gap: var(--s);
 }
 
+.flex-row {
+  flex-direction: row;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.items-end {
+  align-items: end;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-baseline {
+  align-items: baseline;
+}
+
+.items-stretch {
+  align-items: stretch;
+}
+
+.gap-2xs {
+  gap: var(--2xs);
+}
+
 .gap-xs {
   gap: var(--xs);
 }
