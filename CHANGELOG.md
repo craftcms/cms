@@ -22,6 +22,7 @@
 - Fixed a bug where temp assets had a “Show in folder” action.
 - Fixed a bug where edit pages didn’t have headings if the element didn’t have a title.
 - Fixed a bug where tooltips for truncated element chips in the breadcrumbs were also getting truncated.
+- Fixed a bug where it wasn’t possible to sort elements by custom field values in descending order. ([#15434](https://github.com/craftcms/cms/issues/15434))
 
 ## 5.2.8 - 2024-07-17
 

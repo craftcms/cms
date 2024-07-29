@@ -2005,9 +2005,13 @@ abstract class Element extends Component implements ElementInterface
                 if ($sortOption['orderBy'] instanceof CoalesceColumnsExpression) {
                     $params = [];
                     $sql = $sortOption['orderBy']->getSql($params);
-                    return new Expression(sprintf('%s %s', $sql, $dir === SORT_ASC ? 'ASC' : 'DESC'), $params);
+                } elseif (is_string($sortOption['orderBy'])) {
+                    $sql = $sortOption['orderBy'];
+                } else {
+                    return $sortOption['orderBy'];
                 }
-                return $sortOption['orderBy'];
+
+                return new Expression(sprintf('%s %s', $sql, $dir === SORT_ASC ? 'ASC' : 'DESC'), $params ?? []);
             }
         }
 
