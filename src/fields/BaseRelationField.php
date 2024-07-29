@@ -765,7 +765,9 @@ JS, [
             ->sortBy(fn(CustomField $layoutElement) => $layoutElement->dateAdded)
             ->first();
 
-        return $this->layoutElement->uid === $first?->uid;
+        // Compare handles here rather than UUIDs, since the UUID will change
+        //if we're hot-swapping field layouts (e.g. changing an entry's type).
+        return $this->handle === $first?->getField()->handle;
     }
 
     /**
