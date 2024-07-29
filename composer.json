@@ -65,7 +65,7 @@
     "voku/stringy": "^6.4.0",
     "web-auth/webauthn-lib": "~4.9.0",
     "webonyx/graphql-php": "~14.11.5",
-    "yiisoft/yii2": "~2.0.51",
+    "yiisoft/yii2": "~2.0.51.0",
     "yiisoft/yii2-debug": "~2.1.25.0",
     "yiisoft/yii2-queue": "~2.3.2",
     "yiisoft/yii2-symfonymailer": "^4.0.0"
