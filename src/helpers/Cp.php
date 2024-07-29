@@ -308,6 +308,7 @@ class Cp
      * - `selectable` – Whether the chip should include a checkbox input
      * - `showActionMenu` – Whether the chip should include an action menu
      * - `showLabel` – Whether the component’s label should be shown
+     * - `showHandle` – Whether the component’s handle should be show (only applies if the component implements [[Grippable]])
      * - `showStatus` – Whether the component’s status should be shown (if it has statuses)
      * - `showThumb` – Whether the component’s thumbnail should be shown (if it has one)
      * - `size` – The size of the chip (`small` or `large`)
