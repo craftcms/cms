@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.2.9 - 2024-07-29
 
 - Added `craft\helpers\Money::normalizeString()`.
 - Updated web-auth/webauthn-lib to 4.9. ([#15377](https://github.com/craftcms/cms/issues/15377))
