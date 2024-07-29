@@ -624,6 +624,7 @@ class App
 
         if (
             getenv('PHP_BINARY') === false &&
+            /** @phpstan-ignore-next-line */
             PHP_BINARY &&
             PHP_SAPI === 'cgi-fcgi' &&
             str_ends_with(PHP_BINARY, 'php-cgi')
