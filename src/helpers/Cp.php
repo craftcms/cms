@@ -14,6 +14,7 @@ use craft\base\Colorable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\Grippable;
 use craft\base\Iconic;
 use craft\base\Statusable;
 use craft\base\Thumbable;
@@ -330,6 +331,7 @@ class Cp
             'selectable' => false,
             'showActionMenu' => false,
             'showLabel' => true,
+            'showHandle' => false,
             'showStatus' => true,
             'showThumb' => true,
             'size' => self::CHIP_SIZE_SMALL,
@@ -337,10 +339,11 @@ class Cp
         ];
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
+        $config['showHandle'] = $config['showHandle'] && $component instanceof Grippable;
         $config['showStatus'] = $config['showStatus'] && $component instanceof Statusable;
         $config['showThumb'] = $config['showThumb'] && ($component instanceof Thumbable || $component instanceof Iconic);
 
-        $label = $component->getUiLabel();
+        $labelHtml = $component->getUiLabel();
         $color = $component instanceof Colorable ? $component->getColor() : null;
 
         $attributes = ArrayHelper::merge([
@@ -362,6 +365,7 @@ class Cp
                     'selectable' => $config['selectable'],
                     'id' => Craft::$app->getView()->namespaceInputId($config['id']),
                     'showLabel' => $config['showLabel'],
+                    'showHandle' => $config['showHandle'],
                     'showStatus' => $config['showStatus'],
                     'showThumb' => $config['showThumb'],
                     'size' => $config['size'],
@@ -399,8 +403,23 @@ class Cp
         }
 
         if ($config['showLabel'] || isset($config['labelHtml'])) {
-            $html .= $config['labelHtml'] ?? Html::tag('div', Html::encode($label), [
+            if (isset($config['labelHtml'])) {
+                $labelHtml = $config['labelHtml'];
+            } else {
+                $labelHtml = Html::encode($labelHtml);
+                if ($config['showHandle']) {
+                    /** @var Chippable&Grippable $component */
+                    $handle = $component->getHandle();
+                    if ($handle) {
+                        $labelHtml .= Html::tag('div', Html::encode($handle), [
+                            'class' => ['my-2xs', 'smalltext', 'light', 'code'],
+                        ]);
+                    }
+                }
+            }
+            $html .= Html::tag('div', $labelHtml, [
                 'id' => sprintf('%s-label', $config['id']),
+                'class' => 'chip-label',
             ]);
         }
 

@@ -65,7 +65,9 @@
         {%- endif -%}
         <span class="menu-item-label">{{ item.label ?? item.html|raw }}</span>
         {% if item.description is defined %}
-          <div class="menu-item-description smalltext light">{{ item.description }}</div>
+          <div class="menu-item-description mt-2xs smalltext light">{{ item.description }}</div>
+        {% elseif item.handle is defined %}
+          <div class="menu-item-description mt-2xs smalltext light code">{{ item.handle }}</div>
         {% endif %}
         {% if selected %}
           <span class="visually-hidden">, selected</span>
