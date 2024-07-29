@@ -27,6 +27,7 @@
 - Relation fields now have Translation Method settings with all the usual options, replacing “Manage relations on a per-site basis” settings. ([#15400](https://github.com/craftcms/cms/pull/15400))
 - Entry types are no longer required to have unique names. ([#14774](https://github.com/craftcms/cms/issues/14774), [#15438](https://github.com/craftcms/cms/pull/15438))
 - Entry type selects within section and Matrix/CKEditor field settings now display entry types’ handles in addition to their names, to avoid ambiguity. ([#15438](https://github.com/craftcms/cms/pull/15438))
+- The Entry Types index page now displays entry type chips in place of plain text labels, so their custom colors are shown. ([#15432](https://github.com/craftcms/cms/discussions/15432))
 - Icon fields now have an “Include Pro icons” setting, which determines whether Font Awesome Pro icon should be selectable. ([#15242](https://github.com/craftcms/cms/issues/15242))
 - New sites’ Base URL settings now default to an environment variable name based on the site name. ([#15347](https://github.com/craftcms/cms/pull/15347))
 - Craft now warns against using the `@web` alias for URL settings, regardless of whether it was explicitly defined. ([#15347](https://github.com/craftcms/cms/pull/15347))

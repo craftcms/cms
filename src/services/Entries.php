@@ -28,6 +28,7 @@ use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
@@ -1690,17 +1691,17 @@ SQL)->execute();
             fn(EntryType $a, EntryType $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name)
         );
 
-        $entryTypeIds = array_map(fn(EntryType $entryType) => $entryType->id, $entryTypes);
-
         $tableData = [];
         foreach ($entryTypes as $entryType) {
+            $label = $entryType->getUiLabel();
             $tableData[] = [
                 'id' => $entryType->id,
-                'title' => Craft::t('site', $entryType->name),
-                'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
-                'iconColor' => $entryType->color?->value,
-                'url' => $entryType->getCpEditUrl(),
-                'name' => Craft::t('site', $entryType->name),
+                'title' => $label,
+                'chip' => Cp::chipHtml($entryType, [
+                    'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
+                        'class' => ['chip-label', 'cell-bold'],
+                    ]),
+                ]),
                 'handle' => $entryType->handle,
             ];
         }
