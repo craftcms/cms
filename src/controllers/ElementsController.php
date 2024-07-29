@@ -579,25 +579,19 @@ class ElementsController extends Controller
      */
     private function _editElementTitles(ElementInterface $element): array
     {
-        if ($element::hasTitles()) {
+        if ($element::hasTitles() && $element->title !== null && $element->title !== '') {
             $title = $element->title;
-
-            if ($title === '') {
-                if (!$element->id || $element->getIsUnpublishedDraft()) {
-                    $title = Craft::t('app', 'Create a new {type}', [
-                        'type' => $element::lowerDisplayName(),
-                    ]);
-                } else {
-                    $title = sprintf('%s %s', $element::displayName(), $element->id);
-                }
-            }
+        } elseif (!$element->id || $element->getIsUnpublishedDraft()) {
+            $title = Craft::t('app', 'Create a new {type}', [
+                'type' => $element::lowerDisplayName(),
+            ]);
         } else {
             $title = $element->getUiLabel();
         }
 
-        $docTitle = $title;
+        $docTitle = $element->getUiLabel();
 
-        if ($element->getIsDraft()) {
+        if ($element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
             /** @var ElementInterface|DraftBehavior $element */
             if ($element->isProvisionalDraft) {
                 $docTitle .= ' — ' . Craft::t('app', 'Edited');
