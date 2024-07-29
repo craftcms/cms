@@ -55,6 +55,7 @@
 - Added `craft\base\RelationFieldInterface`. ([#15400](https://github.com/craftcms/cms/pull/15400))
 - Added `craft\base\RelationFieldTrait`. ([#15400](https://github.com/craftcms/cms/pull/15400))
 - Added `craft\config\GeneralConfig::addAlias()`. ([#15346](https://github.com/craftcms/cms/pull/15346))
+- Added `craft\elements\Asset::$sanitizeOnUpload`. ([#15430](https://github.com/craftcms/cms/discussions/15430))
 - Added `craft\elements\Entry::isEntryTypeCompatible()`.
 - Added `craft\elements\actions\MoveToSection`.
 - Added `craft\events\DefineShowFieldLayoutComponentInFormEvent`. ([#15260](https://github.com/craftcms/cms/issues/15260))
