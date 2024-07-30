@@ -610,7 +610,11 @@ class Category extends Element
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
+        try {
+            return $this->getGroup()->getFieldLayout();
+        } catch (InvalidConfigException) {
+            return null;
+        }
     }
 
     /**

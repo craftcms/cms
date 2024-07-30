@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where it wasn’t possible to render element partial templates for assets, categories, or tags. ([#15426](https://github.com/craftcms/cms/issues/15426))
+
 ## 5.2.9 - 2024-07-29
 
 - Added `craft\helpers\Money::normalizeString()`.
