@@ -1281,16 +1281,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        if (($fieldLayout = parent::getFieldLayout()) !== null) {
-            return $fieldLayout;
-        }
         try {
-            $entryType = $this->getType();
+            return $this->getType()->getFieldLayout();
         } catch (InvalidConfigException) {
             // The entry type was probably deleted
             return null;
         }
-        return $entryType->getFieldLayout();
     }
 
     /**

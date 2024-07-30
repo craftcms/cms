@@ -1937,12 +1937,11 @@ JS,[
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        if (($fieldLayout = parent::getFieldLayout()) !== null) {
-            return $fieldLayout;
+        try {
+            return $this->getVolume()->getFieldLayout();
+        } catch (InvalidConfigException) {
+            return null;
         }
-
-        $volume = $this->getVolume();
-        return $volume->getFieldLayout();
     }
 
     /**
