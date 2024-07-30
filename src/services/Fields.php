@@ -58,7 +58,6 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\records\Field as FieldRecord;
@@ -1415,7 +1414,7 @@ class Fields extends Component
                 'title' => Craft::t('site', $field->name),
                 'translatable' => $field->getIsTranslatable(null) ? ($field->getTranslationDescription(null) ?? Craft::t('app', 'This field is translatable.')) : false,
                 'searchable' => (bool)$field->searchable,
-                'url' => UrlHelper::url('settings/fields/edit/' . $field->id),
+                'url' => $field->getCpEditUrl(),
                 'handle' => $field->handle,
                 'type' => [
                     'isMissing' => $field instanceof MissingField,
