@@ -273,7 +273,6 @@ MD));
 
         $this->stdout(" → Running content migration …\n");
         $contentMigrator->migrateUp($migrationName);
-        $this->stdout("\n");
 
         $this->success(sprintf(<<<EOD
 Entry types merged. Commit `%s`
