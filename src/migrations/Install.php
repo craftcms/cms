@@ -452,6 +452,7 @@ class Install extends Migration
             'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable(Table::GLOBALSETS, [
@@ -864,6 +865,7 @@ class Install extends Migration
         $this->createIndex(null, Table::FIELDLAYOUTS, ['type'], false);
         $this->createIndex(null, Table::FIELDS, ['handle', 'context']);
         $this->createIndex(null, Table::FIELDS, ['context'], false);
+        $this->createIndex(null, Table::FIELDS, ['dateDeleted'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['name'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['handle'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['fieldLayoutId'], false);

@@ -748,10 +748,10 @@ class Fields extends Component
         try {
             $field->beforeApplyDelete();
 
-            // Delete the row in fields
-            Db::delete(Table::FIELDS, [
-                'id' => $fieldRecord->id,
-            ]);
+            // Soft-delete the row in `fields`
+            Craft::$app->getDb()->createCommand()
+                ->softDelete(Table::FIELDS, ['id' => $fieldRecord->id])
+                ->execute();
 
             $field->afterDelete();
 
@@ -1290,7 +1290,7 @@ class Fields extends Component
         $transaction = $db->beginTransaction();
 
         try {
-            $fieldRecord = $this->_getFieldRecord($fieldUid);
+            $fieldRecord = $this->_getFieldRecord($fieldUid, true);
             $isNewField = $fieldRecord->getIsNewRecord();
             $oldSettings = $fieldRecord->getOldAttribute('settings');
 
@@ -1319,7 +1319,11 @@ class Fields extends Component
             $fieldRecord->type = $data['type'];
             $fieldRecord->settings = $data['settings'] ?? null;
 
-            $fieldRecord->save(false);
+            if ($fieldRecord->dateDeleted) {
+                $fieldRecord->restore();
+            } else {
+                $fieldRecord->save(false);
+            }
 
             $transaction->commit();
         } catch (Throwable $e) {
@@ -1474,6 +1478,7 @@ class Fields extends Component
                 'fields.uid',
             ])
             ->from(['fields' => Table::FIELDS])
+            ->where(['fields.dateDeleted' => null])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
     }
 
@@ -1505,10 +1510,15 @@ class Fields extends Component
      * Returns a field record for a given UID
      *
      * @param string $uid
+     * @param bool $withTrashed
      * @return FieldRecord
      */
-    private function _getFieldRecord(string $uid): FieldRecord
+    private function _getFieldRecord(string $uid, bool $withTrashed = false): FieldRecord
     {
-        return FieldRecord::findOne(['uid' => $uid]) ?? new FieldRecord();
+        $query = $withTrashed ? FieldRecord::findWithTrashed() : FieldRecord::find();
+        $query->andWhere(['uid' => $uid]);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var FieldRecord */
+        return $query->one() ?? new FieldRecord();
     }
 }
