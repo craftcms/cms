@@ -280,16 +280,10 @@ class Fields extends Component
             foreach ($this->getAllFieldTypes() as $class) {
                 /** @var string|FieldInterface $class */
                 /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
-                if ($class === get_class($field)) {
-                    if ($includeCurrent) {
-                        $types[] = $class;
-                    }
-                    continue;
-                }
-
-                $otherDbType = $class::dbType();
-
-                if (is_string($otherDbType) && Db::areColumnTypesCompatible($dbType, $otherDbType)) {
+                if (
+                    ($includeCurrent || $class !== $field::class) &&
+                    $this->areFieldTypesCompatible($field::class, $class)
+                ) {
                     $types[] = $class;
                 }
             }
@@ -311,6 +305,35 @@ class Fields extends Component
         }
 
         return $types;
+    }
+
+    /**
+     * Returns whether the two given field types are considered compatible with each other.
+     *
+     * @param string|FieldInterface $fieldA
+     * @param string|FieldInterface $fieldB
+     * @phpstan-param class-string<FieldInterface> $fieldA
+     * @phpstan-param class-string<FieldInterface> $fieldB
+     * @return bool
+     * @since 5.3.0
+     */
+    public function areFieldTypesCompatible(string $fieldA, string $fieldB): bool
+    {
+        if ($fieldA === $fieldB) {
+            return true;
+        }
+
+        $dbTypeA = $fieldA::dbType();
+        if (!is_string($dbTypeA)) {
+            return false;
+        }
+
+        $dbTypeB = $fieldB::dbType();
+        if (!is_string($dbTypeB)) {
+            return false;
+        }
+
+        return Db::areColumnTypesCompatible($dbTypeA, $dbTypeB);
     }
 
     /**
