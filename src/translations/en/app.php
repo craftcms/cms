@@ -1289,7 +1289,6 @@ return [
     'Required' => 'Required',
     'Requirements' => 'Requirements',
     'Requires PHP {version}' => 'Requires PHP {version}',
-    'Resaving moved entries' => 'Resaving moved entries',
     'Resaving {name} entries' => 'Resaving {name} entries',
     'Resaving {type} entries' => 'Resaving {type} entries',
     'Resaving {type}' => 'Resaving {type}',
