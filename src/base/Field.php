@@ -806,6 +806,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param FieldInterface $persistingField
      * @param string|null $reason
      * @return bool
+     * @since 5.3.0
      */
     public function canMergeInto(FieldInterface $persistingField, ?string &$reason): bool
     {
@@ -819,6 +820,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param FieldInterface $outgoingField
      * @param string|null $reason
      * @return bool
+     * @since 5.3.0
      */
     public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
     {
@@ -830,6 +832,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Performs actions after the field has been merged into the given field.
      *
      * @param FieldInterface $persistingField
+     * @since 5.3.0
      */
     public function afterMergeInto(FieldInterface $persistingField)
     {
@@ -843,6 +846,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Performs actions after the given field has been merged into this one.
      *
      * @param FieldInterface $outgoingField
+     * @since 5.3.0
      */
     public function afterMergeFrom(FieldInterface $outgoingField)
     {
