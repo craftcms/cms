@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\MergeableFieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\QueryParam;
 use craft\events\DefineInputOptionsEvent;
@@ -32,7 +33,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
+abstract class BaseOptionsField extends Field implements PreviewableFieldInterface, MergeableFieldInterface
 {
     /**
      * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.

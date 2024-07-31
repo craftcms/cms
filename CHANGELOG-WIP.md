@@ -34,6 +34,7 @@
 - Entry types created from Matrix block types no longer show the Slug field by default, after upgrading to Craft 5. ([#15379](https://github.com/craftcms/cms/issues/15379))
 - Global sets listed within fields’ “Used by” lists now link to their settings page, rather than their edit page. ([#15423](https://github.com/craftcms/cms/discussions/15423))
 - Added the `entry-types/merge` command. ([#15444](https://github.com/craftcms/cms/pull/15444))
+- Added the `fields/merge` command. ([#15454](https://github.com/craftcms/cms/pull/15454))
 
 ### Development
 - Added support for application-type based `general` and `db` configs (e.g. `config/general.web.php`). ([#15346](https://github.com/craftcms/cms/pull/15346))
@@ -51,9 +52,17 @@
 - Added `craft\base\ApplicationTrait::getDb2()`. ([#15384](https://github.com/craftcms/cms/pull/15384))
 - Added `craft\base\ElementInterface::addInvalidNestedElementIds()`.
 - Added `craft\base\ElementInterface::getInvalidNestedElementIds()`.
+- Added `craft\base\Field::EVENT_AFTER_MERGE_FROM`.
+- Added `craft\base\Field::EVENT_AFTER_MERGE_INTO`.
+- Added `craft\base\Field::afterMergeFrom()`. ([#15454](https://github.com/craftcms/cms/pull/15454))
+- Added `craft\base\Field::afterMergeInto()`. ([#15454](https://github.com/craftcms/cms/pull/15454))
+- Added `craft\base\Field::canMergeFrom()`. ([#15454](https://github.com/craftcms/cms/pull/15454))
+- Added `craft\base\Field::canMergeInto()`. ([#15454](https://github.com/craftcms/cms/pull/15454))
 - Added `craft\base\FieldLayoutComponent::EVENT_DEFINE_SHOW_IN_FORM`. ([#15260](https://github.com/craftcms/cms/issues/15260))
 - Added `craft\base\FieldLayoutElement::$dateAdded`.
+- Added `craft\base\FieldTrait::$dateDeleted`.
 - Added `craft\base\Grippable`.
+- Added `craft\base\MergeableFieldInterface`. ([#15454](https://github.com/craftcms/cms/pull/15454))
 - Added `craft\base\RelationFieldInterface`. ([#15400](https://github.com/craftcms/cms/pull/15400))
 - Added `craft\base\RelationFieldTrait`. ([#15400](https://github.com/craftcms/cms/pull/15400))
 - Added `craft\config\GeneralConfig::addAlias()`. ([#15346](https://github.com/craftcms/cms/pull/15346))
@@ -80,6 +89,7 @@
 - Added `craft\services\Entries::EVENT_AFTER_MOVE_TO_SECTION`.
 - Added `craft\services\Entries::EVENT_BEFORE_MOVE_TO_SECTION`.
 - Added `craft\services\Entries::moveEntryToSection()`.
+- Added `craft\services\Fields::areFieldTypesCompatible()`.
 - Added `craft\web\View::clearAssetBundleBuffer()`.
 - Added `craft\web\View::startAssetBundleBuffer()`.
 - `craft\helpers\DateTimeHelper::toIso8601()` now has a `$setToUtc` argument.
@@ -110,6 +120,7 @@
 - Craft no longer ensures that the `cpresources` folder is writable.
 - Front-end queue runner scripts are now injected before the `</body>` tag, rather than at the end of the response HTML.
 - Nested entries created for Matrix fields set to inline-editable block mode now begin life as unpublished drafts. ([#15418](https://github.com/craftcms/cms/issues/15418))
+- Custom fields are now soft-deleted initially.
 - Updated Yii to 2.0.51.
 - Updated yii2-debug to 2.1.25.
 - Updated svg-sanitizer to 0.19.

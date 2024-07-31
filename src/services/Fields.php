@@ -280,16 +280,10 @@ class Fields extends Component
             foreach ($this->getAllFieldTypes() as $class) {
                 /** @var string|FieldInterface $class */
                 /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
-                if ($class === get_class($field)) {
-                    if ($includeCurrent) {
-                        $types[] = $class;
-                    }
-                    continue;
-                }
-
-                $otherDbType = $class::dbType();
-
-                if (is_string($otherDbType) && Db::areColumnTypesCompatible($dbType, $otherDbType)) {
+                if (
+                    ($includeCurrent || $class !== $field::class) &&
+                    $this->areFieldTypesCompatible($field::class, $class)
+                ) {
                     $types[] = $class;
                 }
             }
@@ -311,6 +305,35 @@ class Fields extends Component
         }
 
         return $types;
+    }
+
+    /**
+     * Returns whether the two given field types are considered compatible with each other.
+     *
+     * @param string|FieldInterface $fieldA
+     * @param string|FieldInterface $fieldB
+     * @phpstan-param class-string<FieldInterface> $fieldA
+     * @phpstan-param class-string<FieldInterface> $fieldB
+     * @return bool
+     * @since 5.3.0
+     */
+    public function areFieldTypesCompatible(string $fieldA, string $fieldB): bool
+    {
+        if ($fieldA === $fieldB) {
+            return true;
+        }
+
+        $dbTypeA = $fieldA::dbType();
+        if (!is_string($dbTypeA)) {
+            return false;
+        }
+
+        $dbTypeB = $fieldB::dbType();
+        if (!is_string($dbTypeB)) {
+            return false;
+        }
+
+        return Db::areColumnTypesCompatible($dbTypeA, $dbTypeB);
     }
 
     /**
@@ -748,10 +771,10 @@ class Fields extends Component
         try {
             $field->beforeApplyDelete();
 
-            // Delete the row in fields
-            Db::delete(Table::FIELDS, [
-                'id' => $fieldRecord->id,
-            ]);
+            // Soft-delete the row in `fields`
+            Craft::$app->getDb()->createCommand()
+                ->softDelete(Table::FIELDS, ['id' => $fieldRecord->id])
+                ->execute();
 
             $field->afterDelete();
 
@@ -1290,7 +1313,7 @@ class Fields extends Component
         $transaction = $db->beginTransaction();
 
         try {
-            $fieldRecord = $this->_getFieldRecord($fieldUid);
+            $fieldRecord = $this->_getFieldRecord($fieldUid, true);
             $isNewField = $fieldRecord->getIsNewRecord();
             $oldSettings = $fieldRecord->getOldAttribute('settings');
 
@@ -1319,7 +1342,11 @@ class Fields extends Component
             $fieldRecord->type = $data['type'];
             $fieldRecord->settings = $data['settings'] ?? null;
 
-            $fieldRecord->save(false);
+            if ($fieldRecord->dateDeleted) {
+                $fieldRecord->restore();
+            } else {
+                $fieldRecord->save(false);
+            }
 
             $transaction->commit();
         } catch (Throwable $e) {
@@ -1474,6 +1501,7 @@ class Fields extends Component
                 'fields.uid',
             ])
             ->from(['fields' => Table::FIELDS])
+            ->where(['fields.dateDeleted' => null])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
     }
 
@@ -1505,10 +1533,15 @@ class Fields extends Component
      * Returns a field record for a given UID
      *
      * @param string $uid
+     * @param bool $withTrashed
      * @return FieldRecord
      */
-    private function _getFieldRecord(string $uid): FieldRecord
+    private function _getFieldRecord(string $uid, bool $withTrashed = false): FieldRecord
     {
-        return FieldRecord::findOne(['uid' => $uid]) ?? new FieldRecord();
+        $query = $withTrashed ? FieldRecord::findWithTrashed() : FieldRecord::find();
+        $query->andWhere(['uid' => $uid]);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var FieldRecord */
+        return $query->one() ?? new FieldRecord();
     }
 }

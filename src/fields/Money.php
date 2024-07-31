@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\MoneyFieldConditionRule;
 use craft\gql\types\Money as MoneyType;
@@ -36,7 +37,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Money extends Field implements InlineEditableFieldInterface, SortableFieldInterface
+class Money extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
 {
     /**
      * @inheritdoc

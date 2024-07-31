@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\fields\conditions\CountryFieldConditionRule;
 use craft\helpers\Cp;
 use yii\db\Schema;
@@ -21,7 +22,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.6.0
  */
-class Country extends Field implements InlineEditableFieldInterface
+class Country extends Field implements InlineEditableFieldInterface, MergeableFieldInterface
 {
     /**
      * @inheritdoc

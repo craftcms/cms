@@ -14,6 +14,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\base\RelationalFieldInterface;
 use craft\behaviors\EventBehavior;
@@ -58,7 +59,8 @@ use yii\validators\NumberValidator;
 abstract class BaseRelationField extends Field implements
     InlineEditableFieldInterface,
     EagerLoadingFieldInterface,
-    RelationalFieldInterface
+    RelationalFieldInterface,
+    MergeableFieldInterface
 {
     /**
      * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
