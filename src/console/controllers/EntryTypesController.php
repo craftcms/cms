@@ -176,13 +176,11 @@ MD));
                 $this->stdout(' ' . $this->markdownToAnsi("- `$oldHandle` → `$newHandle`") . "\n");
             }
             $this->stdout("\n");
+            if (!$this->confirm('Proceed?')) {
+                return ExitCode::OK;
+            }
+            $this->stdout("\n");
         }
-
-        if (!$this->confirm('Proceed?')) {
-            return ExitCode::OK;
-        }
-
-        $this->stdout("\n");
 
         if (!empty($addFields)) {
             $this->do("Updating {$persistingEntryType->name}’s field layout", function() use (
