@@ -13,8 +13,10 @@ use craft\base\Element;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
@@ -38,6 +40,7 @@ use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -67,6 +70,7 @@ use yii\db\Expression;
 class Matrix extends Field implements
     ElementContainerFieldInterface,
     EagerLoadingFieldInterface,
+    MergeableFieldInterface,
     GqlInlineFragmentFieldInterface
 {
     /**
@@ -1146,6 +1150,32 @@ JS;
                 'revisions' => null,
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
+    {
+        // Make sure this field has all the entry types the outgoing field has
+        /** @var self $outgoingField */
+        $outgoingEntryTypeIds = array_map(fn(EntryType $entryType) => $entryType->id, $outgoingField->getEntryTypes());
+        $persistentEntryTypeIds = array_map(fn(EntryType $entryType) => $entryType->id, $this->getEntryTypes());
+        $missingEntryTypeIds = array_diff($outgoingEntryTypeIds, $persistentEntryTypeIds);
+        if (!empty($missingEntryTypeIds)) {
+            $reason = "$this->name doesn’t have all of the entry types that $outgoingField->name does.";
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMergeFrom(FieldInterface $outgoingField)
+    {
+        Db::update(DbTable::ENTRIES, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+        parent::afterMergeFrom($outgoingField);
     }
 
     /**

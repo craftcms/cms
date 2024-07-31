@@ -45,24 +45,28 @@ class BaseFieldMergeMigration extends Migration
             return false;
         }
 
-        if (!$outgoingField->canMergeInto($persistingField)) {
+        $reason = null;
+        if (!$outgoingField->canMergeInto($persistingField, $reason)) {
             echo sprintf(
-                "%s (%s) doesn’t support merging into %s (%s).\n",
+                "%s (%s) doesn’t support merging into %s (%s)%s\n",
                 $outgoingField->name,
                 $outgoingField::displayName(),
                 $persistingField->name,
                 $persistingField::displayName(),
+                $reason ? ": $reason" : '.',
             );
             return false;
         }
 
-        if (!$persistingField->canMergeFrom($outgoingField)) {
+        $reason = null;
+        if (!$persistingField->canMergeFrom($outgoingField, $reason)) {
             echo sprintf(
-                "%s (%s) doesn’t support being merged into from %s (%s).\n",
+                "%s (%s) doesn’t support being merged into from %s (%s)%s\n",
                 $persistingField->name,
                 $persistingField::displayName(),
                 $outgoingField->name,
                 $outgoingField::displayName(),
+                $reason ? ": $reason" : '.',
             );
             return false;
         }

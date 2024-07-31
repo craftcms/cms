@@ -804,9 +804,10 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Returns whether the field can be merged into the given field.
      *
      * @param FieldInterface $persistingField
+     * @param string|null $reason
      * @return bool
      */
-    public function canMergeInto(FieldInterface $persistingField): bool
+    public function canMergeInto(FieldInterface $persistingField, ?string &$reason): bool
     {
         // Go with whether the DB types are compatible by default
         return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $persistingField::class);
@@ -816,9 +817,10 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Returns whether the given field can be merged into this one.
      *
      * @param FieldInterface $outgoingField
+     * @param string|null $reason
      * @return bool
      */
-    public function canMergeFrom(FieldInterface $outgoingField): bool
+    public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
     {
         // Go with whether the DB types are compatible by default
         return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $outgoingField::class);

@@ -110,11 +110,18 @@ EOD,
             }
         }
 
-        $canMergeIntoFieldA = $fieldB->canMergeInto($fieldA) && $fieldA->canMergeFrom($fieldB);
-        $canMergeIntoFieldB = $fieldA->canMergeInto($fieldB) && $fieldB->canMergeFrom($fieldA);
+        $reasonA1 = $reasonA2 = $reasonB1 = $reasonB2 = null;
+        $canMergeIntoFieldA = $fieldB->canMergeInto($fieldA, $reasonA1) && $fieldA->canMergeFrom($fieldB, $reasonA2);
+        $canMergeIntoFieldB = $fieldA->canMergeInto($fieldB, $reasonB1) && $fieldB->canMergeFrom($fieldA, $reasonB2);
 
         if (!$canMergeIntoFieldA && !$canMergeIntoFieldB) {
-            $this->stderr("Neither of those fields supports merging into/from the other one.\n", Console::FG_RED);
+            $reasons = array_filter([$reasonA1, $reasonA2, $reasonB1, $reasonB2]);
+            $this->stderr(sprintf(
+                "Neither of those fields support merging into/from the other one%s\n",
+                !empty($reasons)
+                    ? sprintf(":\n\n%s\n", implode("\n", array_map(fn(string $reason) => " - $reason", $reasons)))
+                    : '.',
+            ), Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
