@@ -827,7 +827,7 @@ class UserQuery extends ElementQuery
 
         $this->joinElementTable(Table::USERS);
 
-        $this->query->select([
+        $this->query->addSelect([
             'users.photoId',
             'users.pending',
             'users.locked',
