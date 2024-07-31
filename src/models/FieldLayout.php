@@ -567,6 +567,17 @@ class FieldLayout extends Model
     /**
      * Returns the layout elements of a given type.
      *
+     * @return FieldLayoutElement[]
+     * @since 5.3.0
+     */
+    public function getAllElements(): array
+    {
+        return iterator_to_array($this->_elements());
+    }
+
+    /**
+     * Returns the layout elements of a given type.
+     *
      * @template T
      * @param string $class
      * @phpstan-param class-string<T> $class
@@ -905,16 +916,19 @@ class FieldLayout extends Model
     }
 
     /**
-     * @param callable $filter
+     * @param callable|null $filter
      * @param ElementInterface|null $element
      * @return Generator
      */
-    private function _elements(callable $filter, ?ElementInterface $element = null): Generator
+    private function _elements(?callable $filter = null, ?ElementInterface $element = null): Generator
     {
         foreach ($this->getTabs() as $tab) {
             if (!$element || !isset($tab->uid) || $tab->showInForm($element)) {
                 foreach ($tab->getElements() as $layoutElement) {
-                    if ($filter($layoutElement) && (!$element || !isset($layoutElement->uid) || $layoutElement->showInForm($element))) {
+                    if (
+                        (!$filter || $filter($layoutElement)) &&
+                        (!$element || !isset($layoutElement->uid) || $layoutElement->showInForm($element))
+                    ) {
                         yield $layoutElement;
                     }
                 }
