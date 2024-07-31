@@ -36,7 +36,7 @@ class <?= $className ?> extends BaseEntryTypeMergeMigration
     public string $outgoingEntryTypeUid = '<?= $outgoingEntryTypeUid ?>';
     public array $layoutElementUidMap = [
 <?php foreach ($layoutElementUidMap as $old => $new): ?>
-        '<?= $old ?>' => '<?= $old ?>',
+        '<?= $old ?>' => '<?= $new ?>',
 <?php endforeach; ?>
     ];
 }

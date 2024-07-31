@@ -78,7 +78,7 @@ class BaseEntryTypeMergeMigration extends Migration
             if ($changed) {
                 Db::update(
                     Table::ELEMENTS_SITES,
-                    ['content' => Json::encode($content)],
+                    ['content' => $content],
                     ['id' => $row['id']],
                 );
             }
