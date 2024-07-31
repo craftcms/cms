@@ -86,10 +86,36 @@ class BaseEntryTypeMergeMigration extends Migration
             echo "✓\n";
         }
 
+        echo '    > Restoring entries … ';
+        $elementsTable = Table::ELEMENTS;
+        $entriesTable = Table::ENTRIES;
+        if ($this->db->getIsMysql()) {
+            $this->db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+INNER JOIN $entriesTable [[entries]] ON [[entries.id]] = [[elements.id]]
+SET [[elements.dateDeleted]] = NULL
+WHERE [[entries.typeId]] = $outgoingEntryTypeRecord->id
+AND [[entries.deletedWithEntryType]] = 1
+SQL)->execute();
+        } else {
+            $this->db->createCommand(<<<SQL
+UPDATE $elementsTable [[elements]]
+SET [[dateDeleted]] = NULL
+FROM $entriesTable [[entries]]
+WHERE [[entries.id]] = [[elements.id]]
+AND [[entries.typeId]] = $outgoingEntryTypeRecord->id
+AND [[entries.deletedWithEntryType]] = TRUE
+SQL)->execute();
+        }
+        echo "✓\n";
+
         echo '    > Reassigning entries … ';
         Db::update(
             Table::ENTRIES,
-            ['typeId' => $persistingEntryTypeRecord->id],
+            [
+                'typeId' => $persistingEntryTypeRecord->id,
+                'deletedWithEntryType' => false,
+            ],
             ['typeId' => $outgoingEntryTypeRecord->id],
         );
         echo "✓\n";
