@@ -2,6 +2,7 @@
 
 ## Unreleased (5.3.0)
 
+- Double-clicking on element index rows no longer opens the element editor slideout, when inline editing is active. ([#15441](https://github.com/craftcms/cms/discussions/15441))
 - Country field values are now set to `CommerceGuys\Addressing\Country\Country` objects. ([#15463](https://github.com/craftcms/cms/pull/15463))
 - Added `craft\elements\Address::getCountry()`. ([#15463](https://github.com/craftcms/cms/pull/15463))
 
