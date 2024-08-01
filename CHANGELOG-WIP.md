@@ -18,10 +18,12 @@
 - The `allowedGraphqlOrigins` config setting is now deprecated. `craft\filters\Cors` should be used instead. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - The `permissionsPolicyHeader` config settings is now deprecated. `craft\filters\Headers` should be used instead. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - `{% cache %}` tags now cache any asset bundles registered within them.
+- Country field values are now set to `CommerceGuys\Addressing\Country\Country` objects. ([#15463](https://github.com/craftcms/cms/pull/15463))
 - Auto-populated section and category group Template settings are now suffixed with `.twig`.
 
 ### Extensibility
 - Added `craft\config\GeneralConfig::addAlias()`. ([#15346](https://github.com/craftcms/cms/pull/15346))
+- Added `craft\elements\Address::getCountry()`. ([#15463](https://github.com/craftcms/cms/pull/15463))
 - Added `craft\elements\Asset::$sanitizeOnUpload`. ([#15430](https://github.com/craftcms/cms/discussions/15430))
 - Added `craft\filters\Cors`. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - Added `craft\filters\Headers`. ([#15397](https://github.com/craftcms/cms/pull/15397))
