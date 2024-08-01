@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased (5.3.0)
+
+- Country field values are now set to `CommerceGuys\Addressing\Country\Country` objects. ([#15463](https://github.com/craftcms/cms/pull/15463))
+- Added `craft\elements\Address::getCountry()`. ([#15463](https://github.com/craftcms/cms/pull/15463))
+
 ## 5.3.0-beta.1 - 2024-07-31
 
 ### Content Management

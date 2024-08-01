@@ -1457,6 +1457,7 @@ class App
      *
      * @param object $object the object to be configured
      * @param array $properties the property initial values given in terms of name-value pairs.
+     * @since 5.3.0
      */
     public static function configure(object $object, array $properties): void
     {
