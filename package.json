@@ -33,7 +33,7 @@
     "@selectize/selectize": "selectize/selectize.js#master",
     "@types/jquery": "^3.5.7",
     "accounting": "^0.4.1",
-    "axios": "^0.27.2",
+    "axios": "^0.28.1",
     "blueimp-file-upload": "^10.31.0",
     "d3": "^4.11.0",
     "d3-format": "^1.4.4",
