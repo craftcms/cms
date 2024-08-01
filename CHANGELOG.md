@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a PHP error. ([#14635](https://github.com/craftcms/cms/issues/14635))
+
 ## 4.10.7 - 2024-07-29
 
 - Fixed a bug where element index result counts weren’t getting updated when the element list was refreshed but pagination was preserved. ([#15367](https://github.com/craftcms/cms/issues/15367))
