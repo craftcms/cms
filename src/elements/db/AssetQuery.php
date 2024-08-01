@@ -904,7 +904,7 @@ class AssetQuery extends ElementQuery
         $this->subQuery->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
         $this->query->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
 
-        $this->query->select([
+        $this->query->addSelect([
             'assets.volumeId',
             'assets.folderId',
             'assets.uploaderId',
