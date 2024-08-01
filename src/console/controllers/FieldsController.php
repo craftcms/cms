@@ -135,6 +135,7 @@ EOD,
         );
 
         unset($fieldA, $fieldB);
+        $this->stdout("\n");
 
         $this->do('Updating usages', function() use (
             $fieldsService,
