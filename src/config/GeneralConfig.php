@@ -3983,7 +3983,11 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultCpLanguage(?string $value): self
     {
-        if ($value !== null && class_exists(Craft::class, false)) {
+        if (
+            $value !== null &&
+            class_exists(Craft::class, false) &&
+            isset(Craft::$app)
+        ) {
             try {
                 $value = Localization::normalizeLanguage($value);
             } catch (InvalidArgumentException $e) {
