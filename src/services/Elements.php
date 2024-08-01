@@ -830,7 +830,12 @@ class Elements extends Component
         $rootElement = $element;
 
         if ($element instanceof NestedElementInterface) {
-            $owner = $element->getOwner();
+            try {
+                $owner = $element->getOwner();
+            } catch (InvalidConfigException) {
+                $owner = null;
+            }
+
             if ($owner) {
                 $tags[] = sprintf('element::%s', $owner->id);
 
