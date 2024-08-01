@@ -20,6 +20,7 @@
 - `{% cache %}` tags now cache any asset bundles registered within them.
 - Country field values are now set to `CommerceGuys\Addressing\Country\Country` objects. ([#15463](https://github.com/craftcms/cms/pull/15463))
 - Auto-populated section and category group Template settings are now suffixed with `.twig`.
+- `x-craft-preview`/`x-craft-live-preview` URL query string params are now added to generated URLs for Live Preview requests, so `craft\web\Request::getIsPreview()` continues to return `true` on subsequent pages loaded within the iframe. ([#15447](https://github.com/craftcms/cms/discussions/15447)) 
 
 ### Extensibility
 - Added `craft\config\GeneralConfig::addAlias()`. ([#15346](https://github.com/craftcms/cms/pull/15346))
