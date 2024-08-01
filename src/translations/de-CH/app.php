@@ -1009,7 +1009,7 @@ return [
     'New {group} category' => 'Neue {group}-Kategorie',
     'New {section} entry' => 'Neuer Eintrag in «{section}»',
     'New {total, plural, =1{position} other{positions}} saved.' => 'Neue {total, plural, =1{Position} other{Positionen}} gespeichert.',
-    'New {type}' => 'Neue {type}',
+    'New {type}' => '{type, select, Eintrag{Neuer} Benutzer{Neuer} other{Neue}} {type}',
     'New' => 'Neue',
     'Next Page' => 'Nächste Seite',
     'Next' => 'Weiter',
