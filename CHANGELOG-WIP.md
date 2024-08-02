@@ -43,6 +43,7 @@
 - Control panel `resize` events now use ResizeObserver.
 - Craft no longer ensures that the `cpresources` folder is writable.
 - Front-end queue runner scripts are now injected before the `</body>` tag, rather than at the end of the response HTML.
+- `graphql/api` requests no longer update the schema’s `lastUsed` timestamp if it was already updated within the last minute. ([#15464](https://github.com/craftcms/cms/issues/15464))
 - Updated Yii to 2.0.51.
 - Updated yii2-debug to 2.1.25.
 - Updated svg-sanitizer to 0.19.
