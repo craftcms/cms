@@ -4281,7 +4281,7 @@ table.editable {
     font-weight: normal;
     background-color: var(--gray-050);
 
-    button,
+    button:not(.lightswitch),
     a {
       display: inline-flex;
       width: var(--touch-target-size);
