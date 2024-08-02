@@ -152,13 +152,10 @@ EOD,
                 foreach ($layout->getCustomFieldElements() as $layoutElement) {
                     if ($layoutElement->getFieldUid() === $outgoingField->uid) {
                         // hard code the label, handle, and instructions, if they differ from the persistent field
-                        if ($persistingField->name !== $outgoingField->name) {
-                            $layoutElement->label ??= $outgoingField->name;
-                        }
-                        $layoutElement->handle ??= $outgoingField->handle;
-                        if ($persistingField->instructions !== $outgoingField->instructions) {
-                            $layoutElement->instructions ??= $outgoingField->instructions;
-                        }
+                        $layoutElement->label = $this->layoutElementOverride($persistingField->name, $outgoingField->name, $layoutElement->label);
+                        $layoutElement->handle = $this->layoutElementOverride($persistingField->handle, $outgoingField->handle, $layoutElement->handle);
+                        $layoutElement->instructions = $this->layoutElementOverride($persistingField->instructions, $outgoingField->instructions, $layoutElement->instructions);
+
                         $layoutElement->setField($persistingField);
                         $changed = true;
                     }
@@ -276,5 +273,14 @@ MD) . "\n\n");
                 "%s $elementDisplayName layout",
                 in_array(strtolower($elementDisplayName[0]), ['a', 'e', 'i', 'o', 'u']) ? 'an' : 'a',
             );
+    }
+
+    private function layoutElementOverride(?string $persistingFieldValue, ?string $outgoingFieldValue, ?string $override): ?string
+    {
+        $persistingFieldValue = ($persistingFieldValue === '' ? null : $persistingFieldValue);
+        $outgoingFieldValue = ($outgoingFieldValue === '' ? null : $outgoingFieldValue);
+        $override = ($override === '' ? null : $override);
+        $expected = $override ?? $outgoingFieldValue;
+        return $persistingFieldValue !== $expected ? $expected : null;
     }
 }
