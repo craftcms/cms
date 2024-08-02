@@ -18,7 +18,7 @@
 - The `allowedGraphqlOrigins` config setting is now deprecated. `craft\filters\Cors` should be used instead. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - The `permissionsPolicyHeader` config settings is now deprecated. `craft\filters\Headers` should be used instead. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - `{% cache %}` tags now cache any asset bundles registered within them.
-- Country field values are now set to `CommerceGuys\Addressing\Country\Country` objects. ([#15463](https://github.com/craftcms/cms/pull/15463))
+- Country field values are now set to `CommerceGuys\Addressing\Country\Country` objects. ([#15455](https://github.com/craftcms/cms/issues/15455), [#15463](https://github.com/craftcms/cms/pull/15463))
 - Auto-populated section and category group Template settings are now suffixed with `.twig`.
 - `x-craft-preview`/`x-craft-live-preview` URL query string params are now added to generated URLs for Live Preview requests, so `craft\web\Request::getIsPreview()` continues to return `true` on subsequent pages loaded within the iframe. ([#15447](https://github.com/craftcms/cms/discussions/15447)) 
 
