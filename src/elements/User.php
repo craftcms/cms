@@ -1890,7 +1890,6 @@ XML;
                         'params' => [
                             'userId' => $this->id,
                         ],
-                        'redirect' => Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect(),
                     ];
 
                     $copyImpersonationUrlId = sprintf('action-copy-impersonation-url-%s', mt_rand());

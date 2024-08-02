@@ -145,6 +145,9 @@
 
 - Fixed a bug where it wasn’t possible to render element partial templates for assets, categories, or tags. ([#15426](https://github.com/craftcms/cms/issues/15426))
 - Fixed an error that could occur when deleting a nested element, if its owner wasn’t saved for the same site. ([#15290](https://github.com/craftcms/cms/issues/15290))
+- Fixed a PHP error that could occur when running Codeception tests. ([#15445](https://github.com/craftcms/cms/issues/15445))
+- Fixed a bug where columns added to element queries via `EVENT_BEFORE_PREPARE` were getting overridden for all core element types except entries. ([#15446](https://github.com/craftcms/cms/pull/15446))
+- Fixed a bug where the “Sign in as” user action would redirect to the control panel even if the user didn’t have permission to access the control panel. ([#15449](https://github.com/craftcms/cms/issues/15449))
 
 ## 5.2.9 - 2024-07-29
 
