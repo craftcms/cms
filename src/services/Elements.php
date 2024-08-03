@@ -3271,6 +3271,15 @@ class Elements extends Component
         $fieldLayout = $element->getFieldLayout();
         $dirtyFields = $element->getDirtyFields();
 
+        // Get the element's site record
+        if (!$isNewElement && !$element->isNewForSite) {
+            $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
+                'elementId' => $element->id,
+                'siteId' => $element->siteId,
+            ]);
+        }
+        $element->isNewForSite = empty($siteSettingsRecord);
+
         // Validate
         if ($runValidation) {
             // If we're propagating, only validate changed custom fields
@@ -3386,14 +3395,7 @@ class Elements extends Component
             }
 
             // Save the element’s site settings record
-            if (!$isNewElement) {
-                $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
-                    'elementId' => $element->id,
-                    'siteId' => $element->siteId,
-                ]);
-            }
-
-            if ($element->isNewForSite = empty($siteSettingsRecord)) {
+            if ($element->isNewForSite) {
                 // First time we've saved the element for this site
                 $siteSettingsRecord = new Element_SiteSettingsRecord();
                 $siteSettingsRecord->elementId = $element->id;
@@ -3642,12 +3644,13 @@ class Elements extends Component
         }
 
         // If it doesn't exist yet, just clone the initial site
-        if ($isNewSiteForElement = ($siteElement === null)) {
+        if ($siteElement === null) {
             $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->siteSettingsId = null;
             $siteElement->contentId = null;
             $siteElement->setEnabledForSite($siteInfo['enabledByDefault']);
+            $siteElement->isNewForSite = true;
 
             // Keep track of this new site ID
             $element->newSiteIds[] = $siteInfo['siteId'];
@@ -3694,7 +3697,7 @@ class Elements extends Component
         if (
             $element::hasUris() &&
             (
-                $isNewSiteForElement ||
+                $siteElement->isNewForSite ||
                 in_array('uri', $element->getDirtyAttributes()) ||
                 $element->resaving
             )
@@ -3714,7 +3717,7 @@ class Elements extends Component
 
         // Copy any non-translatable field values
         if ($element::hasContent()) {
-            if ($isNewSiteForElement) {
+            if ($siteElement->isNewForSite) {
                 // Copy all the field values
                 $siteElement->setFieldValues($element->getFieldValues());
             } elseif (($fieldLayout = $element->getFieldLayout()) !== null) {

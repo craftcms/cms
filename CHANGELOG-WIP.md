@@ -50,3 +50,4 @@
 - Updated svg-sanitizer to 0.19.
 - Updated Axios to 0.28.1. ([#15448](https://github.com/craftcms/cms/issues/15448))
 - Fixed a bug where error messages returned by the `users/send-password-reset-email` action weren’t accounting for the `useEmailAsUsername` config setting. ([#15425](https://github.com/craftcms/cms/issues/15425))
+- Fixed a bug where `$element->isNewForSite` was always `false` from fields’ `normalizeValue()` methods when propagating an element to a new site.
