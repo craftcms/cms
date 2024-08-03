@@ -229,7 +229,7 @@ EOD,
                 continue;
             }
 
-            $this->stdout("\n" . $this->markdownToAnsi('**Which should persist?**') . "\n\n");
+            $this->stdout("\n" . $this->markdownToAnsi('**Which one should persist?**') . "\n\n");
 
             $choice = $this->select(
                 'Choose:',
