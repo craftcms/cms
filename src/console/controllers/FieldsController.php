@@ -16,6 +16,7 @@ use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\models\FieldLayout;
 use craft\services\Fields;
 use Illuminate\Support\Collection;
@@ -134,8 +135,212 @@ EOD,
             $canMergeIntoFieldB,
         );
 
-        unset($fieldA, $fieldB);
         $this->stdout("\n");
+        $this->mergeFields($persistingField, $outgoingField, $outgoingLayouts, $migrationPath);
+
+        $this->success(sprintf(<<<EOD
+Fields merged. Commit `%s`
+and your project config changes, and run `craft up` on other environments
+for the changes to take effect.
+EOD,
+            FileHelper::relativePath($migrationPath)
+        ));
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Finds fields with identical settings and merges them together.
+     *
+     * @return int
+     */
+    public function actionAutoMerge(): int
+    {
+        if (!$this->interactive) {
+            $this->stderr("The fields/merge command must be run interactively.\n");
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $fieldsService = Craft::$app->getFields();
+
+        /** @var Collection<Collection<FieldInterface>> $groups */
+        $groups = Collection::make($fieldsService->getAllFields())
+            ->filter(fn($field) => $field instanceof MergeableFieldInterface)
+            ->groupBy(fn(FieldInterface $field) => implode(',', [
+                $field::class,
+                (int)$field->searchable,
+                $field->translationMethod,
+                $field->translationKeyFormat ?? '-',
+                md5(Json::encode($field->getSettings())),
+            ]))
+            ->filter(function(Collection $group) {
+                if ($group->count() === 1) {
+                    return false;
+                }
+
+                $others = Collection::make($group);
+                /** @var MergeableFieldInterface $first */
+                $first = $others->shift();
+                $reason = null;
+                return $others->doesntContain(fn(MergeableFieldInterface $other) => (
+                    !$other->canMergeInto($first, $reason) ||
+                    !$first->canmergeFrom($other, $reason)
+                ));
+            });
+
+        if ($groups->isEmpty()) {
+            $this->success('No fields with identical settings could be found.');
+            return ExitCode::OK;
+        }
+
+        $migrationPaths = [];
+
+        foreach ($groups as $group) {
+            /** @var Collection<FieldInterface> $group */
+            /** @var FieldInterface $first */
+            $first = $group->first();
+
+            $this->stdout($this->markdownToAnsi(sprintf(
+                '**Found %s %s fields with identical settings:**',
+                $group->count(),
+                $first::displayName(),
+            )));
+            $this->stdout("\n\n");
+            $usagesByField = [];
+            $group = $group
+                ->each(function(FieldInterface $field) use ($fieldsService, &$usagesByField) {
+                    $usagesByField[$field->id] = $fieldsService->findFieldUsages($field);
+                })
+                ->sortBy(fn(FieldInterface $field) => $field->handle)
+                ->sortBy(fn(FieldInterface $field) => count($usagesByField[$field->id]), SORT_NUMERIC, true)
+                ->keyBy(fn(FieldInterface $field) => $field->handle)
+                ->each(function(FieldInterface $field) use (&$usagesByField) {
+                    $this->stdout($this->markdownToAnsi(sprintf(
+                        " - `%s` (%s)",
+                        $field->handle,
+                        $this->usagesDescriptor($usagesByField[$field->id]),
+                    )));
+                    $this->stdout("\n");
+                });
+
+            $this->stdout("\n");
+
+            if (!$this->confirm('Merge these fields?')) {
+                continue;
+            }
+
+            $this->stdout("\n" . $this->markdownToAnsi('**Which one should persist?**') . "\n\n");
+
+            $choice = $this->select(
+                'Choose:',
+                $group
+                    ->keyBy(fn(FieldInterface $field) => $field->handle)
+                    ->map(fn(FieldInterface $field) => $field->getUiLabel())
+                    ->all(),
+                $group->first()->handle,
+            );
+
+            $this->stdout("\n");
+            /** @var FieldInterface $persistentField */
+            $persistentField = $group->get($choice);
+
+            $group
+                ->except($choice)
+                ->each(function(FieldInterface $outgoingField) use ($persistentField, $usagesByField, &$migrationPaths) {
+                    $this->stdout($this->markdownToAnsi("Merging `{$outgoingField->handle}` → `{$persistentField->handle}`") . "\n");
+                    $this->mergeFields($persistentField, $outgoingField, $usagesByField[$outgoingField->id], $migrationPath);
+                    $migrationPaths[] = $migrationPath;
+                    $this->stdout("\n");
+                });
+        }
+
+        if (!empty($migrationPaths)) {
+            $this->success(<<<EOD
+Fields merged. Commit the new content migrations and your project config changes,
+and run `craft up` on other environments for the changes to take effect.
+EOD);
+        } else {
+            $this->failure('No fields merged.');
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * @param FieldInterface $fieldA
+     * @param FieldInterface $fieldB
+     * @param FieldLayout[] $layoutsA
+     * @param FieldLayout[] $layoutsB
+     * @param bool $canMergeIntoFieldA
+     * @param bool $canMergeIntoFieldB
+     * @return array{0:FieldInterface,1:FieldInterface,2:FieldLayout[]}
+     */
+    private function choosePersistingField(
+        FieldInterface $fieldA,
+        FieldInterface $fieldB,
+        array $layoutsA,
+        array $layoutsB,
+        bool $canMergeIntoFieldA,
+        bool $canMergeIntoFieldB,
+    ): array {
+        if ($canMergeIntoFieldA && $canMergeIntoFieldB) {
+            $infoA = $this->usagesDescriptor($layoutsA);
+            $infoB = $this->usagesDescriptor($layoutsB);
+
+            $this->stdout("\n" . $this->markdownToAnsi(<<<MD
+**Which field should persist?**
+
+ - `$fieldA->handle` ($infoA)
+ - `$fieldB->handle` ($infoB)
+MD) . "\n\n");
+
+            $choice = $this->select('Choose:', [
+                $fieldA->handle => $fieldA->name,
+                $fieldB->handle => $fieldB->name,
+            ], count($layoutsA) >= count($layoutsB) ? $fieldA->handle : $fieldB->handle);
+
+            return $choice === $fieldA->handle
+                ? [$fieldA, $fieldB, $layoutsB]
+                : [$fieldB, $fieldA, $layoutsA];
+        }
+
+        return $canMergeIntoFieldA
+            ? [$fieldA, $fieldB, $layoutsB]
+            : [$fieldB, $fieldA, $layoutsA];
+    }
+
+    private function usagesDescriptor(array $layouts): string
+    {
+        return sprintf('%s %s', count($layouts), count($layouts) === 1 ? 'usage' : 'usages');
+    }
+
+    private function layoutDescriptor(FieldLayout $layout): string
+    {
+        /** @var string|ElementInterface $elementType */
+        $elementType = $layout->type;
+        $elementDisplayName = $elementType::lowerDisplayName();
+        $providerHandle = $layout->provider?->getHandle();
+        return $providerHandle
+            ? "the `$providerHandle` $elementDisplayName layout"
+            : sprintf(
+                "%s $elementDisplayName layout",
+                in_array(strtolower($elementDisplayName[0]), ['a', 'e', 'i', 'o', 'u']) ? 'an' : 'a',
+            );
+    }
+
+    /**
+     * @param FieldInterface $persistingField
+     * @param FieldInterface $outgoingField
+     * @param FieldLayout[] $outgoingLayouts
+     * @param string|null $migrationPath
+     */
+    private function mergeFields(
+        FieldInterface $persistingField,
+        FieldInterface $outgoingField,
+        array $outgoingLayouts,
+        ?string &$migrationPath = null,
+    ): void {
+        $fieldsService = Craft::$app->getFields();
 
         $this->do('Updating usages', function() use (
             $fieldsService,
@@ -205,74 +410,7 @@ EOD,
         });
 
         $this->stdout(" → Running content migration …\n");
-        $contentMigrator->migrateUp($migrationName);
-
-        $this->success(sprintf(<<<EOD
-Fields merged. Commit `%s`
-and your project config changes, and run `craft up` on other environments
-for the changes to take effect.
-EOD,
-            FileHelper::relativePath($migrationPath)
-        ));
-
-        return ExitCode::OK;
-    }
-
-    /**
-     * @param FieldInterface $fieldA
-     * @param FieldInterface $fieldB
-     * @param FieldLayout[] $layoutsA
-     * @param FieldLayout[] $layoutsB
-     * @param bool $canMergeIntoFieldA
-     * @param bool $canMergeIntoFieldB
-     * @return array{0:FieldInterface,1:FieldInterface,2:FieldLayout[]}
-     */
-    private function choosePersistingField(
-        FieldInterface $fieldA,
-        FieldInterface $fieldB,
-        array $layoutsA,
-        array $layoutsB,
-        bool $canMergeIntoFieldA,
-        bool $canMergeIntoFieldB,
-    ): array {
-        if ($canMergeIntoFieldA && $canMergeIntoFieldB) {
-            $infoA = sprintf('%s %s', count($layoutsA), count($layoutsA) === 1 ? 'usage' : 'usages');
-            $infoB = sprintf('%s %s', count($layoutsB), count($layoutsB) === 1 ? 'usage' : 'usages');
-
-            $this->stdout("\n" . $this->markdownToAnsi(<<<MD
-**Which field should persist?**
-
- - `$fieldA->handle` ($infoA)
- - `$fieldB->handle` ($infoB)
-MD) . "\n\n");
-
-            $choice = $this->select('Choose:', [
-                $fieldA->handle => $fieldA->name,
-                $fieldB->handle => $fieldB->name,
-            ], count($layoutsA) >= count($layoutsB) ? $fieldA->handle : $fieldB->handle);
-
-            return $choice === $fieldA->handle
-                ? [$fieldA, $fieldB, $layoutsB]
-                : [$fieldB, $fieldA, $layoutsA];
-        }
-
-        return $canMergeIntoFieldA
-            ? [$fieldA, $fieldB, $layoutsB]
-            : [$fieldB, $fieldA, $layoutsA];
-    }
-
-    private function layoutDescriptor(FieldLayout $layout): string
-    {
-        /** @var string|ElementInterface $elementType */
-        $elementType = $layout->type;
-        $elementDisplayName = $elementType::lowerDisplayName();
-        $providerHandle = $layout->provider?->getHandle();
-        return $providerHandle
-            ? "the `$providerHandle` $elementDisplayName layout"
-            : sprintf(
-                "%s $elementDisplayName layout",
-                in_array(strtolower($elementDisplayName[0]), ['a', 'e', 'i', 'o', 'u']) ? 'an' : 'a',
-            );
+        Craft::$app->getContentMigrator()->migrateUp($migrationName);
     }
 
     private function layoutElementOverride(?string $persistingFieldValue, ?string $outgoingFieldValue, ?string $override): ?string
