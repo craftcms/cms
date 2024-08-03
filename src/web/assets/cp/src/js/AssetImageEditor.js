@@ -115,7 +115,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.$saveBtn = Craft.ui
           .createButton({
             class: 'save copy',
-            label: Craft.t('app', 'Save as a new asset'),
+            label: Craft.t('app', 'Save as a new {type}', {
+              type: Craft.elementTypeNames['craft\\elements\\Asset'][2],
+            }),
             spinner: true,
           })
           .appendTo(this.$buttons);

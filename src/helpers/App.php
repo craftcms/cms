@@ -1410,4 +1410,21 @@ class App
         sort($resolveItems);
         return md5(implode('', $resolveItems));
     }
+
+    /**
+     * Configures an object with property values.
+     *
+     * This is identical to [[\BaseYii::configure()]], except this class is safe to be called during application
+     * bootstrap, whereas `\BaseYii` is not.
+     *
+     * @param object $object the object to be configured
+     * @param array $properties the property initial values given in terms of name-value pairs.
+     * @since 4.11.0
+     */
+    public static function configure(object $object, array $properties): void
+    {
+        foreach ($properties as $name => $value) {
+            $object->$name = $value;
+        }
+    }
 }

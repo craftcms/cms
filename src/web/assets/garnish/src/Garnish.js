@@ -992,20 +992,27 @@ Object.assign(Garnish, {
 // Custom events
 // -----------------------------------------------------------------------------
 
-var erd;
-
-function getErd() {
-  if (typeof erd === 'undefined') {
-    erd = elementResizeDetectorMaker({
-      callOnAdd: false,
-    });
-  }
-
-  return erd;
-}
-
-function triggerResizeEvent(elem) {
-  $(elem).trigger('resize');
+let resizeObserver;
+/**
+ * @returns {ResizeObserver}
+ */
+function getResizeObserver() {
+  return (resizeObserver =
+    resizeObserver ||
+    new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const size = $.data(entry.target, 'size');
+        if (size) {
+          const {width, height} = entry.target.getBoundingClientRect();
+          if (width !== size.width || height !== size.height) {
+            $.data(entry.target, 'size', {width, height});
+            if (!Garnish.resizeEventsMuted) {
+              $(entry.target).trigger('resize');
+            }
+          }
+        }
+      }
+    }));
 }
 
 // Work them into jQuery's event system
@@ -1116,15 +1123,16 @@ $.extend($.event.special, {
         return false;
       }
 
-      $('> :last-child', this).addClass('last');
-      getErd().listenTo(this, triggerResizeEvent);
+      const {width, height} = this.getBoundingClientRect();
+      $.data(this, 'size', {width, height});
+      getResizeObserver().observe(this);
     },
     teardown: function () {
       if (this === window) {
         return false;
       }
 
-      getErd().removeListener(this, triggerResizeEvent);
+      getResizeObserver().unobserve(this);
     },
   },
 });

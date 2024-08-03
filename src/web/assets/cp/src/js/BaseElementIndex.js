@@ -573,7 +573,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         .catch((e) => {
           if (!axios.isCancel(e)) {
             this.setIndexAvailable();
-            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+            Craft.cp.displayError(e?.response?.data?.message);
           }
         });
     },
@@ -1458,7 +1458,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           .catch((e) => {
             if (!axios.isCancel(e)) {
               this.setIndexAvailable();
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              Craft.cp.displayError(e?.response?.data?.message);
             }
             reject(e);
           });
@@ -2921,7 +2921,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           checkboxMode: !!this.actions,
           onSelectionChange: this._handleSelectionChange.bind(this),
         },
-        this.getViewSettings()
+        this.getViewSettings(),
+        this.settings.viewSettings()
       );
 
       this.view = this.createView(this.getSelectedViewMode(), settings);
@@ -3198,7 +3199,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         )
           .catch((e) => {
             if (!axios.isCancel(e)) {
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              Craft.cp.displayError(e?.response?.data?.message);
             }
           })
           .finally(() => {
@@ -3326,6 +3327,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       preferStoredSource: false,
       showSourcePath: true,
       canHaveDrafts: false,
+      viewSettings: $.noop,
 
       elementTypeName: Craft.t('app', 'Element'),
       elementTypePluralName: Craft.t('app', 'Elements'),
@@ -3909,8 +3911,8 @@ const FilterHud = Garnish.HUD.extend({
           this.serialized = this.serialize();
         }
       })
-      .catch(() => {
-        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+      .catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
       });
 
     this.$hud.css('position', 'fixed');

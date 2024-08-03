@@ -1,25 +1,10 @@
 {% requireAdmin %}
 
 {% extends "_layouts/cp" %}
-{% set title = "Globals"|t('app') %}
-
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
-
-{% do view.registerTranslations('app', [
-    "Global Set Name",
-    "Handle",
-    "No global sets exist yet.",
-]) %}
 
 {% block actionButton %}
-    <a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New global set"|t('app') }}</a>
+    <a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ buttonLabel }}</a>
 {% endblock %}
-
-{% set crumbs = [
-    { label: "Settings"|t('app'), url: url('settings') }
-] %}
-
-{% set globalSets = craft.app.globals.getAllSets() %}
 
 {% block content %}
     <div id="sets-vue-admin-table"></div>

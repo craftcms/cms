@@ -7,6 +7,8 @@
 
 namespace craft\fields;
 
+use CommerceGuys\Addressing\Country\Country as CountryModel;
+use CommerceGuys\Addressing\Exception\UnknownCountryException;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
@@ -43,7 +45,19 @@ class Country extends Field implements PreviewableFieldInterface
      */
     public function normalizeValue(mixed $value, ElementInterface $element = null): mixed
     {
-        return !in_array(strtolower($value), ['', '__blank__']) ? $value : null;
+        if ($value instanceof CountryModel) {
+            return $value;
+        }
+
+        if (!$value || strtolower($value) === '__blank__') {
+            return null;
+        }
+
+        try {
+            return Craft::$app->getAddresses()->getCountryRepository()->get($value);
+        } catch (UnknownCountryException) {
+            return null;
+        }
     }
 
     /**
@@ -60,6 +74,15 @@ class Country extends Field implements PreviewableFieldInterface
             'options' => $options,
             'value' => $value,
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        /** @var CountryModel|null $value */
+        return $value?->getCountryCode();
     }
 
     /**

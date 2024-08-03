@@ -205,9 +205,9 @@
             this._fieldTypeSettingsHtml[type] = response.data;
             resolve(response.data);
           })
-          .catch(() => {
+          .catch((e) => {
             if (!this._ignoreFailedRequest) {
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              Craft.cp.displayError(e?.response?.data?.message);
             }
             reject();
           });
