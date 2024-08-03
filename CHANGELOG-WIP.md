@@ -123,6 +123,7 @@
 - The control panel now displays Ajax response-defined error messages when provided, rather than a generic “server error” message. ([#15292](https://github.com/craftcms/cms/issues/15292))
 - Craft no longer sets the `Permissions-Policy` header on control panel responses. ([#15348](https://github.com/craftcms/cms/issues/15348))
 - Control panel `resize` events now use ResizeObserver.
+- Twig templates no longer attempt to preload singles for global variable names. ([#15468](https://github.com/craftcms/cms/pull/15468))
 - Craft no longer ensures that the `cpresources` folder is writable.
 - Front-end queue runner scripts are now injected before the `</body>` tag, rather than at the end of the response HTML.
 - Nested entries created for Matrix fields set to inline-editable block mode now begin life as unpublished drafts. ([#15418](https://github.com/craftcms/cms/issues/15418))
