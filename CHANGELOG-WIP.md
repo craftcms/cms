@@ -112,6 +112,7 @@
 - Added `Craft.removeRight()`.
 - Added `Craft.ui.addAttributes()`.
 - `Craft.ElementEditor` now triggers a `checkActivity` event each time author activity is fetched. ([#15237](https://github.com/craftcms/cms/discussions/15237))
+- `Craft.NestedElementManager` now triggers an `afterInit` event after initialization. ([#15470](https://github.com/craftcms/cms/issues/15470))
 - `Craft.ensureEndsWith()` now has a `caseInsensitive` argument.
 - `Craft.ensureStartsWith()` now has a `caseInsensitive` argument.
 - `Craft.startsWith()` is no longer deprecated, and now has a `caseInsensitive` argument.
