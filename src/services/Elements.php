@@ -1105,6 +1105,9 @@ class Elements extends Component
         $duplicateOf = $element->duplicateOf;
         $element->duplicateOf = null;
 
+        $isNewForSite = $element->isNewForSite;
+        $element->isNewForSite = false;
+
         $success = $this->_saveElementInternal(
             $element,
             $runValidation,
@@ -1113,7 +1116,10 @@ class Elements extends Component
             forceTouch: $forceTouch,
             crossSiteValidate: $crossSiteValidate,
         );
+
         $element->duplicateOf = $duplicateOf;
+        $element->isNewForSite = $isNewForSite;
+
         return $success;
     }
 
