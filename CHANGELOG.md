@@ -4,6 +4,7 @@
 
 - Fixed a PHP error. ([#14635](https://github.com/craftcms/cms/issues/14635))
 - Fixed a PHP error that could occur when running Codeception tests. ([#15445](https://github.com/craftcms/cms/issues/15445))
+- Fixed a bug where `deleteAsset`, `deleteCategory`, `deleteEntry`, and `deleteTag` GraphQL mutations were returning `null` rather than `true` or `false`. ([#15465](https://github.com/craftcms/cms/issues/15465))
 
 ## 4.10.7 - 2024-07-29
 
