@@ -1509,7 +1509,7 @@ class Fields extends Component
      */
     private function _createFieldQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'fields.id',
                 'fields.dateCreated',
@@ -1527,8 +1527,14 @@ class Fields extends Component
                 'fields.uid',
             ])
             ->from(['fields' => Table::FIELDS])
-            ->where(['fields.dateDeleted' => null])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
+
+        // todo: remove after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::FIELDS, 'dateDeleted')) {
+            $query->where(['fields.dateDeleted' => null]);
+        }
+
+        return $query;
     }
 
     /**

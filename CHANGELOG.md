@@ -15,6 +15,7 @@
 - `graphql/api` requests no longer update the schema’s `lastUsed` timestamp if it was already updated within the last minute. ([#15464](https://github.com/craftcms/cms/issues/15464))
 - `Craft.NestedElementManager` now triggers an `afterInit` event after initialization. ([#15470](https://github.com/craftcms/cms/issues/15470))
 - Fixed a styling bug with lightswitches within table row headers. ([#15460](https://github.com/craftcms/cms/issues/15460))
+- Fixed a SQL error that occurred when upgrading to Craft 5. ([#15471](https://github.com/craftcms/cms/issues/15471))
 
 ## 5.3.0-beta.1 - 2024-07-31
 
