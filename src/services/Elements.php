@@ -1279,6 +1279,9 @@ class Elements extends Component
         $duplicateOf = $element->duplicateOf;
         $element->duplicateOf = null;
 
+        $isNewForSite = $element->isNewForSite;
+        $element->isNewForSite = false;
+
         $success = $this->_saveElementInternal(
             $element,
             $runValidation,
@@ -1288,7 +1291,10 @@ class Elements extends Component
             crossSiteValidate: $crossSiteValidate,
             saveContent: $saveContent,
         );
+
         $element->duplicateOf = $duplicateOf;
+        $element->isNewForSite = $isNewForSite;
+
         return $success;
     }
 
@@ -3528,6 +3534,18 @@ class Elements extends Component
         $fieldLayout = $element->getFieldLayout();
         $dirtyFields = $element->getDirtyFields();
 
+        // Get the element's site record
+        if (!$isNewElement && !$element->isNewForSite) {
+            $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
+                'elementId' => $element->id,
+                'siteId' => $element->siteId,
+            ]);
+        } else {
+            $siteSettingsRecord = null;
+        }
+
+        $element->isNewForSite = empty($siteSettingsRecord);
+
         // Validate
         if ($runValidation) {
             // If we're propagating, only validate changed custom fields
@@ -3565,6 +3583,7 @@ class Elements extends Component
             $runValidation,
             $originalDateUpdated,
             $dirtyFields,
+            $siteSettingsRecord,
         ) {
             // Figure out whether we will be updating the search index (and memoize that for nested element saves)
             $oldUpdateSearchIndex = $this->_updateSearchIndex;
@@ -3661,21 +3680,11 @@ class Elements extends Component
                 }
 
                 // Save the element’s site settings record
-                if (!$isNewElement) {
-                    $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
-                        'elementId' => $element->id,
-                        'siteId' => $element->siteId,
-                    ]);
-                }
-
-                if (!isset($siteSettingsRecord)) {
+                if ($siteSettingsRecord === null) {
                     // First time we've saved the element for this site
                     $siteSettingsRecord = new Element_SiteSettingsRecord();
                     $siteSettingsRecord->elementId = $element->id;
                     $siteSettingsRecord->siteId = $element->siteId;
-                    $element->isNewForSite = true;
-                } else {
-                    $element->isNewForSite = false;
                 }
 
                 $title = $element::hasTitles() ? $element->title : null;
@@ -3966,11 +3975,12 @@ class Elements extends Component
         }
 
         // If it doesn't exist yet, just clone the initial site
-        if ($isNewSiteForElement = ($siteElement === null)) {
+        if ($siteElement === null) {
             $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->siteSettingsId = null;
             $siteElement->setEnabledForSite($siteInfo['enabledByDefault']);
+            $siteElement->isNewForSite = true;
 
             // Keep track of this new site ID
             $element->newSiteIds[] = $siteInfo['siteId'];
@@ -4016,7 +4026,7 @@ class Elements extends Component
         if (
             $element::hasUris() &&
             (
-                $isNewSiteForElement ||
+                $siteElement->isNewForSite ||
                 in_array('uri', $element->getDirtyAttributes()) ||
                 $element->resaving
             )
@@ -4036,7 +4046,7 @@ class Elements extends Component
 
         if ($saveContent) {
             // Copy any non-translatable field values
-            if ($isNewSiteForElement) {
+            if ($siteElement->isNewForSite) {
                 // Copy all the field values
                 $siteElement->setFieldValues($element->getFieldValues());
             } else {
