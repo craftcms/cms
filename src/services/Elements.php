@@ -1105,9 +1105,6 @@ class Elements extends Component
         $duplicateOf = $element->duplicateOf;
         $element->duplicateOf = null;
 
-        $isNewForSite = $element->isNewForSite;
-        $element->isNewForSite = false;
-
         $success = $this->_saveElementInternal(
             $element,
             $runValidation,
@@ -1118,7 +1115,6 @@ class Elements extends Component
         );
 
         $element->duplicateOf = $duplicateOf;
-        $element->isNewForSite = $isNewForSite;
 
         return $success;
     }
@@ -3209,6 +3205,7 @@ class Elements extends Component
         $propagate = $propagate && $element::isLocalized() && Craft::$app->getIsMultiSite();
         $originalPropagateAll = $element->propagateAll;
         $originalFirstSave = $element->firstSave;
+        $originalIsNewForSite = $element->isNewForSite;
         $originalDateUpdated = $element->dateUpdated;
 
         $element->firstSave = (
@@ -3239,6 +3236,7 @@ class Elements extends Component
 
         if (!$element->beforeSave($isNewElement)) {
             $element->firstSave = $originalFirstSave;
+            $element->isNewForSite = $originalIsNewForSite;
             $element->propagateAll = $originalPropagateAll;
             return false;
         }
@@ -3249,6 +3247,7 @@ class Elements extends Component
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$element->siteId])) {
             $element->firstSave = $originalFirstSave;
+            $element->isNewForSite = $originalIsNewForSite;
             $element->propagateAll = $originalPropagateAll;
             throw new UnsupportedSiteException($element, $element->siteId, 'Attempting to save an element in an unsupported site.');
         }
@@ -3301,7 +3300,9 @@ class Elements extends Component
             if (($names === null || !empty($names)) && !$element->validate($names)) {
                 Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
                 $element->firstSave = $originalFirstSave;
+                $element->isNewForSite = $originalIsNewForSite;
                 $element->propagateAll = $originalPropagateAll;
+
                 return false;
             }
         }
@@ -3324,6 +3325,7 @@ class Elements extends Component
 
                     if (!$elementRecord) {
                         $element->firstSave = $originalFirstSave;
+                        $element->isNewForSite = $originalIsNewForSite;
                         $element->propagateAll = $originalPropagateAll;
                         throw new ElementNotFoundException("No element exists with the ID '$element->id'");
                     }
@@ -3374,6 +3376,7 @@ class Elements extends Component
 
                 if ($dateCreated === false) {
                     $element->firstSave = $originalFirstSave;
+                    $element->isNewForSite = $originalIsNewForSite;
                     $element->propagateAll = $originalPropagateAll;
                     throw new Exception('There was a problem calculating dateCreated.');
                 }
@@ -3430,6 +3433,7 @@ class Elements extends Component
 
             if (!$siteSettingsRecord->save(false)) {
                 $element->firstSave = $originalFirstSave;
+                $element->isNewForSite = $originalIsNewForSite;
                 $element->propagateAll = $originalPropagateAll;
                 throw new Exception('Couldn’t save elements’ site settings record.');
             }
@@ -3499,6 +3503,7 @@ class Elements extends Component
         } catch (Throwable $e) {
             $transaction->rollBack();
             $element->firstSave = $originalFirstSave;
+            $element->isNewForSite = $originalIsNewForSite;
             $element->propagateAll = $originalPropagateAll;
             $element->dateUpdated = $originalDateUpdated;
             if ($e instanceof InvalidConfigException) {
@@ -3612,6 +3617,7 @@ class Elements extends Component
         // Clear the element’s record of dirty fields
         $element->markAsClean();
         $element->firstSave = $originalFirstSave;
+        $element->isNewForSite = $originalIsNewForSite;
         $element->propagateAll = $originalPropagateAll;
 
         return true;
