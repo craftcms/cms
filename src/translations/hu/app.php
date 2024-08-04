@@ -1672,7 +1672,7 @@ return [
     'This plugin requires Craft CMS {name} edition.' => 'Ehhez a beépülő modulhoz Craft CMS {name} kiadásra van szükség.',
     'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.' => 'Ehhez a beépülő modulhoz PHP {v1} szükséges, de a composer.json fájljának beállítása jelenleg {v2}.',
     'This plugin requires PHP {v1}, but your environment is currently running {v2}.' => 'Ehhez a beépülő modulhoz PHP {v1} szükséges, de a környezetében jelenleg a PHP {v2} verziója fut.',
-    'This revision’s entry type is no longer available. You can still view it, but not revert to it.' => 'A revízió bejegyzési típusa már nem áll rendelkezésre. Továbbra is megtekintheti, de nem válthat vissza rá.',
+    'This revision’s entry type is no longer available. You can still view it, but not revert to it.' => 'A revízió bejegyzéstípusa már nem áll rendelkezésre. Továbbra is megtekintheti, de nem válthat vissza rá.',
     'This site has its own base URL' => 'A webhelynek saját alap URL-címe van.',
     'This tab contains errors' => 'A lap hibákat tartalmaz',
     'This tab is conditional' => 'Ez a fül feltételes',
