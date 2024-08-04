@@ -11,7 +11,7 @@
 {% set sources = craft.app.elementSources.getSources(elementType, 'index', true) %}
 
 {% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
-{% if showSiteMenu == 'auto' %}
+{% if showSiteMenu is same as ('auto') %}
     {% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
 
@@ -40,7 +40,7 @@
         label: selectedSite.name|t('site'),
         menu: {
             items: siteMenuItems(selectableSites, selectedSite),
-            label: 'Select site'|t('site')
+            label: 'Select site'|t('app')
         }
     }) %}
 {% endif %}

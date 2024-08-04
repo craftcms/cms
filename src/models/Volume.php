@@ -9,6 +9,8 @@ namespace craft\models;
 
 use Craft;
 use craft\base\BaseFsInterface;
+use craft\base\Chippable;
+use craft\base\CpEditable;
 use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\FsInterface;
@@ -19,6 +21,7 @@ use craft\fs\MissingFs;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -31,11 +34,26 @@ use yii\base\InvalidConfigException;
  * @mixin FieldLayoutBehavior
  * @property FsInterface $fs
  * @property string $fsHandle
+ * @property string $subpath
+ * @property string $transformSubpath
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterface
+class Volume extends Model implements
+    BaseFsInterface,
+    Chippable,
+    CpEditable,
+    FieldLayoutProviderInterface
 {
+    /**
+     * @inheritdoc
+     */
+    public static function get(string|int $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getVolumes()->getVolumeById($id);
+    }
+
     /**
      * @var int|null ID
      */
@@ -90,16 +108,18 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
     public ?string $uid = null;
 
     /**
-     * @var string The subpath to use in the transform filesystem
-     */
-    public string $transformSubpath = '';
-
-    /**
      * @var string The subpath to use in the filesystem for uploading files to this volume
      * @see getSubpath()
      * @see setSubpath()
      */
     private string $_subpath = '';
+
+    /**
+     * @var string The subpath to use in the transform filesystem
+     * @see getTransformSubpath()
+     * @see setTransformSubpath()
+     */
+    private string $_transformSubpath = '';
 
     /**
      * @var FsInterface|null
@@ -158,6 +178,41 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
                 'elementType' => Asset::class,
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl(): ?string
+    {
+        return $this->id ? UrlHelper::cpUrl("settings/assets/volumes/$this->id") : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes(): array
+    {
+        $attributes = parent::attributes();
+        $attributes[] = 'subpath';
+        $attributes[] = 'transformSubpath';
+        return $attributes;
     }
 
     /**
@@ -437,9 +492,11 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
             'fs' => $this->_fsHandle,
             'subpath' => $this->_subpath,
             'transformFs' => $this->_transformFsHandle,
-            'transformSubpath' => $this->transformSubpath,
+            'transformSubpath' => $this->_transformSubpath,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
+            'altTranslationMethod' => $this->altTranslationMethod,
+            'altTranslationKeyFormat' => $this->altTranslationKeyFormat ?: null,
             'sortOrder' => $this->sortOrder,
         ];
 
@@ -467,27 +524,59 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
      * Returns the volume’s subpath.
      *
      * @param bool $ensureTrailing Whether to include a trailing slash
+     * @param bool $parse Whether to parse the name for an alias or environment variable
      * @return string
      * @since 5.0.0
      */
-    public function getSubpath(bool $ensureTrailing = true): string
+    public function getSubpath(bool $ensureTrailing = true, bool $parse = true): string
     {
-        if ($ensureTrailing) {
-            return ($this->_subpath !== '' ? StringHelper::ensureRight($this->_subpath, '/') : '');
+        $subpath = $parse ? App::parseEnv($this->_subpath) : $this->_subpath;
+
+        if ($ensureTrailing && $subpath !== '' && !str_ends_with($subpath, '/')) {
+            $subpath .= '/';
         }
 
-        return $this->_subpath;
+        return $subpath;
     }
 
     /**
      * Sets the volume’s subpath, ensuring it's a string.
      *
      * @param string|null $subpath
-     * @return void
      */
     public function setSubpath(?string $subpath): void
     {
         $this->_subpath = $subpath ?? '';
+    }
+
+    /**
+     * Returns the volume’s transform subpath.
+     *
+     * @param bool $ensureTrailing Whether to include a trailing slash
+     * @param bool $parse Whether to parse the name for an alias or environment variable
+     * @return string
+     * @since 5.2.0
+     */
+    public function getTransformSubpath(bool $ensureTrailing = true, bool $parse = true): string
+    {
+        $subpath = $parse ? App::parseEnv($this->_transformSubpath) : $this->_transformSubpath;
+
+        if ($ensureTrailing && $subpath !== '' && !str_ends_with($subpath, '/')) {
+            $subpath .= '/';
+        }
+
+        return $subpath;
+    }
+
+    /**
+     * Sets the volume’s transform subpath, ensuring it's a string.
+     *
+     * @param string|null $subpath
+     * @since 5.2.0
+     */
+    public function setTransformSubpath(?string $subpath): void
+    {
+        $this->_transformSubpath = $subpath ?? '';
     }
 
     /**

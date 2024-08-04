@@ -130,16 +130,18 @@ class Drafts extends Component
         $markAsSaved = ArrayHelper::remove($newAttributes, 'markAsSaved') ?? true;
 
         // Fire a 'beforeCreateDraft' event
-        $event = new DraftEvent([
-            'canonical' => $canonical,
-            'creatorId' => $creatorId,
-            'provisional' => $provisional,
-            'draftName' => $name,
-            'draftNotes' => $notes,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_CREATE_DRAFT, $event);
-        $name = $event->draftName;
-        $notes = $event->draftNotes;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_DRAFT)) {
+            $event = new DraftEvent([
+                'canonical' => $canonical,
+                'creatorId' => $creatorId,
+                'provisional' => $provisional,
+                'draftName' => $name,
+                'draftNotes' => $notes,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_CREATE_DRAFT, $event);
+            $name = $event->draftName;
+            $notes = $event->draftNotes;
+        }
 
         if ($name === null || $name === '') {
             $name = $this->generateDraftName($canonical->id);
@@ -266,11 +268,12 @@ SQL,
      *
      * @template T of ElementInterface
      * @param T $draft The draft
+     * @param array $newAttributes Any attributes to apply to the canonical element
      * @return T The canonical element with the draft applied to it
      * @throws Throwable
      * @since 3.6.0
      */
-    public function applyDraft(ElementInterface $draft): ElementInterface
+    public function applyDraft(ElementInterface $draft, array $newAttributes = []): ElementInterface
     {
         /** @var ElementInterface|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
@@ -316,9 +319,9 @@ SQL,
                 }
 
                 // "Duplicate" the draft with the canonical element’s ID and UID
-                $newCanonical = $elementsService->updateCanonicalElement($draft, [
+                $newCanonical = $elementsService->updateCanonicalElement($draft, array_merge($newAttributes, [
                     'revisionNotes' => $draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
-                ]);
+                ]));
 
                 // Move the new canonical element after the draft?
                 if ($draft->structureId && $draft->root) {
@@ -394,7 +397,9 @@ SQL,
         }
 
         try {
-            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false)) {
+            // no need to propagate or save content here – and it could end up overriding any
+            // content changes made to other sites from a previous onAfterPropagate(), etc.
+            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false, false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
             Db::delete(Table::DRAFTS, [

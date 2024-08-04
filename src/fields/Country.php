@@ -7,21 +7,24 @@
 
 namespace craft\fields;
 
+use CommerceGuys\Addressing\Country\Country as CountryModel;
+use CommerceGuys\Addressing\Exception\UnknownCountryException;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\fields\conditions\CountryFieldConditionRule;
 use craft\helpers\Cp;
 use yii\db\Schema;
 
 /**
- * Email represents an Email field.
+ * Country represents a Country field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.6.0
  */
-class Country extends Field implements InlineEditableFieldInterface
+class Country extends Field implements InlineEditableFieldInterface, MergeableFieldInterface
 {
     /**
      * @inheritdoc
@@ -29,6 +32,14 @@ class Country extends Field implements InlineEditableFieldInterface
     public static function displayName(): string
     {
         return Craft::t('app', 'Country');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'flag';
     }
 
     /**
@@ -52,7 +63,19 @@ class Country extends Field implements InlineEditableFieldInterface
      */
     public function normalizeValue(mixed $value, ElementInterface $element = null): mixed
     {
-        return !in_array($value, ['', '__BLANK__']) ? $value : null;
+        if ($value instanceof CountryModel) {
+            return $value;
+        }
+
+        if (!$value || strtolower($value) === '__blank__') {
+            return null;
+        }
+
+        try {
+            return Craft::$app->getAddresses()->getCountryRepository()->get($value);
+        } catch (UnknownCountryException) {
+            return null;
+        }
     }
 
     /**
@@ -61,7 +84,7 @@ class Country extends Field implements InlineEditableFieldInterface
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $options = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
-        array_unshift($options, ['label' => '', 'value' => '__BLANK__']);
+        array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
 
         return Cp::selectizeHtml([
             'id' => $this->getInputId(),
@@ -69,6 +92,15 @@ class Country extends Field implements InlineEditableFieldInterface
             'options' => $options,
             'value' => $value,
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        /** @var CountryModel|null $value */
+        return $value?->getCountryCode();
     }
 
     /**

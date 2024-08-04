@@ -31,6 +31,11 @@ Craft.ui = {
     if (config.controls) {
       $btn.attr('aria-controls', config.controls);
     }
+    if (config.data) {
+      Object.entries(config.data).forEach((item) => {
+        $btn.attr('data-' + item[0], item[1]);
+      });
+    }
     if (config.spinner) {
       $btn.append($('<div class="spinner spinner-absolute"/>'));
     }
@@ -73,6 +78,7 @@ Craft.ui = {
               : 'off'
             : config.autocomplete,
         disabled: this.getDisabledValue(config.disabled),
+        'aria-describedby': this.getDescribedByValue(config),
         readonly: config.readonly,
         title: config.title,
         placeholder: config.placeholder,
@@ -96,6 +102,12 @@ Craft.ui = {
     }
     if (!config.size) {
       $input.addClass('fullwidth');
+    }
+    if (config.describedBy) {
+      $input.attr('aria-describedby', config.describedBy);
+    }
+    if (config.inputAttributes) {
+      this.addAttributes($input, config.inputAttributes);
     }
 
     if (config.showCharsLeft && config.maxlength) {
@@ -480,7 +492,7 @@ Craft.ui = {
   },
 
   createCheckboxSelect: function (config) {
-    const $container = $('<fieldset class="checkbox-select"/>');
+    const $container = $('<div class="checkbox-select"/>');
 
     if (config.class) {
       $container.addClass(config.class);
@@ -1167,6 +1179,9 @@ Craft.ui = {
     const $field = $(config.fieldset ? '<fieldset/>' : '<div/>', {
       class: 'field',
       id: config.fieldId || (config.id ? config.id + '-field' : null),
+      'aria-describedby': config.fieldset
+        ? this.getDescribedByValue(config)
+        : null,
     });
 
     if (config.first) {
@@ -1203,6 +1218,7 @@ Craft.ui = {
     if (config.instructions) {
       $('<div class="instructions"/>')
         .text(config.instructions)
+        .attr('id', this.getInstructionsId(config))
         .appendTo($field);
     }
 
@@ -1235,6 +1251,38 @@ Craft.ui = {
     return $field;
   },
 
+  addAttributes: function ($element, attributes) {
+    for (const name in attributes) {
+      const value = attributes[name];
+      if (typeof value === 'boolean') {
+        if (value) {
+          $element.attr(name, '');
+        }
+      } else if ($.isPlainObject(value)) {
+        if (['aria', 'data', 'data-ng', 'ng'].includes(name)) {
+          for (const n in value) {
+            let v = value[n];
+            if (typeof v === 'object') {
+              $element.attr(`${name}-${n}`, JSON.stringify(v));
+            } else if (typeof v === 'boolean') {
+              if (v) {
+                $element.attr(`${name}-${n}`, '');
+              }
+            } else if (v !== null) {
+              $element.attr(`${name}-${n}`, v);
+            }
+          }
+        } else if (name === 'class') {
+          $element.addClass(value);
+        } else if (name === 'style') {
+          $element.css(value);
+        } else {
+          $element.attr(name, value);
+        }
+      }
+    }
+  },
+
   createErrorList: function (errors, fieldErrorsId) {
     const $list = $('<ul class="errors" tabindex="-1"/>');
     if (fieldErrorsId) {
@@ -1259,8 +1307,10 @@ Craft.ui = {
       return;
     }
 
+    this.clearErrorsFromField($field);
+
     $field.addClass('has-errors');
-    $field.children('.input').addClass('errors');
+    $field.children('.input').addClass('errors prevalidate');
 
     const fieldId = $field.attr('id');
     let fieldErrorsId = '';
@@ -1279,80 +1329,38 @@ Craft.ui = {
 
   clearErrorsFromField: function ($field) {
     $field.removeClass('has-errors');
-    $field.children('.input').removeClass('errors');
+    $field.children('.input').removeClass('errors prevalidate');
     $field.children('ul.errors').remove();
   },
 
   clearErrorSummary: function ($body) {
-    $body.prev('.error-summary').remove();
+    $body.find('.error-summary').remove();
   },
 
-  setFocusOnErrorSummary: function ($body, namespace = '') {
+  setFocusOnErrorSummary: function ($body) {
     const errorSummaryContainer = $body.find('.error-summary');
     if (errorSummaryContainer.length > 0) {
-      errorSummaryContainer.trigger('focus');
+      errorSummaryContainer.focus();
 
       // start listening for clicks on summary errors
       errorSummaryContainer.find('a').on('click', (ev) => {
         if ($(ev.currentTarget).hasClass('cross-site-validate') == false) {
           ev.preventDefault();
-          this.anchorSummaryErrorToField(ev.currentTarget, $body, namespace);
+          this.anchorSummaryErrorToField(ev.currentTarget, $body);
         }
       });
     }
   },
 
-  findErrorsContainerByErrorKey: function ($body, fieldErrorKey, namespace) {
-    namespace = this._getPreppedNamespace(namespace);
-
-    // get the field handle from error key
-    const errorKeyParts = fieldErrorKey.split(/[\[\]\.]/).filter((n) => n);
-
-    // define regex for searching for errors list for given field
-    let regex;
-
-    if (typeof errorKeyParts[0] !== 'undefined') {
-      if (typeof errorKeyParts[2] === 'undefined') {
-        regex = new RegExp(`^${namespace}fields-${errorKeyParts[0]}.*-errors`);
-      } else {
-        regex = new RegExp(`^${namespace}fields-${errorKeyParts[0]}.*-`);
-
-        let subpartsCount = Math.ceil(errorKeyParts.length / 2) - 1;
-        let j = 0;
-        for (let i = 0; i < subpartsCount; i++) {
-          j = j + 2;
-          let regexPart;
-          if (i == subpartsCount - 1) {
-            regexPart = new RegExp(`fields-${errorKeyParts[j]}-errors`);
-          } else {
-            regexPart = new RegExp(`fields-${errorKeyParts[j]}.*-`);
-          }
-          regex = new RegExp(regex.source + regexPart.source);
-        }
-      }
-    }
-
-    // find errors list for given error from summary
-    let errorsElement;
-    if (regex) {
-      errorsElement = $body.find('ul.errors').filter(function () {
-        return this.id.match(regex);
-      });
-
-      if (
-        errorsElement.length > 1 &&
-        typeof errorKeyParts[errorKeyParts.length - 2] !== 'undefined'
-      ) {
-        errorsElement = errorsElement[errorKeyParts[errorKeyParts.length - 2]];
-      } else {
-        errorsElement = errorsElement[0];
-      }
-    }
+  findErrorsContainerByErrorKey: function ($body, fieldErrorKey) {
+    let errorsElement = $body
+      .find(`[data-error-key="${fieldErrorKey}"]`)
+      .find('ul.errors');
 
     return $(errorsElement);
   },
 
-  anchorSummaryErrorToField: function (error, $body, namespace) {
+  anchorSummaryErrorToField: function (error, $body) {
     const fieldErrorKey = $(error).attr('data-field-error-key');
 
     if (!fieldErrorKey) {
@@ -1361,20 +1369,23 @@ Craft.ui = {
 
     const $fieldErrorsContainer = this.findErrorsContainerByErrorKey(
       $body,
-      fieldErrorKey,
-      namespace
+      fieldErrorKey
     );
 
     if ($fieldErrorsContainer) {
       // check if we need to switch tabs first
-      const $fieldTabAnchor = this.findTabAnchorForField(
+      const fieldTabAnchors = this.findTabAnchorForField(
         $fieldErrorsContainer,
-        $body,
-        namespace
+        $body
       );
 
-      if ($fieldTabAnchor && $fieldTabAnchor.attr('aria-selected') == 'false') {
-        $fieldTabAnchor.click();
+      if (fieldTabAnchors.length > 0) {
+        for (let i = 0; i < fieldTabAnchors.length; i++) {
+          let $tabAnchor = $(fieldTabAnchors[i]);
+          if ($tabAnchor.attr('aria-selected') == 'false') {
+            $tabAnchor.click();
+          }
+        }
       }
 
       // check if the parents are collapsed - if yes, expand
@@ -1396,27 +1407,37 @@ Craft.ui = {
       // focus on the field container that contains the error
       let $field = $fieldErrorsContainer.parents('.field:first');
       if ($field.is(':visible')) {
-        $field.attr('tabindex', '-1').trigger('focus');
+        $field.attr('tabindex', '-1').focus();
       } else {
         // wait in case the field isn't yet visible; (MatrixInput.expand() has a timeout of 200)
         setTimeout(() => {
-          $field.attr('tabindex', '-1').trigger('focus');
+          $field.attr('tabindex', '-1').focus();
         }, 201);
       }
     }
   },
 
-  findTabAnchorForField: function ($container, $body, namespace) {
-    namespace = this._getPreppedNamespace(namespace);
-
-    const fieldTabDiv = $container.parents(
-      `div[id^=${namespace}tab][role="tabpanel"]`
+  findTabAnchorForField: function ($container, $body) {
+    const fieldTabDivs = $container.parents(
+      `div[data-id^=tab][role="tabpanel"]`
     );
-    const fieldTabAnchor = $body
-      .find('[role="tablist"]')
-      .find('a[href="#' + fieldTabDiv.attr('id') + '"]');
 
-    return $(fieldTabAnchor);
+    let fieldTabAnchors = [];
+    fieldTabDivs.each((i, tabDiv) => {
+      let tabAnchor = $body
+        .find('[role="tablist"]')
+        .find('a[href="#' + $(tabDiv).attr('id') + '"]');
+      fieldTabAnchors.push(tabAnchor);
+    });
+
+    return fieldTabAnchors;
+  },
+
+  getInstructionsId: function (config) {
+    console.log(config);
+    return config.id
+      ? `${config.id}-instructions`
+      : `${Math.floor(Math.random() * 1000000000)}-instructions`;
   },
 
   getAutofocusValue: function (autofocus) {
@@ -1427,7 +1448,17 @@ Craft.ui = {
     return disabled ? 'disabled' : null;
   },
 
-  _getPreppedNamespace: function (namespace) {
-    return namespace !== '' ? (namespace += '-') : namespace;
+  getDescribedByValue: function (config) {
+    let value = '';
+
+    if (config.instructions) {
+      value += this.getInstructionsId(config);
+    }
+
+    if (value.length) {
+      return value;
+    }
+
+    return null;
   },
 };

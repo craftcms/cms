@@ -119,9 +119,10 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
     private function _formatTemplate(YiiResponse $response, CpScreenResponseBehavior $behavior): void
     {
         $response->format = Response::FORMAT_HTML;
+        $isForm = (bool)$behavior->action;
 
         if ($behavior->prepareScreen) {
-            call_user_func($behavior->prepareScreen, $response, 'main-form');
+            call_user_func($behavior->prepareScreen, $response, $isForm ? 'main-form' : 'main');
         }
 
         $docTitle = $behavior->docTitle ?? strip_tags($behavior->title ?? '');
@@ -140,7 +141,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'icon' => Cp::earthIcon(),
                 'label' => Craft::t('site', $behavior->site->name),
                 'menu' => [
-                    'label' => Craft::t('site', 'Select site'),
+                    'label' => Craft::t('app', 'Select site'),
                     'items' => !empty($behavior->selectableSites)
                         ? Cp::siteMenuItems($behavior->selectableSites, $behavior->site, [
                             'includeOmittedSites' => true,
@@ -178,14 +179,14 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                     'hiddenLabel' => Craft::t('app', 'Actions'),
                     'buttonAttributes' => [
                         'id' => 'action-btn',
-                        'class' => ['action-btn'],
+                        'class' => ['action-btn', 'hairline-dark'],
                         'title' => Craft::t('app', 'Actions'),
                     ],
                 ]),
                 'submitButtonLabel' => $behavior->submitButtonLabel,
                 'additionalButtons' => $addlButtons,
                 'tabs' => $behavior->tabs,
-                'fullPageForm' => (bool)$behavior->action,
+                'fullPageForm' => $isForm,
                 'mainAttributes' => $behavior->mainAttributes,
                 'mainFormAttributes' => $behavior->formAttributes,
                 'formActions' => array_map(function(array $action) use ($security): array {

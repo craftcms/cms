@@ -9,9 +9,10 @@
     id: 'name',
     name: 'name',
     value: volume.name,
-    errors: volume.getErrors('name'),
     autofocus: true,
     required: true,
+    errors: volume.getErrors('name'),
+    data: {'error-key': 'name'},
 }) }}
 
 {{ forms.textField({
@@ -22,8 +23,9 @@
     autocorrect: false,
     autocapitalize: false,
     value: volume.handle,
-    errors: volume.getErrors('handle'),
     required: true,
+    errors: volume.getErrors('handle'),
+    data: {'error-key': 'handle'},
 }) }}
 
 <hr>
@@ -37,15 +39,18 @@
     value: volume.getFsHandle(false),
     options: fsOptions,
     errors: volume.getErrors('fsHandle'),
+    data: {'error-key': 'fsHandle'},
 }) }}
 
-{{ forms.textField({
+{{ forms.autosuggestField({
     label: 'Subpath'|t('app'),
     instructions: 'Where assets should be stored on the filesystem.'|t('app'),
     id: 'subpath',
     name: 'subpath',
-    value: volume.getSubpath(false),
+    suggestEnvVars: true,
+    value: volume.getSubpath(false, false),
     errors: volume.getErrors('subpath'),
+    data: {'error-key': 'subpath'},
 }) }}
 
 {{ forms.fsField({
@@ -57,15 +62,18 @@
     value: volume.transformFsHandle(false),
     options: [{label: 'Same as asset filesystem'|t('app'), value: null}]|merge(craft.cp.getFsOptions()),
     errors: volume.getErrors('transformFsHandle'),
+    data: {'error-key': 'transformFsHandle'},
 }) }}
 
-{{ forms.textField({
+{{ forms.autosuggestField({
     label: 'Transform Subpath'|t('app'),
     instructions: 'Where transforms should be stored on the filesystem.'|t('app'),
     id: 'transformSubpath',
     name: 'transformSubpath',
-    value: volume.transformSubpath,
+    suggestEnvVars: true,
+    value: volume.getTransformSubpath(false, false),
     errors: volume.getErrors('transformSubpath'),
+    data: {'error-key': 'transformSubpath'},
 }) }}
 
 {% if craft.app.getIsMultiSite() %}
@@ -103,7 +111,8 @@
             id: 'title-translation-key-format',
             name: 'titleTranslationKeyFormat',
             value: volume.titleTranslationKeyFormat,
-            errors: volume.getErrors('titleTranslationKeyFormat')
+            errors: volume.getErrors('titleTranslationKeyFormat'),
+            data: {'error-key': 'titleTranslationKeyFormat'},
         }) }}
     </div>
 
@@ -139,7 +148,8 @@
             id: 'alt-translation-key-format',
             name: 'altTranslationKeyFormat',
             value: volume.altTranslationKeyFormat,
-            errors: volume.getErrors('altTranslationKeyFormat')
+            errors: volume.getErrors('altTranslationKeyFormat'),
+            data: {'error-key': 'altTranslationKeyFormat'},
         }) }}
     </div>
 {% endif %}

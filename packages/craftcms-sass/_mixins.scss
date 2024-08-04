@@ -116,7 +116,7 @@ $pink800: #9d174d;
 $pink900: #831843;
 
 // submit button colors
-$primaryColor: $red500;
+$primaryColor: $red600;
 $secondaryColor: $grey500;
 
 $inputColor: hsl(212, 25%, 50%);
@@ -130,8 +130,8 @@ $linkColor: #1f5fea;
 
 // menu colors
 $menuOptionColor: $textColor;
-$menuOptionActiveColor: $white;
-$menuOptionActiveBackgroundColor: $grey500;
+$menuOptionActiveColor: $textColor;
+$menuOptionActiveBackgroundColor: $grey050;
 
 // hairline colors
 $hairlineColor: transparentize($grey800, 0.9);
@@ -170,8 +170,6 @@ $mediumBorderRadius: 4px;
 $largeBorderRadius: 5px;
 
 $menuBorderRadius: $mediumBorderRadius;
-$checkboxSize: 16px;
-$radioSize: 16px;
 
 @mixin sans-serif-font {
   font-family:
@@ -263,18 +261,20 @@ $radioSize: 16px;
   user-select: none;
 }
 
-@mixin angle($dir: down, $color: currentColor, $width: 2px) {
+@mixin angle($dir: down, $color: currentColor, $width: calc(2rem / 16)) {
   display: block;
   content: '';
   font-size: 0;
-  width: 7px;
-  height: 7px;
+  width: calc(7rem / 16);
+  height: calc(7rem / 16);
   border: solid $color;
   border-width: 0 $width $width 0;
   opacity: 0.8;
+  position: relative;
 
   @if $dir == up {
     transform: rotate(225deg);
+    top: 2px;
   } @else if $dir == down {
     transform: rotate(45deg);
   } @else if $dir == left {
@@ -328,12 +328,18 @@ $radioSize: 16px;
   // (sub-pixel antialiasing looks too bold/blurry with light text on dark background)
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
-  font-weight: 500;
 }
 
 @mixin light-focus-ring() {
-  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
-    0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
+  --focus-ring: 0 0 0 1px
+      hsl(#{hue($blue200)}, #{saturation($blue200)}, #{lightness($blue200)}),
+    0 0 0 3px hsla(var(--light-focus-hsl), 1);
+}
+
+@mixin dark-btn-light-bg-focus-ring() {
+  --focus-ring: 0 0 0 1px
+      hsl(#{hue($blue200)}, #{saturation($blue200)}, #{lightness($blue200)}),
+    0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
 }
 
 @mixin custom-color-focus-ring($primary, $secondary: null) {
@@ -564,7 +570,8 @@ $radioSize: 16px;
     }
 
     &:active,
-    &.active {
+    &.active,
+    &[aria-expanded='true'] {
       background-color: darken($grey200, 10%);
     }
   }
@@ -579,15 +586,15 @@ $radioSize: 16px;
 }
 
 @mixin header-btn {
-  width: 30px;
-  height: 30px;
+  width: calc(30rem / 16);
+  height: calc(30rem / 16);
   padding-left: 0;
   padding-right: 0;
 
-  &:not(:hover):not(:active):not(.active) {
+  &:not(:hover):not(:active):not(.active):not([aria-expanded='true']) {
     background-color: transparent;
   }
-  &:not(:active):not(.active):hover {
+  &:not(:active):not(.active):not([aria-expanded='true']):hover {
     background-color: transparentize($grey300, 0.85);
   }
 }
@@ -635,8 +642,14 @@ $radioSize: 16px;
 }
 
 @mixin menu-item-active-styles {
-  color: $menuOptionActiveColor;
-  background-color: $menuOptionActiveBackgroundColor;
+  color: var(--white) !important;
+  --medium-text-color: rgba(255, 255, 255, 0.8);
+  --light-text-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--dark-sel-color);
+
+  svg {
+    @include svg-mask(var(--white));
+  }
 }
 
 @mixin disclosure-link-hover-styles {
@@ -709,6 +722,7 @@ $radioSize: 16px;
   @include right(9px);
   user-select: none;
   pointer-events: none;
+  color: var(--ui-control-color);
 }
 
 @mixin select-input-styles {
@@ -743,15 +757,28 @@ $radioSize: 16px;
   width: var(--touch-target-size);
 }
 
+// https://tailwindcss.com/docs/screen-readers#undoing-screen-reader-only-elements
 @mixin visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
   padding: 0;
-  margin: 0;
+  margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
-  border: 0;
+  white-space: nowrap;
+  border-width: 0;
+}
+
+@mixin not-visually-hidden {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
 }
 
 @mixin readable {

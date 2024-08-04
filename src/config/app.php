@@ -3,9 +3,9 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '5.0.0-alpha.8',
-    'schemaVersion' => '5.0.0.15',
-    'minVersionRequired' => '4.4.0',
+    'version' => '5.3.0-beta.1',
+    'schemaVersion' => '5.3.0.1',
+    'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
@@ -218,6 +218,11 @@ return [
         },
 
         'db' => function() {
+            $config = craft\helpers\App::dbConfig();
+            return Craft::createObject($config);
+        },
+
+        'db2' => function() {
             $config = craft\helpers\App::dbConfig();
             return Craft::createObject($config);
         },

@@ -16,6 +16,9 @@
     placeholder: defaultHandle,
     errors: field.getErrors('handle'),
     required: true,
+    data: {
+      'error-key': 'handle'
+    }
   }) }}
 
   {{ block('instructionsField') }}

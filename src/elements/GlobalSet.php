@@ -82,6 +82,15 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    protected static function defineFieldLayouts(?string $source): array
+    {
+        // fetch them through the global set instances so $provider gets set
+        return array_map(fn(self $globalSet) => $globalSet->getFieldLayout(), self::findAll());
+    }
+
+    /**
      * @return string|null
      */
     public function getRef(): ?string
@@ -256,6 +265,14 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
     protected function cpEditUrl(): ?string
     {
         return UrlHelper::cpUrl('globals/' . $this->handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPostEditUrl(): ?string
+    {
+        return $this->getCpEditUrl();
     }
 
     /**

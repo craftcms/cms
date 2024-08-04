@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Craft;
 use craft\config\GeneralConfig;
+use craft\enums\CmsEdition;
 use craft\helpers\App;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
@@ -94,7 +95,7 @@ class AppHelperTest extends TestCase
         self::assertNull(App::parseEnv(null));
         self::assertSame(CRAFT_TESTS_PATH, App::parseEnv('$CRAFT_TESTS_PATH'));
         self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
-        self::assertSame('$TEST_MISSING', App::parseEnv('$TEST_MISSING'));
+        self::assertSame(null, App::parseEnv('$TEST_MISSING'));
         self::assertSame(Craft::getAlias('@vendor/foo'), App::parseEnv('@vendor/foo'));
     }
 
@@ -151,7 +152,11 @@ class AppHelperTest extends TestCase
      */
     public function testEditions(): void
     {
-        self::assertEquals([Craft::Solo, Craft::Pro], App::editions());
+        self::assertEquals([
+            CmsEdition::Solo->value,
+            CmsEdition::Team->value,
+            CmsEdition::Pro->value,
+        ], App::editions());
     }
 
     /**
@@ -445,6 +450,7 @@ class AppHelperTest extends TestCase
             [true, 1],
             [false, 0],
             [null, 2],
+            [null, '$TEST_MISSING'],
         ];
     }
 
@@ -454,8 +460,9 @@ class AppHelperTest extends TestCase
     public static function editionHandleDataProvider(): array
     {
         return [
-            ['solo', Craft::Solo],
-            ['pro', Craft::Pro],
+            ['solo', CmsEdition::Solo->value],
+            ['team', CmsEdition::Team->value],
+            ['pro', CmsEdition::Pro->value],
             [false, -1],
         ];
     }
@@ -466,8 +473,9 @@ class AppHelperTest extends TestCase
     public static function editionNameDataProvider(): array
     {
         return [
-            ['Solo', Craft::Solo],
-            ['Pro', Craft::Pro],
+            ['Solo', CmsEdition::Solo->value],
+            ['Team', CmsEdition::Team->value],
+            ['Pro', CmsEdition::Pro->value],
             [false, -1],
         ];
     }
@@ -478,8 +486,9 @@ class AppHelperTest extends TestCase
     public static function editionIdByHandleDataProvider(): array
     {
         return [
-            [Craft::Solo, 'solo'],
-            [Craft::Pro, 'pro'],
+            [CmsEdition::Solo->value, 'solo'],
+            [CmsEdition::Team->value, 'team'],
+            [CmsEdition::Pro->value, 'pro'],
             [false, 'personal'],
             [false, 'client'],
         ];
@@ -491,16 +500,17 @@ class AppHelperTest extends TestCase
     public static function validEditionsDataProvider(): array
     {
         return [
-            [true, Craft::Pro],
-            [true, Craft::Solo],
+            [true, CmsEdition::Pro->value],
+            [true, CmsEdition::Team->value],
+            [true, CmsEdition::Solo->value],
             [true, '1'],
             [true, 0],
             [true, 1],
-            [true, true],
+            [true, 2],
+            [false, true],
             [false, null],
             [false, false],
             [false, 4],
-            [false, 2],
             [false, 3],
         ];
     }

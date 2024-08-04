@@ -8,7 +8,6 @@
   transition:
     opacity linear 200ms,
     transform linear 200ms;
-  margin-bottom: 14px;
 
   &.scaleout {
     opacity: 0;
@@ -165,20 +164,20 @@ body ol.widget__list {
 /* New Widget Menu */
 .newwidgetmenu ul li a {
   position: relative;
-  @include padding-left(40px);
+  @include padding-left(calc(var(--m) + 10px + 1rem));
 
   .icon {
     position: absolute;
     top: 11px;
-    @include left(14px);
-    width: 16px;
+    @include left(var(--m));
+    width: 1rem;
   }
 }
 
 .newwidgetmenu ul li a .icon svg,
 .widgetmanagerhud-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
   @include svg-mask(var(--ui-control-color));
 }
 

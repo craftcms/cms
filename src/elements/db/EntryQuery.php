@@ -13,8 +13,8 @@ use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\elements\ElementCollection;
 use craft\elements\Entry;
+use craft\enums\CmsEdition;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -25,18 +25,17 @@ use DateTime;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\db\Connection;
 
 /**
  * EntryQuery represents a SELECT SQL statement for entries in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of Entry
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @property-write string|string[]|EntryType|null $type The entry type(s) that resulting entries must have
  * @property-write string|string[]|Section|null $section The section(s) that resulting entries must belong to
  * @property-write string|string[]|UserGroup|null $authorGroup The user group(s) that resulting entries’ authors must belong to
- * @method Entry[]|array all($db = null)
- * @method Entry|array|null one($db = null)
- * @method Entry|array|null nth(int $n, ?Connection $db = null)
- * @method ElementCollection<Entry> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path entries.md
@@ -243,7 +242,10 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['entries.postDate' => SORT_DESC];
+    protected array $defaultOrderBy = [
+        'entries.postDate' => SORT_DESC,
+        'elements.id' => SORT_DESC,
+    ];
 
     /**
      * @inheritdoc
@@ -340,6 +342,7 @@ class EntryQuery extends ElementQuery
      * | `['foo', 'bar']` | in a section with a handle of `foo` or `bar`.
      * | `['not', 'foo', 'bar']` | not in a section with a handle of `foo` or `bar`.
      * | a [[Section|Section]] object | in a section represented by the object.
+     * | `'*'` | in any section.
      *
      * ---
      *
@@ -376,6 +379,8 @@ class EntryQuery extends ElementQuery
             } else {
                 $this->withStructure = false;
             }
+        } elseif ($value === '*') {
+            $this->sectionId = Craft::$app->getEntries()->getAllSectionIds();
         } elseif (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
                 $item = Craft::$app->getEntries()->getSectionByHandle($item);
@@ -527,9 +532,7 @@ class EntryQuery extends ElementQuery
      * | Value | Fetches entries…
      * | - | -
      * | `1` | created for an element with an ID of 1.
-     * | `'not 1'` | not created for an element with an ID of 1.
      * | `[1, 2]` | created for an element with an ID of 1 or 2.
-     * | `['not', 1, 2]` | not created for an element with an ID of 1 or 2.
      *
      * ---
      *
@@ -597,9 +600,7 @@ class EntryQuery extends ElementQuery
      * | Value | Fetches entries…
      * | - | -
      * | `1` | created for an element with an ID of 1.
-     * | `'not 1'` | not created for an element with an ID of 1.
      * | `[1, 2]` | created for an element with an ID of 1 or 2.
-     * | `['not', 1, 2]` | not created for an element with an ID of 1 or 2.
      *
      * ---
      *
@@ -1025,9 +1026,9 @@ class EntryQuery extends ElementQuery
      *
      * | Value | Fetches entries…
      * | - | -
-     * | `'2018-04-01'` | that were posted after 2018-04-01.
-     * | a [[\DateTime|DateTime]] object | that were posted after the date represented by the object.
-     * | `now`/`today`/`tomorrow`/`yesterday` | that were posted after midnight of the specified relative date.
+     * | `'2018-04-01'` | that were posted on or after 2018-04-01.
+     * | a [[\DateTime|DateTime]] object | that were posted on or after the date represented by the object.
+     * | `now`/`today`/`tomorrow`/`yesterday` | that were posted on or after midnight of the specified relative date.
      *
      * ---
      *
@@ -1251,7 +1252,7 @@ class EntryQuery extends ElementQuery
             $this->subQuery->andWhere(['entries.typeId' => $this->typeId]);
         }
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition !== CmsEdition::Solo) {
             if ($this->authorId) {
                 // Checking multiple authors?
                 if (
@@ -1641,12 +1642,18 @@ class EntryQuery extends ElementQuery
             foreach ($this->sectionId as $sectionId) {
                 $tags[] = "section:$sectionId";
             }
+        } elseif ($this->fieldId) {
+            foreach ($this->fieldId as $fieldId) {
+                $tags[] = "field:$fieldId";
+            }
         }
+
         if ($this->primaryOwnerId) {
             foreach ($this->primaryOwnerId as $ownerId) {
                 $tags[] = "element::$ownerId";
             }
         }
+
         if ($this->ownerId) {
             foreach ($this->ownerId as $ownerId) {
                 $tags[] = "element::$ownerId";

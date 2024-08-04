@@ -32,7 +32,7 @@ abstract class Api
         $headers = [
             'Accept' => 'application/json',
             'X-Craft-Env' => Craft::$app->env,
-            'X-Craft-System' => 'craft:' . Craft::$app->getVersion() . ';' . strtolower(Craft::$app->getEditionName()),
+            'X-Craft-System' => sprintf('craft:%s;%s', Craft::$app->getVersion(), Craft::$app->edition->handle()),
         ];
 
         // platform
@@ -162,7 +162,8 @@ abstract class Api
         $cache = Craft::$app->getCache();
         $duration = 31536000;
         if (isset($headers['x-craft-allow-trials'])) {
-            $cache->set('editionTestableDomain@' . Craft::$app->getRequest()->getHostName(), (bool)reset($headers['x-craft-allow-trials']), $duration);
+            $cacheKey = sprintf('editionTestableDomain@%s', Craft::$app->getRequest()->getHostName());
+            $cache->set($cacheKey, (int)reset($headers['x-craft-allow-trials']), $duration);
         }
 
         // did we just get a new license key?

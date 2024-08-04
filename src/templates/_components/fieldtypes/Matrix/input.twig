@@ -1,63 +1,52 @@
+{% set singleType = entryTypes|length == 1 %}
+
 {% import '_includes/forms.twig' as forms %}
 
 {{ hiddenInput(name, '') }}
 
 <div class="matrix matrix-field" id="{{ id }}">
-    <span role="status" class="visually-hidden" data-status-message></span>
-    <div class="blocks" role="list">
-        {% for entry in entries %}
-            {% include '_components/fieldtypes/Matrix/block.twig' %}
-        {% endfor %}
+  <span role="status" class="visually-hidden" data-status-message></span>
+  <div class="blocks" role="list">
+    {% for entry in entries %}
+      {% include '_components/fieldtypes/Matrix/block.twig' %}
+    {% endfor %}
+  </div>
+  {% if not static and not staticEntries %}
+    <div class="buttons">
+      {% if singleType %}
+        {{ forms.button({
+          label: createButtonLabel,
+          class: ['dashed', 'add', 'icon'],
+          spinner: true,
+          attributes: {
+            data: {
+              type: entryTypes|first.handle,
+            },
+            aria: {
+              label: entryTypes|first.name|t('site'),
+              describedby: labelId,
+            },
+          },
+        }) }}
+      {% else %}
+        {{ disclosureMenu(entryTypes|map(entryType => {
+          icon: entryType.icon,
+          color: entryType.color,
+          label: entryType.name|t('site'),
+          value: entryType.handle,
+          attributes: {
+            data: {
+              type: entryType.handle,
+            },
+          },
+        }), {
+          buttonLabel: createButtonLabel,
+          buttonSpinner: true,
+          buttonAttributes: {
+            class: ['dashed', 'add', 'icon'],
+          },
+        }) }}
+      {% endif %}
     </div>
-    {% if not static and not staticEntries %}
-        <div class="buttons">
-            <div class="btngroup">
-                {% for entryType in entryTypes %}
-                    {{ forms.button({
-                        label: entryType.name|t('site'),
-                        class: [
-                            'dashed',
-                            loop.first ? 'add' : null,
-                            loop.first ? 'icon' : null,
-                        ]|filter,
-                        spinner: true,
-                        attributes: {
-                            data: {
-                                type: entryType.handle,
-                            },
-                            aria: {
-                                label: entryType.name|t('site'),
-                                describedby: labelId,
-                            },
-                        },
-                    }) }}
-                {% endfor %}
-            </div>
-
-            {{ forms.button({
-                label: 'Add an entry'|t('app'),
-                class: ['dashed', 'add', 'icon', 'menubtn', 'hidden'],
-                spinner: true,
-            }) }}
-            <div class="menu">
-                <ul>
-                    {% for entryType in entryTypes %}
-                        <li>
-                            {% tag 'button' with {
-                                class: 'menu-item',
-                                data: {
-                                    type: entryType.handle,
-                                },
-                            } %}
-                                {% if entryType.icon %}
-                                    <span class="icon">{{ iconSvg(entryType.icon) }}</span>
-                                {% endif %}
-                                <span class="label">{{ entryType.name|t('site') }}</span>
-                            {% endtag %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    {% endif %}
+  {% endif %}
 </div>

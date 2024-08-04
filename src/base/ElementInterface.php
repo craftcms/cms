@@ -32,7 +32,13 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Statusable, Actionable
+interface ElementInterface extends
+    ComponentInterface,
+    Chippable,
+    CpEditable,
+    Thumbable,
+    Statusable,
+    Actionable
 {
     /**
      * Returns the lowercase version of [[displayName()]].
@@ -263,6 +269,7 @@ interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Sta
      * - **`status`** – The status color that should be shown beside the source label. Possible values include `green`,
      *   `orange`, `red`, `yellow`, `pink`, `purple`, `blue`, `turquoise`, `light`, `grey`, `black`, and `white`. (Optional)
      * - **`badgeCount`** – The badge count that should be displayed alongside the label. (Optional)
+     * - **`badgeLabel`** – The badge count label that should be provided for screen readers. (Optional)
      * - **`sites`** – An array of site IDs or UUIDs that the source should be shown for, on multi-site element indexes.
      *   (Optional; by default the source will be shown for all sites.)
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
@@ -336,8 +343,8 @@ interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Sta
     public static function modifyCustomSource(array $config): array;
 
     /**
-     * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-actions.html) for a
-     * given source.
+     * Returns the available [bulk element actions](https://craftcms.com/docs/4.x/extend/element-actions.html)
+     * for a given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name
      * set to a `type` key, or by an instantiated element action object.
@@ -348,7 +355,7 @@ interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Sta
      * :::
      *
      * @param string $source The selected source’s key.
-     * @return array The available element actions.
+     * @return array The available bulk element actions.
      * @phpstan-return array<ElementActionInterface|class-string<ElementActionInterface>|array{type:class-string<ElementActionInterface>}>
      */
     public static function actions(string $source): array;
@@ -908,13 +915,6 @@ interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Sta
     public function prepareEditScreen(Response $response, string $containerId): void;
 
     /**
-     * Returns the element’s edit URL in the control panel.
-     *
-     * @return string|null
-     */
-    public function getCpEditUrl(): ?string;
-
-    /**
      * Returns the URL that users should be redirected to after editing the element.
      *
      * @return string|null
@@ -1160,6 +1160,13 @@ interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Sta
      * @return bool
      */
     public function offsetExists($offset): bool;
+
+    /**
+     * Sets the element’s attributes from an element editor submission.
+     *
+     * @param array $values The attribute values
+     */
+    public function setAttributesFromRequest(array $values): void;
 
     /**
      * Returns the status of a given attribute.
@@ -1473,6 +1480,22 @@ interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Sta
     public function getFieldContext(): string;
 
     /**
+     * Returns the element’s invalid nested element IDs.
+     *
+     * @return int[]
+     * @since 5.3.0
+     */
+    public function getInvalidNestedElementIds(): array;
+
+    /**
+     * Registers invalid nested element IDs with the element, so an `error` class can be added on their cards.
+     *
+     * @param int[] $ids
+     * @since 5.3.0
+     */
+    public function addInvalidNestedElementIds(array $ids): void;
+
+    /**
      * Returns whether elements have been eager-loaded with a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
@@ -1567,7 +1590,7 @@ interface ElementInterface extends ComponentInterface, Chippable, Thumbable, Sta
     // -------------------------------------------------------------------------
 
     /**
-     * Returns any attributes that should be included in the element’s DOM representation in the control panel.
+     * Returns any attributes that should be included in the element’s chips and cards.
      *
      * The attribute HTML will be rendered with [[\yii\helpers\BaseHtml::renderTagAttributes()]].
      *

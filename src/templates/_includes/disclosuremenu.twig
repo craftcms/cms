@@ -1,5 +1,6 @@
 {% set id = id ?? "menu-#{random()}" %}
 {% set withButton = withButton ?? false %}
+{% set buttonSpinner = buttonSpinner ?? false %}
 
 {% set hasSelected = items|map(i => i.items ?? [i])|flatten(1)|contains('selected') %}
 
@@ -16,6 +17,10 @@
     {{- 'button' }}
   {%- endif %}
 {%- endmacro %}
+
+{% macro color(color) %}
+  {{- color is instance of ('craft\\enums\\Color') ? color.value : color -}}
+{% endmacro %}
 
 {% macro item(item, menuId) %}
   {% set type = _self.itemType(item) %}
@@ -47,36 +52,57 @@
     }|merge(item.attributes ?? {}, recursive=true) %}
       {%- apply spaceless %}
         {% if item.icon ?? false %}
-          <span class="icon">{{ iconSvg(item.icon) }}</span>
+          {{ tag('span', {
+            class: [
+              'icon',
+              _self.color(item.color ?? null),
+            ]|filter,
+            html: iconSvg(item.icon),
+          }) }}
         {% endif %}
         {% if item.status ?? false -%}
           {{ statusIndicator(item.status) }}
         {%- endif -%}
-        <span class="menu-item-label">{{ item.label ?? item.html|raw }}</span>
-        {% if item.description is defined %}
-          <div class="menu-item-description smalltext light">{{ item.description }}</div>
-        {% endif %}
+        <span class="menu-item-label inline-flex flex-col items-start gap-2xs">
+          {{ item.label ?? item.html|raw }}
+          {% if item.description is defined %}
+            <span class="menu-item-description mt-2xs smalltext light">{{ item.description }}</span>
+        {% elseif item.handle is defined %}
+            <span class="menu-item-description mt-2xs smalltext light code">{{ item.handle }}</span>
+          {% endif %}
+        </span>
         {% if selected %}
           <span class="visually-hidden">, selected</span>
         {% endif %}
       {% endapply -%}
     {% endtag %}
   {% endtag %}
+  {% if type == 'link' %}
+    {% js %}
+      $('#{{ id|namespaceInputId }}').on('keydown', (ev) => {
+        if (ev.keyCode === Garnish.SPACE_KEY) {
+          ev.currentTarget.click();
+        }
+      });
+    {% endjs %}
+  {% endif %}
   {% js %}
     $('#{{ id|namespaceInputId }}').on('activate', () => {
-      $('#{{ menuId|namespaceInputId }}').data('disclosureMenu').hide();
+      setTimeout(() => {
+        $('#{{ menuId|namespaceInputId }}').data('disclosureMenu').hide();
+      }, 1);
     });
   {% endjs %}
 {% endmacro %}
 
 {% if withButton %}
   {% if html ?? false %}
-    {{ html | raw }}
+    {{ html|raw }}
   {% elseif label ?? false %}
     <span >{{ label }}</span>
   {% endif %}
 
-  {{ tag('button', {
+  {% tag 'button' with {
     class: ['btn', 'menubtn'],
     type: 'button',
     aria: {
@@ -86,9 +112,23 @@
     data: {
       'disclosure-trigger': true,
     },
-    text: buttonLabel ?? null,
-    html: buttonHtml ?? null,
-  }|merge(buttonAttributes ?? {}, recursive=true)) }}
+  }|merge(buttonAttributes ?? {}, recursive=true) %}
+    {%- apply spaceless %}
+      {% if buttonSpinner %}
+        <div role="status" class="visually-hidden"></div>
+      {% endif %}
+      {{ (buttonLabel or buttonHtml) ? tag('div', {
+        class: 'label',
+        text: buttonLabel ?? null,
+        html: buttonHtml ?? null
+      }) }}
+      {% if buttonSpinner %}
+        <div class="spinner spinner-absolute">
+          <span class="visually-hidden">{{ 'Loading'|t('app') }}</span>
+        </div>
+      {% endif %}
+    {% endapply -%}
+  {% endtag %}
 {% endif %}
 
 {% tag 'div' with {
@@ -118,7 +158,7 @@
             {% if item.heading is defined %}
               {% tag headingTag with {
                 class: ['h6', 'padded'],
-              } | merge(item.headingAttributes ??{}, recursive=true) %}
+              }|merge(item.headingAttributes ??{}, recursive=true) %}
                 {{ item.heading }}
               {% endtag %}
             {% endif %}

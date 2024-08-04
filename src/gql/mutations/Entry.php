@@ -8,8 +8,10 @@
 namespace craft\gql\mutations;
 
 use Craft;
+use craft\base\ElementContainerFieldInterface;
 use craft\gql\arguments\mutations\Draft as DraftMutationArguments;
 use craft\gql\arguments\mutations\Entry as EntryMutationArguments;
+use craft\gql\arguments\mutations\NestedEntry;
 use craft\gql\arguments\mutations\Structure as StructureArguments;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
@@ -45,7 +47,7 @@ class Entry extends Mutation
             $canSave = Gql::canSchema($scope, 'save');
 
             if ($canCreate || $canSave) {
-                // Create a mutation for each editable section that includes the entry type
+                // Create a mutation for each entry type
                 foreach ($section->getEntryTypes() as $entryType) {
                     foreach (static::createSaveMutations($section, $entryType, $canSave) as $mutation) {
                         $mutationList[$mutation['name']] = $mutation;
@@ -59,6 +61,35 @@ class Entry extends Mutation
 
             if (!$createDeleteMutation && !$isSingle && Gql::canSchema($scope, 'delete')) {
                 $createDeleteMutation = true;
+            }
+        }
+
+        $fieldsService = Craft::$app->getFields();
+        foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
+            foreach ($fieldsService->getFieldsByType($type) as $field) {
+                /** @var ElementContainerFieldInterface $field */
+                $scope = "nestedentryfields.$field->uid";
+                $canCreate = Gql::canSchema($scope, 'create');
+                $canSave = Gql::canSchema($scope, 'save');
+
+                if ($canCreate || $canSave) {
+                    // Create a mutation for each entry type
+                    foreach ($field->getFieldLayoutProviders() as $provider) {
+                        if ($provider instanceof EntryTypeModel) {
+                            foreach (static::createSaveMutationsForField($field, $provider, $canSave) as $mutation) {
+                                $mutationList[$mutation['name']] = $mutation;
+                            }
+                        }
+                    }
+                }
+
+                if (!$createDraftMutations && $canSave) {
+                    $createDraftMutations = true;
+                }
+
+                if (!$createDeleteMutation && Gql::canSchema($scope, 'delete')) {
+                    $createDeleteMutation = true;
+                }
             }
         }
 
@@ -196,6 +227,62 @@ class Entry extends Mutation
         if ($createSaveDraftMutation) {
             $mutations[] = [
                 'name' => "save_{$section->handle}_{$entryType->handle}_Draft",
+                'description' => $draftDescription,
+                'args' => $draftMutationArguments,
+                'resolve' => [$resolver, 'saveEntry'],
+                'type' => $generatedType,
+            ];
+        }
+
+        return $mutations;
+    }
+
+    /**
+     * Create the per-entry-type save mutations for a nested entry field.
+     *
+     * @param ElementContainerFieldInterface $field
+     * @param EntryTypeModel $entryType
+     * @param bool $createSaveDraftMutation
+     * @return array
+     * @throws InvalidConfigException
+     */
+    public static function createSaveMutationsForField(
+        ElementContainerFieldInterface $field,
+        EntryTypeModel $entryType,
+        bool $createSaveDraftMutation,
+    ): array {
+        $mutations = [];
+
+        $entryMutationArguments = NestedEntry::getArguments();
+        $draftMutationArguments = DraftMutationArguments::getArguments();
+        $generatedType = EntryType::generateType($entryType);
+
+        /** @var EntryMutationResolver $resolver */
+        $resolver = Craft::createObject(EntryMutationResolver::class);
+        $resolver->setResolutionData('entryType', $entryType);
+        $resolver->setResolutionData('field', $field);
+
+        static::prepareResolver($resolver, $entryType->getCustomFields());
+
+        $description = sprintf('Save a “%s” entry in the “%s” %s field.', $entryType->name, $field->name, $field::displayName());
+        $draftDescription = sprintf('Save a “%s” entry draft in the “%s” %s field.', $entryType->name, $field->name, $field::displayName());
+
+        $contentFields = $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY);
+        $entryMutationArguments = array_merge($entryMutationArguments, $contentFields);
+        $draftMutationArguments = array_merge($draftMutationArguments, $contentFields);
+
+        $mutations[] = [
+            'name' => "save_{$field->handle}Field_{$entryType->handle}_Entry",
+            'description' => $description,
+            'args' => $entryMutationArguments,
+            'resolve' => [$resolver, 'saveEntry'],
+            'type' => $generatedType,
+        ];
+
+        // This gets created only if allowed to save entries
+        if ($createSaveDraftMutation) {
+            $mutations[] = [
+                'name' => "save_{$field->handle}Field_{$entryType->handle}_Draft",
                 'description' => $draftDescription,
                 'args' => $draftMutationArguments,
                 'resolve' => [$resolver, 'saveEntry'],

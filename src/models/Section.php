@@ -8,6 +8,8 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Chippable;
+use craft\base\CpEditable;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
@@ -31,7 +33,7 @@ use craft\validators\UniqueValidator;
  * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
-class Section extends Model
+class Section extends Model implements Chippable, CpEditable
 {
     public const TYPE_SINGLE = 'single';
     public const TYPE_CHANNEL = 'channel';
@@ -48,6 +50,15 @@ class Section extends Model
     public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
     /** @since 3.7.0 */
     public const DEFAULT_PLACEMENT_END = 'end';
+
+    /**
+     * @inheritdoc
+     */
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getEntries()->getSectionById($id);
+    }
 
     /**
      * @var int|null ID
@@ -141,7 +152,7 @@ class Section extends Model
             $this->previewTargets = [
                 [
                     'label' => Craft::t('app', 'Primary {type} page', [
-                        'type' => StringHelper::toLowerCase(Entry::displayName()),
+                        'type' => Entry::lowerDisplayName(),
                     ]),
                     'urlFormat' => '{url}',
                 ],
@@ -149,6 +160,22 @@ class Section extends Model
         }
 
         parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     /**
@@ -358,14 +385,11 @@ class Section extends Model
     }
 
     /**
-     * Returns the section’s edit URL in the control panel.
-     *
-     * @return string
-     * @since 5.0.0
+     * @inheritdoc
      */
-    public function getCpEditUrl(): string
+    public function getCpEditUrl(): ?string
     {
-        return UrlHelper::cpUrl("settings/sections/$this->id");
+        return $this->id ? UrlHelper::cpUrl("settings/sections/$this->id") : null;
     }
 
     /**

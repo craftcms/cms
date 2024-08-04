@@ -18,6 +18,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     $toolbar: null,
     $tabContainer: null,
     $loadSpinner: null,
+    $actionBtn: null,
     $editLink: null,
     $sidebarBtn: null,
 
@@ -37,6 +38,19 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     cancelToken: null,
     ignoreFailedRequest: false,
     fieldsWithErrors: null,
+
+    /**
+     * @returns {boolean} Whether the slideout is wide enough to show the sidebar alongside the content
+     */
+    get showExpandedView() {
+      return this.$container.width() > 700;
+    },
+
+    get sidebarIsOverlapping() {
+      return (
+        this.showingSidebar && this.$sidebar.css('position') === 'absolute'
+      );
+    },
 
     init: function (action, settings) {
       this.action = action;
@@ -129,7 +143,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       this.$container.data('cpScreen', this);
       this.on('beforeClose', () => {
-        this.hideSidebar();
+        this.hideSidebarIfOverlapping();
       });
 
       // Register shortcuts & events
@@ -159,7 +173,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           !$target.closest(this.$sidebarBtn).length &&
           !$target.closest(this.$sidebar).length
         ) {
-          this.hideSidebar();
+          this.hideSidebarIfOverlapping();
         }
       });
       this.addListener(this.$container, 'submit', 'handleSubmit');
@@ -312,7 +326,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
             class: 'visually-hidden',
             text: Craft.t('app', 'Actions'),
           }).insertBefore(this.$editLink);
-          const $trigger = $('<button/>', {
+          this.$actionBtn = $('<button/>', {
             class: 'btn action-btn header-btn',
             type: 'button',
             title: Craft.t('app', 'Actions'),
@@ -321,11 +335,12 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
             'data-disclosure-trigger': 'true',
           }).insertBefore(this.$editLink);
           $(data.actionMenu).insertBefore(this.$editLink);
-          $trigger.disclosureMenu();
+          this.$actionBtn.disclosureMenu();
+        } else {
+          this.$actionBtn = null;
         }
 
         if (data.sidebar) {
-          this.$container.addClass('has-sidebar');
           this.$sidebarBtn.removeClass('hidden');
           this.$sidebar.html(data.sidebar);
 
@@ -340,8 +355,14 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           });
 
           this.hasSidebar = true;
+
+          if (this.showExpandedView) {
+            this.showSidebar(false);
+          } else {
+            this.hideSidebar();
+          }
         } else {
-          this.$container.removeClass('has-sidebar');
+          this.hideSidebar();
           this.$sidebarBtn.addClass('hidden');
           this.$sidebar.addClass('hidden').html('');
           this.hasSidebar = false;
@@ -356,11 +377,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         this.updateHeaderVisibility();
         this.$footer.removeClass('hidden');
 
-        Garnish.requestAnimationFrame(() => {
-          Craft.appendHeadHtml(data.headHtml);
-          Craft.appendBodyHtml(data.bodyHtml);
-
+        Garnish.requestAnimationFrame(async () => {
           Craft.initUiElements(this.$content);
+          await Craft.appendHeadHtml(data.headHtml);
+          await Craft.appendBodyHtml(data.bodyHtml);
           Craft.cp.elementThumbLoader.load($(this.$content));
 
           if (data.sidebar) {
@@ -403,11 +423,12 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       }
     },
 
-    showSidebar: function () {
+    showSidebar: function (focus = true) {
       if (this.showingSidebar) {
         return;
       }
 
+      this.$container.addClass('showing-sidebar');
       this.$body.scrollTop(0).addClass('no-scroll');
 
       this.$sidebar
@@ -420,13 +441,15 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       this.$sidebar.css(this._openedSidebarStyles());
 
-      if (!Garnish.isMobileBrowser()) {
+      if (focus && !Garnish.isMobileBrowser()) {
         this.$sidebar.one('transitionend.so', () => {
           Craft.setFocusWithin(this.$sidebar);
         });
       }
 
-      Craft.trapFocusWithin(this.$sidebar);
+      if (!this.showExpandedView) {
+        Craft.trapFocusWithin(this.$sidebar);
+      }
 
       this.$sidebarBtn.addClass('active').attr({
         'aria-expanded': 'true',
@@ -435,9 +458,11 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       Garnish.$win.trigger('resize');
       this.$sidebar.trigger('scroll');
 
-      Garnish.uiLayerManager.addLayer();
-      Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
-        this.hideSidebar();
+      Garnish.uiLayerManager.addLayer({
+        bubble: true,
+      });
+      Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, (ev) => {
+        this.hideSidebarIfOverlapping() || ev.bubbleShortcut();
       });
 
       this.showingSidebar = true;
@@ -448,7 +473,14 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         return;
       }
 
+      this.$container.removeClass('showing-sidebar');
       this.$body.removeClass('no-scroll');
+
+      // Do the same thing when there are no transitions
+      if (!this.sidebarIsOverlapping) {
+        this.$sidebar.addClass('hidden');
+        this.$sidebarBtn.focus();
+      }
 
       this.$sidebar
         .off('transitionend.so')
@@ -458,6 +490,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           this.$sidebarBtn.focus();
         });
 
+      Craft.releaseFocusWithin(this.$sidebar);
+
       this.$sidebarBtn.removeClass('active').attr({
         'aria-expanded': 'false',
       });
@@ -465,6 +499,15 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       Garnish.uiLayerManager.removeLayer();
 
       this.showingSidebar = false;
+    },
+
+    hideSidebarIfOverlapping() {
+      if (this.sidebarIsOverlapping) {
+        this.hideSidebar();
+        return true;
+      } else {
+        return false;
+      }
     },
 
     _openedSidebarStyles: function () {
@@ -489,7 +532,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
     handleSubmit: function (ev) {
       ev.preventDefault();
-      this.submit();
+      // give other submit handlers a chance to modify things
+      setTimeout(() => {
+        this.submit();
+      }, 1);
     },
 
     submit: function () {
@@ -512,8 +558,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         .then((response) => {
           this.handleSubmitResponse(response);
         })
-        .catch((error) => {
-          this.handleSubmitError(error);
+        .catch((e) => {
+          this.handleSubmitError(e);
         })
         .finally(() => {
           this.hideSubmitSpinner();
@@ -538,20 +584,93 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       }
     },
 
-    handleSubmitError: function (error) {
-      if (
-        !error.isAxiosError ||
-        !error.response ||
-        !error.response.status === 400
-      ) {
+    handleSubmitError: function (e) {
+      if (!e.isAxiosError || !e.response || !e.response.status === 400) {
         Craft.cp.displayError();
-        throw error;
+        throw e;
       }
 
-      const data = error.response.data || {};
+      const data = e.response.data || {};
       Craft.cp.displayError(data.message);
       if (data.errors) {
         this.showErrors(data.errors);
+      }
+
+      if (data.errorSummary) {
+        this.showErrorSummary(
+          data.errorSummary,
+          Object.keys(data.errors || {}).length
+        );
+      }
+    },
+
+    showErrorSummary: function (errorSummary, errorCount = 0) {
+      // start by clearing any error summary that might be left
+      Craft.ui.clearErrorSummary(this.$body);
+
+      // if we have multiple tabs - split the error summary into them
+      if (this.tabManager !== null) {
+        let $tabs = this.tabManager.$tabs;
+        let $tabsWithErrors = $tabs.filter('.error');
+        let $content = this.$content;
+
+        $tabs.each(function (i, tab) {
+          let tabDataId = $(tab).data('id');
+          let $tabContainer = $content.find('#' + tabDataId);
+          if ($tabContainer.length > 0) {
+            let tabUid = $tabContainer.data('layout-tab');
+            let $tabErrorSummary = $(errorSummary);
+            let tabErrorCount = $tabErrorSummary.find('ul.errors li').length;
+            let headingText = '';
+
+            // remove any errors that are not specifically for this tab
+            // leave out errors that don't have a tab assignment (e.g. cross-validation errors)
+            $tabErrorSummary.find('ul.errors li').each(function (j, error) {
+              let errorTabUid = $(error).find('a').data('layout-tab');
+              if (
+                typeof errorTabUid !== 'undefined' &&
+                errorTabUid !== tabUid
+              ) {
+                $(error).remove();
+                tabErrorCount--;
+              }
+            });
+
+            if (tabErrorCount > 0) {
+              headingText = Craft.t(
+                'app',
+                'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.',
+                {num: tabErrorCount}
+              );
+
+              // if there are errors in any other tabs - tell users about it.
+              if ($tabsWithErrors.length - 1 > 0) {
+                headingText +=
+                  '<span class="visually-hidden">' +
+                  Craft.t(
+                    'app',
+                    '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
+                    {
+                      total: errorCount,
+                      num: $tabsWithErrors.length,
+                    }
+                  ) +
+                  '</span>';
+              }
+            } else {
+              headingText = Craft.t('app', 'Found errors in other tabs.');
+            }
+
+            $tabErrorSummary.find('h2').html(headingText);
+
+            $tabErrorSummary.prependTo($tabContainer);
+            Craft.ui.setFocusOnErrorSummary($tabContainer); // this also makes the deep linking work
+          }
+        });
+      } else {
+        // if we only have one tab - just show the error summary as is
+        $(errorSummary).prependTo(this.$content);
+        Craft.ui.setFocusOnErrorSummary(this.$content);
       }
     },
 
@@ -561,11 +680,59 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     showErrors: function (errors) {
       this.clearErrors();
 
+      const tabMenu = this.tabManager?.menu || [];
+      const tabErrorIndicator =
+        '<span data-icon="alert">' +
+        '<span class="visually-hidden">' +
+        Craft.t('app', 'This tab contains errors') +
+        '</span>\n' +
+        '</span>';
+
       Object.entries(errors).forEach(([name, fieldErrors]) => {
-        const $field = this.$container.find(`[data-attribute="${name}"]`);
+        const $field = this.$container.find(`[data-error-key="${name}"]`);
         if ($field) {
           Craft.ui.addErrorsToField($field, fieldErrors);
           this.fieldsWithErrors.push($field);
+
+          // find tabs that contain fields with errors
+          let fieldTabAnchors = Craft.ui.findTabAnchorForField(
+            $field,
+            this.$container
+          );
+
+          // add error indicator to tabs
+          if (fieldTabAnchors.length > 0) {
+            // add error indicator to the tabs menuBtn
+            if (this.tabManager.$menuBtn.hasClass('error') == false) {
+              this.tabManager.$menuBtn.addClass('error');
+              this.tabManager.$menuBtn.append(
+                '<span data-icon="alert"></span>'
+              );
+            }
+
+            for (let i = 0; i < fieldTabAnchors.length; i++) {
+              let $fieldTabAnchor = $(fieldTabAnchors[i]);
+
+              if ($fieldTabAnchor.hasClass('error') == false) {
+                $fieldTabAnchor.addClass('error');
+                $fieldTabAnchor.find('.tab-label').append(tabErrorIndicator);
+
+                // also add the error indicator to the disclosure menu for the tabs
+                if (tabMenu.length) {
+                  let $tabMenuItem = tabMenu.find(
+                    '[data-id=' + $fieldTabAnchor.data('id') + ']'
+                  );
+                  if (
+                    $tabMenuItem.length > 0 &&
+                    $tabMenuItem.hasClass('error') == false
+                  ) {
+                    $tabMenuItem.addClass('error');
+                    $tabMenuItem.append(tabErrorIndicator);
+                  }
+                }
+              }
+            }
+          }
         }
       });
     },
@@ -607,6 +774,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     close: function () {
+      if (this.showingSidebar) {
+        this.hideSidebar();
+      }
+
       this.base();
 
       if (this.cancelToken) {

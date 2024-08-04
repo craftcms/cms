@@ -30,7 +30,7 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
     init: function (tableView, $elements, settings) {
       this.tableView = tableView;
 
-      this._helperMargin = this.tableView.elementIndex.actions ? 52 : 0;
+      this._helperMargin = this.tableView.elementIndex.actions ? 40 : 0;
 
       settings = $.extend({}, Craft.ElementTableSorter.defaults, settings, {
         handle: '.move',
@@ -83,8 +83,8 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
       // and does it look like this draggee has descendants we don't know about yet?
       if (
         this.settings.maxLevels &&
-        this.draggingLastElements &&
-        this.tableView.getMorePending()
+        ($draggee.has('> th button.toggle[aria-expanded=false]').length ||
+          (this.draggingLastElements && this.tableView.getMorePending()))
       ) {
         // Only way to know the true descendant level delta is to ask PHP
         this._loadingDraggeeLevelDelta = true;
@@ -98,6 +98,7 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
 
           if (this.dragging) {
             this._draggeeLevelDelta = response.data.delta;
+            this._setTargetLevelBounds();
             this.drag(false);
           }
         });
@@ -159,10 +160,6 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
      * Returns whether the draggee can be inserted before a given item.
      */
     canInsertBefore: function ($item) {
-      if (this._loadingDraggeeLevelDelta) {
-        return false;
-      }
-
       return this._getLevelBounds($item.prev(), $item) !== false;
     },
 
@@ -170,10 +167,6 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
      * Returns whether the draggee can be inserted after a given item.
      */
     canInsertAfter: function ($item) {
-      if (this._loadingDraggeeLevelDelta) {
-        return false;
-      }
-
       return this._getLevelBounds($item, $item.next()) !== false;
     },
 
@@ -317,8 +310,8 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
               // See if we should run any pending tasks
               Craft.cp.runQueue();
             })
-            .catch(({response}) => {
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+            .catch((e) => {
+              Craft.cp.displayError(e?.response?.data?.message);
               this.tableView.elementIndex.updateElements();
             });
         }
@@ -369,6 +362,10 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
      * two given rows, or false if it’s not going to work out.
      */
     _getLevelBounds: function ($prevRow, $nextRow) {
+      if (this._loadingDraggeeLevelDelta) {
+        return false;
+      }
+
       // Can't go any lower than the next row, if there is one
       if ($nextRow && $nextRow.length) {
         this._getLevelBounds._minLevel = this._level($nextRow);
@@ -651,7 +648,7 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
   },
   {
     HELPER_MARGIN: 0,
-    LEVEL_INDENT: 44,
+    LEVEL_INDENT: 48,
     MAX_GIVE: 22,
 
     defaults: {

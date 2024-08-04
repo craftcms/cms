@@ -117,7 +117,7 @@ import './system_messages.scss';
         this.addListener(this.$cancelBtn, 'click', 'cancel');
 
         setTimeout(() => {
-          this.$subjectInput.trigger('focus');
+          this.$subjectInput.focus();
         }, 100);
       });
     },
@@ -171,12 +171,8 @@ import './system_messages.scss';
           this.hide();
           Craft.cp.displaySuccess(Craft.t('app', 'Message saved.'));
         })
-        .catch(({response}) => {
-          if (response && response.data && response.data.message) {
-            Craft.cp.displayError(response.data.message);
-          } else {
-            Craft.cp.displayError();
-          }
+        .catch((e) => {
+          Craft.cp.displayError(e?.response?.data?.message);
         })
         .finally(() => {
           this.$saveBtn.removeClass('loading');

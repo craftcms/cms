@@ -1,5 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
+/** global: $ */
+/** global: jQuery */
 
 /**
  * Base component select input
@@ -111,7 +113,9 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       if (this.settings.selectable) {
         this.componentSelect = new Garnish.Select({
           multi: this.settings.sortable,
-          filter: ':not(a):not(button)',
+          filter: (target) => {
+            return !$(target).closest('a[href],button,[role=button]').length;
+          },
           // prevent keyboard focus since component selection is only needed for drag-n-drop
           makeFocusable: false,
         });
@@ -162,23 +166,28 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       );
     },
 
-    enableAddComponentBtn: function () {
-      if (this.$addBtn.length) {
-        this.$addBtn.removeClass('hidden');
+    updateButtons() {
+      if (this.canAddMoreComponents()) {
+        if (this.$addBtn.length) {
+          if (this.getOptions().parent(':not(.hidden)').length) {
+            this.$addBtn.removeClass('hidden');
+          } else {
+            this.$addBtn.addClass('hidden');
+          }
+        }
+
+        if (this.$createBtn.length) {
+          this.$createBtn.removeClass('hidden');
+        }
+      } else {
+        if (this.$addBtn.length) {
+          this.$addBtn.addClass('hidden');
+        }
+        if (this.$createBtn.length) {
+          this.$createBtn.addClass('hidden');
+        }
       }
 
-      this.updateButtonContainer();
-    },
-
-    disableAddComponentBtn: function () {
-      if (this.$addBtn.length) {
-        this.$addBtn.addClass('hidden');
-      }
-
-      this.updateButtonContainer();
-    },
-
-    updateButtonContainer: function () {
       const $container = this.$addBtn.length && this.$addBtn.parent('.flex');
       if ($container && $container.length) {
         if ($container.children(':not(.hidden)').length) {
@@ -223,10 +232,33 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       // add the action triggers
       for (let i = 0; i < $components.length; i++) {
         const $component = $components.eq(i);
+
         const actions = this.defineComponentActions($component);
-        if (actions.length) {
-          Craft.addActionsToChip($component, actions);
-        }
+        Craft.addActionsToChip($component, actions);
+
+        const disclosureMenu = $component
+          .find('> .chip-content > .chip-actions .action-btn')
+          .disclosureMenu()
+          .data('disclosureMenu');
+        const moveForwardBtn = disclosureMenu.$container.find(
+          '[data-move-forward]'
+        )[0];
+        const moveBackwardBtn = disclosureMenu.$container.find(
+          '[data-move-backward]'
+        )[0];
+
+        disclosureMenu.on('show', () => {
+          const $li = $component.parent();
+          const $prev = $li.prev();
+          const $next = $li.next();
+
+          if (moveForwardBtn) {
+            disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
+          }
+          if (moveBackwardBtn) {
+            disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
+          }
+        });
 
         if (this.settings.sortable) {
           $('<button/>', {
@@ -237,6 +269,14 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
             'aria-describedby': $component.find('.label').attr('id'),
           }).appendTo($component.find('.chip-actions'));
         }
+
+        this.addListener($component, 'dblclick,taphold', (ev) => {
+          // don't open the edit slideout if we are tapholding to drag
+          if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
+            return;
+          }
+          disclosureMenu.$container.find('[data-edit-action]').click();
+        });
 
         this.hideOption($component.data('id'));
       }
@@ -324,43 +364,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       this.componentSelect?.resetItemOrder();
       this.$components = $().add(this.$components);
 
-      for (let i = 0; i < this.$components.length; i++) {
-        const $component = this.$components.eq(i);
-        const $actionMenuBtn = $component
-          .find('.chip-actions,.card-actions')
-          .find('.action-btn');
-        const $menu = $actionMenuBtn
-          .disclosureMenu()
-          .data('disclosureMenu').$container;
-        const $moveForward = $menu.find('[data-move-forward]').closest('li');
-        const $moveBackward = $menu.find('[data-move-backward]').closest('li');
-        const $ul = $moveForward.closest('ul');
-        const $hr = $ul.prev('hr');
-
-        if (i === 0) {
-          $moveForward.addClass('hidden');
-        } else {
-          $moveForward.removeClass('hidden');
-        }
-
-        if (i === this.$components.length - 1) {
-          $moveBackward.addClass('hidden');
-        } else {
-          $moveBackward.removeClass('hidden');
-        }
-
-        if ($ul.children('li:not(.hidden)').length) {
-          $hr.removeClass('hidden');
-        } else {
-          $hr.addClass('hidden');
-        }
-      }
-
-      if (this.canAddMoreComponents()) {
-        this.enableAddComponentBtn();
-      } else {
-        this.disableAddComponentBtn();
-      }
+      this.updateButtons();
 
       if (this._initialized) {
         this.trigger('change');
@@ -473,6 +477,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
                 instances: [
                   {
                     showActionMenu: this.settings.showActionMenu,
+                    showHandle: this.settings.showHandles,
                     inputName: this.settings.name,
                   },
                 ],
@@ -484,20 +489,27 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         }
       );
 
-      const $component = $(data.components[type][id][0]);
-      $('<li/>').append($component).appendTo(this.$list);
-      this.addComponents($component);
+      const canAdd = this.canAddMoreComponents();
+
+      if (canAdd) {
+        const $component = $(data.components[type][id][0]);
+        $('<li/>').append($component).appendTo(this.$list);
+        this.addComponents($component);
+      }
 
       if (addToMenu && disclosureMenu) {
-        const $menuItem = $(data.menuItems[type][id]).addClass('hidden');
+        const $menuItem = $(data.menuItems[type][id]);
         disclosureMenu.addItem($menuItem);
+        if (canAdd) {
+          disclosureMenu.hideItem($menuItem.children()[0]);
+        }
         this.addListener($menuItem.find('button'), 'activate', () => {
           this.addComponent(type, id);
         });
       }
 
-      Craft.appendHeadHtml(data.headHtml);
-      Craft.appendBodyHtml(data.bodyHtml);
+      await Craft.appendHeadHtml(data.headHtml);
+      await Craft.appendBodyHtml(data.bodyHtml);
     },
   },
   {
@@ -506,6 +518,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       id: null,
       name: null,
       limit: null,
+      showHandles: false,
       sortable: true,
       selectable: true,
       showActionMenu: true,

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\ArrayHelper;
@@ -26,7 +27,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Lightswitch extends Field implements InlineEditableFieldInterface, SortableFieldInterface
+class Lightswitch extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
 {
     /**
      * @inheritdoc
@@ -34,6 +35,14 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
     public static function displayName(): string
     {
         return Craft::t('app', 'Lightswitch');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'toggle-on';
     }
 
     /**
@@ -231,13 +240,17 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
 
         $label = $this->onLabel ?: Craft::t('app', 'Enabled');
 
-        return Html::tag('span', '', [
-            'class' => 'checkbox-icon',
-            'role' => 'img',
-            'title' => $label,
-            'aria' => [
-                'label' => $label,
-            ],
-        ]);
+        return
+            Html::tag('span', '', [
+                'class' => 'checkbox-icon',
+                'role' => 'img',
+                'title' => $label,
+                'aria' => [
+                    'label' => $label,
+                ],
+            ]) .
+            Html::tag('span', $this->getUiLabel(), [
+                'class' => 'checkbox-preview-label',
+            ]);
     }
 }

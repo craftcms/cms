@@ -12,8 +12,8 @@ use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
 use craft\base\UtilityInterface;
+use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
-use craft\enums\MenuItemType;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
@@ -22,6 +22,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Search;
@@ -33,9 +34,11 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use DateInterval;
 use Throwable;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\caching\FileDependency;
 use yii\web\BadRequestHttpException;
+use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -58,6 +61,7 @@ class AppController extends Controller
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'health-check' => self::ALLOW_ANONYMOUS_LIVE,
+        'resource-js' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -83,6 +87,26 @@ class AppController extends Controller
         $this->response->format = Response::FORMAT_RAW;
         $this->response->data = '';
         return $this->response;
+    }
+
+    /**
+     * Loads the given JavaScript resource URL and returns it.
+     *
+     * @param string $url
+     * @return Response
+     */
+    public function actionResourceJs(string $url): Response
+    {
+        $this->requireCpRequest();
+
+        if (!str_starts_with($url, Craft::$app->getAssetManager()->baseUrl)) {
+            throw new BadRequestHttpException("$url does not appear to be a resource URL");
+        }
+
+        $response = Craft::createGuzzleClient()->get($url);
+        $this->response->setCacheHeaders();
+        $this->response->getHeaders()->set('content-type', 'application/javascript');
+        return $this->asRaw($response->getBody());
     }
 
     /**
@@ -376,6 +400,76 @@ class AppController extends Controller
     }
 
     /**
+     * Displays a licensing issues takeover page.
+     *
+     * @param array $issues
+     * @param string $hash
+     * @return Response
+     * @internal
+     */
+    public function actionLicensingIssues(array $issues, string $hash): Response
+    {
+        $this->requireCpRequest();
+
+        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
+            'items' => array_map(fn($issue) => $issue[2], $issues),
+        ]);
+
+        $cookie = $this->request->getCookies()->get(App::licenseShunCookieName());
+        $data = $cookie ? Json::decode($cookie->value) : null;
+        if (($data['hash'] ?? null) !== $hash) {
+            $data = null;
+        }
+
+        $duration = match ($data['count'] ?? 0) {
+            0 => 21,
+            1 => 34,
+            2 => 55,
+            3 => 89,
+            4 => 144,
+            5 => 233,
+            6 => 377,
+            7 => 610,
+            8 => 987,
+            default => 1597,
+        };
+
+        return $this->renderTemplate('_special/licensing-issues.twig', [
+            'issues' => $issues,
+            'hash' => $hash,
+            'cartUrl' => $cartUrl,
+            'duration' => $duration,
+        ])->setStatusCode(402);
+    }
+
+    /**
+     * Sets the license shun cookie.
+     *
+     * @return Response
+     * @internal
+     */
+    public function actionSetLicenseShunCookie(): Response
+    {
+        $cookieName = App::licenseShunCookieName();
+        $oldCookie = $this->request->getCookies()->get($cookieName);
+        $data = $oldCookie ? Json::decode($oldCookie->value) : [];
+
+        $newCookie = new Cookie(Craft::cookieConfig([
+            'name' => $cookieName,
+            'value' => Json::encode([
+                'hash' => $this->request->getRequiredBodyParam('hash'),
+                'timestamp' => DateTimeHelper::toIso8601(DateTimeHelper::now()),
+                'count' => ($data['count'] ?? 0) + 1,
+            ]),
+            'expire' => DateTimeHelper::now()->modify('+1 year')->getTimestamp(),
+        ], $this->request));
+
+        $this->response->getCookies()->add($newCookie);
+        return $this->asSuccess();
+    }
+
+    /**
      * Tries a Craft edition on for size.
      *
      * @return Response
@@ -388,24 +482,22 @@ class AppController extends Controller
         $this->requireAdmin();
 
         $edition = $this->request->getRequiredBodyParam('edition');
-        $licensedEdition = Craft::$app->getLicensedEdition();
+        $licensedEdition = Craft::$app->getLicensedEdition() ?? CmsEdition::Solo;
 
-        if ($licensedEdition === null) {
-            $licensedEdition = 0;
+        try {
+            $edition = CmsEdition::fromHandle($edition);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }
 
-        $edition = match ($edition) {
-            'solo' => Craft::Solo,
-            'pro' => Craft::Pro,
-            default => throw new BadRequestHttpException('Invalid Craft edition: ' . $edition),
-        };
-
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
-        if ($edition > $licensedEdition && !Craft::$app->getCanTestEditions()) {
+        if ($edition->value > $licensedEdition->value && !Craft::$app->getCanTestEditions()) {
             throw new BadRequestHttpException('Craft is not permitted to test edition upgrades from this server');
         }
 
-        Craft::$app->setEdition($edition);
+        if (!Craft::$app->setEdition($edition)) {
+            return $this->asFailure();
+        }
 
         return $this->asSuccess();
     }
@@ -485,20 +577,15 @@ class AppController extends Controller
         $arr['name'] = $name;
         $arr['latestVersion'] = $update->getLatest()->version ?? null;
 
-        if ($update->abandoned) {
-            $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
-            if ($update->replacementName) {
-                if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
-                    $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
-                } else {
-                    $replacementUrl = $update->replacementUrl;
-                }
-                $arr['statusText'] .= ' ' .
-                    Craft::t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', [
-                        'url' => $replacementUrl,
-                        'name' => $update->replacementName,
-                    ]);
-            }
+        // Make sure that the platform & composer.json PHP version are compatible
+        $phpConstraintError = null;
+        if (
+            $update->phpConstraint &&
+            !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)
+        ) {
+            $arr['status'] = 'phpIssue';
+            $arr['statusText'] = $phpConstraintError;
+            $arr['ctaUrl'] = false;
         } elseif ($update->status === Update::STATUS_EXPIRED) {
             $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
                 'name' => $name,
@@ -507,23 +594,33 @@ class AppController extends Controller
                 'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
             ]);
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
-        } else {
-            // Make sure that the platform & composer.json PHP version are compatible
-            $phpConstraintError = null;
-            if ($update->phpConstraint && !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)) {
-                $arr['status'] = 'phpIssue';
-                $arr['statusText'] = $phpConstraintError;
-                $arr['ctaUrl'] = false;
-            } else {
-                if ($update->status === Update::STATUS_BREAKPOINT) {
-                    $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
-                        'update' => $name . ' ' . ($update->getLatest()->version ?? ''),
-                    ]);
-                }
 
-                if ($allowUpdates) {
-                    $arr['ctaText'] = Craft::t('app', 'Update');
+            if ($allowUpdates && Craft::$app->getCanTestEditions()) {
+                $arr['altCtaText'] = Craft::t('app', 'Update anyway');
+            }
+        } else {
+            if ($update->abandoned) {
+                $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
+                if ($update->replacementName) {
+                    if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+                        $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
+                    } else {
+                        $replacementUrl = $update->replacementUrl;
+                    }
+                    $arr['statusText'] .= ' ' .
+                        Craft::t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', [
+                            'url' => $replacementUrl,
+                            'name' => $update->replacementName,
+                        ]);
                 }
+            } elseif ($update->status === Update::STATUS_BREAKPOINT) {
+                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
+                    'update' => $name . ' ' . ($update->getLatest()->version ?? ''),
+                ]);
+            }
+
+            if ($allowUpdates) {
+                $arr['ctaText'] = Craft::t('app', 'Update');
             }
         }
 
@@ -666,17 +763,20 @@ class AppController extends Controller
                 ->id($id)
                 ->fixedOrder()
                 ->drafts(null)
-                ->provisionalDrafts(null)
                 ->revisions(null)
                 ->siteId($siteId)
                 ->status(null)
                 ->all();
 
+            // See if there are any provisional drafts we should swap these out with
+            ElementHelper::swapInProvisionalDrafts($elements);
+
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
+                    $id = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
                     /** @var 'chip'|'card' $ui */
                     $ui = $instance['ui'] ?? 'chip';
-                    $elementHtml[$element->id][$key] = match ($ui) {
+                    $elementHtml[$id][$key] = match ($ui) {
                         'chip' => Cp::elementChipHtml($element, $instance),
                         'card' => Cp::elementCardHtml($element, $instance),
                     };
@@ -717,8 +817,8 @@ class AppController extends Controller
             $componentType = $componentInfo['type'];
             $id = $componentInfo['id'];
 
-            if (!$id || (!is_numeric($id) && !(is_array($id) && ArrayHelper::isNumeric($id)))) {
-                throw new BadRequestHttpException('Invalid component ID');
+            if (!$id) {
+                throw new BadRequestHttpException('Missing component ID');
             }
 
             $component = $componentType::get($id);
@@ -729,7 +829,6 @@ class AppController extends Controller
 
                 if ($withMenuItems) {
                     $menuItemHtml[$componentType][$id] = Cp::menuItem([
-                        'type' => MenuItemType::Button->value,
                         'label' => $component->getUiLabel(),
                         'icon' => $component instanceof Iconic ? $component->getIcon() : null,
                         'attributes' => [
@@ -769,11 +868,12 @@ class AppController extends Controller
         $this->requireAcceptsJson();
 
         $search = $this->request->getRequiredBodyParam('search');
+        $freeOnly = (bool)($this->request->getBodyParam('freeOnly') ?? false);
         $noSearch = $search === '';
 
         if ($noSearch) {
             $cache = Craft::$app->getCache();
-            $cacheKey = 'icon-picker-options-list-html';
+            $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
             $listHtml = $cache->get($cacheKey);
             if ($listHtml !== false) {
                 return $this->asJson([
@@ -791,6 +891,10 @@ class AppController extends Controller
         $scores = [];
 
         foreach ($icons as $name => $icon) {
+            if ($freeOnly && $icon['pro']) {
+                continue;
+            }
+
             if ($searchTerms) {
                 $score = $this->matchTerms($searchTerms, $icon['name']) * 5 + $this->matchTerms($searchTerms, $icon['terms']);
                 if ($score === 0) {

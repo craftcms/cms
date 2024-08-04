@@ -208,6 +208,22 @@ class Search extends Component
     }
 
     /**
+     * Returns whether we should search for the resulting elements up front via [[searchElements()]],
+     * rather than supply a subquery which should be applied to the main element query via [[createDbQuery()]].
+     *
+     * If the element query is being ordered by `score`, [[searchElements()]] will be called regardless of
+     * what this returns.
+     *
+     * @param ElementQuery $elementQuery
+     * @return bool
+     * @since 4.8.0
+     */
+    public function shouldCallSearchElements(ElementQuery $elementQuery): bool
+    {
+        return false;
+    }
+
+    /**
      * Searches for elements that match the given element query.
      *
      * @param ElementQuery $elementQuery The element query being executed
@@ -427,6 +443,7 @@ SQL;
         $site = $element->getSite();
         $keywords = SearchHelper::normalizeKeywords($keywords, [], true, $site->language);
 
+        // Fire a 'beforeIndexKeywords' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_INDEX_KEYWORDS)) {
             $event = new IndexKeywordsEvent([
                 'element' => $element,

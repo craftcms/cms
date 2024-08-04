@@ -41,6 +41,7 @@ Garnish.ltr = !Garnish.rtl;
 
 Garnish = $.extend(Garnish, {
   $scrollContainer: Garnish.$win,
+  resizeEventsMuted: false,
 
   // Key code constants
   BACKSPACE_KEY: 8,
@@ -310,14 +311,17 @@ Garnish = $.extend(Garnish, {
   hideModalBackgroundLayers: function () {
     const topmostLayer = Garnish.uiLayerManager.currentLayer.$container.get(0);
 
-    Garnish.$bod.children().each(function () {
-      // If element is modal or already has jsAria class, do nothing
-      if (Garnish.hasJsAriaClass(this) || this === topmostLayer) return;
+    Garnish.$bod
+      .children()
+      .not('#notifications')
+      .each(function () {
+        // If element is modal or already has jsAria class, do nothing
+        if (Garnish.hasJsAriaClass(this) || this === topmostLayer) return;
 
-      if (!Garnish.isScriptOrStyleElement(this)) {
-        Garnish.ariaHide(this);
-      }
-    });
+        if (!Garnish.isScriptOrStyleElement(this)) {
+          Garnish.ariaHide(this);
+        }
+      });
   },
 
   /**
@@ -459,6 +463,7 @@ Garnish = $.extend(Garnish, {
    */
   trapFocusWithin: function (container) {
     const $container = $(container);
+    this.releaseFocusWithin($container);
     $container.on('keydown.focus-trap', function (ev) {
       if (ev.keyCode === Garnish.TAB_KEY) {
         const $focusableElements = $container.find(':focusable');
@@ -470,14 +475,22 @@ Garnish = $.extend(Garnish, {
         if (index === 0 && ev.shiftKey) {
           ev.preventDefault();
           ev.stopPropagation();
-          $focusableElements.last().trigger('focus');
+          $focusableElements.last().focus();
         } else if (index === $focusableElements.length - 1 && !ev.shiftKey) {
           ev.preventDefault();
           ev.stopPropagation();
-          $focusableElements.first().trigger('focus');
+          $focusableElements.first().focus();
         }
       }
     });
+  },
+
+  /**
+   * Releases focus within a container.
+   * @param {Object} container
+   */
+  releaseFocusWithin: function (container) {
+    $(container).off('.focus-trap');
   },
 
   /**
@@ -486,14 +499,30 @@ Garnish = $.extend(Garnish, {
    */
   setFocusWithin: function (container) {
     const $container = $(container);
-    const $firstFocusable = $(container).find(
-      ':focusable:not(.checkbox):first'
+    if ($container.has(document.activeElement).length) {
+      return;
+    }
+
+    let $firstFocusable = $(container).find(
+      ':focusable:not(.checkbox):not(.prevent-autofocus):first'
     );
 
+    // if the first visible .field container is not the parent of the first focusable element we found
+    // just focus on the container;
+    // this can happen if e.g. you have an entry without a title and the first field is a ckeditor field;
+    // in such case the second (or further) element would get focus on initial load, which can be confusing
+    // see https://github.com/craftcms/cms/issues/15245
+    if (
+      $container.find('.field:visible:first')[0] !==
+      $firstFocusable.parents('.field')[0]
+    ) {
+      $firstFocusable = [];
+    }
+
     if ($firstFocusable.length > 0) {
-      $firstFocusable.trigger('focus');
+      $firstFocusable.focus();
     } else {
-      $container.attr('tabindex', '-1').trigger('focus');
+      $container.attr('tabindex', '-1').focus();
     }
   },
 
@@ -812,7 +841,10 @@ Garnish = $.extend(Garnish, {
         break;
       }
 
-      $targetInputs.eq(i).val($sourceInputs.eq(i).val());
+      const $targetInput = $targetInputs.eq(i);
+      if ($targetInput.attr('type') !== 'file') {
+        $targetInputs.eq(i).val($sourceInputs.eq(i).val());
+      }
     }
   },
 
@@ -902,6 +934,31 @@ Garnish = $.extend(Garnish, {
       }
     }
   },
+
+  once: function (target, events, data, handler) {
+    if (typeof target === 'undefined') {
+      console.warn('Garnish.once() called for an invalid target class.');
+      return;
+    }
+
+    if (typeof data === 'function') {
+      handler = data;
+      data = {};
+    }
+
+    const onceler = (event) => {
+      this.off(target, events, onceler);
+      handler(event);
+    };
+    this.on(target, events, data, onceler);
+  },
+
+  muteResizeEvents: function (callback) {
+    const resizeEventsMuted = Garnish.resizeEventsMuted;
+    Garnish.resizeEventsMuted = true;
+    callback();
+    Garnish.resizeEventsMuted = resizeEventsMuted;
+  },
 });
 
 Object.assign(Garnish, {
@@ -938,20 +995,27 @@ Object.assign(Garnish, {
 // Custom events
 // -----------------------------------------------------------------------------
 
-var erd;
-
-function getErd() {
-  if (typeof erd === 'undefined') {
-    erd = elementResizeDetectorMaker({
-      callOnAdd: false,
-    });
-  }
-
-  return erd;
-}
-
-function triggerResizeEvent(elem) {
-  $(elem).trigger('resize');
+let resizeObserver;
+/**
+ * @returns {ResizeObserver}
+ */
+function getResizeObserver() {
+  return (resizeObserver =
+    resizeObserver ||
+    new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const size = $.data(entry.target, 'size');
+        if (size) {
+          const {width, height} = entry.target.getBoundingClientRect();
+          if (width !== size.width || height !== size.height) {
+            $.data(entry.target, 'size', {width, height});
+            if (!Garnish.resizeEventsMuted) {
+              $(entry.target).trigger('resize');
+            }
+          }
+        }
+      }
+    }));
 }
 
 // Work them into jQuery's event system
@@ -963,7 +1027,10 @@ $.extend($.event.special, {
       $elem.on({
         'mousedown.garnish-activate': function (e) {
           // Prevent buttons from getting focus on click
-          if (e.currentTarget.nodeName === 'BUTTON') {
+          if (
+            e.currentTarget.nodeName === 'BUTTON' ||
+            e.currentTarget.role === 'button'
+          ) {
             e.preventDefault();
           }
         },
@@ -981,7 +1048,10 @@ $.extend($.event.special, {
             return;
           }
 
-          if (e.currentTarget.nodeName === 'BUTTON') {
+          if (
+            e.currentTarget.nodeName === 'BUTTON' ||
+            e.currentTarget.role === 'button'
+          ) {
             e.preventDefault();
           }
 
@@ -992,13 +1062,21 @@ $.extend($.event.special, {
         'keydown.garnish-activate': function (e) {
           // Ignore if the event was bubbled up, or if it wasn't the Space/Return key
           if (
-            this === $elem[0] &&
-            [Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(e.keyCode)
+            this !== $elem[0] ||
+            ![Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(e.keyCode)
+          ) {
+            return;
+          }
+
+          if (
+            e.currentTarget.nodeName === 'BUTTON' ||
+            e.currentTarget.role === 'button'
           ) {
             e.preventDefault();
-            if (!$elem.hasClass('disabled')) {
-              $elem.trigger('activate');
-            }
+          }
+
+          if (!$elem.hasClass('disabled')) {
+            $elem.trigger('activate');
           }
         },
       });
@@ -1035,12 +1113,7 @@ $.extend($.event.special, {
     handle: function (ev, data) {
       var el = this;
       var args = arguments;
-      var delay =
-        data && typeof data.delay !== 'undefined'
-          ? data.delay
-          : ev.data && ev.data.delay !== undefined
-            ? ev.data.delay
-            : null;
+      var delay = data?.delay ?? ev?.data?.delay ?? null;
       var handleObj = ev.handleObj;
       var targetData = $.data(ev.target);
 
@@ -1066,15 +1139,16 @@ $.extend($.event.special, {
         return false;
       }
 
-      $('> :last-child', this).addClass('last');
-      getErd().listenTo(this, triggerResizeEvent);
+      const {width, height} = this.getBoundingClientRect();
+      $.data(this, 'size', {width, height});
+      getResizeObserver().observe(this);
     },
     teardown: function () {
       if (this === window) {
         return false;
       }
 
-      getErd().removeListener(this, triggerResizeEvent);
+      getResizeObserver().unobserve(this);
     },
   },
 });

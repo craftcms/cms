@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\MergeableFieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\QueryParam;
 use craft\events\DefineInputOptionsEvent;
@@ -32,7 +33,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
+abstract class BaseOptionsField extends Field implements PreviewableFieldInterface, MergeableFieldInterface
 {
     /**
      * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.
@@ -263,6 +264,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'cols' => $cols,
             'rows' => $rows,
             'errors' => $this->getErrors('options'),
+            'data' => ['error-key' => 'options'],
         ]);
     }
 
@@ -282,7 +284,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = Json::decodeIfJson($value);
         } elseif ($value === '' && static::$multi) {
             $value = [];
-        } elseif ($value === '__BLANK__') {
+        } elseif (is_string($value) && strtolower($value) === '__blank__') {
             $value = '';
         } elseif ($value === null && $this->isFresh($element)) {
             $value = $this->defaultValue();
@@ -415,13 +417,18 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             }
         }
 
+        $request = Craft::$app->getRequest();
+
         return [
             [
                 'in',
                 'range' => $range,
                 'allowArray' => static::$multi,
                 // Don't allow saving invalid blank values via Selectize
-                'skipOnEmpty' => !($this instanceof Dropdown && Craft::$app->getRequest()->getIsCpRequest()),
+                'skipOnEmpty' => !(
+                    $this instanceof Dropdown &&
+                    ($request->getIsCpRequest() || $request->getIsConsoleRequest())
+                ),
             ],
         ];
     }
@@ -556,6 +563,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $options = $this->options();
         $translatedOptions = [];
 
+        // Fire a 'defineOptions' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_OPTIONS)) {
             $event = new DefineInputOptionsEvent([
                 'options' => $options,

@@ -26,6 +26,9 @@ import './js/Slideout.js';
 import './js/CpScreenSlideout.js';
 import './js/ElementEditorSlideout.js';
 
+// Modals
+import './js/CpModal.js';
+
 // Tabs
 import './js/Tabs.js';
 
@@ -61,6 +64,8 @@ import './js/ElementTableSorter.js';
 import './js/ElevatedSessionForm.js';
 import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';
+import './js/EnvVarGenerator.js';
+import './js/EntryMover.js';
 import './js/FieldLayoutDesigner.js';
 import './js/FormObserver.js';
 import './js/VolumeFolderSelectorModal.js';
@@ -71,6 +76,7 @@ import './js/IconPicker.js';
 import './js/ImageUpload.js';
 import './js/InfoIcon.js';
 import './js/LightSwitch.js';
+import './js/LinkInput.js';
 import './js/Listbox.js';
 import './js/LivePreview.js';
 import './js/LoginForm.js';
@@ -92,3 +98,11 @@ import './js/Tooltip.js';
 import './js/Uploader.js';
 import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
+
+// Custom elements
+import './js/CraftGlobalSidebar.js';
+import './js/CraftDisclosure.js';
+import './js/CraftSpinner.js';
+import './js/CraftTooltip.js';
+import './js/CraftElementLabel';
+import './js/CraftProxyScrollbar';

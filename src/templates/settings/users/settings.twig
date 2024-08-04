@@ -63,7 +63,7 @@
   {{ actionInput('user-settings/save-user-settings') }}
   {{ csrfInput() }}
 
-  {% if CraftEdition == CraftPro %}
+  {% if CraftEdition >= CraftTeam %}
     <h2 class="first">{{ 'User Photos'|t('app') }}</h2>
   {% endif %}
 
@@ -85,31 +85,57 @@
     }, '<p class="error">' ~ "No volumes exist yet."|t('app') ~ '</p>') }}
   {% endif %}
 
+  {% if CraftEdition >= CraftTeam %}
+    <hr>
+    <h2>{{ 'Security'|t('app') }}</h2>
+
+    {{ forms.checkboxSelectField({
+      label: 'Require two-step verification'|t('app'),
+      instructions: 'Choose which users must use two-step verification when accessing the control panel.'|t('app'),
+      name: 'require2fa',
+      options: craft.app.userGroups.getAllGroups()
+      |map(g => {value: g.uid, label: g.name|t('site')})
+      |unshift({value: 'admins', label: 'Admins'|t('app')}),
+      showAllOption: true,
+      allLabel: 'All users'|t('app'),
+      allValue: 'all',
+      values: settings.require2fa ?? false,
+    }) }}
+  {% endif %}
+
   {% if CraftEdition == CraftPro %}
+    {{ forms.lightswitchField({
+      fieldClass: 'first',
+      label: 'Verify email addresses'|t('app'),
+      instructions: 'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)'|t('app'),
+      name: 'requireEmailVerification',
+      on: settings.requireEmailVerification,
+    }) }}
+
     <hr>
     <h2>{{ 'Public Registration'|t('app') }}</h2>
 
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
       fieldClass: 'first',
       label: 'Allow public registration'|t('app'),
       name: 'allowPublicRegistration',
-      checked: settings.allowPublicRegistration,
+      on: settings.allowPublicRegistration,
       toggle: 'publicRegistrationSettings'
     }) }}
 
     <div id="publicRegistrationSettings" class="nested-fields{% if not settings.allowPublicRegistration %} hidden{% endif %}">
-      {{ forms.checkboxField({
+      {{ forms.lightswitchField({
         label: 'Validate custom fields on public registration'|t('app'),
         instructions: 'Whether custom fields should be validated during public registration.'|t('app'),
         name: 'validateOnPublicRegistration',
-        checked: settings.validateOnPublicRegistration,
+        on: settings.validateOnPublicRegistration,
       }) }}
 
-      {{ forms.checkboxField({
+      {{ forms.lightswitchField({
         label: 'Deactivate users by default'|t('app'),
         instructions: 'Should users who register their own accounts be deactivated by default? This will prevent them from receiving an activation email or logging in.'|t('app'),
         name: 'deactivateByDefault',
-        checked: settings.deactivateByDefault,
+        on: settings.deactivateByDefault,
       }) }}
 
       {% set groups = [{ label: "None"|t('app'), value: '' }] %}
@@ -125,29 +151,5 @@
         value: settings.defaultGroup
       }) }}
     </div>
-
-    <hr>
-    <h2>{{ 'Security'|t('app') }}</h2>
-
-    {{ forms.checkboxField({
-      fieldClass: 'first',
-      label: 'Verify email addresses'|t('app'),
-      instructions: 'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)'|t('app'),
-      name: 'requireEmailVerification',
-      checked: settings.requireEmailVerification,
-    }) }}
-
-    {{ forms.checkboxSelectField({
-      label: 'Require two-step verification'|t('app'),
-      instructions: 'Choose which users must use two-step verification when accessing the control panel.'|t('app'),
-      name: 'require2fa',
-      options: craft.app.userGroups.getAllGroups()
-      |map(g => {value: g.uid, label: g.name|t('site')})
-      |unshift({value: 'admins', label: 'Admins'|t('app')}),
-      showAllOption: true,
-      allLabel: 'All users'|t('app'),
-      allValue: 'all',
-      values: settings.require2fa ?? false,
-    }) }}
   {% endif %}
 {% endblock %}

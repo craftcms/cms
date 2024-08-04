@@ -27,7 +27,7 @@
     {% endif %}
     {% tag 'button' with attributes %}
         {{ (label or labelHtml) ? tag('div', {
-            class: 'label',
+            class: ['label', 'inline-flex'],
             text: label ?? null,
             html: labelHtml ?? null
         }) }}

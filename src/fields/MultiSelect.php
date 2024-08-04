@@ -42,6 +42,14 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'list-check';
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var MultiOptionsFieldData $value */

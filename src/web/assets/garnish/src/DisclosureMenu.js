@@ -45,8 +45,19 @@ export default Base.extend(
         return;
       }
 
-      const triggerId = this.$trigger.attr('aria-controls');
-      this.$container = $('#' + triggerId);
+      this.$trigger.attr('data-disclosure-trigger', 'true');
+
+      const containerId = this.$trigger.attr('aria-controls');
+      this.$container = $('#' + containerId);
+      if (!this.$container.length) {
+        // see if it's the next element
+        const $next = this.$trigger.next();
+        if ($next.is(`#${containerId}`)) {
+          this.$container = $next;
+        } else {
+          throw 'No disclosure container found.';
+        }
+      }
 
       this.$trigger.data('disclosureMenu', this);
       this.$container.data('disclosureMenu', this);
@@ -77,12 +88,21 @@ export default Base.extend(
         Craft.initUiElements(this.$container);
       }
       this.addDisclosureMenuEventListeners();
+
+      Garnish.DisclosureMenu.instances.push(this);
     },
 
     addDisclosureMenuEventListeners: function () {
       this.addListener(this.$trigger, 'mousedown', (ev) => {
         ev.stopPropagation();
         ev.preventDefault();
+
+        // Let the other disclosure menus know about it, at least
+        for (const disclosureMenu of Garnish.DisclosureMenu.instances) {
+          if (disclosureMenu !== this) {
+            disclosureMenu.handleMousedown(ev);
+          }
+        }
       });
 
       this.addListener(this.$trigger, 'mouseup', (ev) => {
@@ -212,7 +232,13 @@ export default Base.extend(
         const $options = this.$container.find('li');
         for (let i = 0; i < $options.length; i++) {
           const $o = $options.eq(i);
-          if ($o.text().toLowerCase().trimStart().startsWith(this.searchStr)) {
+          if (typeof $o.data('searchText') === 'undefined') {
+            // clone without nested SVGs
+            const $clone = $o.clone();
+            $clone.find('svg').remove();
+            $o.data('searchText', $clone.text().toLowerCase().trimStart());
+          }
+          if ($o.data('searchText').startsWith(this.searchStr)) {
             $option = $o;
             break;
           }
@@ -249,6 +275,8 @@ export default Base.extend(
       if (this.isExpanded() || this.$trigger.hasClass('disabled')) {
         return;
       }
+
+      this.trigger('beforeShow');
 
       // Move the menu to the end of the DOM
       this.$container.appendTo(Garnish.$bod);
@@ -332,10 +360,15 @@ export default Base.extend(
 
       this.trigger('hide');
       this.clearSearchStr();
-      Garnish.uiLayerManager.removeLayer();
+      this.removeListener(Garnish.$scrollContainer, 'scroll');
+      this.removeListener(Garnish.$win, 'resize');
+      Garnish.uiLayerManager.removeLayer(this.$container);
     },
 
     focusIsInMenu: function () {
+      if (!this.$container.length) {
+        return false;
+      }
       const $focusedEl = Garnish.getFocusedElement();
       return $focusedEl.length && $.contains(this.$container[0], $focusedEl[0]);
     },
@@ -378,6 +411,7 @@ export default Base.extend(
         this._alignmentElementOffsetBottom;
 
       if (
+        this.settings.position === 'below' ||
         bottomClearance >= this._menuHeight ||
         (topClearance < this._menuHeight && bottomClearance >= topClearance)
       ) {
@@ -468,18 +502,15 @@ export default Base.extend(
       let type;
       if (item.type) {
         type = item.type;
-      } else if (item.action) {
-        type = 'button';
-      } else {
+      } else if (item.url) {
         type = 'link';
+      } else {
+        type = 'button';
       }
 
       const li = document.createElement('li');
-      if (item.hidden) {
-        li.classList.add('hidden');
-      }
-
       const el = document.createElement(type === 'button' ? 'button' : 'a');
+
       el.id = item.id || `menu-item-${Math.floor(Math.random() * 1000000)}`;
       el.className = 'menu-item';
       if (item.selected) {
@@ -497,6 +528,9 @@ export default Base.extend(
       }
       if (item.icon) {
         el.setAttribute('data-icon', item.icon);
+        if (item.iconColor) {
+          el.classList.add(item.iconColor);
+        }
       }
       if (item.action) {
         el.setAttribute('data-action', item.action);
@@ -515,6 +549,11 @@ export default Base.extend(
       }
       if (item.redirect) {
         el.setAttribute('data-redirect', item.redirect);
+      }
+      if (item.attributes) {
+        for (let name in item.attributes) {
+          el.setAttribute(name, item.attributes[name]);
+        }
       }
       li.append(el);
 
@@ -540,22 +579,48 @@ export default Base.extend(
         el.append(description);
       }
 
+      if (type === 'link') {
+        this.addListener(el, 'keydown', (ev) => {
+          if (ev.keyCode === Garnish.SPACE_KEY) {
+            el.click();
+          }
+        });
+      }
+
       this.addListener(el, 'activate', () => {
-        this.hide();
+        if (item.onActivate) {
+          item.onActivate();
+        } else if (item.callback) {
+          item.callback();
+        }
+        setTimeout(() => {
+          this.hide();
+        }, 1);
       });
 
       return li;
     },
 
     addItem: function (item, ul) {
-      item = this.createItem(item);
+      const li = this.createItem(item);
 
       if (!ul) {
         ul = this.$container.children('ul').last().get(0) || this.addGroup();
       }
 
-      ul.append(item);
-      return item.querySelector('a, button');
+      ul.append(li);
+      const el = li.querySelector('a, button');
+
+      // show or hide it (show, in case the UL is already hidden)
+      this.toggleItem(el, !item.hidden);
+
+      return el;
+    },
+
+    addItems: function (items, ul) {
+      for (const item of items) {
+        this.addItem(item, ul);
+      }
     },
 
     addHr: function (before) {
@@ -579,7 +644,7 @@ export default Base.extend(
         .get(0);
     },
 
-    addGroup: function (heading, addHrs, before) {
+    addGroup: function (heading = null, addHrs = true, before = null) {
       const padded = this.isPadded();
 
       if (heading) {
@@ -622,11 +687,74 @@ export default Base.extend(
       return ul;
     },
 
+    toggleItem(el, show) {
+      if (typeof show === 'undefined') {
+        show = el.parentNode.classList.contains('hidden');
+      }
+
+      if (show) {
+        this.showItem(el);
+      } else {
+        this.hideItem(el);
+      }
+    },
+
+    showItem(el) {
+      const li = el.parentNode;
+      li.classList.remove('hidden');
+      const ul = li.parentNode;
+      if (ul.classList.contains('hidden')) {
+        ul.classList.remove('hidden');
+        if (
+          ul.previousElementSibling &&
+          ul.previousElementSibling.nodeName === 'HR'
+        ) {
+          ul.previousElementSibling.classList.remove('hidden');
+        }
+        if (ul.nextElementSibling && ul.nextElementSibling.nodeName === 'HR') {
+          ul.nextElementSibling.classList.remove('hidden');
+        }
+      }
+
+      if (this.isExpanded()) {
+        this.setContainerPosition();
+      }
+    },
+
+    hideItem(el) {
+      const li = el.parentNode;
+      li.classList.add('hidden');
+      const ul = li.parentNode;
+      if (ul.querySelectorAll(':scope > li:not(.hidden)').length === 0) {
+        ul.classList.add('hidden');
+        if (
+          ul.previousElementSibling &&
+          ul.previousElementSibling.nodeName === 'HR'
+        ) {
+          ul.previousElementSibling.classList.add('hidden');
+        } else if (
+          ul.nextElementSibling &&
+          ul.nextElementSibling.nodeName === 'HR'
+        ) {
+          ul.nextElementSibling.classList.add('hidden');
+        }
+      }
+
+      if (this.isExpanded()) {
+        this.setContainerPosition();
+      }
+    },
+
     /**
      * Destroy
      */
     destroy: function () {
       this.$trigger.removeData('trigger');
+
+      Garnish.DisclosureMenu.instances = Craft.Preview.instances.filter(
+        (o) => o !== this
+      );
+
       this.base();
     },
 
@@ -663,7 +791,13 @@ export default Base.extend(
   },
   {
     defaults: {
+      position: null,
       windowSpacing: 5,
     },
+
+    /**
+     * @type {Garnish.DisclosureMenu[]}
+     */
+    instances: [],
   }
 );

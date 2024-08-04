@@ -13,7 +13,6 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Asset;
-use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -21,17 +20,16 @@ use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\Volume;
 use yii\base\InvalidArgumentException;
-use yii\db\Connection;
 use yii\db\Schema;
 
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of Asset
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @property-write string|string[]|Volume|null $volume The volume(s) that resulting assets must belong to
- * @method Asset[]|array all($db = null)
- * @method Asset|array|null one($db = null)
- * @method Asset|array|null nth(int $n, ?Connection $db = null)
- * @method ElementCollection<Asset> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path assets.md
@@ -906,7 +904,7 @@ class AssetQuery extends ElementQuery
         $this->subQuery->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
         $this->query->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
 
-        $this->query->select([
+        $this->query->addSelect([
             'assets.volumeId',
             'assets.folderId',
             'assets.uploaderId',
@@ -966,21 +964,6 @@ class AssetQuery extends ElementQuery
             $this->subQuery->andWhere($kindCondition);
         }
 
-        if ($this->hasAlt !== null) {
-            $hasAltCondition = [
-                'or',
-                ['assets.alt' => null],
-                ['assets_site.alt' => null],
-            ];
-            $this->subQuery
-                ->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
-                    'and',
-                    '[[assets_sites.assetId]] = [[assets.id]]',
-                    '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
-                ])
-                ->andWhere($this->hasAlt ? ['not', $hasAltCondition] : $hasAltCondition);
-        }
-
         if ($this->width) {
             $this->subQuery->andWhere(Db::parseNumericParam('assets.width', $this->width));
         }
@@ -1001,6 +984,30 @@ class AssetQuery extends ElementQuery
         $this->_applyAuthParam($this->savable, 'saveAssets', 'savePeerAssets');
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function afterPrepare(): bool
+    {
+        if ($this->hasAlt !== null) {
+            $hasAltCondition = [
+                'or',
+                ['assets.alt' => null],
+                ['assets_sites.alt' => null],
+            ];
+
+            $this->subQuery
+                ->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
+                    'and',
+                    '[[assets_sites.assetId]] = [[assets.id]]',
+                    '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
+                ])
+                ->andWhere($this->hasAlt ? ['not', $hasAltCondition] : $hasAltCondition);
+        }
+
+        return parent::afterPrepare();
     }
 
     /**
@@ -1106,7 +1113,7 @@ class AssetQuery extends ElementQuery
     {
         // Use the site-specific alt text, if set
         $siteAlt = ArrayHelper::remove($row, 'siteAlt');
-        if ($siteAlt !== null && $siteAlt !== '') {
+        if ($siteAlt !== null) {
             $row['alt'] = $siteAlt;
         }
 

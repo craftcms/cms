@@ -9,9 +9,10 @@
     id: 'name',
     name: 'name',
     value: entryType.name,
-    errors: entryType.getErrors('name'),
     autofocus: true,
-    required: true
+    required: true,
+    errors: entryType.getErrors('name'),
+    data: {'error-key': 'name'},
 }) }}
 
 {{ forms.textField({
@@ -23,8 +24,9 @@
     autocorrect: false,
     autocapitalize: false,
     value: entryType.handle,
+    required: true,
     errors: entryType.getErrors('handle'),
-    required: true
+    data: {'error-key': 'handle'},
 }) }}
 
 {{ forms.iconPickerField({
@@ -33,6 +35,20 @@
     name: 'icon',
     value: entryType.icon,
     errors: entryType.getErrors('icon'),
+    data: {
+        'error-key': 'icon',
+    },
+}) }}
+
+{{ forms.colorSelectField({
+    label: 'Color'|t('app'),
+    id: 'color',
+    name: 'color',
+    value: entryType.color,
+    errors: entryType.getErrors('color'),
+    data: {
+        'error-key': 'color',
+    },
 }) }}
 
 <hr>
@@ -41,7 +57,7 @@
     label: "Show the Title field"|t('app'),
     name: 'hasTitleField',
     toggle: 'title-container',
-    reverseToggle: '#titleFormat-container, .fld-title-field-icon',
+    reverseToggle: '#titleFormat-container, #field-layout .fld-title-field-icon',
     on: entryType.hasTitleField
 }) }}
 
@@ -79,7 +95,10 @@
                 id: 'translation-key-format',
                 name: 'titleTranslationKeyFormat',
                 value: entryType.titleTranslationKeyFormat,
-                errors: entryType.getErrors('titleTranslationKeyFormat')
+                errors: entryType.getErrors('titleTranslationKeyFormat'),
+                data: {
+                    'error-key': 'titleTranslationKeyFormat',
+                },
             }) }}
         </div>
     </div>
@@ -94,6 +113,9 @@
         class: 'code',
         value: entryType.titleFormat,
         errors: entryType.getErrors('titleFormat'),
+        data: {
+            'error-key': 'titleFormat',
+        },
     }) }}
 </div>
 
@@ -101,7 +123,7 @@
     label: "Show the Slug field"|t('app'),
     name: 'showSlugField',
     toggle: 'slug-container',
-    reverseToggle: '#slugFormat-container, .fld-slug-field-icon',
+    reverseToggle: '#slugFormat-container, #field-layout .fld-slug-field-icon',
     on: entryType.showSlugField
 }) }}
 
@@ -139,7 +161,10 @@
                 id: 'slug-translation-key-format',
                 name: 'slugTranslationKeyFormat',
                 value: entryType.slugTranslationKeyFormat,
-                errors: entryType.getErrors('slugTranslationKeyFormat')
+                errors: entryType.getErrors('slugTranslationKeyFormat'),
+                data: {
+                    'error-key': 'slugTranslationKeyFormat',
+                },
             }) }}
         </div>
     </div>
@@ -150,12 +175,16 @@
     id: 'showStatusField',
     name: 'showStatusField',
     on: entryType.showStatusField,
-    errors: entryType.getErrors('showStatusField')
+    errors: entryType.getErrors('showStatusField'),
+    data: {
+        'error-key': 'showStatusField',
+    },
 }) }}
 
 <hr>
 
 {{ forms.fieldLayoutDesignerField({
+    id: 'field-layout',
     fieldLayout: entryType.getFieldLayout(),
 }) }}
 

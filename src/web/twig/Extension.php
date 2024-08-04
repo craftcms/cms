@@ -11,10 +11,12 @@ use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Countable;
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\FieldLayoutProviderInterface;
 use craft\base\MissingComponentInterface;
 use craft\base\PluginInterface;
 use craft\elements\Address;
 use craft\elements\Asset;
+use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\errors\AssetException;
 use craft\helpers\App;
@@ -31,6 +33,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
+use craft\models\EntryType;
 use craft\web\twig\nodevisitors\EventTagAdder;
 use craft\web\twig\nodevisitors\EventTagFinder;
 use craft\web\twig\nodevisitors\GetAttrAdjuster;
@@ -40,6 +43,7 @@ use craft\web\twig\tokenparsers\DdTokenParser;
 use craft\web\twig\tokenparsers\DeprecatedTokenParser;
 use craft\web\twig\tokenparsers\DumpTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
+use craft\web\twig\tokenparsers\ExpiresTokenParser;
 use craft\web\twig\tokenparsers\HeaderTokenParser;
 use craft\web\twig\tokenparsers\HookTokenParser;
 use craft\web\twig\tokenparsers\NamespaceTokenParser;
@@ -136,6 +140,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new DdTokenParser(),
             new DumpTokenParser(),
             new ExitTokenParser(),
+            new ExpiresTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
             new RegisterResourceTokenParser('css', TemplateHelper::class . '::css', [
@@ -561,7 +566,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * Formats the value in bytes as a size in human readable form for example `12 kB`.
+     * Formats the value in bytes as a size in human-readable form, for example `12 kB`.
      *
      * @param mixed $value
      * @param int|null $decimals
@@ -948,7 +953,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param DateTimeInterface|DateInterval|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param string|null $locale The target locale the date should be formatted for. By default the current system locale will be used.
+     * @param string|null $locale The target locale the date should be formatted for. By default, the current system locale will be used.
      * @return string
      */
     public function dateFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
@@ -1047,7 +1052,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
+     * @param string|null $locale The target locale the date should be formatted for. By default, the current system locale will be used.
      * @return string
      */
     public function timeFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
@@ -1077,7 +1082,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
+     * @param string|null $locale The target locale the date should be formatted for. By default, the current system locale will be used.
      * @return string
      */
     public function datetimeFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
@@ -1142,7 +1147,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * Groups an array by a the results of an arrow function, or value of a property.
+     * Groups an array by the results of an arrow function, or value of a property.
      *
      * @param iterable $arr
      * @param callable|string $arrow The arrow function or property name that determines the group the item should be grouped in
@@ -1352,7 +1357,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('dataUrl', [$this, 'dataUrlFunction']),
             new TwigFunction('date', [$this, 'dateFunction'], ['needs_environment' => true]),
             new TwigFunction('dump', [$this, 'dumpFunction'], ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
+            new TwigFunction('entryType', [$this, 'entryTypeFunction']),
             new TwigFunction('expression', [$this, 'expressionFunction']),
+            new TwigFunction('fieldValueSql', [$this, 'fieldValueSqlFunction']),
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', [App::class, 'env']),
             new TwigFunction('gql', [$this, 'gqlFunction']),
@@ -1415,7 +1422,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function collectFunction(mixed $var): Collection
     {
-        return Collection::make($var);
+        $collection = Collection::make($var);
+
+        // If all the items are elements, return an ElementCollection instead
+        if ($collection->isNotEmpty() && $collection->doesntContain(fn($item) => !$item instanceof ElementInterface)) {
+            return ElementCollection::make($collection);
+        }
+
+        return $collection;
     }
 
     /**
@@ -1484,6 +1498,20 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * @param string $handle
+     * @return EntryType
+     * @since 5.0.0
+     */
+    public function entryTypeFunction(string $handle): EntryType
+    {
+        $entryType = Craft::$app->getEntries()->getEntryTypeByHandle($handle);
+        if ($entryType === null) {
+            throw new InvalidArgumentException("Invalid entry type handle: $handle");
+        }
+        return $entryType;
+    }
+
+    /**
      * @param mixed $expression
      * @param array $params
      * @param array $config
@@ -1493,6 +1521,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function expressionFunction(mixed $expression, array $params = [], array $config = []): Expression
     {
         return new Expression($expression, $params, $config);
+    }
+
+    /**
+     * @param FieldLayoutProviderInterface $provider
+     * @param string $fieldHandle
+     * @param string|null $key
+     * @return string|null
+     * @since 5.0.0
+     */
+    public function fieldValueSqlFunction(FieldLayoutProviderInterface $provider, string $fieldHandle, ?string $key = null): ?string
+    {
+        return $provider->getFieldLayout()->getFieldByHandle($fieldHandle)->getValueSql($key);
     }
 
     /**
@@ -1577,11 +1617,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param string|Asset $svg An SVG asset, a file path, or raw SVG markup
      * @param bool|null $sanitize Whether the SVG should be sanitized of potentially
-     * malicious scripts. By default the SVG will only be sanitized if an asset
+     * malicious scripts. By default, the SVG will only be sanitized if an asset
      * or markup is passed in. (File paths are assumed to be safe.)
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
-     * By default the SVG will only be namespaced if an asset or markup is passed in.
+     * By default, the SVG will only be namespaced if an asset or markup is passed in.
      * @param string|null $class A CSS class name that should be added to the `<svg>` element.
      * (This argument is deprecated. The `|attr` filter should be used instead.)
      * @return string
@@ -1692,6 +1732,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'system',
             'passthru',
             'exec',
+            'file_get_contents',
+            'file_put_contents',
         ])) {
             throw new RuntimeError('Not supported in this filter.');
         }

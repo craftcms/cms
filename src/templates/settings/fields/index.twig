@@ -11,6 +11,7 @@
     "Type",
     "This field’s values are used as search keywords.",
     "No fields exist yet.",
+    "No results.",
 ]) %}
 
 {% set crumbs = [
@@ -18,7 +19,6 @@
 ] %}
 
 {% set emptyMessage = "No fields exist yet."|t('app') %}
-{% set fields = craft.app.fields.getAllFields() %}
 
 
 {% block actionButton %}
@@ -31,31 +31,9 @@
     <div id="fields-vue-admin-table"></div>
 {% endblock %}
 
-{% set tableData = [] %}
-{% for field in fields %}
-    {% set fieldIsMissing = false %}
-
-    {% if field is missing %}
-        {% set fieldIsMissing = true %}
-    {% endif %}
-
-    {% set tableData = tableData|merge([{
-        id: field.id,
-        title: field.name|t('site'),
-        translatable: field.getIsTranslatable(null) ? (field.getTranslationDescription(null) ?? 'This field is translatable.'|t('app')),
-        searchable: field.searchable ? true : false,
-        url: url('settings/fields/edit/' ~ field.id),
-        handle: field.handle,
-        type: {
-            isMissing: fieldIsMissing,
-            label: fieldIsMissing ? field.expectedType : field.displayName()
-        },
-    }]) %}
-{% endfor %}
-
 {% js %}
     var columns = [
-        { name: '__slot:title', title: Craft.t('app', 'Name') },
+        { name: '__slot:title', title: Craft.t('app', 'Name'), sortField: true },
         {
             name: 'searchable',
             titleClass: 'thin',
@@ -78,17 +56,22 @@
             }
         },
         {% endif %}
-        { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+        { name: '__slot:handle', title: Craft.t('app', 'Handle'), sortField: true },
         {
             name: 'type',
             title: Craft.t('app', 'Type'),
-            callback: function(value) {
+            callback: (value) => {
+                let label = '<div class="flex flex-nowrap gap-s">' +
+                    `<div class="cp-icon small">${value.icon}</div>`;
                 if (value.isMissing) {
-                    return '<span class="error">' + value.label + '</span>'
+                    label += `<span class="error">${value.label}</span>`;
+                } else {
+                    label += `<span>${value.label}</span>`;
                 }
-
-                return value.label
-            }
+                label += '</div>';
+                return label;
+            },
+            sortField: true,
         },
     ];
 
@@ -97,6 +80,7 @@
         container: '#fields-vue-admin-table',
         deleteAction: 'fields/delete-field',
         emptyMessage: Craft.t('app', '{{ emptyMessage }}'),
-        tableData: {{ tableData|json_encode|raw }},
+        tableDataEndpoint: 'fields/table-data',
+        search: true,
     });
 {% endjs %}

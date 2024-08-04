@@ -14,6 +14,7 @@ use craft\auth\methods\TOTP;
 use craft\auth\passkeys\CredentialRepository;
 use craft\auth\passkeys\WebauthnServer;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
@@ -28,6 +29,7 @@ use ParagonIE\ConstantTime\Base64UrlSafe;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
+use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
@@ -221,15 +223,17 @@ class Auth extends Component
                 RecoveryCodes::class,
             ];
 
-            $event = new RegisterComponentTypesEvent([
-                'types' => $methods,
-            ]);
-            $this->trigger(self::EVENT_REGISTER_METHODS, $event);
+            // Fire a 'registerMethods' event
+            if ($this->hasEventHandlers(self::EVENT_REGISTER_METHODS)) {
+                $event = new RegisterComponentTypesEvent(['types' => $methods]);
+                $this->trigger(self::EVENT_REGISTER_METHODS, $event);
+                $methods = $event->types;
+            }
 
             $this->_methods[$user->id] = array_map(fn(string $class) => ComponentHelper::createComponent([
                 'type' => $class,
                 'user' => $user,
-            ], AuthMethodInterface::class), $event->types);
+            ], AuthMethodInterface::class), $methods);
 
             usort($this->_methods[$user->id], function(AuthMethodInterface $a, AuthMethodInterface $b) {
                 // place Recovery Codes at the end
@@ -329,7 +333,7 @@ class Auth extends Component
      */
     public function is2faRequired(User $user): bool
     {
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Solo) {
             return false;
         }
 
@@ -444,8 +448,14 @@ class Auth extends Component
             return false;
         }
 
+        $serializer = $this->webauthnServer()->getSerializer();
+
         $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::createFromArray(Json::decode($optionsJson));
-        $publicKeyCredential = $this->webauthnServer()->getPublicKeyCredentialLoader()->load($credentials);
+        $publicKeyCredential = $serializer->deserialize(
+            $credentials,
+            PublicKeyCredential::class,
+            'json',
+        );
         $authenticatorAttestationResponse = $publicKeyCredential->response;
 
         if (!$authenticatorAttestationResponse instanceof AuthenticatorAttestationResponse) {

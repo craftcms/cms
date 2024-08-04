@@ -11,7 +11,8 @@
   name: 'minAddresses',
   value: field.minAddresses,
   size: 3,
-  errors: field.getErrors('minAddresses')
+  errors: field.getErrors('minAddresses'),
+  data: {'error-key': 'minAddresses'},
 }) }}
 
 {{ forms.textField({
@@ -25,7 +26,8 @@
   name: 'maxAddresses',
   value: field.maxAddresses,
   size: 3,
-  errors: field.getErrors('maxAddresses')
+  errors: field.getErrors('maxAddresses'),
+  data: {'error-key': 'maxAddresses'},
 }) }}
 
 {{ forms.selectField({

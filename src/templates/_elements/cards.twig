@@ -1,14 +1,19 @@
 {% set elements = elements ?? [] %}
 {% set disabled = disabled ?? null %}
-{% set viewMode = viewMode ?? null %}
+{% set showInGrid = showInGrid ?? false %}
 
-<ul class="elements cards card-grid">
+{% tag 'ul' with {
+  class: [
+    'elements',
+    showInGrid ? 'card-grid' : 'cards',
+  ],
+} %}
   {%- apply spaceless  %}
     {% for element in elements %}
       <li>
         {% set html = elementCard(element, {
           context: context ?? 'index',
-          inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
+          inputName: inputName ?? ((name ?? false) ? ((single ?? false) ? name : "#{name}[]") : null),
           selectable: selectable ?? false,
           showActionMenu: showActionMenu ?? false,
           sortable: sortable ?? false,
@@ -20,4 +25,4 @@
       </li>
     {% endfor %}
   {% endapply -%}
-</ul>
+{% endtag %}

@@ -13,6 +13,8 @@ use craft\base\Element;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\FieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
@@ -33,6 +35,7 @@ use craft\gql\arguments\elements\Address as AddressArguments;
 use craft\gql\interfaces\elements\Address as AddressGqlInterface;
 use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\input\Addresses as AddressesInput;
+use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\StringHelper;
 use craft\services\Elements;
@@ -49,7 +52,8 @@ use yii\db\Expression;
  */
 class Addresses extends Field implements
     ElementContainerFieldInterface,
-    EagerLoadingFieldInterface
+    EagerLoadingFieldInterface,
+    MergeableFieldInterface
 {
     public const VIEW_MODE_CARDS = 'cards';
     public const VIEW_MODE_INDEX = 'index';
@@ -60,6 +64,14 @@ class Addresses extends Field implements
     public static function displayName(): string
     {
         return Craft::t('app', 'Addresses');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'map-location';
     }
 
     /**
@@ -300,13 +312,7 @@ class Addresses extends Field implements
      */
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): ?bool
     {
-        $owner = $element->getOwner();
-        if (!Craft::$app->getElements()->canSave($owner, $user)) {
-            return false;
-        }
-
-        // Make sure we aren't hitting the Min Addresses limit
-        return !$this->minAddressesReached($owner);
+        return false;
     }
 
     private function minAddressesReached(ElementInterface $owner): bool
@@ -334,9 +340,8 @@ class Addresses extends Field implements
             return (clone $value)
                 ->drafts(null)
                 ->status(null)
-                ->site('*')
+                ->siteId($owner->siteId)
                 ->limit(null)
-                ->unique()
                 ->count();
         }
 
@@ -425,6 +430,7 @@ class Addresses extends Field implements
             'sortingCode',
             'addressLine1',
             'addressLine2',
+            'addressLine3',
             'organization',
             'organizationTaxId',
             'latitude',
@@ -558,6 +564,7 @@ class Addresses extends Field implements
             /** @var Address $address */
             $addressId = $address->id ?? 'new' . ++$new;
             $serialized[$addressId] = [
+                'title' => $address->title,
                 'countryCode' => $address->countryCode,
                 'administrativeArea' => $address->administrativeArea,
                 'locality' => $address->locality,
@@ -566,6 +573,7 @@ class Addresses extends Field implements
                 'sortingCode' => $address->sortingCode,
                 'addressLine1' => $address->addressLine1,
                 'addressLine2' => $address->addressLine2,
+                'addressLine3' => $address->addressLine3,
                 'organization' => $address->organization,
                 'organizationTaxId' => $address->organizationTaxId,
                 'fullName' => $address->fullName,
@@ -628,7 +636,9 @@ class Addresses extends Field implements
 
     private function inputHtmlInternal(?ElementInterface $owner, bool $static = false): string
     {
-        $config = [];
+        $config = [
+            'showInGrid' => true,
+        ];
 
         if (!$static) {
             $config += [
@@ -780,6 +790,15 @@ class Addresses extends Field implements
                 'allowOwnerRevisions' => true,
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMergeFrom(FieldInterface $outgoingField): void
+    {
+        Db::update(DbTable::ADDRESSES, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+        parent::afterMergeFrom($outgoingField);
     }
 
     /**

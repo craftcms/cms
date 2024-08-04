@@ -49,17 +49,17 @@ use yii\di\Instance;
 class ImageTransforms extends Component
 {
     /**
-     * @event AssetTransformEvent The event that is triggered before an asset transform is saved
+     * @event AssetTransformEvent The event that is triggered before an image transform is saved
      */
     public const EVENT_BEFORE_SAVE_IMAGE_TRANSFORM = 'beforeSaveImageTransform';
 
     /**
-     * @event AssetTransformEvent The event that is triggered after an asset transform is saved
+     * @event AssetTransformEvent The event that is triggered after an image transform is saved
      */
     public const EVENT_AFTER_SAVE_IMAGE_TRANSFORM = 'afterSaveImageTransform';
 
     /**
-     * @event AssetTransformEvent The event that is triggered before an asset transform is deleted
+     * @event AssetTransformEvent The event that is triggered before an image transform is deleted
      */
     public const EVENT_BEFORE_DELETE_IMAGE_TRANSFORM = 'beforeDeleteImageTransform';
 
@@ -69,12 +69,12 @@ class ImageTransforms extends Component
     public const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
 
     /**
-     * @event AssetTransformEvent The event that is triggered after an asset transform is deleted
+     * @event AssetTransformEvent The event that is triggered after an image transform is deleted
      */
     public const EVENT_AFTER_DELETE_IMAGE_TRANSFORM = 'afterDeleteImageTransform';
 
     /**
-     * @event AssetEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event AssetEvent The event that is triggered before a transform is deleted for an Asset.
      */
     public const EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS = 'beforeInvalidateAssetTransforms';
 
@@ -562,13 +562,14 @@ class ImageTransforms extends Component
             ImageTransformer::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $transformers,
-        ]);
+        // Fire a 'registerImageTransformers' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_IMAGE_TRANSFORMERS)) {
+            $event = new RegisterComponentTypesEvent(['types' => $transformers]);
+            $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
+            return $event->types;
+        }
 
-        $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
-
-        return $event->types;
+        return $transformers;
     }
 
     /**

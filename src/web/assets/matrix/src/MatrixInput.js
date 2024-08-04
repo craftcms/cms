@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 (function ($) {
   /** global: Craft */
   /** global: Garnish */
@@ -20,13 +22,17 @@
       $form: null,
       $entriesContainer: null,
       $addEntryBtnContainer: null,
-      $addEntryBtnGroup: null,
-      $addEntryBtnGroupBtns: null,
+      $addEntryBtn: null,
       $addEntryMenuBtn: null,
       $statusMessage: null,
 
       entrySort: null,
       entrySelect: null,
+
+      /**
+       * @type {Craft.ElementEditor|null}
+       */
+      elementEditor: null,
 
       addingEntry: false,
 
@@ -46,15 +52,12 @@
         this.$form = this.$container.closest('form');
         this.$entriesContainer = this.$container.children('.blocks');
         this.$addEntryBtnContainer = this.$container.children('.buttons');
-        this.$addEntryBtnGroup =
-          this.$addEntryBtnContainer.children('.btngroup');
-        this.$addEntryBtnGroupBtns = this.$addEntryBtnGroup.children('.btn');
+        this.$addEntryBtn =
+          this.$addEntryBtnContainer.children('.btn:not(.menubtn)');
         this.$addEntryMenuBtn = this.$addEntryBtnContainer.children('.menubtn');
         this.$statusMessage = this.$container.find('[data-status-message]');
 
         this.$container.data('matrix', this);
-
-        this.setNewEntryBtn();
 
         this.entryTypesByHandle = {};
 
@@ -63,17 +66,8 @@
           this.entryTypesByHandle[entryType.handle] = entryType;
         }
 
-        const $entries = this.$entriesContainer.children();
+        const $entries = this.$entriesContainer.children('.matrixblock');
         const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
-
-        if ($entries.length > 0 && $($entries[0]).hasClass('matrixblock')) {
-          for (let i = 0; i < $entries.length; i++) {
-            let matrixblockTabs = $($entries[i]).find('.matrixblock-tabs');
-            if (matrixblockTabs.length > 0) {
-              Craft.cp.initMatrixTabs(matrixblockTabs);
-            }
-          }
-        }
 
         this.entrySort = new Garnish.DragSort($entries, {
           handle: '> .actions > .move',
@@ -104,86 +98,64 @@
           {
             multi: true,
             vertical: true,
-            handle: '> .checkbox, > .titlebar',
-            filter: ':not(.tab-label)',
+            handle: '> .actions > .checkbox, > .titlebar',
+            filter: (target) => {
+              return !$(target).closest('.tab-label').length;
+            },
             checkboxMode: true,
           }
         );
 
         for (let i = 0; i < $entries.length; i++) {
           const $entry = $($entries[i]);
-          const entry = new Entry(this, $entry);
+          const entry = new Craft.MatrixInput.Entry(this, $entry);
 
           if (entry.id && $.inArray('' + entry.id, collapsedEntries) !== -1) {
             entry.collapse();
           }
         }
 
-        this.addListener(this.$addEntryBtnGroupBtns, 'click', function (ev) {
-          const $button = $(ev.currentTarget).addClass('loading');
-          this.addEntry($button.data('type')).then(() => {
-            $button.removeClass('loading');
-          });
+        this.addListener(this.$addEntryBtn, 'activate', async function () {
+          this.$addEntryBtn.addClass('loading');
+          try {
+            await this.addEntry(this.$addEntryBtn.data('type'));
+          } finally {
+            this.$addEntryBtn.removeClass('loading');
+          }
         });
 
         if (this.$addEntryMenuBtn.length) {
-          this.$addEntryMenuBtn.menubtn();
-          this.$addEntryMenuBtn.data('menubtn').on('optionSelect', (ev) => {
-            this.$addEntryMenuBtn.addClass('loading');
-            this.addEntry($(ev.option).data('type')).then(() => {
-              this.$addEntryMenuBtn.removeClass('loading');
+          this.$addEntryMenuBtn
+            .disclosureMenu()
+            .data('disclosureMenu')
+            .$container.find('button')
+            .on('activate', async (ev) => {
+              this.$addEntryMenuBtn.addClass('loading');
+              try {
+                await this.addEntry($(ev.currentTarget).data('type'));
+              } finally {
+                this.$addEntryMenuBtn.removeClass('loading');
+              }
             });
-          });
         }
 
         this.updateAddEntryBtn();
 
-        this.addListener(this.$container, 'resize', 'setNewEntryBtn');
-        Garnish.$doc.ready(this.setNewEntryBtn.bind(this));
+        setTimeout(() => {
+          this.elementEditor = this.$container
+            .closest('form')
+            .data('elementEditor');
 
-        this.trigger('afterInit');
-      },
-
-      setNewEntryBtn: function () {
-        // Do we know what the button group width is yet?
-        if (!this.addEntryBtnGroupWidth) {
-          this.addEntryBtnGroupWidth = this.$addEntryBtnGroup.width();
-
-          if (!this.addEntryBtnGroupWidth) {
-            return;
+          if (this.elementEditor) {
+            this.elementEditor.on('update', () => {
+              this.settings.ownerId = this.elementEditor.getDraftElementId(
+                this.settings.ownerId
+              );
+            });
           }
-        }
 
-        // Only check if the container width has resized
-        if (
-          this.addEntryBtnContainerWidth !==
-          (this.addEntryBtnContainerWidth = this.$addEntryBtnContainer.width())
-        ) {
-          if (this.addEntryBtnGroupWidth > this.addEntryBtnContainerWidth) {
-            if (!this.showingAddEntryMenu) {
-              this.$addEntryBtnGroup.addClass('hidden');
-              this.$addEntryMenuBtn.removeClass('hidden');
-              this.showingAddEntryMenu = true;
-            }
-          } else {
-            if (this.showingAddEntryMenu) {
-              this.$addEntryMenuBtn.addClass('hidden');
-              this.$addEntryBtnGroup.removeClass('hidden');
-              this.showingAddEntryMenu = false;
-
-              // Because Safari is awesome
-              if (navigator.userAgent.indexOf('Safari') !== -1) {
-                Garnish.requestAnimationFrame(() => {
-                  this.$addEntryBtnGroup.css('opacity', 0.99);
-
-                  Garnish.requestAnimationFrame(() => {
-                    this.$addEntryBtnGroup.css('opacity', '');
-                  });
-                });
-              }
-            }
-          }
-        }
+          this.trigger('afterInit');
+        }, 100);
       },
 
       canAddMoreEntries: function () {
@@ -195,12 +167,8 @@
 
       updateAddEntryBtn: function () {
         if (this.canAddMoreEntries()) {
-          this.$addEntryBtnGroup.removeClass('disabled');
+          this.$addEntryBtn.removeClass('disabled').removeAttr('aria-disabled');
           this.$addEntryMenuBtn.removeClass('disabled');
-
-          this.$addEntryBtnGroupBtns.each(function () {
-            $(this).removeAttr('aria-disabled');
-          });
 
           for (let i = 0; i < this.entrySelect.$items.length; i++) {
             const entry = this.entrySelect.$items.eq(i).data('entry');
@@ -216,12 +184,8 @@
             }
           }
         } else {
-          this.$addEntryBtnGroup.addClass('disabled');
+          this.$addEntryBtn.addClass('disabled').attr('aria-disabled', 'true');
           this.$addEntryMenuBtn.addClass('disabled');
-
-          this.$addEntryBtnGroupBtns.each(function () {
-            $(this).attr('aria-disabled', 'true');
-          });
 
           for (let i = 0; i < this.entrySelect.$items.length; i++) {
             const entry = this.entrySelect.$items.eq(i).data('entry');
@@ -255,7 +219,7 @@
         }, 250);
       },
 
-      addEntry: async function (type, $insertBefore, autofocus) {
+      async addEntry(type, $insertBefore, autofocus) {
         if (this.addingEntry) {
           // only one new entry at a time
           return;
@@ -268,9 +232,18 @@
 
         this.addingEntry = true;
 
+        if (this.elementEditor) {
+          // First ensure we're working with drafts for all elements leading up
+          // to this field’s element
+          await this.elementEditor.setFormValue(
+            this.settings.baseInputName,
+            '*'
+          );
+        }
+
         const {data} = await Craft.sendActionRequest(
           'POST',
-          'matrix/render-block',
+          'matrix/create-entry',
           {
             data: {
               fieldId: this.settings.fieldId,
@@ -279,21 +252,15 @@
               ownerElementType: this.settings.ownerElementType,
               siteId: this.settings.siteId,
               namespace: this.settings.namespace,
+              staticEntries: this.settings.staticEntries,
             },
           }
         );
 
         const $entry = $(data.blockHtml);
 
-        // Pause the draft editor
-        const elementEditor = this.$form.data('elementEditor');
-        if (elementEditor) {
-          elementEditor.pause();
-        }
-
-        if ($entry.hasClass('matrixblock')) {
-          Craft.cp.initMatrixTabs($entry);
-        }
+        // Pause the element editor
+        this.elementEditor?.pause();
 
         if ($insertBefore) {
           $entry.insertBefore($insertBefore);
@@ -312,12 +279,12 @@
             'margin-bottom': 10,
           },
           'fast',
-          () => {
+          async () => {
             $entry.css('margin-bottom', '');
             Craft.initUiElements($entry.children('.fields'));
-            Craft.appendHeadHtml(data.headHtml);
-            Craft.appendBodyHtml(data.bodyHtml);
-            new Entry(this, $entry);
+            await Craft.appendHeadHtml(data.headHtml);
+            await Craft.appendBodyHtml(data.bodyHtml);
+            new Craft.MatrixInput.Entry(this, $entry);
             this.entrySort.addItems($entry);
             this.entrySelect.addItems($entry);
             this.updateAddEntryBtn();
@@ -327,13 +294,11 @@
                 // Scroll to the entry
                 Garnish.scrollContainerToElement($entry);
                 // Focus on the first focusable element
-                $entry.find('.flex-fields :focusable').first().trigger('focus');
+                $entry.find('.flex-fields :focusable').first().focus();
               }
 
-              // Resume the draft editor
-              if (elementEditor) {
-                elementEditor.resume();
-              }
+              // Resume the element editor
+              this.elementEditor?.resume();
             });
           }
         );
@@ -391,6 +356,7 @@
         fieldId: null,
         maxEntries: null,
         namespace: null,
+        baseInputName: null,
         ownerElementType: null,
         ownerId: null,
         siteId: null,
@@ -440,20 +406,71 @@
           }
         }
       },
+
+      initTabs(container) {
+        const $tabs = $(container).children('.pane-tabs');
+        if (!$tabs.length) {
+          return;
+        }
+
+        // init tab manager
+        let tabManager = new Craft.Tabs($tabs);
+
+        // prevent items in the disclosure menu from changing the URL
+        let disclosureMenu = tabManager.$menuBtn.data('trigger');
+        $(disclosureMenu.$container)
+          .find('li, a')
+          .on('click', function (ev) {
+            ev.preventDefault();
+          });
+
+        tabManager.on('selectTab', (ev) => {
+          const href = ev.$tab.attr('href');
+
+          // Show its content area
+          if (href && href.charAt(0) === '#') {
+            $(href).removeClass('hidden');
+          }
+
+          // Trigger a resize event to update any UI components that are listening for it
+          Garnish.$win.trigger('resize');
+
+          // Fixes Redactor fixed toolbars on previously hidden panes
+          Garnish.$doc.trigger('scroll');
+        });
+
+        tabManager.on('deselectTab', (ev) => {
+          const href = ev.$tab.attr('href');
+          if (href && href.charAt(0) === '#') {
+            // Hide its content area
+            $(ev.$tab.attr('href')).addClass('hidden');
+          }
+        });
+
+        return tabManager;
+      },
     }
   );
 
-  const Entry = Garnish.Base.extend({
+  Craft.MatrixInput.Entry = Garnish.Base.extend({
+    /**
+     * @type {Craft.MatrixInput}
+     */
     matrix: null,
     $container: null,
     $titlebar: null,
-    $tabsContainer: null,
+    $tabContainer: null,
     $fieldsContainer: null,
     $previewContainer: null,
     $actionMenu: null,
     $collapsedInput: null,
 
+    tabManager: null,
     actionDisclosure: null,
+    formObserver: null,
+    visibleLayoutElements: null,
+    cancelToken: null,
+    ignoreFailedRequest: false,
 
     isNew: null,
     id: null,
@@ -464,7 +481,7 @@
       this.matrix = matrix;
       this.$container = $container;
       this.$titlebar = $container.children('.titlebar');
-      this.$tabsContainer = this.$titlebar.children('.matrixblock-tabs');
+      this.$tabContainer = this.$titlebar.children('.matrixblock-tabs');
       this.$previewContainer = this.$titlebar.children('.preview');
       this.$fieldsContainer = $container.children('.fields');
 
@@ -474,6 +491,10 @@
       this.isNew =
         !this.id ||
         (typeof this.id === 'string' && this.id.substring(0, 3) === 'new');
+
+      if (this.$tabContainer.length) {
+        this.tabManager = Craft.MatrixInput.initTabs(this.$tabContainer);
+      }
 
       const $actionMenuBtn = this.$container.find('> .actions .action-btn');
       const actionDisclosure =
@@ -527,11 +548,21 @@
       }
 
       this._handleTitleBarClick = function (ev) {
-        ev.preventDefault();
-        this.toggle();
+        // don't expand/collapse the matrix "block" if double tapping the tabs
+        if (!$(ev.target).closest('.tab-label').length) {
+          ev.preventDefault();
+          this.toggle();
+        }
       };
 
       this.addListener(this.$titlebar, 'doubletap', this._handleTitleBarClick);
+
+      this.visibleLayoutElements = this.$container.data(
+        'visible-layout-elements'
+      );
+      this.formObserver = new Craft.FormObserver(this.$container, (data) => {
+        this.updateFieldLayout(data);
+      });
     },
 
     toggle: function () {
@@ -607,19 +638,18 @@
       this.$previewContainer.html(previewHtml);
 
       this.$fieldsContainer.velocity('stop');
-      this.$tabsContainer.velocity('stop');
       this.$container.velocity('stop');
 
       if (animate && !Garnish.prefersReducedMotion()) {
         this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-        this.$container.velocity({height: 32}, 'fast');
+        this.$container.velocity({height: 34}, 'fast');
       } else {
         this.$previewContainer.show();
         this.$fieldsContainer.hide();
-        this.$container.css({height: 32});
+        this.$container.css({height: 34});
       }
 
-      this.$tabsContainer.hide();
+      this.$tabContainer.hide();
 
       setTimeout(() => {
         this.$actionMenu
@@ -703,7 +733,7 @@
           this.$previewContainer.html('');
           this.$container.height('auto');
           this.$container.trigger('scroll');
-          this.$tabsContainer.show();
+          this.$tabContainer.show();
         }
       );
 
@@ -908,6 +938,215 @@
           });
         }
       );
+    },
+
+    updateFieldLayout(data) {
+      return new Promise((resolve, reject) => {
+        const elementEditor = this.matrix.elementEditor;
+        const baseInputName = this.$container.data('base-input-name');
+
+        // Ignore if we're already submitting the main form
+        if (elementEditor?.submittingForm) {
+          reject('Form already being submitted.');
+          return;
+        }
+
+        if (this.cancelToken) {
+          this.ignoreFailedRequest = true;
+          this.cancelToken.cancel();
+        }
+
+        const param = (n) => Craft.namespaceInputName(n, baseInputName);
+        const extraData = {
+          [param('visibleLayoutElements')]: this.visibleLayoutElements,
+          [param('elementType')]: 'craft\\elements\\Entry',
+          [param('ownerId')]: this.matrix.settings.ownerId,
+          [param('fieldId')]: this.matrix.settings.fieldId,
+          [param('sortOrder')]: this.$container.index() + 1,
+          [param('typeId')]: this.$container.data('type-id'),
+          [param('elementUid')]:
+            elementEditor?.getDraftElementUid(this.$container.data('uid')) ??
+            this.$container.data('uid'),
+        };
+
+        const selectedTabId = this.$fieldsContainer
+          .children('[data-layout-tab]:not(.hidden)')
+          .data('id');
+        if (selectedTabId) {
+          extraData[param('selectedTab')] = selectedTabId;
+        }
+
+        data += `&${$.param(extraData)}`;
+
+        this.cancelToken = axios.CancelToken.source();
+
+        Craft.sendActionRequest('POST', 'elements/update-field-layout', {
+          cancelToken: this.cancelToken.token,
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+            'X-Craft-Namespace': baseInputName,
+          },
+          data,
+        })
+          .then((response) => {
+            this._afterUpdateFieldLayout(
+              data,
+              selectedTabId,
+              baseInputName,
+              response
+            );
+            resolve();
+          })
+          .catch((e) => {
+            if (!this.ignoreFailedRequest) {
+              reject(e);
+            }
+            this.ignoreFailedRequest = false;
+          })
+          .finally(() => {
+            this.cancelToken = null;
+          });
+      });
+    },
+
+    async _afterUpdateFieldLayout(
+      data,
+      selectedTabId,
+      baseInputName,
+      response
+    ) {
+      // capture the new selected tab ID, in case it just changed
+      const newSelectedTabId = this.$fieldsContainer
+        .children('[data-layout-tab]:not(.hidden)')
+        .data('id');
+
+      // Update the visible elements
+      let $allTabContainers = $();
+      const visibleLayoutElements = {};
+      let changedElements = false;
+
+      for (const tabInfo of response.data.missingElements) {
+        let $tabContainer = this.$fieldsContainer.children(
+          `[data-layout-tab="${tabInfo.uid}"]`
+        );
+
+        if (!$tabContainer.length) {
+          $tabContainer = $('<div/>', {
+            id: Craft.namespaceId(tabInfo.id, baseInputName),
+            class: 'flex-fields',
+            'data-id': tabInfo.id,
+            'data-layout-tab': tabInfo.uid,
+          });
+          if (tabInfo.id !== selectedTabId) {
+            $tabContainer.addClass('hidden');
+          }
+          $tabContainer.appendTo(this.$fieldsContainer);
+        }
+
+        $allTabContainers = $allTabContainers.add($tabContainer);
+
+        for (const elementInfo of tabInfo.elements) {
+          if (elementInfo.html !== false) {
+            if (!visibleLayoutElements[tabInfo.uid]) {
+              visibleLayoutElements[tabInfo.uid] = [];
+            }
+            visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
+
+            if (typeof elementInfo.html === 'string') {
+              const $oldElement = $tabContainer.children(
+                `[data-layout-element="${elementInfo.uid}"]`
+              );
+              const $newElement = $(elementInfo.html);
+              if ($oldElement.length) {
+                $oldElement.replaceWith($newElement);
+              } else {
+                $newElement.appendTo($tabContainer);
+              }
+              Craft.initUiElements($newElement);
+              changedElements = true;
+            }
+          } else {
+            const $oldElement = $tabContainer.children(
+              `[data-layout-element="${elementInfo.uid}"]`
+            );
+            if (
+              !$oldElement.length ||
+              !Garnish.hasAttr($oldElement, 'data-layout-element-placeholder')
+            ) {
+              const $placeholder = $('<div/>', {
+                class: 'hidden',
+                'data-layout-element': elementInfo.uid,
+                'data-layout-element-placeholder': '',
+              });
+
+              if ($oldElement.length) {
+                $oldElement.replaceWith($placeholder);
+              } else {
+                $placeholder.appendTo($tabContainer);
+              }
+
+              changedElements = true;
+            }
+          }
+        }
+      }
+
+      // Remove any unused tab content containers
+      // (`[data-layout-tab=""]` == unconditional containers, so ignore those)
+      const $unusedTabContainers = this.$fieldsContainer
+        .children('[data-layout-tab]')
+        .not($allTabContainers)
+        .not('[data-layout-tab=""]');
+      if ($unusedTabContainers.length) {
+        $unusedTabContainers.remove();
+        changedElements = true;
+      }
+
+      // Make the first tab visible if no others are
+      if (!$allTabContainers.filter(':not(.hidden)').length) {
+        $allTabContainers.first().removeClass('hidden');
+      }
+
+      this.visibleLayoutElements = visibleLayoutElements;
+
+      // Update the tabs
+      if (this.tabManager) {
+        this.tabManager.destroy();
+        this.tabManager = null;
+        this.$tabContainer.html('');
+      }
+
+      this.hasTabs = !!response.data.tabs;
+
+      if (this.hasTabs) {
+        this.$tabContainer.append(response.data.tabs);
+        this.tabManager = Craft.MatrixInput.initTabs(this.$tabContainer);
+
+        // was a new tab selected after the request was kicked off?
+        if (
+          selectedTabId &&
+          newSelectedTabId &&
+          selectedTabId !== newSelectedTabId
+        ) {
+          const $newSelectedTab = this.tabManager.$tabs.filter(
+            `[data-id="${newSelectedTabId}"]`
+          );
+          if ($newSelectedTab.length) {
+            // if the new tab is visible - switch to it
+            this.tabManager.selectTab($newSelectedTab);
+          } else {
+            // if the new tab is not visible (e.g. hidden by a condition)
+            // switch to the first tab
+            this.tabManager.selectTab(this.tabManager.$tabs.first());
+          }
+        }
+      }
+
+      await Craft.appendHeadHtml(response.data.headHtml);
+      await Craft.appendBodyHtml(response.data.bodyHtml);
+
+      // re-grab dismissible tips, re-attach listener, hide on re-load
+      this.matrix.elementEditor?.handleDismissibleTips();
     },
   });
 })(jQuery);

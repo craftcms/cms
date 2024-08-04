@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\Cp;
+use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -65,7 +66,9 @@ class AddressField extends BaseField
     public function previewHtml(ElementInterface $element): string
     {
         /** @var Address $element */
-        return Craft::$app->getAddresses()->formatAddress($element);
+        return Html::tag('div', Craft::$app->getAddresses()->formatAddress($element), [
+            'class' => 'no-truncate',
+        ]);
     }
 
     /**
@@ -103,6 +106,7 @@ class AddressField extends BaseField
             'countryCode',
             'addressLine1',
             'addressLine2',
+            'addressLine3',
             'administrativeArea',
             'locality',
             'dependentLocality',
@@ -144,7 +148,7 @@ class AddressField extends BaseField
                     params: Object.assign({}, hotValues, {
                         namespace: $namespace,
                     }),
-                }).then(response => {
+                }).then(async (response) => {
                     const values = Object.assign(
                         Object.fromEntries(fieldNames.map(name => [name, fields[name].val()])),
                         Object.fromEntries(hotFieldNames.map(name => [name, hotValues[name] || null]))
@@ -157,8 +161,8 @@ class AddressField extends BaseField
                     );
                     \$addressFields.eq(0).replaceWith(response.data.fieldsHtml);
                     \$addressFields.remove();
-                    Craft.appendHeadHtml(response.data.headHtml);
-                    Craft.appendBodyHtml(response.data.bodyHtml);
+                    await Craft.appendHeadHtml(response.data.headHtml);
+                    await Craft.appendBodyHtml(response.data.bodyHtml);
                     initFields(values);
                     if (activeElementId) {
                         $('#' + activeElementId).focus();                        

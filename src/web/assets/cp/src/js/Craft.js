@@ -1,8 +1,9 @@
-import $ from 'jquery';
 import * as d3 from 'd3';
 
 /** global: Craft */
 /** global: Garnish */
+/** global: $ */
+/** global: jQuery */
 /** global: d3FormatLocaleDefinition */
 
 // Use old jQuery prefilter behavior
@@ -830,7 +831,15 @@ $.extend(Craft, {
         // Force Safari to not load from cache
         v: new Date().getTime(),
       });
-      axios.request(options).then(resolve).catch(reject);
+      axios
+        .request(options)
+        .then((response) => {
+          if (response.headers['x-csrf-token']) {
+            Craft.csrfTokenValue = response.headers['x-csrf-token'];
+          }
+          resolve(response);
+        })
+        .catch(reject);
     });
   },
 
@@ -1077,71 +1086,123 @@ $.extend(Craft, {
    * @param {string} oldData
    * @param {string} newData
    * @param {Object} deltaNames
-   * @param {findDeltaDataCallback} [callback] Callback function that should be called whenever a new group of modified params has been found
+   * @param {findDeltaDataCallback|null} [callback] Callback function that should be called whenever a new group of modified params has been found
    * @param {Object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
-   * @param {Object} [modifiedDeltaNames} List of delta names that should be considered modified regardles of their param values
+   * @param {Object} [forceModifiedDeltaNames] List of delta names that should be considered modified regardless of their param values
+   * @param {boolean} [asArray] Whether the params should be returned as an array
    * @returns {string}
    */
   findDeltaData: function (
     oldData,
     newData,
     deltaNames,
-    callback,
-    initialDeltaValues,
-    modifiedDeltaNames
+    callback = null,
+    initialDeltaValues = {},
+    forceModifiedDeltaNames = [],
+    asArray = false
+  ) {
+    const [modifiedDeltaNames, groupedNewParams] = this.findModifiedDeltaNames(
+      oldData,
+      newData,
+      deltaNames,
+      initialDeltaValues,
+      forceModifiedDeltaNames
+    );
+
+    // Figure out which of the new params should actually be posted
+    let params = groupedNewParams.__root__;
+    for (let name of modifiedDeltaNames) {
+      params = params.concat(groupedNewParams[name]);
+      params.push(`modifiedDeltaNames[]=${name}`);
+      if (callback) {
+        callback(name, groupedNewParams[name]);
+      }
+    }
+
+    return asArray ? params : params.join('&');
+  },
+
+  /**
+   * Returns the delta names that have been modified, given old and new form data.
+   *
+   * @param {string} oldData
+   * @param {string} newData
+   * @param {Object} deltaNames
+   * @param {Object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
+   * @param {Object} [modifiedDeltaNames] List of delta names that should be considered modified regardless of their param values
+   * @param {boolean} [mostSpecific] Whether the most specific modified delta names should be returned
+   * @returns {Array}
+   */
+  findModifiedDeltaNames: function (
+    oldData,
+    newData,
+    deltaNames,
+    initialDeltaValues = {},
+    modifiedDeltaNames = [],
+    mostSpecific = false
   ) {
     // Make sure oldData and newData are always strings. This is important because further below String.split is called.
     oldData = typeof oldData === 'string' ? oldData : '';
     newData = typeof newData === 'string' ? newData : '';
-    deltaNames = Array.isArray(deltaNames) ? deltaNames : [];
-    initialDeltaValues = $.isPlainObject(initialDeltaValues)
-      ? initialDeltaValues
-      : {};
-    modifiedDeltaNames = Array.isArray(modifiedDeltaNames)
-      ? modifiedDeltaNames
-      : [];
+    if (!Array.isArray(deltaNames)) {
+      deltaNames = [];
+    }
+    if (!$.isPlainObject(initialDeltaValues)) {
+      initialDeltaValues = {};
+    }
+    if (!Array.isArray(modifiedDeltaNames)) {
+      modifiedDeltaNames = [];
+    }
 
     // Sort the delta namespaces from least -> most specific
-    deltaNames.sort(function (a, b) {
+    deltaNames.sort((a, b) => {
       if (a.length === b.length) {
         return 0;
+      }
+      if (mostSpecific) {
+        return a.length < b.length ? 1 : -1;
       }
       return a.length > b.length ? 1 : -1;
     });
 
-    // Group all of the old & new params by namespace
-    var groupedOldParams = this._groupParamsByDeltaNames(
+    // Group all the old & new params by namespace
+    const groupedOldParams = this._groupParamsByDeltaNames(
       oldData.split('&'),
       deltaNames,
       false,
       initialDeltaValues
     );
-    var groupedNewParams = this._groupParamsByDeltaNames(
+    const groupedNewParams = this._groupParamsByDeltaNames(
       newData.split('&'),
       deltaNames,
       true,
       false
     );
 
-    // Figure out which of the new params should actually be posted
-    var params = groupedNewParams.__root__;
-    for (var n = 0; n < deltaNames.length; n++) {
+    for (let name of deltaNames) {
       if (
-        Craft.inArray(deltaNames[n], modifiedDeltaNames) ||
-        (typeof groupedNewParams[deltaNames[n]] === 'object' &&
-          (typeof groupedOldParams[deltaNames[n]] !== 'object' ||
-            JSON.stringify(groupedOldParams[deltaNames[n]]) !==
-              JSON.stringify(groupedNewParams[deltaNames[n]])))
+        !modifiedDeltaNames.includes(name) &&
+        typeof groupedNewParams[name] === 'object' &&
+        (typeof groupedOldParams[name] !== 'object' ||
+          JSON.stringify(groupedOldParams[name]) !==
+            JSON.stringify(groupedNewParams[name]))
       ) {
-        params = params.concat(groupedNewParams[deltaNames[n]]);
-        params.push('modifiedDeltaNames[]=' + deltaNames[n]);
-        if (callback) {
-          callback(deltaNames[n], groupedNewParams[deltaNames[n]]);
-        }
+        modifiedDeltaNames.push(name);
       }
     }
 
-    return params.join('&');
+    // Sort the delta namespaces from least -> most specific
+    modifiedDeltaNames.sort((a, b) => {
+      if (a.length === b.length) {
+        return 0;
+      }
+      if (mostSpecific) {
+        return a.length < b.length ? 1 : -1;
+      }
+      return a.length > b.length ? 1 : -1;
+    });
+
+    return [modifiedDeltaNames, groupedNewParams];
   },
 
   /**
@@ -1164,31 +1225,32 @@ $.extend(Craft, {
       grouped.__root__ = [];
     }
 
+    // sort delta names from most to least specific
+    deltaNames = deltaNames.sort((a, b) => b.length - a.length);
+
+    for (let name of deltaNames) {
+      grouped[name] = [];
+    }
+
     const encodeURIComponentExceptEqualChar = (o) =>
       encodeURIComponent(o).replace('%3D', '=');
 
     params = params.map((p) => decodeURIComponent(p));
 
-    paramLoop: for (let p = 0; p < params.length; p++) {
-      // loop through the delta names from most -> least specific
-      for (let n = deltaNames.length - 1; n >= 0; n--) {
-        const paramName = params[p].substring(0, deltaNames[n].length + 1);
-        if (
-          paramName === deltaNames[n] + '=' ||
-          paramName === deltaNames[n] + '['
-        ) {
-          if (typeof grouped[deltaNames[n]] === 'undefined') {
-            grouped[deltaNames[n]] = [];
+    paramLoop: for (let param of params) {
+      for (let name of deltaNames) {
+        const paramName = param.substring(0, name.length + 1);
+        if ([`${name}=`, `${name}[`].includes(paramName)) {
+          if (typeof grouped[name] === 'undefined') {
+            grouped[name] = [];
           }
-          grouped[deltaNames[n]].push(
-            encodeURIComponentExceptEqualChar(params[p])
-          );
+          grouped[name].push(encodeURIComponentExceptEqualChar(param));
           continue paramLoop;
         }
       }
 
       if (withRoot) {
-        grouped.__root__.push(encodeURIComponentExceptEqualChar(params[p]));
+        grouped.__root__.push(encodeURIComponentExceptEqualChar(param));
       }
     }
 
@@ -1486,11 +1548,29 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @returns {boolean}
-   * @deprecated String.prototype.endsWith() should be used instead
    */
-  startsWith: function (str, substr) {
+  startsWith: function (str, substr, caseInsensitive = false) {
+    if (caseInsensitive) {
+      return str.toLowerCase().startsWith(substr.toLowerCase());
+    }
     return str.startsWith(substr);
+  },
+
+  /**
+   * Returns whether a string ends with another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @returns {boolean}
+   */
+  endsWith: function (str, substr, caseInsensitive = false) {
+    if (caseInsensitive) {
+      return str.toLowerCase().endsWith(substr.toLowerCase());
+    }
+    return str.endsWith(substr);
   },
 
   /**
@@ -1498,10 +1578,11 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @return {string}
    */
-  ensureStartsWith: function (str, substr) {
-    if (!str.startsWith(substr)) {
+  ensureStartsWith: function (str, substr, caseInsensitive = false) {
+    if (!Craft.startsWith(str, substr, caseInsensitive)) {
       str = substr + str;
     }
     return str;
@@ -1512,11 +1593,42 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @return {string}
    */
-  ensureEndsWith: function (str, substr) {
-    if (!str.endsWith(substr)) {
+  ensureEndsWith: function (str, substr, caseInsensitive = false) {
+    if (!Craft.endsWith(str, substr, caseInsensitive)) {
       str += substr;
+    }
+    return str;
+  },
+
+  /**
+   * Removes a string from the beginning of another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @return {string}
+   */
+  removeLeft: function (str, substr, caseInsensitive = false) {
+    if (Craft.startsWith(str, substr, caseInsensitive)) {
+      return str.slice(substr.length);
+    }
+    return str;
+  },
+
+  /**
+   * Removes a string from the end of another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @return {string}
+   */
+  removeRight: function (str, substr, caseInsensitive = false) {
+    if (Craft.endsWith(str, substr, caseInsensitive)) {
+      return str.slice(0, -substr.length);
     }
     return str;
   },
@@ -1876,8 +1988,6 @@ $.extend(Craft, {
       return;
     }
 
-    const scriptUrls = [];
-
     const nodes = $.parseHTML(html.trim(), true).filter((node) => {
       if (node.nodeName === 'LINK' && node.href) {
         if (!this._existingCss) {
@@ -1901,43 +2011,27 @@ $.extend(Craft, {
             .map((n) => n.src.replace(/&/g, '&amp;'));
         }
 
-        if (!this._existingJs.includes(node.src)) {
-          scriptUrls.push(node.src);
-          this._existingJs.push(node.src);
+        // if this is a cross-domain JS resource, use our app/resource-js proxy to load it
+        if (
+          node.src.startsWith(this.resourceBaseUrl) &&
+          !this.isSameHost(node.src)
+        ) {
+          node.src = this.getActionUrl('app/resource-js', {
+            url: node.src,
+          });
         }
 
-        // return false either way since we are going to load it ourselves
-        return false;
+        if (this._existingJs.includes(node.src)) {
+          return false;
+        }
+
+        this._existingJs.push(node.src);
       }
 
       return true;
     });
 
-    await this._loadScripts(scriptUrls);
     $parent.append(nodes);
-  },
-
-  _loadScripts: function (urls) {
-    return new Promise((resolve) => {
-      if (!urls.length) {
-        resolve();
-        return;
-      }
-
-      const url = urls.shift();
-      $.ajaxSetup({cache: true});
-
-      $.getScript(url)
-        .done(() => {
-          $.ajaxSetup({cache: false});
-          this._loadScripts(urls).then(resolve);
-        })
-        .fail(() => {
-          console.error(`Failed to load ${url}:`);
-          $.ajaxSetup({cache: false});
-          this._loadScripts(urls).then(resolve);
-        });
-    });
   },
 
   /**
@@ -2182,7 +2276,7 @@ $.extend(Craft, {
    * Retrieves a value from localStorage if it exists.
    *
    * @param {string} key
-   * @param {*} defaultValue
+   * @param {*} [defaultValue]
    */
   getLocalStorage: function (key, defaultValue) {
     key = 'Craft-' + Craft.systemUid + '.' + key;
@@ -2382,12 +2476,32 @@ $.extend(Craft, {
             }
           }
           const $actions = $element
-            .find('.chip-actions,.card-actions')
+            .find(
+              '> .chip-content .chip-actions,> .card-actions-container .card-actions'
+            )
             .detach();
           const $inputs = $element.find('input,button').detach();
-          $element.html($replacement.html());
+          $element.html($replacement.html()).removeClass('error');
+
           if ($actions.length) {
-            $element.find('.chip-actions,.card-actions').replaceWith($actions);
+            const $oldStatus = $actions.find('span.status');
+            const $newStatus = $replacement.find(
+              '> .chip-content .chip-actions span.status,> .card-actions-container .card-actions span.status'
+            );
+
+            if (
+              $oldStatus.length &&
+              $newStatus.length &&
+              $oldStatus[0].classList !== $newStatus[0].classList
+            ) {
+              $actions.find('span.status').replaceWith($newStatus);
+            }
+
+            $element
+              .find(
+                '> .chip-content .chip-actions,> .card-actions-container .card-actions'
+              )
+              .replaceWith($actions);
           }
           if ($inputs.length) {
             $inputs.appendTo($element);
@@ -2447,16 +2561,16 @@ $.extend(Craft, {
    * @param {Array} actions
    */
   addActionsToChip(chip, actions) {
-    const $actions = $(chip).find('.chip-actions,.card-actions');
-    let $actionMenuBtn = $actions.find('.action-btn');
-    let $actionMenu;
+    if (!actions?.length) {
+      return;
+    }
 
-    if ($actionMenuBtn.length) {
-      $actionMenu = $actionMenuBtn
-        .disclosureMenu()
-        .data('disclosureMenu').$container;
-      $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
-    } else {
+    const $actions = $(chip).find(
+      '> .chip-content > .chip-actions, > .card-actions-container > .card-actions'
+    );
+    let $actionMenuBtn = $actions.find('.action-btn');
+
+    if (!$actionMenuBtn.length) {
       // the chip/card doesn't have an action menu yet, so add one
       const menuId = `actions-${Math.floor(Math.random() * 1000000)}`;
       const labelId = `${menuId}-label`;
@@ -2473,66 +2587,28 @@ $.extend(Craft, {
         'aria-describedby': labelId,
         'data-disclosure-trigger': 'true',
       }).insertAfter($label);
-      $actionMenu = $('<div/>', {
+      $('<div/>', {
         id: menuId,
         class: 'menu menu--disclosure',
       }).insertAfter($actionMenuBtn);
-      $actionMenuBtn.disclosureMenu();
     }
+
+    const disclosureMenu = $actionMenuBtn
+      .disclosureMenu()
+      .data('disclosureMenu');
 
     const safeActions = actions.filter((a) => !a.destructive);
     const destructiveActions = actions.filter((a) => a.destructive);
-    let $items = $();
 
     if (safeActions.length) {
-      const $ul = $('<ul/>').appendTo($actionMenu);
-      for (let action of safeActions) {
-        const $li = $('<li/>').appendTo($ul);
-        const $a = $('<a/>', {
-          role: action.url ? null : 'button',
-          'data-icon': action.icon,
-          'aria-label': action.label,
-          text: action.label,
-          href: action.url,
-        })
-          .appendTo($li)
-          .data('actionCallback', action.callback);
-        if (action.attributes) {
-          $a.attr(action.attributes);
-        }
-        $items = $items.add($a);
-      }
+      disclosureMenu.addItems(safeActions, disclosureMenu.addGroup());
     }
-    if (safeActions.length && destructiveActions.length) {
-      $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
-    }
+
     if (destructiveActions.length) {
-      const $ul = $('<ul/>').appendTo($actionMenu);
-      for (let action of destructiveActions) {
-        const $li = $('<li/>').appendTo($ul);
-        const $a = $('<a/>', {
-          class: 'error',
-          type: 'button',
-          role: 'button',
-          'data-icon': action.icon,
-          'aria-label': action.label,
-          text: action.label,
-        })
-          .appendTo($li)
-          .data('actionCallback', action.callback);
-        if (action.attributes) {
-          $a.attr(action.attributes);
-        }
-        $items = $items.add($a);
-      }
+      disclosureMenu.addItems(destructiveActions, disclosureMenu.addGroup());
     }
 
-    $items.on('activate', (ev) => {
-      $actionMenuBtn.data('disclosureMenu').hide();
-      $(ev.currentTarget).data('actionCallback')();
-    });
-
-    Craft.initUiElements($actionMenu);
+    Craft.initUiElements(disclosureMenu.$container);
   },
 
   /**
@@ -2608,6 +2684,14 @@ $.extend(Craft, {
    */
   trapFocusWithin: function (container) {
     Garnish.trapFocusWithin(container);
+  },
+
+  /**
+   * Releases focus within a container.
+   * @param {Object} container
+   */
+  releaseFocusWithin: function (container) {
+    Garnish.releaseFocusWithin(container);
   },
 
   /**
@@ -2859,7 +2943,7 @@ $.extend($.fn, {
    */
   checkboxselect: function () {
     return this.each(function () {
-      if (!$.data(this, 'checkboxselect')) {
+      if (!$.data(this, 'checkboxSelect')) {
         new Garnish.CheckboxSelect(this);
       }
     });
@@ -2971,6 +3055,7 @@ $.extend($.fn, {
         confirm: $btn.data('confirm'),
         action: $btn.data('action'),
         redirect: $btn.data('redirect'),
+        retainScroll: Garnish.hasAttr($btn, 'data-retain-scroll'),
         requireElevatedSession: Garnish.hasAttr(
           $btn,
           'data-require-elevated-session'
@@ -3003,12 +3088,12 @@ $.extend($.fn, {
     });
   },
 
-  disclosureMenu: function () {
+  disclosureMenu: function (settings) {
     return this.each(function () {
       const $trigger = $(this);
       // Only instantiate if it's not already a disclosure trigger, and it references a disclosure content
       if (!$trigger.data('trigger') && $trigger.attr('aria-controls')) {
-        new Garnish.DisclosureMenu($trigger);
+        new Garnish.DisclosureMenu($trigger, settings);
       }
     });
   },

@@ -26,6 +26,7 @@ use craft\widgets\NewUsers as NewUsersWidget;
 use craft\widgets\QuickPost as QuickPostWidget;
 use craft\widgets\RecentEntries as RecentEntriesWidget;
 use craft\widgets\Updates as UpdatesWidget;
+use DateTime;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -100,12 +101,14 @@ class Dashboard extends Component
             UpdatesWidget::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $widgetTypes,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_WIDGET_TYPES, $event);
+        // Fire a 'registerWidgetTypes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_WIDGET_TYPES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $widgetTypes]);
+            $this->trigger(self::EVENT_REGISTER_WIDGET_TYPES, $event);
+            return $event->types;
+        }
 
-        return $event->types;
+        return $widgetTypes;
     }
 
     /**
@@ -113,7 +116,7 @@ class Dashboard extends Component
      *
      * @template T of WidgetInterface
      * @param string|array $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
-     * @phpstan-param class-string<T>|array{type:class-string<T>} $config
+     * @phpstan-param class-string<T>|array{type:class-string<T>,id?:int,dateCreated?:DateTime,dateUpdated?:DateTime,colspan?:int,settings?:array|string} $config
      * @return T
      */
     public function createWidget(mixed $config): WidgetInterface

@@ -32,7 +32,7 @@
                         {%- endif -%}
                     </td>
                     <td>{{ log.lastOccurrence|timestamp }}</td>
-                    <td class="nowrap viewtraces"><a role="button">{{ "Stack Trace"|t('app') }}</a></td>
+                    <td class="nowrap viewtraces"><a class="btn hairline" role="button">{{ "Stack Trace"|t('app') }}</a></td>
                     <td><a class="delete icon" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}" role="button"></a></td>
                 </tr>
             {% endfor %}

@@ -109,7 +109,7 @@ class ElementRelationParamParser extends BaseObject
                     isset($relCriteria['element']) &&
                     $relCriteria['element'][0] === 'or'
                     && $relCriteria['field'] === null &&
-                    $relCriteria['sourceSite'] === null
+                    $relCriteria['sourceSite'] === $siteId
                 ) {
                     array_push($orElements, ...array_slice($relCriteria['element'], 1));
                     unset($relatedToParam[$i]);
@@ -349,8 +349,12 @@ class ElementRelationParamParser extends BaseObject
                 $fields = is_string($fields) ? StringHelper::split($fields) : [$fields];
             }
 
+            // We only care about the fields provided by the element query if the target elements were specified,
+            // and the element query is fetching the source elements where the provided field(s) actually exist.
+            $useElementQueryFields = $dir === self::DIR_REVERSE;
+
             foreach ($fields as $field) {
-                if (($fieldModel = $this->_getField($field, $fieldHandleParts)) === null) {
+                if (($fieldModel = $this->_getField($field, $fieldHandleParts, $useElementQueryFields)) === null) {
                     Craft::warning('Attempting to load relations for an invalid field: ' . $field);
 
                     return false;
@@ -504,9 +508,10 @@ class ElementRelationParamParser extends BaseObject
      *
      * @param mixed $field
      * @param array|null $fieldHandleParts
+     * @param bool $useElementQueryFields
      * @return FieldInterface|null
      */
-    private function _getField(mixed $field, ?array &$fieldHandleParts = null): ?FieldInterface
+    private function _getField(mixed $field, ?array &$fieldHandleParts, bool $useElementQueryFields): ?FieldInterface
     {
         if (is_numeric($field)) {
             $fieldHandleParts = null;
@@ -514,6 +519,12 @@ class ElementRelationParamParser extends BaseObject
         }
 
         $fieldHandleParts = explode('.', $field);
-        return $this->fields[$fieldHandleParts[0]] ?? null;
+        $fieldHandle = $fieldHandleParts[0];
+
+        if ($useElementQueryFields) {
+            return $this->fields[$fieldHandle] ?? null;
+        }
+
+        return Craft::$app->getFields()->getFieldByHandle($fieldHandle);
     }
 }

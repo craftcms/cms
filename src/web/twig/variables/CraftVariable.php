@@ -24,6 +24,7 @@ use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
 use yii\di\ServiceLocator;
@@ -69,7 +70,7 @@ class CraftVariable extends ServiceLocator
             'routes' => Routes::class,
         ];
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition !== CmsEdition::Solo) {
             $components = array_merge($components, [
                 'rebrand' => Rebrand::class,
             ]);
@@ -114,9 +115,13 @@ class CraftVariable extends ServiceLocator
     public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
-        $event = new DefineBehaviorsEvent();
-        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
-        return $event->behaviors;
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
+            $event = new DefineBehaviorsEvent();
+            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+            return $event->behaviors;
+        }
+
+        return [];
     }
 
     // General info

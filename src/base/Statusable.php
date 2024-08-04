@@ -23,8 +23,7 @@ interface Statusable
      * with the following keys:
      *
      * - **`label`** – The human-facing status label.
-     * - **`color`** – The status color. Possible values include `green`, `orange`, `red`, `yellow`, `pink`, `purple`, `blue`,
-     *   `turquoise`, `light`, `grey`, `black`, and `white`.
+     * - **`color`** – The status color. See [[craft\enums\Color]] for possible values.
      *
      * @return array
      */

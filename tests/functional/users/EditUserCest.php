@@ -9,6 +9,7 @@ namespace crafttests\functional\users;
 
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use FunctionalTester;
 
 /**
@@ -42,7 +43,7 @@ class EditUserCest
         $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
 
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
     }
 
     /**

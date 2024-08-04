@@ -68,6 +68,10 @@ $iconSize: 46px;
         }
       }
 
+      .plugin-badges > div:not(:last-child) {
+        @include margin-right(5px);
+      }
+
       .plugin-status,
       .plugin-version {
         display: inline-block;
@@ -76,7 +80,6 @@ $iconSize: 46px;
         padding: 0 7px 1px;
       }
       .plugin-status {
-        @include margin-right(5px);
         text-transform: uppercase;
         color: $grey600;
         background-color: transparentize($grey600, 0.95);

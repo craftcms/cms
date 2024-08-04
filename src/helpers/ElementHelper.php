@@ -19,9 +19,14 @@ use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
 use craft\i18n\Locale;
 use craft\services\ElementSources;
+use craft\web\View;
 use DateTime;
 use Throwable;
+use Twig\Error\LoaderError as TwigLoaderError;
+use Twig\Markup;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 
 /**
  * Class ElementHelper
@@ -66,7 +71,7 @@ class ElementHelper
      *
      * @param string $str The string
      * @param bool|null $ascii Whether the slug should be converted to ASCII. If null, it will depend on
-     * the <config4:limitAutoSlugsToAscii> config setting value.
+     * the <config5:limitAutoSlugsToAscii> config setting value.
      * @param string|null $language The language to pull ASCII character mappings for, if needed
      * @return string
      * @since 3.5.0
@@ -354,6 +359,7 @@ class ElementHelper
             ->id($element->id)
             ->siteId($propagatedSiteIds)
             ->status(null)
+            ->trashed(null)
             ->asArray()
             ->select(['elements_sites.siteId', 'elements_sites.enabled']);
 
@@ -481,7 +487,19 @@ class ElementHelper
      */
     public static function isDraft(ElementInterface $element): bool
     {
-        return static::rootElement($element)->getIsDraft();
+        if ($element->getIsDraft()) {
+            return true;
+        }
+
+        // Defer to the owner element, if there is one
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::isDraft($owner);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -493,7 +511,19 @@ class ElementHelper
      */
     public static function isRevision(ElementInterface $element): bool
     {
-        return static::rootElement($element)->getIsRevision();
+        if ($element->getIsRevision()) {
+            return true;
+        }
+
+        // Defer to the owner element, if there is one
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::isRevision($owner);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -505,8 +535,19 @@ class ElementHelper
      */
     public static function isDraftOrRevision(ElementInterface $element): bool
     {
-        $root = static::rootElement($element);
-        return $root->getIsDraft() || $root->getIsRevision();
+        if ($element->getIsDraft() || $element->getIsRevision()) {
+            return true;
+        }
+
+        // Defer to the owner element, if there is one
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::isDraftOrRevision($owner);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -852,6 +893,26 @@ class ElementHelper
     }
 
     /**
+     * Returns the URL that users should be redirected to after editing the given element.
+     *
+     * @param ElementInterface $element
+     * @return string
+     * @since 5.2.0
+     */
+    public static function postEditUrl(ElementInterface $element): string
+    {
+        if ($element instanceof NestedElementInterface) {
+            // redirect to the owner's edit page, if possible
+            $ownerEditUrl = $element->getOwner()?->getCpEditUrl();
+            if ($ownerEditUrl) {
+                return $ownerEditUrl;
+            }
+        }
+
+        return $element->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+    }
+
+    /**
      * Returns an element action’s JavaScript configuration.
      *
      * @param ElementActionInterface $action
@@ -869,5 +930,106 @@ class ElementHelper
             'confirm' => $action->getConfirmationMessage(),
             'settings' => $action->getSettings() ?: null,
         ];
+    }
+
+    /**
+     * Renders the given elements using their partial templates.
+     *
+     * If no partial template exists for an element, its string representation will be output instead.
+     *
+     * @param ElementInterface[] $elements
+     * @param array $variables
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @since 5.0.0
+     */
+    public static function renderElements(array $elements, array $variables = []): Markup
+    {
+        $view = Craft::$app->getView();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $output = [];
+
+        foreach ($elements as $element) {
+            $refHandle = $element::refHandle();
+            if ($refHandle === null) {
+                throw new NotSupportedException(sprintf('Element type “%s” doesn’t define a reference handle, so it doesn’t support partial templates.', $element::displayName()));
+            }
+            $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
+            if ($providerHandle === null) {
+                throw new InvalidConfigException(sprintf('Element “%s” doesn’t have a field layout provider that defines a handle, so it can’t be rendered with a partial template.', $element));
+            }
+            $template = sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle);
+            $variables[$refHandle] = $element;
+            try {
+                $output[] = $view->renderTemplate($template, $variables, View::TEMPLATE_MODE_SITE);
+            } catch (TwigLoaderError $error) {
+                if ($error->getSourceContext() !== null) {
+                    throw $error;
+                }
+                // fallback to the string representation of the element
+                $output[] = Html::tag('p', Html::encode((string)$element));
+            }
+        }
+
+        return new Markup(implode("\n", $output), Craft::$app->charset);
+    }
+
+    /**
+     * Swaps out any canonical elements with provisional drafts, when they exist.
+     *
+     * @param ElementInterface[] $elements
+     * @since 5.2.0
+     */
+    public static function swapInProvisionalDrafts(array &$elements): void
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        if (!$user) {
+            return;
+        }
+
+        $canonicalElements = array_filter($elements, fn(ElementInterface $element) => $element->getIsCanonical());
+
+        if (empty($canonicalElements)) {
+            return;
+        }
+
+        $first = reset($canonicalElements);
+
+        if (!$first::hasDrafts()) {
+            return;
+        }
+
+        $drafts = $first::find()
+            ->draftOf($canonicalElements)
+            ->draftCreator($user)
+            ->provisionalDrafts()
+            ->siteId($first->siteId)
+            ->status(null)
+            ->indexBy('canonicalId')
+            ->all();
+
+        if (empty($drafts)) {
+            return;
+        }
+
+        // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
+        foreach ($canonicalElements as $i => $element) {
+            if (isset($drafts[$element->id])) {
+                $draft = $drafts[$element->id];
+                $draft->setCanonical($element);
+
+                // retain canonical element structure data => ['root', 'lft', 'rgt', 'level']
+                if ($element->structureId !== null) {
+                    $draft->structureId = $element->structureId;
+                    $draft->root = $element->root;
+                    $draft->lft = $element->lft;
+                    $draft->rgt = $element->rgt;
+                    $draft->level = $element->level;
+                }
+
+                $elements[$i] = $draft;
+            }
+        }
     }
 }

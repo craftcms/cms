@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\Asset;
 use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;
+use craft\web\View;
 use enshrined\svgSanitize\Sanitizer;
 use Throwable;
 use yii\base\Exception;
@@ -96,7 +97,25 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
-        return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+        $async = ArrayHelper::remove($options, 'async')
+            ?? ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
+
+        if (!$async) {
+            Craft::$app->getResponse()->setNoCacheHeaders();
+            return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+        }
+
+        Craft::$app->getView()->registerHtml(
+            Craft::$app->getView()->renderTemplate(
+                '_special/async-csrf-input',
+                [
+                    'url' => UrlHelper::actionUrl('users/session-info'),
+                ],
+                View::TEMPLATE_MODE_CP,
+            )
+        );
+
+        return static::tag('craft-csrf-input');
     }
 
     /**
@@ -417,7 +436,7 @@ class Html extends \yii\helpers\Html
             // Wrapped in quotes?
             if (isset($html[$offset]) && in_array($html[$offset], ['\'', '"'])) {
                 $q = preg_quote($html[$offset], '/');
-                if (!preg_match("/$q(.*?)$q/A", $html, $m, 0, $offset)) {
+                if (!preg_match("/$q(.*?)$q/sA", $html, $m, 0, $offset)) {
                     // No matching end quote
                     throw new InvalidArgumentException("Malformed HTML tag attribute in string: $html");
                 }
@@ -521,11 +540,22 @@ class Html extends \yii\helpers\Html
             return $value;
         }
         if (is_string($value)) {
+            // first match any css properties that contain 'url()'
+            $markers = [];
+            $value = preg_replace_callback('/\burl\(.*\)/i', function($match) use (&$markers) {
+                $marker = sprintf('{marker:%s}', mt_rand());
+                $markers[$marker] = $match[0];
+                return $marker;
+            }, $value);
+
+            // now split the styles string on semicolons
             $styles = ArrayHelper::filterEmptyStringsFromArray(preg_split('/\s*;\s*/', $value));
+
+            // and proceed with the array of styles
             $normalized = [];
             foreach ($styles as $style) {
                 [$n, $v] = array_pad(preg_split('/\s*:\s*/', $style, 2), 2, '');
-                $normalized[$n] = $v;
+                $normalized[$n] = strtr($v, $markers);
             }
             return $normalized;
         }
@@ -656,13 +686,12 @@ class Html extends \yii\helpers\Html
     public static function id(string $id = ''): string
     {
         // Ignore if it looks like a placeholder
-        if (preg_match('/^__[A-Z_]+__$/', $id)) {
+        // or starts with a placeholder (e.g. widgets > __NAMESPACE__-fieldId)
+        if (preg_match('/^__[A-Z_]+__/', $id)) {
             return $id;
         }
 
-        // IDs must begin with a letter
-        $id = preg_replace('/^[^A-Za-z]+/', '', $id);
-        $id = rtrim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
+        $id = trim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
         return $id ?: StringHelper::randomString(10);
     }
 
@@ -816,19 +845,34 @@ class Html extends \yii\helpers\Html
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\"))([^'\"]+)\\3/i",
             function(array $match) use ($namespace, $ids): string {
-                $namespacedIds = array_map(function(string $id) use ($match, $ids, $namespace): string {
+                $matchIds = preg_split('/([,\s+]+)/', $match[4], flags: PREG_SPLIT_DELIM_CAPTURE);
+                $namespacedIds = '';
+                foreach ($matchIds as $i => $id) {
                     if (
-                        isset($ids[$id]) ||
-                        $match[2] === 'data-target-prefix' ||
-                        ($match[2] === 'href' && str_ends_with($match[1], '#'))
+                        $i % 2 === 0 && // not a delimiter
+                        $id[0] !== '.' // not a class name
                     ) {
-                        return sprintf('%s-%s', $namespace, $id);
+                        $isHash = $id[0] === '#';
+                        if ($isHash) {
+                            $id = substr($id, 1);
+                        }
+                        if (
+                            isset($ids[$id]) ||
+                            $match[2] === 'data-target-prefix' ||
+                            ($isHash && $match[2] === 'href')
+                        ) {
+                            $id = sprintf('%s-%s', $namespace, $id);
+                        }
+                        if ($isHash) {
+                            $id = "#$id";
+                        }
                     }
-                    return $id;
-                }, explode(' ', $match[4]));
-                return $match[1] . implode(' ', $namespacedIds) . $match[3];
+
+                    $namespacedIds .= $id;
+                }
+                return sprintf('%s%s%s', $match[1], $namespacedIds, $match[3]);
             }, $html);
 
         // ID references in url() calls

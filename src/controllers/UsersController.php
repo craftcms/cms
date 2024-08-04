@@ -16,6 +16,7 @@ use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\InvalidElementException;
 use craft\errors\UploadFailedException;
 use craft\events\DefineUserContentSummaryEvent;
@@ -23,9 +24,9 @@ use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
-use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -74,6 +75,8 @@ use yii\web\ServerErrorHttpException;
  */
 class UsersController extends Controller
 {
+    use EditUserTrait;
+
     /**
      * @event FindLoginUserEvent The event that is triggered before attempting to find a user to sign in
      *
@@ -112,6 +115,13 @@ class UsersController extends Controller
     public const EVENT_LOGIN_FAILURE = 'loginFailure';
 
     /**
+     * @event DefineEditUserScreensEvent The event that is triggered when defining the screens that should be
+     * shown for the user being edited.
+     * @since 5.1.0
+     */
+    public const EVENT_DEFINE_EDIT_SCREENS = 'defineEditScreens';
+
+    /**
      * @event UserEvent The event that is triggered BEFORE user groups and permissions ARE assigned to the user getting saved
      * @since 3.5.13
      */
@@ -146,13 +156,6 @@ class UsersController extends Controller
      * @since 3.6.5
      */
     public const EVENT_INVALID_USER_TOKEN = 'invalidUserToken';
-
-    private const SCREEN_PROFILE = 'profile';
-    private const SCREEN_ADDRESSES = 'addresses';
-    private const SCREEN_PERMISSIONS = 'permissions';
-    private const SCREEN_PREFERENCES = 'preferences';
-    private const SCREEN_PASSWORD = 'password';
-    private const SCREEN_PASSKEYS = 'passkeys';
 
     /**
      * @inheritdoc
@@ -200,7 +203,13 @@ class UsersController extends Controller
      */
     public function actionLogin(): ?Response
     {
-        if (!$this->request->getIsPost()) {
+        if ($this->request->getIsGet()) {
+            // see if they're already logged in
+            $user = static::currentUser();
+            if ($user) {
+                return $this->_handleSuccessfulLogin($user);
+            }
+
             return null;
         }
 
@@ -299,19 +308,28 @@ class UsersController extends Controller
 
     private function _findLoginUser(string $loginName): ?User
     {
-        $event = new FindLoginUserEvent([
-            'loginName' => $loginName,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_FIND_LOGIN_USER, $event);
+        // Fire a 'beforeFindLoginUser' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_FIND_LOGIN_USER)) {
+            $event = new FindLoginUserEvent(['loginName' => $loginName]);
+            $this->trigger(self::EVENT_BEFORE_FIND_LOGIN_USER, $event);
+            $user = $event->user;
+        } else {
+            $user = null;
+        }
 
-        $user = $event->user ?? Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+        $user ??= Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
-        $event = new FindLoginUserEvent([
-            'loginName' => $loginName,
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_AFTER_FIND_LOGIN_USER, $event);
-        return $event->user;
+        // Fire an 'afterFindLoginUser' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_FIND_LOGIN_USER)) {
+            $event = new FindLoginUserEvent([
+                'loginName' => $loginName,
+                'user' => $user,
+            ]);
+            $this->trigger(self::EVENT_AFTER_FIND_LOGIN_USER, $event);
+            return $event->user;
+        }
+
+        return $user;
     }
 
     /**
@@ -577,7 +595,9 @@ class UsersController extends Controller
 
             if (!$loginName) {
                 // If they didn't even enter a username/email, just bail now.
-                $errors[] = Craft::t('app', 'Username or email is required.');
+                $errors[] = Craft::$app->getConfig()->getGeneral()->useEmailAsUsername
+                    ? Craft::t('app', 'Email is required.')
+                    : Craft::t('app', 'Username or email is required.');
 
                 return $this->_handleSendPasswordResetError($errors);
             }
@@ -585,7 +605,9 @@ class UsersController extends Controller
             $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
             if (!$user || !$user->getIsCredentialed()) {
-                $errors[] = Craft::t('app', 'Invalid username or email.');
+                $errors[] = Craft::$app->getConfig()->getGeneral()->useEmailAsUsername
+                    ? Craft::t('app', 'Invalid email.')
+                    : Craft::t('app', 'Invalid username or email.');
             }
         }
 
@@ -661,6 +683,66 @@ class UsersController extends Controller
         return $this->asJson([
             'url' => $url,
         ]);
+    }
+
+    /**
+     * Requires a user to reset their password on next login.
+     *
+     * @return Response|null
+     * @since 5.0.0
+     */
+    public function actionRequirePasswordReset(): ?Response
+    {
+        $this->requirePermission('administrateUsers');
+
+        $userId = $this->request->getRequiredParam('userId');
+        $user = Craft::$app->getUsers()->getUserById($userId);
+
+        if (!$user) {
+            $this->_noUserExists();
+        }
+
+        $user->passwordResetRequired = true;
+
+        if (!Craft::$app->getElements()->saveElement($user, false)) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
+        }
+
+        return $this->asSuccess(Craft::t('app', '{type} saved.', [
+            'type' => User::displayName(),
+        ]));
+    }
+
+    /**
+     * Removes the requirement for a user to reset their password on next login.
+     *
+     * @return Response|null
+     * @since 5.0.0
+     */
+    public function actionRemovePasswordResetRequirement(): ?Response
+    {
+        $this->requirePermission('administrateUsers');
+
+        $userId = $this->request->getRequiredParam('userId');
+        $user = Craft::$app->getUsers()->getUserById($userId);
+
+        if (!$user) {
+            $this->_noUserExists();
+        }
+
+        $user->passwordResetRequired = false;
+
+        if (!Craft::$app->getElements()->saveElement($user, false)) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
+        }
+
+        return $this->asSuccess(Craft::t('app', '{type} saved.', [
+            'type' => User::displayName(),
+        ]));
     }
 
     /**
@@ -878,6 +960,25 @@ class UsersController extends Controller
     }
 
     /**
+     * User index
+     *
+     * @param string|null $source
+     * @return Response
+     * @since 5.3.0
+     */
+    public function actionIndex(?string $source = null): Response
+    {
+        $this->requirePermission('editUsers');
+        return $this->renderTemplate('users/_index.twig', [
+            'title' => Craft::t('app', 'Users'),
+            'buttonLabel' => Craft::t('app', 'New {type}', [
+                'type' => User::lowerDisplayName(),
+            ]),
+            'source' => $source,
+        ]);
+    }
+
+    /**
      * Creates a new unpublished draft of a user and redirects to its edit page.
      *
      * @return Response
@@ -885,7 +986,7 @@ class UsersController extends Controller
      */
     public function actionCreate(): Response
     {
-        Craft::$app->requireEdition(Craft::Pro);
+        Craft::$app->requireEdition(CmsEdition::Team);
 
         $user = Craft::createObject(User::class);
 
@@ -930,14 +1031,20 @@ class UsersController extends Controller
     {
         $this->requireCpRequest();
 
-        $element ??= $this->editScreenUser($userId);
+        $element ??= $this->editedUser($userId);
 
         // let the elements/edit action do most of the work
         Craft::$app->runAction('elements/edit', [
             'element' => $element,
         ]);
 
-        return $this->asEditScreen($element, self::SCREEN_PROFILE);
+        if ($element->getIsUnpublishedDraft() && $this->showPermissionsScreen()) {
+            $this->response
+                ->submitButtonLabel(Craft::t('app', 'Create and set permissions'))
+                ->redirectUrl($this->editUserScreenUrl($element, self::SCREEN_PERMISSIONS));
+        }
+
+        return $this->asEditUserScreen($element, self::SCREEN_PROFILE);
     }
 
     /**
@@ -950,13 +1057,13 @@ class UsersController extends Controller
     public function actionAddresses(?int $userId = null): Response
     {
         $this->requireCpRequest();
-
-        $user = $this->editScreenUser($userId);
+        $user = $this->editedUser($userId);
         /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditScreen($user, self::SCREEN_ADDRESSES);
+        $response = $this->asEditUserScreen($user, self::SCREEN_ADDRESSES);
 
         $response->contentHtml(function() use ($user) {
             $config = [
+                'showInGrid' => true,
                 'canCreate' => true,
             ];
 
@@ -983,16 +1090,27 @@ class UsersController extends Controller
     public function actionPermissions(?int $userId = null): Response
     {
         $this->requireCpRequest();
-
-        $user = $this->editScreenUser($userId);
+        $user = $this->editedUser($userId);
         /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditScreen($user, self::SCREEN_PERMISSIONS);
+        $response = $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS);
 
         $response->action('users/save-permissions');
         $response->contentTemplate('users/_permissions', [
             'user' => $user,
             'currentGroupIds' => array_map(fn(UserGroup $group) => $group->id, $user->getGroups()),
         ]);
+
+        if (!$user->getIsCredentialed() && static::currentUser()->can('administrateUsers')) {
+            $response->additionalButtonsHtml(
+                Html::button(Craft::t('app', 'Save and send activation email'), [
+                    'class' => ['btn', 'secondary', 'formsubmit'],
+                    'data' => [
+                        'param' => 'sendActivationEmail',
+                        'value' => '1',
+                    ],
+                ])
+            );
+        }
 
         return $response;
     }
@@ -1008,7 +1126,7 @@ class UsersController extends Controller
         $this->requireCpRequest();
 
         $currentUser = static::currentUser();
-        $user = $this->editScreenUser((int)$this->request->getRequiredBodyParam('userId'));
+        $user = $this->editedUser((int)$this->request->getRequiredBodyParam('userId'));
 
         // Is their admin status changing?
         if ($currentUser->admin) {
@@ -1023,22 +1141,40 @@ class UsersController extends Controller
             }
         }
 
-        // Fire an 'beforeAssignGroupsAndPermissions' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-            $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                'user' => $user,
-            ]));
+        if (Craft::$app->edition === CmsEdition::Pro) {
+            // Fire an 'beforeAssignGroupsAndPermissions' event
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                    'user' => $user,
+                ]));
+            }
+
+            // Assign user groups and permissions if the current user is allowed to do that
+            $this->_saveUserGroups($user, $currentUser);
+            $this->_saveUserPermissions($user, $currentUser);
+
+            // Fire an 'afterAssignGroupsAndPermissions' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                    'user' => $user,
+                ]));
+            }
         }
 
-        // Assign user groups and permissions if the current user is allowed to do that
-        $this->_saveUserGroups($user, $currentUser);
-        $this->_saveUserPermissions($user, $currentUser);
-
-        // Fire an 'afterAssignGroupsAndPermissions' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
-            $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
-                'user' => $user,
-            ]));
+        if (
+            !$user->getIsCredentialed() &&
+            $currentUser->can('administrateUsers') &&
+            $this->request->getBodyParam('sendActivationEmail')
+        ) {
+            try {
+                if (!Craft::$app->getUsers()->sendActivationEmail($user)) {
+                    $this->setFailFlash(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
+                }
+            } catch (InvalidElementException $e) {
+                $this->setFailFlash(Craft::t('app', 'Couldn’t send the activation email: {error}', [
+                    'error' => $e->getMessage(),
+                ]));
+            }
         }
 
         return $this->asSuccess(Craft::t('app', 'Permissions saved.'));
@@ -1053,67 +1189,34 @@ class UsersController extends Controller
     public function actionPreferences(): Response
     {
         $this->requireCpRequest();
-
         $user = static::currentUser();
         /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditScreen($user, self::SCREEN_PREFERENCES);
+        $response = $this->asEditUserScreen($user, self::SCREEN_PREFERENCES);
 
         $i18n = Craft::$app->getI18n();
-        $appLocales = $i18n->getAppLocales();
-        ArrayHelper::multisort($appLocales, fn(Locale $locale) => $locale->getDisplayName());
-        $languageId = Craft::$app->getLocale()->getLanguageID();
 
-        $languageOptions = array_map(fn(Locale $locale) => [
-            'label' => $locale->getDisplayName(Craft::$app->language),
-            'value' => $locale->id,
-            'data' => [
-                'data' => [
-                    'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '',
-                    'hintLang' => $locale->id,
-                ],
-            ],
-        ], $appLocales);
-
+        // user language
         $userLanguage = $user->getPreferredLanguage();
 
         if (
             !$userLanguage ||
-            !ArrayHelper::contains($appLocales, fn(Locale $locale) => $locale->id === $userLanguage)
+            !ArrayHelper::contains($i18n->getAppLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLanguage))
         ) {
             $userLanguage = Craft::$app->language;
         }
 
-        // Formatting Locale
-        $allLocales = $i18n->getAllLocales();
-        ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
-
-        $localeOptions = [
-            ['label' => Craft::t('app', 'Same as language'), 'value' => ''],
-        ];
-        array_push($localeOptions, ...array_map(fn(Locale $locale) => [
-            'label' => $locale->getDisplayName(Craft::$app->language),
-            'value' => $locale->id,
-            'data' => [
-                'data' => [
-                    'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
-                    'hintLang' => $locale->id,
-                ],
-            ],
-        ], $allLocales));
-
+        // user locale
         $userLocale = $user->getPreferredLocale();
 
         if (
             !$userLocale ||
-            !ArrayHelper::contains($allLocales, fn(Locale $locale) => $locale->id === $userLocale)
+            !ArrayHelper::contains($i18n->getAllLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLocale))
         ) {
             $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
         }
 
         $response->action('users/save-preferences');
         $response->contentTemplate('users/_preferences', compact(
-            'languageOptions',
-            'localeOptions',
             'userLanguage',
             'userLocale',
         ));
@@ -1132,13 +1235,18 @@ class UsersController extends Controller
         $this->requireCpRequest();
 
         $user = static::currentUser();
+        $preferredLocale = $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null;
+        if ($preferredLocale === '__blank__') {
+            $preferredLocale = null;
+        }
         $preferences = [
             'language' => $this->request->getBodyParam('preferredLanguage', $user->getPreference('language')),
-            'locale' => $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null,
+            'locale' => $preferredLocale,
             'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
             'alwaysShowFocusRings' => (bool)$this->request->getBodyParam('alwaysShowFocusRings', $user->getPreference('alwaysShowFocusRings')),
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
+            'disableAutofocus' => $this->request->getBodyParam('disableAutofocus', $user->getPreference('disableAutofocus')),
             'notificationDuration' => $this->request->getBodyParam('notificationDuration', $user->getPreference('notificationDuration')),
         ];
 
@@ -1168,12 +1276,12 @@ class UsersController extends Controller
     public function actionPassword(?User $user = null): Response
     {
         $this->requireCpRequest();
+        $user ??= static::currentUser();
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response = $this->asEditUserScreen($user, self::SCREEN_PASSWORD);
 
         $this->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
 
-        $user ??= static::currentUser();
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditScreen($user, self::SCREEN_PASSWORD);
         $response->action('users/save-password');
         $response->contentTemplate('users/_password', compact('user'));
 
@@ -1224,6 +1332,9 @@ class UsersController extends Controller
     public function actionPasskeys(): Response
     {
         $this->requireCpRequest();
+        $user = static::currentUser();
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response = $this->asEditUserScreen($user, self::SCREEN_PASSKEYS);
 
         $view = $this->getView();
         $view->registerAssetBundle(PasskeySetupAsset::class);
@@ -1231,113 +1342,11 @@ class UsersController extends Controller
 new Craft.PasskeySetup();
 JS);
 
-        $user = static::currentUser();
         $passkeys = Craft::$app->getAuth()->getPasskeys($user);
-
-        /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditScreen($user, self::SCREEN_PASSKEYS);
-
         $response->contentTemplate('users/_passkeys', [
             'user' => $user,
             'passkeys' => $passkeys,
         ]);
-
-        return $response;
-    }
-
-    private function editScreenUser(?int $userId): User
-    {
-        if ($userId === null) {
-            return static::currentUser();
-        }
-
-        /** @var User|null $user */
-        $user = User::find()
-            ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->id($userId)
-            ->drafts(null)
-            ->status(null)
-            ->one();
-
-        if (!$user) {
-            throw new BadRequestHttpException('No user was identified by the request.');
-        }
-
-        if (!$user->getIsCurrent()) {
-            // Make sure they have permission to edit other users
-            $this->requirePermission('editUsers');
-        }
-
-        return $user;
-    }
-
-    private function asEditScreen(User $user, string $currentScreen): Response
-    {
-        $currentUser = static::currentUser();
-        $includeScreens = array_keys(array_filter([
-            self::SCREEN_PROFILE => true,
-            self::SCREEN_ADDRESSES => $user->id,
-            self::SCREEN_PERMISSIONS => (
-                Craft::$app->getEdition() === Craft::Pro &&
-                ($currentUser->can('assignUserPermissions') || $currentUser->canAssignUserGroups())
-            ),
-            self::SCREEN_PREFERENCES => $user->getIsCurrent(),
-            self::SCREEN_PASSWORD => $user->getIsCurrent(),
-            self::SCREEN_PASSKEYS => $user->getIsCurrent(),
-        ]));
-
-        if (!in_array($currentScreen, $includeScreens)) {
-            throw new ForbiddenHttpException('User not authorized to perform this action.');
-        }
-
-        $response = $this->asCpScreen();
-        if ($user->getIsCurrent()) {
-            $response->title(Craft::t('app', 'My Account'));
-        } else {
-            $response->title($user->getUiLabel());
-        }
-
-        $navItems = [];
-        $currentNavItems = &$navItems;
-
-        foreach ($includeScreens as $screen) {
-            if ($screen === self::SCREEN_PASSWORD) {
-                $navItem = [
-                    'heading' => Craft::t('app', 'Account Security'),
-                    'nested' => [],
-                ];
-                $navItems[] = &$navItem;
-                $currentNavItems = &$navItem['nested'];
-            }
-
-            $currentNavItems[] = [
-                'label' => $this->editScreenTitle($screen),
-                'url' => $this->editScreenUrl($user, $screen),
-                'selected' => $screen === $currentScreen,
-            ];
-        }
-
-        $response->pageSidebarTemplate('_includes/nav', [
-            'label' => $this->editScreenTitle($currentScreen),
-            'items' => $navItems,
-        ]);
-
-        if ($currentScreen !== self::SCREEN_PROFILE) {
-            $response->crumbs([
-                ...$user->getCrumbs(),
-                [
-                    'html' => Cp::elementChipHtml($user, ['showDraftName' => false]),
-                    'current' => true,
-                ],
-            ]);
-
-            $response->actionMenuItems(fn() => array_filter(
-                $user->getActionMenuItems(),
-                fn(array $item) => !str_starts_with($item['id'] ?? '', 'action-edit-'),
-            ));
-
-            $response->metaSidebarHtml($user->getSidebarHtml(false) . Cp::metadataHtml($user->getMetadata()));
-        }
 
         return $response;
     }
@@ -1355,32 +1364,6 @@ JS);
         $this->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
 
         return $this->renderTemplate('_special/setup-2fa.twig');
-    }
-
-    /**
-     * @param self::SCREEN_* $screen
-     * @return string
-     */
-    private function editScreenTitle(string $screen): string
-    {
-        return match ($screen) {
-            self::SCREEN_PROFILE => Craft::t('app', 'Profile'),
-            self::SCREEN_ADDRESSES => Craft::t('app', 'Addresses'),
-            self::SCREEN_PERMISSIONS => Craft::t('app', 'Permissions'),
-            self::SCREEN_PREFERENCES => Craft::t('app', 'Preferences'),
-            self::SCREEN_PASSWORD => Craft::t('app', 'Password & Verification'),
-            self::SCREEN_PASSKEYS => Craft::t('app', 'Passkeys'),
-        };
-    }
-
-    private function editScreenUrl(User $user, string $screen): string
-    {
-        $basePath = $user->getIsCurrent() ? 'myaccount' : "users/$user->id";
-        $path = match ($screen) {
-            self::SCREEN_PROFILE => $basePath,
-            default => "$basePath/$screen",
-        };
-        return UrlHelper::cpUrl($path);
     }
 
     /**
@@ -1408,7 +1391,10 @@ JS);
         $canAdministrateUsers = $currentUser && $currentUser->can('administrateUsers');
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
-        $requireEmailVerification = $userSettings['requireEmailVerification'] ?? true;
+        $requireEmailVerification = (
+            Craft::$app->edition === CmsEdition::Pro &&
+            ($userSettings['requireEmailVerification'] ?? true)
+        );
         $deactivateByDefault = $userSettings['deactivateByDefault'] ?? false;
         $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
         $returnCsrfToken = false;
@@ -1442,7 +1428,7 @@ JS);
             }
         } else {
             // Make sure this is Craft Pro, since that's required for having multiple user accounts
-            Craft::$app->requireEdition(Craft::Pro);
+            Craft::$app->requireEdition(CmsEdition::Team);
 
             // Is someone logged in?
             if ($currentUser) {
@@ -1649,7 +1635,7 @@ JS);
         // Save the user’s photo, if it was submitted
         $this->_processUserPhoto($user);
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Pro) {
             // If this is public registration, assign the user to the default user group
             if ($isPublicRegistration) {
                 // Assign them to the default user group
@@ -1988,14 +1974,17 @@ JS);
             }
         }
 
-        // Fire a 'defineUserContentSummary' event
-        $event = new DefineUserContentSummaryEvent([
-            'userId' => $userId,
-            'contentSummary' => $summary,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_CONTENT_SUMMARY, $event);
+        // Fire a 'defineContentSummary' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_CONTENT_SUMMARY)) {
+            $event = new DefineUserContentSummaryEvent([
+                'userId' => $userId,
+                'contentSummary' => $summary,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_CONTENT_SUMMARY, $event);
+            $summary = $event->contentSummary;
+        }
 
-        return $this->asJson($event->contentSummary);
+        return $this->asJson($summary);
     }
 
     /**
@@ -2303,15 +2292,19 @@ JS);
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 
         // Fire a 'loginFailure' event
-        $event = new LoginFailureEvent([
-            'authError' => $authError,
-            'message' => $message,
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
+        if ($this->hasEventHandlers(self::EVENT_LOGIN_FAILURE)) {
+            $event = new LoginFailureEvent([
+                'authError' => $authError,
+                'message' => $message,
+                'user' => $user,
+            ]);
+            $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
+            $message = $event->message;
+        }
+
 
         return $this->asFailure(
-            $event->message,
+            $message,
             data: [
                 'errorCode' => $authError,
             ],
@@ -2319,7 +2312,7 @@ JS);
                 'loginName' => $this->request->getBodyParam('loginName'),
                 'rememberMe' => (bool)$this->request->getBodyParam('rememberMe'),
                 'errorCode' => $authError,
-                'errorMessage' => $event->message,
+                'errorMessage' => $message,
             ]
         );
     }
@@ -2881,15 +2874,20 @@ JS);
 
         if ($fullName !== null) {
             $model->fullName = $fullName;
+
+            // Unset firstName and lastName so NameTrait::prepareNamesForSave() can set them
+            $model->firstName = $model->lastName = null;
         } else {
             // Still check for firstName/lastName in case a front-end form is still posting them
             $firstName = $this->request->getBodyParam('firstName');
             $lastName = $this->request->getBodyParam('lastName');
 
             if ($firstName !== null || $lastName !== null) {
-                $model->fullName = null;
                 $model->firstName = $firstName ?? $model->firstName;
                 $model->lastName = $lastName ?? $model->lastName;
+
+                // Unset fullName so NameTrait::prepareNamesForSave() can set it
+                $model->fullName = null;
             }
         }
     }

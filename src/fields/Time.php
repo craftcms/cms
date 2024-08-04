@@ -11,7 +11,9 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
@@ -26,7 +28,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.12
  */
-class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface
+class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
 {
     /**
      * @inheritdoc
@@ -34,6 +36,14 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     public static function displayName(): string
     {
         return Craft::t('app', 'Time');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'clock';
     }
 
     /**
@@ -209,6 +219,14 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     {
         /** @var DateTime|null $value */
         return $value?->format('H:i:s');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementConditionRuleType(): array|string|null
+    {
+        return EmptyFieldConditionRule::class;
     }
 
     /**

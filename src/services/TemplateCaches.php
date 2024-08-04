@@ -13,10 +13,12 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\caching\TagDependency;
+use yii\web\AssetBundle;
 
 /**
  * Template Caches service.
@@ -69,7 +71,7 @@ class TemplateCaches extends Component
             return null;
         }
 
-        [$body, $cacheInfo, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags] = array_pad($data, 9, null);
+        [$body, $cacheInfo, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags, $bufferedAssetBundles] = array_pad($data, 10, null);
 
         // If we're actively collecting element cache info, register this cache's tags and duration
         $elementsService = Craft::$app->getElements();
@@ -91,7 +93,8 @@ class TemplateCaches extends Component
                 $bufferedJsFiles ?? [],
                 $bufferedCssFiles ?? [],
                 $bufferedHtml ?? [],
-                $bufferedMetaTags ?? []
+                $bufferedMetaTags ?? [],
+                $bufferedAssetBundles ?? [],
             );
         }
 
@@ -126,6 +129,7 @@ class TemplateCaches extends Component
             $view->startCssFileBuffer();
             $view->startHtmlBuffer();
             $view->startMetaTagBuffer();
+            $view->startAssetBundleBuffer();
         }
     }
 
@@ -134,7 +138,7 @@ class TemplateCaches extends Component
      *
      * @param string $key The template cache key.
      * @param bool $global Whether the cache should be stored globally.
-     * @param string|null $duration How long the cache should be stored for. Should be a [relative time format](https://php.net/manual/en/datetime.formats.relative.php).
+     * @param string|null $duration How long the cache should be stored for. Should be a [relative time statement](https://www.php.net/manual/en/datetime.formats.php#datetime.formats.relative).
      * @param mixed $expiration When the cache should expire.
      * @param string $body The contents of the cache.
      * @param bool $withResources Whether JS and CSS code registered with [[\craft\web\View::registerJs()]],
@@ -162,6 +166,7 @@ class TemplateCaches extends Component
             $bufferedCssFiles = $view->clearCssFileBuffer();
             $bufferedHtml = $view->clearHtmlBuffer();
             $bufferedMetaTags = $view->clearMetaTagBuffer();
+            $bufferedAssetBundles = $view->clearAssetBundleBuffer();
         }
 
         // If there are any transform generation URLs in the body, don't cache it.
@@ -197,12 +202,36 @@ class TemplateCaches extends Component
             $bufferedCssFiles = $this->_parseExternalResourceTags($bufferedCssFiles, 'href');
             $bufferedMetaTags = $this->_parseSelfClosingTags($bufferedMetaTags);
 
+            $bufferedAssetBundles = Collection::make($bufferedAssetBundles)
+                ->map(fn(AssetBundle $bundle, string $name) => [$name, $bundle->jsOptions['position'] ?? null])
+                ->values()
+                ->all();
+
             if ($saveCache) {
-                array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags);
+                array_push(
+                    $cacheValue,
+                    $bufferedJs,
+                    $bufferedScripts,
+                    $bufferedCss,
+                    $bufferedJsFiles,
+                    $bufferedCssFiles,
+                    $bufferedHtml,
+                    $bufferedMetaTags,
+                    $bufferedAssetBundles,
+                );
             }
 
             // Re-register the JS and CSS
-            $this->_registerResources($bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags);
+            $this->_registerResources(
+                $bufferedJs,
+                $bufferedScripts,
+                $bufferedCss,
+                $bufferedJsFiles,
+                $bufferedCssFiles,
+                $bufferedHtml,
+                $bufferedMetaTags,
+                $bufferedAssetBundles,
+            );
         }
 
         if (!$saveCache) {
@@ -279,6 +308,7 @@ class TemplateCaches extends Component
         array $bufferedCssFiles,
         array $bufferedHtml,
         array $bufferedMetaTags,
+        array $bufferedAssetBundles,
     ): void {
         $view = Craft::$app->getView();
 
@@ -317,6 +347,10 @@ class TemplateCaches extends Component
 
         foreach ($bufferedMetaTags as $key => $options) {
             $view->registerMetaTag($options, $key);
+        }
+
+        foreach ($bufferedAssetBundles as [$name, $position]) {
+            $view->registerAssetBundle($name, $position);
         }
     }
 

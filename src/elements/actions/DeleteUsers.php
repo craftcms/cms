@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use yii\base\Exception;
 
 /**
@@ -117,7 +118,7 @@ JS,
             [
                 static::class,
                 $this->_getUndeletableUserIds(),
-                Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
+                Craft::$app->getSecurity()->hashData(Craft::$app->edition === CmsEdition::Solo ? 'dashboard' : 'users'),
             ]);
 
         return null;

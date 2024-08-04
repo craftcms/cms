@@ -17,7 +17,7 @@
     name: name ?? false,
     value: value ?? false,
     maxlength: maxlength ?? false,
-    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    autofocus: (autofocus ?? false) and currentUser and currentUser.getAutofocusPreferred() and not craft.app.request.isMobileBrowser(true),
     autocomplete: autocomplete is boolean ? (autocomplete ? 'on' : 'off') : autocomplete,
     autocorrect: (autocorrect ?? true) ? false : 'off',
     autocapitalize: (autocapitalize ?? true) ? false : 'none',

@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements\users;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\fieldlayoutelements\TextField;
 use yii\base\InvalidArgumentException;
 
@@ -91,8 +92,11 @@ class EmailField extends TextField
      */
     protected function warning(?ElementInterface $element = null, bool $static = false): ?string
     {
+        /** @var User $element */
         if (
+            Craft::$app->edition === CmsEdition::Pro &&
             Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
+            !$element->getIsDraft() &&
             !Craft::$app->getUser()->checkPermission('administrateUsers')
         ) {
             return Craft::t('app', 'New email addresses must be verified before taking effect.');
@@ -111,7 +115,11 @@ class EmailField extends TextField
                 throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', __CLASS__));
             }
 
-            if (!$element->getIsCurrent() && !Craft::$app->getUser()->checkPermission('administrateUsers')) {
+            if (
+                !$element->getIsCurrent() &&
+                !$element->getIsDraft() &&
+                !Craft::$app->getUser()->checkPermission('administrateUsers')
+            ) {
                 return null;
             }
 

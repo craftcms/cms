@@ -427,6 +427,8 @@ class HtmlHelperTest extends TestCase
             [false, "<div x-foo='>"],
             [false, '<!-- comment -->'],
             [false, '<?xml?>'],
+            // https://github.com/craftcms/cms/issues/14498
+            [['data' => ['label' => "foo\n\nbar"]], "<div data-label=\"foo\n\nbar\">"],
         ];
     }
 
@@ -476,6 +478,17 @@ class HtmlHelperTest extends TestCase
             [['class' => false], ['class' => null]],
             [['class' => false], ['class' => false]],
             [['class' => false], ['class' => null]],
+            // https://github.com/craftcms/cms/issues/14964
+            [
+                [
+                    'style' => [
+                        'background-image' => 'url(data:image/jpeg;base64,hash)',
+                    ],
+                ],
+                [
+                    'style' => 'background-image:url(data:image/jpeg;base64,hash);',
+                ],
+            ],
         ];
     }
 
@@ -491,7 +504,9 @@ class HtmlHelperTest extends TestCase
             ['foo-bar-baz', 'foo bar baz'],
             ['foo.bar', 'foo.bar'],
             ['foo-bar', 'foo bar'],
-            [null, '100'],
+            ['100', '100'],
+            ['100-foo-bar', '100-foo-bar'],
+            ['__FOO__ bar', '__FOO__ bar'],
         ];
     }
 
@@ -517,9 +532,10 @@ class HtmlHelperTest extends TestCase
             ['foo-bar-baz', 'bar[baz]', 'foo'],
             ['foo-bar-baz', 'baz', 'foo[bar]'],
             ['foo-bar', 'foo[bar]', null],
-            ['foo__', '__foo__', null],
+            ['__foo__', '__foo__', null],
             ['__FOO__', '__FOO__', null],
             ['__FOO_BAR__', '__FOO_BAR__', null],
+            ['__FOO_BAR__-baz', '__FOO_BAR__-baz', null],
         ];
     }
 
@@ -574,6 +590,10 @@ class HtmlHelperTest extends TestCase
             ['<circle id="foo-bar"></circle><use xlink:href="#foo-bar"></use>', '<circle id="bar"></circle><use xlink:href="#bar"></use>', 'foo', false],
             // https://github.com/craftcms/cms/pull/13251
             ['<style>.foo-a, .foo-b:hover</style>', '<style>.a, .b:hover</style>', 'foo', true],
+            ['<div id="foo-bar"></div><div data-reverse-target="#foo-bar, .foo"></div>', '<div id="bar"></div><div data-reverse-target="#bar, .foo"></div>', 'foo', false],
+            ['<div id="foo-bar"></div><div data-reverse-target="#foo-bar, #foo-bar .foo"></div>', '<div id="bar"></div><div data-reverse-target="#bar, #bar .foo"></div>', 'foo', false],
+            ['<div id="foo-bar"></div><div data-target-prefix="#foo-"></div>', '<div id="bar"></div><div data-target-prefix="#"></div>', 'foo', false],
+            ['<div id="foo-bar"></div><div data-target-prefix></div>', '<div id="bar"></div><div data-target-prefix></div>', 'foo', false],
         ];
     }
 

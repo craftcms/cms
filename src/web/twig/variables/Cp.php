@@ -10,8 +10,7 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
-use craft\enums\LicenseKeyStatus;
-use craft\errors\InvalidPluginException;
+use craft\enums\CmsEdition;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -21,6 +20,7 @@ use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
@@ -35,6 +35,7 @@ use SplFileInfo;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\helpers\Inflector;
 
 /**
  * Control panel functions
@@ -207,7 +208,6 @@ class Cp extends Component
      */
     public function nav(): array
     {
-        $craftPro = Craft::$app->getEdition() === Craft::Pro;
         $isAdmin = Craft::$app->getUser()->getIsAdmin();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -251,7 +251,10 @@ class Cp extends Component
             ];
         }
 
-        if ($craftPro && Craft::$app->getUser()->checkPermission('editUsers')) {
+        if (
+            Craft::$app->edition !== CmsEdition::Solo &&
+            Craft::$app->getUser()->checkPermission('editUsers')
+        ) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
@@ -273,7 +276,7 @@ class Cp extends Component
         }
 
         if ($isAdmin) {
-            if ($craftPro && $generalConfig->enableGql) {
+            if ($generalConfig->enableGql) {
                 $subNavItems = [];
 
                 if ($generalConfig->allowAdminChanges) {
@@ -337,12 +340,12 @@ class Cp extends Component
             ];
         }
 
-        // Allow plugins to modify the nav
-        $event = new RegisterCpNavItemsEvent([
-            'navItems' => $navItems,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
-        $navItems = $event->navItems;
+        // Fire a 'registerCpNavItems' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_CP_NAV_ITEMS)) {
+            $event = new RegisterCpNavItemsEvent(['navItems' => $navItems]);
+            $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
+            $navItems = $event->navItems;
+        }
 
         // Figure out which item is selected, and normalize the items
         $path = Craft::$app->getRequest()->getPathInfo();
@@ -360,9 +363,14 @@ class Cp extends Component
                     $item['subnav'] = false;
                 }
                 $foundSelectedItem = true;
+
+                // Modify aria-current value for exact page vs. subpages
+                $item['linkAttributes']['aria']['current'] = $item['url'] === $path ? 'page' : 'true';
             } else {
                 $item['sel'] = false;
-                $item['subnav'] = false;
+                if (!isset($item['subnav'])) {
+                    $item['subnav'] = false;
+                }
             }
 
             if (!isset($item['id'])) {
@@ -429,17 +437,17 @@ class Cp extends Component
 
         $label = Craft::t('app', 'Content');
 
-        $settings[$label]['fields'] = [
-            'iconMask' => '@app/icons/light/pen-to-square.svg',
-            'label' => Craft::t('app', 'Fields'),
+        $settings[$label]['sections'] = [
+            'iconMask' => '@app/icons/light/newspaper.svg',
+            'label' => Craft::t('app', 'Sections'),
         ];
         $settings[$label]['entry-types'] = [
             'iconMask' => '@app/icons/light/files.svg',
             'label' => Craft::t('app', 'Entry Types'),
         ];
-        $settings[$label]['sections'] = [
-            'iconMask' => '@app/icons/light/newspaper.svg',
-            'label' => Craft::t('app', 'Sections'),
+        $settings[$label]['fields'] = [
+            'iconMask' => '@app/icons/light/pen-to-square.svg',
+            'label' => Craft::t('app', 'Fields'),
         ];
         $settings[$label]['globals'] = [
             'iconMask' => '@app/icons/light/globe.svg',
@@ -456,14 +464,13 @@ class Cp extends Component
 
         $label = Craft::t('app', 'Media');
 
-        $settings[$label]['filesystems'] = [
-            'iconMask' => '@app/icons/light/folder-open.svg',
-            'label' => Craft::t('app', 'Filesystems'),
-        ];
-
         $settings[$label]['assets'] = [
             'iconMask' => '@app/icons/light/image.svg',
             'label' => Craft::t('app', 'Assets'),
+        ];
+        $settings[$label]['filesystems'] = [
+            'iconMask' => '@app/icons/light/folder-open.svg',
+            'label' => Craft::t('app', 'Filesystems'),
         ];
 
         $label = Craft::t('app', 'Plugins');
@@ -480,13 +487,14 @@ class Cp extends Component
             }
         }
 
-        // Allow plugins to modify the settings
-        $event = new RegisterCpSettingsEvent([
-            'settings' => $settings,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_CP_SETTINGS, $event);
+        // Fire a 'registerCpSettings' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_CP_SETTINGS)) {
+            $event = new RegisterCpSettingsEvent(['settings' => $settings]);
+            $this->trigger(self::EVENT_REGISTER_CP_SETTINGS, $event);
+            return $event->settings;
+        }
 
-        return $event->settings;
+        return $settings;
     }
 
     /**
@@ -514,98 +522,56 @@ class Cp extends Component
      * Returns info about the active trials.
      *
      * @return array|null
-     * @since 4.4.15
+     * @internal
      */
     public function trialInfo(): ?array
     {
-        $cache = Craft::$app->getCache();
-        $updatesService = Craft::$app->getUpdates();
+        $issues = Collection::make(App::licensingIssues(false));
 
-        if (!$cache->exists('licenseInfo') && $updatesService->getIsUpdateInfoCached()) {
+        if ($issues->isEmpty()) {
             return null;
         }
 
-        $resolvableLicenseItems = [];
-        $hasCraftTrial = false;
-        $trialPluginCount = 0;
-        $trialPluginNames = [];
-        $allLicenseInfo = $cache->get('licenseInfo') ?: [];
-        $pluginsService = Craft::$app->getPlugins();
+        $cmsIssues = $issues->filter(fn($issue) => in_array($issue[2]['type'], ['cms-edition', 'cms-renewal']));
+        $pluginEditionIssues = $issues->filter(fn($issue) => $issue[2]['type'] === 'plugin-edition');
+        $pluginRenewalIssues = $issues->filter(fn($issue) => $issue[2]['type'] === 'plugin-renewal');
 
-        foreach ($allLicenseInfo as $handle => $licenseInfo) {
-            $isCraft = $handle === 'craft';
-
-            if ($isCraft) {
-                $editions = ['solo', 'pro'];
-                $currentEdition = Craft::$app->getEditionHandle();
-            } else {
-                if (!str_starts_with($handle, 'plugin-')) {
-                    continue;
-                }
-                $handle = StringHelper::removeLeft($handle, 'plugin-');
-
-                try {
-                    $pluginInfo = $pluginsService->getPluginInfo($handle);
-                } catch (InvalidPluginException $e) {
-                    continue;
-                }
-
-                $plugin = $pluginsService->getPlugin($handle);
-                if (!$plugin) {
-                    continue;
-                }
-
-                $pluginName = $plugin->name;
-                $editions = $plugin::editions();
-                $currentEdition = $pluginInfo['edition'];
-            }
-
-            $resolvableLicenseItem = null;
-
-            if ($licenseInfo['status'] === LicenseKeyStatus::Trial->value) {
-                $resolvableLicenseItem = array_filter([
-                    'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
-                    'plugin' => !$isCraft ? $handle : null,
-                    'licenseId' => $licenseInfo['id'],
-                    'edition' => $currentEdition,
-                ]);
-            } elseif ($licenseInfo['edition'] !== $currentEdition) {
-                $currentEditionIdx = array_search($currentEdition, $editions);
-                $licenseEditionIdx = array_search($licenseInfo['edition'], $editions);
-                if ($currentEditionIdx !== false && $licenseEditionIdx !== false && $currentEditionIdx > $licenseEditionIdx) {
-                    $resolvableLicenseItem = [
-                        'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
-                        'edition' => $currentEdition,
-                        'licenseId' => $licenseInfo['id'],
-                    ];
-                }
-            }
-
-            if ($resolvableLicenseItem) {
-                $resolvableLicenseItems[] = $resolvableLicenseItem;
-                if ($isCraft) {
-                    $hasCraftTrial = true;
+        $names = $cmsIssues->map(fn($issue) => $issue[0])->all();
+        foreach ([$pluginEditionIssues, $pluginRenewalIssues] as $group) {
+            /** @var Collection $group */
+            $count = $group->count();
+            if ($count === 1) {
+                $names[] = $group->first()[0];
+            } elseif ($count !== 0) {
+                if ($group->first()[2]['type'] === 'plugin-edition') {
+                    $name = Craft::t('app', '{count, spellout} {count, plural, =1{plugin} other{plugins}}', [
+                        'count' => $count,
+                    ]);
                 } else {
-                    $trialPluginCount++;
-                    /** @phpstan-ignore-next-line */
-                    $trialPluginNames[] = $pluginName;
+                    $name = Craft::t('app', '{count, spellout} plugin {count, plural, =1{update} other{updates}}', [
+                        'count' => $count,
+                    ]);
                 }
+                if (empty($names)) {
+                    $name = ucfirst($name);
+                }
+                $names[] = $name;
             }
         }
 
-        if (empty($resolvableLicenseItems)) {
-            return null;
-        }
+        $message = Craft::t('app', '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.', [
+            'names' => Inflector::sentence($names, lastWordConnector: sprintf(',%s', Craft::t('yii', ' and '))),
+            'total' => $issues->count(),
+        ]);
 
         $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
+            'items' => $issues->map(fn($issue) => $issue[2])->all(),
+        ]);
 
         return [
-            'hasCraftTrial' => $hasCraftTrial,
-            'trialPluginCount' => $trialPluginCount,
-            'trialPluginNames' => $trialPluginNames,
-            'cartUrl' => UrlHelper::urlWithParams("$consoleUrl/cart/new", [
-                'items' => $resolvableLicenseItems,
-            ]),
+            'message' => $message,
+            'cartUrl' => $cartUrl,
         ];
     }
 
@@ -649,6 +615,11 @@ class Cp extends Component
         if ($includeAliases) {
             $aliasSuggestions = [];
             foreach (Craft::$aliases as $alias => $path) {
+                // Don't ever suggest @web
+                if ($alias === '@web' || str_starts_with($alias, '@web/')) {
+                    continue;
+                }
+
                 if (is_array($path)) {
                     if (
                         isset($path[$alias]) &&
@@ -753,6 +724,50 @@ class Cp extends Component
     }
 
     /**
+     * Returns environment variable options for a language menu.
+     *
+     * @param bool $appOnly Whether to limit the env options to those that match available app locales
+     * @return array
+     * @since 5.0.0
+     */
+    public function getLanguageEnvOptions(bool $appOnly = false): array
+    {
+        $options = [];
+        if ($appOnly) {
+            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAppLocales());
+        } else {
+            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAllLocales());
+        }
+
+        foreach (array_keys($_SERVER) as $var) {
+            if (!is_string($var)) {
+                continue;
+            }
+            $value = App::env($var);
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $languageValue = null;
+            if (in_array($value, $allLanguages, true)) {
+                $languageValue = $value;
+            }
+
+            if ($languageValue !== null) {
+                $options[] = [
+                    'label' => "$$var",
+                    'value' => "$$var",
+                    'data' => [
+                        'hint' => $languageValue,
+                    ],
+                ];
+            }
+        }
+
+        return $this->_envOptions($options);
+    }
+
+    /**
      * @param array $options
      * @return array
      */
@@ -821,6 +836,62 @@ class Cp extends Component
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
+
+        return $options;
+    }
+
+    /**
+     * Returns all known language options for a language input.
+     *
+     * @param bool $showLocaleIds Whether to show the hint as locale id; e.g. en, en-GB
+     * @param bool $showLocalizedNames Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
+     * @param bool $appLocales Whether to limit the returned locales to just app locales (cp translation options) or show them all
+     * @return array
+     * @since 5.0.0
+     */
+    public function getLanguageOptions(
+        bool $showLocaleIds = false,
+        bool $showLocalizedNames = false,
+        bool $appLocales = false,
+    ): array {
+        $options = [];
+
+        $languageId = Craft::$app->getLocale()->getLanguageID();
+
+        if ($appLocales) {
+            $allLocales = Craft::$app->getI18n()->getAppLocales();
+        } else {
+            $allLocales = Craft::$app->getI18n()->getAllLocales();
+        }
+
+        ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
+
+        foreach ($allLocales as $locale) {
+            $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '';
+            $option = [
+                'label' => $locale->getDisplayName(Craft::$app->language),
+                'value' => $locale->id,
+                'data' => [
+                    'data' => [
+                        'keywords' => $name,
+                    ],
+                ],
+            ];
+
+            $hints = [];
+            if ($showLocaleIds) {
+                $hints[] = $locale->id;
+            }
+            if ($showLocalizedNames) {
+                $hints[] = $name;
+                $option['data']['data']['hintLang'] = $locale->id;
+            }
+            if (!empty($hints)) {
+                $option['data']['data']['hint'] = implode(', ', $hints);
+            }
+
+            $options[] = $option;
+        }
 
         return $options;
     }
@@ -983,11 +1054,16 @@ class Cp extends Component
      */
     public function prepFormActions(?array $formActions): ?array
     {
-        $event = new FormActionsEvent([
-            'formActions' => $formActions ?? [],
-        ]);
-        $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
-        return $event->formActions ?: null;
+        // Fire a 'registerFormActions' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_FORM_ACTIONS)) {
+            $event = new FormActionsEvent([
+                'formActions' => $formActions ?? [],
+            ]);
+            $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
+            return $event->formActions ?: null;
+        }
+
+        return $formActions;
     }
 
     /**

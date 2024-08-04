@@ -26,6 +26,8 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property string $transformSubpath The transform filesystem subpath for storing transforms
  * @property string $titleTranslationMethod
  * @property string|null $titleTranslationKeyFormat
+ * @property string $altTranslationMethod
+ * @property string|null $altTranslationKeyFormat
  * @property int $sortOrder Sort order
  * @property FieldLayout $fieldLayout Field layout
  * @mixin SoftDeleteBehavior

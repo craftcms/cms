@@ -114,6 +114,10 @@ Craft.Tabs = Garnish.Base.extend({
     return this.menu.find('a');
   },
 
+  getSelectedTabIndex: function () {
+    return this.$tabs.index(this.$selectedTab);
+  },
+
   selectTab: function (tab, focusTab = true) {
     const $tab = this._getTab(tab);
 
@@ -126,7 +130,7 @@ Craft.Tabs = Garnish.Base.extend({
     this.makeTabFocusable($tab);
 
     if (focusTab) {
-      $tab.trigger('focus');
+      $tab.focus();
     }
 
     this.scrollToTab($tab);
@@ -211,6 +215,10 @@ Craft.Tabs = Garnish.Base.extend({
   },
 
   _getTab: function (tab) {
+    if (typeof tab === 'number') {
+      tab = this.$tabs.eq(tab);
+    }
+
     if (tab instanceof jQuery) {
       return tab;
     }

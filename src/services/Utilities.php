@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\UtilityInterface;
+use craft\enums\CmsEdition;
 use craft\events\RegisterComponentTypesEvent;
 use craft\queue\QueueInterface;
 use craft\utilities\AssetIndexes;
@@ -72,7 +73,7 @@ class Utilities extends Component
             PhpInfo::class,
         ];
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition === CmsEdition::Pro) {
             $utilityTypes[] = SystemMessagesUtility::class;
         }
 
@@ -87,18 +88,25 @@ class Utilities extends Component
 
         $utilityTypes[] = ClearCaches::class;
         $utilityTypes[] = DeprecationErrors::class;
-        $utilityTypes[] = DbBackup::class;
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->backupCommand !== false) {
+            $utilityTypes[] = DbBackup::class;
+        }
+
         $utilityTypes[] = FindAndReplace::class;
         $utilityTypes[] = Migrations::class;
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $utilityTypes,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_UTILITIES, $event);
+        // Fire a 'registerUtilities' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_UTILITIES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $utilityTypes]);
+            $this->trigger(self::EVENT_REGISTER_UTILITIES, $event);
+            $utilityTypes = $event->types;
+        }
 
-        $disabledUtilities = array_flip(Craft::$app->getConfig()->getGeneral()->disabledUtilities);
+        $disabledUtilities = array_flip($generalConfig->disabledUtilities);
 
-        return array_values(array_filter($event->types, function(string $class) use ($disabledUtilities) {
+        return array_values(array_filter($utilityTypes, function(string $class) use ($disabledUtilities) {
             /** @var string|UtilityInterface $class */
             return !isset($disabledUtilities[$class::id()]);
         }));

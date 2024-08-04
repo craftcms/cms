@@ -126,6 +126,19 @@ class Sites extends Component
     public const EVENT_AFTER_DELETE_SITE = 'afterDeleteSite';
 
     /**
+     * This value can be configured as needed, but exists as a safeguard against performance issues.
+     *
+     * ::: warning
+     * Craft’s multi-site support is not designed to be infinitely scalable.
+     * Increase this limit at your own risk!
+     * :::
+     *
+     * @var int The maximum number of sites that can be created.
+     * @since 5.0.0
+     */
+    public int $maxSites = 100;
+
+    /**
      * @var MemoizableArray<SiteGroup>|null
      * @see _groups()
      */
@@ -634,6 +647,31 @@ class Sites extends Component
     }
 
     /**
+     * Returns sites by their language.
+     *
+     * @param string $language
+     * @param bool|null $withDisabled
+     * @return Site[]
+     * @since 4.9.0
+     */
+    public function getSitesByLanguage(string $language, ?bool $withDisabled = null): array
+    {
+        return ArrayHelper::where($this->_allSites($withDisabled), 'language', $language, true);
+    }
+
+    /**
+     * Returns the number of sites that can be created, based on [[$maxSites]].
+     *
+     * @return int
+     * @see $maxSites
+     * @since 5.0.0
+     */
+    public function getRemainingSites(): int
+    {
+        return max($this->maxSites - count($this->_allSitesById), 0);
+    }
+
+    /**
      * Saves a site.
      *
      * @param Site $site The site to be saved
@@ -645,6 +683,10 @@ class Sites extends Component
     public function saveSite(Site $site, bool $runValidation = true): bool
     {
         $isNewSite = !$site->id;
+
+        if ($isNewSite && !$this->getRemainingSites()) {
+            throw new Exception("Maximum number of sites cannot exceed $this->maxSites.");
+        }
 
         if (!empty($this->_allSitesById)) {
             $primarySite = $this->getPrimarySite();
@@ -800,7 +842,6 @@ class Sites extends Component
                     'elementType' => $elementType,
                     'criteria' => [
                         'siteId' => $oldPrimarySiteId,
-                        'status' => null,
                     ],
                     'siteId' => $site->id,
                 ]));
@@ -891,17 +932,16 @@ class Sites extends Component
             throw new Exception('You cannot delete the primary site.');
         }
 
-        // Fire a 'beforeDeleteSite' event
-        $event = new DeleteSiteEvent([
-            'site' => $site,
-            'transferContentTo' => $transferContentTo,
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_DELETE_SITE, $event);
-
-        // Make sure the event is giving us the go ahead
-        if (!$event->isValid) {
-            return false;
+        // Fire a 'beforeDeleteSite'
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE)) {
+            $event = new DeleteSiteEvent([
+                'site' => $site,
+                'transferContentTo' => $transferContentTo,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_DELETE_SITE, $event);
+            if (!$event->isValid) {
+                return false;
+            }
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -1099,6 +1139,7 @@ class Sites extends Component
     {
         $this->_allSitesById = null;
         $this->_enabledSitesById = null;
+        $this->_editableSiteIds = null;
         $this->_loadAllSites();
         Craft::$app->getIsMultiSite(true);
     }
@@ -1334,7 +1375,7 @@ SQL;
         // Set the new primary site by forcing a reload from the DB.
         $this->refreshSites();
 
-        // Fire an afterChangePrimarySite event
+        // Fire an 'afterChangePrimarySite' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {
             $this->trigger(self::EVENT_AFTER_CHANGE_PRIMARY_SITE, new SiteEvent([
                 'site' => $this->_primarySite,

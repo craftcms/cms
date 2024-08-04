@@ -19,8 +19,10 @@ use craft\debug\UserPanel;
 use craft\errors\ExitException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
@@ -35,7 +37,6 @@ use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
-use yii\base\Response as BaseResponse;
 use yii\db\Exception as DbException;
 use yii\debug\Module as YiiDebugModule;
 use yii\debug\panels\AssetPanel;
@@ -48,7 +49,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
-use yii\web\Response;
+use yii\web\Response as BaseResponse;
 use yii\web\UnauthorizedHttpException;
 
 /**
@@ -56,13 +57,13 @@ use yii\web\UnauthorizedHttpException;
  *
  * An instance of the Web Application class is globally accessible to web requests in Craft via [[\Craft::$app|`Craft::$app`]].
  *
- * @property Request $request The request component
- * @property \craft\web\Response $response The response component
- * @property Session $session The session component
- * @property UrlManager $urlManager The URL manager for this application
- * @property User $user The user component
+ * @property-read Request $request The request component
+ * @property-read Response $response The response component
+ * @property-read Session $session The session component
+ * @property-read UrlManager $urlManager The URL manager for this application
+ * @property-read User $user The user component
  * @method Request getRequest() Returns the request component.
- * @method \craft\web\Response getResponse() Returns the response component.
+ * @method Response getResponse() Returns the response component.
  * @method Session getSession() Returns the session component.
  * @method UrlManager getUrlManager() Returns the URL manager for this application.
  * @method User getUser() Returns the user component.
@@ -152,16 +153,16 @@ class Application extends \yii\web\Application
      * @param Request $request the request to be handled
      * @param bool $skipSpecialHandling Whether to skip the special case request handling stuff and go straight to
      * the normal routing logic
-     * @return Response the resulting response
+     * @return BaseResponse the resulting response
      * @throws Throwable if reasons
      */
-    public function handleRequest($request, bool $skipSpecialHandling = false): Response
+    public function handleRequest($request, bool $skipSpecialHandling = false): BaseResponse
     {
         if (!$skipSpecialHandling) {
             // Process resource requests before anything else
             $this->_processResourceRequest($request);
 
-            // Disable read/write splitting for POST requests
+            // Disable read/write splitting for most POST requests
             if (
                 $request->getIsPost() &&
                 !in_array($request->getActionSegments(), [
@@ -171,7 +172,9 @@ class Application extends \yii\web\Application
                     ['element-indexes', 'get-elements'],
                     ['element-indexes', 'get-more-elements'],
                     ['element-indexes', 'get-source-tree-html'],
-                ])
+                    ['graphql', 'api'],
+                ]) &&
+                !$request->getIsGraphql()
             ) {
                 $this->getDb()->enableReplicas = false;
             }
@@ -179,7 +182,7 @@ class Application extends \yii\web\Application
             $headers = $this->getResponse()->getHeaders();
             $generalConfig = $this->getConfig()->getGeneral();
 
-            if ($generalConfig->permissionsPolicyHeader) {
+            if ($generalConfig->permissionsPolicyHeader && $request->getIsSiteRequest()) {
                 $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
             }
 
@@ -279,12 +282,26 @@ class Application extends \yii\web\Application
                     }
                 }
 
-                // If this is a CP request, see if the user is expected to have 2FA enabled
                 if (!$userSession->getIsGuest()) {
+                    // See if the user is expected to have 2FA enabled
                     $auth = $this->getAuth();
                     $user = $userSession->getIdentity();
                     if ($auth->is2faRequired($user) && !$auth->hasActiveMethod($user)) {
                         return $this->runAction('users/setup-2fa');
+                    }
+
+                    if (!$this->getCanTestEditions()) {
+                        // Are there are any licensing issues cached?
+                        $licenseIssues = App::licensingIssues(false);
+                        if (!empty($licenseIssues)) {
+                            $hash = App::licensingIssuesHash($licenseIssues);
+                            if ($this->_showLicensingIssuesScreen($hash)) {
+                                return $this->runAction('app/licensing-issues', [
+                                    'issues' => $licenseIssues,
+                                    'hash' => $hash,
+                                ]);
+                            }
+                        }
                     }
                 }
             }
@@ -304,17 +321,34 @@ class Application extends \yii\web\Application
         }
     }
 
+    private function _showLicensingIssuesScreen(string $hash = null): bool
+    {
+        $cookie = $this->request->getCookies()->get(App::licenseShunCookieName());
+        if (!$cookie) {
+            return true;
+        }
+
+        // the cookie is only valid if it's for the same set of issues we're currently seeing
+        $data = Json::decode($cookie->value);
+        if ($data['hash'] !== $hash) {
+            return true;
+        }
+
+        // if the cookie was created earlier today, let them pass
+        return !DateTimeHelper::isToday($data['timestamp']);
+    }
+
     /**
      * @inheritdoc
      * @param string $route
      * @param array $params
-     * @return Response|null The result of the action, normalized into a Response object
+     * @return BaseResponse|null The result of the action, normalized into a Response object
      */
     public function runAction($route, $params = []): ?BaseResponse
     {
         $result = parent::runAction($route, $params);
 
-        if ($result === null || $result instanceof Response) {
+        if ($result === null || $result instanceof BaseResponse) {
             return $result;
         }
 
@@ -357,10 +391,8 @@ class Application extends \yii\web\Application
             return;
         }
 
-        @FileHelper::createDirectory($resourceBasePath);
-
-        if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
-            throw new InvalidConfigException($resourceBasePath . ' doesn’t exist or isn’t writable by PHP.');
+        if (!@FileHelper::createDirectory($resourceBasePath)) {
+            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
         }
     }
 
@@ -543,12 +575,12 @@ class Application extends \yii\web\Application
      * Processes install requests.
      *
      * @param Request $request
-     * @return null|Response
+     * @return null|BaseResponse
      * @throws NotFoundHttpException
      * @throws ServiceUnavailableHttpException
      * @throws YiiExitException
      */
-    private function _processInstallRequest(Request $request): ?Response
+    private function _processInstallRequest(Request $request): ?BaseResponse
     {
         $isCpRequest = $request->getIsCpRequest();
         $isInstalled = $this->getIsInstalled();
@@ -602,10 +634,10 @@ class Application extends \yii\web\Application
      * Processes action requests.
      *
      * @param Request $request
-     * @return Response|null
+     * @return BaseResponse|null
      * @throws Throwable if reasons
      */
-    private function _processActionRequest(Request $request): ?Response
+    private function _processActionRequest(Request $request): ?BaseResponse
     {
         if ($request->getIsActionRequest()) {
             $route = implode('/', $request->getActionSegments());
@@ -613,7 +645,13 @@ class Application extends \yii\web\Application
             try {
                 Craft::debug("Route requested: '$route'", __METHOD__);
                 $this->requestedRoute = $route;
-                return $this->runAction($route, $_GET);
+                $response = $this->runAction($route, $_GET);
+
+                // Return the response for OPTIONS requests that return null
+                // to support the CORS filter: https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
+                return $request->getIsOptions()
+                    ? ($response ?? $this->getResponse())
+                    : $response;
             } catch (Throwable $e) {
                 $this->_unregisterDebugModule();
                 if ($e instanceof InvalidRouteException) {
@@ -632,9 +670,9 @@ class Application extends \yii\web\Application
      * meet Craft’s minimum requirements.
      *
      * @param Request $request
-     * @return Response|null
+     * @return BaseResponse|null
      */
-    private function _processRequirementsCheck(Request $request): ?Response
+    private function _processRequirementsCheck(Request $request): ?BaseResponse
     {
         // Only run for control panel requests and if we’re not in the middle of an update.
         if (
@@ -659,11 +697,11 @@ class Application extends \yii\web\Application
 
     /**
      * @param Request $request
-     * @return Response|null
+     * @return BaseResponse|null
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
      */
-    private function _processUpdateLogic(Request $request): ?Response
+    private function _processUpdateLogic(Request $request): ?BaseResponse
     {
         $this->_unregisterDebugModule();
 

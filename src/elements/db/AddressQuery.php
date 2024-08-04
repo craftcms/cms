@@ -14,20 +14,18 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Address;
-use craft\elements\ElementCollection;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\db\Connection;
 
 /**
  * AddressQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
  *
- * @method Address[]|array all($db = null)
- * @method Address|array|null one($db = null)
- * @method Address|array|null nth(int $n, ?Connection $db = null)
- * @method ElementCollection<Address> collect($db = null)
+ * @template TKey of array-key
+ * @template TElement of Address
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  * @doc-path addresses.md
@@ -281,6 +279,26 @@ class AddressQuery extends ElementQuery
      * @since 5.0.0
      */
     public ?string $addressLine2 = null;
+
+    /**
+     * @var string|null Narrows the query results based on the third address line the addresses have.
+     * ---
+     * ```php
+     * // fetch addresses by address line 3
+     * $addresses = \craft\elements\Address::find()
+     *     ->addressLine3('Suite 212')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch addresses by address line 3 #}
+     * {% set addresses = craft.addresses()
+     *   .addressLine3('Suite 212')
+     *   .all() %}
+     * ```
+     * @used-by addressLine3()
+     * @since 5.0.0
+     */
+    public ?string $addressLine3 = null;
 
     /**
      * @var string|null Narrows the query results based on the full name the addresses have.
@@ -734,6 +752,45 @@ class AddressQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results based on the third address line the addresses have.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches addresses…
+     * | - | -
+     * | `'Suite 212'` | with an addressLine3 of `Suite 212`.
+     * | `'*Suite*'` | with an addressLine3 containing `Suite`.
+     * | `'Suite*'` | with an addressLine3 beginning with `Suite`.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch addresses at Suite 212 #}
+     * {% set {elements-var} = {twig-method}
+     *   .addressLine3('Suite 212')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch addresses at Suite 212
+     * ${elements-var} = {php-method}
+     *     ->addressLine3('Suite 212')
+     *     ->all();
+     * ```
+     *
+     * @param string|null $value The property value
+     * @return static self reference
+     * @uses $addressLine3
+     * @since 5.0.0
+     */
+    public function addressLine3(?string $value): static
+    {
+        $this->addressLine3 = $value;
+
+        return $this;
+    }
+
+    /**
      * Narrows the query results based on the full name the addresses have.
      *
      * Possible values include:
@@ -946,9 +1003,7 @@ class AddressQuery extends ElementQuery
      * | Value | Fetches addresses…
      * | - | -
      * | `1` | created for an element with an ID of 1.
-     * | `'not 1'` | not created for an element with an ID of 1.
      * | `[1, 2]` | created for an element with an ID of 1 or 2.
-     * | `['not', 1, 2]` | not created for an element with an ID of 1 or 2.
      *
      * ---
      *
@@ -1146,7 +1201,7 @@ class AddressQuery extends ElementQuery
 
         $this->joinElementTable(Table::ADDRESSES);
 
-        $this->query->select([
+        $this->query->addSelect([
             'addresses.id',
             'addresses.fieldId',
             'addresses.primaryOwnerId',
@@ -1158,6 +1213,7 @@ class AddressQuery extends ElementQuery
             'addresses.sortingCode',
             'addresses.addressLine1',
             'addresses.addressLine2',
+            'addresses.addressLine3',
             'addresses.organization',
             'addresses.organizationTaxId',
             'addresses.fullName',
@@ -1209,11 +1265,11 @@ class AddressQuery extends ElementQuery
             }
 
             $this->defaultOrderBy = ['elements_owners.sortOrder' => SORT_ASC];
-        } elseif (isset($this->ownerId)) {
-            if (!$this->ownerId) {
+        } elseif (isset($this->primaryOwnerId) || isset($this->ownerId)) {
+            if (!$this->primaryOwnerId && !$this->ownerId) {
                 throw new QueryAbortedException();
             }
-            $this->subQuery->andWhere(['addresses.primaryOwnerId' => $this->ownerId]);
+            $this->subQuery->andWhere(['addresses.primaryOwnerId' => $this->primaryOwnerId ?? $this->ownerId]);
         }
 
         if ($this->countryCode) {
@@ -1254,6 +1310,10 @@ class AddressQuery extends ElementQuery
 
         if ($this->addressLine2) {
             $this->subQuery->andWhere(Db::parseParam('addresses.addressLine2', $this->addressLine2));
+        }
+
+        if ($this->addressLine3) {
+            $this->subQuery->andWhere(Db::parseParam('addresses.addressLine3', $this->addressLine3));
         }
 
         if ($this->lastName) {
@@ -1327,11 +1387,18 @@ class AddressQuery extends ElementQuery
     {
         $tags = [];
 
+        if ($this->fieldId) {
+            foreach ($this->fieldId as $fieldId) {
+                $tags[] = "field:$fieldId";
+            }
+        }
+
         if ($this->primaryOwnerId) {
             foreach ($this->primaryOwnerId as $ownerId) {
                 $tags[] = "element::$ownerId";
             }
         }
+
         if ($this->ownerId) {
             foreach ($this->ownerId as $ownerId) {
                 $tags[] = "element::$ownerId";

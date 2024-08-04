@@ -21,6 +21,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property string $name Name
  * @property string $handle Handle
  * @property string|null $icon Icon
+ * @property string|null $color Color
  * @property bool $hasTitleField Has title field
  * @property string $titleTranslationMethod Title translation method
  * @property string|null $titleTranslationKeyFormat Title translation key format

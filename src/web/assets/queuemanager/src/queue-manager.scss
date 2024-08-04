@@ -1,0 +1,9 @@
+@charset "UTF-8";
+@import '@craftcms/sass/mixins';
+
+#queue-manager-utility {
+  a {
+    color: var(--link-color);
+    cursor: pointer;
+  }
+}

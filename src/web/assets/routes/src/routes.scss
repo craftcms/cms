@@ -95,15 +95,25 @@
   align-items: stretch;
 
   .body {
-    height: calc(100% - 119px);
+    height: calc(100% - 113px);
     overflow: auto;
 
     .uri {
       width: auto;
       cursor: text;
+      @include padding-left(0);
+      padding-top: 0;
+      padding-bottom: 0;
 
       input[type='text'] {
         box-shadow: none;
+        box-sizing: content-box;
+        padding-top: 6px;
+        padding-bottom: 6px;
+
+        &:first-child {
+          @include padding-left(9px);
+        }
       }
 
       .token {
@@ -136,7 +146,6 @@
   .delete {
     display: block;
     @include floatleft;
-    margin-top: 7px;
     color: var(--disabled-color);
   }
 }

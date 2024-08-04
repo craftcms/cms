@@ -61,7 +61,7 @@ class Gc extends Component
     /**
      * @var bool whether [[hardDelete()]] should delete *all* soft-deleted rows,
      * rather than just the ones that were deleted long enough ago to be ready
-     * for hard-deletion per the <config4:softDeleteDuration> config setting.
+     * for hard-deletion per the <config5:softDeleteDuration> config setting.
      */
     public bool $deleteAllTrashed = false;
 
@@ -123,20 +123,25 @@ class Gc extends Component
         $this->deletePartialElements(User::class, Table::USERS, 'id');
 
         $this->_deleteUnsupportedSiteEntries();
+        $this->_deleteOrphanedNestedEntries();
+
+        // Fire a 'run' event
+        // Note this should get fired *before* orphaned drafts & revisions are deleted
+        // (see https://github.com/craftcms/cms/issues/14309)
+        if ($this->hasEventHandlers(self::EVENT_RUN)) {
+            $this->trigger(self::EVENT_RUN);
+        }
 
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
         $this->_deleteOrphanedRelations();
         $this->_deleteOrphanedStructureElements();
 
-        // Fire a 'run' event
-        if ($this->hasEventHandlers(self::EVENT_RUN)) {
-            $this->trigger(self::EVENT_RUN);
-        }
+        $this->_hardDeleteStructures();
 
         $this->hardDelete([
-            Table::STRUCTURES,
             Table::FIELDLAYOUTS,
+            Table::FIELDS,
             Table::SITES,
         ]);
 
@@ -183,7 +188,7 @@ class Gc extends Component
     /**
      * Hard-deletes eligible elements.
      *
-     * Any soft-deleted block elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
+     * Any soft-deleted nested elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
      *
      * @since 4.0.0
      */
@@ -194,11 +199,11 @@ class Gc extends Component
         }
 
         $normalElementTypes = [];
-        $blockElementTypes = [];
+        $nestedElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             if (is_subclass_of($elementType, NestedElementInterface::class)) {
-                $blockElementTypes[] = $elementType;
+                $nestedElementTypes[] = $elementType;
             } else {
                 $normalElementTypes[] = $elementType;
             }
@@ -214,17 +219,20 @@ class Gc extends Component
             ]);
         }
 
-        if ($blockElementTypes) {
-            // Only hard-delete block elements that don't have any revisions
+        if (!empty($nestedElementTypes)) {
             $elementsTable = Table::ELEMENTS;
             $revisionsTable = Table::REVISIONS;
+            $elementsOwnersTable = Table::ELEMENTS_OWNERS;
+
+            // first hard-delete nested elements which are not nested (owned) and that don't have any revisions
             $params = [];
             $conditionSql = $this->db->getQueryBuilder()->buildCondition([
                 'and',
                 $this->_hardDeleteCondition('e'),
                 [
-                    'e.type' => $blockElementTypes,
+                    'e.type' => $nestedElementTypes,
                     'r.id' => null,
+                    'eo.elementId' => null,
                 ],
             ], $params);
 
@@ -232,6 +240,7 @@ class Gc extends Component
                 $sql = <<<SQL
 DELETE [[e]].* FROM $elementsTable [[e]]
 LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = COALESCE([[e.canonicalId]], [[e.id]])
 WHERE $conditionSql
 SQL;
             } else {
@@ -239,6 +248,36 @@ SQL;
 DELETE FROM $elementsTable
 USING $elementsTable [[e]]
 LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = COALESCE([[e.canonicalId]], [[e.id]])
+WHERE
+  $elementsTable.[[id]] = [[e.id]] AND $conditionSql
+SQL;
+            }
+
+            $this->db->createCommand($sql, $params)->execute();
+
+            // then hard-delete any nested elements that don't have any revisions, including nested ones
+            $params = [];
+            $conditionSql = $this->db->getQueryBuilder()->buildCondition([
+                'and',
+                $this->_hardDeleteCondition('e'),
+                [
+                    'e.type' => $nestedElementTypes,
+                    'r.id' => null,
+                ],
+            ], $params);
+
+            if ($this->db->getIsMysql()) {
+                $sql = <<<SQL
+DELETE [[e]].* FROM $elementsTable [[e]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])
+WHERE $conditionSql
+SQL;
+            } else {
+                $sql = <<<SQL
+DELETE FROM $elementsTable
+USING $elementsTable [[e]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])
 WHERE
   $elementsTable.[[id]] = [[e.id]] AND $conditionSql
 SQL;
@@ -486,6 +525,40 @@ SQL;
     }
 
     /**
+     * Deletes any orphaned nested entries.
+     */
+    private function _deleteOrphanedNestedEntries(): void
+    {
+        $this->_stdout('    > deleting orphaned nested entries ... ');
+
+        $now = Db::prepareDateForDb(new DateTime());
+        $elementsTable = Table::ELEMENTS;
+        $entriesTable = Table::ENTRIES;
+        $elementsOwnersTable = Table::ELEMENTS_OWNERS;
+
+        if ($this->db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[el]].* FROM $elementsTable [[el]]
+INNER JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = [[el.id]]
+WHERE [[en.fieldId]] IS NOT NULL AND [[eo.elementId]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $elementsTable
+USING $elementsTable [[el]]
+INNER JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = [[el.id]]
+WHERE [[en.fieldId]] IS NOT NULL AND [[eo.elementId]] IS NULL
+SQL;
+        }
+
+        $this->db->createCommand($sql)->execute();
+
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.
      */
     private function _deleteOrphanedDraftsAndRevisions(): void
@@ -578,6 +651,65 @@ SQL;
 
         $this->db->createCommand($sql)->execute();
         $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Hard delete structures data
+     * Any soft-deleted structure elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
+     *
+     * @return void
+     * @throws \yii\db\Exception
+     */
+    private function _hardDeleteStructures(): void
+    {
+        // get IDs of structures that can be deleted;
+        // those are the ones for which the elements don't have any revisions
+        $structuresTable = Table::STRUCTURES;
+        $structureElementsTable = Table::STRUCTUREELEMENTS;
+        $elementsTable = Table::ELEMENTS;
+        $revisionsTable = Table::REVISIONS;
+
+        $params = [];
+
+        $structureIds = (new Query())
+            ->select('[[s.id]]')
+            ->distinct()
+            ->from(['s' => $structuresTable])
+            ->leftJoin(['se' => $structureElementsTable], '[[s.id]] = [[se.structureId]]')
+            ->leftJoin(['e' => $elementsTable], '[[e.id]] = [[se.elementId]]')
+            ->leftJoin(['r' => $revisionsTable], '[[r.canonicalId]] = coalesce([[e.canonicalId]],[[e.id]])')
+            ->where([
+                'and',
+                $this->_hardDeleteCondition('s'),
+                [
+                    'r.canonicalId' => null,
+                ],
+            ])
+            ->column();
+
+        if (!empty($structureIds)) {
+            $ids = implode(',', $structureIds);
+            $conditionSql = $this->db->getQueryBuilder()->buildCondition($this->_hardDeleteCondition('s'), $params);
+
+            // and now perform the actual deletion based on those IDs
+            if ($this->db->getIsMysql()) {
+                $sql = <<<SQL
+DELETE [[s]].* FROM $structuresTable [[s]]
+WHERE [[s.id]] NOT IN ($ids)
+AND $conditionSql
+SQL;
+            } else {
+                $sql = <<<SQL
+DELETE FROM $structuresTable
+USING $structuresTable [[s]]
+WHERE 
+    $structuresTable.[[id]] = [[s.id]] AND 
+    [[s.id]] NOT IN ($ids) AND
+    $conditionSql
+SQL;
+            }
+            $this->db->createCommand($sql, $params)->execute();
+        }
     }
 
     private function _gcCache(): void

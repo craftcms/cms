@@ -1,8 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
-
-import $ from 'jquery';
-import Garnish from '../../../garnish/src';
+/** global: $ */
+/** global: jQuery */
 
 /**
  * Element index class
@@ -416,16 +415,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.clearSearch(true);
 
         if (!Garnish.isMobileBrowser(true)) {
-          this.$search.trigger('focus');
+          this.$search.focus();
         }
       });
 
       // Autofocus the Search box, unless this is an embedded index
       if (
         this.settings.context !== 'embedded-index' &&
-        !Garnish.isMobileBrowser(true)
+        !Garnish.isMobileBrowser(true) &&
+        Craft.disableAutofocus === false
       ) {
-        this.$search.trigger('focus');
+        this.$search.focus();
       }
 
       // View menus
@@ -480,7 +480,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // source path is selected
       let stepKey;
       if (this.settings.context === 'index') {
-        stepKey = this.getSelectedSourceState('sourcePathStep');
+        if (queryParams.sourcePathStep !== undefined) {
+          stepKey = queryParams.sourcePathStep;
+        } else {
+          stepKey = this.getSelectedSourceState('sourcePathStep');
+        }
       } else {
         stepKey = this.instanceState.sourcePathStep || null;
       }
@@ -489,8 +493,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       const sourcePath = this.getDefaultSourcePath();
 
-      // If no default source path was explicitly configured, use the localStorage key
-      if (!sourcePath && stepKey) {
+      // If no default source path was explicitly configured, or it's set to the root of the volume, use the localStorage key
+      if ((!sourcePath || sourcePath.length == 1) && stepKey) {
         this.loadSourcePathByKey(stepKey).then((sourcePath) => {
           if (sourcePath) {
             // Filter out any source path steps that are above the source's root
@@ -510,6 +514,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
         this.afterSetInitialSource(queryParams);
       }
+
+      // Set visible source name on small/zoomed screens
+      this.updateMainHeading();
     },
 
     afterInit: function () {
@@ -618,7 +625,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     getSourceLabel: function () {
-      return this.$source.data('label');
+      return this.$source?.data('label');
     },
 
     getItemLabel: function () {
@@ -735,7 +742,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         .catch((e) => {
           if (!axios.isCancel(e)) {
             this.setIndexAvailable();
-            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+            Craft.cp.displayError(e?.response?.data?.message);
           }
         });
     },
@@ -766,6 +773,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       } else {
         $source.data('hasNestedSources', false);
       }
+    },
+
+    updateMainHeading: function () {
+      let $contentHeading = $('#content-heading');
+
+      if (!$contentHeading.length) {
+        $contentHeading = $('<span>', {
+          id: 'content-heading',
+        });
+
+        $contentHeading.appendTo('.screen-title');
+      }
+
+      $contentHeading.text(this.getSourceLabel());
     },
 
     deinitSource: function ($source) {
@@ -1218,10 +1239,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$clearSearchBtn.removeClass('hidden');
       this.searching = true;
       this.sortByScore = true;
-
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
     },
 
     clearSearch: function (updateElements) {
@@ -1249,10 +1266,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$clearSearchBtn.addClass('hidden');
       this.searching = false;
       this.sortByScore = false;
-
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
     },
 
     setInstanceState: function (key, value) {
@@ -1277,11 +1290,22 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return null;
       }
 
-      sourceKey = sourceKey.replace(/\/.*/, '');
+      if (typeof this.sourceStates[sourceKey] === 'undefined') {
+        // If this is a nested source key, see if we have a source state for the parent
+        const lastSlashPos = sourceKey.lastIndexOf('/');
+        if (lastSlashPos !== -1) {
+          return this.getSourceState(
+            sourceKey.substring(0, lastSlashPos),
+            key,
+            defaultValue
+          );
+        }
+      }
+
       const sourceState = this.sourceStates[sourceKey] || {};
 
       if (typeof key === 'undefined') {
-        return sourceState;
+        return Object.assign({}, sourceState);
       }
       if (typeof sourceState[key] !== 'undefined') {
         return sourceState[key];
@@ -1325,18 +1349,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       let sourceKey = '*';
       if (this.instanceState.selectedSource != undefined) {
         // otherwise do what we used to do
-        sourceKey = this.instanceState.selectedSource.replace(/\/.*/, '');
+        sourceKey = this.instanceState.selectedSource;
       }
 
       const sourceStates = this.sourceStates;
       sourceStates[sourceKey] = viewState;
-
-      // Clean up sourceStates while we're at it
-      for (let i in sourceStates) {
-        if (sourceStates.hasOwnProperty(i) && i.includes('/')) {
-          delete sourceStates[i];
-        }
-      }
 
       this.sourceStates = sourceStates;
     },
@@ -1392,7 +1409,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.$sourceActionsBtn = $('<button/>', {
         type: 'button',
-        class: 'btn settings icon menubtn',
+        class: 'btn action-btn hairline',
         title: Craft.t('app', 'Source settings'),
         'aria-label': Craft.t('app', 'Source settings'),
         'aria-controls': 'source-actions-menu',
@@ -1458,12 +1475,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     updateViewMenu: function () {
       if (
         !this.activeViewMenu ||
-        this.activeViewMenu !== this.viewMenus[this.rootSourceKey]
+        this.activeViewMenu !== this.viewMenus[this.sourceKey]
       ) {
         if (this.activeViewMenu) {
           this.activeViewMenu.hideTrigger();
         }
-        if (!this.viewMenus[this.rootSourceKey]) {
+        if (!this.viewMenus[this.sourceKey]) {
           if (
             !this.getViewModesForSource().find(
               (mode) => mode.mode === 'table'
@@ -1472,12 +1489,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           ) {
             return;
           }
-          this.viewMenus[this.rootSourceKey] = new ViewMenu(
-            this,
-            this.$rootSource
-          );
+          this.viewMenus[this.sourceKey] = new ViewMenu(this, this.$source);
         }
-        this.activeViewMenu = this.viewMenus[this.rootSourceKey];
+        this.activeViewMenu = this.viewMenus[this.sourceKey];
         this.activeViewMenu.showTrigger();
       }
     },
@@ -1536,7 +1550,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         context: this.settings.context,
         elementType: this.elementType,
         canHaveDrafts: this.settings.canHaveDrafts,
-        source: this.instanceState.selectedSource,
+        source: this.sourceKey,
         condition: this.settings.condition,
         referenceElementId: this.settings.referenceElementId,
         referenceElementSiteId: this.settings.referenceElementSiteId,
@@ -1547,6 +1561,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         paginated: this.paginated,
         selectable: this.selectable,
         sortable: this.sortable,
+        prevalidate: this.settings.prevalidate,
       };
 
       params.viewState.showHeaderColumn = this.settings.showHeaderColumn;
@@ -1622,8 +1637,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         if (preservePagination !== true) {
           this.setPage(1);
-          this._resetCount();
         }
+
+        this._resetCount();
 
         this._previousViewParams = this._viewParams;
         this._viewParams = this.getViewParams();
@@ -1694,7 +1710,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           .catch((e) => {
             if (!axios.isCancel(e)) {
               this.setIndexAvailable();
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              Craft.cp.displayError(e?.response?.data?.message);
             }
             reject(e);
           });
@@ -1868,9 +1884,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
           this.afterAction(action, params);
         } catch (e) {
-          Craft.cp.displayError(
-            e && e.response && e.response.data && e.response.data.message
-          );
+          Craft.cp.displayError(e?.response?.data?.message);
         } finally {
           this.setIndexAvailable();
         }
@@ -1963,7 +1977,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string}
      */
     getSelectedSortAttribute: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
+      $source = $source || this.$source;
 
       if ($source) {
         const attribute = this.getSourceState($source.data('key'), 'order');
@@ -1984,6 +1998,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      */
     getSelectedSortDirection: function ($source) {
       $source = $source || this.$source;
+
       if ($source) {
         const direction = this.getSourceState($source.data('key'), 'sort');
 
@@ -2015,9 +2030,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // If score, keep track of that separately
       if (attr === 'score') {
         this.sortByScore = true;
-        if (this.activeViewMenu) {
-          this.activeViewMenu.updateSortField();
-        }
         return;
       }
 
@@ -2062,11 +2074,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         sort: dir,
         orderHistory: history,
       });
-
-      // Update the view menu
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
 
       if (this.settings.context === 'index') {
         // Update the query string
@@ -2174,7 +2181,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.setInstanceState('selectedSource', this.sourceKey);
       this.sourceNav.selectItem($source);
 
-      Craft.cp.updateContentHeading();
+      this.updateMainHeading();
 
       if (this.searching) {
         // Clear the search value without causing it to update elements
@@ -2292,11 +2299,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.updateFilterBtn();
       }
 
+      this.onSelectSource();
+
       this.sourcePath =
         this.sourcePaths[this.sourceKey] ||
         this.$source.data('default-source-path');
-
-      this.onSelectSource();
 
       if (this.settings.context === 'index') {
         const urlParams = Craft.getQueryParams();
@@ -2317,14 +2324,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
+    getSourceData($source, key) {
+      $source ||= this.$source;
+      if (!$source) {
+        return undefined;
+      }
+      const data = $source.data(key);
+      if (data === undefined) {
+        const $parentSource = this.getParentSource($source);
+        if ($parentSource) {
+          return this.getSourceData($parentSource, key);
+        }
+      }
+      return data;
+    },
+
     /**
      * Returns the available sort attributes for a source (or the selected root source)
      * @param {jQuery} [$source]
      * @returns {Object[]}
      */
     getSortOptions: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
-      const sortOptions = ($source ? $source.data('sort-opts') : null) || [];
+      const sortOptions = this.getSourceData($source, 'sort-opts') || [];
 
       // Make sure there's at least one attribute
       if (!sortOptions.length) {
@@ -2356,24 +2377,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getDefaultSort: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
-      if ($source) {
-        let defaultSort = $source.data('default-sort');
-        if (defaultSort) {
-          if (typeof defaultSort === 'string') {
-            defaultSort = [defaultSort];
+      let defaultSort = this.getSourceData($source, 'default-sort');
+      if (defaultSort) {
+        if (typeof defaultSort === 'string') {
+          defaultSort = [defaultSort];
+        }
+
+        // Make sure it's valid
+        const sortOption = this.getSortOption(defaultSort[0], $source);
+        if (sortOption) {
+          // Fill in the default direction if it's not specified
+          if (!defaultSort[1]) {
+            defaultSort[1] = sortOption.defaultDir;
           }
 
-          // Make sure it's valid
-          const sortOption = this.getSortOption(defaultSort[0], $source);
-          if (sortOption) {
-            // Fill in the default direction if it's not specified
-            if (!defaultSort[1]) {
-              defaultSort[1] = sortOption.defaultDir;
-            }
-
-            return defaultSort;
-          }
+          return defaultSort;
         }
       }
 
@@ -2388,8 +2406,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]}
      */
     getTableColumnOptions: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
-      return ($source ? $source.data('table-col-opts') : null) || [];
+      return this.getSourceData($source, 'table-col-opts') || [];
     },
 
     /**
@@ -2411,8 +2428,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getDefaultTableColumns: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
-      return ($source ? $source.data('default-table-cols') : null) || [];
+      return this.getSourceData($source, 'default-table-cols') || [];
     },
 
     /**
@@ -2421,7 +2437,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getSelectedTableColumns: function ($source) {
-      $source = $source ? this.getRootSource($source) : this.$rootSource;
+      $source ||= this.$source;
       if ($source) {
         const attributes = this.getSourceState(
           $source.data('key'),
@@ -2480,7 +2496,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       viewModes.push({
         mode: 'cards',
         title: Craft.t('app', 'Display as cards'),
-        icon: 'cards',
+        icon: 'element-cards',
       });
 
       if (this.settings.allowedViewModes) {
@@ -2546,11 +2562,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.viewModeBtns[this._viewMode]
           .addClass('active')
           .attr('aria-pressed', 'true');
-      }
-
-      // Update the view menu
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
       }
     },
 
@@ -2917,10 +2928,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.status = queryParam = $option.data('status') || null;
       }
 
-      if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortField();
-      }
-
       if (this.settings.context === 'index') {
         Craft.setQueryParam('status', queryParam);
       }
@@ -2990,22 +2997,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               .data('sites')
               .toString()
               .split(',')
-              .some((siteId) => {
-                if (siteId == this.siteId) {
-                  return true;
-                }
-                // maybe UUIDs were used
-                if (siteId != parseInt(siteId)) {
-                  const site = Craft.sites.find(
-                    (site) => site.id == this.siteId
-                  );
-                  if (site && siteId == site.uid) {
-                    return true;
-                  }
-                }
-
-                return false;
-              }))
+              .some((siteId) => siteId == this.siteId))
         ) {
           $source.parent().removeClass('hidden');
           this.$visibleSources = this.$visibleSources.add($source);
@@ -3039,7 +3031,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       ev.stopPropagation();
     },
 
-    // Source managemnet
+    // Source management
     // -------------------------------------------------------------------------
 
     _getSourcesInList: function ($list, topLevel) {
@@ -3111,7 +3103,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // View
     // -------------------------------------------------------------------------
 
-    _updateView: function (params, response) {
+    async _updateView(params, response) {
       // Cleanup
       // -------------------------------------------------------------
 
@@ -3239,8 +3231,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // -------------------------------------------------------------
 
       this.$elements.html(response.html);
-      Craft.appendHeadHtml(response.headHtml);
-      Craft.appendBodyHtml(response.bodyHtml);
+      await Craft.appendHeadHtml(response.headHtml);
+      await Craft.appendBodyHtml(response.bodyHtml);
 
       // Batch actions setup
       // -------------------------------------------------------------
@@ -3299,11 +3291,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
           });
         }
-      } else {
+      } else if (this.$selectAllContainer.prop('nodeName') !== 'TH') {
         if (!this.$selectAllContainer.siblings().length) {
           this.$selectAllContainer.parent('.header').remove();
         }
         this.$selectAllContainer.remove();
+      }
+
+      if (this.selectable) {
+        const role = this.multiSelect ? 'checkbox' : 'radio';
+        this.$elements.find('.checkbox').attr('role', role);
+        if (!this.multiSelect) {
+          this.$elements.attr('role', 'radiogroup');
+        }
+      } else {
+        this.$elements.removeAttr('role');
       }
 
       // Exporters setup
@@ -3333,11 +3335,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           multiSelect: this.multiSelect,
           canSelectElement: this.settings.canSelectElement,
           checkboxMode: this.selectable,
+          waitForDoubleClicks: this.settings.waitForDoubleClicks,
           sortable: this.sortable,
           onSelectionChange: this._handleSelectionChange.bind(this),
           onSortChange: this.settings.onSortChange,
         },
-        this.getViewSettings()
+        this.getViewSettings(),
+        this.settings.viewSettings()
       );
 
       // Kill the old view class
@@ -3631,6 +3635,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           var limit = parseInt($limitField.find('input').val());
           if (limit && !isNaN(limit)) {
             params.criteria.limit = limit;
+          } else {
+            // don't set the default limit of 100
+            delete params.criteria.limit;
           }
         }
 
@@ -3645,7 +3652,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         )
           .catch((e) => {
             if (!axios.isCancel(e)) {
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              Craft.cp.displayError(e?.response?.data?.message);
             }
           })
           .finally(() => {
@@ -3760,6 +3767,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       disabledElementIds: [],
       selectable: false,
       multiSelect: false,
+      waitForDoubleClicks: false,
       canSelectElement: null,
       canDuplicateElements: (selectedItems) => true,
       onBeforeDuplicateElements: async (selectedItems) => {},
@@ -3768,6 +3776,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       onBeforeDeleteElements: async (selectedItems) => {},
       onDeleteElements: async (selectedItems) => {},
       sortable: false,
+      prevalidate: false,
       inlineEditable: null,
       actions: null,
       buttonContainer: null,
@@ -3783,6 +3792,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       preferStoredSource: false,
       showSourcePath: true,
       canHaveDrafts: false,
+      viewSettings: $.noop,
 
       elementTypeName: Craft.t('app', 'Element'),
       elementTypePluralName: Craft.t('app', 'Elements'),
@@ -3848,7 +3858,11 @@ const SourceNav = Garnish.Base.extend(
     handleKeypress: function (event) {
       const {keyCode} = event;
 
-      if (keyCode === Garnish.RETURN_KEY || keyCode === Garnish.SPACE_KEY) {
+      if (
+        (keyCode === Garnish.RETURN_KEY || keyCode === Garnish.SPACE_KEY) &&
+        !ev.shiftKey &&
+        !Garnish.isCtrlKeyPressed(ev)
+      ) {
         event.preventDefault();
         this.selectItem(event.target);
       }
@@ -3865,6 +3879,10 @@ const SourceNav = Garnish.Base.extend(
     },
 
     selectItem: function (item) {
+      if (item.length === 0) {
+        return;
+      }
+
       const $item = $(item);
       this.deselectAll();
 
@@ -3997,6 +4015,8 @@ const ViewMenu = Garnish.Base.extend({
 
     this.menu.on('show', () => {
       this.$trigger.addClass('active');
+      this.updateSortField();
+      this.updateTableFieldVisibility();
     });
 
     this.menu.on('hide', () => {
@@ -4017,6 +4037,32 @@ const ViewMenu = Garnish.Base.extend({
     this.$trigger.data('trigger').hide();
     this.$trigger.addClass('hidden');
     this.menu.hide();
+  },
+
+  updateTableFieldVisibility: function () {
+    // we only want to show the "Table Columns" checkboxes and "Use defaults" btn in table and structure views
+    if (
+      this.elementIndex.viewMode !== 'table' &&
+      this.elementIndex.viewMode !== 'structure'
+    ) {
+      if (this.$tableColumnsContainer) {
+        this.$tableColumnsContainer
+          .closest('.table-columns-field')
+          .addClass('hidden');
+      }
+      if (this.$revertBtn) {
+        this.$revertBtn.addClass('hidden');
+      }
+    } else {
+      if (this.$tableColumnsContainer) {
+        this.$tableColumnsContainer
+          .closest('.table-columns-field')
+          .removeClass('hidden');
+      }
+      if (this.$revertBtn) {
+        this.$revertBtn.removeClass('hidden');
+      }
+    }
   },
 
   updateSortField: function () {
@@ -4191,6 +4237,16 @@ const ViewMenu = Garnish.Base.extend({
       this._createRevertBtn();
     }
 
+    // we only want to show the "Use defaults" btn in table and structure views
+    if (
+      this.elementIndex.viewMode !== 'table' &&
+      this.elementIndex.viewMode !== 'structure'
+    ) {
+      if (this.$revertBtn) {
+        this.$revertBtn.addClass('hidden');
+      }
+    }
+
     this.$closeBtn = $('<button/>', {
       type: 'button',
       class: 'btn',
@@ -4205,13 +4261,34 @@ const ViewMenu = Garnish.Base.extend({
   _createSortField: function () {
     const $container = $('<div class="flex"/>');
 
+    const options = this.elementIndex
+      .getSortOptions(this.$source)
+      .sort((a, b) => {
+        return a.label === b.label ? 0 : a.label < b.label ? -1 : 1;
+      });
+    const groups = options.reduce(
+      (groups, o) => {
+        const index = o.attr.startsWith('field:') ? 1 : 0;
+        groups[index].push(o);
+        return groups;
+      },
+      [[], []]
+    );
+    if (groups[1].length) {
+      groups[1].unshift({
+        optgroup: Craft.t('app', 'Fields'),
+      });
+    }
+
     const $sortAttributeSelectContainer = Craft.ui
       .createSelect({
-        options: this.elementIndex.getSortOptions(this.$source).map((o) => {
-          return {
-            label: Craft.escapeHtml(o.label),
-            value: o.attr,
-          };
+        options: groups.flat().map((o) => {
+          return o.optgroup
+            ? o
+            : {
+                label: Craft.escapeHtml(o.label),
+                value: o.attr,
+              };
         }),
       })
       .addClass('fullwidth')
@@ -4302,7 +4379,11 @@ const ViewMenu = Garnish.Base.extend({
   },
 
   _createTableColumnsField: function () {
-    const columns = this.elementIndex.getTableColumnOptions(this.$source);
+    const columns = this.elementIndex
+      .getTableColumnOptions(this.$source)
+      .sort((a, b) => {
+        return a.label === b.label ? 0 : a.label < b.label ? -1 : 1;
+      });
 
     if (!columns.length) {
       return $();
@@ -4332,6 +4413,15 @@ const ViewMenu = Garnish.Base.extend({
       fieldset: true,
     });
     $field.addClass('table-columns-field');
+
+    // we only want to show the "Table Columns" checkboxes in table and structure views
+    if (
+      this.elementIndex.viewMode !== 'table' &&
+      this.elementIndex.viewMode !== 'structure'
+    ) {
+      $field.addClass('hidden');
+    }
+
     return $field;
   },
 
@@ -4461,14 +4551,14 @@ const FilterHud = Garnish.HUD.extend({
         id: `${this.id}-filters`,
       },
     })
-      .then((response) => {
+      .then(async (response) => {
         this.loading = false;
         this.$hud.removeClass('loading');
         $loadingContent.remove();
 
         this.$main.append(response.data.hudHtml);
-        Craft.appendHeadHtml(response.data.headHtml);
-        Craft.appendBodyHtml(response.data.bodyHtml);
+        await Craft.appendHeadHtml(response.data.headHtml);
+        await Craft.appendBodyHtml(response.data.bodyHtml);
 
         const $btnContainer = $('<div/>', {
           class: 'flex flex-nowrap',
@@ -4506,8 +4596,8 @@ const FilterHud = Garnish.HUD.extend({
           this.serialized = this.serialize();
         }
       })
-      .catch(() => {
-        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+      .catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
       });
 
     this.$hud.css('position', 'fixed');

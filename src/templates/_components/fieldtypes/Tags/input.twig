@@ -9,14 +9,18 @@
 {% from "_includes/forms" import text %}
 
 <div id="{{ id }}" class="elementselect tagselect">
-    <div class="elements">
+    <ul class="elements">
+        {%- apply spaceless  %}
         {% for element in elements %}
-            {{ elementChip(element, {
-                context: 'field',
-                inputName: (name ?? false) ? "#{name}[]" : null,
-            }) }}
+            <li>
+                {{ elementChip(element, {
+                    context: 'field',
+                    inputName: (name ?? false) ? "#{name}[]" : null,
+                }) }}
+            </li>
         {% endfor %}
-    </div>
+        {% endapply -%}
+    </ul>
 
     <div class="texticon add icon">
         {{ text({

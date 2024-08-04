@@ -11,6 +11,9 @@ export default Base.extend(
     $container: null,
     $shade: null,
     $triggerElement: null,
+    $liveRegion: $(
+      '<span class="visually-hidden" role="status" data-status-message></span>'
+    ),
 
     visible: false,
 
@@ -90,6 +93,9 @@ export default Base.extend(
         });
       }
 
+      // add live region
+      this.$liveRegion.appendTo(this.$container);
+
       this.addListener(this.$container, 'click', function (ev) {
         ev.stopPropagation();
       });
@@ -98,6 +104,22 @@ export default Base.extend(
       if (this.visible) {
         this.show();
       }
+    },
+
+    updateLiveRegion: function (message) {
+      if (!message) return;
+
+      this.$liveRegion.empty().text(message);
+
+      // Clear message after interval
+      setTimeout(() => {
+        const currentMessage = this.$liveRegion.text();
+
+        // Check that this is the same message and hasn't been updated since
+        if (message !== currentMessage) return;
+
+        this.$liveRegion.empty();
+      }, 5000);
     },
 
     show: function () {
@@ -228,6 +250,8 @@ export default Base.extend(
 
         this.$shade.velocity('stop');
         this.$shade.css('opacity', 0).hide();
+
+        this.onFadeOut();
       }
     },
 
@@ -374,6 +398,10 @@ export default Base.extend(
         this.resizeDragger.destroy();
       }
 
+      Garnish.Modal.instances = Craft.Preview.instances.filter(
+        (o) => o !== this
+      );
+
       this.base();
     },
   },
@@ -395,7 +423,15 @@ export default Base.extend(
       triggerElement: null,
       shadeClass: 'modal-shade',
     },
+
+    /**
+     * @type {Garnish.Modal[]}
+     */
     instances: [],
+
+    /**
+     * @type {?Garnish.Modal}
+     */
     visibleModal: null,
   }
 );

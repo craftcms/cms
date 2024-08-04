@@ -4,6 +4,8 @@ namespace craft\elements;
 
 use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
+use CommerceGuys\Addressing\Country\Country;
+use CommerceGuys\Addressing\Subdivision\SubdivisionUpdater;
 use Craft;
 use craft\base\Element;
 use craft\base\NameTrait;
@@ -137,6 +139,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             'sortingCode',
             'addressLine1',
             'addressLine2',
+            'addressLine3',
             'organization',
             'organizationTaxId',
             'fullName',
@@ -202,6 +205,12 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public ?string $addressLine2 = null;
 
     /**
+     * @var string|null Third line of the address
+     * @since 5.0.0
+     */
+    public ?string $addressLine3 = null;
+
+    /**
      * @var string|null Organization name
      */
     public ?string $organization = null;
@@ -246,7 +255,11 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         }
 
         if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            // Unset fullName so NameTrait::prepareNamesForSave() can set it
             $this->fullName = null;
+        } elseif (array_key_exists('fullName', $values)) {
+            // Unset firstName and lastName so NameTrait::prepareNamesForSave() can set them
+            $this->firstName = $this->lastName = null;
         }
 
         parent::setAttributes($values, $safeOnly);
@@ -354,6 +367,17 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
+     * Returns a [[Country]] object representing the address’ coutry.
+     *
+     * @return Country
+     * @since 5.3.0
+     */
+    public function getCountry(): Country
+    {
+        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getAdministrativeArea(): ?string
@@ -407,6 +431,14 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public function getAddressLine2(): ?string
     {
         return $this->addressLine2;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAddressLine3(): ?string
+    {
+        return $this->addressLine3;
     }
 
     /**
@@ -556,6 +588,46 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
     /**
      * @inheritdoc
+     */
+    protected function cacheTags(): array
+    {
+        $tags = [];
+
+        if (isset($this->fieldId)) {
+            $tags[] = "field:$this->fieldId";
+        }
+
+        return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        // commerceguys/addressing 2.0.x - remap changed subdivision IDs
+        // update the subdivision ID to its ISO code where available
+        if (isset($this->countryCode)) {
+            if (isset($this->administrativeArea)) {
+                $this->administrativeArea = SubdivisionUpdater::updateValue(
+                    $this->countryCode,
+                    $this->administrativeArea,
+                );
+            }
+            // Andorra is the only country with remapped localities.
+            if ($this->countryCode == 'AD' && isset($this->locality)) {
+                $this->locality = SubdivisionUpdater::updateValue(
+                    $this->countryCode,
+                    $this->locality,
+                );
+            }
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
      * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
@@ -583,6 +655,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         $record->sortingCode = $this->sortingCode;
         $record->addressLine1 = $this->addressLine1;
         $record->addressLine2 = $this->addressLine2;
+        $record->addressLine3 = $this->addressLine3;
         $record->organization = $this->organization;
         $record->organizationTaxId = $this->organizationTaxId;
         $record->fullName = $this->fullName;
@@ -596,14 +669,39 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         $record->save(false);
 
-        // ownerId will be null when creating a revision
-        if (isset($this->fieldId, $this->ownerId) && $this->saveOwnership) {
-            if (($isNew && $this->getIsCanonical()) || !isset($this->sortOrder)) {
+        $ownerId = $this->getOwnerId();
+        if (isset($this->fieldId) && $ownerId && $this->saveOwnership) {
+            if (!isset($this->sortOrder) && (!$isNew || $this->duplicateOf)) {
+                // figure out if we should proceed this way
+                // if we're dealing with an element that's being duplicated, and it has a draftId
+                // it means we're creating a draft of something
+                // if we're duplicating element via duplicate action - draftId would be empty
+                $elementId = null;
+                if ($this->duplicateOf) {
+                    if ($this->draftId) {
+                        $elementId = $this->duplicateOf->id;
+                    }
+                } else {
+                    // if we're not duplicating - use element's id
+                    $elementId = $this->id;
+                }
+                if ($elementId) {
+                    $this->sortOrder = (new Query())
+                        ->select('sortOrder')
+                        ->from(Table::ELEMENTS_OWNERS)
+                        ->where([
+                            'elementId' => $elementId,
+                            'ownerId' => $ownerId,
+                        ])
+                        ->scalar() ?: null;
+                }
+            }
+            if (!isset($this->sortOrder)) {
                 $max = (new Query())
                     ->from(['eo' => Table::ELEMENTS_OWNERS])
                     ->innerJoin(['a' => Table::ADDRESSES], '[[a.id]] = [[eo.elementId]]')
                     ->where([
-                        'eo.ownerId' => $this->ownerId,
+                        'eo.ownerId' => $ownerId,
                         'a.fieldId' => $this->fieldId,
                     ])
                     ->max('[[eo.sortOrder]]');
@@ -612,7 +710,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             if ($isNew) {
                 Db::insert(Table::ELEMENTS_OWNERS, [
                     'elementId' => $this->id,
-                    'ownerId' => $this->ownerId,
+                    'ownerId' => $ownerId,
                     'sortOrder' => $this->sortOrder,
                 ]);
             } else {
@@ -620,7 +718,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
                     'sortOrder' => $this->sortOrder,
                 ], [
                     'elementId' => $this->id,
-                    'ownerId' => $this->ownerId,
+                    'ownerId' => $ownerId,
                 ]);
             }
         }

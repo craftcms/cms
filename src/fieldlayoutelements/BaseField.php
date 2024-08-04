@@ -176,13 +176,12 @@ abstract class BaseField extends FieldLayoutElement
         $innerHtml = '';
 
         $label = $this->selectorLabel();
+        $icon = $this->selectorIcon();
 
-        $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', '', [
-            'class' => ['fld-indicator'],
+        $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', Cp::iconSvg($indicator['icon']), [
+            'class' => array_filter(['cp-icon', 'puny', $indicator['iconColor'] ?? null]),
             'title' => $indicator['label'],
             'aria' => ['label' => $indicator['label']],
-            'data' => ['icon' => $indicator['icon']],
-            'role' => 'img',
         ]), $this->selectorIndicators()));
 
         if ($label !== null) {
@@ -190,7 +189,7 @@ abstract class BaseField extends FieldLayoutElement
             $innerHtml .= Html::tag('div',
                 Html::tag('h4', $label, [
                     'title' => $label,
-                ]) . $indicatorHtml, [
+                ]), [
                     'class' => 'fld-element-label',
                 ]);
         }
@@ -203,12 +202,25 @@ abstract class BaseField extends FieldLayoutElement
                 'class' => ['smalltext', 'light', 'code', 'fld-attribute-label'],
                 'title' => $this->attribute(),
             ]) .
-            ($label === null ? $indicatorHtml : '') .
             Html::endTag('div'); // .fld-attribute
 
-        return Html::tag('div', $innerHtml, [
+        if ($indicatorHtml) {
+            $innerHtml .= Html::tag('div', $indicatorHtml, [
+                'class' => ['flex', 'flex-nowrap', 'gap-xs'],
+            ]);
+        }
+
+        $html = Html::tag('div', $innerHtml, [
             'class' => ['field-name'],
         ]);
+
+        if ($icon) {
+            $html = Html::tag('div', Cp::iconSvg($icon), [
+                'class' => ['cp-icon', 'medium'],
+            ]) . $html;
+        }
+
+        return $html;
     }
 
     /**
@@ -241,6 +253,22 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns the selector’s SVG icon.
+     *
+     * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
+     * the path to an SVG file, or raw SVG markup.
+     *
+     * System icons can be found in `src/icons/solid/.`
+     *
+     * @return string|null
+     * @since 5.0.0
+     */
+    protected function selectorIcon(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Returns the indicators that should be shown within the selector.
      *
      * @since 5.0.0
@@ -249,31 +277,35 @@ abstract class BaseField extends FieldLayoutElement
     {
         $indicators = [];
 
-        if ($this->required) {
+        if ($this->requirable() && $this->required) {
             $indicators[] = [
                 'label' => Craft::t('app', 'This field is required'),
                 'icon' => 'asterisk',
+                'iconColor' => 'rose',
             ];
         }
 
         if ($this->hasConditions()) {
             $indicators[] = [
                 'label' => Craft::t('app', 'This field is conditional'),
-                'icon' => 'condition',
+                'icon' => 'diamond',
+                'iconColor' => 'orange',
             ];
         }
 
         if ($this->thumbable() && $this->providesThumbs) {
             $indicators[] = [
                 'label' => Craft::t('app', 'This field provides thumbnails for elements'),
-                'icon' => 'asset',
+                'icon' => 'image',
+                'iconColor' => 'violet',
             ];
         }
 
         if ($this->previewable() && $this->includeInCards) {
             $indicators[] = [
                 'label' => Craft::t('app', 'This field is included in element cards'),
-                'icon' => 'check',
+                'icon' => 'eye',
+                'iconColor' => 'blue',
             ];
         }
 
@@ -284,6 +316,14 @@ abstract class BaseField extends FieldLayoutElement
      * @inheritdoc
      */
     public function hasCustomWidth(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasSettings()
     {
         return true;
     }
@@ -348,7 +388,7 @@ abstract class BaseField extends FieldLayoutElement
      * Returns the HTML for an element’s thumbnail.
      *
      * @param ElementInterface $element The element the field is associated with
-     * @param int $size The width and height the thumbnail should have.
+     * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
      */
     public function thumbHtml(ElementInterface $element, int $size): ?string
@@ -489,6 +529,41 @@ abstract class BaseField extends FieldLayoutElement
         ]);
 
         return $ids ? implode(' ', $ids) : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
+    {
+        return ArrayHelper::merge(parent::containerAttributes($element, $static), [
+            'data' => [
+                'base-input-name' => Craft::$app->getView()->namespaceInputName($this->baseInputName()),
+                'error-key' => $this->errorKey(),
+            ],
+        ]);
+    }
+
+    /**
+     * Returns the base input name for the field (sans namespace).
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    protected function baseInputName(): string
+    {
+        return $this->attribute();
+    }
+
+    /**
+     * Returns the error key this field should be associated with.
+     *
+     * @return string
+     * @since 5.0.0
+     */
+    protected function errorKey(): string
+    {
+        return $this->attribute();
     }
 
     /**

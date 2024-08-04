@@ -124,7 +124,7 @@ class VolumesController extends Controller
                 'shortcut' => true,
                 'retainScroll' => true,
             ])
-            ->editUrl($volume->id ? "settings/assets/volumes/$volume->id" : null)
+            ->editUrl($volume->getCpEditUrl())
             ->contentTemplate('settings/assets/volumes/_edit.twig', [
                 'volumeId' => $volumeId,
                 'volume' => $volume,
@@ -172,6 +172,8 @@ class VolumesController extends Controller
             'transformSubpath' => $this->request->getBodyParam('transformSubpath', ""),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
+            'altTranslationMethod' => $this->request->getBodyParam('altTranslationMethod', Field::TRANSLATION_METHOD_NONE),
+            'altTranslationKeyFormat' => $this->request->getBodyParam('altTranslationKeyFormat'),
         ]);
 
         // Set the field layout

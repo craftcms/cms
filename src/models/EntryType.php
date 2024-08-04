@@ -10,13 +10,17 @@ namespace craft\models;
 use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
+use craft\base\Colorable;
+use craft\base\CpEditable;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
+use craft\base\GqlInlineFragmentInterface;
 use craft\base\Iconic;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
-use craft\enums\MenuItemType;
+use craft\enums\Color;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
@@ -29,7 +33,14 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class EntryType extends Model implements FieldLayoutProviderInterface, Chippable, Iconic, Actionable
+class EntryType extends Model implements
+    FieldLayoutProviderInterface,
+    GqlInlineFragmentInterface,
+    Chippable,
+    CpEditable,
+    Iconic,
+    Colorable,
+    Actionable
 {
     /**
      * @inheritdoc
@@ -65,6 +76,12 @@ class EntryType extends Model implements FieldLayoutProviderInterface, Chippable
      * @since 5.0.0
      */
     public ?string $icon = null;
+
+    /**
+     * @var Color|null Color
+     * @since 5.0.0
+     */
+    public ?Color $color = null;
 
     /**
      * @var bool Has title field
@@ -179,6 +196,14 @@ class EntryType extends Model implements FieldLayoutProviderInterface, Chippable
     /**
      * @inheritdoc
      */
+    public function getColor(): ?Color
+    {
+        return $this->color;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getActionMenuItems(): array
     {
         $items = [];
@@ -190,24 +215,21 @@ class EntryType extends Model implements FieldLayoutProviderInterface, Chippable
         ) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
-                'type' => MenuItemType::Button,
                 'id' => $editId,
                 'icon' => 'edit',
                 'label' => Craft::t('app', 'Edit'),
             ];
 
             $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn($id) => <<<JS
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
 $('#' + $id).on('click', () => {
   new Craft.CpScreenSlideout('entry-types/edit', {
-    params: {
-      entryTypeId: $this->id,
-    },
+    params: $params,
   });
 });
 JS, [
                 $view->namespaceInputId($editId),
-
+                ['entryTypeId' => $this->id],
             ]);
         }
 
@@ -241,13 +263,6 @@ JS, [
             ['handle'],
             HandleValidator::class,
             'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
-        ];
-        $rules[] = [
-            ['name'],
-            UniqueValidator::class,
-            'targetClass' => EntryTypeRecord::class,
-            'targetAttribute' => 'name',
-            'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
         $rules[] = [
             ['handle'],
@@ -309,13 +324,29 @@ JS, [
     }
 
     /**
-     * Returns the entry’s edit URL in the control panel.
-     *
-     * @return string
+     * @inheritdoc
+     * @since 3.3.0
      */
-    public function getCpEditUrl(): string
+    public function getFieldContext(): string
     {
-        return UrlHelper::cpUrl("settings/entry-types/$this->id");
+        return 'global';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getEagerLoadingPrefix(): string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl(): ?string
+    {
+        return $this->id ? UrlHelper::cpUrl("settings/entry-types/$this->id") : null;
     }
 
     /**
@@ -330,6 +361,7 @@ JS, [
             'name' => $this->name,
             'handle' => $this->handle,
             'icon' => $this->icon,
+            'color' => $this->color?->value,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat,
@@ -349,5 +381,46 @@ JS, [
         }
 
         return $config;
+    }
+
+    /**
+     * Returns an array of sections and custom fields that make use of this entry type.
+     *
+     * @return array<Section|ElementContainerFieldInterface>
+     * @since 5.0.0
+     */
+    public function findUsages(): array
+    {
+        if (!isset($this->id)) {
+            return [];
+        }
+
+        $usages = [];
+
+        // Sections
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                if ($entryType->id === $this->id) {
+                    $usages[] = $section;
+                    break;
+                }
+            }
+        }
+
+        // Fields
+        $fieldsService = Craft::$app->getFields();
+        foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
+            /** @var ElementContainerFieldInterface[] $fields */
+            $fields = $fieldsService->getFieldsByType($type);
+            foreach ($fields as $field) {
+                foreach ($field->getFieldLayoutProviders() as $provider) {
+                    if ($provider instanceof EntryType && $provider->id === $this->id) {
+                        $usages[] = $field;
+                    }
+                }
+            }
+        }
+
+        return $usages;
     }
 }

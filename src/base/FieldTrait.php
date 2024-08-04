@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\fieldlayoutelements\CustomField;
+use DateTime;
 
 /**
  * FieldTrait implements the common methods and properties for field classes.
@@ -51,6 +52,7 @@ trait FieldTrait
 
     /**
      * @var string The field’s translation method
+     * @phpstan-var Field::TRANSLATION_METHOD_*
      */
     public string $translationMethod = Field::TRANSLATION_METHOD_NONE;
 
@@ -87,6 +89,12 @@ trait FieldTrait
      * @deprecated in 4.1.4. [[\craft\fieldlayoutelements\BaseField::$required]] should be used instead
      */
     public ?bool $required = null;
+
+    /**
+     * @var DateTime|null The date that the field was trashed
+     * @since 5.3.0
+     */
+    public ?DateTime $dateDeleted = null;
 
     /**
      * @var CustomField|null The field layout element

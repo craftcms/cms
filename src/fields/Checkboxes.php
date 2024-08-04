@@ -36,6 +36,14 @@ class Checkboxes extends BaseOptionsField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'square-check';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function useFieldset(): bool
     {
         return true;

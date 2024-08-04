@@ -8,6 +8,7 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\MissingField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
@@ -118,7 +119,13 @@ class BaseContentRefactorMigration extends Migration
 
             foreach ($fieldColumns as $layoutElementUid => $column) {
                 $field = $fieldsByUid[$layoutElementUid];
-                $dbType = $field::dbType();
+
+                if ($field instanceof MissingField) {
+                    // Figure it out from the actual DB column
+                    $dbType = $contentTableSchema->getColumn($column)?->dbType;
+                } else {
+                    $dbType = $field::dbType();
+                }
 
                 if (is_array($column)) {
                     /** @var array $dbType */
@@ -150,7 +157,7 @@ class BaseContentRefactorMigration extends Migration
             // don't call $this->update() so it doesn't mess with the CLI output
             Db::update(Table::ELEMENTS_SITES, [
                 'title' => $element['title'] ?? null,
-                'content' => !empty($content) ? Db::prepareForJsonColumn($content, $this->db) : null,
+                'content' => $content ?: null,
             ], ['id' => $element['id']], updateTimestamp: false, db: $this->db);
 
             echo " done\n";
@@ -227,10 +234,13 @@ class BaseContentRefactorMigration extends Migration
         array &$fieldColumns,
         array &$flatFieldColumns,
     ): bool {
-        $dbType = $field::dbType();
-
-        if ($dbType === null) {
-            return false;
+        if ($field instanceof MissingField) {
+            $dbType = Schema::TYPE_TEXT;
+        } else {
+            $dbType = $field::dbType();
+            if ($dbType === null) {
+                return false;
+            }
         }
 
         $primaryColumn = sprintf(
@@ -293,6 +303,12 @@ class BaseContentRefactorMigration extends Migration
 
             // if we're still here, go with the first type listed instead
             $dbType = reset($dbType);
+
+            // special case for a datetime that was stored in a single column
+            // we need to do it here, cause if it was stored in 2 cols, the $dbType wouldn't have been an array
+            if ($dbType === Schema::TYPE_DATETIME && is_string($value)) {
+                return ['date' => $value];
+            }
         }
 
         switch ($dbType) {

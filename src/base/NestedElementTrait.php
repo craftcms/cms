@@ -9,6 +9,7 @@
 namespace craft\base;
 
 use Craft;
+use craft\elements\db\EagerLoadPlan;
 use yii\base\InvalidConfigException;
 
 /**
@@ -19,11 +20,39 @@ use yii\base\InvalidConfigException;
  * @property int|null $primaryOwnerId the primary owner element’s ID
  * @property int|null $ownerId the owner element’s ID
  * @property ElementContainerFieldInterface|null $field the element’s field
+ * @mixin Element
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
 trait NestedElementTrait
 {
+    /**
+     * @inheritdoc
+     */
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
+    {
+        switch ($handle) {
+            case 'owner':
+            case 'primaryOwner':
+                /** @var NestedElementInterface[] $sourceElements */
+                return [
+                    'elementType' => get_class(reset($sourceElements)),
+                    'map' => array_map(fn(NestedElementInterface $element) => [
+                        'source' => $element->id,
+                        'target' => match ($handle) {
+                            'owner' => $element->getOwnerId(),
+                            'primaryOwner' => $element->getPrimaryOwnerId(),
+                        },
+                    ], $sourceElements),
+                    'criteria' => [
+                        'status' => null,
+                    ],
+                ];
+            default:
+                return parent::eagerLoadingMap($sourceElements, $handle);
+        }
+    }
+
     /**
      * @var int|null Primary owner ID
      */
@@ -48,6 +77,16 @@ trait NestedElementTrait
      * @var bool Whether to save the element’s row in the `elements_owners` table from `afterSave()`.
      */
     public bool $saveOwnership = true;
+
+    /**
+     * @var bool Whether the search index should be updated for the owner element, alongside this element.
+     *
+     * This will only be checked if [[fieldId]] is set, and `false` isn’t passed to the `updateSearchIndex`
+     * argument of [[\craft\services\Elements::saveElement()]].
+     *
+     * @since 5.2.0
+     */
+    public bool $updateSearchIndexForOwner = false;
 
     /**
      * @var ElementInterface|false The primary owner element, or false if [[primaryOwnerId]] is invalid
@@ -112,7 +151,9 @@ trait NestedElementTrait
                 return null;
             }
 
-            $this->_primaryOwner = Craft::$app->getElements()->getElementById($primaryOwnerId, null, $this->siteId) ?? false;
+            $this->_primaryOwner = Craft::$app->getElements()->getElementById($primaryOwnerId, null, $this->siteId, [
+                'trashed' => null,
+            ]) ?? false;
             if (!$this->_primaryOwner) {
                 throw new InvalidConfigException("Invalid owner ID: $primaryOwnerId");
             }
@@ -162,7 +203,9 @@ trait NestedElementTrait
                 return $this->getPrimaryOwner();
             }
 
-            $this->_owner = Craft::$app->getElements()->getElementById($ownerId, null, $this->siteId) ?? false;
+            $this->_owner = Craft::$app->getElements()->getElementById($ownerId, null, $this->siteId, [
+                'trashed' => null,
+            ]) ?? false;
             if (!$this->_owner) {
                 throw new InvalidConfigException("Invalid owner ID: $ownerId");
             }
@@ -189,7 +232,9 @@ trait NestedElementTrait
             return null;
         }
 
-        $field = $this->getOwner()->getFieldLayout()->getFieldById($this->fieldId);
+        $field = $this->getOwner()?->getFieldLayout()->getFieldById($this->fieldId)
+            ?? Craft::$app->getFields()->getFieldById($this->fieldId);
+
         if (!$field instanceof ElementContainerFieldInterface) {
             throw new InvalidConfigException("Invalid field ID: $this->fieldId");
         }
@@ -219,5 +264,34 @@ trait NestedElementTrait
     public function setSaveOwnership(bool $saveOwnership): void
     {
         $this->saveOwnership = $saveOwnership;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addInvalidNestedElementIds(array $ids): void
+    {
+        parent::addInvalidNestedElementIds($ids);
+
+        if (isset($this->_owner)) {
+            $this->_owner->addInvalidNestedElementIds($ids);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
+    {
+        switch ($plan->handle) {
+            case 'owner':
+                $this->setOwner(reset($elements));
+                break;
+            case 'primaryOwner':
+                $this->setPrimaryOwner(reset($elements));
+                break;
+            default:
+                parent::setEagerLoadedElements($handle, $elements, $plan);
+        }
     }
 }

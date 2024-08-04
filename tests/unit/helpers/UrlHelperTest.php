@@ -31,6 +31,10 @@ class UrlHelperTest extends TestCase
     public const NON_ABSOLUTE_URL = 'craftcms.com/';
     public const NON_ABSOLUTE_URL_WWW = 'www.craftcms.com/';
     public const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
+    public const EMAIL_URL = 'mailto:test@abc.com';
+    public const TEL_URL = 'tel:+10123456789';
+    public const FILE_PATH_1 = 'C:';
+    public const FILE_PATH_2 = 'C:\foo\bar.txt';
 
     /**
      * @var UnitTester
@@ -250,10 +254,10 @@ class UrlHelperTest extends TestCase
      */
     public function testActionUrl(): void
     {
-        $expected = str_replace('https', 'http', TestSetup::SITE_URL) . 'index.php?p=actions/endpoint';
+        $expected = Craft::getAlias('@web/index.php?p=actions/endpoint');
         self::assertSame($expected, UrlHelper::actionUrl('endpoint'));
 
-        $expected = TestSetup::SITE_URL . 'actions/endpoint';
+        $expected = Craft::getAlias('@web/actions/endpoint');
         self::assertSame($expected, UrlHelper::actionUrl('endpoint', null, null, false));
     }
 
@@ -303,6 +307,10 @@ class UrlHelperTest extends TestCase
             'absolute-url-www' => [true, self::ABSOLUTE_URL_WWW],
             'non-url' => [false, self::NON_ABSOLUTE_URL],
             'non-absolute-url-www' => [false, self::NON_ABSOLUTE_URL_WWW],
+            'email-url' => [true, self::EMAIL_URL],
+            'tel-url' => [true, self::TEL_URL],
+            'file-path-1' => [false, self::FILE_PATH_1],
+            'file-path-2' => [false, self::FILE_PATH_2],
         ];
     }
 

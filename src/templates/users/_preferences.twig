@@ -3,21 +3,22 @@
 <div>
   <h2>{{ 'General'|t('app') }}</h2>
 
-  {{ forms.selectizeField({
+  {{ forms.languageMenuField({
     id: 'preferredLanguage',
     name: 'preferredLanguage',
     label: 'Language'|t('app'),
     instructions: 'The language that the control panel should use.'|t('app'),
-    options: languageOptions,
+    options: craft.cp.getLanguageOptions(false, true, true),
     value: userLanguage,
+    appOnly: true,
   }) }}
 
-  {{ forms.selectizeField({
+  {{ forms.languageMenuField({
     id: 'preferredLocale',
     name: 'preferredLocale',
     label: 'Formatting Locale'|t('app'),
     instructions: 'The locale that should be used for date and number formatting.'|t('app'),
-    options: localeOptions,
+    options: [{'label' : 'Same as language'|t('app'), 'value' : '__blank__'}]|merge(craft.cp.getLanguageOptions(false, true)),
     value: userLocale,
   }) }}
 
@@ -56,6 +57,18 @@
         name: 'underlineLinks',
         id: 'underlineLinks',
         checked: currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
+      },
+    ],
+  }) }}
+
+  {{ forms.checkboxGroupField({
+    label: 'General Settings'|t('app'),
+    options: [
+      {
+        label: 'Disable autofocus'|t('app'),
+        name: 'disableAutofocus',
+        id: 'disableAutofocus',
+        checked: currentUser.getPreference('disableAutofocus') ?? a11yDefaults['disableAutofocus'] ?? false,
       },
     ],
   }) }}
