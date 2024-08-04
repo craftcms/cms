@@ -1757,7 +1757,7 @@ return [
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => 'Werk uw YAML-bestanden voor projectconfiguratie bij met de meest recente wijzigingen in de geladen projectconfiguratie.',
     'Update {type}' => '{type} bijwerken',
     'Update' => 'Updaten',
-    'Updated at' => 'Geüpdatet op',
+    'Updated at' => 'Bijgewerkt op',
     'Updater' => 'Updateprogramma',
     'Updates until {date}' => 'Updates tot {date}',
     'Updates' => 'Updates',
