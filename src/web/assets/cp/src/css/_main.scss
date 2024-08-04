@@ -5465,19 +5465,19 @@ table.data tbody tr:not(.disabled).active-drop-target {
     resize: none;
   }
 
+  & > .field .heading,
+  & > fieldset > legend {
+    margin: 0 0 var(--s);
+  }
+
   & > .field > .heading > label,
   & > fieldset > legend {
-    margin-top: 0;
     font-weight: normal;
     color: var(--gray-600);
   }
 
-  & > fieldset {
-    margin: var(--spacing) 0 !important;
-
-    & > legend {
-      margin-bottom: 5px;
-    }
+  & > .field > .heading > label {
+    margin: 0;
   }
 
   & > .field {
@@ -5495,6 +5495,10 @@ table.data tbody tr:not(.disabled).active-drop-target {
       background-color: var(--gray-050) !important;
       width: calc(100% + var(--padding) + var(--padding));
     }
+  }
+
+  & > fieldset {
+    margin: var(--spacing) 0 !important;
   }
 
   & > .text {
