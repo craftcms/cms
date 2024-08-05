@@ -115,7 +115,9 @@ abstract class AbstractExternalProvider extends AbstractProvider
      */
     public function getSiteLoginHtml(?string $label = null, ?string $url = null): string
     {
-        return Html::a($label ?: "Login via " . $this->name, $url ?: $this->getRequestUrl());
+        return Html::a($label ?: Craft::t('app', 'Sign in with {name}', [
+            'name' => $this->name ?: static::displayName(),
+        ]), $url ?: $this->getRequestUrl());
     }
 
     /**
@@ -123,7 +125,11 @@ abstract class AbstractExternalProvider extends AbstractProvider
      */
     public function getCpLoginHtml(?string $label = null, ?string $url = null): string
     {
-        return Html::a($label ?: "Login via " . $this->name, $url ?: $this->getRequestUrl());
+        return Html::a($label ?: Craft::t('app', 'Sign in with {name}', [
+            'name' => $this->name ?: static::displayName(),
+        ]), $url ?: $this->getRequestUrl(), [
+            'class' => 'btn',
+        ]);
     }
 
     /**

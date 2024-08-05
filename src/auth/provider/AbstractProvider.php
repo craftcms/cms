@@ -7,7 +7,7 @@
 
 namespace craft\auth\provider;
 
-use yii\base\Component;
+use craft\base\Component;
 
 /**
  *
