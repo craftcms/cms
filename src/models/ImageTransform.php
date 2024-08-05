@@ -114,6 +114,12 @@ class ImageTransform extends Model
     protected string $transformer = self::DEFAULT_TRANSFORMER;
 
     /**
+     * @var int|null The image transform index ID (if one was passed to the request).
+     * @since 5.3.0
+     */
+    public ?int $indexId = null;
+
+    /**
      * @inheritdoc
      */
     public function __construct($config = [])
