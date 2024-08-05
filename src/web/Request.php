@@ -522,7 +522,7 @@ class Request extends \yii\web\Request
     /**
      * Sets the token value.
      *
-     * @param ?string $token
+     * @param string|null $token
      * @since 3.6.0
      */
     public function setToken(?string $token): void
