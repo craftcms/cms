@@ -8,15 +8,22 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\errors\AuthFailedException;
 use craft\errors\AuthProviderNotFoundException;
+use craft\errors\SsoFailedException;
 use craft\helpers\Json;
 use craft\helpers\User as UserHelper;
 use craft\web\Controller;
 use yii\web\HttpException;
 use yii\web\Response;
 
-class AuthSsoController extends Controller
+/**
+ * SSO controller
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
+ */
+class SsoController extends Controller
 {
     /**
      * @inheritdoc
@@ -39,7 +46,7 @@ class AuthSsoController extends Controller
      */
     public function actionRequest(?string $provider = null): ?Response
     {
-        $authProvider = Craft::$app->getAuthSso()->getProviderByHandle(
+        $authProvider = Craft::$app->getSso()->getProviderByHandle(
             $provider ?? $this->request->getRequiredParam('provider')
         );
 
@@ -48,14 +55,14 @@ class AuthSsoController extends Controller
                 $this->request,
                 $this->response
             );
-        } catch (AuthFailedException $exception) {
+        } catch (SsoFailedException $exception) {
             throw new HttpException(400, $exception->getMessage(), previous: $exception);
         }
     }
 
     public function actionResponse(?string $provider = null): ?Response
     {
-        $authProvider = Craft::$app->getAuthSso()->getProviderByHandle(
+        $authProvider = Craft::$app->getSso()->getProviderByHandle(
             $provider ?? $this->request->getRequiredParam('provider')
         );
 
@@ -66,7 +73,7 @@ class AuthSsoController extends Controller
             )) {
                 return $this->handleSuccessfulResponse();
             }
-        } catch (AuthFailedException $exception) {
+        } catch (SsoFailedException $exception) {
             return $this->handleFailedResponse($exception);
         }
 
@@ -133,7 +140,7 @@ class AuthSsoController extends Controller
         $user = null;
         $message = Craft::t('app', 'Auth error');
 
-        if ($exception instanceof AuthFailedException) {
+        if ($exception instanceof SsoFailedException) {
             $user = $exception->identity;
             $message =
                 UserHelper::getAuthFailureMessage($exception->identity) ??

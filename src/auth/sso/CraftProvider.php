@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\provider;
+namespace craft\auth\sso;
 
 use Craft;
 use craft\web\View;
@@ -23,8 +23,12 @@ use yii\web\Response;
  *     'class' => \craft\auth\provider\CraftProvider::class,
  * ]
  * ```
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
  */
-class CraftProvider extends AbstractProvider
+class CraftProvider extends BaseProvider
 {
     /**
      * @inheritDoc

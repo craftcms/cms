@@ -181,14 +181,6 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
         ]);
-        $this->createTable(Table::AUTH, [
-            'provider' => $this->string()->notNull(),
-            'identityId' => $this->string()->notNull(),
-            'userId' => $this->integer()->notNull(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'PRIMARY KEY([[provider]], [[identityId]], [[userId]])',
-        ]);
         $this->createTable(Table::ASSETS_SITES, [
             'assetId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
@@ -640,6 +632,14 @@ class Install extends Migration
             'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
+        $this->createTable(Table::SSO_IDENTITIES, [
+            'provider' => $this->string()->notNull(),
+            'identityId' => $this->string()->notNull(),
+            'userId' => $this->integer()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'PRIMARY KEY([[provider]], [[identityId]], [[userId]])',
+        ]);
         $this->createTable(Table::STRUCTUREELEMENTS, [
             'id' => $this->primaryKey(),
             'structureId' => $this->integer()->notNull(),
@@ -1003,7 +1003,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ASSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['uploaderId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ASSETS, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::AUTH, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS_SITES, ['assetId'], Table::ASSETS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS_SITES, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::AUTHENTICATOR, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
@@ -1061,6 +1060,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::SESSIONS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SHUNNEDMESSAGES, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SITES, ['groupId'], Table::SITEGROUPS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::SSO_IDENTITIES, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::STRUCTUREELEMENTS, ['structureId'], Table::STRUCTURES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::TAGGROUPS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::TAGS, ['groupId'], Table::TAGGROUPS, ['id'], 'CASCADE', null);

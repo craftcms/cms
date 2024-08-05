@@ -64,7 +64,6 @@ use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Auth;
-use craft\services\AuthSso;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Conditions;
@@ -92,6 +91,7 @@ use craft\services\Routes;
 use craft\services\Search;
 use craft\services\Security;
 use craft\services\Sites;
+use craft\services\Sso;
 use craft\services\Structures;
 use craft\services\SystemMessages;
 use craft\services\Tags;
@@ -140,7 +140,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read Assets $assets The assets service
  * @property-read Auth $auth The user authentication service
- * @property-read AuthSso $authSso
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
  * @property-read Conditions $conditions The conditions service
@@ -179,6 +178,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Search $search The search service
  * @property-read Security $security The security component
  * @property-read Sites $sites The sites service
+ * @property-read Sso $sso The SSO service
  * @property-read Structures $structures The structures service
  * @property-read SystemMessages $systemMessages The system email messages service
  * @property-read Tags $tags The tags service
@@ -1037,18 +1037,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the user authentication service.
-     *
-     * @return AuthSso The AuthSSO service
-     * @since 5.0.0
-     */
-    public function getAuthSso(): AuthSso
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('authSso');
-    }
-
-    /**
      * Returns the image transforms service.
      *
      * @return ImageTransforms The asset transforms service
@@ -1418,6 +1406,17 @@ trait ApplicationTrait
     public function getSites(): Sites
     {
         return $this->get('sites');
+    }
+
+    /**
+     * Returns the SSO service.
+     *
+     * @return Sso The SSO service
+     * @since 5.3.0
+     */
+    public function getSso(): Sso
+    {
+        return $this->get('sso');
     }
 
     /**

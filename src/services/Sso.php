@@ -8,32 +8,41 @@
 namespace craft\services;
 
 use Craft;
-use craft\auth\provider\ProviderInterface;
+use craft\auth\sso\ProviderInterface;
 use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
-use craft\errors\AuthFailedException;
 use craft\errors\AuthProviderNotFoundException;
+use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
-use craft\records\AuthSso as AuthRecord;
+use craft\records\SsoIdentity as AuthRecord;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
-class AuthSso extends Component
+/**
+ * SSO service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSites()|`Craft::$app->sites`]].
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
+ */
+class Sso extends Component
 {
     /**
-     * @event UserEvent The event that is triggered when populating user groups from an AuthSso provider.
+     * @event UserEvent The event that is triggered when populating user groups from an SSO provider.
      *
      * ---
      * ```php
      * use craft\events\UserGroupsAssignEvent;
-     * use craft\services\AuthSso;
+     * use craft\services\Sso;
      * use yii\base\Event;
      *
      * Event::on(
      *     \some\provider\Type::class,
-     *     AuthSso::EVENT_POPULATE_USER_GROUPS,
+     *     Sso::EVENT_POPULATE_USER_GROUPS,
      *     function(UserGroupsAssignEvent $event) {
      *         $providerData = $event->sender;
      *
@@ -49,17 +58,17 @@ class AuthSso extends Component
     public const EVENT_POPULATE_USER_GROUPS = 'populateUserGroups';
 
     /**
-     * @event UserEvent The event that is triggered when populating a user from an AuthSso provider.
+     * @event UserEvent The event that is triggered when populating a user from an SSO provider.
      *
      * ---
      * ```php
      * use craft\events\UserEvent;
-     * use craft\services\AuthSso;
+     * use craft\services\Sso;
      * use yii\base\Event;
      *
      * Event::on(
      *     \some\provider\Type::class,
-     *     AuthSso::EVENT_POPULATE_USER,
+     *     Sso::EVENT_POPULATE_USER,
      *     function(UserEvent $event) {
      *         $providerData = $event->sender;
      *
@@ -202,7 +211,7 @@ class AuthSso extends Component
                 'userId',
             ])
             ->from([
-                Table::AUTH,
+                Table::SSO_IDENTITIES,
             ])
             ->where(
                 [
@@ -254,7 +263,7 @@ class AuthSso extends Component
      * @param int|null $sessionDuration
      * @param bool $rememberMe
      * @return bool
-     * @throws AuthFailedException
+     * @throws SsoFailedException
      */
     public function loginUser(ProviderInterface $provider, User $user, ?int $sessionDuration = null, bool $rememberMe = false): bool
     {
@@ -276,12 +285,12 @@ class AuthSso extends Component
         $user->authError = UserHelper::getAuthStatus($user);
 
         if (!empty($user->authError)) {
-            throw new AuthFailedException($provider, $user, $user->authError);
+            throw new SsoFailedException($provider, $user, $user->authError);
         }
 
         // Try logging them in
         if (!$userSession->login($user, $sessionDuration)) {
-            throw new AuthFailedException($provider, $user, Craft::t('auth', "Unable to login"));
+            throw new SsoFailedException($provider, $user, Craft::t('auth', "Unable to login"));
         }
 
         return true;

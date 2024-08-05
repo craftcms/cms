@@ -5,13 +5,18 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\provider\mapper;
+namespace craft\auth\sso\mapper;
 
 use Craft;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Typecast;
 use yii\base\InvalidConfigException;
 
+/**
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
+ */
 class MapFactory
 {
     /**

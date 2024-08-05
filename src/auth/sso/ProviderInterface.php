@@ -5,13 +5,19 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\provider;
+namespace craft\auth\sso;
 
-use craft\errors\AuthFailedException;
+use craft\base\ComponentInterface;
+use craft\errors\SsoFailedException;
 use yii\web\Request;
 use yii\web\Response;
 
-interface ProviderInterface
+/**
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
+ */
+interface ProviderInterface extends ComponentInterface
 {
     /**
      * Get the unique handle for the provider
@@ -27,7 +33,7 @@ interface ProviderInterface
      * @param Response $response
      * @return Response
      *
-     * @throws AuthFailedException
+     * @throws SsoFailedException
      */
     public function handleRequest(Request $request, Response $response): Response;
 
@@ -38,7 +44,7 @@ interface ProviderInterface
      * @param Response $response
      * @return bool
      *
-     * @throws AuthFailedException
+     * @throws SsoFailedException
      */
     public function handleResponse(Request $request, Response $response): bool;
 

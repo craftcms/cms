@@ -5,9 +5,14 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\provider;
+namespace craft\auth\sso;
 
-trait AuthProviderTrait
+/**
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
+*/
+trait ProviderTrait
 {
     /**
      * @var string|null Name

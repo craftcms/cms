@@ -5,13 +5,18 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\provider\mapper;
+namespace craft\auth\sso\mapper;
 
 use Craft;
 use craft\base\FieldInterface;
 use craft\elements\User;
 use craft\helpers\Json;
 
+/**
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
+ */
 trait SetUserValueTrait
 {
     /**

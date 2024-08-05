@@ -7,16 +7,16 @@
 
 namespace craft\errors;
 
-use craft\auth\provider\ProviderInterface;
+use craft\auth\sso\ProviderInterface;
 use craft\elements\User;
 use Throwable;
 use yii\base\Exception;
 
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
+ * @since 5.3.0
  */
-class AuthFailedException extends Exception
+class SsoFailedException extends Exception
 {
     /**
      * @var ProviderInterface
@@ -24,7 +24,7 @@ class AuthFailedException extends Exception
     public ProviderInterface $provider;
 
     /**
-     * @var ?User
+     * @var User|null
      */
     public ?User $identity;
 

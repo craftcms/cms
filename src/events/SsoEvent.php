@@ -7,15 +7,15 @@
 
 namespace craft\events;
 
-use craft\auth\provider\ProviderInterface;
+use craft\auth\sso\ProviderInterface;
 
 /**
- * User Auth event class.
+ * SSO event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
+ * @since 5.3.0
  */
-class UserAuthEvent extends UserEvent
+class SsoEvent extends UserEvent
 {
     /**
      * @var ProviderInterface The provider associated with the event.

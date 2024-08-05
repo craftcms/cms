@@ -3,7 +3,7 @@ An example provider
 
 ```php
 'components' => [
-    'authSso' => [
+    'sso' => [
         'providers' => [
             'test' => [
                 'type' => \craft\auth\oidc\Google::class,

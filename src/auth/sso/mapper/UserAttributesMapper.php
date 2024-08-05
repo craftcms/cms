@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\provider\mapper;
+namespace craft\auth\sso\mapper;
 
 use craft\elements\User;
 use yii\base\BaseObject;
@@ -13,6 +13,10 @@ use yii\base\InvalidConfigException;
 
 /**
  * Set multiple User attributes
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
  */
 class UserAttributesMapper extends BaseObject implements UserMapInterface
 {

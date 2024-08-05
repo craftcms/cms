@@ -5,27 +5,33 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\provider;
+namespace craft\auth\sso;
 
 use Craft;
-use craft\auth\provider\mapper\UserAttributesMapper;
+use craft\auth\sso\mapper\UserAttributesMapper;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
-use craft\errors\AuthFailedException;
-use craft\events\UserAuthEvent;
+use craft\errors\SsoFailedException;
+use craft\events\SsoEvent;
 use craft\events\UserGroupsAssignEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\services\AuthSso;
+use craft\services\Sso;
 
 /**
+ * BaseExternalProvider provides a base implementation for external identity providers.
+ *
  * We should always trust an external provider; therefore we need to perform additional
  * operations such as finding, populating and linking a Craft user.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
  */
-abstract class AbstractExternalProvider extends AbstractProvider
+abstract class BaseExternalProvider extends BaseProvider
 {
     /**
      * Override the default IdP unique identifier.  This value will be used to uniquely link a Craft User
@@ -97,7 +103,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
      */
     protected function getRequestUrl(): ?string
     {
-        return UrlHelper::actionUrl('auth-sso/request', ['provider' => $this->handle], null, false);
+        return UrlHelper::actionUrl('sso/request', ['provider' => $this->handle], null, false);
     }
 
     /**
@@ -107,7 +113,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
      */
     protected function getResponseUrl(): ?string
     {
-        return UrlHelper::actionUrl('auth-sso/response', ['provider' => $this->handle], null, false);
+        return UrlHelper::actionUrl('sso/response', ['provider' => $this->handle], null, false);
     }
 
     /**
@@ -142,7 +148,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
     {
         // First, look in storage
         if ($idpIdentifier) {
-            $user = Craft::$app->getAuthSso()->findUser(
+            $user = Craft::$app->getSso()->findUser(
                 $this,
                 (string) $idpIdentifier
             );
@@ -192,7 +198,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
 
         // Save user
         if (!Craft::$app->getElements()->saveElement($user)) {
-            throw new AuthFailedException(
+            throw new SsoFailedException(
                 $this,
                 $user,
                 sprintf(
@@ -203,7 +209,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
         }
 
         // Link User to IdP for future logins
-        Craft::$app->getAuthSso()->linkUserToIdentity($user, $this, $idpIdentifier);
+        Craft::$app->getSso()->linkUserToIdentity($user, $this, $idpIdentifier);
 
         // Assign User Groups
         $this->assignUserToGroups($user, $data);
@@ -240,7 +246,7 @@ abstract class AbstractExternalProvider extends AbstractProvider
             'groupIds' => $groupIds,
         ]);
 
-        $this->trigger(AuthSso::EVENT_POPULATE_USER_GROUPS, $event);
+        $this->trigger(Sso::EVENT_POPULATE_USER_GROUPS, $event);
 
         return Craft::$app->getUsers()->assignUserToGroups(
             $user->getId(),
@@ -314,13 +320,13 @@ abstract class AbstractExternalProvider extends AbstractProvider
             $user = call_user_func_array($populateUser, [$user, $data]);
         }
 
-        $event = new UserAuthEvent([
+        $event = new SsoEvent([
             'user' => $user,
             'provider' => $this,
             'sender' => $data,
         ]);
 
-        $this->trigger(AuthSso::EVENT_POPULATE_USER, $event);
+        $this->trigger(Sso::EVENT_POPULATE_USER, $event);
 
         return $event->user;
     }

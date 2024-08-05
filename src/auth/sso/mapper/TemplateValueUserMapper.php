@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\provider\mapper;
+namespace craft\auth\sso\mapper;
 
 use Craft;
 use craft\base\Component;
@@ -13,6 +13,10 @@ use craft\elements\User;
 
 /**
  * Set a value from a parsed view template as a User's attribute
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
  */
 class TemplateValueUserMapper extends Component implements UserMapInterface
 {

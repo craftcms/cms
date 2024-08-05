@@ -5,13 +5,17 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\provider\mapper;
+namespace craft\auth\sso\mapper;
 
 use craft\base\Component;
 use craft\elements\User;
 
 /**
  * Set an explicit value as a User's attribute
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
  */
 class ExplicitUserMapper extends Component implements UserMapInterface
 {

@@ -29,9 +29,6 @@ return [
         'auth' => [
             'class' => craft\services\Auth::class,
         ],
-        'authSso' => [
-            'class' => craft\services\AuthSso::class,
-        ],
         'categories' => [
             'class' => craft\services\Categories::class,
         ],
@@ -179,6 +176,9 @@ return [
         'sites' => [
             'class' => craft\services\Sites::class,
             'currentSite' => craft\helpers\App::env('CRAFT_SITE'),
+        ],
+        'sso' => [
+            'class' => craft\services\Sso::class,
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,

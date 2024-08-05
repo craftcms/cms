@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\auth\provider\mapper;
+namespace craft\auth\sso\mapper;
 
 use Craft;
 use craft\base\Component;
@@ -14,6 +14,10 @@ use craft\helpers\ArrayHelper;
 
 /**
  * Set a value from the IdP as a User's attribute
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @internal
+ * @since 5.3.0
  */
 class IdpAttributeUserMapper extends Component implements UserMapInterface
 {
