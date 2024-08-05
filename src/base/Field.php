@@ -8,11 +8,13 @@
 namespace craft\base;
 
 use Craft;
+use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\AttributeStatus;
 use craft\events\DefineFieldHtmlEvent;
 use craft\events\DefineFieldKeywordsEvent;
 use craft\events\FieldElementEvent;
+use craft\events\FieldEvent;
 use craft\gql\types\QueryArgument;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -20,6 +22,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
@@ -126,6 +129,20 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public const EVENT_DEFINE_INPUT_HTML = 'defineInputHtml';
 
+    /**
+     * @event FieldEvent The event that is triggered after the field has been merged into another.
+     * @see afterMergeInto()
+     * @since 5.3.0
+     */
+    public const EVENT_AFTER_MERGE_INTO = 'afterMergeInto';
+
+    /**
+     * @event FieldEvent The event that is triggered after another field has been merged into this one.
+     * @see afterMergeFrom()
+     * @since 5.3.0
+     */
+    public const EVENT_AFTER_MERGE_FROM = 'afterMergeFrom';
+
     // Translation methods
     // -------------------------------------------------------------------------
 
@@ -218,7 +235,14 @@ abstract class Field extends SavableComponent implements FieldInterface
             return false;
         }
 
-        return Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
+        if (is_array($value) && isset($value['value'])) {
+            $caseInsensitive = $value['caseInsensitive'] ?? false;
+            $value = $value['value'];
+        } else {
+            $caseInsensitive = false;
+        }
+
+        return Db::parseParam($valueSql, $value, caseInsensitive: $caseInsensitive, columnType: Schema::TYPE_JSON);
     }
 
     /**
@@ -476,6 +500,22 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getUiLabel(): string
     {
         return Craft::t('site', $this->name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl(): ?string
+    {
+        return $this->id ? UrlHelper::cpUrl("settings/fields/edit/$this->id") : null;
     }
 
     /**
@@ -740,7 +780,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * [[\craft\base\ElementInterface::sortOptions()|sortOptions()]] response.
      *
      * @return array
-     * @see \craft\base\SortableFieldInterface::getSortOption()
+     * @see SortableFieldInterface::getSortOption
      * @since 3.2.0
      */
     public function getSortOption(): array
@@ -749,11 +789,75 @@ abstract class Field extends SavableComponent implements FieldInterface
             throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
         }
 
+        // The attribute name should match the table attribute name,
+        // per ElementSources::getTableAttributesForFieldLayouts()
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => [$this->getValueSql(), 'id'],
-            'attribute' => "field:{$this->layoutElement->uid}",
+            'orderBy' => $this->getValueSql(),
+            'attribute' => isset($this->layoutElement->handle)
+                ? "fieldInstance:{$this->layoutElement->uid}"
+                : "field:$this->uid",
         ];
+    }
+
+    /**
+     * Returns whether the field can be merged into the given field.
+     *
+     * @param FieldInterface $persistingField
+     * @param string|null $reason
+     * @return bool
+     * @since 5.3.0
+     */
+    public function canMergeInto(FieldInterface $persistingField, ?string &$reason): bool
+    {
+        // Go with whether the DB types are compatible by default
+        return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $persistingField::class);
+    }
+
+    /**
+     * Returns whether the given field can be merged into this one.
+     *
+     * @param FieldInterface $outgoingField
+     * @param string|null $reason
+     * @return bool
+     * @since 5.3.0
+     */
+    public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
+    {
+        // Go with whether the DB types are compatible by default
+        return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $outgoingField::class);
+    }
+
+    /**
+     * Performs actions after the field has been merged into the given field.
+     *
+     * @param FieldInterface $persistingField
+     * @since 5.3.0
+     */
+    public function afterMergeInto(FieldInterface $persistingField)
+    {
+        // Fire an 'afterMergeInto' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_INTO)) {
+            $this->trigger(self::EVENT_AFTER_MERGE_INTO, new FieldEvent(['field' => $persistingField]));
+        }
+    }
+
+    /**
+     * Performs actions after the given field has been merged into this one.
+     *
+     * @param FieldInterface $outgoingField
+     * @since 5.3.0
+     */
+    public function afterMergeFrom(FieldInterface $outgoingField)
+    {
+        if ($this instanceof RelationalFieldInterface) {
+            Db::update(DbTable::RELATIONS, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+        }
+
+        // Fire an 'afterMergeFrom' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_FROM)) {
+            $this->trigger(self::EVENT_AFTER_MERGE_FROM, new FieldEvent(['field' => $outgoingField]));
+        }
     }
 
     /**

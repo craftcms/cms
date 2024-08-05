@@ -494,7 +494,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     {
         /** @var AssetQuery|ElementCollection $value */
         if ($value instanceof AssetQuery) {
-            $handle = sprintf('%s-%s', preg_replace('/:+/', '-', __METHOD__), $size);
+            $handle = sprintf('%s-%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id, $size);
             $value = (clone $value)->eagerly($handle);
         }
 

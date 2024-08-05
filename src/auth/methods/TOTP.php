@@ -179,7 +179,7 @@ JS, [
             }
         }
 
-        return chunk_split($secret, 4, ' ');
+        return rtrim(chunk_split($secret, 4, ' '));
     }
 
     /**

@@ -293,6 +293,13 @@ class View extends \yii\web\View
     private array $_metaTagBuffers = [];
 
     /**
+     * @var array
+     * @see startAssetBundleBuffer()
+     * @see clearAssetBundleBuffer()
+     */
+    private array $_assetBundleBuffers = [];
+
+    /**
      * @var array|null the registered generic `<script>` code blocks
      * @see registerScript()
      */
@@ -789,8 +796,8 @@ class View extends \yii\web\View
      * - TemplateName/index.twig
      *
      * If this is a front-end request, the actual list of file extensions and
-     * index filenames are configurable via the <config4:defaultTemplateExtensions>
-     * and <config4:indexTemplateFilenames> config settings.
+     * index filenames are configurable via the <config5:defaultTemplateExtensions>
+     * and <config5:indexTemplateFilenames> config settings.
      *
      * For example if you set the following in config/general.php:
      *
@@ -1258,6 +1265,39 @@ class View extends \yii\web\View
     }
 
     /**
+     * Starts a buffer for any asset bundles registered with [[registerAssetBundle()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearAssetBundleBuffer()]].
+     *
+     * @see clearAssetBundleBuffer()
+     * @since 5.3.0
+     */
+    public function startAssetBundleBuffer(): void
+    {
+        $this->_assetBundleBuffers[] = $this->assetBundles;
+        $this->assetBundles = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startAssetBundleBuffer()]], returning any asset bundles that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The asset bundles that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     * @see startAssetBundleBuffer()
+     * @since 5.3.0
+     */
+    public function clearAssetBundleBuffer(): array|false
+    {
+        if (empty($this->_assetBundleBuffers)) {
+            return false;
+        }
+
+        $bufferedAssetBundles = $this->assetBundles;
+        $this->assetBundles = array_pop($this->_assetBundleBuffers);
+        return $bufferedAssetBundles;
+    }
+
+    /**
      * @inheritdoc
      */
     public function registerJsFile($url, $options = [], $key = null): void
@@ -1550,7 +1590,7 @@ JS;
      *
      * @return string[]
      * @see registerDeltaName()
-     * @since 4.10.1
+     * @since 5.2.1
      */
     public function getModifiedDeltaNames(): array
     {

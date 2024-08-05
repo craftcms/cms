@@ -218,7 +218,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   focusLabelInput: function () {
-    this.selectedSource.$labelInput.trigger('focus');
+    this.selectedSource.$labelInput.focus();
   },
 
   getSourceName: function () {
@@ -298,7 +298,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     this.addListener(this.$sidebarCloseBtn, 'click', () => {
       this.toggleSidebar();
-      this.$sidebarToggleBtn.trigger('focus');
+      this.$sidebarToggleBtn.focus();
     });
   },
 
@@ -450,8 +450,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
         window.location.reload();
       })
-      .catch(() => {
-        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+      .catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
       })
       .finally(() => {
         this.$saveBtn.removeClass('loading');
@@ -971,7 +971,7 @@ Craft.CustomizeSourcesModal.Heading =
 
       $container.append('<hr/>');
 
-      this.$deleteBtn = $('<a class="error delete"/>')
+      this.$deleteBtn = $('<a class="error delete pointer"/>')
         .text(Craft.t('app', 'Delete heading'))
         .attr({
           role: 'button',

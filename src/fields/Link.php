@@ -12,6 +12,9 @@ use craft\base\ElementInterface;
 use craft\base\Event;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
+use craft\base\RelationalFieldInterface;
+use craft\base\RelationalFieldTrait;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\fields\data\LinkData;
@@ -37,8 +40,10 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-class Link extends Field implements InlineEditableFieldInterface
+class Link extends Field implements InlineEditableFieldInterface, RelationalFieldInterface, MergeableFieldInterface
 {
+    use RelationalFieldTrait;
+
     /**
      * @event DefineLinkOptionsEvent The event that is triggered when registering the link types for Link fields.
      * @see types()
@@ -246,6 +251,7 @@ class Link extends Field implements InlineEditableFieldInterface
         $html = Cp::checkboxSelectFieldHtml([
             'label' => Craft::t('app', 'Allowed Link Types'),
             'id' => 'types',
+            'fieldClass' => 'mb-0',
             'name' => 'types',
             'options' => $linkTypeOptions,
             'values' => $this->types,
@@ -261,13 +267,16 @@ class Link extends Field implements InlineEditableFieldInterface
             $typeSettingsHtml = $view->namespaceInputs(fn() => $linkType->getSettingsHtml(), "typeSettings[$typeId]");
             if ($typeSettingsHtml) {
                 $html .=
+                    Html::beginTag('div', [
+                        'id' => "types-$typeId",
+                        'class' => array_keys(array_filter([
+                            'pt-xl' => true,
+                            'hidden' => !isset($linkTypes[$typeId]),
+                        ])),
+                    ]) .
                     Html::tag('hr') .
-                    Html::tag('div', $typeSettingsHtml, [
-                    'id' => "types-$typeId",
-                    'class' => array_keys(array_filter([
-                        'hidden' => !isset($linkTypes[$typeId]),
-                    ])),
-                ]);
+                    $typeSettingsHtml .
+                    Html::endTag('div');
             }
         }
 
@@ -473,5 +482,20 @@ JS;
         }
         $value = Html::encode((string)$value);
         return "<a href=\"$value\" target=\"_blank\">$value</a>";
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRelationTargetIds(ElementInterface $element): array
+    {
+        $targetIds = [];
+        /** @var LinkData|null $value */
+        $value = $element->getFieldValue($this->handle);
+        $element = $value?->getElement();
+        if ($element) {
+            $targetIds[] = $element->id;
+        }
+        return $targetIds;
     }
 }

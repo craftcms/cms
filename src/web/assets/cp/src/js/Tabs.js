@@ -130,7 +130,7 @@ Craft.Tabs = Garnish.Base.extend({
     this.makeTabFocusable($tab);
 
     if (focusTab) {
-      $tab.trigger('focus');
+      $tab.focus();
     }
 
     this.scrollToTab($tab);

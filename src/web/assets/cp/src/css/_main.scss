@@ -51,6 +51,7 @@
   --ui-control-border-radius: var(--large-border-radius);
   --ui-control-height: calc(34rem / 16);
   --ui-control-height--small: calc(30rem / 16);
+  --focus-ring-alpha: 0.85;
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -58,9 +59,11 @@
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)},
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
+    0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
+  --focus-ring-outset: inset 0 0 0 1px currentColor,
+    0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+    inset 0 0 0 3px hsla(var(--dark-focus-hsl), var(--focus-ring-alpha));
   --touch-target-size: calc(
     24rem / 16
   ); /* Minimum recommended touch target size */
@@ -144,6 +147,9 @@ fieldset:last-child,
 .mt-0 {
   margin-top: 0 !important;
 }
+.mt-2xs {
+  margin-top: var(--2xs) !important;
+}
 .mt-xs {
   margin-top: var(--xs) !important;
 }
@@ -162,6 +168,9 @@ fieldset:last-child,
 
 .mb-0 {
   margin-bottom: 0 !important;
+}
+.mb-2xs {
+  margin-bottom: var(--2xs) !important;
 }
 .mb-xs {
   margin-bottom: var(--xs) !important;
@@ -182,6 +191,9 @@ fieldset:last-child,
 .ml-0 {
   margin-left: 0 !important;
 }
+.ml-2xs {
+  margin-left: var(--2xs) !important;
+}
 .ml-xs {
   margin-left: var(--xs) !important;
 }
@@ -200,6 +212,9 @@ fieldset:last-child,
 
 .mr-0 {
   margin-right: 0 !important;
+}
+.mr-2xs {
+  margin-right: var(--2xs) !important;
 }
 .mr-xs {
   margin-right: var(--xs) !important;
@@ -220,6 +235,10 @@ fieldset:last-child,
 .mx-0 {
   margin-left: 0 !important;
   margin-right: 0 !important;
+}
+.mx-2xs {
+  margin-left: var(--2xs) !important;
+  margin-right: var(--2xs) !important;
 }
 .mx-xs {
   margin-left: var(--xs) !important;
@@ -246,6 +265,10 @@ fieldset:last-child,
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
+.my-2xs {
+  margin-top: var(--2xs) !important;
+  margin-bottom: var(--2xs) !important;
+}
 .my-xs {
   margin-top: var(--xs) !important;
   margin-bottom: var(--xs) !important;
@@ -265,6 +288,152 @@ fieldset:last-child,
 .my-xl {
   margin-top: var(--xl) !important;
   margin-bottom: var(--xl) !important;
+}
+
+.pt-0 {
+  padding-top: 0 !important;
+}
+.pt-2xs {
+  padding-top: var(--2xs) !important;
+}
+.pt-xs {
+  padding-top: var(--xs) !important;
+}
+.pt-s {
+  padding-top: var(--s) !important;
+}
+.pt-m {
+  padding-top: var(--m) !important;
+}
+.pt-l {
+  padding-top: var(--l) !important;
+}
+.pt-xl {
+  padding-top: var(--xl) !important;
+}
+
+.pb-0 {
+  padding-bottom: 0 !important;
+}
+.pb-2xs {
+  padding-bottom: var(--2xs) !important;
+}
+.pb-xs {
+  padding-bottom: var(--xs) !important;
+}
+.pb-s {
+  padding-bottom: var(--s) !important;
+}
+.pb-m {
+  padding-bottom: var(--m) !important;
+}
+.pb-l {
+  padding-bottom: var(--l) !important;
+}
+.pb-xl {
+  padding-bottom: var(--xl) !important;
+}
+
+.pl-0 {
+  padding-left: 0 !important;
+}
+.pl-2xs {
+  padding-left: var(--2xs) !important;
+}
+.pl-xs {
+  padding-left: var(--xs) !important;
+}
+.pl-s {
+  padding-left: var(--s) !important;
+}
+.pl-m {
+  padding-left: var(--m) !important;
+}
+.pl-l {
+  padding-left: var(--l) !important;
+}
+.pl-xl {
+  padding-left: var(--xl) !important;
+}
+
+.pr-0 {
+  padding-right: 0 !important;
+}
+.pr-2xs {
+  padding-right: var(--2xs) !important;
+}
+.pr-xs {
+  padding-right: var(--xs) !important;
+}
+.pr-s {
+  padding-right: var(--s) !important;
+}
+.pr-m {
+  padding-right: var(--m) !important;
+}
+.pr-l {
+  padding-right: var(--l) !important;
+}
+.pr-xl {
+  padding-right: var(--xl) !important;
+}
+
+.px-0 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.px-2xs {
+  padding-left: var(--2xs) !important;
+  padding-right: var(--2xs) !important;
+}
+.px-xs {
+  padding-left: var(--xs) !important;
+  padding-right: var(--xs) !important;
+}
+.px-s {
+  padding-left: var(--s) !important;
+  padding-right: var(--s) !important;
+}
+.px-m {
+  padding-left: var(--m) !important;
+  padding-right: var(--m) !important;
+}
+.px-l {
+  padding-left: var(--l) !important;
+  padding-right: var(--l) !important;
+}
+.px-xl {
+  padding-left: var(--xl) !important;
+  padding-right: var(--xl) !important;
+}
+
+.py-0 {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.py-2xs {
+  padding-top: var(--2xs) !important;
+  padding-bottom: var(--2xs) !important;
+}
+.py-xs {
+  padding-top: var(--xs) !important;
+  padding-bottom: var(--xs) !important;
+}
+.py-s {
+  padding-top: var(--s) !important;
+  padding-bottom: var(--s) !important;
+}
+.py-m {
+  padding-top: var(--m) !important;
+  padding-bottom: var(--m) !important;
+}
+.py-l {
+  padding-top: var(--l) !important;
+  padding-bottom: var(--l) !important;
+}
+.py-xl {
+  padding-top: var(--xl) !important;
+  padding-bottom: var(--xl) !important;
 }
 
 .center-absolute {
@@ -1283,6 +1452,7 @@ td.right {
 }
 
 .customize-sources-item {
+  --light-text-color: var(--gray-600);
   --selected-item-color: var(--white);
   display: flex;
   width: calc(100% - 1px);
@@ -1307,7 +1477,7 @@ td.right {
   }
 
   &.sel {
-    @include light-focus-ring;
+    @include dark-btn-light-bg-focus-ring;
     --ui-control-color: var(--selected-item-color);
     background-color: var(--dark-sel-color);
     color: var(--selected-item-color);
@@ -1513,6 +1683,38 @@ ul.icons {
   align-items: center;
   align-content: stretch;
   gap: var(--s);
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.items-end {
+  align-items: end;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-baseline {
+  align-items: baseline;
+}
+
+.items-stretch {
+  align-items: stretch;
+}
+
+.gap-2xs {
+  gap: var(--2xs);
 }
 
 .gap-xs {
@@ -1841,8 +2043,10 @@ ul.icons {
   .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not(
       [aria-disabled]
     ) {
+    --focus-ring: var(--focus-ring-outset);
     background-color: var(--gray-500);
     color: var(--white);
+    @include dark-btn-light-bg-focus-ring;
   }
 }
 
@@ -2090,6 +2294,7 @@ ul.icons {
   &.secondary {
     color: var(--white) !important;
     --ui-control-active-color: var(--white);
+    --focus-ring: var(--focus-ring-outset);
     @include light-on-dark-text;
   }
 
@@ -3085,6 +3290,10 @@ table {
       margin: -4px -1px 0;
     }
 
+    .chip-label {
+      padding: var(--2xs) 0;
+    }
+
     .chip-actions {
       margin-left: auto;
     }
@@ -3365,7 +3574,7 @@ table {
   }
 
   & > .cp-icon {
-    @include margin(0, -4px, 0, -2px);
+    @include margin(3px, -4px, 0, -2px);
   }
 
   .card-content,
@@ -3399,7 +3608,7 @@ table {
         display: none;
       }
 
-      & > * {
+      & > *:not(:has(> .no-truncate)) {
         --max-lines: 2;
         margin: 0;
         max-height: calc(var(--lh) * var(--max-lines));
@@ -3514,6 +3723,11 @@ table {
       &:focus {
         box-shadow: var(--inner-focus-ring);
       }
+    }
+
+    // label links inside cards and chip should be coloured as regular a tags despite not having href attribute
+    a.label-link {
+      color: var(--link-color);
     }
 
     .segment:after {
@@ -3810,6 +4024,20 @@ table {
     .chip {
       background-color: transparent;
     }
+
+    tr.disabled {
+      opacity: 1;
+
+      & > th > div > *,
+      & > td {
+        opacity: 0.25;
+      }
+
+      & > th > div > button.toggle {
+        opacity: 1;
+        pointer-events: all;
+      }
+    }
   }
 
   // thumbs views
@@ -4052,6 +4280,32 @@ table.editable {
     color: var(--medium-text-color);
     font-weight: normal;
     background-color: var(--gray-050);
+
+    button:not(.lightswitch),
+    a {
+      display: inline-flex;
+      width: var(--touch-target-size);
+      height: var(--touch-target-size);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flex {
+      gap: 0;
+    }
+  }
+
+  td.action {
+    padding-left: var(--xs) !important;
+    padding-right: var(--xs) !important;
+
+    &:has(+ td.action) {
+      padding-right: 0 !important;
+    }
+
+    & + td.action {
+      padding-left: 0 !important;
+    }
   }
 
   thead,
@@ -5211,19 +5465,19 @@ table.data tbody tr:not(.disabled).active-drop-target {
     resize: none;
   }
 
+  & > .field .heading,
+  & > fieldset > legend {
+    margin: 0 0 var(--s);
+  }
+
   & > .field > .heading > label,
   & > fieldset > legend {
-    margin-top: 0;
     font-weight: normal;
     color: var(--gray-600);
   }
 
-  & > fieldset {
-    margin: 0 0 var(--spacing);
-
-    & > legend {
-      margin-bottom: 5px;
-    }
+  & > .field > .heading > label {
+    margin: 0;
   }
 
   & > .field {
@@ -5241,6 +5495,10 @@ table.data tbody tr:not(.disabled).active-drop-target {
       background-color: var(--gray-050) !important;
       width: calc(100% + var(--padding) + var(--padding));
     }
+  }
+
+  & > fieldset {
+    margin: var(--spacing) 0 !important;
   }
 
   & > .text {
@@ -6876,12 +7134,10 @@ $min2ColWidth: 400px;
   & > a:not(.crumb-link),
   & > .menu-item,
   & > .menu-option {
+    --focus-ring: var(--inner-focus-ring);
+
     &:hover {
       @include disclosure-link-hover-styles;
-    }
-
-    @include focus-styles {
-      box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
     }
   }
 }
@@ -8569,6 +8825,7 @@ body.licensing-issues {
 
   .flex-fields {
     --row-gap: var(--m) !important;
+    --padding: var(--m);
   }
 
   // no margin when a .field comes after a hidden item.
@@ -8851,6 +9108,37 @@ body.sitepicker {
         z-index: 1;
       }
     }
+  }
+}
+
+.entry-mover-modal {
+  --width: calc(var(--ui-control-height) * 10 + var(--s) * 9 + var(--xl) * 2);
+  width: var(--width) !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 20px) !important;
+  max-height: 200px;
+
+  .header {
+    padding-top: calc(var(--m));
+    padding-bottom: calc(var(--m));
+    text-align: center;
+  }
+
+  .body {
+    .entry-mover-modal--list {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+  }
+
+  .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
   }
 }
 

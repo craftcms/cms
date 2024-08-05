@@ -295,7 +295,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
       this.killSearchMenu();
       this.$addTagInput.val('');
-      this.$addTagInput.trigger('focus');
+      this.$addTagInput.focus();
 
       if (!id) {
         // We need to create the tag first
@@ -313,9 +313,9 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
             $element.removeClass('loading disabled');
           })
-          .catch(({response}) => {
+          .catch((e) => {
             this.removeElement($element);
-            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+            Craft.cp.displayError(e?.response?.data?.message);
           });
       }
     },

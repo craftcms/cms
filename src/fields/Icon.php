@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\ThumbableFieldInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -22,7 +23,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
-class Icon extends Field implements InlineEditableFieldInterface, ThumbableFieldInterface
+class Icon extends Field implements InlineEditableFieldInterface, ThumbableFieldInterface, MergeableFieldInterface
 {
     /**
      * @inheritdoc

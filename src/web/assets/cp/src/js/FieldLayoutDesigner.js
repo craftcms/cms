@@ -374,7 +374,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         // Hold off a sec until it's positioned...
         Garnish.requestAnimationFrame(() => {
           // Focus on the first text input
-          slideout.$container.find('.text:first').trigger('focus');
+          slideout.$container.find('.text:first').focus();
         });
       });
 

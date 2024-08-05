@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
@@ -28,7 +29,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface
+class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
 {
     /**
      * @since 3.5.11

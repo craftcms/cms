@@ -97,12 +97,26 @@ Craft.EditableTable = Garnish.Base.extend(
 
       this.$addRowBtn = this.$table.next('.add');
       this.updateAddRowButton();
+
+      // If there's only one row, disable the action button
+      const $actionButtons = this.$tbody.find('.action-btn');
+      if (this.rowCount === 1) {
+        $actionButtons.attr('disabled', 'disabled').addClass('disabled');
+      }
+
       this.addListener(this.$addRowBtn, 'activate', 'addRow');
+
+      // don't allow lazyInitRows if any of the columns are radio checkboxes
+      this.settings.lazyInitRows =
+        this.settings.lazyInitRows &&
+        !Object.entries(this.columns).some(
+          ([colId, col]) => col.type === 'checkbox' && col.radioMode
+        );
 
       if (this.settings.lazyInitRows) {
         // Lazily create the row objects
         this.addListener(
-          this.$tbody,
+          this.$tbody.add($actionButtons),
           'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
           (ev) => {
             const $target = $(ev.target);
@@ -114,7 +128,7 @@ Craft.EditableTable = Garnish.Base.extend(
               this.createRowObj($tr);
               setTimeout(() => {
                 if ($textarea && !$textarea.is(':focus')) {
-                  $textarea.trigger('focus');
+                  $textarea.focus();
                 }
               }, 100);
             }
@@ -164,6 +178,7 @@ Craft.EditableTable = Garnish.Base.extend(
       }
 
       const $deleteBtn = $row.find('button.delete');
+      const $actionsBtn = $row.find('button.action-btn');
 
       if ($deleteBtn.length) {
         $deleteBtn.attr(
@@ -176,6 +191,20 @@ Craft.EditableTable = Garnish.Base.extend(
           $deleteBtn.removeAttr('disabled').removeClass('disabled');
         } else {
           $deleteBtn.attr('disabled', 'disabled').addClass('disabled');
+        }
+      }
+
+      if ($actionsBtn.length) {
+        const name = `${Craft.t('app', 'Row {index}', {
+          index: $row.index() + 1,
+        })} ${Craft.t('app', 'Actions')}`;
+        $actionsBtn.attr('aria-label', name);
+
+        if (this.rowCount === 1) {
+          $actionsBtn.attr('disabled', 'disabled').addClass('disabled');
+          $actionsBtn.attr('disabled', 'disabled').addClass('disabled');
+        } else {
+          $actionsBtn.removeAttr('disabled').removeClass('disabled');
         }
       }
     },
@@ -228,10 +257,10 @@ Craft.EditableTable = Garnish.Base.extend(
 
       if (this.rowCount === 0) {
         this.$table.addClass('hidden');
-        this.$addRowBtn.trigger('focus');
+        this.$addRowBtn.focus();
       } else {
         // Focus element in previous row
-        this.$tbody.find(':focusable').last().trigger('focus');
+        this.$tbody.find(':focusable').last().focus();
       }
 
       // onDeleteRow callback
@@ -278,7 +307,7 @@ Craft.EditableTable = Garnish.Base.extend(
         $tr
           .find('input:visible,textarea:visible,select:visible')
           .first()
-          .trigger('focus');
+          .focus();
       }
 
       this.rowCount++;
@@ -340,7 +369,7 @@ Craft.EditableTable = Garnish.Base.extend(
       var $input = $('textarea,input.text', prevRow.$tds[tdIndex]);
       if ($input.length) {
         $(blurTd).trigger('blur');
-        $input.trigger('focus');
+        $input.focus();
       }
     },
 
@@ -373,7 +402,7 @@ Craft.EditableTable = Garnish.Base.extend(
       var $input = $('textarea,input.text', nextRow.$tds[tdIndex]);
       if ($input.length) {
         $(blurTd).trigger('blur');
-        $input.trigger('focus');
+        $input.focus();
       }
     },
 
@@ -577,6 +606,19 @@ Craft.EditableTable = Garnish.Base.extend(
       }
 
       if (allowReorder) {
+        const containerId = `menu-${Math.floor(Math.random() * 1000000)}`;
+        const $actionsBtn = $('<button/>', {
+          class: 'btn menu-btn action-btn',
+          type: 'button',
+          title: Craft.t('app', 'Actions'),
+          'aria-controls': containerId,
+          'data-disclosure-trigger': 'true',
+        });
+        const $menuContainer = $('<div/>', {
+          id: containerId,
+          class: 'menu menu--disclosure',
+        });
+
         $('<td/>', {
           class: 'thin action',
         })
@@ -588,7 +630,25 @@ Craft.EditableTable = Garnish.Base.extend(
               type: 'button',
             })
           )
+          .append('&nbsp;')
+          .append($actionsBtn)
+          .append($menuContainer)
           .appendTo($tr);
+
+        const menu = $actionsBtn.disclosureMenu().data('disclosureMenu');
+
+        menu.addItems([
+          {
+            icon: 'arrow-up',
+            label: Craft.t('app', 'Move up'),
+            attributes: {'data-action': 'moveUp'},
+          },
+          {
+            icon: 'arrow-down',
+            label: Craft.t('app', 'Move down'),
+            attributes: {'data-action': 'moveDown'},
+          },
+        ]);
       }
 
       if (allowDelete) {
@@ -624,6 +684,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
     tds: null,
     $textareas: null,
     $deleteBtn: null,
+
+    get prevRow() {
+      return this.$tr.prev('tr');
+    },
+
+    get nextRow() {
+      return this.$tr.next('tr');
+    },
 
     init: function (table, tr) {
       this.table = table;
@@ -778,6 +846,95 @@ Craft.EditableTable.Row = Garnish.Base.extend(
       this.addListener($inputs, 'blur', function (ev) {
         $(ev.currentTarget).closest('td').removeClass('focus');
       });
+
+      // Action menu modification
+      const $actionMenuBtn = this.$tr.find('> .action .action-btn');
+
+      const actionDisclosure =
+        $actionMenuBtn.data('trigger') ||
+        new Garnish.DisclosureMenu($actionMenuBtn);
+
+      this.$actionMenu = actionDisclosure.$container;
+      this.actionDisclosure = actionDisclosure;
+
+      actionDisclosure.on('show', () => {
+        this.updateDisclosureMenu();
+
+        // Fixes issue focusing caused by hiding button
+        const $focusableBtn = Garnish.firstFocusableElement(this.$actionMenu);
+        $focusableBtn.focus();
+      });
+
+      this.$actionMenuOptions = this.$actionMenu.find('button[data-action]');
+
+      this.addListener(
+        this.$actionMenuOptions,
+        'activate',
+        this.handleActionClick
+      );
+    },
+
+    updateDisclosureMenu: function () {
+      if (this.prevRow.length) {
+        this.$actionMenu
+          .find('button[data-action=moveUp]:first')
+          .parent()
+          .removeClass('hidden');
+      } else {
+        this.$actionMenu
+          .find('button[data-action=moveUp]:first')
+          .parent()
+          .addClass('hidden');
+      }
+      if (this.nextRow.length) {
+        this.$actionMenu
+          .find('button[data-action=moveDown]:first')
+          .parent()
+          .removeClass('hidden');
+      } else {
+        this.$actionMenu
+          .find('button[data-action=moveDown]:first')
+          .parent()
+          .addClass('hidden');
+      }
+    },
+
+    handleActionClick: function (event) {
+      event.preventDefault();
+      this.onActionSelect(event.target);
+    },
+
+    onActionSelect: function (option) {
+      $option = $(option);
+      switch ($option.data('action')) {
+        case 'moveUp': {
+          this.moveUp();
+          break;
+        }
+
+        case 'moveDown': {
+          this.moveDown();
+          break;
+        }
+      }
+
+      this.actionDisclosure.hide();
+    },
+
+    moveUp: function () {
+      let $prev = this.prevRow;
+      if ($prev.length) {
+        this.$tr.insertBefore($prev);
+        this.table.updateAllRows();
+      }
+    },
+
+    moveDown: function () {
+      let $next = this.nextRow;
+      if ($next.length) {
+        this.$tr.insertAfter($next);
+        this.table.updateAllRows();
+      }
     },
 
     onTextareaFocus: function (ev) {

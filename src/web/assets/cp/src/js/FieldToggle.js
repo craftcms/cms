@@ -1,5 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
+import postcssValueParser from 'tailwindcss/src/value-parser';
+
 /**
  * FieldToggle
  */
@@ -109,7 +111,7 @@ Craft.FieldToggle = Garnish.Base.extend({
 
   getToggleVal: function () {
     if (this.targetPrefix !== null) {
-      return this.$toggle.val();
+      return this.normalizeToggleVal(this.$toggle.val());
     }
 
     switch (this.type) {
@@ -136,10 +138,15 @@ Craft.FieldToggle = Garnish.Base.extend({
         }
 
         // Normalize the value
-        return typeof postVal === 'undefined' || postVal === null
-          ? null
-          : postVal.replace(/[^\w]+/g, '-');
+        return this.normalizeToggleVal(postVal);
     }
+  },
+
+  normalizeToggleVal: function (val) {
+    if (!val) {
+      return null;
+    }
+    return val.replace(/[^\w]+/g, '-');
   },
 
   onToggleChange: function () {
@@ -150,17 +157,14 @@ Craft.FieldToggle = Garnish.Base.extend({
     } else {
       this.findTargets();
 
-      switch (this.type) {
-        case 'link':
-          this.onToggleChange._show =
-            this.$toggle.hasClass('collapsed') ||
-            !this.$toggle.hasClass('expanded');
-          break;
-        case 'checkbox':
-          this.onToggleChange._show = this.$toggle.prop('checked');
-          break;
-        default:
-          this.onToggleChange._show = !!this.getToggleVal();
+      if (this.type === 'link') {
+        this.onToggleChange._show =
+          this.$toggle.hasClass('collapsed') ||
+          !this.$toggle.hasClass('expanded');
+      } else if (this.type === 'checkbox' && this.targetPrefix !== null) {
+        this.onToggleChange._show = this.$toggle.prop('checked');
+      } else {
+        this.onToggleChange._show = !!this.getToggleVal();
       }
 
       if (this.onToggleChange._show) {

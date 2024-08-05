@@ -12,6 +12,8 @@ use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\db\CoalesceColumnsExpression;
+use craft\db\Command;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
@@ -1276,15 +1278,9 @@ abstract class Element extends Component implements ElementInterface
 
         $elements = static::indexElements($elementQuery, $sourceKey);
 
-        if (empty($elements)) {
-            if ($elementQuery->offset) {
-                // load-more request
-                return '';
-            }
-
-            return Html::tag('div', Craft::t('app', 'Nothing yet.'), [
-                'class' => ['zilch', 'small'],
-            ]);
+        if (empty($elements) && !$includeContainer) {
+            // load-more request
+            return '';
         }
 
         // See if there are any provisional drafts we should swap these out with
@@ -2059,7 +2055,16 @@ abstract class Element extends Component implements ElementInterface
         // See if it's a source-specific sort option
         foreach (Craft::$app->getElementSources()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
             if ($sortOption['attribute'] === $attribute) {
-                return $sortOption['orderBy'];
+                if ($sortOption['orderBy'] instanceof CoalesceColumnsExpression) {
+                    $params = [];
+                    $sql = $sortOption['orderBy']->getSql($params);
+                } elseif (is_string($sortOption['orderBy'])) {
+                    $sql = $sortOption['orderBy'];
+                } else {
+                    return $sortOption['orderBy'];
+                }
+
+                return new Expression(sprintf('%s %s', $sql, $dir === SORT_ASC ? 'ASC' : 'DESC'), $params ?? []);
             }
         }
 
@@ -2224,6 +2229,13 @@ abstract class Element extends Component implements ElementInterface
      * @see getNextSibling()
      */
     private ElementInterface|false|null $_nextSibling = null;
+
+    /**
+     * @var int[]
+     * @see getInvalidNestedElementIds()
+     * @see addInvalidNestedElementIds()
+     */
+    private array $_invalidNestedElementIds = [];
 
     /**
      * @var array<string,ElementCollection>
@@ -2703,6 +2715,7 @@ abstract class Element extends Component implements ElementInterface
     public function validate($attributeNames = null, $clearErrors = true)
     {
         $this->_attributeNames = $attributeNames ? array_flip((array)$attributeNames) : null;
+        $this->_invalidNestedElementIds = [];
         $result = parent::validate($attributeNames, $clearErrors);
         $this->_attributeNames = null;
         return $result;
@@ -5034,6 +5047,22 @@ JS, [
     /**
      * @inheritdoc
      */
+    public function getInvalidNestedElementIds(): array
+    {
+        return $this->_invalidNestedElementIds;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addInvalidNestedElementIds(array $ids): void
+    {
+        array_push($this->_invalidNestedElementIds, ...$ids);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasEagerLoadedElements(string $handle): bool
     {
         return isset($this->_eagerLoadedElements[$handle]);
@@ -5837,6 +5866,9 @@ JS,
      */
     public function afterSave(bool $isNew): void
     {
+        // Update the element’s relation data
+        $this->updateRelations();
+
         // Tell the fields about it
         foreach ($this->fieldLayoutFields() as $field) {
             $field->afterElementSave($this, $isNew);
@@ -5850,6 +5882,149 @@ JS,
         }
     }
 
+    private function updateRelations(): void
+    {
+        if (!$this->hasFieldLayout()) {
+            return;
+        }
+
+        $fields = $this->relationalFields();
+
+        /** @var int[] $skipFieldIds */
+        $skipFieldIds = [];
+        /** @var array<int,int|null> $sourceSiteIds */
+        $sourceSiteIds = [];
+        /** @var array<int,array<int,int>> $relationData */
+        $relationData = [];
+
+        foreach ($fields as $fieldId => $instances) {
+            $localizeRelations = $instances[0]->localizeRelations();
+            $include = false;
+
+            foreach ($instances as $field) {
+                // Skip if nothing changed, or the element is just propagating and we're not localizing relations
+                if (
+                    ($this->duplicateOf || $this->isFieldDirty($field->handle) || $field->forceUpdateRelations($this)) &&
+                    (!$this->propagating || $localizeRelations)
+                ) {
+                    $include = true;
+                    break;
+                }
+            }
+
+            if ($include) {
+                // Create target ID => sort order mappings for the field
+                foreach ($instances as $field) {
+                    $sourceSiteIds[$field->id] = $localizeRelations ? $this->siteId : null;
+                    $relationData[$field->id] ??= [];
+                    foreach ($field->getRelationTargetIds($this) as $targetId) {
+                        if (!isset($relationData[$field->id][$targetId])) {
+                            $relationData[$field->id][$targetId] = count($relationData[$field->id]) + 1;
+                        }
+                    }
+                }
+            } else {
+                $skipFieldIds[] = $fieldId;
+            }
+        }
+
+        // Get the old relations
+        $db = Craft::$app->getDb();
+        $query = (new Query())
+            ->select(['id', 'fieldId', 'sourceSiteId', 'targetId', 'sortOrder'])
+            ->from([Table::RELATIONS])
+            ->where(['sourceId' => $this->id])
+            ->andWhere(['or', ['sourceSiteId' => null], ['sourceSiteId' => $this->siteId]]);
+        if (!empty(($skipFieldIds))) {
+            // Exclude the skipped fields rather than listing included fields,
+            // so we also get any relations for fields that aren't part of the layout
+            // (https://github.com/craftcms/cms/issues/13956)
+            $query->andWhere(['not', ['fieldId' => $skipFieldIds]]);
+        }
+        $oldRelations = $query->all($db);
+
+        /** @var Command[] $updateCommands */
+        $updateCommands = [];
+        $deleteIds = [];
+
+        foreach ($oldRelations as $relation) {
+            [$relationId, $fieldId, $oldSourceSiteId, $targetId, $oldSortOrder] = [
+                $relation['id'],
+                $relation['fieldId'],
+                $relation['sourceSiteId'],
+                $relation['targetId'],
+                $relation['sortOrder'],
+            ];
+
+            // Does this relation still exist?
+            if (isset($relationData[$fieldId][$targetId])) {
+                // Anything to update?
+                if ($oldSourceSiteId != $sourceSiteIds[$fieldId] || $oldSortOrder != $relationData[$fieldId][$targetId]) {
+                    $updateCommands[] = $db->createCommand()->update(Table::RELATIONS, [
+                        'sourceSiteId' => $sourceSiteIds[$fieldId],
+                        'sortOrder' => $relationData[$fieldId][$targetId],
+                    ], ['id' => $relationId]);
+                }
+
+                // Avoid re-inserting it
+                unset($relationData[$fieldId][$targetId]);
+                if (empty($relationData[$fieldId])) {
+                    unset($relationData[$fieldId]);
+                }
+            } else {
+                $deleteIds[] = $relationId;
+            }
+        }
+
+        if (empty($updateCommands) && empty($deleteIds) && empty($relationData)) {
+            // Nothing to do here
+            return;
+        }
+
+        $db->transaction(function() use ($updateCommands, $deleteIds, $relationData, $sourceSiteIds, $db) {
+            foreach ($updateCommands as $command) {
+                $command->execute();
+            }
+
+            // Add the new ones
+            if (!empty($relationData)) {
+                $values = [];
+                foreach ($relationData as $fieldId => $targetIds) {
+                    foreach ($targetIds as $targetId => $sortOrder) {
+                        $values[] = [
+                            $fieldId,
+                            $this->id,
+                            $sourceSiteIds[$fieldId],
+                            $targetId,
+                            $sortOrder,
+                        ];
+                    }
+                }
+                Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $values, $db);
+            }
+
+            if (!empty($deleteIds)) {
+                Db::delete(Table::RELATIONS, [
+                    'id' => $deleteIds,
+                ], [], $db);
+            }
+        });
+    }
+
+    /**
+     * @return array<int,RelationalFieldInterface[]>
+     */
+    private function relationalFields(): array
+    {
+        $fields = [];
+        foreach ($this->fieldLayoutFields() as $field) {
+            if ($field instanceof RelationalFieldInterface) {
+                $fields[$field->id][] = $field;
+            }
+        }
+        return $fields;
+    }
+
     /**
      * @inheritdoc
      */
@@ -5858,11 +6033,6 @@ JS,
         // Tell the fields about it
         foreach ($this->fieldLayoutFields() as $field) {
             $field->afterElementPropagate($this, $isNew);
-        }
-
-        // Delete relations that don’t belong to a relational field on the element's field layout
-        if (!ElementHelper::isDraftOrRevision($this)) {
-            Craft::$app->getRelations()->deleteLeftoverRelations($this);
         }
 
         // Fire an 'afterPropagate' event
@@ -5931,9 +6101,22 @@ JS,
      */
     public function afterDeleteForSite(): void
     {
+        // Delete any site-specific relation data
+        $this->deleteSiteRelations();
+
         // Tell the fields about it
         foreach ($this->fieldLayoutFields() as $field) {
             $field->afterElementDeleteForSite($this);
+        }
+    }
+
+    private function deleteSiteRelations(): void
+    {
+        if ($this->hasFieldLayout()) {
+            Db::delete(Table::RELATIONS, [
+                'sourceSiteId' => $this->siteId,
+                'sourceId' => $this->id,
+            ]);
         }
     }
 

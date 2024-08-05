@@ -1191,6 +1191,17 @@ $.extend(Craft, {
       }
     }
 
+    // Sort the delta namespaces from least -> most specific
+    modifiedDeltaNames.sort((a, b) => {
+      if (a.length === b.length) {
+        return 0;
+      }
+      if (mostSpecific) {
+        return a.length < b.length ? 1 : -1;
+      }
+      return a.length > b.length ? 1 : -1;
+    });
+
     return [modifiedDeltaNames, groupedNewParams];
   },
 
@@ -2673,6 +2684,14 @@ $.extend(Craft, {
    */
   trapFocusWithin: function (container) {
     Garnish.trapFocusWithin(container);
+  },
+
+  /**
+   * Releases focus within a container.
+   * @param {Object} container
+   */
+  releaseFocusWithin: function (container) {
+    Garnish.releaseFocusWithin(container);
   },
 
   /**

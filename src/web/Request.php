@@ -411,8 +411,8 @@ class Request extends \yii\web\Request
      * Returns the segments of the requested path.
      *
      * ::: tip
-     * Note that the segments will not include the [control panel trigger](config4:cpTrigger)
-     * if it’s a control panel request, or the [page trigger](config4:pageTrigger)
+     * Note that the segments will not include the [control panel trigger](config5:cpTrigger)
+     * if it’s a control panel request, or the [page trigger](config5:pageTrigger)
      * or page number if it’s a paginated request.
      * :::
      *
@@ -505,7 +505,7 @@ class Request extends \yii\web\Request
     /**
      * Returns the token submitted with the request, if there is one.
      *
-     * Tokens must be sent either as a query string param named after the <config4:tokenParam> config setting (`token` by
+     * Tokens must be sent either as a query string param named after the <config5:tokenParam> config setting (`token` by
      * default), or an `X-Craft-Token` HTTP header on the request.
      *
      * @return string|null The token, or `null` if there isn’t one.
@@ -561,7 +561,7 @@ class Request extends \yii\web\Request
     /**
      * Returns the site token submitted with the request, if there is one.
      *
-     * Tokens must be sent either as a query string param named after the <config4:siteToken> config setting
+     * Tokens must be sent either as a query string param named after the <config5:siteToken> config setting
      * (`siteToken` by default), or an `X-Craft-Site-Token` HTTP header on the request.
      *
      * @return string|null The token, or `null` if there isn’t one.
@@ -591,7 +591,7 @@ class Request extends \yii\web\Request
      * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
-     * [control panel trigger](config4:cpTrigger).
+     * [control panel trigger](config5:cpTrigger).
      *
      * @return bool Whether the current request should be routed to the control panel.
      */
@@ -628,7 +628,7 @@ class Request extends \yii\web\Request
      *
      * There are several ways that this method could return `true`:
      *
-     * - If the first segment in the Craft path matches the [action trigger](config4:actionTrigger)
+     * - If the first segment in the Craft path matches the [action trigger](config5:actionTrigger)
      * - If there is an `action` param in either the POST data or query string
      * - If the Craft path matches the Login path, the Logout path, or the Set Password path
      *
@@ -1242,7 +1242,7 @@ class Request extends \yii\web\Request
      * Returns the `Bearer` token value from the `X-Craft-Authorization` or `Authorization` header, if present.
      *
      * @return string|null
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public function getBearerToken(): ?string
     {
@@ -1307,6 +1307,9 @@ class Request extends \yii\web\Request
      */
     public function getCsrfToken($regenerate = false): string
     {
+        // Ensure the response is not cached by the browser or static cache proxies.
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         if (!isset($this->_craftCsrfToken) || $regenerate) {
             $token = $this->loadCsrfToken();
 

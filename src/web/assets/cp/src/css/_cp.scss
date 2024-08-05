@@ -14,6 +14,7 @@ $badgeBackgroundColor: var(--gray-200);
 $badgeColor: var(--gray-800);
 
 :root {
+  --2xs: 2px;
   --xs: 4px;
   --s: 8px;
   --m: 14px;
@@ -551,7 +552,7 @@ li.crumb {
         box-shadow: var(--inner-focus-ring);
       }
 
-      span:not(.context-label) {
+      & > span:not(.context-label) {
         display: block;
         white-space: nowrap;
         overflow: hidden;
@@ -1616,6 +1617,7 @@ li.breadcrumb-toggle-wrapper {
         &.active-drop-target {
           cursor: default;
           background-color: var(--gray-500);
+          @include dark-btn-light-bg-focus-ring;
 
           &,
           & + .toggle {
@@ -1625,6 +1627,7 @@ li.breadcrumb-toggle-wrapper {
 
         &.sel {
           @include light-on-dark-text;
+          --focus-ring: var(--focus-ring-outset);
         }
       }
 
@@ -1795,12 +1798,12 @@ li.breadcrumb-toggle-wrapper {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 calc(var(--row-gap) * -1) calc(var(--row-gap) * -1);
-  width: calc(100% + var(--row-gap) * 2);
+  margin: 0 calc(var(--padding) * -1) calc(var(--row-gap) * -1);
+  width: calc(100% + var(--padding) * 2);
 
   & > :not(.error-summary) {
     margin: 0 0 var(--row-gap) !important;
-    padding: 0 var(--row-gap);
+    padding: 0 var(--padding);
     box-sizing: border-box;
   }
 

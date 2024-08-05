@@ -280,7 +280,7 @@ class ProjectConfig extends Component
     private array $_configFileList = [];
 
     /**
-     * @var int|null The project config cache duration. If null, the <config4:cacheDuration> config setting will be used.
+     * @var int|null The project config cache duration. If null, the <config5:cacheDuration> config setting will be used.
      * @since 4.5.0
      */
     public ?int $cacheDuration = null;
@@ -939,7 +939,7 @@ class ProjectConfig extends Component
      * Get the list of applied changes
      *
      * @return array
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public function getAppliedChanges(): array
     {

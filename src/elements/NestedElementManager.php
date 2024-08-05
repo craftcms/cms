@@ -763,6 +763,11 @@ JS, [
                                 'ownerId' => $owner->id,
                             ]);
                         }
+                    } elseif (
+                        $element->getIsUnpublishedDraft() &&
+                        $element->getPrimaryOwnerId() === $owner->id
+                    ) {
+                        Craft::$app->getDrafts()->removeDraftData($element);
                     }
                 } elseif ((int)$element->getSortOrder() !== $sortOrder) {
                     // Just update its sortOrder
@@ -853,7 +858,9 @@ JS, [
                         }
 
                         // Make sure we don't duplicate elements for any of the sites that were just propagated to
-                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
+                        foreach ($sourceSupportedSiteIds as $siteId) {
+                            $handledSiteIds[$siteId] = true;
+                        }
                     }
 
                     if ($value instanceof ElementQueryInterface) {

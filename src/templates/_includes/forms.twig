@@ -385,9 +385,9 @@
                     text: 'Learn more'|t('app'),
                 }),
             }) %}
-        {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') and craft.app.request.isWebAliasSetDynamically %}
+        {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') %}
             {% set config = config|merge({
-                warning: 'The `@web` alias is not recommended if it is determined automatically.'|t('app')
+                warning: 'The `@web` alias is not recommended.'|t('app'),
             }) %}
         {% endif %}
     {% endif %}

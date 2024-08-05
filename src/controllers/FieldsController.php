@@ -18,6 +18,7 @@ use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Iconic;
+use craft\elements\GlobalSet;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
@@ -256,7 +257,12 @@ JS, [
                             /** @var FieldLayoutProviderInterface&Chippable $provider */
                             $provider = $layout->provider;
                             $label = $labels[] = $provider->getUiLabel();
-                            $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
+                            // special case for global sets, where we should link to the settings rather than the edit page
+                            if ($provider instanceof GlobalSet) {
+                                $url = "settings/globals/$provider->id";
+                            } else {
+                                $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
+                            }
                             $icon = $provider instanceof Iconic ? $provider->getIcon() : null;
 
                             $labelHtml = Html::beginTag('span', [
@@ -511,8 +517,17 @@ JS, [
         $page = (int)$this->request->getParam('page', 1);
         $limit = (int)$this->request->getParam('per_page', 100);
         $searchTerm = $this->request->getParam('search');
+        $orderBy = match ($this->request->getParam('sort.0.field')) {
+            '__slot:handle' => 'handle',
+            'type' => 'type',
+            default => 'name',
+        };
+        $sortDir = match ($this->request->getParam('sort.0.direction')) {
+            'desc' => SORT_DESC,
+            default => SORT_ASC,
+        };
 
-        [$pagination, $tableData] = $fieldsService->getTableData($page, $limit, $searchTerm);
+        [$pagination, $tableData] = $fieldsService->getTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
 
         return $this->asSuccess(data: [
             'pagination' => $pagination,

@@ -119,6 +119,8 @@ Craft.NestedElementManager = Garnish.Base.extend(
             }
           });
         }
+
+        this.trigger('afterInit');
       }, 100);
     },
 

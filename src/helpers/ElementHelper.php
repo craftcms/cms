@@ -71,7 +71,7 @@ class ElementHelper
      *
      * @param string $str The string
      * @param bool|null $ascii Whether the slug should be converted to ASCII. If null, it will depend on
-     * the <config4:limitAutoSlugsToAscii> config setting value.
+     * the <config5:limitAutoSlugsToAscii> config setting value.
      * @param string|null $language The language to pull ASCII character mappings for, if needed
      * @return string
      * @since 3.5.0
@@ -487,7 +487,19 @@ class ElementHelper
      */
     public static function isDraft(ElementInterface $element): bool
     {
-        return static::rootElement($element)->getIsDraft();
+        if ($element->getIsDraft()) {
+            return true;
+        }
+
+        // Defer to the owner element, if there is one
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::isDraft($owner);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -499,7 +511,19 @@ class ElementHelper
      */
     public static function isRevision(ElementInterface $element): bool
     {
-        return static::rootElement($element)->getIsRevision();
+        if ($element->getIsRevision()) {
+            return true;
+        }
+
+        // Defer to the owner element, if there is one
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::isRevision($owner);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -511,8 +535,19 @@ class ElementHelper
      */
     public static function isDraftOrRevision(ElementInterface $element): bool
     {
-        $root = static::rootElement($element);
-        return $root->getIsDraft() || $root->getIsRevision();
+        if ($element->getIsDraft() || $element->getIsRevision()) {
+            return true;
+        }
+
+        // Defer to the owner element, if there is one
+        if ($element instanceof NestedElementInterface) {
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::isDraftOrRevision($owner);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -920,7 +955,7 @@ class ElementHelper
             if ($refHandle === null) {
                 throw new NotSupportedException(sprintf('Element type “%s” doesn’t define a reference handle, so it doesn’t support partial templates.', $element::displayName()));
             }
-            $providerHandle = $element->getFieldLayout()?->provider->getHandle();
+            $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
             if ($providerHandle === null) {
                 throw new InvalidConfigException(sprintf('Element “%s” doesn’t have a field layout provider that defines a handle, so it can’t be rendered with a partial template.', $element));
             }

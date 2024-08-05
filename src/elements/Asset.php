@@ -383,7 +383,22 @@ class Asset extends Element
             !Craft::$app->getRequest()->getIsConsoleRequest()
         ) {
             $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
-            $sources[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder);
+            $temporaryUploadFs = Craft::$app->getAssets()->getTempAssetUploadFs();
+            $sources[] = [
+                'key' => 'temp',
+                'label' => Craft::t('app', 'Temporary Uploads'),
+                'hasThumbs' => true,
+                'criteria' => ['folderId' => $temporaryUploadFolder->id],
+                'defaultSort' => ['dateCreated', 'desc'],
+                'data' => [
+                    'volume-handle' => false,
+                    'folder-id' => $temporaryUploadFolder->id,
+                    'can-upload' => false,
+                    'can-move-to' => false,
+                    'can-move-peer-files-to' => false,
+                    'fs-type' => $temporaryUploadFs::class,
+                ],
+            ];
         }
 
         return $sources;
@@ -1085,6 +1100,14 @@ class Asset extends Element
     public bool $keepFileOnDelete = false;
 
     /**
+     * @var bool|null Whether the associated file should be sanitized on upload, if it's an image. Defaults to `true`,
+     * unless it’s a control panel request and <config4:sanitizeCpImageUploads> is disabled.
+     * @see afterSave()
+     * @since 4.11.0
+     */
+    public ?bool $sanitizeOnUpload = null;
+
+    /**
      * @var int|null Volume ID
      */
     private ?int $_volumeId = null;
@@ -1557,7 +1580,7 @@ JS, [
         ]);
 
         // Show in Folder
-        if ($this->canView($user)) {
+        if ($this->volumeId && $this->canView($user)) {
             $viewItems[] = [
                 'type' => MenuItemType::Link,
                 'icon' => 'magnifying-glass',
@@ -1966,12 +1989,11 @@ JS,[
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        if (($fieldLayout = parent::getFieldLayout()) !== null) {
-            return $fieldLayout;
+        try {
+            return $this->getVolume()->getFieldLayout();
+        } catch (InvalidConfigException) {
+            return null;
         }
-
-        $volume = $this->getVolume();
-        return $volume->getFieldLayout();
     }
 
     /**
@@ -2987,17 +3009,25 @@ JS;
      */
     public function attributes(): array
     {
-        $names = parent::attributes();
-        $names[] = 'extension';
-        $names[] = 'filename';
-        $names[] = 'focalPoint';
-        $names[] = 'hasFocalPoint';
-        $names[] = 'height';
-        $names[] = 'mimeType';
-        $names[] = 'path';
-        $names[] = 'volumeId';
-        $names[] = 'width';
-        return $names;
+        $names = array_flip(parent::attributes());
+
+        unset(
+            $names['avoidFilenameConflicts'],
+            $names['keepFileOnDelete'],
+            $names['sanitizeOnUpload'],
+        );
+
+        $names['extension'] = true;
+        $names['filename'] = true;
+        $names['focalPoint'] = true;
+        $names['hasFocalPoint'] = true;
+        $names['height'] = true;
+        $names['mimeType'] = true;
+        $names['path'] = true;
+        $names['volumeId'] = true;
+        $names['width'] = true;
+
+        return array_keys($names);
     }
 
     /**
@@ -3109,14 +3139,15 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
-            $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
-            $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
-
+            // Are we uploading an image that needs to be sanitized?
             if (
                 isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
-                !($isCpRequest && !$sanitizeCpImageUploads)
+                ($this->sanitizeOnUpload ?? (
+                    !Craft::$app->getRequest()->getIsCpRequest() ||
+                    Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
+                ))
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
             }
