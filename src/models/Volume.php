@@ -442,7 +442,7 @@ class Volume extends Model implements
     /**
      * Set the transform filesystem.
      *
-     * @param ?FsInterface $fs
+     * @param FsInterface|null $fs
      */
     public function setTransformFs(?FsInterface $fs): void
     {
