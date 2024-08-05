@@ -6055,7 +6055,7 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param ?string $value
+     * @param string|null $value
      * @phpstan-param 'None'|'Lax'|'Strict'|null $value
      * @return self
      * @see $sameSiteCookieValue
