@@ -218,7 +218,7 @@ class UserSettingsController extends Controller
             $settings['require2fa'] = $this->request->getBodyParam('require2fa') ?: false;
         }
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             $settings['requireEmailVerification'] = (bool)$this->request->getBodyParam('requireEmailVerification');
             $settings['validateOnPublicRegistration'] = (bool)$this->request->getBodyParam('validateOnPublicRegistration');
             $settings['allowPublicRegistration'] = (bool)$this->request->getBodyParam('allowPublicRegistration');

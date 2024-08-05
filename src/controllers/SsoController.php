@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\enums\CmsEdition;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\helpers\Json;
@@ -34,6 +35,19 @@ class SsoController extends Controller
     ];
 
     public $enableCsrfValidation = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        Craft::$app->requireEdition(CmsEdition::Enterprise);
+        return true;
+    }
 
     /**
      * Perform a login request.

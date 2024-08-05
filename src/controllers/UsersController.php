@@ -1141,7 +1141,7 @@ class UsersController extends Controller
             }
         }
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             // Fire an 'beforeAssignGroupsAndPermissions' event
             if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
                 $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
@@ -1392,7 +1392,7 @@ JS);
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
         $requireEmailVerification = (
-            Craft::$app->edition === CmsEdition::Pro &&
+            Craft::$app->edition->value >= CmsEdition::Pro->value &&
             ($userSettings['requireEmailVerification'] ?? true)
         );
         $deactivateByDefault = $userSettings['deactivateByDefault'] ?? false;
@@ -1635,7 +1635,7 @@ JS);
         // Save the user’s photo, if it was submitted
         $this->_processUserPhoto($user);
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             // If this is public registration, assign the user to the default user group
             if ($isPublicRegistration) {
                 // Assign them to the default user group

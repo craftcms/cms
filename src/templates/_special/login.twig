@@ -125,8 +125,10 @@
       retryMessage: 'Sign in with a passkey'|t('app'),
     }) }}
 
-    {% for provider in craft.app.sso.providers %}
-      {{ provider.getCpLoginHtml()|raw }}
-    {% endfor %}
+    {% if CraftEdition == CraftEnterprise %}
+      {% for provider in craft.app.sso.providers %}
+        {{ provider.getCpLoginHtml()|raw }}
+      {% endfor %}
+    {% endif %}
   </div>
 </div>

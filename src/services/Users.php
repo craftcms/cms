@@ -1635,7 +1635,7 @@ class Users extends Component
      */
     final public function canCreateUsers(): bool
     {
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             return true;
         }
 

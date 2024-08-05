@@ -13,6 +13,7 @@ use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
@@ -84,6 +85,16 @@ class Sso extends Component
      * @see _providers()
      */
     private ?MemoizableArray $_providers = null;
+
+    /**
+     * Constructor
+     * @param array $config
+     */
+    public function __construct(array $config = [])
+    {
+        Craft::$app->requireEdition(CmsEdition::Enterprise);
+        parent::__construct($config);
+    }
 
     /**
      * Serializer

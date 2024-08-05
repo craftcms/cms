@@ -7,7 +7,9 @@
 
 namespace craft\auth\sso;
 
+use Craft;
 use craft\base\Component;
+use craft\enums\CmsEdition;
 
 /**
  * BaseProvider provides a base implementation for identity providers.
@@ -19,6 +21,16 @@ use craft\base\Component;
 abstract class BaseProvider extends Component implements ProviderInterface
 {
     use ProviderTrait;
+
+    /**
+     * Constructor
+     * @param array $config
+     */
+    public function __construct(array $config = [])
+    {
+        Craft::$app->requireEdition(CmsEdition::Enterprise);
+        parent::__construct($config);
+    }
 
     /**
      * @return $this
