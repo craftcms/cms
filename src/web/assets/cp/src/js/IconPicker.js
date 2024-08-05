@@ -69,7 +69,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
       this.$iconListContainer = $(
         '<div class="icon-picker-modal--list"/>'
       ).appendTo($body);
-      this.$iconList = $('<ul tabindex="-1" />').appendTo(
+      this.$iconList = $('<ul tabindex="-1"/>').appendTo(
         this.$iconListContainer
       );
 
