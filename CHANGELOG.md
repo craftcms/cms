@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.10.8 - 2024-08-05
 
 - Fixed a PHP error. ([#14635](https://github.com/craftcms/cms/issues/14635))
 - Fixed a PHP error that could occur when running Codeception tests. ([#15445](https://github.com/craftcms/cms/issues/15445))
