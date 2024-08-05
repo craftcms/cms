@@ -3,11 +3,14 @@
 {% set id = id ?? "selectize#{random()}" %}
 {% set value = value ?? null %}
 {% set static = static ?? false %}
+{{ value }}
 
 <div id="{{ id }}" class="icon-picker">
   {% tag 'div' with {
     class: 'icon-picker--icon',
     title: value ?: false,
+    role: value ? 'img' : false,
+    lang: craft.app.getTargetLanguage() starts with 'en' ? false : 'en',
     aria: {
       label: value ?: false,
     },
