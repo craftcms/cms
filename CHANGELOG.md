@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased (5.3.0)
+## 5.3.0-beta.2 - 2024-08-05
 
 - Double-clicking on element index rows no longer opens the element editor slideout, when inline editing is active. ([#15441](https://github.com/craftcms/cms/discussions/15441))
 - When propagating an element to a new site, relation fields no longer copy relations for target elements that wouldn’t have been selectable from the propagated site based on the field’s “Related elements from a specific site?” and “Show the site menu” settings. ([#15459](https://github.com/craftcms/cms/issues/15459))
