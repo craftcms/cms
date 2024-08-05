@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.2.10 - 2024-08-05
 
 - Fixed a bug where it wasn’t possible to render element partial templates for assets, categories, or tags. ([#15426](https://github.com/craftcms/cms/issues/15426))
 - Fixed an error that could occur when deleting a nested element, if its owner wasn’t saved for the same site. ([#15290](https://github.com/craftcms/cms/issues/15290))
