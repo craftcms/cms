@@ -1201,7 +1201,7 @@ class AddressQuery extends ElementQuery
 
         $this->joinElementTable(Table::ADDRESSES);
 
-        $this->query->select([
+        $this->query->addSelect([
             'addresses.id',
             'addresses.fieldId',
             'addresses.primaryOwnerId',

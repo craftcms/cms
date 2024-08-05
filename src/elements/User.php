@@ -1489,7 +1489,9 @@ class User extends Element implements IdentityInterface
         // Choose a color based on the UUID
         $uid = strtolower($this->uid ?? '00ff');
         $totalColors = count(self::$photoColors);
+        /** @phpstan-ignore-next-line */
         $color1Index = base_convert(substr($uid, 0, 2), 16, 10) % $totalColors;
+        /** @phpstan-ignore-next-line */
         $color2Index = base_convert(substr($uid, 2, 2), 16, 10) % $totalColors;
         if ($color2Index === $color1Index) {
             $color2Index = ($color1Index + 1) % $totalColors;
@@ -1888,7 +1890,6 @@ XML;
                         'params' => [
                             'userId' => $this->id,
                         ],
-                        'redirect' => Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect(),
                     ];
 
                     $copyImpersonationUrlId = sprintf('action-copy-impersonation-url-%s', mt_rand());

@@ -241,7 +241,7 @@ class SystemSettingsController extends Controller
      * Global Set index
      *
      * @return Response
-     * @since 4.11.0
+     * @since 5.3.0
      */
     public function actionGlobalSetIndex(): Response
     {

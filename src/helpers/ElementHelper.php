@@ -955,7 +955,7 @@ class ElementHelper
             if ($refHandle === null) {
                 throw new NotSupportedException(sprintf('Element type “%s” doesn’t define a reference handle, so it doesn’t support partial templates.', $element::displayName()));
             }
-            $providerHandle = $element->getFieldLayout()?->provider->getHandle();
+            $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
             if ($providerHandle === null) {
                 throw new InvalidConfigException(sprintf('Element “%s” doesn’t have a field layout provider that defines a handle, so it can’t be rendered with a partial template.', $element));
             }

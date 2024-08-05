@@ -141,6 +141,7 @@ class Gc extends Component
 
         $this->hardDelete([
             Table::FIELDLAYOUTS,
+            Table::FIELDS,
             Table::SITES,
         ]);
 

@@ -338,13 +338,13 @@ class Config extends Component
     }
 
     /**
-     * Sets an environment variable value in the project's .env file.
+     * Sets an environment variable value in the project's `.env` file.
      *
      * @param string $name The environment variable name
-     * @param string $value The environment variable value
+     * @param string|false $value The environment variable value, or `false` if it should be removed.
      * @throws Exception if the .env file doesn't exist
      */
-    public function setDotEnvVar(string $name, string $value): void
+    public function setDotEnvVar(string $name, string|false $value): void
     {
         $path = $this->getDotEnvPath();
 
@@ -354,28 +354,36 @@ class Config extends Component
 
         $contents = file_get_contents($path);
         $qName = preg_quote($name, '/');
-        $slashedValue = addslashes($value);
 
-        // Only surround with quotes if the value contains a space
-        if (str_contains($slashedValue, ' ') || str_contains($slashedValue, '#')) {
-            $slashedValue = "\"$slashedValue\"";
-        }
-
-        $def = "$name=$slashedValue";
-        $token = StringHelper::randomString();
-        $contents = preg_replace("/^(\s*)$qName=.*/m", $token, $contents, -1, $count);
-
-        if ($count !== 0) {
-            $contents = str_replace($token, $def, $contents);
+        if ($value === false) {
+            $contents = preg_replace("/\s*^\s*$qName=.*/m", '', $contents);
         } else {
-            $contents = rtrim($contents);
-            $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . $def . PHP_EOL;
+            $slashedValue = addslashes($value);
+            // Only surround with quotes if the value contains a space
+            if (str_contains($slashedValue, ' ') || str_contains($slashedValue, '#')) {
+                $slashedValue = "\"$slashedValue\"";
+            }
+            $def = "$name=$slashedValue";
+
+            $token = StringHelper::randomString();
+            $contents = preg_replace("/^\s*$qName=.*/m", $token, $contents, -1, $count);
+
+            if ($count !== 0) {
+                $contents = str_replace($token, $def, $contents);
+            } else {
+                $contents = rtrim($contents);
+                $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . $def . PHP_EOL;
+            }
         }
 
         FileHelper::writeToFile($path, $contents);
 
         // Now actually set the environment variable
-        $_SERVER[$name] = $value;
+        if ($value === false) {
+            unset($_SERVER[$name]);
+        } else {
+            $_SERVER[$name] = $value;
+        }
     }
 
     /**

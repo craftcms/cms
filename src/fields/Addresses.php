@@ -13,6 +13,8 @@ use craft\base\Element;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\FieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
@@ -33,6 +35,7 @@ use craft\gql\arguments\elements\Address as AddressArguments;
 use craft\gql\interfaces\elements\Address as AddressGqlInterface;
 use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\input\Addresses as AddressesInput;
+use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\StringHelper;
 use craft\services\Elements;
@@ -49,7 +52,8 @@ use yii\db\Expression;
  */
 class Addresses extends Field implements
     ElementContainerFieldInterface,
-    EagerLoadingFieldInterface
+    EagerLoadingFieldInterface,
+    MergeableFieldInterface
 {
     public const VIEW_MODE_CARDS = 'cards';
     public const VIEW_MODE_INDEX = 'index';
@@ -786,6 +790,15 @@ class Addresses extends Field implements
                 'allowOwnerRevisions' => true,
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMergeFrom(FieldInterface $outgoingField): void
+    {
+        Db::update(DbTable::ADDRESSES, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+        parent::afterMergeFrom($outgoingField);
     }
 
     /**

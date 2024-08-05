@@ -13,6 +13,23 @@
 {%- set allowReorder = (allowReorder ?? false) and not staticRows %}
 {%- set allowDelete = (allowDelete ?? false) and not staticRows %}
 
+{% set actionMenuItems = [
+  {
+    icon: 'arrow-up',
+    label: 'Move up'|t('app'),
+    attributes: {
+      data: {action: 'moveUp'},
+    },
+  },
+  {
+    icon: 'arrow-down',
+    label: 'Move down'|t('app'),
+    attributes: {
+      data: {action: 'moveDown'},
+    },
+  },
+] %}
+
 {% if not static %}
     {{ hiddenInput(name, '') }}
 {% endif %}
@@ -98,6 +115,8 @@
     <tbody>
         {% for rowId, row in rows %}
             {% set rowNumber = loop.index %}
+            {% set rowName = 'Row {index}'|t('app', {index: rowNumber}) %}
+            {% set actionBtnLabel = "#{rowName} #{'Actions'|t('app')}" %}
             <tr data-id="{{ rowId }}">
                 {% for colId, col in cols %}
                     {% set cell = row[colId] is defined ? row[colId] : (defaultValues[colId] ?? null) %}
@@ -215,7 +234,21 @@
                     {% endif %}
                 {% endfor %}
                 {% if allowReorder -%}
-                    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" type="button" role="button"></a></td>
+                    <td class="thin action">
+                      <div class="flex flex-nowrap">
+                        <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" type="button" role="button"></a>
+                        {{~ disclosureMenu(actionMenuItems, {
+                          buttonAttributes: {
+                            'aria-label': actionBtnLabel,
+                            class: ['action-btn'],
+                            title: 'Actions'|t('app'),
+                            data: {
+                              'disclosure-trigger': true,
+                            },
+                          },
+                        }) }}
+                      </div>
+                    </td>
                 {%- endif -%}
                 {%- if allowDelete -%}
                     <td class="thin action">

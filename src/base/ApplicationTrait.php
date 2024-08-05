@@ -144,6 +144,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
+ * @property-read Connection $db2 The database connection component used for mutex locks and element bulk op records
  * @property-read Dashboard $dashboard The dashboard service
  * @property-read Deprecator $deprecator The deprecator service
  * @property-read Drafts $drafts The drafts service
@@ -170,7 +171,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Plugins $plugins The plugins service
  * @property-read ProjectConfig $projectConfig The project config service
  * @property-read Queue|QueueInterface $queue The job queue
- * @property-read Relations $relations The relations service
+ * @property-read Relations $relations The relations service (deprecated)
  * @property-read Revisions $revisions The revisions service
  * @property-read Routes $routes The routes service
  * @property-read Search $search The search service
@@ -1105,6 +1106,20 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the database connection used for mutex locks and element bulk op records.
+     *
+     * This helps avoid erratic behavior when locks are used during transactions
+     * (see https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions).
+     *
+     * @return Connection
+     * @since 5.3.0
+     */
+    public function getDb2(): Connection
+    {
+        return $this->get('db2');
+    }
+
+    /**
      * Returns the deprecator service.
      *
      * @return Deprecator The deprecator service
@@ -1343,6 +1358,7 @@ trait ApplicationTrait
      * Returns the relations service.
      *
      * @return Relations The relations service
+     * @deprecated in 5.3.0
      */
     public function getRelations(): Relations
     {
