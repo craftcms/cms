@@ -187,6 +187,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
       this.$input.val('');
       this.$chooseBtn.children('.label').text(Craft.t('app', 'Choose'));
       this.$removeBtn.addClass('hidden');
+      this.$chooseBtn.focus();
     },
   },
   {
