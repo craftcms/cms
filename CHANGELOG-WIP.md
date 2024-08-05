@@ -30,6 +30,7 @@
 - Added `craft\filters\Cors`. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - Added `craft\filters\Headers`. ([#15397](https://github.com/craftcms/cms/pull/15397))
 - Added `craft\helpers\App::configure()`.
+- Added `craft\models\ImageTransform::$indexId`.
 - Added `craft\web\View::clearAssetBundleBuffer()`.
 - Added `craft\web\View::startAssetBundleBuffer()`.
 - Added `Craft.EnvVarGenerator`.
@@ -52,3 +53,4 @@
 - Updated Axios to 0.28.1. ([#15448](https://github.com/craftcms/cms/issues/15448))
 - Fixed a bug where error messages returned by the `users/send-password-reset-email` action weren’t accounting for the `useEmailAsUsername` config setting. ([#15425](https://github.com/craftcms/cms/issues/15425))
 - Fixed a bug where `$element->isNewForSite` was always `false` from fields’ `normalizeValue()` methods when propagating an element to a new site.
+- Fixed a bug where `assets/generate-transforms` requests could generate the wrong transform, if another transform index with the same parameters existed. ([#15402](https://github.com/craftcms/cms/pull/15402), [#15477](https://github.com/craftcms/cms/pull/15477)) 
