@@ -470,7 +470,7 @@ return [
     'Database Name' => 'Database Naam',
     'Date Created' => 'Aanmaakdatum',
     'Date Range' => 'Datumbereik',
-    'Date Updated' => 'Datum geüpdate',
+    'Date Updated' => 'Datum bijgewerkt',
     'Date Uploaded' => 'Datum geüpload',
     'Date' => 'Datum',
     'Days' => 'Dagen',
