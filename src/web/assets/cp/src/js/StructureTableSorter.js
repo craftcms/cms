@@ -315,8 +315,8 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
             // See if we should run any pending tasks
             Craft.cp.runQueue();
           })
-          .catch(({response}) => {
-            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+          .catch((e) => {
+            Craft.cp.displayError(e?.response?.data?.message);
             this.tableView.elementIndex.updateElements();
             return;
           });

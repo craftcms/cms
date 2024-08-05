@@ -396,6 +396,12 @@ class Template
      */
     public static function preloadSingles(array $handles): void
     {
-        self::$_fallbacks += Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+        // Ignore handles that are defined Twig globals
+        $globals = Craft::$app->view->getTwig()->getGlobals();
+        $handles = array_diff($handles, array_keys($globals));
+
+        if (!empty($handles)) {
+            self::$_fallbacks += Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+        }
     }
 }

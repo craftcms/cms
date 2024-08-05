@@ -100,7 +100,10 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         return;
       }
 
-      var targetVal = this.generateTargetValue(sourceVal);
+      let targetVal = this.generateTargetValue(sourceVal);
+      if (targetVal) {
+        targetVal = `${this.settings.prefix}${targetVal}${this.settings.suffix}`;
+      }
 
       this.$target.val(targetVal);
 
@@ -127,6 +130,8 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
   {
     defaults: {
       updateWhenHidden: false,
+      prefix: '',
+      suffix: '',
     },
   }
 );

@@ -149,7 +149,7 @@
             new Craft.UriFormatGenerator(
                 '#name',
                 '#sites tr[data-id="{{ site.handle }}"] input[name$="[template]"]',
-                { suffix: '/_category' }
+                { suffix: '/_category.twig' }
             );
         {% endfor %}
     {% endjs %}

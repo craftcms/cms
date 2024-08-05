@@ -416,14 +416,11 @@ class EntriesController extends BaseEntriesController
             throw new NotFoundHttpException('Entry not found');
         }
 
-        $entry = new Entry();
-        $entry->sectionId = $this->request->getRequiredBodyParam('sectionId');
-
-        if ($siteId) {
-            $entry->siteId = $siteId;
-        }
-
-        return $entry;
+        // Pass the config into the constructor so they're in place for ensureBehaviors()
+        return new Entry(array_filter([
+            'sectionId' => $this->request->getRequiredBodyParam('sectionId'),
+            'siteId' => $siteId,
+        ]));
     }
 
     /**
