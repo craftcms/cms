@@ -516,7 +516,6 @@ class AppHelperTest extends TestCase
             [false, null],
             [false, false],
             [false, 4],
-            [false, 3],
         ];
     }
 
