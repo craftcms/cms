@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.3.0.1 - 2024-08-06
 
 - Fixed an error that occurred when accessing custom config settings defined in `config/custom.php`. ([#15481](https://github.com/
 - Fixed a PHP error that could occur when editing Addresses fields. ([#15485](https://github.com/craftcms/cms/issues/15485))
