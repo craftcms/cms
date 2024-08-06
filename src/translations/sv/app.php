@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'Logga in som {user}',
     'Sign in unsuccessful' => 'Inloggningen misslyckades',
     'Sign in with a passkey' => 'Logga in med en passnyckel',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'Logga in',
     'Sign out now' => 'Logga ut nu',
     'Sign out' => 'Logga ut',
