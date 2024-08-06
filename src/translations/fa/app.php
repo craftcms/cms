@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'ورود به عنوان {user}',
     'Sign in unsuccessful' => 'ورود ناموفق',
     'Sign in with a passkey' => 'ورود به سیستم با یک رمز عبور',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'ورود',
     'Sign out now' => 'همین حالا خارج شوید',
     'Sign out' => 'خروج',
