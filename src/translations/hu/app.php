@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'Bejelentkezés mint {user}',
     'Sign in unsuccessful' => 'A bejelentkezés sikertelen',
     'Sign in with a passkey' => 'Bejelentkezés jelszókulccsal',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'Bejelentkezés',
     'Sign out now' => 'Bejelentkezés most',
     'Sign out' => 'Kijelentkezés',
