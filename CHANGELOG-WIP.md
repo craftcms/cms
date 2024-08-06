@@ -23,6 +23,7 @@
 - Single-select element selection modals now assign `role="radio"` to listed elements’ checkboxes.
 - Sortable editable table rows now have “Move up” and “Move down” disclosure menu actions. ([#15385](https://github.com/craftcms/cms/pull/15385))
 - Improved the Customize Sources modal for screen readers. ([#15395](https://github.com/craftcms/cms/pull/15395))
+- Improved the accessibility of icon fields. ([#15479](https://github.com/craftcms/cms/pull/15479))
 
 ### Administration
 - Relation fields are now multi-instance. ([#15400](https://github.com/craftcms/cms/pull/15400))
