@@ -769,6 +769,10 @@ class User extends Element implements IdentityInterface
             $this->email = StringHelper::idnToUtf8Email($this->email);
         }
 
+        if (empty($this->username) && Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            $this->username = $this->email;
+        }
+
         $this->normalizeNames();
     }
 
@@ -1890,7 +1894,6 @@ XML;
                         'params' => [
                             'userId' => $this->id,
                         ],
-                        'redirect' => Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect(),
                     ];
 
                     $copyImpersonationUrlId = sprintf('action-copy-impersonation-url-%s', mt_rand());

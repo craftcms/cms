@@ -165,9 +165,8 @@ MD) . "\n\n");
             }
         });
 
-        $this->stdout("\n");
-
         if (!empty($handleMap)) {
+            $this->stdout("\n");
             $this->stdout($this->markdownToAnsi(<<<MD
 **These fields will be renamed for existing $outgoingEntryType->name entries:**
 MD));

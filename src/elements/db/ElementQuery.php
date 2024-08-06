@@ -1887,13 +1887,34 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($cachedResult !== null) {
             return !empty($cachedResult);
         }
-        try {
-            return $this->prepareSubquery()
-                ->select('elements.id')
-                ->exists($db);
-        } catch (QueryAbortedException) {
-            return false;
+
+        if (
+            !$this->distinct
+            && empty($this->groupBy)
+            && empty($this->having)
+            && empty($this->union)
+        ) {
+            try {
+                $subquery = $this->prepareSubquery();
+
+                // If distinct, et al. were set by prepare(), don't mess with it
+                // see https://github.com/craftcms/cms/issues/15001#issuecomment-2174563927
+                if (
+                    !$subquery->distinct
+                    && empty($subquery->groupBy)
+                    && empty($subquery->having)
+                    && empty($subquery->union)
+                ) {
+                    return $subquery
+                        ->select('elements.id')
+                        ->exists($db);
+                }
+            } catch (QueryAbortedException) {
+                return false;
+            }
         }
+
+        return parent::exists($db);
     }
 
     /**

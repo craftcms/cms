@@ -15,6 +15,7 @@ use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
+use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
@@ -63,6 +64,7 @@ use craft\models\FieldLayoutTab;
 use craft\records\Field as FieldRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -1406,17 +1408,41 @@ class Fields extends Component
      * @param int $page
      * @param int $limit
      * @param string|null $searchTerm
+     * @param string $orderBy
+     * @param int $sortDir
      * @return array
      * @since 5.0.0
      * @internal
      */
-    public function getTableData(int $page, int $limit, ?string $searchTerm): array
-    {
+    public function getTableData(
+        int $page,
+        int $limit,
+        ?string $searchTerm,
+        string $orderBy = 'name',
+        int $sortDir = SORT_ASC,
+    ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
 
         $offset = ($page - 1) * $limit;
         $query = $this->_createFieldQuery()
             ->andWhere(['context' => 'global']);
+
+        if ($orderBy === 'type') {
+            /** @var Collection<class-string<FieldInterface>> $types */
+            $types = Collection::make($this->getAllFieldTypes())
+                ->sortBy(fn(string $class) => $class::displayName());
+            if ($sortDir === SORT_DESC) {
+                $types = $types->reverse();
+            }
+            $query->orderBy(new FixedOrderExpression('type', $types->all(), Craft::$app->getDb()))
+                ->addOrderBy(['name' => $sortDir])
+                ->addOrderBy(['handle' => $sortDir]);
+        } else {
+            $query->orderBy([$orderBy => $sortDir]);
+            if ($orderBy === 'name') {
+                $query->addOrderBy(['handle' => $sortDir]);
+            }
+        }
 
         if ($searchTerm !== null && $searchTerm !== '') {
             $searchParams = $this->_getSearchParams($searchTerm);
@@ -1483,7 +1509,7 @@ class Fields extends Component
      */
     private function _createFieldQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'fields.id',
                 'fields.dateCreated',
@@ -1501,8 +1527,14 @@ class Fields extends Component
                 'fields.uid',
             ])
             ->from(['fields' => Table::FIELDS])
-            ->where(['fields.dateDeleted' => null])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
+
+        // todo: remove after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::FIELDS, 'dateDeleted')) {
+            $query->where(['fields.dateDeleted' => null]);
+        }
+
+        return $query;
     }
 
     /**

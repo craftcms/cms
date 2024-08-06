@@ -31,8 +31,8 @@
 
 {% js %}
 var columns = [
-    { name: 'chip', title: Craft.t('app', 'Entry Type') },
-    { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+    { name: 'chip', title: Craft.t('app', 'Entry Type'), sortField: true },
+    { name: '__slot:handle', title: Craft.t('app', 'Handle'), sortField: true },
 ];
 
 new Craft.VueAdminTable({
