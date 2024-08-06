@@ -2836,7 +2836,7 @@ JS);
         if ($user->getIsCurrent()) {
             $data['headerPhotoHtml'] = $view->renderTemplate(
                 '_layouts/components/header-photo.twig',
-                templateMode: $templateMode,
+                templateMode: View::TEMPLATE_MODE_CP,
             );
         }
 
