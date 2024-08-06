@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'เข้าสู่ระบบในฐานะ {user}',
     'Sign in unsuccessful' => 'เข้าสู่ระบบไม่สำเร็จ',
     'Sign in with a passkey' => 'เข้าสู่ระบบด้วยพาสคีย์',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'เข้าสู่ระบบ',
     'Sign out now' => 'ออกจากระบบตอนนี้',
     'Sign out' => 'Sign out',
