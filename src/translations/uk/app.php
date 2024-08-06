@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'Увійти як користувач {user}',
     'Sign in unsuccessful' => 'Увійти не вдалося',
     'Sign in with a passkey' => 'Увійти з ключем доступу',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'Увійти',
     'Sign out now' => 'Вийти зараз',
     'Sign out' => 'Вийти',
