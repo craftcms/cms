@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'התחבר בשם {user}',
     'Sign in unsuccessful' => 'כשל כניסה',
     'Sign in with a passkey' => 'היכנס באמצעות מפתח גישה',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'התחבר',
     'Sign out now' => 'התנתק עכשיו',
     'Sign out' => 'התנתק',
