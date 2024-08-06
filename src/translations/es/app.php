@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'Iniciar sesión como {user}',
     'Sign in unsuccessful' => 'Inicio de sesión incorrecto',
     'Sign in with a passkey' => 'Iniciar sesión con clave de acceso',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'Iniciar sesión',
     'Sign out now' => 'Cerrar sesión ahora',
     'Sign out' => 'Cerrar sesión',
