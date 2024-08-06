@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'Als {user} anmelden',
     'Sign in unsuccessful' => 'Anmeldung fehlgeschlagen',
     'Sign in with a passkey' => 'Mit einem Passkey anmelden',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'Anmelden',
     'Sign out now' => 'Jetzt abmelden',
     'Sign out' => 'Abmelden',
