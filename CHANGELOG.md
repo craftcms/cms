@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## 4.11.0.1 - 2024-08-06
+
+- Fixed an error that occurred when accessing custom config settings defined in `config/custom.php`. ([#15481](https://github.com/craftcms/cms/issues/15481))
+
 ## 4.11.0 - 2024-08-06
 
 ### Content Management
