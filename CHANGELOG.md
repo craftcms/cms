@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.3.0.2 - 2024-08-06
 
 - Fixed an error that could occur on console requests.
 
