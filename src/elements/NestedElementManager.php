@@ -363,6 +363,7 @@ class NestedElementManager extends Component
     {
         $config += [
             'showInGrid' => false,
+            'prevalidate' => false,
         ];
 
         return $this->createView(

@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a PHP error that could occur when editing Addresses fields. ([#15485](https://github.com/craftcms/cms/issues/15485))
+
 ## 5.3.0 - 2024-08-06
 
 ### Content Management
