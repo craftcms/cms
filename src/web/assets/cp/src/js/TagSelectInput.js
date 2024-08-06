@@ -43,7 +43,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
       this.$addTagInput = this.$container.children('.add').children('.text');
       this.$spinner = this.$addTagInput.next();
       this.$liveRegion = this.$container.find('[role="status"]');
-      console.log(this.$liveRegion);
 
       this.addListener(this.$addTagInput, 'input', () => {
         if (this.searchTimeout) {
