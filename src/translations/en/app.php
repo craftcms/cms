@@ -892,6 +892,7 @@ return [
     'Loaded Project Config Data' => 'Loaded Project Config Data',
     'Loading Plugin Store…' => 'Loading Plugin Store…',
     'Loading' => 'Loading',
+    'Loading complete' => 'Loading complete',
     'Local Folder' => 'Local Folder',
     'Local copies of remote images, generated thumbnails' => 'Local copies of remote images, generated thumbnails',
     'Local filesystems cannot be located above system directories.' => 'Local filesystems cannot be located above system directories.',

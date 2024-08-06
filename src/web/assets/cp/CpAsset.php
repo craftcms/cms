@@ -234,6 +234,7 @@ JS;
             'License transferred.',
             'Limit',
             'Loading',
+            'Loading complete',
             'Make not required',
             'Make optional',
             'Make required',
