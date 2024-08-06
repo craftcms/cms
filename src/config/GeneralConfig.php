@@ -4047,7 +4047,11 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultCpLanguage(?string $value): self
     {
-        if ($value !== null && class_exists(Craft::class, false)) {
+        if (
+            $value !== null &&
+            class_exists(Craft::class, false) &&
+            isset(Craft::$app)
+        ) {
             try {
                 $value = Localization::normalizeLanguage($value);
             } catch (InvalidArgumentException $e) {
@@ -6240,7 +6244,7 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param ?string $value
+     * @param string|null $value
      * @phpstan-param 'None'|'Lax'|'Strict'|null $value
      * @return self
      * @see $sameSiteCookieValue

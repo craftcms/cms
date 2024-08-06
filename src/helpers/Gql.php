@@ -271,7 +271,7 @@ class Gql
      *
      * @param string $typeName The union type name.
      * @param array $includedTypes The type the union should include
-     * @param ?callable $resolveFunction The resolver function to use to resolve a specific type. If not provided,
+     * @param callable|null $resolveFunction The resolver function to use to resolve a specific type. If not provided,
      * a default one will be used that is able to resolve Craft elements.
      * @return mixed
      */
