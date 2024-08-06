@@ -1076,7 +1076,7 @@ class Asset extends Element
      * @var bool|null Whether the associated file should be sanitized on upload, if it's an image. Defaults to `true`,
      * unless it’s a control panel request and <config4:sanitizeCpImageUploads> is disabled.
      * @see afterSave()
-     * @since 4.11.0
+     * @since 5.3.0
      */
     public ?bool $sanitizeOnUpload = null;
 
