@@ -630,17 +630,19 @@ class UrlHelper
             }
         } else {
             // token/siteToken/preview params
-            if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
-                $params[$generalConfig->tokenParam] = $token;
-            }
             if (!isset($params[$generalConfig->siteToken]) && ($siteToken = $request->getSiteToken()) !== null) {
                 $params[$generalConfig->siteToken] = $siteToken;
             }
-            if (!isset($params['x-craft-preview']) && !isset($params['x-craft-live-preview'])) {
-                if (($previewToken = $request->getQueryParam('x-craft-preview')) !== null) {
-                    $params['x-craft-preview'] = $previewToken;
-                } elseif (($previewToken = $request->getQueryParam('x-craft-live-preview')) !== null) {
-                    $params['x-craft-live-preview'] = $previewToken;
+            if ($request->getIsSiteRequest()) {
+                if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+                    $params[$generalConfig->tokenParam] = $token;
+                }
+                if (!isset($params['x-craft-preview']) && !isset($params['x-craft-live-preview'])) {
+                    if (($previewToken = $request->getQueryParam('x-craft-preview')) !== null) {
+                        $params['x-craft-preview'] = $previewToken;
+                    } elseif (($previewToken = $request->getQueryParam('x-craft-live-preview')) !== null) {
+                        $params['x-craft-live-preview'] = $previewToken;
+                    }
                 }
             }
         }
