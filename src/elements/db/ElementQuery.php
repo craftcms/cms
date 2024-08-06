@@ -376,6 +376,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public $orderBy = '';
 
+    /**
+     * @var bool Whether custom fields should be factored into the query.
+     * @used-by withCustomFields()
+     * @since 4.11.0
+     */
+    public bool $withCustomFields = true;
+
     // Structure parameters
     // -------------------------------------------------------------------------
 
@@ -1162,6 +1169,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $withCustomFields
+     */
+    public function withCustomFields(bool $value = true): static
+    {
+        $this->withCustomFields = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $withStructure
      * @return static
      */
@@ -1690,13 +1707,34 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($cachedResult !== null) {
             return !empty($cachedResult);
         }
-        try {
-            return $this->prepareSubquery()
-                ->select('elements.id')
-                ->exists($db);
-        } catch (QueryAbortedException) {
-            return false;
+
+        if (
+            !$this->distinct
+            && empty($this->groupBy)
+            && empty($this->having)
+            && empty($this->union)
+        ) {
+            try {
+                $subquery = $this->prepareSubquery();
+
+                // If distinct, et al. were set by prepare(), don't mess with it
+                // see https://github.com/craftcms/cms/issues/15001#issuecomment-2174563927
+                if (
+                    !$subquery->distinct
+                    && empty($subquery->groupBy)
+                    && empty($subquery->having)
+                    && empty($subquery->union)
+                ) {
+                    return $subquery
+                        ->select('elements.id')
+                        ->exists($db);
+                }
+            } catch (QueryAbortedException) {
+                return false;
+            }
         }
+
+        return parent::exists($db);
     }
 
     /**
@@ -1878,11 +1916,21 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             try {
                 $subquery = $this->prepareSubquery();
-                $subquery->select = [$selectExpression];
-                $subquery->orderBy = null;
-                $subquery->limit = null;
-                $subquery->offset = null;
-                $command = $subquery->createCommand($db);
+
+                // If distinct, et al. were set by prepare(), don't mess with it
+                // see https://github.com/craftcms/cms/issues/15001#issuecomment-2174563927
+                if (
+                    !$subquery->distinct
+                    && empty($subquery->groupBy)
+                    && empty($subquery->having)
+                    && empty($subquery->union)
+                ) {
+                    $subquery->select = [$selectExpression];
+                    $subquery->orderBy = null;
+                    $subquery->limit = null;
+                    $subquery->offset = null;
+                    return $subquery->createCommand($db)->queryScalar();
+                }
             } catch (QueryAbortedException) {
                 return false;
             } finally {
@@ -1891,8 +1939,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->limit = $limit;
                 $this->offset = $offset;
             }
-
-            return $command->queryScalar();
         }
 
         return parent::queryScalar($selectExpression, $db);
@@ -2222,6 +2268,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
+        if (!$this->withCustomFields) {
+            return [];
+        }
+
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'global';

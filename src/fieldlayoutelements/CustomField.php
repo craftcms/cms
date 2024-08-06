@@ -16,7 +16,7 @@ use craft\helpers\ArrayHelper;
 /**
  * CustomField represents a custom field that can be included in field layouts.
  *
- * @property-write FieldInterface $field The custom field this layout field is based on
+ * @property FieldInterface $field The custom field this layout field is based on
  * @property string $fieldUid The UID of the field this layout field is based on
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -262,7 +262,8 @@ class CustomField extends BaseField
         }
 
         $view = Craft::$app->getView();
-        $view->registerDeltaName($this->_field->handle);
+        $isDirty = $element?->isFieldDirty($this->_field->handle);
+        $view->registerDeltaName($this->_field->handle, $isDirty);
 
         $required = $this->_field->required;
         $describedBy = $this->_field->describedBy;

@@ -205,9 +205,9 @@
             this._fieldTypeSettingsHtml[type] = response.data;
             resolve(response.data);
           })
-          .catch(() => {
+          .catch((e) => {
             if (!this._ignoreFailedRequest) {
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              Craft.cp.displayError(e?.response?.data?.message);
             }
             reject();
           });
@@ -343,7 +343,7 @@
 
       if (!Garnish.isMobileBrowser()) {
         setTimeout(() => {
-          this.$nameInput.trigger('focus');
+          this.$nameInput.focus();
         }, 100);
       }
 
@@ -693,7 +693,7 @@
 
       if (!Garnish.isMobileBrowser()) {
         setTimeout(() => {
-          this.$nameInput.trigger('focus');
+          this.$nameInput.focus();
         }, 100);
       }
     },

@@ -1884,7 +1884,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       if (!Garnish.isMobileBrowser(true)) {
-        this.$nameTextInput.trigger('focus');
+        this.$nameTextInput.focus();
       }
     },
 
@@ -1940,7 +1940,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$editMetaBtn.attr('aria-expanded', 'false');
 
       if (Garnish.focusIsInside(this.metaHud.$body)) {
-        this.$editMetaBtn.trigger('focus');
+        this.$editMetaBtn.focus();
       }
     },
 
@@ -2082,6 +2082,14 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     _checkActivity: function () {
+      if (!Craft.remainingSessionTime) {
+        // Try again after login
+        Garnish.once(Craft.AuthManager, 'login', () => {
+          this._checkActivity();
+        });
+        return;
+      }
+
       this.queue.push(
         () =>
           new Promise((resolve, reject) => {
@@ -2209,7 +2217,17 @@ Craft.ElementEditor = Garnish.Base.extend(
                 }, 15000);
                 resolve();
               })
-              .catch(reject);
+              .catch((e) => {
+                if (e?.response?.status === 400) {
+                  // Try again after login
+                  Garnish.once(Craft.AuthManager, 'login', () => {
+                    this._checkActivity();
+                  });
+                  resolve();
+                } else {
+                  reject(e);
+                }
+              });
           })
       );
     },

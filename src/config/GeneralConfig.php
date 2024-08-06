@@ -136,7 +136,7 @@ class GeneralConfig extends BaseConfig
      * ->addTrailingSlashesToUrls(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_ADD_TRAILING_SLASHES_TO_URLS=1
+     * CRAFT_ADD_TRAILING_SLASHES_TO_URLS=true
      * ```
      * :::
      *
@@ -145,7 +145,7 @@ class GeneralConfig extends BaseConfig
     public bool $addTrailingSlashesToUrls = false;
 
     /**
-     * @var array Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
+     * @var array<string,string|null> Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
      *
      * ```php Static Config
      * ->aliases([
@@ -203,6 +203,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group GraphQL
      * @since 3.5.0
+     * @deprecated in 4.11.0. [[\craft\filters\Cors]] should be used instead.
+     * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
      */
     public array|null|false $allowedGraphqlOrigins = null;
 
@@ -345,7 +347,7 @@ class GeneralConfig extends BaseConfig
      * ->allowSimilarTags(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_ALLOW_SIMILAR_TAGS=1
+     * CRAFT_ALLOW_SIMILAR_TAGS=true
      * ```
      * :::
      *
@@ -361,7 +363,7 @@ class GeneralConfig extends BaseConfig
      * ->allowUppercaseInSlug(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_ALLOW_UPPERCASE_IN_SLUG=1
+     * CRAFT_ALLOW_UPPERCASE_IN_SLUG=true
      * ```
      * :::
      *
@@ -1011,7 +1013,7 @@ class GeneralConfig extends BaseConfig
      * ->disallowRobots(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_DISALLOW_ROBOTS=1
+     * CRAFT_DISALLOW_ROBOTS=true
      * ```
      * :::
      *
@@ -1028,7 +1030,7 @@ class GeneralConfig extends BaseConfig
      * ->disableGraphqlTransformDirective(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_DISABLE_GRAPHQL_TRANSFORM_DIRECTIVE=1
+     * CRAFT_DISABLE_GRAPHQL_TRANSFORM_DIRECTIVE=true
      * ```
      * :::
      *
@@ -1046,7 +1048,7 @@ class GeneralConfig extends BaseConfig
      *  ->asyncCsrfInputs(true)
      *  ```
      *  ```shell Environment Override
-     *  CRAFT_ASYNC_CSRF_INPUTS=1
+     *  CRAFT_ASYNC_CSRF_INPUTS=true
      *  ```
      *  :::
      *
@@ -1063,7 +1065,7 @@ class GeneralConfig extends BaseConfig
      * ->enableBasicHttpAuth(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_ENABLE_BASIC_HTTP_AUTH=1
+     * CRAFT_ENABLE_BASIC_HTTP_AUTH=true
      * ```
      * :::
      *
@@ -1197,7 +1199,7 @@ class GeneralConfig extends BaseConfig
      * ->setGraphqlDatesToSystemTimeZone(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_SET_GRAPHQL_DATES_TO_SYSTEM_TIMEZONE=1
+     * CRAFT_SET_GRAPHQL_DATES_TO_SYSTEM_TIMEZONE=true
      * ```
      * :::
      *
@@ -1378,7 +1380,7 @@ class GeneralConfig extends BaseConfig
      * ->generateTransformsBeforePageLoad(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD=1
+     * CRAFT_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD=true
      * ```
      * :::
      *
@@ -1449,7 +1451,7 @@ class GeneralConfig extends BaseConfig
      * ->headlessMode(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_HEADLESS_MODE=1
+     * CRAFT_HEADLESS_MODE=true
      * ```
      * :::
      *
@@ -1620,6 +1622,23 @@ class GeneralConfig extends BaseConfig
     public ?bool $isSystemLive = null;
 
     /**
+     * @var bool Whether GraphQL types should be generated lazily.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->lazyGqlTypes(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_LAZY_GQL_TYPES=true
+     * ```
+     * :::
+     *
+     * @group GraphQL
+     * @since 4.11.0
+     */
+    public bool $lazyGqlTypes = false;
+
+    /**
      * @var bool Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
      *
      * ::: tip
@@ -1631,7 +1650,7 @@ class GeneralConfig extends BaseConfig
      * ->limitAutoSlugsToAscii(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_LIMIT_AUTO_SLUGS_TO_ASCII=1
+     * CRAFT_LIMIT_AUTO_SLUGS_TO_ASCII=true
      * ```
      * :::
      *
@@ -1876,7 +1895,7 @@ class GeneralConfig extends BaseConfig
      * ->omitScriptNameInUrls(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_OMIT_SCRIPT_NAME_IN_URLS=1
+     * CRAFT_OMIT_SCRIPT_NAME_IN_URLS=true
      * ```
      * :::
      *
@@ -1899,7 +1918,7 @@ class GeneralConfig extends BaseConfig
      * ->optimizeImageFilesize(false)
      * ```
      * ```shell Environment Override
-     * CRAFT_OPTIMIZE_IMAGE_FILESIZE=1
+     * CRAFT_OPTIMIZE_IMAGE_FILESIZE=false
      * ```
      * :::
      *
@@ -1962,7 +1981,7 @@ class GeneralConfig extends BaseConfig
     public ?string $pathParam = 'p';
 
     /**
-     * @var string|null The `Permissions-Policy` header that should be sent for web responses.
+     * @var string|null The `Permissions-Policy` header that should be sent for site responses.
      *
      * ::: code
      * ```php Static Config
@@ -1975,6 +1994,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      * @since 3.6.14
+     * @deprecated in 4.11.0. [[\craft\filters\Headers]] should be used instead.
      */
     public ?string $permissionsPolicyHeader = null;
 
@@ -2129,7 +2149,7 @@ class GeneralConfig extends BaseConfig
      * ->preserveCmykColorspace(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_PRESERVE_CMYK_COLORSPACE=1
+     * CRAFT_PRESERVE_CMYK_COLORSPACE=true
      * ```
      * :::
      *
@@ -2150,7 +2170,7 @@ class GeneralConfig extends BaseConfig
      * ->preserveExifData(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_PRESERVE_EXIF_DATA=1
+     * CRAFT_PRESERVE_EXIF_DATA=true
      * ```
      * :::
      *
@@ -2189,7 +2209,7 @@ class GeneralConfig extends BaseConfig
      * ->preventUserEnumeration(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_PREVENT_USER_ENUMERATION=1
+     * CRAFT_PREVENT_USER_ENUMERATION=true
      * ```
      * :::
      *
@@ -2338,7 +2358,7 @@ class GeneralConfig extends BaseConfig
      * ->rasterizeSvgThumbs(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_RASTERIZE_SVG_THUMBS=1
+     * CRAFT_RASTERIZE_SVG_THUMBS=true
      * ```
      * :::
      *
@@ -2490,7 +2510,7 @@ class GeneralConfig extends BaseConfig
      * ->revAssetUrls(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_REV_ASSET_URLS=1
+     * CRAFT_REV_ASSET_URLS=true
      * ```
      * :::
      *
@@ -2639,7 +2659,7 @@ class GeneralConfig extends BaseConfig
      * ->sendContentLengthHeader(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_SEND_CONTENT_LENGTH_HEADER=1
+     * CRAFT_SEND_CONTENT_LENGTH_HEADER=true
      * ```
      * :::
      *
@@ -2868,7 +2888,7 @@ class GeneralConfig extends BaseConfig
      * ->storeUserIps(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_STORE_USER_IPS=1
+     * CRAFT_STORE_USER_IPS=true
      * ```
      * :::
      *
@@ -2958,7 +2978,7 @@ class GeneralConfig extends BaseConfig
      * ->translationDebugOutput(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_TRANSLATION_DEBUG_OUTPUT=1
+     * CRAFT_TRANSLATION_DEBUG_OUTPUT=true
      * ```
      * :::
      *
@@ -3033,7 +3053,7 @@ class GeneralConfig extends BaseConfig
      * ->useEmailAsUsername(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_USE_EMAIL_AS_USERNAME=1
+     * CRAFT_USE_EMAIL_AS_USERNAME=true
      * ```
      * :::
      *
@@ -3064,7 +3084,7 @@ class GeneralConfig extends BaseConfig
      * ->useIframeResizer(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_USE_IFRAME_RESIZER=1
+     * CRAFT_USE_IFRAME_RESIZER=true
      * ```
      * :::
      *
@@ -3083,7 +3103,7 @@ class GeneralConfig extends BaseConfig
      * ->usePathInfo(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_USE_PATH_INFO=1
+     * CRAFT_USE_PATH_INFO=true
      * ```
      * :::
      *
@@ -3102,7 +3122,7 @@ class GeneralConfig extends BaseConfig
      * ->useSecureCookies(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_USE_SECURE_COOKIES=1
+     * CRAFT_USE_SECURE_COOKIES=true
      * ```
      * :::
      *
@@ -3122,7 +3142,7 @@ class GeneralConfig extends BaseConfig
      * ->useSslOnTokenizedUrls(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_USE_SSL_ON_TOKENIZED_URLS=1
+     * CRAFT_USE_SSL_ON_TOKENIZED_URLS=true
      * ```
      * :::
      *
@@ -3386,14 +3406,40 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param array $value
+     * @param array<string,string|null> $value
      * @return self
      * @see $aliases
      * @since 4.2.0
      */
     public function aliases(array $value): self
     {
-        $this->aliases = $value;
+        $this->aliases = [];
+        foreach ($value as $name => $path) {
+            $this->addAlias($name, $path);
+        }
+        return $this;
+    }
+
+    /**
+     * Adds a custom Yii [alias](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
+     *
+     * ```php
+     * ->addAlias('@webroot', '/var/www/')
+     * ```
+     *
+     * @group Environment
+     * @param string $name
+     * @param string|null $path
+     * @return self
+     * @see $aliases
+     * @since 4.2.0
+     */
+    public function addAlias(string $name, ?string $path): self
+    {
+        if (!str_starts_with($name, '@')) {
+            $name = "@$name";
+        }
+        $this->aliases[$name] = $path;
         return $this;
     }
 
@@ -3443,6 +3489,8 @@ class GeneralConfig extends BaseConfig
      * @return self
      * @see $allowedGraphqlOrigins
      * @since 4.2.0
+     * @deprecated in 4.11.0. [[\craft\filters\Cors]] should be used instead.
+     * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
      */
     public function allowedGraphqlOrigins(array|null|false $value): self
     {
@@ -3935,7 +3983,11 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultCpLanguage(?string $value): self
     {
-        if ($value !== null && class_exists(Craft::class, false)) {
+        if (
+            $value !== null &&
+            class_exists(Craft::class, false) &&
+            isset(Craft::$app)
+        ) {
             try {
                 $value = Localization::normalizeLanguage($value);
             } catch (InvalidArgumentException $e) {
@@ -4951,6 +5003,25 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Whether GraphQL types should be generated lazily.
+     *
+     * ```php
+     * ->lazyGqlTypes(true)
+     * ```
+     *
+     * @group GraphQL
+     * @param bool $value
+     * @return self
+     * @see $lazyGqlTypes
+     * @since 4.11.0
+     */
+    public function lazyGqlTypes(bool $value): self
+    {
+        $this->lazyGqlTypes = $value;
+        return $this;
+    }
+
+    /**
      * Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
      *
      * ::: tip
@@ -5339,6 +5410,7 @@ class GeneralConfig extends BaseConfig
      * @return self
      * @see $permissionsPolicyHeader
      * @since 4.2.0
+     * @deprecated in 4.11.0. [[\craft\filters\Headers]] should be used instead.
      */
     public function permissionsPolicyHeader(?string $value): self
     {
@@ -6051,7 +6123,7 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param ?string $value
+     * @param string|null $value
      * @phpstan-param 'None'|'Lax'|'Strict'|null $value
      * @return self
      * @see $sameSiteCookieValue

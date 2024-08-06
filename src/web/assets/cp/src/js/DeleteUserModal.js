@@ -196,7 +196,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
     onFadeIn: function () {
       // Auto-focus the first radio
       if (!Garnish.isMobileBrowser(true)) {
-        this.$deleteActionRadios.first().trigger('focus');
+        this.$deleteActionRadios.first().focus();
       }
 
       this.base();

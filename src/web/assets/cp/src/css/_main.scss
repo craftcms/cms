@@ -3227,6 +3227,20 @@ $checkboxPadding: $checkboxSize + 4;
     .enabled-label {
       margin-left: var(--xs);
     }
+
+    tr.disabled {
+      opacity: 1;
+
+      & > th > *,
+      & > td {
+        opacity: 0.25;
+      }
+
+      & > th > button.toggle {
+        opacity: 1;
+        pointer-events: all;
+      }
+    }
   }
 
   // thumbs views
@@ -4349,19 +4363,19 @@ ul.tree,
     resize: none;
   }
 
+  & > .field .heading,
+  & > fieldset > legend {
+    margin: 0 0 var(--s);
+  }
+
   & > .field > .heading > label,
   & > fieldset > legend {
-    margin-top: 0;
     font-weight: normal;
     color: var(--gray-600);
   }
 
-  & > fieldset {
-    margin: 0 0 var(--spacing);
-
-    & > legend {
-      margin-bottom: 5px;
-    }
+  & > .field > .heading > label {
+    margin: 0;
   }
 
   & > .field {
@@ -4379,6 +4393,10 @@ ul.tree,
       background-color: var(--gray-050) !important;
       width: calc(100% + var(--padding) + var(--padding));
     }
+  }
+
+  & > fieldset {
+    margin: 0 0 var(--spacing);
   }
 
   & > .text {

@@ -89,8 +89,8 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
       // and does it look like this draggee has descendants we don't know about yet?
       if (
         this.maxLevels &&
-        this.draggingLastElements &&
-        this.tableView.getMorePending()
+        ($draggee.has('> th > button.toggle[aria-expanded=false]').length ||
+          (this.draggingLastElements && this.tableView.getMorePending()))
       ) {
         // Only way to know the true descendant level delta is to ask PHP
         this._loadingDraggeeLevelDelta = true;
@@ -104,6 +104,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
 
           if (this.dragging) {
             this._draggeeLevelDelta = response.data.delta;
+            this._setTargetLevelBounds();
             this.drag(false);
           }
         });
@@ -166,10 +167,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
      * Returns whether the draggee can be inserted before a given item.
      */
     canInsertBefore: function ($item) {
-      if (this._loadingDraggeeLevelDelta) {
-        return false;
-      }
-
       return this._getLevelBounds($item.prev(), $item) !== false;
     },
 
@@ -177,10 +174,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
      * Returns whether the draggee can be inserted after a given item.
      */
     canInsertAfter: function ($item) {
-      if (this._loadingDraggeeLevelDelta) {
-        return false;
-      }
-
       return this._getLevelBounds($item, $item.next()) !== false;
     },
 
@@ -322,8 +315,8 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
             // See if we should run any pending tasks
             Craft.cp.runQueue();
           })
-          .catch(({response}) => {
-            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+          .catch((e) => {
+            Craft.cp.displayError(e?.response?.data?.message);
             this.tableView.elementIndex.updateElements();
             return;
           });
@@ -374,6 +367,10 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
      * two given rows, or false if it’s not going to work out.
      */
     _getLevelBounds: function ($prevRow, $nextRow) {
+      if (this._loadingDraggeeLevelDelta) {
+        return false;
+      }
+
       // Can't go any lower than the next row, if there is one
       if ($nextRow && $nextRow.length) {
         this._getLevelBounds._minLevel = $nextRow.data('level');

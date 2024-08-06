@@ -522,7 +522,7 @@ class Request extends \yii\web\Request
     /**
      * Sets the token value.
      *
-     * @param ?string $token
+     * @param string|null $token
      * @since 3.6.0
      */
     public function setToken(?string $token): void
@@ -1281,6 +1281,9 @@ class Request extends \yii\web\Request
      */
     public function getCsrfToken($regenerate = false): string
     {
+        // Ensure the response is not cached by the browser or static cache proxies.
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         if (!isset($this->_craftCsrfToken) || $regenerate) {
             $token = $this->loadCsrfToken();
 
@@ -1391,6 +1394,9 @@ class Request extends \yii\web\Request
      */
     protected function generateCsrfToken(): string
     {
+        // Ensure the response is not cached by the browser or static cache proxies.
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         $existingToken = $this->loadCsrfToken();
 
         // They have an existing CSRF token.

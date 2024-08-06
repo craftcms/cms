@@ -587,6 +587,21 @@ JS, [
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
+        // If we're propagating a value, and we don't show the site menu,
+        // only save relations to elements in the current site.
+        // (see https://github.com/craftcms/cms/issues/15459)
+        if (
+            $value instanceof ElementQueryInterface &&
+            $element?->propagating &&
+            $element->isNewForSite &&
+            !$this->targetSiteId &&
+            !$this->showSiteMenu
+        ) {
+            $value = $this->_all($value, $element)
+                ->siteId($this->targetSiteId($element))
+                ->ids();
+        }
+
         if ($value instanceof ElementQueryInterface || $value instanceof Collection) {
             return $value;
         }

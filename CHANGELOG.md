@@ -1,5 +1,77 @@
 # Release Notes for Craft CMS 4
 
+## 4.10.8 - 2024-08-05
+
+- Fixed a PHP error. ([#14635](https://github.com/craftcms/cms/issues/14635))
+- Fixed a PHP error that could occur when running Codeception tests. ([#15445](https://github.com/craftcms/cms/issues/15445))
+- Fixed a bug where `deleteAsset`, `deleteCategory`, `deleteEntry`, and `deleteTag` GraphQL mutations were returning `null` rather than `true` or `false`. ([#15465](https://github.com/craftcms/cms/issues/15465))
+- Fixed a styling issue. ([#15473](https://github.com/craftcms/cms/issues/15473))
+- Fixed a bug where `exists()` element queries weren’t working if `distinct`, `groupBy`, `having,` or `union` params were set on them during query preparation. ([#15001](https://github.com/craftcms/cms/issues/15001), [#15223](https://github.com/craftcms/cms/pull/15223))
+- Fixed a bug where users’ `username` properties weren’t getting set if `useEmailAsUsername` was enabled. ([#15475](https://github.com/craftcms/cms/issues/15475))
+
+## 4.10.7 - 2024-07-29
+
+- Fixed a bug where element index result counts weren’t getting updated when the element list was refreshed but pagination was preserved. ([#15367](https://github.com/craftcms/cms/issues/15367))
+- Fixed a PHP error that occurred when making a field layout component conditional on a Time or CKEditor field. ([craftcms/ckeditor#267](https://github.com/craftcms/ckeditor/issues/267))
+- Fixed an error that occurred when editing a user via a slideout, if the current user didn’t have permission to edit the primary site. ([#15408](https://github.com/craftcms/cms/issues/15408))
+- Fixed a bug where editable tables with single-select checkbox columns weren’t deselecting the selected option automatically. ([#15415](https://github.com/craftcms/cms/issues/15415))
+- Fixed a styling issue. ([#15422](https://github.com/craftcms/cms/issues/15422))
+- Fixed a bug where category groups’ Template settings weren’t being auto-populated for new groups.
+
+## 4.10.6 - 2024-07-16
+
+- `craft\helpers\UrlHelper::actionUrl()` now returns URLs based on the primary site’s base URL (if it has one), for console requests if the `@web` alias wasn’t explicitly defined.
+- Fixed a bug where it wasn’t possible to expand/collapse descendants of disabled table rows within element select modals. ([#15337](https://github.com/craftcms/cms/issues/15337))
+- Fixed a bug where PhpStorm autocomplete wasn’t working when chaining custom field methods defined by `CustomFieldBehavior`. ([#15336](https://github.com/craftcms/cms/issues/15336))
+- Fixed a bug where new Matrix blocks created on newly-created elements weren’t getting duplicated to all other sites for the owner element. ([#15321](https://github.com/craftcms/cms/issues/15321))
+- Fixed a bug where focus could jump unexpectedly when a slideout was opened. ([#15314](https://github.com/craftcms/cms/issues/15314))
+
+## 4.10.5 - 2024-07-11
+
+> [!NOTE]
+> Craft now sends no-cache headers for requests that generate/retrieve a CSRF token. If your Craft install is behind a static caching service like Cloudflare, enable the [asyncCsrfInputs](https://craftcms.com/docs/5.x/reference/config/general.html#asynccsrfinputs) config setting to avoid a significant cache hit reduction. ([#15293](https://github.com/craftcms/cms/pull/15293), [#15281](https://github.com/craftcms/cms/pull/15281))
+
+- Craft now sends no-cache headers for any request that calls `craft\web\Request::getCsrfToken()`. ([#15293](https://github.com/craftcms/cms/pull/15293), [#15281](https://github.com/craftcms/cms/pull/15281))
+- Fixed a bug where structures’ Max Levels settings weren’t being enforced when dragging elements with collapsed descendants. ([#15310](https://github.com/craftcms/cms/issues/15310))
+- Fixed a bug where `craft\helpers\ElementHelper::isDraft()`, `isRevision()`, and `isDraftOrRevision()` weren’t returning `true` if a nested draft/revision element was passed in, but the root element was canonical. ([#15303](https://github.com/craftcms/cms/issues/15303))
+- Fixed a bug where focus could be trapped within slideout sidebars. ([#15314](https://github.com/craftcms/cms/issues/15314))
+
+## 4.10.4 - 2024-07-02
+
+- Craft now sends no-cache headers for any request that generates a CSRF token. ([#15281](https://github.com/craftcms/cms/pull/15281), [verbb/formie#1963](https://github.com/verbb/formie/issues/1963))
+- Fixed a JavaScript error that occurred when creating a new custom element source, preventing the Default Sort and Default Table Columns fields from showing up.
+- Fixed a bug where the control panel was getting asynchronous CSRF inputs if the `asyncCsrfInputs` config setting was enabled.
+- Fixed a bug where Craft’s Twig implementation wasn’t respecting sandboxing rules for object properties. ([#15278](https://github.com/craftcms/cms/issues/15278))
+
+## 4.10.3 - 2024-06-27
+
+- Previewing PDF/video assets without public URLs now displays a “Preview not supported.” message. ([#15235](https://github.com/craftcms/cms/pull/15235))
+- Added `Garnish.once()` and `Garnish.Base::once()`, for registering event handlers that should only be triggered one time.
+- Fixed a bug where Edit Asset pages showed a “View” button for assets without URLs. ([#15235](https://github.com/craftcms/cms/pull/15235))
+- Fixed a bug where asset indexes attempted to link to assets without URLs. ([#15235](https://github.com/craftcms/cms/pull/15235))
+- Fixed a bug where queue job tracking and element activity tracking could stop working after a user session expired and then was reauthenticated.
+- Fixed an error that occurred if an element select input was initialized without a `name` value.
+- Fixed a bug where Selectize inputs could be immediately focused and marked as dirty when opening an element editor slideout, if they were the first focusable element in the field layout. ([#15245](https://github.com/craftcms/cms/issues/15245))
+
+## 4.10.2 - 2024-06-18
+
+- Added `craft\base\conditions\BaseNumberConditionRule::$step`.
+- Added `Garnish.muteResizeEvents()`.
+- Fixed a JavaScript performance degradation bug. ([#14510](https://github.com/craftcms/cms/issues/14510))
+- Fixed a bug where scalar element queries weren’t working if `distinct`, `groupBy`, `having,` or `union` params were set on them during query preparation. ([#15001](https://github.com/craftcms/cms/issues/15001))
+- Fixed a bug where Edit Asset pages would warn about losing unsaved changes when navigating away, if the file was replaced but nothing else had changed.
+- Fixed a bug where Edit Asset pages would show a notification with a “Reload” button after the file was replaced.
+- Fixed a bug where Number fields’ condition rules weren’t allowing decimal values. ([#15222](https://github.com/craftcms/cms/issues/15222))
+
+## 4.10.1 - 2024-06-17
+
+- Added `craft\web\View::getModifiedDeltaNames()`.
+- `craft\web\View::registerDeltaName()` now has a `$forceModified` argument.
+- Fixed a bug where changed field values could be forgotten within Matrix fields, if a validation error occurred. ([#15190](https://github.com/craftcms/cms/issues/15190))
+- Fixed a bug where the `graphql/create-token` command was prompting for the schema name, when it meant the token name. ([#15205](https://github.com/craftcms/cms/pull/15205))
+- Fixed an error that could occur when applying a draft. ([#15211](https://github.com/craftcms/cms/issues/15211))
+- Fixed a bug where keyboard shortcuts weren’t getting registered properly for modals and slideouts opened via a disclosure menu. ([#15209](https://github.com/craftcms/cms/issues/15209))
+
 ## 4.10.0 - 2024-06-12
 
 ### Content Management

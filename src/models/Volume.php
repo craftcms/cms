@@ -302,7 +302,7 @@ class Volume extends Model implements BaseFsInterface, FieldLayoutProviderInterf
     /**
      * Set the transform filesystem.
      *
-     * @param ?FsInterface $fs
+     * @param FsInterface|null $fs
      */
     public function setTransformFs(?FsInterface $fs): void
     {

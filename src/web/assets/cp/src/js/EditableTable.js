@@ -99,6 +99,13 @@ Craft.EditableTable = Garnish.Base.extend(
       this.updateAddRowButton();
       this.addListener(this.$addRowBtn, 'activate', 'addRow');
 
+      // don't allow lazyInitRows if any of the columns are radio checkboxes
+      this.settings.lazyInitRows =
+        this.settings.lazyInitRows &&
+        !Object.entries(this.columns).some(
+          ([colId, col]) => col.type === 'checkbox' && col.radioMode
+        );
+
       if (this.settings.lazyInitRows) {
         // Lazily create the row objects
         this.addListener(
@@ -114,7 +121,7 @@ Craft.EditableTable = Garnish.Base.extend(
               this.createRowObj($tr);
               setTimeout(() => {
                 if ($textarea && !$textarea.is(':focus')) {
-                  $textarea.trigger('focus');
+                  $textarea.focus();
                 }
               }, 100);
             }
@@ -228,10 +235,10 @@ Craft.EditableTable = Garnish.Base.extend(
 
       if (this.rowCount === 0) {
         this.$table.addClass('hidden');
-        this.$addRowBtn.trigger('focus');
+        this.$addRowBtn.focus();
       } else {
         // Focus element in previous row
-        this.$tbody.find(':focusable').last().trigger('focus');
+        this.$tbody.find(':focusable').last().focus();
       }
 
       // onDeleteRow callback
@@ -278,7 +285,7 @@ Craft.EditableTable = Garnish.Base.extend(
         $tr
           .find('input:visible,textarea:visible,select:visible')
           .first()
-          .trigger('focus');
+          .focus();
       }
 
       this.rowCount++;
@@ -340,7 +347,7 @@ Craft.EditableTable = Garnish.Base.extend(
       var $input = $('textarea,input.text', prevRow.$tds[tdIndex]);
       if ($input.length) {
         $(blurTd).trigger('blur');
-        $input.trigger('focus');
+        $input.focus();
       }
     },
 
@@ -373,7 +380,7 @@ Craft.EditableTable = Garnish.Base.extend(
       var $input = $('textarea,input.text', nextRow.$tds[tdIndex]);
       if ($input.length) {
         $(blurTd).trigger('blur');
-        $input.trigger('focus');
+        $input.focus();
       }
     },
 

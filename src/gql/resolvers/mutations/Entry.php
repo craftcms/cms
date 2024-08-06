@@ -107,9 +107,10 @@ class Entry extends ElementMutationResolver
      * @param array $arguments
      * @param mixed $context
      * @param ResolveInfo $resolveInfo
+     * @return bool
      * @throws Throwable if reasons.
      */
-    public function deleteEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
+    public function deleteEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
@@ -119,13 +120,13 @@ class Entry extends ElementMutationResolver
         $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
 
         if (!$entry) {
-            return;
+            return false;
         }
 
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->getTypeId());
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'delete');
 
-        $elementService->deleteElementById($entryId);
+        return $elementService->deleteElementById($entryId);
     }
 
     /**

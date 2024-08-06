@@ -182,7 +182,7 @@ class Application extends \yii\web\Application
             $headers = $this->getResponse()->getHeaders();
             $generalConfig = $this->getConfig()->getGeneral();
 
-            if ($generalConfig->permissionsPolicyHeader) {
+            if ($generalConfig->permissionsPolicyHeader && $request->getIsSiteRequest()) {
                 $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
             }
 
@@ -382,10 +382,8 @@ class Application extends \yii\web\Application
             return;
         }
 
-        @FileHelper::createDirectory($resourceBasePath);
-
-        if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
-            throw new InvalidConfigException($resourceBasePath . ' doesn’t exist or isn’t writable by PHP.');
+        if (!@FileHelper::createDirectory($resourceBasePath)) {
+            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
         }
     }
 
@@ -638,7 +636,13 @@ class Application extends \yii\web\Application
             try {
                 Craft::debug("Route requested: '$route'", __METHOD__);
                 $this->requestedRoute = $route;
-                return $this->runAction($route, $_GET);
+                $response = $this->runAction($route, $_GET);
+
+                // Return the response for OPTIONS requests that return null
+                // to support the CORS filter: https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
+                return $request->getIsOptions()
+                    ? ($response ?? $this->getResponse())
+                    : $response;
             } catch (Throwable $e) {
                 $this->_unregisterDebugModule();
                 if ($e instanceof InvalidRouteException) {

@@ -1113,7 +1113,9 @@ class Elements extends Component
             forceTouch: $forceTouch,
             crossSiteValidate: $crossSiteValidate,
         );
+
         $element->duplicateOf = $duplicateOf;
+
         return $success;
     }
 
@@ -1670,6 +1672,7 @@ class Elements extends Component
                 static::$duplicatedElementSourceIds[$mainClone->id] = $element->id;
             }
 
+            $propagatedTo = [$mainClone->siteId => true];
             $mainClone->newSiteIds = [];
 
             // Propagate it
@@ -1746,8 +1749,23 @@ class Elements extends Component
                         throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site $siteElement->siteId: " . implode(', ', $siteClone->getFirstErrors()));
                     }
 
+                    $propagatedTo[$siteClone->siteId] = true;
                     if ($siteClone->isNewForSite) {
                         $mainClone->newSiteIds[] = $siteClone->siteId;
+                    }
+                }
+
+                // Now propagate $mainClone to any sites the source element didn’t already exist in
+                foreach ($supportedSites as $siteId => $siteInfo) {
+                    if (!isset($propagatedTo[$siteId]) && $siteInfo['propagate']) {
+                        $siteClone = false;
+                        if (!$this->_propagateElement($mainClone, $supportedSites, $siteId, $siteClone)) {
+                            throw $siteClone
+                                ? new InvalidElementException($siteClone, "Element $siteClone->id could not be propagated to site $siteId: " . implode(', ', $siteClone->getFirstErrors()))
+                                : new InvalidElementException($mainClone, "Element $mainClone->id could not be propagated to site $siteId.");
+                        }
+                        $propagatedTo[$siteId] = true;
+                        $mainClone->newSiteIds[] = $siteId;
                     }
                 }
             }
@@ -3187,6 +3205,7 @@ class Elements extends Component
         $propagate = $propagate && $element::isLocalized() && Craft::$app->getIsMultiSite();
         $originalPropagateAll = $element->propagateAll;
         $originalFirstSave = $element->firstSave;
+        $originalIsNewForSite = $element->isNewForSite;
         $originalDateUpdated = $element->dateUpdated;
 
         $element->firstSave = (
@@ -3217,6 +3236,7 @@ class Elements extends Component
 
         if (!$element->beforeSave($isNewElement)) {
             $element->firstSave = $originalFirstSave;
+            $element->isNewForSite = $originalIsNewForSite;
             $element->propagateAll = $originalPropagateAll;
             return false;
         }
@@ -3227,6 +3247,7 @@ class Elements extends Component
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$element->siteId])) {
             $element->firstSave = $originalFirstSave;
+            $element->isNewForSite = $originalIsNewForSite;
             $element->propagateAll = $originalPropagateAll;
             throw new UnsupportedSiteException($element, $element->siteId, 'Attempting to save an element in an unsupported site.');
         }
@@ -3255,6 +3276,15 @@ class Elements extends Component
         $fieldLayout = $element->getFieldLayout();
         $dirtyFields = $element->getDirtyFields();
 
+        // Get the element's site record
+        if (!$isNewElement && !$element->isNewForSite) {
+            $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
+                'elementId' => $element->id,
+                'siteId' => $element->siteId,
+            ]);
+        }
+        $element->isNewForSite = empty($siteSettingsRecord);
+
         // Validate
         if ($runValidation) {
             // If we're propagating, only validate changed custom fields
@@ -3270,7 +3300,9 @@ class Elements extends Component
             if (($names === null || !empty($names)) && !$element->validate($names)) {
                 Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
                 $element->firstSave = $originalFirstSave;
+                $element->isNewForSite = $originalIsNewForSite;
                 $element->propagateAll = $originalPropagateAll;
+
                 return false;
             }
         }
@@ -3293,6 +3325,7 @@ class Elements extends Component
 
                     if (!$elementRecord) {
                         $element->firstSave = $originalFirstSave;
+                        $element->isNewForSite = $originalIsNewForSite;
                         $element->propagateAll = $originalPropagateAll;
                         throw new ElementNotFoundException("No element exists with the ID '$element->id'");
                     }
@@ -3343,6 +3376,7 @@ class Elements extends Component
 
                 if ($dateCreated === false) {
                     $element->firstSave = $originalFirstSave;
+                    $element->isNewForSite = $originalIsNewForSite;
                     $element->propagateAll = $originalPropagateAll;
                     throw new Exception('There was a problem calculating dateCreated.');
                 }
@@ -3370,14 +3404,7 @@ class Elements extends Component
             }
 
             // Save the element’s site settings record
-            if (!$isNewElement) {
-                $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
-                    'elementId' => $element->id,
-                    'siteId' => $element->siteId,
-                ]);
-            }
-
-            if ($element->isNewForSite = empty($siteSettingsRecord)) {
+            if ($element->isNewForSite) {
                 // First time we've saved the element for this site
                 $siteSettingsRecord = new Element_SiteSettingsRecord();
                 $siteSettingsRecord->elementId = $element->id;
@@ -3406,6 +3433,7 @@ class Elements extends Component
 
             if (!$siteSettingsRecord->save(false)) {
                 $element->firstSave = $originalFirstSave;
+                $element->isNewForSite = $originalIsNewForSite;
                 $element->propagateAll = $originalPropagateAll;
                 throw new Exception('Couldn’t save elements’ site settings record.');
             }
@@ -3475,6 +3503,7 @@ class Elements extends Component
         } catch (Throwable $e) {
             $transaction->rollBack();
             $element->firstSave = $originalFirstSave;
+            $element->isNewForSite = $originalIsNewForSite;
             $element->propagateAll = $originalPropagateAll;
             $element->dateUpdated = $originalDateUpdated;
             if ($e instanceof InvalidConfigException) {
@@ -3588,6 +3617,7 @@ class Elements extends Component
         // Clear the element’s record of dirty fields
         $element->markAsClean();
         $element->firstSave = $originalFirstSave;
+        $element->isNewForSite = $originalIsNewForSite;
         $element->propagateAll = $originalPropagateAll;
 
         return true;
@@ -3626,12 +3656,13 @@ class Elements extends Component
         }
 
         // If it doesn't exist yet, just clone the initial site
-        if ($isNewSiteForElement = ($siteElement === null)) {
+        if ($siteElement === null) {
             $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->siteSettingsId = null;
             $siteElement->contentId = null;
             $siteElement->setEnabledForSite($siteInfo['enabledByDefault']);
+            $siteElement->isNewForSite = true;
 
             // Keep track of this new site ID
             $element->newSiteIds[] = $siteInfo['siteId'];
@@ -3678,7 +3709,7 @@ class Elements extends Component
         if (
             $element::hasUris() &&
             (
-                $isNewSiteForElement ||
+                $siteElement->isNewForSite ||
                 in_array('uri', $element->getDirtyAttributes()) ||
                 $element->resaving
             )
@@ -3698,7 +3729,7 @@ class Elements extends Component
 
         // Copy any non-translatable field values
         if ($element::hasContent()) {
-            if ($isNewSiteForElement) {
+            if ($siteElement->isNewForSite) {
                 // Copy all the field values
                 $siteElement->setFieldValues($element->getFieldValues());
             } elseif (($fieldLayout = $element->getFieldLayout()) !== null) {

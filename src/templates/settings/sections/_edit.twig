@@ -278,7 +278,7 @@
             new Craft.UriFormatGenerator(
                 '#name',
                 '#sites tr[data-id="{{ site.handle }}"] input[name$="[template]"]',
-                { suffix: '/_entry', updateWhenHidden: true }
+                { suffix: '/_entry.twig', updateWhenHidden: true }
             );
         {% endfor %}
     {% endjs %}

@@ -513,7 +513,9 @@ class UsersController extends Controller
 
             if (!$loginName) {
                 // If they didn't even enter a username/email, just bail now.
-                $errors[] = Craft::t('app', 'Username or email is required.');
+                $errors[] = Craft::$app->getConfig()->getGeneral()->useEmailAsUsername
+                    ? Craft::t('app', 'Email is required.')
+                    : Craft::t('app', 'Username or email is required.');
 
                 return $this->_handleSendPasswordResetError($errors);
             }
@@ -521,7 +523,9 @@ class UsersController extends Controller
             $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
             if (!$user || !$user->getIsCredentialed()) {
-                $errors[] = Craft::t('app', 'Invalid username or email.');
+                $errors[] = Craft::$app->getConfig()->getGeneral()->useEmailAsUsername
+                    ? Craft::t('app', 'Invalid email.')
+                    : Craft::t('app', 'Invalid username or email.');
             }
         }
 
@@ -800,6 +804,25 @@ class UsersController extends Controller
     }
 
     /**
+     * User index
+     *
+     * @param string|null $source
+     * @return Response
+     * @since 4.11.0
+     */
+    public function actionIndex(?string $source = null): Response
+    {
+        $this->requirePermission('editUsers');
+        return $this->renderTemplate('users/_index.twig', [
+            'title' => Craft::t('app', 'Users'),
+            'buttonLabel' => Craft::t('app', 'New {type}', [
+                'type' => User::lowerDisplayName(),
+            ]),
+            'source' => $source,
+        ]);
+    }
+
+    /**
      * Edit a user account.
      *
      * @param int|string|null $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
@@ -1032,7 +1055,9 @@ class UsersController extends Controller
                 ]);
             }
         } else {
-            $title = Craft::t('app', 'Create a new user');
+            $title = Craft::t('app', 'Create a new {type}', [
+                'type' => User::lowerDisplayName(),
+            ]);
         }
 
         // Trigger EVENT_DEFINE_ADDITIONAL_BUTTONS

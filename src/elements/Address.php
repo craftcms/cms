@@ -4,6 +4,7 @@ namespace craft\elements;
 
 use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
+use CommerceGuys\Addressing\Country\Country;
 use Craft;
 use craft\base\BlockElementInterface;
 use craft\base\Element;
@@ -405,6 +406,17 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public function getCountryCode(): string
     {
         return $this->countryCode;
+    }
+
+    /**
+     * Returns a [[Country]] object representing the address’ coutry.
+     *
+     * @return Country
+     * @since 4.11.0
+     */
+    public function getCountry(): Country
+    {
+        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode);
     }
 
     /**
