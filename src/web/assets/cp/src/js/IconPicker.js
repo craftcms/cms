@@ -72,6 +72,8 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
       this.$iconList = $('<ul tabindex="-1"/>').appendTo(
         this.$iconListContainer
       );
+
+      this.updateLangAttribute(this.$iconList);
       const $spinner = $('<div class="spinner spinner-absolute"/>').appendTo(
         this.$iconListContainer
       );
@@ -156,13 +158,24 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
       }
     },
 
+    updateLangAttribute($element) {
+      const htmlLang = document.documentElement.lang;
+
+      if (!htmlLang.startsWith('en')) {
+        $element.attr('lang', 'en');
+      }
+    },
+
     selectIcon($button) {
       this.modal.hide();
       const name = $button.attr('title');
       this.$preview
         .html($button.html())
         .attr('title', name)
-        .attr('aria-label', name);
+        .attr('aria-label', name)
+        .attr('role', 'img');
+
+      this.updateLangAttribute(this.$preview);
       this.$input.val(name);
       this.$chooseBtn.children('.label').text(Craft.t('app', 'Change'));
       this.$chooseBtn.focus();
@@ -174,6 +187,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
       this.$input.val('');
       this.$chooseBtn.children('.label').text(Craft.t('app', 'Choose'));
       this.$removeBtn.addClass('hidden');
+      this.$chooseBtn.focus();
     },
   },
   {

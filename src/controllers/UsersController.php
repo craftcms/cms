@@ -1100,7 +1100,7 @@ class UsersController extends Controller
             'currentGroupIds' => array_map(fn(UserGroup $group) => $group->id, $user->getGroups()),
         ]);
 
-        if (!$user->getIsCredentialed() && static::currentUser()->can('administrateUsers')) {
+        if (!$user->getIsCredentialed() && $user->username && static::currentUser()->can('administrateUsers')) {
             $response->additionalButtonsHtml(
                 Html::button(Craft::t('app', 'Save and send activation email'), [
                     'class' => ['btn', 'secondary', 'formsubmit'],

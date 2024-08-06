@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased (5.3)
+
+- Improved the accessibility of icon fields. ([#15479](https://github.com/craftcms/cms/pull/15479))
+- Fixed a bug where user permission screens had a “Save and send activation email” button for inactive users that didn’t have a username.
+
 ## 5.3.0-beta.2 - 2024-08-05
 
 - Double-clicking on element index rows no longer opens the element editor slideout, when inline editing is active. ([#15441](https://github.com/craftcms/cms/discussions/15441))
