@@ -101,7 +101,7 @@ class Config extends Component
         if (!isset($this->_configSettings[$category])) {
             $config = $this->_createConfigObj($category, $category, null);
 
-            if (isset($this->appType)) {
+            if ($category !== self::CATEGORY_CUSTOM && isset($this->appType)) {
                 // See if an application type-specific config exists (general.web.php / general.console.php)
                 /** @var GeneralConfig|DbConfig $config */
                 $config = $this->_createConfigObj($category, "$category.$this->appType", $config);
