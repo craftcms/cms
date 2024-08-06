@@ -108,7 +108,7 @@ import $ from 'jquery';
 
         for (let i = 0; i < $entries.length; i++) {
           const $entry = $($entries[i]);
-          const entry = new Entry(this, $entry);
+          const entry = new Craft.MatrixInput.Entry(this, $entry);
 
           if (entry.id && $.inArray('' + entry.id, collapsedEntries) !== -1) {
             entry.collapse();
@@ -252,6 +252,7 @@ import $ from 'jquery';
               ownerElementType: this.settings.ownerElementType,
               siteId: this.settings.siteId,
               namespace: this.settings.namespace,
+              staticEntries: this.settings.staticEntries,
             },
           }
         );
@@ -283,7 +284,7 @@ import $ from 'jquery';
             Craft.initUiElements($entry.children('.fields'));
             await Craft.appendHeadHtml(data.headHtml);
             await Craft.appendBodyHtml(data.bodyHtml);
-            new Entry(this, $entry);
+            new Craft.MatrixInput.Entry(this, $entry);
             this.entrySort.addItems($entry);
             this.entrySelect.addItems($entry);
             this.updateAddEntryBtn();
@@ -293,7 +294,7 @@ import $ from 'jquery';
                 // Scroll to the entry
                 Garnish.scrollContainerToElement($entry);
                 // Focus on the first focusable element
-                $entry.find('.flex-fields :focusable').first().trigger('focus');
+                $entry.find('.flex-fields :focusable').first().focus();
               }
 
               // Resume the element editor
@@ -451,7 +452,7 @@ import $ from 'jquery';
     }
   );
 
-  const Entry = Garnish.Base.extend({
+  Craft.MatrixInput.Entry = Garnish.Base.extend({
     /**
      * @type {Craft.MatrixInput}
      */
@@ -963,7 +964,9 @@ import $ from 'jquery';
           [param('fieldId')]: this.matrix.settings.fieldId,
           [param('sortOrder')]: this.$container.index() + 1,
           [param('typeId')]: this.$container.data('type-id'),
-          [param('elementUid')]: this.$container.data('uid'),
+          [param('elementUid')]:
+            elementEditor?.getDraftElementUid(this.$container.data('uid')) ??
+            this.$container.data('uid'),
         };
 
         const selectedTabId = this.$fieldsContainer

@@ -8,11 +8,13 @@
 namespace craft\base;
 
 use Craft;
+use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\AttributeStatus;
 use craft\events\DefineFieldHtmlEvent;
 use craft\events\DefineFieldKeywordsEvent;
 use craft\events\FieldElementEvent;
+use craft\events\FieldEvent;
 use craft\gql\types\QueryArgument;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -20,6 +22,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
@@ -126,6 +129,20 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public const EVENT_DEFINE_INPUT_HTML = 'defineInputHtml';
 
+    /**
+     * @event FieldEvent The event that is triggered after the field has been merged into another.
+     * @see afterMergeInto()
+     * @since 5.3.0
+     */
+    public const EVENT_AFTER_MERGE_INTO = 'afterMergeInto';
+
+    /**
+     * @event FieldEvent The event that is triggered after another field has been merged into this one.
+     * @see afterMergeFrom()
+     * @since 5.3.0
+     */
+    public const EVENT_AFTER_MERGE_FROM = 'afterMergeFrom';
+
     // Translation methods
     // -------------------------------------------------------------------------
 
@@ -218,7 +235,14 @@ abstract class Field extends SavableComponent implements FieldInterface
             return false;
         }
 
-        return Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
+        if (is_array($value) && isset($value['value'])) {
+            $caseInsensitive = $value['caseInsensitive'] ?? false;
+            $value = $value['value'];
+        } else {
+            $caseInsensitive = false;
+        }
+
+        return Db::parseParam($valueSql, $value, caseInsensitive: $caseInsensitive, columnType: Schema::TYPE_JSON);
     }
 
     /**
@@ -259,6 +283,12 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @see setIsFresh()
      */
     private ?bool $_isFresh = null;
+
+    /**
+     * @var array<string,string|false>
+     * @see getValueSql()
+     */
+    private array $_valueSql;
 
     /**
      * Constructor
@@ -475,6 +505,22 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl(): ?string
+    {
+        return $this->id ? UrlHelper::cpUrl("settings/fields/edit/$this->id") : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getOrientation(?ElementInterface $element): string
     {
         if (!Craft::$app->getIsMultiSite()) {
@@ -591,16 +637,19 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $html = $this->inputHtml($value, $element, false);
 
-        // Give plugins a chance to modify it
-        $event = new DefineFieldHtmlEvent([
-            'value' => $value,
-            'element' => $element,
-            'inline' => false,
-            'html' => $html,
-        ]);
+        // Fire a 'defineInputHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_INPUT_HTML)) {
+            $event = new DefineFieldHtmlEvent([
+                'value' => $value,
+                'element' => $element,
+                'inline' => false,
+                'html' => $html,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
+            return $event->html;
+        }
 
-        $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
-        return $event->html;
+        return $html;
     }
 
     /**
@@ -615,16 +664,19 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $html = $this->inputHtml($value, $element, true);
 
-        // Give plugins a chance to modify it
-        $event = new DefineFieldHtmlEvent([
-            'value' => $value,
-            'element' => $element,
-            'inline' => true,
-            'html' => $html,
-        ]);
+        // Fire a 'defineInputHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_INPUT_HTML)) {
+            $event = new DefineFieldHtmlEvent([
+                'value' => $value,
+                'element' => $element,
+                'inline' => true,
+                'html' => $html,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
+            return $event->html;
+        }
 
-        $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
-        return $event->html;
+        return $html;
     }
 
     /**
@@ -679,7 +731,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getSearchKeywords(mixed $value, ElementInterface $element): string
     {
-        // Give plugins/modules a chance to define custom keywords
+        // Fire a 'defineKeywords' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_KEYWORDS)) {
             $event = new DefineFieldKeywordsEvent([
                 'value' => $value,
@@ -690,6 +742,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 return $event->keywords;
             }
         }
+
         return $this->searchKeywords($value, $element);
     }
 
@@ -727,7 +780,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * [[\craft\base\ElementInterface::sortOptions()|sortOptions()]] response.
      *
      * @return array
-     * @see \craft\base\SortableFieldInterface::getSortOption()
+     * @see SortableFieldInterface::getSortOption
      * @since 3.2.0
      */
     public function getSortOption(): array
@@ -736,11 +789,75 @@ abstract class Field extends SavableComponent implements FieldInterface
             throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
         }
 
+        // The attribute name should match the table attribute name,
+        // per ElementSources::getTableAttributesForFieldLayouts()
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => [$this->getValueSql(), 'id'],
-            'attribute' => "field:{$this->layoutElement->uid}",
+            'orderBy' => $this->getValueSql(),
+            'attribute' => isset($this->layoutElement->handle)
+                ? "fieldInstance:{$this->layoutElement->uid}"
+                : "field:$this->uid",
         ];
+    }
+
+    /**
+     * Returns whether the field can be merged into the given field.
+     *
+     * @param FieldInterface $persistingField
+     * @param string|null $reason
+     * @return bool
+     * @since 5.3.0
+     */
+    public function canMergeInto(FieldInterface $persistingField, ?string &$reason): bool
+    {
+        // Go with whether the DB types are compatible by default
+        return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $persistingField::class);
+    }
+
+    /**
+     * Returns whether the given field can be merged into this one.
+     *
+     * @param FieldInterface $outgoingField
+     * @param string|null $reason
+     * @return bool
+     * @since 5.3.0
+     */
+    public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
+    {
+        // Go with whether the DB types are compatible by default
+        return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $outgoingField::class);
+    }
+
+    /**
+     * Performs actions after the field has been merged into the given field.
+     *
+     * @param FieldInterface $persistingField
+     * @since 5.3.0
+     */
+    public function afterMergeInto(FieldInterface $persistingField)
+    {
+        // Fire an 'afterMergeInto' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_INTO)) {
+            $this->trigger(self::EVENT_AFTER_MERGE_INTO, new FieldEvent(['field' => $persistingField]));
+        }
+    }
+
+    /**
+     * Performs actions after the given field has been merged into this one.
+     *
+     * @param FieldInterface $outgoingField
+     * @since 5.3.0
+     */
+    public function afterMergeFrom(FieldInterface $outgoingField)
+    {
+        if ($this instanceof RelationalFieldInterface) {
+            Db::update(DbTable::RELATIONS, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+        }
+
+        // Fire an 'afterMergeFrom' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_FROM)) {
+            $this->trigger(self::EVENT_AFTER_MERGE_FROM, new FieldEvent(['field' => $outgoingField]));
+        }
     }
 
     /**
@@ -792,6 +909,13 @@ abstract class Field extends SavableComponent implements FieldInterface
             return null;
         }
 
+        $cacheKey = $key ?? '*';
+        $this->_valueSql[$cacheKey] ??= $this->_valueSql($key) ?? false;
+        return $this->_valueSql[$cacheKey] ?: null;
+    }
+
+    private function _valueSql(?string $key): ?string
+    {
         $dbType = static::dbType();
 
         if ($dbType === null) {
@@ -838,9 +962,16 @@ abstract class Field extends SavableComponent implements FieldInterface
             };
             if ($castType !== null) {
                 // if a length was specified, replace the default with that
-                if ($length = Db::parseColumnLength($dbType)) {
+                $length = Db::parseColumnLength($dbType);
+                if ($length) {
                     $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
+                } elseif ($castType === 'DECIMAL') {
+                    [$precision, $scale] = Db::parseColumnPrecisionAndScale($dbType) ?? [null, null];
+                    if ($precision && $scale) {
+                        $castType .= "($precision,$scale)";
+                    }
                 }
+
                 $sql = "CAST($sql AS $castType)";
             }
         }
@@ -928,14 +1059,17 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
-        // Trigger a 'beforeElementSave' event
-        $event = new FieldElementEvent([
-            'element' => $element,
-            'isNew' => $isNew,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_ELEMENT_SAVE, $event);
+        // Fire a 'beforeElementSave' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_ELEMENT_SAVE)) {
+            $event = new FieldElementEvent([
+                'element' => $element,
+                'isNew' => $isNew,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_ELEMENT_SAVE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -943,7 +1077,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
-        // Trigger an 'afterElementSave' event
+        // Fire an 'afterElementSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_SAVE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
                 'element' => $element,
@@ -957,7 +1091,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
-        // Trigger an 'afterElementPropagate' event
+        // Fire an 'afterElementPropagate' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_PROPAGATE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_PROPAGATE, new FieldElementEvent([
                 'element' => $element,
@@ -971,13 +1105,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function beforeElementDelete(ElementInterface $element): bool
     {
-        // Trigger a 'beforeElementDelete' event
-        $event = new FieldElementEvent([
-            'element' => $element,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_ELEMENT_DELETE, $event);
+        // Fire a 'beforeElementDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_ELEMENT_DELETE)) {
+            $event = new FieldElementEvent(['element' => $element]);
+            $this->trigger(self::EVENT_BEFORE_ELEMENT_DELETE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -985,7 +1120,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function afterElementDelete(ElementInterface $element): void
     {
-        // Trigger an 'afterElementDelete' event
+        // Fire an 'afterElementDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_DELETE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
                 'element' => $element,
@@ -1014,13 +1149,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function beforeElementRestore(ElementInterface $element): bool
     {
-        // Trigger a 'beforeElementRestore' event
-        $event = new FieldElementEvent([
-            'element' => $element,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_ELEMENT_RESTORE, $event);
+        // Fire a 'beforeElementRestore' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_ELEMENT_RESTORE)) {
+            $event = new FieldElementEvent(['element' => $element]);
+            $this->trigger(self::EVENT_BEFORE_ELEMENT_RESTORE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -1028,7 +1164,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function afterElementRestore(ElementInterface $element): void
     {
-        // Trigger an 'afterElementRestore' event
+        // Fire an 'afterElementRestore' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_RESTORE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_RESTORE, new FieldElementEvent([
                 'element' => $element,

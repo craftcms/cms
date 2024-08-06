@@ -63,10 +63,14 @@
         {% if item.status ?? false -%}
           {{ statusIndicator(item.status) }}
         {%- endif -%}
-        <span class="menu-item-label">{{ item.label ?? item.html|raw }}</span>
-        {% if item.description is defined %}
-          <div class="menu-item-description smalltext light">{{ item.description }}</div>
-        {% endif %}
+        <span class="menu-item-label inline-flex flex-col items-start gap-2xs">
+          {{ item.label ?? item.html|raw }}
+          {% if item.description is defined %}
+            <span class="menu-item-description mt-2xs smalltext light">{{ item.description }}</span>
+        {% elseif item.handle is defined %}
+            <span class="menu-item-description mt-2xs smalltext light code">{{ item.handle }}</span>
+          {% endif %}
+        </span>
         {% if selected %}
           <span class="visually-hidden">, selected</span>
         {% endif %}

@@ -194,17 +194,10 @@ class Db
      * @param Connection|null $db The database connection
      * @return array|string
      * @since 5.0.0
+     * @deprecated in 5.2.3
      */
     public static function prepareForJsonColumn(array $value, ?Connection $db = null): array|string
     {
-        if ($db === null) {
-            $db = self::db();
-        }
-
-        if ($db->getIsMaria()) {
-            return Json::encode($value);
-        }
-
         return $value;
     }
 
@@ -395,6 +388,22 @@ class Db
     }
 
     /**
+     * Parses a decimal column type definition and returns just the column precision and scale.
+     *
+     * @param string $columnType
+     * @return array{0:int,1:int}|null
+     * @since 5.2.2
+     */
+    public static function parseColumnPrecisionAndScale(string $columnType): ?array
+    {
+        if (!preg_match('/^\w+\((\d+),\s*(\d+)\)/', $columnType, $matches)) {
+            return null;
+        }
+
+        return [(int)$matches[1], (int)$matches[2]];
+    }
+
+    /**
      * Returns a simplified version of a given column type.
      *
      * @param string $columnType
@@ -575,12 +584,16 @@ class Db
         $condition = [$param->operator];
         $isMysql = self::db()->getIsMysql();
 
-        // Only PostgreSQL supports case-sensitive strings
-        if ($isMysql) {
+        // Only PostgreSQL supports case-sensitive strings on non-JSON column values
+        if ($isMysql && $columnType !== Schema::TYPE_JSON) {
             $caseInsensitive = false;
         }
 
-        $caseColumn = $caseInsensitive ? "lower([[$column]])" : $column;
+        if ($caseInsensitive) {
+            $caseColumn = str_contains($column, '(') ? "lower($column)" : "lower([[$column]])";
+        } else {
+            $caseColumn = $column;
+        }
 
         $inVals = [];
         $notInVals = [];
@@ -649,8 +662,13 @@ class Db
                     $val = str_replace('\*', '*', $val);
                 }
 
+                // if we're prepping to compare to a timestamp - ensure the value is a number not a string
+                if ($parsedColumnType === Schema::TYPE_TIMESTAMP) {
+                    $val = (int)$val;
+                }
+
                 if ($like) {
-                    if ($caseInsensitive) {
+                    if ($caseInsensitive && !$isMysql) {
                         $operator = $operator === '=' ? 'ilike' : 'not ilike';
                     } else {
                         $operator = $operator === '=' ? 'like' : 'not like';
@@ -866,6 +884,33 @@ class Db
         string|null $columnType = Schema::TYPE_INTEGER,
     ): ?array {
         return static::parseParam($column, $value, $defaultOperator, false, $columnType);
+    }
+
+    /**
+     * Parses a query param value for a timestamp column and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * The follow values are supported:
+     *
+     * - A number
+     * - `:empty:` or `:notempty:`
+     * - `'not x'` or `'!= x'`
+     * - `'> x'`, `'>= x'`, `'< x'`, or `'<= x'`, or a combination of those
+     *
+     * @param string $column The database column that the param is targeting.
+     * @param string|string[] $value The param value
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     * @return array|null
+     * @throws InvalidArgumentException if the param value isn’t numeric
+     * @since 5.1.0
+     */
+    public static function parseTimestampParam(
+        string $column,
+        mixed $value,
+        string $defaultOperator = '=',
+    ): ?array {
+        return static::parseParam($column, $value, $defaultOperator, false, Schema::TYPE_TIMESTAMP);
     }
 
     /**

@@ -133,7 +133,7 @@
   {% if not static %}
     {{ hiddenInput("#{name}[sortOrder][]", entry.uid) }}
     {# only register a delta name for this entry if it’s not new #}
-    {% if entry.id %}
+    {% if entry.id and not entry.getIsUnpublishedDraft() %}
       {% do view.registerDeltaName(baseInputName) %}
     {% endif %}
     {{ hiddenInput("#{baseInputName}[type]", entryType.handle) }}
@@ -192,7 +192,7 @@
         }) }}
       </div>
 
-      <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div>
+      <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}" tabindex="0" role="checkbox" aria-checked="false"></div>
       <div>
         {{ disclosureMenu(actionMenuItems, {
           hiddenLabel: 'Actions'|t('app'),

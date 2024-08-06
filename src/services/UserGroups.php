@@ -58,25 +58,28 @@ class UserGroups extends Component
     public const EVENT_AFTER_DELETE_USER_GROUP = 'afterDeleteUserGroup';
 
     /**
+     * The “Team” group’s UUID.
+     */
+    private const TEAM_GROUP_UUID = 'c55ca0a9-4bd6-409b-afd8-c1884dafecd0';
+
+    /**
      * Returns all user groups.
      *
      * @return UserGroup[]
      */
     public function getAllGroups(): array
     {
-        if (Craft::$app->edition !== CmsEdition::Pro) {
-            return [];
+        switch (Craft::$app->edition) {
+            case CmsEdition::Solo:
+                return [];
+            case CmsEdition::Team:
+                return [$this->getTeamGroup()];
+            default:
+                $results = $this->_createUserGroupsQuery()
+                    ->orderBy(['name' => SORT_ASC])
+                    ->all();
+                return array_map(fn(array $result) => new UserGroup($result), $results);
         }
-
-        $results = $this->_createUserGroupsQuery()
-            ->orderBy(['name' => SORT_ASC])
-            ->all();
-
-        foreach ($results as $key => $result) {
-            $results[$key] = new UserGroup($result);
-        }
-
-        return $results;
     }
 
     /**
@@ -154,6 +157,49 @@ class UserGroups extends Component
             ->one();
 
         return $result ? new UserGroup($result) : null;
+    }
+
+    /**
+     * Returns the Craft Team edition’s user group.
+     *
+     * @return UserGroup
+     * @since 5.1.0
+     */
+    public function getTeamGroup(): UserGroup
+    {
+        Craft::$app->requireEdition(CmsEdition::Team, false);
+
+        $group = $this->getGroupByUid(self::TEAM_GROUP_UUID);
+        if ($group) {
+            return $group;
+        }
+
+        /** @var UserGroup $group */
+        $group = Craft::createObject([
+            'class' => UserGroup::class,
+            'uid' => self::TEAM_GROUP_UUID,
+        ]);
+
+        // Find a unique name + handle
+        $i = 1;
+        do {
+            $group->name = sprintf('Team%s', $i > 1 ? " $i" : '');
+            $group->handle = sprintf('team%s', $i > 1 ? $i : '');
+            if ($group->validate(['name', 'handle'])) {
+                break;
+            }
+            $i++;
+        } while (true);
+
+        $groupRecord = UserGroupRecord::findOne(['uid' => $group->uid]) ?? new UserGroupRecord();
+        $groupRecord->name = $group->name;
+        $groupRecord->handle = $group->handle;
+        $groupRecord->description = null;
+        $groupRecord->uid = $group->uid;
+        $groupRecord->save(false);
+
+        $group->id = $groupRecord->id;
+        return $group;
     }
 
     /**
@@ -241,7 +287,11 @@ class UserGroups extends Component
      */
     public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
-        Craft::$app->requireEdition(CmsEdition::Pro);
+        if ($group->uid === self::TEAM_GROUP_UUID) {
+            Craft::$app->requireEdition(CmsEdition::Team);
+        } else {
+            Craft::$app->requireEdition(CmsEdition::Pro);
+        }
 
         $isNewGroup = !$group->id;
 
@@ -260,10 +310,12 @@ class UserGroups extends Component
 
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if ($isNewGroup) {
-            $group->uid = StringHelper::UUID();
-        } elseif (!$group->uid) {
-            $group->uid = Db::uidById(Table::USERGROUPS, $group->id);
+        if (!$group->uid) {
+            if ($isNewGroup) {
+                $group->uid = StringHelper::UUID();
+            } elseif (!$group->uid) {
+                $group->uid = Db::uidById(Table::USERGROUPS, $group->id);
+            }
         }
 
         $configPath = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid;

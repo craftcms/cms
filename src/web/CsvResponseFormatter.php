@@ -105,7 +105,7 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
         }
 
         if ($this->includeHeaderRow) {
-            fputcsv($fp, $headers, ',');
+            fputcsv($fp, $headers, $this->delimiter);
         }
 
         foreach ($data as &$row) {

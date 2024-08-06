@@ -33,7 +33,7 @@
 
 {% js %}
     var columns = [
-        { name: '__slot:title', title: Craft.t('app', 'Name') },
+        { name: '__slot:title', title: Craft.t('app', 'Name'), sortField: true },
         {
             name: 'searchable',
             titleClass: 'thin',
@@ -56,7 +56,7 @@
             }
         },
         {% endif %}
-        { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+        { name: '__slot:handle', title: Craft.t('app', 'Handle'), sortField: true },
         {
             name: 'type',
             title: Craft.t('app', 'Type'),
@@ -70,7 +70,8 @@
                 }
                 label += '</div>';
                 return label;
-            }
+            },
+            sortField: true,
         },
     ];
 

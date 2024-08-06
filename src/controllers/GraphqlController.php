@@ -23,6 +23,7 @@ use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
 use craft\web\ErrorHandler;
+use DateTimeZone;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -247,45 +248,49 @@ class GraphqlController extends Controller
             return $schema;
         }
 
-        // Was a specific token passed?
-        $authHeaders = $requestHeaders->get('X-Craft-Authorization', null, false) ?? $requestHeaders->get('Authorization', null, false) ?? [];
-        foreach ($authHeaders as $authHeader) {
-            $authValues = array_map('trim', explode(',', $authHeader));
-            foreach ($authValues as $authValue) {
-                if (preg_match('/^Bearer\s+(.+)$/i', $authValue, $matches)) {
-                    try {
-                        $token = $gqlService->getTokenByAccessToken($matches[1]);
-                    } catch (InvalidArgumentException) {
-                    }
+        $token = $this->_token($gqlService);
 
-                    if (!isset($token) || !$token->getIsValid()) {
-                        throw new BadRequestHttpException('Invalid Authorization header');
-                    }
-
-                    break 2;
-                }
-            }
-        }
-
-        if (!isset($token)) {
-            // Get the public schema, if it exists & is valid
-            $token = $this->_publicToken($gqlService);
-
-            // If we couldn't find a token, then return the active schema if there is one, otherwise bail
-            if (!$token) {
-                try {
-                    return $gqlService->getActiveSchema();
-                } catch (GqlException) {
-                    throw new BadRequestHttpException('Missing Authorization header');
-                }
+        // If we couldn't find a token, then return the active schema if there is one, otherwise bail
+        if (!$token) {
+            try {
+                return $gqlService->getActiveSchema();
+            } catch (GqlException) {
+                throw new BadRequestHttpException('Missing Authorization header');
             }
         }
 
         // Update the lastUsed timestamp
-        $token->lastUsed = DateTimeHelper::currentUTCDateTime();
-        $gqlService->saveToken($token);
+        $now = DateTimeHelper::currentUTCDateTime();
+        if (
+            !$token->lastUsed ||
+            $token->lastUsed->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i') !== $now->format('Y-m-d H:i')
+        ) {
+            $token->lastUsed = $now;
+            $gqlService->saveToken($token);
+        }
 
         return $token->getSchema();
+    }
+
+    private function _token(GqlService $gqlService): ?GqlToken
+    {
+        $bearerToken = $this->request->getBearerToken();
+
+        if ($bearerToken) {
+            try {
+                $token = $gqlService->getTokenByAccessToken($bearerToken);
+
+                if (!$token->getIsValid()) {
+                    throw new BadRequestHttpException('Invalid Authorization header');
+                }
+
+                return $token;
+            } catch (InvalidArgumentException) {
+            }
+        }
+
+        // Get the public schema, if it exists & is valid
+        return $this->_publicToken($gqlService);
     }
 
     /**
@@ -599,7 +604,6 @@ class GraphqlController extends Controller
             $title = trim($schema->name) ?: Craft::t('app', 'Create a new GraphQL Schema');
         }
 
-
         return $this->renderTemplate('graphql/schemas/_edit.twig', compact(
             'schema',
             'title'
@@ -720,7 +724,7 @@ class GraphqlController extends Controller
         }
 
         $this->setSuccessFlash(Craft::t('app', 'Schema saved.'));
-        return $this->redirectToPostedUrl();
+        return $this->redirectToPostedUrl($schema);
     }
 
     /**

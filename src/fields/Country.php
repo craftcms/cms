@@ -7,10 +7,13 @@
 
 namespace craft\fields;
 
+use CommerceGuys\Addressing\Country\Country as CountryModel;
+use CommerceGuys\Addressing\Exception\UnknownCountryException;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\fields\conditions\CountryFieldConditionRule;
 use craft\helpers\Cp;
 use yii\db\Schema;
@@ -21,7 +24,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.6.0
  */
-class Country extends Field implements InlineEditableFieldInterface
+class Country extends Field implements InlineEditableFieldInterface, MergeableFieldInterface
 {
     /**
      * @inheritdoc
@@ -60,7 +63,19 @@ class Country extends Field implements InlineEditableFieldInterface
      */
     public function normalizeValue(mixed $value, ElementInterface $element = null): mixed
     {
-        return !in_array(strtolower($value), ['', '__blank__']) ? $value : null;
+        if ($value instanceof CountryModel) {
+            return $value;
+        }
+
+        if (!$value || strtolower($value) === '__blank__') {
+            return null;
+        }
+
+        try {
+            return Craft::$app->getAddresses()->getCountryRepository()->get($value);
+        } catch (UnknownCountryException) {
+            return null;
+        }
     }
 
     /**
@@ -77,6 +92,15 @@ class Country extends Field implements InlineEditableFieldInterface
             'options' => $options,
             'value' => $value,
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        /** @var CountryModel|null $value */
+        return $value?->getCountryCode();
     }
 
     /**

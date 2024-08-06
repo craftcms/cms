@@ -477,6 +477,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
                 instances: [
                   {
                     showActionMenu: this.settings.showActionMenu,
+                    showHandle: this.settings.showHandles,
                     inputName: this.settings.name,
                   },
                 ],
@@ -517,6 +518,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       id: null,
       name: null,
       limit: null,
+      showHandles: false,
       sortable: true,
       selectable: true,
       showActionMenu: true,

@@ -323,17 +323,10 @@ class Category extends Element
      */
     protected static function defineTableAttributes(): array
     {
-        return [
+        return array_merge(parent::defineTableAttributes(), [
             'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
             'parent' => ['label' => Craft::t('app', 'Parent')],
-            'slug' => ['label' => Craft::t('app', 'Slug')],
-            'uri' => ['label' => Craft::t('app', 'URI')],
-            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
-            'id' => ['label' => Craft::t('app', 'ID')],
-            'uid' => ['label' => Craft::t('app', 'UID')],
-            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
-        ];
+        ]);
     }
 
     /**
@@ -342,6 +335,7 @@ class Category extends Element
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
+            'status',
             'link',
         ];
     }
@@ -616,7 +610,11 @@ class Category extends Element
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
+        try {
+            return $this->getGroup()->getFieldLayout();
+        } catch (InvalidConfigException) {
+            return null;
+        }
     }
 
     /**

@@ -494,7 +494,8 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     {
         /** @var AssetQuery|ElementCollection $value */
         if ($value instanceof AssetQuery) {
-            $value = (clone $value)->eagerly(__METHOD__);
+            $handle = sprintf('%s-%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id, $size);
+            $value = (clone $value)->eagerly($handle);
         }
 
         return $value->one()?->getThumbHtml($size);
@@ -847,12 +848,17 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
             }
         }
 
-        $event = new LocateUploadedFilesEvent([
-            'element' => $element,
-            'files' => $files,
-        ]);
-        $this->trigger(self::EVENT_LOCATE_UPLOADED_FILES, $event);
-        return $event->files;
+        // Fire a 'locateUploadedFiles' event
+        if ($this->hasEventHandlers(self::EVENT_LOCATE_UPLOADED_FILES)) {
+            $event = new LocateUploadedFilesEvent([
+                'element' => $element,
+                'files' => $files,
+            ]);
+            $this->trigger(self::EVENT_LOCATE_UPLOADED_FILES, $event);
+            return $event->files;
+        }
+
+        return $files;
     }
 
     /**

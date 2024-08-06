@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\Asset;
 use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;
+use craft\web\View;
 use enshrined\svgSanitize\Sanitizer;
 use Throwable;
 use yii\base\Exception;
@@ -96,7 +97,25 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
-        return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+        $async = ArrayHelper::remove($options, 'async')
+            ?? ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
+
+        if (!$async) {
+            Craft::$app->getResponse()->setNoCacheHeaders();
+            return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+        }
+
+        Craft::$app->getView()->registerHtml(
+            Craft::$app->getView()->renderTemplate(
+                '_special/async-csrf-input',
+                [
+                    'url' => UrlHelper::actionUrl('users/session-info'),
+                ],
+                View::TEMPLATE_MODE_CP,
+            )
+        );
+
+        return static::tag('craft-csrf-input');
     }
 
     /**
@@ -521,11 +540,22 @@ class Html extends \yii\helpers\Html
             return $value;
         }
         if (is_string($value)) {
+            // first match any css properties that contain 'url()'
+            $markers = [];
+            $value = preg_replace_callback('/\burl\(.*\)/i', function($match) use (&$markers) {
+                $marker = sprintf('{marker:%s}', mt_rand());
+                $markers[$marker] = $match[0];
+                return $marker;
+            }, $value);
+
+            // now split the styles string on semicolons
             $styles = ArrayHelper::filterEmptyStringsFromArray(preg_split('/\s*;\s*/', $value));
+
+            // and proceed with the array of styles
             $normalized = [];
             foreach ($styles as $style) {
                 [$n, $v] = array_pad(preg_split('/\s*:\s*/', $style, 2), 2, '');
-                $normalized[$n] = $v;
+                $normalized[$n] = strtr($v, $markers);
             }
             return $normalized;
         }
@@ -657,13 +687,11 @@ class Html extends \yii\helpers\Html
     {
         // Ignore if it looks like a placeholder
         // or starts with a placeholder (e.g. widgets > __NAMESPACE__-fieldId)
-        if (preg_match('/^__[A-Z_]+__(-)?/', $id)) {
+        if (preg_match('/^__[A-Z_]+__/', $id)) {
             return $id;
         }
 
-        // IDs must begin with a letter
-        $id = preg_replace('/^[^A-Za-z]+/', '', $id);
-        $id = rtrim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
+        $id = trim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
         return $id ?: StringHelper::randomString(10);
     }
 

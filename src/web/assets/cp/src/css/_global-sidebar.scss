@@ -1,9 +1,5 @@
 .global-sidebar {
   --is-always-visible: true;
-  --prefix-width: calc(30rem / 16);
-  --prefix-ratio: 1;
-  --gutter-width: calc(10rem / 16); // Left and right padding
-
   position: sticky;
   top: 0;
   z-index: $sidebarZIndex;
@@ -52,14 +48,10 @@
 .global-nav > ul {
   display: flex;
   flex-direction: column;
-  gap: var(--s);
 }
 
 .global-nav > ul > li {
   position: relative;
-}
-
-.global-nav > ul > li.sel {
 }
 
 .nav-icon {
@@ -81,25 +73,35 @@
 }
 
 .nav-item {
-  --gutter-width: calc(10rem / 16);
   display: grid;
-  grid-template-columns: var(--gutter-width) minmax(0, 1fr) var(--prefix-width) var(
-      --gutter-width
-    );
+  grid-template-columns:
+    var(--nav-item-gutter-width) minmax(0, 1fr) var(--nav-item-prefix-width)
+    var(--nav-item-gutter-width);
   grid-template-areas: '. action trigger .' 'subnav subnav subnav subnav';
   align-items: center;
   width: 100%;
+  padding-block: var(--xs);
 
   > .sidebar-action {
     grid-area: action;
   }
+
+  &.sel {
+    color: var(--nav-item-fgColor-active);
+    background-color: var(--nav-item-bgColor-active);
+  }
+}
+
+.nav-item--sub {
+  padding-block: 0;
 }
 
 .nav-item__trigger {
   --icon-size: 10px;
-  --trigger-size: var(--touch-target-size);
+  width: var(--nav-item-trigger-size);
   grid-area: trigger;
   display: flex;
+  justify-content: center;
   z-index: 1;
 
   .menubtn {
@@ -107,14 +109,12 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: var(--trigger-size);
-    height: var(--trigger-size);
+    width: var(--nav-item-trigger-size);
+    height: var(--nav-item-trigger-size);
     border: transparent;
 
     &:hover {
-      @include light-on-dark-text;
-      color: var(--white);
-      background-color: var(--medium-text-color);
+      background-color: var(--nav-item-bgColor-hover);
     }
 
     &[aria-expanded='true']:not(:hover) {
@@ -132,12 +132,15 @@
 }
 
 .nav-item__subnav {
-  --prefix-ratio: 4/3;
+  --nav-item-prefix-ratio: 4/3;
   display: none;
   grid-area: subnav;
+  gap: 1px;
+  margin-block: 1px;
+  flex-direction: column;
 
   &[data-state='expanded'] {
-    display: block;
+    display: flex;
   }
 }
 
@@ -150,19 +153,19 @@
   min-width: 1.1rem;
   height: 1rem;
   padding: 0 var(--xs);
-  border-radius: var(--s);
-  background-color: var(--medium-text-color);
-  color: var(--white);
+  border-radius: 8px;
+  background-color: var(--nav-item-badge-bgColor);
+  color: var(--nav-item-badge-fgColor);
 }
 
 .sidebar-actions {
-  padding: 10px var(--gutter-width); // match padding of #system-info
+  padding: 10px var(--nav-item-gutter-width); // match padding of #system-info
 }
 
 .sidebar-action {
   --thumb-size: 0.75rem;
   display: grid;
-  grid-template-columns: var(--prefix-width) minmax(0, 1fr) auto;
+  grid-template-columns: var(--nav-item-prefix-width) minmax(0, 1fr) auto;
   width: 100%;
   align-items: center;
   position: relative;
@@ -171,54 +174,53 @@
   color: currentColor;
   cursor: pointer;
   min-height: 30px;
-  padding-inline: var(--xs);
   font-weight: 500;
 
   &:before {
     content: '';
     position: absolute;
-    inset-inline-start: calc((10rem / 16) * -1); // match #system-name
+    inset-inline-start: 0;
     inset-block-start: 50%;
-    height: 80%;
-    transform: translateY(-50%);
-    width: var(--xs);
+    transform: translateY(-50%) translateX(-150%);
+    height: 95%;
+    width: var(--nav-item-indicator-size);
+    border-radius: var(--small-border-radius);
   }
 
   &:focus-visible,
   &:hover {
-    @include light-on-dark-text;
-    color: var(--white);
-    background-color: var(--medium-text-color);
+    color: var(--nav-item-fgColor-hover);
+    background-color: var(--nav-item-bgColor-hover);
   }
 
-  &.sel {
+  &[aria-current='page'],
+  &[aria-current='true'] {
     &:before {
-      --indicator-size: 6px;
-      color: var(--white);
-      background-color: var(--medium-text-color);
+      background-color: var(--nav-item-fgColor-active);
     }
   }
 }
 
 .sidebar-action--sub {
-  --indicator-size: 4px;
   font-size: 0.9em;
   min-height: 26px;
 
-  &:focus-visible,
-  &:hover {
-    &:before {
-      background-color: var(--white);
-    }
-  }
-
   &:before {
-    @include left(calc((30px / 2) - (var(--indicator-size) / 2)));
-    width: var(--indicator-size);
-    height: var(--indicator-size);
+    transform: translateY(-50%);
+    inset-inline-start: calc(
+      var(--xs) + calc(var(--nav-item-prefix-width) / 2) -
+        (var(--nav-item-indicator-size) / 2)
+    );
+    width: var(--nav-item-indicator-size);
+    height: var(--nav-item-indicator-size);
     border-radius: 100%;
     top: 50%;
     background-color: currentColor;
+  }
+
+  &[aria-current='page'],
+  &[aria-current='true'] {
+    --nav-item-indicator-size: 6px;
   }
 }
 
@@ -277,8 +279,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--prefix-width);
-  aspect-ratio: var(--prefix-ratio);
+  width: var(--nav-item-prefix-width);
+  aspect-ratio: var(--nav-item-prefix-ratio);
   line-height: 0;
   flex-shrink: 0;
 }
@@ -318,9 +320,10 @@ States
 
     .nav-item {
       grid-template-areas: '. action .' '. trigger .' 'subnav subnav subnav';
-      grid-template-columns: var(--gutter-width) var(--prefix-width) var(
-          --gutter-width
-        );
+      grid-template-columns:
+        var(--nav-item-gutter-width) var(--nav-item-prefix-width)
+        var(--nav-item-gutter-width);
+      justify-items: center;
     }
 
     .nav-item__indicator {
@@ -328,9 +331,8 @@ States
     }
 
     .sidebar-action {
-      width: var(--prefix-width);
-      padding-inline: 0;
-      min-height: var(--prefix-width);
+      width: var(--nav-item-prefix-width);
+      min-height: var(--nav-item-prefix-width);
 
       &:focus-visible,
       &:hover {
@@ -379,7 +381,7 @@ States
 
       &:before {
         position: absolute;
-        inset-block-start: calc(var(--s) / -2);
+        inset-block-start: 0;
         inset-inline-start: calc(
           (var(--global-sidebar-width) - var(--separator-width)) / 2
         );

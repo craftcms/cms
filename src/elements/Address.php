@@ -4,6 +4,7 @@ namespace craft\elements;
 
 use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
+use CommerceGuys\Addressing\Country\Country;
 use CommerceGuys\Addressing\Subdivision\SubdivisionUpdater;
 use Craft;
 use craft\base\Element;
@@ -254,7 +255,11 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         }
 
         if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
+            // Unset fullName so NameTrait::prepareNamesForSave() can set it
             $this->fullName = null;
+        } elseif (array_key_exists('fullName', $values)) {
+            // Unset firstName and lastName so NameTrait::prepareNamesForSave() can set them
+            $this->firstName = $this->lastName = null;
         }
 
         parent::setAttributes($values, $safeOnly);
@@ -359,6 +364,17 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public function getCountryCode(): string
     {
         return $this->countryCode;
+    }
+
+    /**
+     * Returns a [[Country]] object representing the address’ coutry.
+     *
+     * @return Country
+     * @since 5.3.0
+     */
+    public function getCountry(): Country
+    {
+        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode);
     }
 
     /**

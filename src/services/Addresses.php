@@ -143,13 +143,13 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function defineAddressSubdivisions(array $parents, array $options = []): array
     {
+        // Fire a 'defineAddressSubdivisions' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDRESS_SUBDIVISIONS)) {
             $event = new DefineAddressSubdivisionsEvent([
                 'parents' => $parents,
                 'subdivisions' => $options,
             ]);
             $this->trigger(self::EVENT_DEFINE_ADDRESS_SUBDIVISIONS, $event);
-
             return $event->subdivisions;
         }
 
@@ -168,6 +168,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
     {
         $fields = $this->getAddressFormatRepository()->get($countryCode)->getUsedFields();
 
+        // Fire a 'defineUsedFields' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_USED_FIELDS)) {
             $event = new DefineAddressFieldsEvent([
                 'countryCode' => $countryCode,
@@ -192,6 +193,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
     {
         $fields = $this->getAddressFormatRepository()->get($countryCode)->getUsedSubdivisionFields();
 
+        // Fire a 'defineUsedSubdivisionFields' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_USED_SUBDIVISION_FIELDS)) {
             $event = new DefineAddressFieldsEvent([
                 'countryCode' => $countryCode,
@@ -230,6 +232,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
             AddressField::FAMILY_NAME => Craft::t('app', 'Last Name'),
         };
 
+        // Fire a 'defineFieldLabel' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_FIELD_LABEL)) {
             $event = new DefineAddressFieldLabelEvent([
                 'countryCode' => $countryCode,

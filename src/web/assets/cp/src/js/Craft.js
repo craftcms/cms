@@ -831,7 +831,15 @@ $.extend(Craft, {
         // Force Safari to not load from cache
         v: new Date().getTime(),
       });
-      axios.request(options).then(resolve).catch(reject);
+      axios
+        .request(options)
+        .then((response) => {
+          if (response.headers['x-csrf-token']) {
+            Craft.csrfTokenValue = response.headers['x-csrf-token'];
+          }
+          resolve(response);
+        })
+        .catch(reject);
     });
   },
 
@@ -1183,6 +1191,17 @@ $.extend(Craft, {
       }
     }
 
+    // Sort the delta namespaces from least -> most specific
+    modifiedDeltaNames.sort((a, b) => {
+      if (a.length === b.length) {
+        return 0;
+      }
+      if (mostSpecific) {
+        return a.length < b.length ? 1 : -1;
+      }
+      return a.length > b.length ? 1 : -1;
+    });
+
     return [modifiedDeltaNames, groupedNewParams];
   },
 
@@ -1529,11 +1548,29 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @returns {boolean}
-   * @deprecated String.prototype.endsWith() should be used instead
    */
-  startsWith: function (str, substr) {
+  startsWith: function (str, substr, caseInsensitive = false) {
+    if (caseInsensitive) {
+      return str.toLowerCase().startsWith(substr.toLowerCase());
+    }
     return str.startsWith(substr);
+  },
+
+  /**
+   * Returns whether a string ends with another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @returns {boolean}
+   */
+  endsWith: function (str, substr, caseInsensitive = false) {
+    if (caseInsensitive) {
+      return str.toLowerCase().endsWith(substr.toLowerCase());
+    }
+    return str.endsWith(substr);
   },
 
   /**
@@ -1541,10 +1578,11 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @return {string}
    */
-  ensureStartsWith: function (str, substr) {
-    if (!str.startsWith(substr)) {
+  ensureStartsWith: function (str, substr, caseInsensitive = false) {
+    if (!Craft.startsWith(str, substr, caseInsensitive)) {
       str = substr + str;
     }
     return str;
@@ -1555,11 +1593,42 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @return {string}
    */
-  ensureEndsWith: function (str, substr) {
-    if (!str.endsWith(substr)) {
+  ensureEndsWith: function (str, substr, caseInsensitive = false) {
+    if (!Craft.endsWith(str, substr, caseInsensitive)) {
       str += substr;
+    }
+    return str;
+  },
+
+  /**
+   * Removes a string from the beginning of another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @return {string}
+   */
+  removeLeft: function (str, substr, caseInsensitive = false) {
+    if (Craft.startsWith(str, substr, caseInsensitive)) {
+      return str.slice(substr.length);
+    }
+    return str;
+  },
+
+  /**
+   * Removes a string from the end of another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @return {string}
+   */
+  removeRight: function (str, substr, caseInsensitive = false) {
+    if (Craft.endsWith(str, substr, caseInsensitive)) {
+      return str.slice(0, -substr.length);
     }
     return str;
   },
@@ -2207,7 +2276,7 @@ $.extend(Craft, {
    * Retrieves a value from localStorage if it exists.
    *
    * @param {string} key
-   * @param {*} defaultValue
+   * @param {*} [defaultValue]
    */
   getLocalStorage: function (key, defaultValue) {
     key = 'Craft-' + Craft.systemUid + '.' + key;
@@ -2412,11 +2481,13 @@ $.extend(Craft, {
             )
             .detach();
           const $inputs = $element.find('input,button').detach();
-          $element.html($replacement.html());
+          $element.html($replacement.html()).removeClass('error');
 
           if ($actions.length) {
             const $oldStatus = $actions.find('span.status');
-            const $newStatus = $replacement.find('span.status');
+            const $newStatus = $replacement.find(
+              '> .chip-content .chip-actions span.status,> .card-actions-container .card-actions span.status'
+            );
 
             if (
               $oldStatus.length &&
@@ -2613,6 +2684,14 @@ $.extend(Craft, {
    */
   trapFocusWithin: function (container) {
     Garnish.trapFocusWithin(container);
+  },
+
+  /**
+   * Releases focus within a container.
+   * @param {Object} container
+   */
+  releaseFocusWithin: function (container) {
+    Garnish.releaseFocusWithin(container);
   },
 
   /**
@@ -2976,6 +3055,7 @@ $.extend($.fn, {
         confirm: $btn.data('confirm'),
         action: $btn.data('action'),
         redirect: $btn.data('redirect'),
+        retainScroll: Garnish.hasAttr($btn, 'data-retain-scroll'),
         requireElevatedSession: Garnish.hasAttr(
           $btn,
           'data-require-elevated-session'

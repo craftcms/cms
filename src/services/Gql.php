@@ -445,14 +445,17 @@ class Gql extends Component
             $validationRules[DisableIntrospection::class] = new DisableIntrospection();
         }
 
-        $event = new DefineGqlValidationRulesEvent([
-            'validationRules' => $validationRules,
-            'debug' => $debug,
-        ]);
+        // Fire a 'defineGqlValidationRules' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_GQL_VALIDATION_RULES)) {
+            $event = new DefineGqlValidationRulesEvent([
+                'validationRules' => $validationRules,
+                'debug' => $debug,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_GQL_VALIDATION_RULES, $event);
+            $validationRules = $event->validationRules;
+        }
 
-        $this->trigger(self::EVENT_DEFINE_GQL_VALIDATION_RULES, $event);
-
-        return array_values($event->validationRules);
+        return array_values($validationRules);
     }
 
     /**
@@ -473,47 +476,60 @@ class Gql extends Component
         ?string $operationName = null,
         bool $debugMode = false,
     ): array {
-        $event = new ExecuteGqlQueryEvent([
-            'schemaId' => $schema->id,
-            'query' => $query,
-            'variables' => $variables,
-            'operationName' => $operationName,
-            'context' => [
-                'conditionBuilder' => Craft::createObject([
-                    'class' => ElementQueryConditionBuilder::class,
-                ]),
-                'argumentManager' => Craft::createObject([
-                    'class' => ArgumentManager::class,
-                ]),
-            ],
-        ]);
+        $context = [
+            'conditionBuilder' => Craft::createObject([
+                'class' => ElementQueryConditionBuilder::class,
+            ]),
+            'argumentManager' => Craft::createObject([
+                'class' => ArgumentManager::class,
+            ]),
+        ];
 
-        $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
+        // Fire a 'beforeExecuteGqlQuery' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_EXECUTE_GQL_QUERY)) {
+            $event = new ExecuteGqlQueryEvent([
+                'schemaId' => $schema->id,
+                'query' => $query,
+                'variables' => $variables,
+                'operationName' => $operationName,
+                'context' => $context,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
+            $query = $event->query;
+            $rootValue = $event->rootValue;
+            $variables = $event->variables;
+            $operationName = $event->operationName;
+            $context = $event->context;
+            $result = $event->result;
+        } else {
+            $result = $rootValue = null;
+        }
 
-        if ($event->result === null) {
+        if ($result === null) {
             $cacheKey = $this->_getCacheKey(
                 $schema,
-                $event->query,
-                $event->rootValue,
-                $event->variables,
-                $event->operationName
+                $query,
+                $rootValue,
+                $variables,
+                $operationName,
             );
 
             if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey)) !== null) {
-                $event->result = $cachedResult;
+                $result = $cachedResult;
             } else {
-                $isIntrospectionQuery = StringHelper::containsAny($event->query, ['__schema', '__type']);
-                $schemaDef = $this->getSchemaDef($schema, true);
+                $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
+                $prebuildSchema = $isIntrospectionQuery || !Craft::$app->getConfig()->getGeneral()->lazyGqlTypes;
+                $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
 
-                $event->result = GraphQL::executeQuery(
+                $result = GraphQL::executeQuery(
                     $schemaDef,
-                    $event->query,
-                    $event->rootValue,
-                    $event->context,
-                    $event->variables,
-                    $event->operationName,
+                    $query,
+                    $rootValue,
+                    $context,
+                    $variables,
+                    $operationName,
                     null,
                     $this->getValidationRules($debugMode, $isIntrospectionQuery)
                 )
@@ -522,15 +538,28 @@ class Gql extends Component
 
                 [$dep, $duration] = $elementsService->stopCollectingCacheInfo();
 
-                if (empty($event->result['errors']) && $cacheKey) {
-                    $this->setCachedResult($cacheKey, $event->result, $dep, $duration);
+                if (empty($result['errors']) && $cacheKey) {
+                    $this->setCachedResult($cacheKey, $result, $dep, $duration);
                 }
             }
         }
 
-        $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
+        // Fire an 'afterExecuteGqlQuery' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_EXECUTE_GQL_QUERY)) {
+            $event = new ExecuteGqlQueryEvent([
+                'schemaId' => $schema->id,
+                'query' => $query,
+                'variables' => $variables,
+                'operationName' => $operationName,
+                'context' => $context,
+                'rootValue' => $rootValue,
+                'result' => $result,
+            ]);
+            $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
+            $result = $event->result;
+        }
 
-        return $event->result ?? [];
+        return $result ?? [];
     }
 
     /**
@@ -683,17 +712,20 @@ class Gql extends Component
         $label = Craft::t('app', 'Tags');
         [$queries[$label], $mutations[$label]] = $this->tagSchemaComponents();
 
-        // Let plugins customize them and add new ones
-        $event = new RegisterGqlSchemaComponentsEvent([
-            'queries' => $queries,
-            'mutations' => $mutations,
-        ]);
-
-        $this->trigger(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS, $event);
+        // Fire a 'registerGqlSchemaComponents' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS)) {
+            $event = new RegisterGqlSchemaComponentsEvent([
+                'queries' => $queries,
+                'mutations' => $mutations,
+            ]);
+            $this->trigger(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS, $event);
+            $queries = $event->queries;
+            $mutations = $event->mutations;
+        }
 
         return [
-            'queries' => $event->queries,
-            'mutations' => $event->mutations,
+            'queries' => $queries,
+            'mutations' => $mutations,
         ];
     }
 
@@ -1334,7 +1366,7 @@ class Gql extends Component
      */
     private function _registerGqlTypes(): array
     {
-        $typeList = [
+        $types = [
             // Scalars
             DateTime::class,
             Number::class,
@@ -1351,19 +1383,20 @@ class Gql extends Component
             TagInterface::class,
         ];
 
-        $event = new RegisterGqlTypesEvent([
-            'types' => $typeList,
-        ]);
+        // Fire a 'registerGqlTypes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_TYPES)) {
+            $event = new RegisterGqlTypesEvent(['types' => $types]);
+            $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
+            $types = $event->types;
+        }
 
-        $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
-
-        foreach ($event->types as $type) {
+        foreach ($types as $type) {
             /** @var string|SingularTypeInterface $type */
             /** @phpstan-var class-string<SingularTypeInterface>|SingularTypeInterface $type */
             TypeLoader::registerType($type::getName(), "$type::getType");
         }
 
-        return $event->types;
+        return $types;
     }
 
     /**
@@ -1383,15 +1416,18 @@ class Gql extends Component
             TagQuery::getQueries(),
         ];
 
+        // Flatten them
+        $queries = array_merge(...$queryList);
 
-        $event = new RegisterGqlQueriesEvent([
-            'queries' => array_merge(...$queryList),
-        ]);
+        // Fire a 'registerGqlQueries' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_QUERIES)) {
+            $event = new RegisterGqlQueriesEvent(['queries' => $queries]);
+            $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
+            $queries = $event->queries;
+        }
 
-        $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
-
-        TypeLoader::registerType('Query', function() use ($event) {
-            return call_user_func(Query::class . '::getType', $event->queries);
+        TypeLoader::registerType('Query', function() use ($queries) {
+            return call_user_func(Query::class . '::getType', $queries);
         });
     }
 
@@ -1410,14 +1446,18 @@ class Gql extends Component
             AssetMutation::getMutations(),
         ];
 
-        $event = new RegisterGqlMutationsEvent([
-            'mutations' => array_merge(...$mutationList),
-        ]);
+        // Flatten them
+        $mutations = array_merge(...$mutationList);
 
-        $this->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $event);
+        // Fire a 'registerGqlMutations' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_MUTATIONS)) {
+            $event = new RegisterGqlMutationsEvent(['mutations' => $mutations]);
+            $this->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $event);
+            $mutations = $event->mutations;
+        }
 
-        TypeLoader::registerType('Mutation', function() use ($event) {
-            return call_user_func(Mutation::class . '::getType', $event->mutations);
+        TypeLoader::registerType('Mutation', function() use ($mutations) {
+            return call_user_func(Mutation::class . '::getType', $mutations);
         });
     }
 
@@ -1442,17 +1482,18 @@ class Gql extends Component
             $directiveClasses[] = Transform::class;
         }
 
-        $event = new RegisterGqlDirectivesEvent([
-            'directives' => $directiveClasses,
-        ]);
-
-        $this->trigger(self::EVENT_REGISTER_GQL_DIRECTIVES, $event);
+        // Fire a 'registerGqlDirectives' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_DIRECTIVES)) {
+            $event = new RegisterGqlDirectivesEvent(['directives' => $directiveClasses]);
+            $this->trigger(self::EVENT_REGISTER_GQL_DIRECTIVES, $event);
+            $directiveClasses = $event->directives;
+        }
 
         $directives = GraphQL::getStandardDirectives();
 
-        foreach ($event->directives as $directive) {
-            /** @var Directive $directive */
-            $directives[] = $directive::create();
+        foreach ($directiveClasses as $class) {
+            /** @var Directive|string $class */
+            $directives[] = $class::create();
         }
 
         return $directives;
@@ -1680,7 +1721,7 @@ class Gql extends Component
      */
     private function userSchemaComponents(): array
     {
-        if (Craft::$app->edition !== CmsEdition::Pro) {
+        if (Craft::$app->edition === CmsEdition::Solo) {
             return [[], []];
         }
 

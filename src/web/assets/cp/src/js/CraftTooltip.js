@@ -12,14 +12,24 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  * @property {'top'|'top-start'|'top-end'|'right'|'right-start'|'right-end'|'bottom'|'bottom-start'|'bottom-end'|'left'|'left-start'|'left-end'} placement - The placement of the tooltip relative to the parent element.
  * @property {boolean} arrow - Whether the tooltip should have an arrow.
  * @property {number} offset - The offset of the tooltip from the parent element.
+ * @property {boolean} self-managed - Whether the tooltip should manage its own state.
+ * @property {string} aria-label - Text content for the tooltip
+ * @property {number} delay - The delay before the tooltip is shown on mouseentery.
  * @method show - Show the tooltip.
  * @method hide - Hide the tooltip.
  * @method update - Update the position of the tooltip.
- * @example <craft-tooltip arrow="false" placement="top" offset="10">Tooltip content</craft-tooltip>
+ *
+ * @example <craft-tooltip aria-label="Tooltip content"><button type="button">Trigger</button></craft-tooltip>
  */
 class CraftTooltip extends HTMLElement {
+  static get observedAttributes() {
+    return ['aria-label'];
+  }
+
   connectedCallback() {
     this.arrowElement = this.querySelector('.arrow');
+    this.trigger = this.querySelector('a, button, [role="button"]');
+    this.selfManaged = this.hasAttribute('self-managed');
 
     this.arrow = this.getAttribute('arrow') !== 'false';
     this.offset = this.hasAttribute('offset')
@@ -28,21 +38,37 @@ class CraftTooltip extends HTMLElement {
 
     this.placement = this.getAttribute('placement') || 'bottom';
     this.direction = getComputedStyle(this).direction;
+    this.delay = this.getAttribute('delay') || 500;
+    this.delayTimeout = null;
+
+    this.renderTooltip();
+    this.renderInner();
 
     if (this.arrow && !this.arrowElement) {
-      this.renderInner();
       this.renderArrow();
     }
 
     this.listeners = [
-      ['mouseenter', this.show],
-      ['focus', this.show],
-      ['mouseleave', this.hide],
-      ['blur', this.hide],
+      ['mouseenter', this.show, this.delay],
+      ['focus', this.show, 0],
+      ['mouseleave', this.hide, 0],
+      ['blur', this.hide, 0],
     ];
 
-    this.listeners.forEach(([event, handler]) => {
-      this.parentElement?.addEventListener(event, handler.bind(this));
+    if (this.selfManaged) {
+      this.trigger = this.parentElement;
+    }
+
+    if (!this.trigger) {
+      console.warn('No trigger found for tooltip');
+      return false;
+    }
+
+    // Make sure the trigger accepts pointer events
+    this.trigger.style.pointerEvents = 'auto';
+
+    this.listeners.forEach(([event, handler, delay]) => {
+      this.trigger?.addEventListener(event, handler.bind(this, delay));
     });
 
     // Close on ESC
@@ -58,17 +84,34 @@ class CraftTooltip extends HTMLElement {
 
     if (this.listeners.length) {
       this.listeners.forEach(([event, handler]) => {
-        this.parentElement?.removeEventListener(event, handler.bind(this));
+        this.trigger?.removeEventListener(event, handler.bind(this));
       });
     }
 
     document.removeEventListener('keyup', this.handleKeyUp.bind(this));
   }
 
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'aria-label' && this.inner) {
+      this.inner.innerText = newValue;
+
+      // innerText will remove the arrow, so we have to put it back if we need it.
+      if (this.arrow) {
+        this.renderArrow();
+      }
+    }
+  }
+
   handleKeyUp(e) {
     if (e.key === 'Escape') {
       this.hide();
     }
+  }
+
+  renderTooltip() {
+    this.tooltip = document.createElement('span');
+    this.tooltip.classList.add('craft-tooltip');
+    this.appendChild(this.tooltip);
   }
 
   /**
@@ -78,11 +121,10 @@ class CraftTooltip extends HTMLElement {
   renderInner() {
     this.inner = document.createElement('span');
     this.inner.classList.add('inner');
-    this.inner.innerText = this.innerText;
+    this.inner.innerText = this.getAttribute('aria-label');
 
     // Replace the content with the inner container
-    this.innerHTML = '';
-    this.appendChild(this.inner);
+    this.tooltip.appendChild(this.inner);
   }
 
   renderArrow() {
@@ -91,20 +133,27 @@ class CraftTooltip extends HTMLElement {
     this.inner.appendChild(this.arrowElement);
   }
 
-  show() {
+  show(delay) {
     this.update();
-    Object.assign(this.style, {
-      opacity: 1,
-      transform: ['left', 'right'].includes(this.getStaticSide())
-        ? `translateX(0)`
-        : `translateY(0)`,
-      // Make sure if a user hovers over the label itself, it stays open
-      pointerEvents: 'auto',
-    });
+
+    this.delayTimeout = setTimeout(() => {
+      Object.assign(this.tooltip.style, {
+        opacity: 1,
+        transform: ['left', 'right'].includes(this.getStaticSide())
+          ? `translateX(0)`
+          : `translateY(0)`,
+        // Make sure if a user hovers over the label itself, it stays open
+        pointerEvents: 'auto',
+      });
+    }, delay);
   }
 
   hide() {
-    Object.assign(this.style, {
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+    }
+
+    Object.assign(this.tooltip.style, {
       opacity: 0,
       transform: this.getInitialTransform(),
       pointerEvents: 'none',
@@ -131,7 +180,7 @@ class CraftTooltip extends HTMLElement {
   }
 
   update() {
-    computePosition(this.parentElement, this, {
+    computePosition(this.trigger, this.tooltip, {
       strategy: 'fixed',
       placement: this.placement,
       middleware: [
@@ -144,7 +193,7 @@ class CraftTooltip extends HTMLElement {
       // Placement may have changed
       this.placement = placement;
 
-      Object.assign(this.style, {
+      Object.assign(this.tooltip.style, {
         left: `${x}px`,
         top: `${y}px`,
         // Add padding to the static side for accessible hovers

@@ -21,7 +21,7 @@ use yii\base\BaseObject;
 abstract class Image extends BaseObject
 {
     /**
-     * @var ?callable Heartbeat function to call, if needed.
+     * @var callable|null Heartbeat function to call, if needed.
      */
     private $_heartBeatCallback = null;
 

@@ -652,7 +652,7 @@ import './dashboard.scss';
 
       // Focus on the first input
       setTimeout(() => {
-        this.$settingsForm.find(':focusable:first').trigger('focus');
+        this.$settingsForm.find(':focusable:first').focus();
       }, 1);
     },
 

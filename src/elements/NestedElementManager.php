@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Closure;
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
@@ -156,7 +157,7 @@ class NestedElementManager extends Component
      */
     public function getIsTranslatable(?ElementInterface $owner = null): bool
     {
-        if ($this->propagationMethod === PropagationMethod::Custom) {
+        if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
             return (
                 $owner === null ||
                 Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $owner) !== ''
@@ -241,6 +242,11 @@ class NestedElementManager extends Component
         $this->setOwnerOnNestedElements($owner, $elements);
 
         foreach ($elements as $element) {
+            $hasTitles ??= $element::hasTitles();
+            if ($hasTitles) {
+                $keywords[] = $element->title;
+            }
+
             foreach ($element->getFieldLayout()->getCustomFields() as $field) {
                 if ($field->searchable) {
                     $fieldValue = $element->getFieldValue($field->handle);
@@ -382,8 +388,32 @@ class NestedElementManager extends Component
                     'class' => 'nested-element-cards',
                 ]);
 
-                /** @var NestedElementInterface[] $elements */
-                $elements = $this->getValue($owner, true)->all();
+
+                /** @var ElementQueryInterface|ElementCollection $value */
+                $value = $this->getValue($owner);
+                if ($value instanceof ElementCollection) {
+                    /** @var NestedElementInterface[] $elements */
+                    $elements = $value->all();
+                } else {
+                    /** @var NestedElementInterface[] $elements */
+                    $elements = $value
+                        ->status(null)
+                        ->limit(null)
+                        ->all();
+                }
+
+                // See if there are any provisional drafts we should swap these out with
+                ElementHelper::swapInProvisionalDrafts($elements);
+
+                if ($this->hasErrors($owner)) {
+                    foreach ($elements as $element) {
+                        if ($element->enabled && $element->getEnabledForSite()) {
+                            $element->setScenario(Element::SCENARIO_LIVE);
+                        }
+                        $element->validate();
+                    }
+                }
+
                 $this->setOwnerOnNestedElements($owner, $elements);
 
                 if (!empty($elements)) {
@@ -399,14 +429,13 @@ class NestedElementManager extends Component
                         'class' => [
                             'elements',
                             $config['showInGrid'] ? 'card-grid' : 'cards',
+                            $config['prevalidate'] ? 'prevalidate' : '',
                         ],
                     ]);
                 }
 
                 $html .=
-                    Html::tag('div', Craft::t('app', 'No {type} yet.', [
-                        'type' => $elementType::pluralLowerDisplayName(),
-                    ]), [
+                    Html::tag('div', Craft::t('app', 'Nothing yet.'), [
                         'class' => array_keys(array_filter([
                             'pane' => true,
                             'no-border' => true,
@@ -463,15 +492,23 @@ class NestedElementManager extends Component
                 $elementType = $this->elementType;
                 $view = Craft::$app->getView();
 
+                $criteria = [
+                    $this->ownerIdParam => $owner->id,
+                ];
+
+                if ($owner->getIsRevision()) {
+                    $criteria['revisions'] = null;
+                    $criteria['trashed'] = null;
+                    $criteria['drafts'] = false;
+                }
+
                 $settings['indexSettings'] = [
                     'namespace' => $view->getNamespace(),
                     'allowedViewModes' => $config['allowedViewModes']
                         ? array_map(fn($mode) => StringHelper::toString($mode), $config['allowedViewModes'])
                         : null,
                     'showHeaderColumn' => $config['showHeaderColumn'],
-                    'criteria' => array_merge([
-                        $this->ownerIdParam => $owner->id,
-                    ], $this->criteria),
+                    'criteria' => array_merge($criteria, $this->criteria),
                     'batchSize' => $config['pageSize'],
                     'actions' => [],
                     'canHaveDrafts' => $elementType::hasDrafts(),
@@ -493,6 +530,8 @@ class NestedElementManager extends Component
                     'fieldLayouts' => $config['fieldLayouts'],
                     'defaultTableColumns' => $config['defaultTableColumns'],
                     'registerJs' => false,
+                    'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
+                    'prevalidate' => $config['prevalidate'] ?? false,
                 ]);
             },
         );
@@ -562,6 +601,7 @@ class NestedElementManager extends Component
                 'ownerIdParam' => $this->ownerIdParam,
                 'fieldHandle' => $this->field?->handle,
                 'baseInputName' => $view->getNamespace(),
+                'prevalidate' => $config['prevalidate'] ?? false,
             ];
 
             if (!empty($config['createAttributes'])) {
@@ -655,6 +695,12 @@ JS, [
         return $owner->isFieldModified($this->field->handle, $anySite);
     }
 
+    private function hasErrors(ElementInterface $owner): bool
+    {
+        $attribute = $this->attribute ?? $this->field->handle;
+        return $owner->hasErrors("$attribute.*");
+    }
+
     private function saveNestedElements(ElementInterface $owner): void
     {
         $elementsService = Craft::$app->getElements();
@@ -697,14 +743,31 @@ JS, [
                     $element->setSortOrder($sortOrder);
                     $elementsService->saveElement($element, false);
 
-                    // If this is a draft, we can shed the draft data now
-                    if ($element->getIsDraft()) {
-                        $canonicalElementId = $element->getCanonicalId();
+                    // If this element's primary owner is $owner, and it’s a draft of another element whose owner is
+                    // $owner's canonical (e.g. a draft entry created by Matrix::_createEntriesFromSerializedData()),
+                    // we can shed its draft data and relation with the canonical owner now
+                    if (
+                        $element->getPrimaryOwnerId() === $owner->id &&
+                        $element->getIsDraft() &&
+                        !$element->getIsUnpublishedDraft() &&
+                        // $owner could be a draft or a non-canonical Matrix entry, etc.
+                        (!$owner->getIsCanonical()) &&
+                        !$owner->getIsUnpublishedDraft()
+                    ) {
+                        /** @var NestedElementInterface $canonical */
+                        $canonical = $element->getCanonical(true);
+                        if ($canonical->getPrimaryOwnerId() === $owner->getCanonicalId()) {
+                            Craft::$app->getDrafts()->removeDraftData($element);
+                            Db::delete(Table::ELEMENTS_OWNERS, [
+                                'elementId' => $canonical->id,
+                                'ownerId' => $owner->id,
+                            ]);
+                        }
+                    } elseif (
+                        $element->getIsUnpublishedDraft() &&
+                        $element->getPrimaryOwnerId() === $owner->id
+                    ) {
                         Craft::$app->getDrafts()->removeDraftData($element);
-                        Db::delete(Table::ELEMENTS_OWNERS, [
-                            'elementId' => $canonicalElementId,
-                            'ownerId' => $owner->id,
-                        ]);
                     }
                 } elseif ((int)$element->getSortOrder() !== $sortOrder) {
                     // Just update its sortOrder
@@ -795,7 +858,9 @@ JS, [
                         }
 
                         // Make sure we don't duplicate elements for any of the sites that were just propagated to
-                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
+                        foreach ($sourceSupportedSiteIds as $siteId) {
+                            $handledSiteIds[$siteId] = true;
+                        }
                     }
 
                     if ($value instanceof ElementQueryInterface) {

@@ -221,6 +221,17 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
+     * Returns the ID of the current job being handled.
+     *
+     * @return string
+     * @since 5.2.0
+     */
+    public function getJobId(): string
+    {
+        return $this->_executingJobId;
+    }
+
+    /**
      * @param string $id The job ID.
      * @return bool
      */
@@ -631,8 +642,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 </script>
 EOD;
 
-        if ($response->content === null) {
-            $response->content = $js;
+        $response->content ??= '';
+        $pos = strripos($response->content, '</body>');
+        if ($pos !== false) {
+            $response->content = substr($response->content, 0, $pos) . $js . substr($response->content, $pos);
         } else {
             $response->content .= $js;
         }

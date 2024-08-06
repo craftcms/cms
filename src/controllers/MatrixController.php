@@ -78,6 +78,7 @@ class MatrixController extends Controller
         $ownerElementType = $this->request->getRequiredBodyParam('ownerElementType');
         $siteId = $this->request->getRequiredBodyParam('siteId');
         $namespace = $this->request->getRequiredBodyParam('namespace');
+        $staticEntries = $this->request->getBodyParam('staticEntries', false);
 
         $elementsService = Craft::$app->getElements();
         $owner = $elementsService->getElementById($ownerId, $ownerElementType, $siteId);
@@ -117,8 +118,7 @@ class MatrixController extends Controller
         }
 
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-
-        if (!$elementsService->saveElement($entry, false)) {
+        if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, $user->id, markAsSaved: false)) {
             return $this->asFailure(Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => Entry::lowerDisplayName(),
             ]));
@@ -135,6 +135,7 @@ class MatrixController extends Controller
             'entryTypes' => $field->getEntryTypesForField($entries, $owner),
             'entry' => $entry,
             'isFresh' => true,
+            'staticEntries' => $staticEntries,
         ]), $namespace);
 
         return $this->asJson([
