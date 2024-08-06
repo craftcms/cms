@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'Sign in as {user}',
     'Sign in unsuccessful' => 'Sign in unsuccessful',
     'Sign in with a passkey' => 'Sign in with a passkey',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'Sign in',
     'Sign out now' => 'Sign out now',
     'Sign out' => 'Sign out',

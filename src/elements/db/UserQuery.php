@@ -1068,7 +1068,7 @@ class UserQuery extends ElementQuery
         $elements = parent::afterPopulate($elements);
 
         // Eager-load user groups?
-        if ($this->withGroups && !$this->asArray && Craft::$app->edition === CmsEdition::Pro) {
+        if ($this->withGroups && !$this->asArray && Craft::$app->edition->value >= CmsEdition::Pro->value) {
             Craft::$app->getUserGroups()->eagerLoadGroups($elements);
         }
 

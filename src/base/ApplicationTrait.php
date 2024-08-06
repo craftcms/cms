@@ -91,6 +91,7 @@ use craft\services\Routes;
 use craft\services\Search;
 use craft\services\Security;
 use craft\services\Sites;
+use craft\services\Sso;
 use craft\services\Structures;
 use craft\services\SystemMessages;
 use craft\services\Tags;
@@ -177,6 +178,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Search $search The search service
  * @property-read Security $security The security component
  * @property-read Sites $sites The sites service
+ * @property-read Sso $sso The SSO service
  * @property-read Structures $structures The structures service
  * @property-read SystemMessages $systemMessages The system email messages service
  * @property-read Tags $tags The tags service
@@ -1404,6 +1406,17 @@ trait ApplicationTrait
     public function getSites(): Sites
     {
         return $this->get('sites');
+    }
+
+    /**
+     * Returns the SSO service.
+     *
+     * @return Sso The SSO service
+     * @since 5.3.0
+     */
+    public function getSso(): Sso
+    {
+        return $this->get('sso');
     }
 
     /**

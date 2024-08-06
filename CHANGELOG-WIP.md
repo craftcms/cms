@@ -78,6 +78,7 @@
 - Added `craft\elements\Asset::$sanitizeOnUpload`. ([#15430](https://github.com/craftcms/cms/discussions/15430))
 - Added `craft\elements\Entry::isEntryTypeCompatible()`.
 - Added `craft\elements\actions\MoveToSection`.
+- Added `craft\enums\CmsEdition::Enterprise`.
 - Added `craft\events\DefineShowFieldLayoutComponentInFormEvent`. ([#15260](https://github.com/craftcms/cms/issues/15260))
 - Added `craft\events\MoveEntryEvent`.
 - Added `craft\fields\Link`.
@@ -125,6 +126,7 @@
 - Component selects now support passing a `showHandles` setting.
 
 ### System
+- Added core support for SSO (Enterprise only).
 - The control panel now displays Ajax response-defined error messages when provided, rather than a generic “server error” message. ([#15292](https://github.com/craftcms/cms/issues/15292))
 - Craft no longer sets the `Permissions-Policy` header on control panel responses. ([#15348](https://github.com/craftcms/cms/issues/15348))
 - Control panel `resize` events now use ResizeObserver.
