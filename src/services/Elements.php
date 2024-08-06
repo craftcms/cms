@@ -3714,6 +3714,7 @@ class Elements extends Component
 
                 // if we're supposed to save all the content
                 if ($saveContent || !empty($dirtyFields)) {
+                    $oldContent = $siteSettingsRecord->content; // we'll need that if we're not saving all the content
                     $content = [];
                     if ($fieldLayout) {
                         foreach ($fieldLayout->getCustomFields() as $field) {
@@ -3721,10 +3722,20 @@ class Elements extends Component
                                 $serializedValue = $field->serializeValue($element->getFieldValue($field->handle), $element);
                                 if ($serializedValue !== null) {
                                     $content[$field->layoutElement->uid] = $serializedValue;
+                                } elseif (!$saveContent) {
+                                    // if serialized value is null, and we're not saving all the content,
+                                    // we need to register the fact that the new value is empty
+                                    unset($oldContent[$field->layoutElement->uid]);
                                 }
                             }
                         }
                     }
+
+                    // if we're only saving dirty fields, we need to merge the new dirty values with what's already in the db
+                    if (!$saveContent && $oldContent) {
+                        $content = $content + $oldContent;
+                    }
+
                     $siteSettingsRecord->content = $content ?: null;
                 }
 
@@ -3775,7 +3786,7 @@ class Elements extends Component
                                     $siteId,
                                     $siteElement,
                                     crossSiteValidate: $runValidation && $crossSiteValidate,
-                                    saveContent: $saveContent,
+                                    saveContent: true,
                                 )) {
                                     throw new InvalidConfigException();
                                 }
