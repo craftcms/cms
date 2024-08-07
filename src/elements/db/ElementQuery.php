@@ -1100,6 +1100,37 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * @param $value
+     * @return $this
+     * @throws NotSupportedException
+     * @uses $notRelatedTo
+     */
+    public function andNotRelatedTo($value): static
+    {
+        if (!$value) {
+            return $this;
+        }
+
+        if (!$this->notRelatedTo) {
+            return $this->notRelatedTo($value);
+        }
+
+        // Normalize so element/targetElement/sourceElement values get pushed down to the 2nd level
+        $relatedTo = ElementRelationParamParser::normalizeRelatedToParam($this->notRelatedTo);
+        $criteriaCount = count($relatedTo) - 1;
+
+        // Not possible to switch from `or` to `and` if there are multiple criteria
+        if ($relatedTo[0] === 'or' && $criteriaCount > 1) {
+            throw new NotSupportedException('It’s not possible to combine “or” and “and” relatedTo conditions.');
+        }
+
+        $relatedTo[0] = $criteriaCount > 0 ? 'and' : 'or';
+        $relatedTo[] = ElementRelationParamParser::normalizeRelatedToCriteria($value);
+
+        return $this->notRelatedTo($relatedTo);
+    }
+
+    /**
      * @inheritdoc
      * @uses $relatedTo
      */
@@ -1124,24 +1155,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $this->relatedTo($value);
         }
 
-        // If this is a `not` query we first need to remove it from the criteria
-        // $isNotQuery = false;
-        // // Normalize to an array so it is easier to pluck out the `not` keyword
-        // if (!is_array($value)) {
-        //     if (is_string($value)) {
-        //         $value = StringHelper::split($value);
-        //     } elseif ($value instanceof Collection) {
-        //         $value = $value->all();
-        //     } else {
-        //         $value = [$value];
-        //     }
-        // }
-        //
-        // if (!empty($value) && isset($value[0]) && $value[0] === 'not') {
-        //     $isNotQuery = true;
-        //     array_shift($value);
-        // }
-
         // Normalize so element/targetElement/sourceElement values get pushed down to the 2nd level
         $relatedTo = ElementRelationParamParser::normalizeRelatedToParam($this->relatedTo);
         $criteriaCount = count($relatedTo) - 1;
@@ -1153,10 +1166,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $relatedTo[0] = $criteriaCount > 0 ? 'and' : 'or';
         $relatedTo[] = ElementRelationParamParser::normalizeRelatedToCriteria($value);
-
-        // if ($isNotQuery) {
-        //     $relatedTo = ['not', $relatedTo];
-        // }
 
         return $this->relatedTo($relatedTo);
     }
@@ -2778,16 +2787,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $notRelatedToParam = $this->notRelatedTo;
 
-        // Prepend `not` as this is not expect to be provided
-        if (!is_array($notRelatedToParam)) {
-            if (is_string($notRelatedToParam)) {
-                $notRelatedToParam = 'not,' . $notRelatedToParam;
-            } else {
-                // Simply nest the params if it is already an array or collection
-                $notRelatedToParam = ['not', $notRelatedToParam];
-            }
-        }
-
         $parser = new ElementRelationParamParser([
             'fields' => $this->customFields ? ArrayHelper::index(
                 $this->customFields,
@@ -2800,8 +2799,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException();
         }
 
-        // $this->subQuery->andWhere($condition);
-        $this->subQuery->andWhere(['not',  $condition]);
+        // Prepend `not` as this is not expect to be provided
+        $condition = ['not', $condition];
+
+        $this->subQuery->andWhere($condition);
     }
 
     /**
