@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'Logg på som {user}',
     'Sign in unsuccessful' => 'Kunne ikke logge inn',
     'Sign in with a passkey' => 'Logg inn med en passnøkkel',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'Logg på',
     'Sign out now' => 'Logg ut nå',
     'Sign out' => 'Logg ut',
