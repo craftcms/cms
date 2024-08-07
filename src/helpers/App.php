@@ -624,6 +624,7 @@ class App
 
         if (
             getenv('PHP_BINARY') === false &&
+            /** @phpstan-ignore-next-line */
             PHP_BINARY &&
             PHP_SAPI === 'cgi-fcgi' &&
             str_ends_with(PHP_BINARY, 'php-cgi')
@@ -1446,5 +1447,22 @@ class App
         $resolveItems = array_map(fn($issue) => Json::encode($issue[2]), $issues);
         sort($resolveItems);
         return md5(implode('', $resolveItems));
+    }
+
+    /**
+     * Configures an object with property values.
+     *
+     * This is identical to [[\BaseYii::configure()]], except this class is safe to be called during application
+     * bootstrap, whereas `\BaseYii` is not.
+     *
+     * @param object $object the object to be configured
+     * @param array $properties the property initial values given in terms of name-value pairs.
+     * @since 5.3.0
+     */
+    public static function configure(object $object, array $properties): void
+    {
+        foreach ($properties as $name => $value) {
+            $object->$name = $value;
+        }
     }
 }

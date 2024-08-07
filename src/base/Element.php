@@ -1270,15 +1270,9 @@ abstract class Element extends Component implements ElementInterface
 
         $elements = static::indexElements($elementQuery, $sourceKey);
 
-        if (empty($elements)) {
-            if ($elementQuery->offset) {
-                // load-more request
-                return '';
-            }
-
-            return Html::tag('div', Craft::t('app', 'Nothing yet.'), [
-                'class' => ['zilch', 'small'],
-            ]);
+        if (empty($elements) && !$includeContainer) {
+            // load-more request
+            return '';
         }
 
         // See if there are any provisional drafts we should swap these out with
@@ -2011,9 +2005,13 @@ abstract class Element extends Component implements ElementInterface
                 if ($sortOption['orderBy'] instanceof CoalesceColumnsExpression) {
                     $params = [];
                     $sql = $sortOption['orderBy']->getSql($params);
-                    return new Expression(sprintf('%s %s', $sql, $dir === SORT_ASC ? 'ASC' : 'DESC'), $params);
+                } elseif (is_string($sortOption['orderBy'])) {
+                    $sql = $sortOption['orderBy'];
+                } else {
+                    return $sortOption['orderBy'];
                 }
-                return $sortOption['orderBy'];
+
+                return new Expression(sprintf('%s %s', $sql, $dir === SORT_ASC ? 'ASC' : 'DESC'), $params ?? []);
             }
         }
 

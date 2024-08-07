@@ -1157,6 +1157,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected function uiLabel(): ?string
     {
         if (!$this->fieldId && (!isset($this->title) || trim($this->title) === '')) {
+            $section = $this->getSection();
+            if ($section?->type === Section::TYPE_SINGLE) {
+                return $section->getUiLabel();
+            }
             return Craft::t('app', 'Untitled {type}', [
                 'type' => self::lowerDisplayName(),
             ]);
@@ -1284,16 +1288,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        if (($fieldLayout = parent::getFieldLayout()) !== null) {
-            return $fieldLayout;
-        }
         try {
-            $entryType = $this->getType();
+            return $this->getType()->getFieldLayout();
         } catch (InvalidConfigException) {
             // The entry type was probably deleted
             return null;
         }
-        return $entryType->getFieldLayout();
     }
 
     /**

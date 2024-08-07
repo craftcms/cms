@@ -11,7 +11,7 @@ use craft\elements\db\ElementQueryInterface;
  * Element has descendants condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.11.0
+ * @since 5.3.0
  */
 class HasDescendantsRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {

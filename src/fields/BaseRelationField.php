@@ -14,6 +14,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\base\RelationalFieldInterface;
 use craft\behaviors\EventBehavior;
@@ -58,7 +59,8 @@ use yii\validators\NumberValidator;
 abstract class BaseRelationField extends Field implements
     InlineEditableFieldInterface,
     EagerLoadingFieldInterface,
-    RelationalFieldInterface
+    RelationalFieldInterface,
+    MergeableFieldInterface
 {
     /**
      * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
@@ -645,6 +647,21 @@ JS, [
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
+        // If we're propagating a value, and we don't show the site menu,
+        // only save relations to elements in the current site.
+        // (see https://github.com/craftcms/cms/issues/15459)
+        if (
+            $value instanceof ElementQueryInterface &&
+            $element?->propagating &&
+            $element->isNewForSite &&
+            !$this->targetSiteId &&
+            !$this->showSiteMenu
+        ) {
+            $value = $this->_all($value, $element)
+                ->siteId($this->targetSiteId($element))
+                ->ids();
+        }
+
         if ($value instanceof ElementQueryInterface || $value instanceof ElementCollection) {
             return $value;
         }
@@ -682,6 +699,7 @@ JS, [
                         $structuresService = Craft::$app->getStructures();
 
                         $structureElements = (clone($query))
+                            ->select(['**' => '**'])
                             ->status(null)
                             ->all();
 
@@ -764,7 +782,9 @@ JS, [
             ->sortBy(fn(CustomField $layoutElement) => $layoutElement->dateAdded)
             ->first();
 
-        return $this->layoutElement->uid === $first?->uid;
+        // Compare handles here rather than UUIDs, since the UUID will change
+        //if we're hot-swapping field layouts (e.g. changing an entry's type).
+        return $this->handle === $first?->getField()->handle;
     }
 
     /**

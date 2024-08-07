@@ -28,6 +28,7 @@ use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
@@ -1656,16 +1657,28 @@ SQL)->execute();
      * @param int $page
      * @param int $limit
      * @param string|null $searchTerm
+     * @param string $orderBy
+     * @param int $sortDir
      * @return array
      * @since 5.0.0
      * @internal
      */
-    public function getTableData(int $page, int $limit, ?string $searchTerm): array
-    {
+    public function getTableData(
+        int $page,
+        int $limit,
+        ?string $searchTerm,
+        string $orderBy = 'name',
+        int $sortDir = SORT_ASC,
+    ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
 
         $offset = ($page - 1) * $limit;
-        $query = $this->_createEntryTypeQuery();
+        $query = $this->_createEntryTypeQuery()
+            ->orderBy([$orderBy => $sortDir]);
+
+        if ($orderBy === 'name') {
+            $query->addOrderBy(['name' => $sortDir]);
+        }
 
         if ($searchTerm !== null && $searchTerm !== '') {
             $searchParams = $this->_getSearchParams($searchTerm);
@@ -1686,21 +1699,17 @@ SQL)->execute();
             array_map(fn(array $result) => $this->_entryTypes()->firstWhere('id', $result['id']), $results)
         ));
 
-        usort($entryTypes,
-            fn(EntryType $a, EntryType $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name)
-        );
-
-        $entryTypeIds = array_map(fn(EntryType $entryType) => $entryType->id, $entryTypes);
-
         $tableData = [];
         foreach ($entryTypes as $entryType) {
+            $label = $entryType->getUiLabel();
             $tableData[] = [
                 'id' => $entryType->id,
-                'title' => Craft::t('site', $entryType->name),
-                'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
-                'iconColor' => $entryType->color?->value,
-                'url' => $entryType->getCpEditUrl(),
-                'name' => Craft::t('site', $entryType->name),
+                'title' => $label,
+                'chip' => Cp::chipHtml($entryType, [
+                    'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
+                        'class' => ['chip-label', 'cell-bold'],
+                    ]),
+                ]),
                 'handle' => $entryType->handle,
             ];
         }

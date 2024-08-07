@@ -147,6 +147,9 @@ fieldset:last-child,
 .mt-0 {
   margin-top: 0 !important;
 }
+.mt-2xs {
+  margin-top: var(--2xs) !important;
+}
 .mt-xs {
   margin-top: var(--xs) !important;
 }
@@ -165,6 +168,9 @@ fieldset:last-child,
 
 .mb-0 {
   margin-bottom: 0 !important;
+}
+.mb-2xs {
+  margin-bottom: var(--2xs) !important;
 }
 .mb-xs {
   margin-bottom: var(--xs) !important;
@@ -185,6 +191,9 @@ fieldset:last-child,
 .ml-0 {
   margin-left: 0 !important;
 }
+.ml-2xs {
+  margin-left: var(--2xs) !important;
+}
 .ml-xs {
   margin-left: var(--xs) !important;
 }
@@ -203,6 +212,9 @@ fieldset:last-child,
 
 .mr-0 {
   margin-right: 0 !important;
+}
+.mr-2xs {
+  margin-right: var(--2xs) !important;
 }
 .mr-xs {
   margin-right: var(--xs) !important;
@@ -223,6 +235,10 @@ fieldset:last-child,
 .mx-0 {
   margin-left: 0 !important;
   margin-right: 0 !important;
+}
+.mx-2xs {
+  margin-left: var(--2xs) !important;
+  margin-right: var(--2xs) !important;
 }
 .mx-xs {
   margin-left: var(--xs) !important;
@@ -249,6 +265,10 @@ fieldset:last-child,
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
+.my-2xs {
+  margin-top: var(--2xs) !important;
+  margin-bottom: var(--2xs) !important;
+}
 .my-xs {
   margin-top: var(--xs) !important;
   margin-bottom: var(--xs) !important;
@@ -273,6 +293,9 @@ fieldset:last-child,
 .pt-0 {
   padding-top: 0 !important;
 }
+.pt-2xs {
+  padding-top: var(--2xs) !important;
+}
 .pt-xs {
   padding-top: var(--xs) !important;
 }
@@ -291,6 +314,9 @@ fieldset:last-child,
 
 .pb-0 {
   padding-bottom: 0 !important;
+}
+.pb-2xs {
+  padding-bottom: var(--2xs) !important;
 }
 .pb-xs {
   padding-bottom: var(--xs) !important;
@@ -311,6 +337,9 @@ fieldset:last-child,
 .pl-0 {
   padding-left: 0 !important;
 }
+.pl-2xs {
+  padding-left: var(--2xs) !important;
+}
 .pl-xs {
   padding-left: var(--xs) !important;
 }
@@ -329,6 +358,9 @@ fieldset:last-child,
 
 .pr-0 {
   padding-right: 0 !important;
+}
+.pr-2xs {
+  padding-right: var(--2xs) !important;
 }
 .pr-xs {
   padding-right: var(--xs) !important;
@@ -349,6 +381,10 @@ fieldset:last-child,
 .px-0 {
   padding-left: 0 !important;
   padding-right: 0 !important;
+}
+.px-2xs {
+  padding-left: var(--2xs) !important;
+  padding-right: var(--2xs) !important;
 }
 .px-xs {
   padding-left: var(--xs) !important;
@@ -374,6 +410,10 @@ fieldset:last-child,
 .py-0 {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
+}
+.py-2xs {
+  padding-top: var(--2xs) !important;
+  padding-bottom: var(--2xs) !important;
 }
 .py-xs {
   padding-top: var(--xs) !important;
@@ -1643,6 +1683,38 @@ ul.icons {
   align-items: center;
   align-content: stretch;
   gap: var(--s);
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.items-end {
+  align-items: end;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-baseline {
+  align-items: baseline;
+}
+
+.items-stretch {
+  align-items: stretch;
+}
+
+.gap-2xs {
+  gap: var(--2xs);
 }
 
 .gap-xs {
@@ -3218,6 +3290,10 @@ table {
       margin: -4px -1px 0;
     }
 
+    .chip-label {
+      padding: var(--2xs) 0;
+    }
+
     .chip-actions {
       margin-left: auto;
     }
@@ -4205,7 +4281,7 @@ table.editable {
     font-weight: normal;
     background-color: var(--gray-050);
 
-    button,
+    button:not(.lightswitch),
     a {
       display: inline-flex;
       width: var(--touch-target-size);
@@ -5389,19 +5465,19 @@ table.data tbody tr:not(.disabled).active-drop-target {
     resize: none;
   }
 
+  & > .field .heading,
+  & > fieldset > legend {
+    margin: 0 0 var(--s);
+  }
+
   & > .field > .heading > label,
   & > fieldset > legend {
-    margin-top: 0;
     font-weight: normal;
     color: var(--gray-600);
   }
 
-  & > fieldset {
-    margin: var(--spacing) 0 !important;
-
-    & > legend {
-      margin-bottom: 5px;
-    }
+  & > .field > .heading > label {
+    margin: 0;
   }
 
   & > .field {
@@ -5419,6 +5495,10 @@ table.data tbody tr:not(.disabled).active-drop-target {
       background-color: var(--gray-050) !important;
       width: calc(100% + var(--padding) + var(--padding));
     }
+  }
+
+  & > fieldset {
+    margin: var(--spacing) 0 !important;
   }
 
   & > .text {

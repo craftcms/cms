@@ -114,7 +114,7 @@ class GlobalSetQuery extends ElementQuery
 
         $this->joinElementTable(Table::GLOBALSETS);
 
-        $this->query->select([
+        $this->query->addSelect([
             'globalsets.name',
             'globalsets.handle',
             'globalsets.sortOrder',

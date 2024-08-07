@@ -595,7 +595,9 @@ class UsersController extends Controller
 
             if (!$loginName) {
                 // If they didn't even enter a username/email, just bail now.
-                $errors[] = Craft::t('app', 'Username or email is required.');
+                $errors[] = Craft::$app->getConfig()->getGeneral()->useEmailAsUsername
+                    ? Craft::t('app', 'Email is required.')
+                    : Craft::t('app', 'Username or email is required.');
 
                 return $this->_handleSendPasswordResetError($errors);
             }
@@ -603,7 +605,9 @@ class UsersController extends Controller
             $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
             if (!$user || !$user->getIsCredentialed()) {
-                $errors[] = Craft::t('app', 'Invalid username or email.');
+                $errors[] = Craft::$app->getConfig()->getGeneral()->useEmailAsUsername
+                    ? Craft::t('app', 'Invalid email.')
+                    : Craft::t('app', 'Invalid username or email.');
             }
         }
 
@@ -1096,7 +1100,7 @@ class UsersController extends Controller
             'currentGroupIds' => array_map(fn(UserGroup $group) => $group->id, $user->getGroups()),
         ]);
 
-        if (!$user->getIsCredentialed() && static::currentUser()->can('administrateUsers')) {
+        if (!$user->getIsCredentialed() && $user->username && static::currentUser()->can('administrateUsers')) {
             $response->additionalButtonsHtml(
                 Html::button(Craft::t('app', 'Save and send activation email'), [
                     'class' => ['btn', 'secondary', 'formsubmit'],
@@ -1137,7 +1141,7 @@ class UsersController extends Controller
             }
         }
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             // Fire an 'beforeAssignGroupsAndPermissions' event
             if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
                 $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
@@ -1388,7 +1392,7 @@ JS);
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
         $requireEmailVerification = (
-            Craft::$app->edition === CmsEdition::Pro &&
+            Craft::$app->edition->value >= CmsEdition::Pro->value &&
             ($userSettings['requireEmailVerification'] ?? true)
         );
         $deactivateByDefault = $userSettings['deactivateByDefault'] ?? false;
@@ -1631,7 +1635,7 @@ JS);
         // Save the user’s photo, if it was submitted
         $this->_processUserPhoto($user);
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             // If this is public registration, assign the user to the default user group
             if ($isPublicRegistration) {
                 // Assign them to the default user group

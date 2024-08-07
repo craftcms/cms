@@ -151,6 +151,10 @@ class ImageTransformIndex extends Model
             $this->_transform->format = $this->format;
         }
 
+        if ($this->id) {
+            $this->_transform->indexId = $this->id;
+        }
+
         return $this->_transform;
     }
 

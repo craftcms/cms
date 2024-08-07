@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\types\DateTime as DateTimeType;
@@ -27,7 +28,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.12
  */
-class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface
+class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
 {
     /**
      * @inheritdoc

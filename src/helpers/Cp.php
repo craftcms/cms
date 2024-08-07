@@ -14,6 +14,7 @@ use craft\base\Colorable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\Grippable;
 use craft\base\Iconic;
 use craft\base\Statusable;
 use craft\base\Thumbable;
@@ -176,7 +177,7 @@ class Cp
         }
 
         // Do any plugins require a higher edition?
-        if (Craft::$app->edition !== CmsEdition::Pro) {
+        if (Craft::$app->edition < CmsEdition::Pro) {
             foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
                 if ($plugin->minCmsEdition->value > Craft::$app->edition->value) {
                     $alerts[] = Craft::t('app', '{plugin} requires Craft CMS {edition} edition.', [
@@ -307,6 +308,7 @@ class Cp
      * - `selectable` – Whether the chip should include a checkbox input
      * - `showActionMenu` – Whether the chip should include an action menu
      * - `showLabel` – Whether the component’s label should be shown
+     * - `showHandle` – Whether the component’s handle should be show (only applies if the component implements [[Grippable]])
      * - `showStatus` – Whether the component’s status should be shown (if it has statuses)
      * - `showThumb` – Whether the component’s thumbnail should be shown (if it has one)
      * - `size` – The size of the chip (`small` or `large`)
@@ -330,6 +332,7 @@ class Cp
             'selectable' => false,
             'showActionMenu' => false,
             'showLabel' => true,
+            'showHandle' => false,
             'showStatus' => true,
             'showThumb' => true,
             'size' => self::CHIP_SIZE_SMALL,
@@ -337,10 +340,11 @@ class Cp
         ];
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
+        $config['showHandle'] = $config['showHandle'] && $component instanceof Grippable;
         $config['showStatus'] = $config['showStatus'] && $component instanceof Statusable;
         $config['showThumb'] = $config['showThumb'] && ($component instanceof Thumbable || $component instanceof Iconic);
 
-        $label = $component->getUiLabel();
+        $labelHtml = $component->getUiLabel();
         $color = $component instanceof Colorable ? $component->getColor() : null;
 
         $attributes = ArrayHelper::merge([
@@ -362,6 +366,7 @@ class Cp
                     'selectable' => $config['selectable'],
                     'id' => Craft::$app->getView()->namespaceInputId($config['id']),
                     'showLabel' => $config['showLabel'],
+                    'showHandle' => $config['showHandle'],
                     'showStatus' => $config['showStatus'],
                     'showThumb' => $config['showThumb'],
                     'size' => $config['size'],
@@ -398,9 +403,22 @@ class Cp
             $html .= self::componentStatusIndicatorHtml($component) ?? '';
         }
 
-        if ($config['showLabel'] || isset($config['labelHtml'])) {
-            $html .= $config['labelHtml'] ?? Html::tag('div', Html::encode($label), [
+        if (isset($config['labelHtml'])) {
+            $html .= $config['labelHtml'];
+        } elseif ($config['showLabel']) {
+            $labelHtml = Html::encode($labelHtml);
+            if ($config['showHandle']) {
+                /** @var Chippable&Grippable $component */
+                $handle = $component->getHandle();
+                if ($handle) {
+                    $labelHtml .= Html::tag('div', Html::encode($handle), [
+                        'class' => ['my-2xs', 'smalltext', 'light', 'code'],
+                    ]);
+                }
+            }
+            $html .= Html::tag('div', $labelHtml, [
                 'id' => sprintf('%s-label', $config['id']),
+                'class' => 'chip-label',
             ]);
         }
 

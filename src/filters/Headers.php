@@ -14,7 +14,7 @@ use yii\base\ActionFilter;
  * Filter for adding arbitrary headers to site responses and handling OPTIONS requests.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.11.0
+ * @since 5.3.0
  */
 class Headers extends ActionFilter
 {

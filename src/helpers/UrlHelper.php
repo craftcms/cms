@@ -630,12 +630,21 @@ class UrlHelper
                 $params['site'] = Cp::requestedSite()->handle;
             }
         } else {
-            // token/siteToken params
-            if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
-                $params[$generalConfig->tokenParam] = $token;
-            }
+            // token/siteToken/preview params
             if (!isset($params[$generalConfig->siteToken]) && ($siteToken = $request->getSiteToken()) !== null) {
                 $params[$generalConfig->siteToken] = $siteToken;
+            }
+            if ($request->getIsSiteRequest()) {
+                if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+                    $params[$generalConfig->tokenParam] = $token;
+                }
+                if (!isset($params['x-craft-preview']) && !isset($params['x-craft-live-preview'])) {
+                    if (($previewToken = $request->getQueryParam('x-craft-preview')) !== null) {
+                        $params['x-craft-preview'] = $previewToken;
+                    } elseif (($previewToken = $request->getQueryParam('x-craft-live-preview')) !== null) {
+                        $params['x-craft-live-preview'] = $previewToken;
+                    }
+                }
             }
         }
 
