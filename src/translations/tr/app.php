@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => '{user} olarak giriş yap',
     'Sign in unsuccessful' => 'Giriş başarısız',
     'Sign in with a passkey' => 'Şifre anahtarıyla oturum açın',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'Giriş',
     'Sign out now' => 'Şimdi çıkış yap',
     'Sign out' => 'Çıkış',
