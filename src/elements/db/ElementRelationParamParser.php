@@ -72,31 +72,11 @@ class ElementRelationParamParser extends BaseObject
         if (!is_array($relatedToParam)) {
             if (is_string($relatedToParam)) {
                 $relatedToParam = StringHelper::split($relatedToParam);
-
-                // if this is a "not" query, we need to nest the criteria
-                if (!empty($relatedToParam) && isset($relatedToParam[0]) && $relatedToParam[0] === 'not') {
-                    $relatedToParam = array_slice($relatedToParam, 1);
-                    $relatedToParam = ['not', $relatedToParam];
-                }
             } elseif ($relatedToParam instanceof Collection) {
                 $relatedToParam = $relatedToParam->all();
             } else {
                 $relatedToParam = [$relatedToParam];
             }
-        }
-
-        // Normalize the 'not' param
-        if (
-            isset($relatedToParam[0]) &&
-            $relatedToParam[0] === 'not'
-        ) {
-            // Remove the `not` param
-            $relatedToParam = array_slice($relatedToParam, 1);
-            // Un-nest the relationship criteria
-            $relatedToParam = array_shift($relatedToParam);
-
-            $relatedToParam = static::normalizeRelatedToParam($relatedToParam, $siteId);
-            return ['not', $relatedToParam];
         }
 
         if (
@@ -235,15 +215,7 @@ class ElementRelationParamParser extends BaseObject
     public function parse(mixed $relatedToParam, array|int|string|null $siteId = null): array|false
     {
         $relatedToParam = static::normalizeRelatedToParam($relatedToParam, $siteId);
-        $isNotQuery = false;
         $glue = array_shift($relatedToParam);
-
-        // Reset glue and related to if this is a not query
-        if ($glue === 'not') {
-            $isNotQuery = true;
-            $relatedToParam = array_shift($relatedToParam);
-            $glue = array_shift($relatedToParam);
-        }
 
         if (empty($relatedToParam)) {
             return false;
@@ -268,18 +240,10 @@ class ElementRelationParamParser extends BaseObject
         }
 
         if (count($conditions) === 1) {
-            if ($isNotQuery) {
-                return ['not', $conditions[0]];
-            }
-
             return $conditions[0];
         }
 
         array_unshift($conditions, $glue);
-
-        if ($isNotQuery) {
-            return ['not', $conditions];
-        }
 
         return $conditions;
     }
