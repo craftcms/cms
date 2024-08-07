@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => '{user}(으)로 로그인',
     'Sign in unsuccessful' => '로그인 실패',
     'Sign in with a passkey' => '패스키로 로그인',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => '로그인',
     'Sign out now' => '지금 로그아웃',
     'Sign out' => '로그아웃',
