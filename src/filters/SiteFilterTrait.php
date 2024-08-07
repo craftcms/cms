@@ -29,7 +29,7 @@ trait SiteFilterTrait
             return false;
         }
 
-        return !$this->isCurrentSiteActive();
+        return $this->isCurrentSiteActive();
     }
 
     protected function setSite(null|array|int|string|Site $value): void

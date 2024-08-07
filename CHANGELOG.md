@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where `\craft\filters\Headers` and `\craft\filters\Cors` were applied to CP requests instead of site requests.
+
 ## 4.11.0.2 - 2024-08-06
 
 - Fixed an error that could occur on console requests.
