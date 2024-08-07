@@ -7,6 +7,7 @@
 ]|filter) %}
 
 {%- set orientation = orientation ?? inputAttributes.dir ?? craft.app.locale.getOrientation() %}
+{%- set expanded = expanded ?? (role ?? false) == 'combobox' ? 'false' : false ?? false %}
 
 {%- set inputAttributes = {
     class: class,
@@ -33,6 +34,7 @@
     aria: {
         labelledby: (inputAttributes.aria.label ?? false) ? false : (labelledBy ?? false),
         describedby: describedBy ?? false,
+        expanded: expanded,
     },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
