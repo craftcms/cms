@@ -142,10 +142,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
     focusOption: function ($option) {
       this.searchMenu.$options.removeClass('hover');
       $option.addClass('hover');
-      this.searchMenu.$menuList.attr(
-        'aria-activedescendant',
-        $option.attr('id')
-      );
+      this.$addTagInput.attr('aria-activedescendant', $option.attr('id'));
     },
 
     // No "add" button
@@ -247,6 +244,17 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             this.searchMenu = new Garnish.Menu($menu, {
               attachToElement: this.$addTagInput,
               onOptionSelect: this.selectTag.bind(this),
+            });
+
+            // Add required ARIA attributes
+            this.$addTagInput.attr('aria-controls', this.searchMenu.menuId);
+
+            this.searchMenu.on('show', () => {
+              this.$addTagInput.attr('aria-expanded', 'true');
+            });
+
+            this.searchMenu.on('hide', () => {
+              this.$addTagInput.attr('aria-expanded', 'false');
             });
 
             this.addListener($menu, 'mousedown', () => {
