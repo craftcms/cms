@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a PHP error that could occur when generating URLs via console requests. ([#15374](https://github.com/craftcms/cms/issues/15374))
+
 ## 4.11.0.2 - 2024-08-06
 
 - Fixed an error that could occur on console requests.
