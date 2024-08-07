@@ -134,6 +134,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
       });
     },
 
+    get fieldName() {
+      const $legend = this.$container.closest('fieldset').find('legend')[0];
+      return $legend.innerText;
+    },
+
     focusOption: function ($option) {
       this.searchMenu.$options.removeClass('hover');
       $option.addClass('hover');
@@ -213,7 +218,9 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             }
             this.$spinner.addClass('hidden');
             this.updateLiveRegion(Craft.t('app', 'Loading complete'));
-            var $menu = $('<div class="menu tagmenu"/>').appendTo(Garnish.$bod),
+            var $menu = $('<div class="menu tagmenu"/>')
+                .attr('aria-label', this.fieldName)
+                .appendTo(Garnish.$bod),
               $ul = $('<ul/>').appendTo($menu);
 
             var $li;
