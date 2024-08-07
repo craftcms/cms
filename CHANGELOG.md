@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Element conditions can now have a “Not Related To” rule.
+- It’s now possible to query elements with `notRelatedTo` in GraphQL.
+- Added `craft\elements\conditions\NotRelatedToConditionRule`.
+- Added `craft\elements\db\ElementQuery::$notRelatedTo`.
+- Added `craft\elements\db\ElementQuery::notRelatedTo()`.
+- Added `craft\elements\db\ElementQuery::andNotRelatedTo()`.
+- Added `craft\elements\db\ElementQueryInterface::notRelatedTo()`.
+- Added `craft\elements\db\ElementQueryInterface::andNotRelatedTo()`.
+
 ## 5.3.0.3 - 2024-08-06
 
 - Fixed a PHP error that could occur when editing Addresses fields set to the element index view mode. ([#15486](https://github.com/craftcms/cms/issues/15486))

@@ -856,9 +856,38 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * @param mixed $value The property value
      * @return static self reference
-     * @since 5.3.0
+     * @since 5.x.x
      */
     public function notRelatedTo(mixed $value): static;
+
+    /**
+     * Narrows the query results to only {elements} that are not related to certain other elements.
+     *
+     * See [Relations](https://craftcms.com/docs/4.x/relations.html) for a full explanation of how to work with this parameter.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all {elements} that are related to myCategoryA and not myCategoryB #}
+     * {% set {elements-var} = {twig-method}
+     *   .relatedTo(myCategoryA)
+     *   .andNotRelatedTo(myCategoryB)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all {elements} that are related to $myCategoryA and not $myCategoryB
+     * ${elements-var} = {php-method}
+     *     ->relatedTo($myCategoryA)
+     *     ->andNotRelatedTo($myCategoryB)
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     * @since 5.x.x
+     */
+    public function andNotRelatedTo(mixed $value): static;
 
     /**
      * Narrows the query results to only {elements} that are related to certain other elements.

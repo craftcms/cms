@@ -335,6 +335,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * See [Relations](https://craftcms.com/docs/4.x/relations.html) for supported syntax options.
      *
      * @used-by notRelatedTo()
+     * @since 5.x.x
      */
     public mixed $notRelatedTo = null;
 
@@ -1092,6 +1093,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $notRelatedTo
+     * @since 5.x.x
      */
     public function notRelatedTo($value): static
     {
@@ -1104,28 +1106,15 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @return $this
      * @throws NotSupportedException
      * @uses $notRelatedTo
+     * @since 5.x.x
      */
     public function andNotRelatedTo($value): static
     {
-        if (!$value) {
+        $relatedTo = $this->_andRelatedToCriteria($value, $this->notRelatedTo);
+
+        if ($relatedTo === false) {
             return $this;
         }
-
-        if (!$this->notRelatedTo) {
-            return $this->notRelatedTo($value);
-        }
-
-        // Normalize so element/targetElement/sourceElement values get pushed down to the 2nd level
-        $relatedTo = ElementRelationParamParser::normalizeRelatedToParam($this->notRelatedTo);
-        $criteriaCount = count($relatedTo) - 1;
-
-        // Not possible to switch from `or` to `and` if there are multiple criteria
-        if ($relatedTo[0] === 'or' && $criteriaCount > 1) {
-            throw new NotSupportedException('It’s not possible to combine “or” and “and” relatedTo conditions.');
-        }
-
-        $relatedTo[0] = $criteriaCount > 0 ? 'and' : 'or';
-        $relatedTo[] = ElementRelationParamParser::normalizeRelatedToCriteria($value);
 
         return $this->notRelatedTo($relatedTo);
     }
@@ -1147,16 +1136,33 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function andRelatedTo($value): static
     {
-        if (!$value) {
+        $relatedTo = $this->_andRelatedToCriteria($value, $this->relatedTo);
+
+        if ($relatedTo === false) {
             return $this;
         }
 
-        if (!$this->relatedTo) {
-            return $this->relatedTo($value);
+        return $this->relatedTo($relatedTo);
+    }
+
+    /**
+     * @param $value
+     * @param $currentValue
+     * @return array|false
+     * @throws NotSupportedException
+     */
+    private function _andRelatedToCriteria($value, $currentValue): array|false
+    {
+        if (!$value) {
+            return false;
+        }
+
+        if (!$currentValue) {
+            return $value;
         }
 
         // Normalize so element/targetElement/sourceElement values get pushed down to the 2nd level
-        $relatedTo = ElementRelationParamParser::normalizeRelatedToParam($this->relatedTo);
+        $relatedTo = ElementRelationParamParser::normalizeRelatedToParam($currentValue);
         $criteriaCount = count($relatedTo) - 1;
 
         // Not possible to switch from `or` to `and` if there are multiple criteria
@@ -1167,7 +1173,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $relatedTo[0] = $criteriaCount > 0 ? 'and' : 'or';
         $relatedTo[] = ElementRelationParamParser::normalizeRelatedToCriteria($value);
 
-        return $this->relatedTo($relatedTo);
+        return $relatedTo;
     }
 
     /**
