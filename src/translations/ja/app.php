@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => '{user}でサインイン',
     'Sign in unsuccessful' => 'サインインに失敗しました',
     'Sign in with a passkey' => 'パスキーでサインイン',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'サインイン',
     'Sign out now' => '今すぐサインアウト',
     'Sign out' => 'ログアウト',
