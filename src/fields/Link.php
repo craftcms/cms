@@ -196,7 +196,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         if (isset($config['types'], $config['typeSettings'])) {
             // Filter out any unneeded type settings
             foreach (array_keys($config['typeSettings']) as $typeId) {
-                if (!in_array($typeId, $config)) {
+                if (!in_array($typeId, $config['types'])) {
                     unset($config['typeSettings'][$typeId]);
                 }
             }
