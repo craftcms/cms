@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a PHP error that could occur when generating URLs via console requests. ([#15374](https://github.com/craftcms/cms/issues/15374))
+- Fixed a bug where `craft\filters\Headers` and `craft\filters\Cors` were applied to control panel requests rather than site requests. ([#15495](https://github.com/craftcms/cms/issues/15495))
 
 ## 4.11.0.2 - 2024-08-06
 
