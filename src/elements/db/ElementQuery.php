@@ -1102,9 +1102,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * @param $value
-     * @return $this
-     * @throws NotSupportedException
+     * @inheritdoc
      * @uses $notRelatedTo
      * @since 5.x.x
      */
