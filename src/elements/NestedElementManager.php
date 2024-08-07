@@ -363,6 +363,7 @@ class NestedElementManager extends Component
     {
         $config += [
             'showInGrid' => false,
+            'prevalidate' => false,
         ];
 
         return $this->createView(
@@ -465,6 +466,7 @@ class NestedElementManager extends Component
             'showHeaderColumn' => true,
             'fieldLayouts' => [],
             'defaultTableColumns' => null,
+            'prevalidate' => false,
             'pageSize' => 50,
             'storageKey' => null,
         ];

@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '5.3.0-beta.2',
-    'schemaVersion' => '5.3.0.1',
+    'version' => '5.3.0.3',
+    'schemaVersion' => '5.3.0.2',
     'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -176,6 +176,9 @@ return [
         'sites' => [
             'class' => craft\services\Sites::class,
             'currentSite' => craft\helpers\App::env('CRAFT_SITE'),
+        ],
+        'sso' => [
+            'class' => craft\services\Sso::class,
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,

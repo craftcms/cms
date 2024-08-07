@@ -213,7 +213,7 @@ class SystemMessages extends Component
             $languageId = $language;
         }
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             // Fetch the customization (if there is one)
             $override = $this->_createMessagesQuery()
                 ->select(['subject', 'body'])

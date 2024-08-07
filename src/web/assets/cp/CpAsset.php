@@ -444,9 +444,10 @@ JS;
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
 
         $data = [
-            'Pro' => CmsEdition::Pro->value,
-            'Team' => CmsEdition::Team->value,
             'Solo' => CmsEdition::Solo->value,
+            'Team' => CmsEdition::Team->value,
+            'Pro' => CmsEdition::Pro->value,
+            'Enterprise' => CmsEdition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
