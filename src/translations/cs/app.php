@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'Přihlásit se jako {user}',
     'Sign in unsuccessful' => 'Přihlášení neúspěšné',
     'Sign in with a passkey' => 'Přihlásit se pomocí přístupového klíče',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'Přihlásit se',
     'Sign out now' => 'Odhlásit nyní',
     'Sign out' => 'Odhlásit',
