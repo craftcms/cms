@@ -1449,6 +1449,7 @@ return [
     'Sign in as {user}' => 'Aanmelden als {user}',
     'Sign in unsuccessful' => 'Aanmelden mislukt',
     'Sign in with a passkey' => 'Aanmelden met een passkey',
+    'Sign in with {name}' => 'Sign in with {name}',
     'Sign in' => 'Aanmelden',
     'Sign out now' => 'Nu afmelden',
     'Sign out' => 'Afmelden',
