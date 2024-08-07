@@ -1580,6 +1580,7 @@ JS, [
                 'id' => $replaceId,
                 'icon' => 'upload',
                 'label' => Craft::t('app', 'Replace file'),
+                'showInChips' => false,
             ];
 
             $view->registerJsWithVars(fn($id, $namespace, $assetId, $fsType, $dimensionsLabel) => <<<JS
