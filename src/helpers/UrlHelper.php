@@ -8,8 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\console\Request as ConsoleRequest;
 use craft\errors\SiteNotFoundException;
-use craft\web\Request;
+use craft\web\Request as WebRequest;
 use yii\base\Exception;
 
 /**
@@ -508,7 +509,7 @@ class UrlHelper
         return self::fallbackBaseUrl();
     }
 
-    private static function fallbackBaseUrl(?Request $request = null): string
+    private static function fallbackBaseUrl(WebRequest|ConsoleRequest|null $request = null): string
     {
         $request ??= Craft::$app->getRequest();
         // Use @web as a fallback, unless it's a console request and @web was defined dynamically,
