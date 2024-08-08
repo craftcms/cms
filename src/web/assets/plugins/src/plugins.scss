@@ -5,8 +5,7 @@
   tbody {
     th,
     td {
-      padding-top: 20px;
-      padding-bottom: 20px;
+      padding-block: 20px;
     }
 
     .plugin-infos {
@@ -39,15 +38,15 @@
         .license-key-status {
           display: block;
           position: absolute;
-          top: 26px;
+          inset-block-start: 26px;
           @include left(26px);
           width: 20px;
           height: 20px;
-          background: no-repeat 0 0 url(images/invalid-icon.svg);
+          background: no-repeat 0 0 url('images/invalid-icon.svg');
           background-size: 100% 100%;
 
           &.valid {
-            background-image: url(images/valid-icon.svg);
+            background-image: url('images/valid-icon.svg');
           }
         }
       }
@@ -58,18 +57,18 @@
         .plugin-id {
           display: flex;
           align-items: baseline;
-          margin-bottom: 0;
+          margin-block-end: 0;
           font-size: 1em;
           white-space: nowrap;
           flex-wrap: wrap;
 
           h2 {
-            margin-bottom: 0;
+            margin-block-end: 0;
           }
 
           .edition {
             position: relative;
-            top: -1px;
+            inset-block-start: -1px;
             @include margin-left(7px);
             user-select: none;
             border: 1px solid var(--medium-text-color);
@@ -80,7 +79,8 @@
 
             & > .edition-name,
             & > .edition-trial {
-              padding: 0 6px;
+              padding-block: 0;
+              padding-inline: 6px;
               font-size: 11px;
               line-height: 16px;
               font-weight: normal;
@@ -89,7 +89,7 @@
             & > .edition-name {
               color: var(--medium-dark-text-color);
               letter-spacing: 1.5px;
-              padding-right: 5px;
+              padding-inline-end: 5px;
               text-transform: uppercase;
               transition: color linear 100ms;
             }
@@ -108,10 +108,10 @@
               @include margin-left(4px);
               @include padding-left(4px);
 
-              &:before {
+              &::before {
                 display: block;
                 position: absolute;
-                top: 0;
+                inset-block-start: 0;
                 content: '';
                 font-size: 0;
                 width: 0;
@@ -120,14 +120,14 @@
                 transition: border-color linear 100ms;
 
                 body.ltr & {
-                  left: -7px;
+                  inset-inline-start: -7px;
                   border-width: 0 7px 16px 0;
                   border-color: transparent var(--medium-text-color) transparent
                     transparent;
                 }
 
                 body.rtl & {
-                  right: -7px;
+                  inset-inline-end: -7px;
                   border-width: 0 0 16px 7px;
                   border-color: transparent transparent transparent
                     var(--medium-text-color);
@@ -149,15 +149,15 @@
             }
 
             & .edition-name + .edition-trial {
-              &:before {
+              &::before {
                 body.ltr & {
-                  left: -7px;
+                  inset-inline-start: -7px;
                   border-width: 0 7px 16px 0;
-                  border-right-color: var(--link-color);
+                  border-inline-end-color: var(--link-color);
                 }
 
                 body.rtl & {
-                  border-left-color: var(--link-color);
+                  border-inline-start-color: var(--link-color);
                 }
               }
             }
@@ -172,7 +172,8 @@
 
         p,
         ul.links {
-          margin: 0.2em 0;
+          margin-block: 0.2em;
+          margin-inline: 0;
         }
 
         ul.links {
@@ -191,10 +192,10 @@
 
             a,
             span {
-              &:before {
+              &::before {
                 @include icon;
                 @include margin-right(4px);
-                margin-top: -3px;
+                margin-block-start: -3px;
                 color: var(--gray-300);
               }
             }
@@ -202,24 +203,24 @@
             &.link-developer {
               a,
               span {
-                &:before {
+                &::before {
                   content: 'building';
                 }
               }
             }
 
-            &.link-docs a:before {
+            &.link-docs a::before {
               content: 'book';
             }
 
-            &.link-settings a:before {
+            &.link-settings a::before {
               content: 'settings';
             }
           }
         }
 
         .license-key {
-          margin-top: 1em;
+          margin-block-start: 1em;
 
           .pane {
             margin: 0;
@@ -230,7 +231,8 @@
             input.text {
               font-weight: bold;
               font-size: 11px !important;
-              padding: 3px 7px 1px;
+              padding-block: 3px 1px;
+              padding-inline: 7px;
               width: 19em;
               min-height: 0;
             }
@@ -243,7 +245,7 @@
         }
 
         .expired {
-          margin-top: 1em;
+          margin-block-start: 1em;
         }
       }
     }

@@ -121,14 +121,14 @@ body.login {
   width: 300px;
 
   .body {
-    @include padding-left(68px);
+    padding-inline-start: 68px;
 
     &::before {
       @include icon;
       display: block;
       position: absolute;
       inset-block-start: 24px;
-      @include left(24px);
+      inset-inline-start: 24px;
       content: 'mail';
       font-size: 30px;
       color: var(--link-color);

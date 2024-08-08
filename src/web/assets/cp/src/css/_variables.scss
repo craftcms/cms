@@ -1,4 +1,4 @@
-@charset "UTF-8";
+@use 'sass:color';
 @import '@craftcms/sass/mixins';
 
 :root {
@@ -45,7 +45,7 @@
 
   // alert/notice colors
   --error-color-rgb: 216, 31, 35;
-  --error-color: rgb(var(--error-color-rgb) 1);
+  --error-color: rgb(var(--error-color-rgb), 1);
   --warning-color: var(--amber-700);
   --success-color: var(--teal-700);
   --notice-color: var(--sky-700);

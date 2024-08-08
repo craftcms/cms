@@ -119,7 +119,7 @@
     position: absolute;
     z-index: 101;
     inset-block-start: 0;
-    @include right(-2px);
+    inset-inline-end: -2px;
     width: 4px;
     height: 100%;
     cursor: col-resize;
@@ -161,7 +161,7 @@
       margin: 0;
 
       .btn + .btn {
-        @include margin-left(7px);
+        margin-inline-start: 7px;
       }
     }
 

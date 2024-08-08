@@ -101,7 +101,7 @@ html.noscroll body {
   &::before {
     position: absolute;
     inset-block-start: 0;
-    @include left(0);
+    inset-inline-start: 0;
     content: '';
     width: 0;
     height: 100%;
@@ -247,7 +247,7 @@ html.noscroll body {
   }
 
   .custom {
-    @include padding-left(calc(1rem + 5px));
+    padding-inline-start: calc(1rem + 5px);
   }
 
   .orientation {

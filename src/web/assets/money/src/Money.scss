@@ -16,7 +16,8 @@
     background: transparent;
     display: flex;
     height: 100%;
-    padding: 6px 9px;
+    padding-block: 6px;
+    padding-inline: 9px;
     white-space: nowrap;
 
     & + .text {
@@ -24,6 +25,7 @@
       @include border-bottom-left-radius(0);
     }
   }
+
   .money-placeholder {
     color: var(--light-sel-color);
   }

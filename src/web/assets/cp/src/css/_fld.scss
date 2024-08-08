@@ -24,7 +24,7 @@ $gridColor: var(--gray-100);
   @include input-styles;
   overflow: hidden;
   box-shadow: none;
-  @include padding-right($tabWidth + 1);
+  padding-inline-end: $tabWidth + 1;
   min-height: 500px;
 
   .errors > & {
@@ -52,17 +52,17 @@ $gridColor: var(--gray-100);
   }
 
   &:not(:has(.fld-library)) {
-    @include padding-right(0);
+    padding-inline-end: 0;
 
     .fld-workspace {
-      @include padding-right($base);
+      padding-inline-end: $base;
     }
   }
 
   .fld-library {
     position: absolute;
     inset-block-start: 0;
-    @include right(0);
+    inset-inline-end: 0;
     height: 100%;
     width: $tabWidth + 1;
     padding: $tabPadding;
@@ -75,7 +75,7 @@ $gridColor: var(--gray-100);
 
 .fld-library-menu {
   width: $tabWidth;
-  @include margin-left($tabPadding * -1);
+  margin-inline-start: $tabPadding * -1;
   padding: $tabPadding;
 }
 
@@ -374,7 +374,7 @@ $gridColor: var(--gray-100);
   }
 
   & > .btn {
-    @include margin-left(5px);
+    margin-inline-start: 5px;
   }
 
   & > .spinner {
@@ -384,10 +384,10 @@ $gridColor: var(--gray-100);
 
 @container (width < #{$base + $tabWidth + $base + $tabWidth + 1}) {
   .fld-container {
-    @include padding-right(0);
+    padding-inline-end: 0;
 
     .fld-workspace {
-      @include padding-right($base);
+      padding-inline-end: $base;
     }
 
     & > .fld-library {

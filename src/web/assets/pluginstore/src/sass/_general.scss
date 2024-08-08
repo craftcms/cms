@@ -106,7 +106,7 @@ code {
   box-shadow:
     inset 0 0 0 1px transparent,
     0 0 0 1px var(--error-color),
-    0 1px 1px rgba(0, 0, 0, 0.1);
+    0 1px 1px rgb(0 0 0 / 10%);
 }
 
 input.error {
@@ -159,7 +159,7 @@ input.error {
       height: 18px;
       vertical-align: middle;
       line-height: 0;
-      margin-right: 3px;
+      margin-inline-end: 3px;
     }
 
     svg {
@@ -173,8 +173,9 @@ input.error {
     .badge {
       @include margin(0, 0, 0, -6px);
       @apply tw-relative tw-inline-block tw-flex-shrink tw-text-white;
-      top: -1px;
-      padding: 0 6px;
+      inset-block-start: -1px;
+      padding-block: 0;
+      padding-inline: 6px;
       font-size: 11px;
       line-height: 16px;
       border-radius: 1em;

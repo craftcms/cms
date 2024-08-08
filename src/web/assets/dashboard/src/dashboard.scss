@@ -8,7 +8,7 @@
   transition:
     opacity linear 200ms,
     transform linear 200ms;
-  margin-bottom: 14px;
+  margin-block-end: 14px;
 
   &.scaleout {
     opacity: 0;
@@ -29,6 +29,7 @@
         opacity: 1 !important;
       }
     }
+
     & > .back {
       transform: rotateY(-180deg);
     }
@@ -46,6 +47,7 @@
     & > .front {
       transform: rotateY(180deg);
     }
+
     & > .back {
       transform: rotateY(0deg);
     }
@@ -65,7 +67,7 @@
         opacity: 0;
         cursor: pointer;
         @include right(12px);
-        top: 12px;
+        inset-block-start: 12px;
         transition: opacity linear 200ms;
         position: absolute;
         height: var(--touch-target-size);
@@ -80,15 +82,15 @@
 
   & > .back {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset-block-start: 0;
+    inset-inline-start: 0;
     width: 100%;
 
     & > .pane {
       background: var(--gray-050);
 
       & > .errors {
-        margin-top: 24px;
+        margin-block-start: 24px;
       }
     }
   }
@@ -113,26 +115,27 @@
         & > .spinner.body-loading {
           display: block;
           position: absolute;
-          top: calc(50% - 15px);
-          left: calc(50% - 12px);
+          inset-block-start: calc(50% - 15px);
+          inset-inline-start: calc(50% - 12px);
         }
       }
     }
   }
 
   .widget-heading {
-    margin-bottom: 15px;
+    margin-block-end: 15px;
 
     h2 {
-      margin-bottom: 3px;
+      margin-block-end: 3px;
     }
+
     h5 {
-      margin-top: 0;
+      margin-block-start: 0;
     }
   }
 
   form + .errors {
-    margin-top: 15px;
+    margin-block-start: 15px;
   }
 }
 
@@ -144,7 +147,8 @@ body ol.widget__list {
 }
 
 .widget__list-item {
-  padding: 7px 0;
+  padding-block: 7px;
+  padding-inline: 0;
 
   .craft\\widgets\\mydrafts & {
     padding: 0;
@@ -169,7 +173,7 @@ body ol.widget__list {
 
   .icon {
     position: absolute;
-    top: 11px;
+    inset-block-start: 11px;
     @include left(var(--m));
     width: 1rem;
   }
@@ -191,7 +195,7 @@ body ol.widget__list {
   }
 }
 
-@media only screen and (max-width: 673px) {
+@media only screen and (width <= 673px) {
   .widgetmanagerhud {
     max-width: 300px;
 
