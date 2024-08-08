@@ -45,7 +45,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     use RelationalFieldTrait;
 
     /**
-     * @event DefineLinkOptionsEvent The event that is triggered when registering the link types for Link fields.
+     * @event RegisterComponentTypesEvent The event that is triggered when registering the link types for Link fields.
      * @see types()
      */
     public const EVENT_REGISTER_LINK_TYPES = 'registerLinkTypes';

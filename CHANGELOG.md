@@ -1,7 +1,11 @@
 # Release Notes for Craft CMS 5
 
 ## Unreleased
+- Fixed a bug where Link fields weren’t allowing category groups to be selected, if they didn’t have a URI format for the primary site.
 
+## 5.3.1 - 2024-08-07
+
+- Fixed a bug where `craft\filters\Headers` and `craft\filters\Cors` were applied to control panel requests rather than site requests. ([#15495](https://github.com/craftcms/cms/issues/15495))
 - Fixed a bug where Link fields weren’t retaining their link type-specific settings. ([#15491](https://github.com/craftcms/cms/issues/15491))
 
 ## 5.3.0.3 - 2024-08-06
