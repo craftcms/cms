@@ -37,7 +37,6 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         $idSets = [];
 
         foreach ($criteriaList as $criteria) {
-            unset($criteria['relatedViaField'], $criteria['relatedViaSite']);
             /** @var ElementQuery $elementQuery */
             $elementQuery = Craft::configure(Craft::$app->getElements()->createElementQuery($elementType), $criteria);
             $idSets[] = $elementQuery->ids();
