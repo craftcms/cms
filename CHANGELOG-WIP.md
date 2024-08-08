@@ -3,6 +3,15 @@
 ### Content Management
 - Asset chips and cards no longer include the “Replace file” action. ([#15498](https://github.com/craftcms/cms/issues/15498))
 
+### Development
+- `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` GraphQL arguments now support passing `relatedViaField` and `relatedViaSite` keys to their criteria objects. ([#15508](https://github.com/craftcms/cms/pull/15508))
+
 ### Extensibility
+- Added `craft\gql\arguments\RelationCriteria`.
+- Added `craft\gql\types\input\criteria\AssetRelation`.
+- Added `craft\gql\types\input\criteria\CategoryRelation`.
+- Added `craft\gql\types\input\criteria\EntryRelation`.
+- Added `craft\gql\types\input\criteria\TagRelation`.
+- Added `craft\gql\types\input\criteria\UserRelation`.
 - `craft\services\Elements::saveContent()`’ now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
 - Element action menu items returned by `craft\base\Element::safeActionMenuItems()` and `destructiveActionMenuItems()` can now include a `showInChips` key to explicitly opt into/out of being shown within element chips and cards.
