@@ -59,10 +59,10 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         // Extract relatedViaField and relatedViaSite values
         $relationParams = [];
         foreach ($argumentValue as &$value) {
-            $relationParams[] = [
+            $relationParams[] = array_filter([
                 'field' => ArrayHelper::remove($value, 'relatedViaField'),
                 'site' => ArrayHelper::remove($value, 'relatedViaSite'),
-            ];
+            ]);
         }
 
         $hash = md5(serialize($argumentValue));
