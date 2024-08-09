@@ -37,7 +37,7 @@
 
 .user-permissions h3:has(+ .select-all) {
   padding-inline-end: 0.5em;
-  @include border-right(1px solid #eee);
+  border-inline-end: 1px solid #eee;
   margin-inline-end: 0.5em;
 }
 

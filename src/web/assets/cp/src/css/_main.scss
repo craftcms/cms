@@ -2225,7 +2225,7 @@ div.btn.submit input {
   background-color: transparent;
 
   .btngroup &:not(:last-child, .btngroup-btn-last) {
-    @include border-right(1px solid transparent);
+    border-inline-end: 1px solid transparent;
     margin-inline-end: -1px;
   }
 
@@ -5952,7 +5952,7 @@ $min2ColWidth: 400px;
           width: calc(100% - 350px);
           height: 100%;
           box-sizing: border-box;
-          @include border-right(1px solid var(--gray-200));
+          border-inline-end: 1px solid var(--gray-200);
           overflow: hidden auto;
         }
 
@@ -8449,7 +8449,7 @@ body {
 
   &:not(:hover) a.last-active,
   &:hover a.last-active-hover {
-    @include border-right(1px solid var(--gray-400));
+    border-inline-end: 1px solid var(--gray-400);
     @include border-top-right-radius(var(--small-border-radius));
     @include border-bottom-right-radius(var(--small-border-radius));
   }

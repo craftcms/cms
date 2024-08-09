@@ -8,7 +8,7 @@
 
   .money-currency-label {
     @include input-styles;
-    @include border-right(none);
+    border-inline-end: none;
     @include border-top-right-radius(0);
     @include border-bottom-right-radius(0);
     align-items: center;
