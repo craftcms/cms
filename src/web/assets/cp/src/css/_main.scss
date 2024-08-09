@@ -1295,7 +1295,7 @@ td.right {
     background-color: var(--gray-050);
     overflow: auto;
     box-shadow: inset -1px 0 0 var(--hairline-color);
-    @include border-top-left-radius(var(--large-border-radius));
+    border-start-start-radius: var(--large-border-radius);
 
     & > .btn {
       margin-inline: 14px 0;
@@ -5222,7 +5222,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
         &:first-child {
           &,
           .tab-label {
-            @include border-top-left-radius(var(--large-border-radius));
+            border-start-start-radius: var(--large-border-radius);
           }
         }
       }
@@ -7238,7 +7238,7 @@ textarea.text.fullwidth {
 
   &:first-child .text {
     &:first-child {
-      @include border-top-left-radius(var(--medium-border-radius));
+      border-start-start-radius: var(--medium-border-radius);
     }
 
     &:last-child {
@@ -8442,7 +8442,7 @@ body {
 
     &:first-child {
       border-inline-start: 1px solid var(--gray-400);
-      @include border-top-left-radius(var(--small-border-radius));
+      border-start-start-radius: var(--small-border-radius);
       @include border-bottom-left-radius(var(--small-border-radius));
     }
   }
