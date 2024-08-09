@@ -631,8 +631,8 @@ $menuBorderRadius: $mediumBorderRadius;
   @include angle;
   position: absolute;
   z-index: 1;
-  top: calc(50% - 5px);
-  @include right(9px);
+  inset-block-start: calc(50% - 5px);
+  inset-inline-end: 9px;
   user-select: none;
   pointer-events: none;
   color: var(--ui-control-color);
@@ -643,7 +643,8 @@ $menuBorderRadius: $mediumBorderRadius;
   position: relative;
   max-width: 100%;
   border: none;
-  @include padding(7px, 22px, 7px, 10px);
+  padding-block: 7px;
+  padding-inline: 10px 22px;
   font-size: 14px;
   line-height: 20px;
   color: $textColor;
@@ -755,7 +756,7 @@ $menuBorderRadius: $mediumBorderRadius;
   ul,
   ol {
     margin: 1em 0;
-    @include padding-left(2em);
+    padding-inline-start: 2em;
   }
 
   ul li {
@@ -769,7 +770,7 @@ $menuBorderRadius: $mediumBorderRadius;
   .tip-dismiss-btn {
     position: absolute;
     top: 12px;
-    @include right(12px);
+    inset-inline-end: 12px;
 
     & + p {
       margin-top: 0;
@@ -782,18 +783,18 @@ $menuBorderRadius: $mediumBorderRadius;
     &:not(.note) {
       padding: 0 16px;
       color: $mediumTextColor;
-      @include border-left(4px solid $hairlineColor);
+      border-inline-start: 4px solid $hairlineColor;
     }
 
     &.note {
       position: relative;
       border-radius: 4px;
       padding: 1em;
-      @include padding-left(50px);
+      padding-inline-start: 50px;
       border: 1px solid;
 
       &.dismissible {
-        @include padding-right(36px);
+        padding-inline-end: 36px;
       }
 
       &:not(.tip):not(.warning) {
@@ -831,7 +832,7 @@ $menuBorderRadius: $mediumBorderRadius;
         opacity: 1;
         position: absolute;
         top: 15px;
-        @include left(16px);
+        inset-inline-start: 16px;
         font-size: 24px;
         width: 24px;
       }
