@@ -5666,7 +5666,7 @@ $min2ColWidth: 400px;
 
   .menubtn:not(.action-btn) {
     padding-inline-start: 0;
-    justify-content: start;
+    justify-content: flex-start;
     width: 100%;
     background-color: transparent;
 
@@ -8517,7 +8517,7 @@ body {
       ul {
         display: flex;
         flex-flow: row wrap;
-        justify-content: start;
+        justify-content: flex-start;
         gap: var(--s);
         max-height: 100%;
         overflow: auto;
