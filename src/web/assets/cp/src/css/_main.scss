@@ -741,7 +741,7 @@ button {
     margin-block: -5px -5px;
     padding-inline: var(--xl) 0;
     padding-block: 5px;
-    @include border-bottom-left-radius(var(--large-border-radius));
+    border-end-start-radius: var(--large-border-radius);
 
     body.ltr & {
       background-image: linear-gradient(
@@ -4160,7 +4160,7 @@ table.editable {
 
       &:last-child {
         td:first-child {
-          @include border-bottom-left-radius(var(--large-border-radius));
+          border-end-start-radius: var(--large-border-radius);
 
           textarea,
           input.text {
@@ -7248,7 +7248,7 @@ textarea.text.fullwidth {
 
   &:last-child .text {
     &:first-child {
-      @include border-bottom-left-radius(var(--medium-border-radius));
+      border-end-start-radius: var(--medium-border-radius);
     }
 
     &:last-child {
@@ -8443,7 +8443,7 @@ body {
     &:first-child {
       border-inline-start: 1px solid var(--gray-400);
       border-start-start-radius: var(--small-border-radius);
-      @include border-bottom-left-radius(var(--small-border-radius));
+      border-end-start-radius: var(--small-border-radius);
     }
   }
 
