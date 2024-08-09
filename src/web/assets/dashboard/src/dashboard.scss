@@ -101,7 +101,7 @@
         & > .spinner.body-loading {
           display: block;
           @include floatright;
-          @include margin-left(10px);
+          margin-inline-start: 10px;
         }
       }
     }

@@ -105,7 +105,7 @@ body {
       height: 6px;
 
       & + div {
-        @include margin-left(5px);
+        margin-inline-start: 5px;
       }
 
       &.sel {

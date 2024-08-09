@@ -149,7 +149,7 @@ input.error {
   @apply tw-flex tw-justify-between tw-items-center;
 
   & > * {
-    @include margin-left(18px);
+    margin-inline-start: 18px;
   }
 
   #cart-button {

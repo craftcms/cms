@@ -100,7 +100,7 @@
         .release-badge {
           display: inline-block;
           vertical-align: text-bottom;
-          @include margin-left(7px);
+          margin-inline-start: 7px;
           border-radius: 3px;
           padding-block: 0;
           padding-inline: 5px;
@@ -126,7 +126,7 @@
 
     .release-date {
       flex-grow: 1;
-      @include margin-left(14px);
+      margin-inline-start: 14px;
       color: var(--light-text-color);
     }
   }

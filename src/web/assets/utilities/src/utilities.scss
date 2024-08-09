@@ -8,7 +8,7 @@ form.utility .utility-status {
   position: relative;
   width: 100px;
   height: 40px;
-  @include margin-left(10px);
+  margin-inline-start: 10px;
 }
 
 form.utility .utility-status .alldone {
