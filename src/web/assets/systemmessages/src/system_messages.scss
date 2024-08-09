@@ -6,7 +6,7 @@
   cursor: pointer;
 
   &:hover {
-    @include padding-right(26px);
+    padding-inline-end: 26px;
 
     &::after {
       position: absolute;

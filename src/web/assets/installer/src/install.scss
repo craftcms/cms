@@ -126,7 +126,7 @@ body {
   @include right(35px);
 
   .btn {
-    @include padding-right(10px);
+    padding-inline-end: 10px;
 
     &::after {
       @include icon;

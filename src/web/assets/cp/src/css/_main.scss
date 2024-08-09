@@ -2722,15 +2722,14 @@ h2 + .actions {
     th,
     td {
       &:first-child:not(.checkbox-cell, .vuetable-th-slot-checkbox) {
-        @include padding-left(
-          var(--pane-padding, var(--pane-x-padding-default))
+        padding-inline-start: var(
+          --pane-padding,
+          var(--pane-x-padding-default)
         );
       }
 
       &:last-child {
-        @include padding-right(
-          var(--pane-padding, var(--pane-x-padding-default))
-        );
+        padding-inline-end: var(--pane-padding, var(--pane-x-padding-default));
       }
     }
   }
