@@ -117,7 +117,8 @@
           a {
             display: block;
             position: relative;
-            @include padding(3px, 0, 3px, 20px);
+            padding-inline: 20px 0;
+            padding-block: 3px 3px;
 
             .status {
               position: absolute;

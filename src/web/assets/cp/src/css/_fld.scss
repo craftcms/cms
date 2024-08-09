@@ -39,7 +39,8 @@ $gridColor: var(--gray-100);
       0,
       calc(var(--small-border-radius - 1px))
     );
-    @include padding($base, 0, $base, $base);
+    padding-inline: $base 0;
+    padding-block: $base;
     @include workspace-bg;
     background-position: -1px -1px;
     box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
@@ -139,7 +140,8 @@ $gridColor: var(--gray-100);
 
 .fld-tab {
   width: $tabWidth + $base;
-  @include padding(0, $base + 1, $base, 0);
+  padding-inline: 0 $base + 1;
+  padding-block: 0 $base;
   box-sizing: border-box;
 
   .tabs {

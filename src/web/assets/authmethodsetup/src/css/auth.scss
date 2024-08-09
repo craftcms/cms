@@ -32,7 +32,8 @@
       flex-flow: row nowrap;
       align-items: center;
       gap: var(--xs);
-      @include padding(0, var(--s), 0, 1px);
+      padding-inline: 1px var(--s);
+      padding-block: 0;
       border: 1px solid var(--enabled-color);
       font-weight: 500;
 

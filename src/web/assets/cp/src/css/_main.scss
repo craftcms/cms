@@ -736,7 +736,8 @@ button {
 
   .so-notice > & {
     @include margin(-5px, 0, -5px, calc(var(--xl) * -1));
-    @include padding(5px, 0, 5px, var(--xl));
+    padding-inline: var(--xl) 0;
+    padding-block: 5px;
     @include border-bottom-left-radius(var(--large-border-radius));
 
     body.ltr & {
@@ -4970,7 +4971,8 @@ table.data tbody tr:not(.disabled).active-drop-target {
     margin-inline: 0;
     border-block-start: 1px solid var(--hairline-color);
     position: relative;
-    @include padding(10px, 0, 10px, 40px);
+    padding-inline: 40px 0;
+    padding-block: 10px;
 
     .icon {
       width: 32px;
@@ -5637,7 +5639,8 @@ $min2ColWidth: 400px;
   }
 
   select {
-    @include padding(var(--s), 12px, var(--s), 0);
+    padding-inline: 0 12px;
+    padding-block: var(--s);
     width: 100%;
     background-color: transparent;
   }
@@ -8354,7 +8357,8 @@ body {
 }
 
 .ui-timepicker-list li {
-  @include padding(2px, 0, 2px, 14px);
+  padding-inline: 14px 0;
+  padding-block: 2px;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -8706,7 +8710,8 @@ body.licensing-issues {
     box-sizing: border-box;
     border-radius: calc(var(--large-border-radius) - 2px)
       calc(var(--large-border-radius) - 2px) 0 0;
-    @include padding(5px, calc(var(--m) + 70px), 5px, var(--m));
+    padding-inline: var(--m) calc(var(--m) + 70px);
+    padding-block: 5px;
     color: var(--custom-text-color, var(--light-text-color));
     overflow: hidden;
     white-space: nowrap;
@@ -8956,7 +8961,8 @@ body.sitepicker {
       box-sizing: border-box;
       border: 1px solid var(--hairline-color);
       border-radius: var(--medium-border-radius);
-      @include padding(9px, 42px, 9px, 15px);
+      padding-inline: 15px 42px;
+      padding-block: 9px;
       font-size: 16px;
       line-height: 1.4;
 
