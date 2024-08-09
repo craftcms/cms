@@ -33,12 +33,10 @@ $gridColor: var(--gray-100);
 
   .fld-workspace {
     flex: 1;
-    @include border-radius(
-      calc(var(--small-border-radius) - 1px),
-      0,
-      0,
-      calc(var(--small-border-radius - 1px))
-    );
+    border-start-start-radius: calc(var(--small-border-radius) - 1px);
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    border-end-start-radius: calc(var(--small-border-radius) - 1px);
     padding-inline: $base 0;
     padding-block: $base;
     @include workspace-bg;
@@ -177,12 +175,10 @@ $gridColor: var(--gray-100);
 
   .fld-tabcontent {
     padding: $tabPadding;
-    @include border-radius(
-      0,
-      var(--medium-border-radius),
-      var(--medium-border-radius),
-      var(--medium-border-radius)
-    );
+    border-start-start-radius: 0;
+    border-start-end-radius: var(--medium-border-radius);
+    border-end-end-radius: var(--medium-border-radius);
+    border-end-start-radius: var(--medium-border-radius);
 
     & > .fld-element,
     & > .fld-add-btn {

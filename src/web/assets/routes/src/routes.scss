@@ -37,12 +37,10 @@
     position: relative;
     margin-inline-end: 20px;
     padding-inline-end: 10px;
-    @include border-radius(
-      var(--large-border-radius),
-      0,
-      0,
-      var(--large-border-radius)
-    );
+    border-start-start-radius: var(--large-border-radius);
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    border-end-start-radius: var(--large-border-radius);
     float: inline-start;
     color: var(--link-color);
     background: var(--white);
