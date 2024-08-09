@@ -10,7 +10,7 @@
     @include input-styles;
     border-inline-end: none;
     border-start-end-radius: 0;
-    @include border-bottom-right-radius(0);
+    border-end-end-radius: 0;
     align-items: center;
     box-sizing: border-box;
     background: transparent;

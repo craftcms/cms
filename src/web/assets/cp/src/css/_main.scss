@@ -7252,7 +7252,7 @@ textarea.text.fullwidth {
     }
 
     &:last-child {
-      @include border-bottom-right-radius(var(--medium-border-radius));
+      border-end-end-radius: var(--medium-border-radius);
     }
   }
 
@@ -8451,7 +8451,7 @@ body {
   &:hover a.last-active-hover {
     border-inline-end: 1px solid var(--gray-400);
     border-start-end-radius: var(--small-border-radius);
-    @include border-bottom-right-radius(var(--small-border-radius));
+    border-end-end-radius: var(--small-border-radius);
   }
 
   &:focus {
