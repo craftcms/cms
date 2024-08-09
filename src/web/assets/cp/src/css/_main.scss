@@ -3515,7 +3515,7 @@ table {
     margin-inline: 0 -1px;
     margin-block: 0 0;
     padding-inline-end: 2px !important;
-    @include border-left(1px solid var(--medium-hairline-color));
+    border-inline-start: 1px solid var(--medium-hairline-color);
     @include border-radius(
       0,
       calc(var(--touch-target-size) / 2),
@@ -3959,7 +3959,7 @@ table {
       padding-inline-start: 0;
       height: 2px;
       background-color: var(--link-color) !important;
-      @include border-left(none);
+      border-inline-start: none;
       border-radius: 1px;
     }
 
@@ -4029,7 +4029,7 @@ table {
 
       &:not(:last-child, .last) {
         padding-inline-start: 37px;
-        @include border-left(1px solid var(--gray-200));
+        border-inline-start: 1px solid var(--gray-200);
 
         body.ltr & {
           --background-position-x: -1px;
@@ -4173,7 +4173,7 @@ table.editable {
 
       td:not(:first-child),
       th ~ td:not(.hidden) ~ td {
-        @include border-left(1px solid var(--hairline-color));
+        border-inline-start: 1px solid var(--hairline-color);
       }
 
       th {
@@ -4182,7 +4182,7 @@ table.editable {
         // If there was it could have been as simple as: th ??? td:not(.hidden) { dark left border }
         // kudos to Mark Huot for coming up with it!
         & ~ td:not(:first-child) {
-          @include border-left(1px solid #dbdddf);
+          border-inline-start: 1px solid #dbdddf;
         }
       }
 
@@ -4271,7 +4271,7 @@ table.editable {
           padding-inline: 7px;
 
           & + td.action {
-            @include border-left(none);
+            border-inline-start: none;
             padding-inline-start: 0;
           }
         }
@@ -8409,7 +8409,7 @@ body {
   a {
     position: relative;
     border: 1px solid var(--hairline-color);
-    @include border-left(none);
+    border-inline-start: none;
     background-image: none;
     width: calc(8rem / 16 - 1px);
     height: calc(1rem - 2px);
@@ -8420,7 +8420,7 @@ body {
 
     &:first-child {
       width: calc(8rem / 16);
-      @include border-left(1px solid var(--gray-400) !important);
+      border-inline-start: 1px solid var(--gray-400) !important;
     }
 
     &::before {
@@ -8441,7 +8441,7 @@ body {
     margin-block: 0;
 
     &:first-child {
-      @include border-left(1px solid var(--gray-400));
+      border-inline-start: 1px solid var(--gray-400);
       @include border-top-left-radius(var(--small-border-radius));
       @include border-bottom-left-radius(var(--small-border-radius));
     }
