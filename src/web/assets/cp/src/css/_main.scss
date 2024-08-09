@@ -1000,7 +1000,7 @@ input.checkbox + label.smalltext {
 }
 
 .right {
-  @include floatright;
+  float: inline-end;
 }
 
 th,
@@ -2692,7 +2692,7 @@ div.btn.submit input {
 
 /* action buttons */
 .actions {
-  @include floatright;
+  float: inline-end;
 }
 
 .actions > li {
@@ -6429,7 +6429,7 @@ $min2ColWidth: 400px;
     box-sizing: border-box;
 
     .spinner {
-      @include floatright;
+      float: inline-end;
       margin-inline-end: -24px;
     }
   }
@@ -6931,7 +6931,7 @@ $min2ColWidth: 400px;
         }
 
         .shortcut {
-          @include floatright;
+          float: inline-end;
           margin-inline-start: 14px;
           padding-block: 0;
           padding-inline: 4px;
@@ -7298,7 +7298,7 @@ textarea.text.fullwidth {
 
 .chars-left {
   position: relative;
-  @include floatright;
+  float: inline-end;
   margin-inline: 0 7px;
   margin-block: calc(-27rem / 16) 0;
   color: var(--light-text-color);
@@ -8296,7 +8296,7 @@ body {
 }
 
 .ui-datepicker-next {
-  @include floatright;
+  float: inline-end;
 }
 
 .ui-datepicker-prev span,

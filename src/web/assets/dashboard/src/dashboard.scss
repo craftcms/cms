@@ -100,7 +100,7 @@
       & > .pane {
         & > .spinner.body-loading {
           display: block;
-          @include floatright;
+          float: inline-end;
           margin-inline-start: 10px;
         }
       }
