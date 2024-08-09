@@ -169,7 +169,7 @@ body ol.widget__list {
 /* New Widget Menu */
 .newwidgetmenu ul li a {
   position: relative;
-  @include padding-left(calc(var(--m) + 10px + 1rem));
+  padding-inline-start: calc(var(--m) + 10px + 1rem);
 
   .icon {
     position: absolute;

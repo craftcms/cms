@@ -33,7 +33,7 @@ form.utility .utility-status .progressbar-status {
   font-size: 12px;
   color: var(--medium-text-color);
   text-align: center;
-  @include padding-left(10px);
+  padding-inline-start: 10px;
 }
 
 /* Asset Index */

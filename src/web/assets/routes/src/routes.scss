@@ -108,7 +108,7 @@
     .uri {
       width: auto;
       cursor: text;
-      @include padding-left(0);
+      padding-inline-start: 0;
       padding-block: 0;
 
       input[type='text'] {
@@ -117,7 +117,7 @@
         padding-block: 6px;
 
         &:first-child {
-          @include padding-left(9px);
+          padding-inline-start: 9px;
         }
       }
 

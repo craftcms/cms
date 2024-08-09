@@ -106,7 +106,7 @@
 
             & .edition-name + .edition-trial {
               @include margin-left(4px);
-              @include padding-left(4px);
+              padding-inline-start: 4px;
 
               &::before {
                 display: block;

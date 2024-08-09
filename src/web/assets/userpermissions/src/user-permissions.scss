@@ -83,21 +83,21 @@
 }
 
 .user-permissions ul ul li .checkbox + label {
-  @include padding-left(35px);
+  padding-inline-start: 35px;
 }
 
 .user-permissions ul ul ul li .checkbox + label {
-  @include padding-left(55px);
+  padding-inline-start: 55px;
 }
 
 .user-permissions ul ul ul ul li .checkbox + label {
-  @include padding-left(70px);
+  padding-inline-start: 70px;
 }
 
 .user-permissions ul ul ul ul ul li .checkbox + label {
-  @include padding-left(85px);
+  padding-inline-start: 85px;
 }
 
 .user-permissions ul ul ul ul ul ul li .checkbox + label {
-  @include padding-left(100px);
+  padding-inline-start: 100px;
 }
