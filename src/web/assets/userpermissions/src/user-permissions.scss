@@ -43,7 +43,7 @@
 
 .user-permissions h3,
 .user-permissions .select-all {
-  @include floatleft;
+  float: inline-start;
 }
 
 .user-permissions ul {

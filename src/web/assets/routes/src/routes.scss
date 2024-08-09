@@ -43,7 +43,7 @@
       0,
       var(--large-border-radius)
     );
-    @include floatleft;
+    float: inline-start;
     color: var(--link-color);
     background: var(--white);
 
@@ -154,7 +154,7 @@
 
   .delete {
     display: block;
-    @include floatleft;
+    float: inline-start;
     color: var(--disabled-color);
   }
 }

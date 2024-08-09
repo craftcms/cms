@@ -4,7 +4,7 @@
 /* Utilities */
 form.utility .utility-status {
   display: block;
-  @include floatleft;
+  float: inline-start;
   position: relative;
   width: 100px;
   height: 40px;

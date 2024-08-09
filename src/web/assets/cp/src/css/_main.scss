@@ -996,7 +996,7 @@ input.checkbox + label.smalltext {
 }
 
 .left {
-  @include floatleft;
+  float: inline-start;
 }
 
 .right {
@@ -2696,7 +2696,7 @@ div.btn.submit input {
 }
 
 .actions > li {
-  @include floatleft;
+  float: inline-start;
 }
 
 .actions > li + li {
@@ -3966,7 +3966,7 @@ table {
     .toggle {
       position: relative;
       z-index: 1;
-      @include floatleft;
+      float: inline-start;
       margin-inline: -12px -8px;
       margin-block: 10px 0;
       padding: 4px;
@@ -4000,7 +4000,7 @@ table {
     }
 
     .checkbox {
-      @include floatleft;
+      float: inline-start;
       margin-inline: 7px 0;
       margin-block: 7px 0;
     }
@@ -6097,7 +6097,7 @@ $min2ColWidth: 400px;
       @include icon;
       margin-inline: -58px 0;
       margin-block: -6px 0;
-      @include floatleft;
+      float: inline-start;
       content: 'alert';
       font-size: 40px;
       color: var(--light-text-color);
@@ -6111,7 +6111,7 @@ $min2ColWidth: 400px;
       @include icon;
       margin-inline: -56px 0;
       margin-block: -14px 0;
-      @include floatleft;
+      float: inline-start;
       content: 'secure';
       font-size: 58px;
       color: var(--light-text-color);
@@ -6884,7 +6884,7 @@ $min2ColWidth: 400px;
 
           &.sel {
             &:not([data-icon])::before {
-              @include floatleft;
+              float: inline-start;
               margin-inline: calc(-18rem / 16 - 4px) 0;
               margin-block: 4px 0;
               font-size: 14px;
@@ -7115,7 +7115,7 @@ $min2ColWidth: 400px;
         padding-inline-start: 26px;
 
         &::before {
-          @include floatleft;
+          float: inline-start;
           margin-inline: -18px 0;
           margin-block: 3px 0;
         }
@@ -8292,7 +8292,7 @@ body {
 }
 
 .ui-datepicker-prev {
-  @include floatleft;
+  float: inline-start;
 }
 
 .ui-datepicker-next {
@@ -8930,7 +8930,7 @@ body.licensing-issues {
 
 .add-category-form .texticon {
   width: 200px;
-  @include floatleft;
+  float: inline-start;
   margin-inline-end: 5px;
 }
 

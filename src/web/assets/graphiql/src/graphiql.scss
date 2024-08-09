@@ -194,7 +194,7 @@ body,
           &::before {
             @include icon;
             content: 'check';
-            @include floatleft;
+            float: inline-start;
             margin-inline: -17px 0;
             margin-block: 3px 0;
             font-size: 14px;

@@ -7,7 +7,7 @@
 
 #mode label {
   display: block;
-  @include floatleft;
+  float: inline-start;
   margin-block-start: -1px;
   width: 113px;
   padding-block-start: 85px;
