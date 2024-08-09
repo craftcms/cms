@@ -518,7 +518,8 @@ class Gql extends Component
                 $result = $cachedResult;
             } else {
                 $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
-                $schemaDef = $this->getSchemaDef($schema, true);
+                $prebuildSchema = $isIntrospectionQuery || !Craft::$app->getConfig()->getGeneral()->lazyGqlTypes;
+                $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
 
@@ -1720,7 +1721,7 @@ class Gql extends Component
      */
     private function userSchemaComponents(): array
     {
-        if (Craft::$app->edition !== CmsEdition::Pro) {
+        if (Craft::$app->edition === CmsEdition::Solo) {
             return [[], []];
         }
 

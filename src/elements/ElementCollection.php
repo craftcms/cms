@@ -44,7 +44,7 @@ class ElementCollection extends Collection
      * @param int|TElement|Arrayable<array-key,int>|iterable<array-key,int> $key
      * @param TFindDefault $default
      * @return static<TKey,TElement>|TElement|TFindDefault
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public function find(mixed $key, mixed $default = null): mixed
     {
@@ -202,7 +202,7 @@ class ElementCollection extends Collection
      * Reloads fresh element instances from the database for all the elements.
      *
      * @return static
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public function fresh(): static
     {

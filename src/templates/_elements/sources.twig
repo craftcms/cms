@@ -101,7 +101,7 @@
                 <span>{{ source.heading|t('site') }}</span>
                 <ul>
             {% set nestedUnderHeading = true %}
-        {% else %}
+        {% elseif (source.sites ?? null) is not same as([]) %}
             {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}
             {% tag 'li' with {
                 class: [

@@ -12,6 +12,7 @@ use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\db\CoalesceColumnsExpression;
 use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
@@ -20,6 +21,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
+use Illuminate\Support\Collection;
 use yii\base\Component;
 
 /**
@@ -145,7 +147,7 @@ class ElementSources extends Component
                         }
                     }
                     return (int)$siteId;
-                }, $source['sites']));
+                }, $source['sites'] ?: []));
             }
         }
 
@@ -315,10 +317,25 @@ class ElementSources extends Component
                 'sortOptions' => $sortOptions,
             ]);
             $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
-            return $event->sortOptions;
+            $sortOptions = $event->sortOptions;
         }
 
-        return $sortOptions;
+        // Combine duplicate attributes. If any attributes map to multiple sort
+        // options and each option has a string orderBy value, cmobine them
+        // with a CoalesceColumnsExpression.
+        return Collection::make($sortOptions)
+            ->groupBy('attribute')
+            ->map(function(Collection $group) {
+                $orderBys = $group->pluck('orderBy');
+                if ($orderBys->count() === 1 || $orderBys->doesntContain(fn($orderBy) => is_string($orderBy))) {
+                    return $group->first();
+                }
+                $expression = new CoalesceColumnsExpression($orderBys->all());
+                return array_merge($group->first(), [
+                    'orderBy' => $expression,
+                ]);
+            })
+            ->all();
     }
 
     /**
@@ -331,16 +348,12 @@ class ElementSources extends Component
      */
     public function getSortOptionsForFieldLayouts(array $fieldLayouts): array
     {
-        $processedFieldIds = [];
         $sortOptions = [];
 
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
-                if (
-                    $field instanceof SortableFieldInterface &&
-                    !isset($processedFieldIds[$field->id])
-                ) {
+                if ($field instanceof SortableFieldInterface) {
                     $sortOption = $field->getSortOption();
                     if (!isset($sortOption['attribute'])) {
                         $sortOption['attribute'] = $sortOption['orderBy'];
@@ -349,7 +362,6 @@ class ElementSources extends Component
                         $sortOption['defaultDir'] = 'asc';
                     }
                     $sortOptions[] = $sortOption;
-                    $processedFieldIds[$field->id] = true;
                 }
             }
         }
@@ -367,6 +379,10 @@ class ElementSources extends Component
      */
     public function getSourceTableAttributes(string $elementType, string $sourceKey): array
     {
+        if ($sourceKey === '__IMP__') {
+            return [];
+        }
+
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
         $attributes = $this->getTableAttributesForFieldLayouts($fieldLayouts);
 

@@ -16,7 +16,7 @@ use Twig\TokenParser\AbstractTokenParser;
  * Class ExpiresTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.10.0
+ * @since 5.2.0
  */
 class ExpiresTokenParser extends AbstractTokenParser
 {

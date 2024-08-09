@@ -92,12 +92,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             `> tbody > tr[data-id="${ev.data.id}"]`
           );
           if ($rows.length) {
-            const data = {
-              elementType: this.elementIndex.elementType,
-              source: this.elementIndex.sourceKey,
+            const data = Object.assign(this.elementIndex.getViewParams(), {
               id: ev.data.id,
-              siteId: this.elementIndex.siteId,
-            };
+            });
             Craft.sendActionRequest(
               'POST',
               'element-indexes/element-table-html',

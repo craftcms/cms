@@ -1003,9 +1003,7 @@ class AddressQuery extends ElementQuery
      * | Value | Fetches addresses…
      * | - | -
      * | `1` | created for an element with an ID of 1.
-     * | `'not 1'` | not created for an element with an ID of 1.
      * | `[1, 2]` | created for an element with an ID of 1 or 2.
-     * | `['not', 1, 2]` | not created for an element with an ID of 1 or 2.
      *
      * ---
      *
@@ -1203,7 +1201,7 @@ class AddressQuery extends ElementQuery
 
         $this->joinElementTable(Table::ADDRESSES);
 
-        $this->query->select([
+        $this->query->addSelect([
             'addresses.id',
             'addresses.fieldId',
             'addresses.primaryOwnerId',

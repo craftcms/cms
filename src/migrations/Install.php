@@ -224,6 +224,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
             'auth2faSecret' => $this->string()->defaultValue(null),
+            'oldTimestamp' => $this->integer()->unsigned()->defaultValue(null),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
         ]);
@@ -451,6 +452,7 @@ class Install extends Migration
             'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable(Table::GLOBALSETS, [
@@ -629,6 +631,14 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
+        ]);
+        $this->createTable(Table::SSO_IDENTITIES, [
+            'provider' => $this->string()->notNull(),
+            'identityId' => $this->string()->notNull(),
+            'userId' => $this->integer()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'PRIMARY KEY([[provider]], [[identityId]], [[userId]])',
         ]);
         $this->createTable(Table::STRUCTUREELEMENTS, [
             'id' => $this->primaryKey(),
@@ -863,6 +873,7 @@ class Install extends Migration
         $this->createIndex(null, Table::FIELDLAYOUTS, ['type'], false);
         $this->createIndex(null, Table::FIELDS, ['handle', 'context']);
         $this->createIndex(null, Table::FIELDS, ['context'], false);
+        $this->createIndex(null, Table::FIELDS, ['dateDeleted'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['name'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['handle'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['fieldLayoutId'], false);
@@ -1020,7 +1031,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
-        $this->addForeignKey(null, Table::ELEMENTS_BULKOPS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS_OWNERS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS_SITES, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
@@ -1050,6 +1060,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::SESSIONS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SHUNNEDMESSAGES, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SITES, ['groupId'], Table::SITEGROUPS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::SSO_IDENTITIES, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::STRUCTUREELEMENTS, ['structureId'], Table::STRUCTURES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::TAGGROUPS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::TAGS, ['groupId'], Table::TAGGROUPS, ['id'], 'CASCADE', null);

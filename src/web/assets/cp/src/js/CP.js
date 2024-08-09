@@ -26,6 +26,7 @@ Craft.CP = Garnish.Base.extend(
     $crumbMenuList: null,
     $crumbMenuItems: null,
     $notificationContainer: null,
+    $notificationHeading: null,
     $main: null,
     $primaryForm: null,
     $headerContainer: null,
@@ -85,6 +86,7 @@ Craft.CP = Garnish.Base.extend(
       this.$crumbList = $('#crumb-list');
       this.$crumbItems = this.$crumbList.children('li');
       this.$notificationContainer = $('#notifications');
+      this.$notificationHeading = $('#cp-notification-heading');
       this.$main = $('#main');
       this.$primaryForm = $('#main-form');
       this.$headerContainer = $('#header-container');
@@ -357,6 +359,11 @@ Craft.CP = Garnish.Base.extend(
 
       // Load any element thumbs
       this.elementThumbLoader.load(this.$pageContainer);
+
+      // Add notification close listeners
+      this.on('notificationClose', () => {
+        this.updateNotificationHeadingDisplay();
+      });
     },
 
     get $contentHeader() {
@@ -378,6 +385,10 @@ Craft.CP = Garnish.Base.extend(
       return $('<div id="content-notice"/>')
         .attr('role', 'status')
         .prependTo(this.$contentHeader);
+    },
+
+    get notificationCount() {
+      return this.$notificationContainer.find('.notification').length;
     },
 
     initSpecialForms: function () {
@@ -830,7 +841,13 @@ Craft.CP = Garnish.Base.extend(
     },
 
     updateFixedHeader: function () {
-      if (this.isMobile) {
+      // Checking if the sidebar toggle is visible
+      // https://stackoverflow.com/a/21696585
+      if (
+        this.isMobile ||
+        (this.$sidebarToggle?.length &&
+          this.$sidebarToggle[0].offsetParent !== null)
+      ) {
         return;
       }
 
@@ -866,6 +883,17 @@ Craft.CP = Garnish.Base.extend(
         this.$sidebar.removeClass('fixed').css('top', '');
         this.$detailsContainer.css('top', '');
         this.fixedHeader = false;
+      }
+    },
+
+    /**
+     * Updates display property of "Notifications" heading based on whether there are active notifications
+     **/
+    updateNotificationHeadingDisplay() {
+      if (this.notificationCount > 0) {
+        this.$notificationHeading.removeClass('hidden');
+      } else {
+        this.$notificationHeading.addClass('hidden');
       }
     },
 
@@ -912,6 +940,8 @@ Craft.CP = Garnish.Base.extend(
         message,
         notification,
       });
+
+      this.updateNotificationHeadingDisplay();
 
       return notification;
     },
@@ -1409,6 +1439,14 @@ Craft.CP = Garnish.Base.extend(
     },
 
     _trackJobProgressInternal: function () {
+      if (!Craft.remainingSessionTime) {
+        // Try again after login
+        Garnish.once(Craft.AuthManager, 'login', () => {
+          this._trackJobProgressInternal();
+        });
+        return;
+      }
+
       this.trackingJobProgress = true;
 
       Craft.queue.push(async () => {
@@ -1437,10 +1475,16 @@ Craft.CP = Garnish.Base.extend(
           );
           data = response.data;
         } catch (e) {
-          // only throw if we weren't expecting this
-          if (this.trackingJobProgress) {
+          if (e?.response?.status === 400) {
+            // Try again after login
+            Garnish.once(Craft.AuthManager, 'login', () => {
+              this._trackJobProgressInternal();
+            });
+          } else if (this.trackingJobProgress) {
+            // only throw if we weren't expecting this
             throw e;
           }
+          return;
         } finally {
           this.trackingJobProgress = false;
           this.trackJobProgressTimeout = null;
@@ -1797,6 +1841,7 @@ Craft.CP.Notification = Garnish.Base.extend({
         duration: 'fast',
         complete: () => {
           this.destroy();
+          Craft.cp.trigger('notificationClose');
         },
       }
     );
@@ -1899,6 +1944,12 @@ var JobProgressIcon = Garnish.Base.extend({
       .appendTo($labelContainer)
       .hide();
 
+    this.$tooltip = $('<craft-tooltip/>', {
+      placement: 'right',
+      'self-managed': true,
+      'aria-label': this.$label.text(),
+    }).appendTo(this.$a);
+
     let m = window.devicePixelRatio > 1 ? 2 : 1;
     this._canvasSize = 18 * m;
     this._arcPos = this._canvasSize / 2;
@@ -1928,6 +1979,8 @@ var JobProgressIcon = Garnish.Base.extend({
     } else {
       this.$progressLabel.hide();
     }
+
+    this.$tooltip.attr('aria-label', description);
   },
 
   setProgress: function (progress) {

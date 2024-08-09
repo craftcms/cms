@@ -23,6 +23,7 @@ use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
 use craft\web\ErrorHandler;
+use DateTimeZone;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -259,8 +260,14 @@ class GraphqlController extends Controller
         }
 
         // Update the lastUsed timestamp
-        $token->lastUsed = DateTimeHelper::currentUTCDateTime();
-        $gqlService->saveToken($token);
+        $now = DateTimeHelper::currentUTCDateTime();
+        if (
+            !$token->lastUsed ||
+            $token->lastUsed->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i') !== $now->format('Y-m-d H:i')
+        ) {
+            $token->lastUsed = $now;
+            $gqlService->saveToken($token);
+        }
 
         return $token->getSchema();
     }

@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use craft\helpers\Cp;
+
 /**
  * Actionable defines the common interface to be implemented by components that
  * can have action menus within the control panel.
@@ -22,6 +24,7 @@ interface Actionable
      * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
      *
      * @return array
+     * @see Cp::disclosureMenu()
      */
     public function getActionMenuItems(): array;
 }

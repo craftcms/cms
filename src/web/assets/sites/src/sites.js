@@ -206,7 +206,7 @@
       // Auto-focus the first radio
       if (!Garnish.isMobileBrowser(true)) {
         setTimeout(() => {
-          this.$deleteActionRadios.first().trigger('focus');
+          this.$deleteActionRadios.first().focus();
         }, 100);
       }
 

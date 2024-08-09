@@ -15,6 +15,7 @@ use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
+use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
@@ -38,6 +39,7 @@ use craft\fields\Email;
 use craft\fields\Entries as EntriesField;
 use craft\fields\Icon;
 use craft\fields\Lightswitch;
+use craft\fields\Link;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
 use craft\fields\Money;
@@ -48,7 +50,6 @@ use craft\fields\RadioButtons;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Time;
-use craft\fields\Url;
 use craft\fields\Users as UsersField;
 use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
@@ -58,11 +59,12 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\records\Field as FieldRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
+use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -222,6 +224,7 @@ class Fields extends Component
             EntriesField::class,
             Icon::class,
             Lightswitch::class,
+            Link::class,
             MatrixField::class,
             Money::class,
             MultiSelect::class,
@@ -231,7 +234,6 @@ class Fields extends Component
             TableField::class,
             TagsField::class,
             Time::class,
-            Url::class,
             UsersField::class,
         ];
 
@@ -280,16 +282,10 @@ class Fields extends Component
             foreach ($this->getAllFieldTypes() as $class) {
                 /** @var string|FieldInterface $class */
                 /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
-                if ($class === get_class($field)) {
-                    if ($includeCurrent) {
-                        $types[] = $class;
-                    }
-                    continue;
-                }
-
-                $otherDbType = $class::dbType();
-
-                if (is_string($otherDbType) && Db::areColumnTypesCompatible($dbType, $otherDbType)) {
+                if (
+                    ($includeCurrent || $class !== $field::class) &&
+                    $this->areFieldTypesCompatible($field::class, $class)
+                ) {
                     $types[] = $class;
                 }
             }
@@ -311,6 +307,35 @@ class Fields extends Component
         }
 
         return $types;
+    }
+
+    /**
+     * Returns whether the two given field types are considered compatible with each other.
+     *
+     * @param string|FieldInterface $fieldA
+     * @param string|FieldInterface $fieldB
+     * @phpstan-param class-string<FieldInterface> $fieldA
+     * @phpstan-param class-string<FieldInterface> $fieldB
+     * @return bool
+     * @since 5.3.0
+     */
+    public function areFieldTypesCompatible(string $fieldA, string $fieldB): bool
+    {
+        if ($fieldA === $fieldB) {
+            return true;
+        }
+
+        $dbTypeA = $fieldA::dbType();
+        if (!is_string($dbTypeA)) {
+            return false;
+        }
+
+        $dbTypeB = $fieldB::dbType();
+        if (!is_string($dbTypeB)) {
+            return false;
+        }
+
+        return Db::areColumnTypesCompatible($dbTypeA, $dbTypeB);
     }
 
     /**
@@ -748,10 +773,10 @@ class Fields extends Component
         try {
             $field->beforeApplyDelete();
 
-            // Delete the row in fields
-            Db::delete(Table::FIELDS, [
-                'id' => $fieldRecord->id,
-            ]);
+            // Soft-delete the row in `fields`
+            Craft::$app->getDb()->createCommand()
+                ->softDelete(Table::FIELDS, ['id' => $fieldRecord->id])
+                ->execute();
 
             $field->afterDelete();
 
@@ -1049,7 +1074,16 @@ class Fields extends Component
     {
         $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
         $config = Json::decode(Craft::$app->getRequest()->getBodyParam($paramPrefix . 'fieldLayout'));
-        return $this->createLayout($config);
+        $layout = $this->createLayout($config);
+
+        // Make sure all the elements have a dateAdded value set
+        foreach ($layout->getTabs() as $tab) {
+            foreach ($tab->getElements() as $layoutElement) {
+                $layoutElement->dateAdded ??= new DateTime();
+            }
+        }
+
+        return $layout;
     }
 
     /**
@@ -1281,7 +1315,7 @@ class Fields extends Component
         $transaction = $db->beginTransaction();
 
         try {
-            $fieldRecord = $this->_getFieldRecord($fieldUid);
+            $fieldRecord = $this->_getFieldRecord($fieldUid, true);
             $isNewField = $fieldRecord->getIsNewRecord();
             $oldSettings = $fieldRecord->getOldAttribute('settings');
 
@@ -1310,7 +1344,11 @@ class Fields extends Component
             $fieldRecord->type = $data['type'];
             $fieldRecord->settings = $data['settings'] ?? null;
 
-            $fieldRecord->save(false);
+            if ($fieldRecord->dateDeleted) {
+                $fieldRecord->restore();
+            } else {
+                $fieldRecord->save(false);
+            }
 
             $transaction->commit();
         } catch (Throwable $e) {
@@ -1370,17 +1408,41 @@ class Fields extends Component
      * @param int $page
      * @param int $limit
      * @param string|null $searchTerm
+     * @param string $orderBy
+     * @param int $sortDir
      * @return array
      * @since 5.0.0
      * @internal
      */
-    public function getTableData(int $page, int $limit, ?string $searchTerm): array
-    {
+    public function getTableData(
+        int $page,
+        int $limit,
+        ?string $searchTerm,
+        string $orderBy = 'name',
+        int $sortDir = SORT_ASC,
+    ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
 
         $offset = ($page - 1) * $limit;
         $query = $this->_createFieldQuery()
             ->andWhere(['context' => 'global']);
+
+        if ($orderBy === 'type') {
+            /** @var Collection<class-string<FieldInterface>> $types */
+            $types = Collection::make($this->getAllFieldTypes())
+                ->sortBy(fn(string $class) => $class::displayName());
+            if ($sortDir === SORT_DESC) {
+                $types = $types->reverse();
+            }
+            $query->orderBy(new FixedOrderExpression('type', $types->all(), Craft::$app->getDb()))
+                ->addOrderBy(['name' => $sortDir])
+                ->addOrderBy(['handle' => $sortDir]);
+        } else {
+            $query->orderBy([$orderBy => $sortDir]);
+            if ($orderBy === 'name') {
+                $query->addOrderBy(['handle' => $sortDir]);
+            }
+        }
 
         if ($searchTerm !== null && $searchTerm !== '') {
             $searchParams = $this->_getSearchParams($searchTerm);
@@ -1405,7 +1467,7 @@ class Fields extends Component
                 'title' => Craft::t('site', $field->name),
                 'translatable' => $field->getIsTranslatable(null) ? ($field->getTranslationDescription(null) ?? Craft::t('app', 'This field is translatable.')) : false,
                 'searchable' => (bool)$field->searchable,
-                'url' => UrlHelper::url('settings/fields/edit/' . $field->id),
+                'url' => $field->getCpEditUrl(),
                 'handle' => $field->handle,
                 'type' => [
                     'isMissing' => $field instanceof MissingField,
@@ -1447,7 +1509,7 @@ class Fields extends Component
      */
     private function _createFieldQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'fields.id',
                 'fields.dateCreated',
@@ -1466,6 +1528,13 @@ class Fields extends Component
             ])
             ->from(['fields' => Table::FIELDS])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
+
+        // todo: remove after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::FIELDS, 'dateDeleted')) {
+            $query->where(['fields.dateDeleted' => null]);
+        }
+
+        return $query;
     }
 
     /**
@@ -1496,10 +1565,15 @@ class Fields extends Component
      * Returns a field record for a given UID
      *
      * @param string $uid
+     * @param bool $withTrashed
      * @return FieldRecord
      */
-    private function _getFieldRecord(string $uid): FieldRecord
+    private function _getFieldRecord(string $uid, bool $withTrashed = false): FieldRecord
     {
-        return FieldRecord::findOne(['uid' => $uid]) ?? new FieldRecord();
+        $query = $withTrashed ? FieldRecord::findWithTrashed() : FieldRecord::find();
+        $query->andWhere(['uid' => $uid]);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var FieldRecord */
+        return $query->one() ?? new FieldRecord();
     }
 }

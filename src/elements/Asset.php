@@ -383,7 +383,22 @@ class Asset extends Element
             !Craft::$app->getRequest()->getIsConsoleRequest()
         ) {
             $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
-            $sources[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder);
+            $temporaryUploadFs = Craft::$app->getAssets()->getTempAssetUploadFs();
+            $sources[] = [
+                'key' => 'temp',
+                'label' => Craft::t('app', 'Temporary Uploads'),
+                'hasThumbs' => true,
+                'criteria' => ['folderId' => $temporaryUploadFolder->id],
+                'defaultSort' => ['dateCreated', 'desc'],
+                'data' => [
+                    'volume-handle' => false,
+                    'folder-id' => $temporaryUploadFolder->id,
+                    'can-upload' => false,
+                    'can-move-to' => false,
+                    'can-move-peer-files-to' => false,
+                    'fs-type' => $temporaryUploadFs::class,
+                ],
+            ];
         }
 
         return $sources;
@@ -1058,6 +1073,14 @@ class Asset extends Element
     public bool $keepFileOnDelete = false;
 
     /**
+     * @var bool|null Whether the associated file should be sanitized on upload, if it's an image. Defaults to `true`,
+     * unless it’s a control panel request and <config4:sanitizeCpImageUploads> is disabled.
+     * @see afterSave()
+     * @since 5.3.0
+     */
+    public ?bool $sanitizeOnUpload = null;
+
+    /**
      * @var int|null Volume ID
      */
     private ?int $_volumeId = null;
@@ -1452,7 +1475,7 @@ class Asset extends Element
             return null;
         }
 
-        $filename = $this->getFilename(false);
+        $filename = preg_replace('/\s+/', '-', $this->getFilename(false));
         $path = "assets/edit/$this->id-$filename";
 
         return UrlHelper::cpUrl($path);
@@ -1530,7 +1553,7 @@ JS, [
         ]);
 
         // Show in Folder
-        if ($user->can("viewAssets:{$this->getVolume()->uid}")) {
+        if ($this->volumeId && $this->canView($user)) {
             $viewItems[] = [
                 'type' => MenuItemType::Link,
                 'icon' => 'magnifying-glass',
@@ -1573,10 +1596,35 @@ $('#' + $id).on('activate', () => {
       },
       fileuploaddone: (event, data) => {
         const result = event instanceof CustomEvent ? event.detail : data.result;
-        $('#' + Craft.namespaceId('new-filename', $namespace)).val(result.filename);
+
+        // Update the filename input and serialized param value
+        const filenameInput = $('#' + Craft.namespaceId('new-filename', $namespace));
+        const oldFilenameValue = encodeURIComponent(filenameInput.val());
+        filenameInput.val(result.filename);
+
+        let form = filenameInput.closest('form');
+
+        // Make sure the form is for this asset
+        let elementEditor = form.data('elementEditor');
+        if (elementEditor?.settings.elementId !== $assetId) {
+          form = null;
+          elementEditor = null;
+        }
+
+        const initialSerializedData = form?.data('initialSerializedValue');
+        if (initialSerializedData) {
+          const inputName = encodeURIComponent(filenameInput.attr('name'));
+          const newFilenameValue = encodeURIComponent(result.filename);
+          form.data('initialSerializedValue', initialSerializedData
+            .replace(inputName + '=' + oldFilenameValue, inputName + '=' + newFilenameValue));
+        }
+
+        // Update the file size value
         $('#' + Craft.namespaceId('file-size-value', $namespace))
           .text(result.formattedSize)
           .attr('title', result.formattedSizeInBytes);
+
+        // Update the dimensions value
         let dimensionsVal = $('#' + Craft.namespaceId('dimensions-value', $namespace));
         if (result.dimensions) {
           if (!dimensionsVal.length) {
@@ -1593,12 +1641,27 @@ $('#' + $id).on('activate', () => {
           dimensionsVal.parent().remove();
         }
 
+        // Update the timestamp on the element editor
+        if (elementEditor && result.updatedTimestamp) {
+          elementEditor.settings.updatedTimestamp = result.updatedTimestamp;
+          elementEditor.settings.canonicalUpdatedTimestamp = result.updatedTimestamp;
+        }
+
         $updatePreviewThumbJs
         Craft.cp.runQueue();
 
+        if (Craft.broadcaster) {
+          Craft.broadcaster.postMessage({
+            event: 'saveElement',
+            id: $assetId,
+          });
+        }
+        
         if (result.error) {
           $('#' + Craft.namespaceId('thumb-container', $namespace)).removeClass('loading');
           alert(result.error);
+        } else {
+          Craft.cp.displayNotice(Craft.t('app', 'New file uploaded.'));
         }
       },
       fileuploadfail: (event, data) => {
@@ -1899,12 +1962,11 @@ JS,[
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        if (($fieldLayout = parent::getFieldLayout()) !== null) {
-            return $fieldLayout;
+        try {
+            return $this->getVolume()->getFieldLayout();
+        } catch (InvalidConfigException) {
+            return null;
         }
-
-        $volume = $this->getVolume();
-        return $volume->getFieldLayout();
     }
 
     /**
@@ -2920,17 +2982,25 @@ JS;
      */
     public function attributes(): array
     {
-        $names = parent::attributes();
-        $names[] = 'extension';
-        $names[] = 'filename';
-        $names[] = 'focalPoint';
-        $names[] = 'hasFocalPoint';
-        $names[] = 'height';
-        $names[] = 'mimeType';
-        $names[] = 'path';
-        $names[] = 'volumeId';
-        $names[] = 'width';
-        return $names;
+        $names = array_flip(parent::attributes());
+
+        unset(
+            $names['avoidFilenameConflicts'],
+            $names['keepFileOnDelete'],
+            $names['sanitizeOnUpload'],
+        );
+
+        $names['extension'] = true;
+        $names['filename'] = true;
+        $names['focalPoint'] = true;
+        $names['hasFocalPoint'] = true;
+        $names['height'] = true;
+        $names['mimeType'] = true;
+        $names['path'] = true;
+        $names['volumeId'] = true;
+        $names['width'] = true;
+
+        return array_keys($names);
     }
 
     /**
@@ -3042,14 +3112,15 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
-            $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
-            $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
-
+            // Are we uploading an image that needs to be sanitized?
             if (
                 isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
-                !($isCpRequest && !$sanitizeCpImageUploads)
+                ($this->sanitizeOnUpload ?? (
+                    !Craft::$app->getRequest()->getIsCpRequest() ||
+                    Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
+                ))
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
             }

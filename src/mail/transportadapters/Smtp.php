@@ -135,7 +135,7 @@ class Smtp extends BaseTransportAdapter
     {
         $config = [
             'scheme' => 'smtp',
-            'host' => App::parseEnv($this->host),
+            'host' => App::parseEnv($this->host) ?? '',
             'port' => $this->port ? (int) App::parseEnv($this->port) : null,
         ];
 

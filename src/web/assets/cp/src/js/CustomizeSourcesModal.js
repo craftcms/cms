@@ -186,7 +186,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       'data-type': 'custom',
     }).on('click', () => {
       const sortOptions = this.baseSortOptions.slice(0);
-      sortOptions.push(this.defaultSortOptions);
+      sortOptions.push(...this.defaultSortOptions);
 
       addSource({
         type: 'custom',
@@ -218,7 +218,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   focusLabelInput: function () {
-    this.selectedSource.$labelInput.trigger('focus');
+    this.selectedSource.$labelInput.focus();
   },
 
   getSourceName: function () {
@@ -298,7 +298,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     this.addListener(this.$sidebarCloseBtn, 'click', () => {
       this.toggleSidebar();
-      this.$sidebarToggleBtn.trigger('focus');
+      this.$sidebarToggleBtn.focus();
     });
   },
 
@@ -450,8 +450,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
         window.location.reload();
       })
-      .catch(() => {
-        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+      .catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
       })
       .finally(() => {
         this.$saveBtn.removeClass('loading');
@@ -637,19 +637,24 @@ Craft.CustomizeSourcesModal.Source =
       });
       const groups = options.reduce(
         (groups, o) => {
-          let index;
+          let key;
           if (o.attr === 'structure') {
-            index = 0;
+            groups.structure.push(o);
+          } else if (o.attr.startsWith('field:')) {
+            groups.field.push(o);
           } else {
-            index = o.attr.startsWith('field:') ? 2 : 1;
+            groups.attribute.push(o);
           }
-          groups[index].push(o);
           return groups;
         },
-        [[], [], []]
+        {
+          structure: [],
+          attribute: [],
+          field: [],
+        }
       );
-      if (groups[2].length) {
-        groups[2].unshift({
+      if (groups.field.length) {
+        groups.field.unshift({
           optgroup: Craft.t('app', 'Fields'),
         });
       }
@@ -657,7 +662,11 @@ Craft.CustomizeSourcesModal.Source =
       const $sortAttributeSelectContainer = Craft.ui
         .createSelect({
           name: `sources[${this.sourceData.key}][defaultSort][0]`,
-          options: groups.flat().map((o) => {
+          options: [
+            ...groups.structure,
+            ...groups.attribute,
+            ...groups.field,
+          ].map((o) => {
             return o.optgroup
               ? o
               : {
@@ -962,7 +971,7 @@ Craft.CustomizeSourcesModal.Heading =
 
       $container.append('<hr/>');
 
-      this.$deleteBtn = $('<a class="error delete"/>')
+      this.$deleteBtn = $('<a class="error delete pointer"/>')
         .text(Craft.t('app', 'Delete heading'))
         .attr({
           role: 'button',

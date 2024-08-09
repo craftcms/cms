@@ -363,6 +363,7 @@ class NestedElementManager extends Component
     {
         $config += [
             'showInGrid' => false,
+            'prevalidate' => false,
         ];
 
         return $this->createView(
@@ -429,6 +430,7 @@ class NestedElementManager extends Component
                         'class' => [
                             'elements',
                             $config['showInGrid'] ? 'card-grid' : 'cards',
+                            $config['prevalidate'] ? 'prevalidate' : '',
                         ],
                     ]);
                 }
@@ -464,6 +466,7 @@ class NestedElementManager extends Component
             'showHeaderColumn' => true,
             'fieldLayouts' => [],
             'defaultTableColumns' => null,
+            'prevalidate' => false,
             'pageSize' => 50,
             'storageKey' => null,
         ];
@@ -529,6 +532,8 @@ class NestedElementManager extends Component
                     'fieldLayouts' => $config['fieldLayouts'],
                     'defaultTableColumns' => $config['defaultTableColumns'],
                     'registerJs' => false,
+                    'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
+                    'prevalidate' => $config['prevalidate'] ?? false,
                 ]);
             },
         );
@@ -598,6 +603,7 @@ class NestedElementManager extends Component
                 'ownerIdParam' => $this->ownerIdParam,
                 'fieldHandle' => $this->field?->handle,
                 'baseInputName' => $view->getNamespace(),
+                'prevalidate' => $config['prevalidate'] ?? false,
             ];
 
             if (!empty($config['createAttributes'])) {
@@ -746,7 +752,8 @@ JS, [
                         $element->getPrimaryOwnerId() === $owner->id &&
                         $element->getIsDraft() &&
                         !$element->getIsUnpublishedDraft() &&
-                        $owner->getIsDraft() &&
+                        // $owner could be a draft or a non-canonical Matrix entry, etc.
+                        (!$owner->getIsCanonical()) &&
                         !$owner->getIsUnpublishedDraft()
                     ) {
                         /** @var NestedElementInterface $canonical */
@@ -758,6 +765,11 @@ JS, [
                                 'ownerId' => $owner->id,
                             ]);
                         }
+                    } elseif (
+                        $element->getIsUnpublishedDraft() &&
+                        $element->getPrimaryOwnerId() === $owner->id
+                    ) {
+                        Craft::$app->getDrafts()->removeDraftData($element);
                     }
                 } elseif ((int)$element->getSortOrder() !== $sortOrder) {
                     // Just update its sortOrder
@@ -848,7 +860,9 @@ JS, [
                         }
 
                         // Make sure we don't duplicate elements for any of the sites that were just propagated to
-                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
+                        foreach ($sourceSupportedSiteIds as $siteId) {
+                            $handledSiteIds[$siteId] = true;
+                        }
                     }
 
                     if ($value instanceof ElementQueryInterface) {

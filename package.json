@@ -47,7 +47,6 @@
     "axios": "^1.6.5",
     "blueimp-file-upload": "^10.31.0",
     "d3": "^7.8.5",
-    "element-resize-detector": "^1.2.4",
     "fabric": "^1.7.19",
     "graphiql": "~1.7.2",
     "graphiql-explorer": "^0.9.0",
@@ -76,5 +75,8 @@
     "vuex": "^3.6.2",
     "xregexp": "^5.1.1",
     "yii2-pjax": "~2.0.1"
+  },
+  "optionalDependencies": {
+    "@awesome.me/kit-ddaed3f5c5": "^1.0.41"
   }
 }

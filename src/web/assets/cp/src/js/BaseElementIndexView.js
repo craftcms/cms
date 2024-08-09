@@ -86,7 +86,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       // Enable inline element editing if this is an index page
       if (this.elementIndex.isAdministrative) {
         this._handleElementEditing = (ev) => {
-          if ($(ev.target).closest('a[href],button,[role=button]').length) {
+          if (
+            this.elementIndex.inlineEditing ||
+            $(ev.target).closest('a[href],button,[role=button]').length
+          ) {
             // Let the link/button do its thing
             return;
           }
@@ -253,7 +256,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     getElementCheckbox: function (element) {
-      return $(element).find('[role="checkbox"]');
+      return $(element).find('.checkbox');
     },
 
     isVerticalList: function () {
@@ -343,6 +346,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           }
 
           let $newElements = $(response.data.html);
+
+          if (this.elementIndex.selectable) {
+            const role = this.elementIndex.multiSelect ? 'checkbox' : 'radio';
+            $newElements.find('.checkbox').attr('role', role);
+          }
 
           this.appendElements($newElements);
           await Craft.appendHeadHtml(response.data.headHtml);

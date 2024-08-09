@@ -194,17 +194,10 @@ class Db
      * @param Connection|null $db The database connection
      * @return array|string
      * @since 5.0.0
+     * @deprecated in 5.2.3
      */
     public static function prepareForJsonColumn(array $value, ?Connection $db = null): array|string
     {
-        if ($db === null) {
-            $db = self::db();
-        }
-
-        if ($db->getIsMaria()) {
-            return Json::encode($value);
-        }
-
         return $value;
     }
 
@@ -395,6 +388,22 @@ class Db
     }
 
     /**
+     * Parses a decimal column type definition and returns just the column precision and scale.
+     *
+     * @param string $columnType
+     * @return array{0:int,1:int}|null
+     * @since 5.2.2
+     */
+    public static function parseColumnPrecisionAndScale(string $columnType): ?array
+    {
+        if (!preg_match('/^\w+\((\d+),\s*(\d+)\)/', $columnType, $matches)) {
+            return null;
+        }
+
+        return [(int)$matches[1], (int)$matches[2]];
+    }
+
+    /**
      * Returns a simplified version of a given column type.
      *
      * @param string $columnType
@@ -575,12 +584,16 @@ class Db
         $condition = [$param->operator];
         $isMysql = self::db()->getIsMysql();
 
-        // Only PostgreSQL supports case-sensitive strings
-        if ($isMysql) {
+        // Only PostgreSQL supports case-sensitive strings on non-JSON column values
+        if ($isMysql && $columnType !== Schema::TYPE_JSON) {
             $caseInsensitive = false;
         }
 
-        $caseColumn = $caseInsensitive ? "lower([[$column]])" : $column;
+        if ($caseInsensitive) {
+            $caseColumn = str_contains($column, '(') ? "lower($column)" : "lower([[$column]])";
+        } else {
+            $caseColumn = $column;
+        }
 
         $inVals = [];
         $notInVals = [];
@@ -655,7 +668,7 @@ class Db
                 }
 
                 if ($like) {
-                    if ($caseInsensitive) {
+                    if ($caseInsensitive && !$isMysql) {
                         $operator = $operator === '=' ? 'ilike' : 'not ilike';
                     } else {
                         $operator = $operator === '=' ? 'like' : 'not like';

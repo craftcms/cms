@@ -119,6 +119,8 @@ Craft.NestedElementManager = Garnish.Base.extend(
             }
           });
         }
+
+        this.trigger('afterInit');
       }, 100);
     },
 
@@ -173,6 +175,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
           {
             context: 'embedded-index',
             sortable: this.settings.sortable,
+            prevalidate: this.settings.prevalidate,
           },
           this.settings.indexSettings,
           {
@@ -529,6 +532,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       baseInputName: null,
       deleteLabel: null,
       deleteConfirmationMessage: null,
+      prevalidate: false,
     },
   }
 );

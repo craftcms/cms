@@ -208,7 +208,7 @@ class CategoryQuery extends ElementQuery
 
         $this->joinElementTable(Table::CATEGORIES);
 
-        $this->query->select([
+        $this->query->addSelect([
             'categories.groupId',
         ]);
 

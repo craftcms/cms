@@ -271,7 +271,7 @@ class Gql
      *
      * @param string $typeName The union type name.
      * @param array $includedTypes The type the union should include
-     * @param ?callable $resolveFunction The resolver function to use to resolve a specific type. If not provided,
+     * @param callable|null $resolveFunction The resolver function to use to resolve a specific type. If not provided,
      * a default one will be used that is able to resolve Craft elements.
      * @return mixed
      */
@@ -654,7 +654,7 @@ class Gql
      *
      * @param string $query
      * @return bool
-     * @since 4.9.6
+     * @since 5.1.8
      */
     public static function isIntrospectionQuery(string $query): bool
     {

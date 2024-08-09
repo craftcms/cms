@@ -8,11 +8,13 @@
 namespace craft\base;
 
 use Craft;
+use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\AttributeStatus;
 use craft\events\DefineFieldHtmlEvent;
 use craft\events\DefineFieldKeywordsEvent;
 use craft\events\FieldElementEvent;
+use craft\events\FieldEvent;
 use craft\gql\types\QueryArgument;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -20,6 +22,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
@@ -126,6 +129,20 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public const EVENT_DEFINE_INPUT_HTML = 'defineInputHtml';
 
+    /**
+     * @event FieldEvent The event that is triggered after the field has been merged into another.
+     * @see afterMergeInto()
+     * @since 5.3.0
+     */
+    public const EVENT_AFTER_MERGE_INTO = 'afterMergeInto';
+
+    /**
+     * @event FieldEvent The event that is triggered after another field has been merged into this one.
+     * @see afterMergeFrom()
+     * @since 5.3.0
+     */
+    public const EVENT_AFTER_MERGE_FROM = 'afterMergeFrom';
+
     // Translation methods
     // -------------------------------------------------------------------------
 
@@ -218,7 +235,14 @@ abstract class Field extends SavableComponent implements FieldInterface
             return false;
         }
 
-        return Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
+        if (is_array($value) && isset($value['value'])) {
+            $caseInsensitive = $value['caseInsensitive'] ?? false;
+            $value = $value['value'];
+        } else {
+            $caseInsensitive = false;
+        }
+
+        return Db::parseParam($valueSql, $value, caseInsensitive: $caseInsensitive, columnType: Schema::TYPE_JSON);
     }
 
     /**
@@ -481,6 +505,22 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl(): ?string
+    {
+        return $this->id ? UrlHelper::cpUrl("settings/fields/edit/$this->id") : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getOrientation(?ElementInterface $element): string
     {
         if (!Craft::$app->getIsMultiSite()) {
@@ -613,11 +653,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the HTML that should be shown for this field’s inline inputs.
-     *
-     * @param mixed $value The field’s value
-     * @param ElementInterface|null $element The element the field is associated with
-     * @return string The HTML that should be shown for this field’s inline input
+     * @see InlineEditableFieldInterface::getInlineInputHtml()
      * @since 5.0.0
      */
     public function getInlineInputHtml(mixed $value, ?ElementInterface $element): string
@@ -723,11 +759,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the HTML that should be shown for this field in table and card views.
-     *
-     * @param mixed $value The field’s value
-     * @param ElementInterface $element The element the field is associated with
-     * @return string The HTML that should be shown for this field in table and card views
+     * @see PreviewableFieldInterface::getPreviewHtml()
      * @since 5.0.0
      */
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
@@ -736,11 +768,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the sort option array that should be included in the element’s
-     * [[\craft\base\ElementInterface::sortOptions()|sortOptions()]] response.
-     *
-     * @return array
-     * @see \craft\base\SortableFieldInterface::getSortOption()
+     * @see SortableFieldInterface::getSortOption()
      * @since 3.2.0
      */
     public function getSortOption(): array
@@ -749,11 +777,63 @@ abstract class Field extends SavableComponent implements FieldInterface
             throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
         }
 
+        // The attribute name should match the table attribute name,
+        // per ElementSources::getTableAttributesForFieldLayouts()
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => [$this->getValueSql(), 'id'],
-            'attribute' => "field:{$this->layoutElement->uid}",
+            'orderBy' => $this->getValueSql(),
+            'attribute' => isset($this->layoutElement->handle)
+                ? "fieldInstance:{$this->layoutElement->uid}"
+                : "field:$this->uid",
         ];
+    }
+
+    /**
+     * @see MergeableFieldInterface::canMergeInto()
+     * @since 5.3.0
+     */
+    public function canMergeInto(FieldInterface $persistingField, ?string &$reason): bool
+    {
+        // Go with whether the DB types are compatible by default
+        return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $persistingField::class);
+    }
+
+    /**
+     * @see MergeableFieldInterface::canMergeFrom()
+     * @since 5.3.0
+     */
+    public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
+    {
+        // Go with whether the DB types are compatible by default
+        return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $outgoingField::class);
+    }
+
+    /**
+     * @see MergeableFieldInterface::afterMergeInto()
+     * @since 5.3.0
+     */
+    public function afterMergeInto(FieldInterface $persistingField)
+    {
+        // Fire an 'afterMergeInto' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_INTO)) {
+            $this->trigger(self::EVENT_AFTER_MERGE_INTO, new FieldEvent(['field' => $persistingField]));
+        }
+    }
+
+    /**
+     * @see MergeableFieldInterface::afterMergeFrom()
+     * @since 5.3.0
+     */
+    public function afterMergeFrom(FieldInterface $outgoingField)
+    {
+        if ($this instanceof RelationalFieldInterface) {
+            Db::update(DbTable::RELATIONS, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+        }
+
+        // Fire an 'afterMergeFrom' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_FROM)) {
+            $this->trigger(self::EVENT_AFTER_MERGE_FROM, new FieldEvent(['field' => $outgoingField]));
+        }
     }
 
     /**
@@ -858,9 +938,16 @@ abstract class Field extends SavableComponent implements FieldInterface
             };
             if ($castType !== null) {
                 // if a length was specified, replace the default with that
-                if ($length = Db::parseColumnLength($dbType)) {
+                $length = Db::parseColumnLength($dbType);
+                if ($length) {
                     $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
+                } elseif ($castType === 'DECIMAL') {
+                    [$precision, $scale] = Db::parseColumnPrecisionAndScale($dbType) ?? [null, null];
+                    if ($precision && $scale) {
+                        $castType .= "($precision,$scale)";
+                    }
                 }
+
                 $sql = "CAST($sql AS $castType)";
             }
         }
@@ -1062,10 +1149,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns an array that lists the scopes this custom field allows when eager-loading or false if eager-loading
-     * should not be allowed in the GraphQL context.
-     *
-     * @return array|null
+     * @see EagerLoadingFieldInterface::getEagerLoadingGqlConditions()
      * @since 3.3.0
      */
     public function getEagerLoadingGqlConditions(): ?array
