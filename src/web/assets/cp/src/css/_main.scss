@@ -922,7 +922,7 @@ i em {
 
 /* text styles */
 .leftalign {
-  @include alignleft;
+  text-align: start;
 }
 
 .topalign {
@@ -1005,7 +1005,7 @@ input.checkbox + label.smalltext {
 
 th,
 td {
-  @include alignleft;
+  text-align: start;
   vertical-align: middle;
 }
 
@@ -2751,7 +2751,7 @@ table {
   thead {
     th {
       font-weight: bold;
-      @include alignleft;
+      text-align: start;
       vertical-align: top;
     }
   }
@@ -2881,7 +2881,7 @@ table {
             width: 100%;
             padding-block: var(--pane-padding, var(--m));
             padding-inline: var(--m) 35px;
-            @include alignleft;
+            text-align: start;
 
             &:focus {
               z-index: 1;
@@ -2998,7 +2998,7 @@ table {
       display: block;
       border: none;
       padding: 0;
-      @include alignleft;
+      text-align: start;
       width: auto !important;
       white-space: normal;
     }
@@ -4192,7 +4192,7 @@ table.editable {
           padding: 0;
 
           .editable-table-preview {
-            @include alignleft;
+            text-align: start;
             white-space: pre-wrap;
 
             & + textarea {
@@ -4208,7 +4208,7 @@ table.editable {
           }
 
           pre {
-            @include alignleft;
+            text-align: start;
             white-space: pre-wrap;
           }
         }
@@ -6905,7 +6905,7 @@ $min2ColWidth: 400px;
         &:not(.flex, .hidden) {
           display: block;
           width: calc(100% + 28px);
-          @include alignleft;
+          text-align: start;
         }
 
         &.flex {
