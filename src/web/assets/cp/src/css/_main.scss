@@ -2352,9 +2352,7 @@ div.btn.submit input {
       inset-inline-start: 0;
       border-block-start: calc(var(--ui-control-height) / 2) solid
         var(--ui-control-bg-color);
-      @include border-left(
-        calc(var(--ui-control-height) / 2) solid transparent
-      );
+      border-inline-start: calc(var(--ui-control-height) / 2) solid transparent;
 
       &::after {
         display: block;
@@ -2365,9 +2363,8 @@ div.btn.submit input {
         inset-inline-end: 0;
         border-block-end: calc(var(--ui-control-height) / 2) solid
           var(--ui-control-bg-color);
-        @include border-left(
-          calc(var(--ui-control-height) / 2) solid transparent
-        );
+        border-inline-start: calc(var(--ui-control-height) / 2) solid
+          transparent;
       }
     }
 
@@ -2375,9 +2372,8 @@ div.btn.submit input {
       inset-inline-end: 0;
       border-block-start: calc(var(--ui-control-height) / 2) solid transparent;
       border-block-end: calc(var(--ui-control-height) / 2) solid transparent;
-      @include border-left(
-        calc(var(--ui-control-height) / 2) solid var(--ui-control-bg-color)
-      );
+      border-inline-start: calc(var(--ui-control-height) / 2) solid
+        var(--ui-control-bg-color);
     }
   }
 
@@ -2813,20 +2809,24 @@ table {
         th,
         td {
           &:first-child {
-            @include border-top-left-radius(
-              var(--border-radius, var(--small-border-radius))
+            border-start-start-radius: var(
+              --border-radius,
+              var(--small-border-radius)
             );
-            @include border-bottom-left-radius(
-              var(--border-radius, var(--small-border-radius))
+            border-end-start-radius: var(
+              --border-radius,
+              var(--small-border-radius)
             );
           }
 
           &:last-child {
-            @include border-top-right-radius(
-              var(--border-radius, var(--small-border-radius))
+            border-start-end-radius: var(
+              --border-radius,
+              var(--small-border-radius)
             );
-            @include border-bottom-right-radius(
-              var(--border-radius, var(--small-border-radius))
+            border-end-end-radius: var(
+              --border-radius,
+              var(--small-border-radius)
             );
           }
         }
@@ -3655,9 +3655,8 @@ table {
         height: 0;
         inset-inline-end: 0;
         border-block-start: calc(var(--ui-control-height) / 2) solid $grey050;
-        @include border-left(
-          calc(var(--ui-control-height) / 2) solid transparent
-        );
+        border-inline-start: calc(var(--ui-control-height) / 2) solid
+          transparent;
       }
 
       &::after {
@@ -3668,9 +3667,8 @@ table {
         inset-block-start: calc(var(--ui-control-height) / 2);
         inset-inline-end: 0;
         border-block-end: calc(var(--ui-control-height) / 2) solid $grey050;
-        @include border-left(
-          calc(var(--ui-control-height) / 2) solid transparent
-        );
+        border-inline-start: calc(var(--ui-control-height) / 2) solid
+          transparent;
       }
 
       .btn {
@@ -4158,9 +4156,7 @@ table.editable {
 
           textarea,
           input.text {
-            @include border-bottom-left-radius(
-              calc(var(--large-border-radius) - 1px)
-            );
+            border-end-start-radius: calc(var(--large-border-radius) - 1px);
           }
         }
       }
@@ -8824,9 +8820,7 @@ body.licensing-issues {
       [role='tab']:first-child {
         &,
         .tab-label {
-          @include border-top-left-radius(
-            calc(var(--large-border-radius) - 2px)
-          );
+          border-start-start-radius: calc(var(--large-border-radius) - 2px);
         }
       }
     }
