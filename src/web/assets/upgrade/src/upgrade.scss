@@ -61,7 +61,7 @@ $iconSize: 46px;
           @include icon;
           content: 'building';
           margin-block-start: -3px;
-          @include margin-right(4px);
+          margin-inline-end: 4px;
           color: $grey300;
         }
 
@@ -72,7 +72,7 @@ $iconSize: 46px;
       }
 
       .plugin-badges > div:not(:last-child) {
-        @include margin-right(5px);
+        margin-inline-end: 5px;
       }
 
       .plugin-status,

@@ -35,7 +35,7 @@
 
   .uri-container {
     position: relative;
-    @include margin-right(20px);
+    margin-inline-end: 20px;
     padding-inline-end: 10px;
     @include border-radius(
       var(--large-border-radius),

@@ -191,7 +191,7 @@ input.error {
     .photo {
       svg {
         @apply tw-align-middle;
-        @include margin-right(7px);
+        margin-inline-end: 7px;
         width: 22px;
         height: 22px;
         border-radius: 100%;

@@ -20,7 +20,7 @@
       .icon {
         display: block;
         vertical-align: top;
-        @include margin-right(14px);
+        margin-inline-end: 14px;
         position: relative;
 
         a {
@@ -194,7 +194,7 @@
             span {
               &::before {
                 @include icon;
-                @include margin-right(4px);
+                margin-inline-end: 4px;
                 margin-block-start: -3px;
                 color: var(--gray-300);
               }
