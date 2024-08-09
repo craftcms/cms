@@ -70,7 +70,8 @@
 
     .site {
       display: inline-block;
-      @include margin(-1px, 8px, -1px, 0);
+      margin-inline: 0 8px;
+      margin-block: -1px -1px;
       border-radius: var(--small-border-radius);
       padding-block: 1px;
       padding-inline: 5px;
@@ -90,7 +91,8 @@
 
     &::before {
       @include icon;
-      @include margin(0, 5px, 0, 0);
+      margin-inline: 0 5px;
+      margin-block: 0 0;
       content: 'template';
     }
   }
@@ -144,7 +146,8 @@
     }
 
     .token {
-      @include margin(5px, 5px, 0, 0);
+      margin-inline: 0 5px;
+      margin-block: 5px 0;
       cursor: pointer;
     }
   }

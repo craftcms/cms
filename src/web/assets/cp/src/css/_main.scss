@@ -537,11 +537,13 @@ h6,
 }
 
 h1[data-icon]::before {
-  @include margin(-8px, 10px, 0, 0);
+  margin-inline: 0 10px;
+  margin-block: -8px 0;
 }
 
 h2[data-icon]::before {
-  @include margin(-4px, 6px, 0, 0);
+  margin-inline: 0 6px;
+  margin-block: -4px 0;
   font-size: 19px;
 }
 
@@ -735,7 +737,8 @@ button {
   }
 
   .so-notice > & {
-    @include margin(-5px, 0, -5px, calc(var(--xl) * -1));
+    margin-inline: calc(var(--xl) * -1) 0;
+    margin-block: -5px -5px;
     padding-inline: var(--xl) 0;
     padding-block: 5px;
     @include border-bottom-left-radius(var(--large-border-radius));
@@ -982,7 +985,8 @@ input.checkbox + label.smalltext {
 
 .required::after {
   content: 'asterisk';
-  @include margin(-2px, 0, 0, 5px);
+  margin-inline: 5px 0;
+  margin-block: -2px 0;
   font-size: 12px;
   color: var(--rose-500);
 }
@@ -1102,7 +1106,8 @@ td.right {
   &.with-icon,
   .icon {
     &::before {
-      @include margin(-2px, 2px, 0, 0);
+      margin-inline: 0 2px;
+      margin-block: -2px 0;
       @include icon;
       width: 1em;
     }
@@ -1293,7 +1298,8 @@ td.right {
     @include border-top-left-radius(var(--large-border-radius));
 
     & > .btn {
-      @include margin(10px, 0, 0, 14px);
+      margin-inline: 14px 0;
+      margin-block: 10px 0;
       display: block;
       width: calc(100% - 28px);
     }
@@ -1419,7 +1425,8 @@ ul.path {
     align-items: center;
 
     &:not(:last-child)::after {
-      @include margin(0, 5px, 0, 2px);
+      margin-inline: 2px 5px;
+      margin-block: 0 0;
       @include angle(right, var(--light-text-color), calc(1rem / 16));
     }
   }
@@ -3095,7 +3102,8 @@ table {
     --thumb-size: calc(30rem / 16);
 
     & > .thumb {
-      @include margin(0, 2px, 0, -2px);
+      margin-inline: -2px 2px;
+      margin-block: 0 0;
 
       &.cp-icon {
         --thumb-size: 1rem; // 16px
@@ -3405,7 +3413,8 @@ table {
   }
 
   & > .cp-icon {
-    @include margin(0, -4px, 0, -2px);
+    margin-inline: -2px -4px;
+    margin-block: 0 0;
   }
 
   .card-content,
@@ -3503,7 +3512,8 @@ table {
   padding-inline-end: 0;
 
   .menubtn:not(.action-btn) {
-    @include margin(0, -1px, 0, 0);
+    margin-inline: 0 -1px;
+    margin-block: 0 0;
     padding-inline-end: 2px !important;
     @include border-left(1px solid var(--medium-hairline-color));
     @include border-radius(
@@ -3563,7 +3573,8 @@ table {
       display: inline-flex !important;
       position: relative;
       inset-block-start: -2px;
-      @include margin(0, 5px, 0, 2px);
+      margin-inline: 2px 5px;
+      margin-block: 0 0;
       @include angle(right, var(--light-text-color), calc(1rem / 16));
 
       .sel & {
@@ -3869,7 +3880,8 @@ table {
 
     li {
       position: relative;
-      @include margin(0, 1px, 1px, 0);
+      margin-inline: 0 1px;
+      margin-block: 0 1px;
       max-width: 226px;
       border-radius: var(--large-border-radius);
 
@@ -3942,7 +3954,8 @@ table {
 
     &.draginsertion {
       position: relative;
-      @include margin(-1px, 0, -1px, 8px);
+      margin-inline: 8px 0;
+      margin-block: -1px -1px;
       padding-inline-start: 0;
       height: 2px;
       background-color: var(--link-color) !important;
@@ -3954,7 +3967,8 @@ table {
       position: relative;
       z-index: 1;
       @include floatleft;
-      @include margin(10px, -8px, 0, -12px);
+      margin-inline: -12px -8px;
+      margin-block: 10px 0;
       padding: 4px;
     }
 
@@ -3964,7 +3978,8 @@ table {
 
     .move,
     .add {
-      @include margin(5px, 5px, 0, 0);
+      margin-inline: 0 5px;
+      margin-block: 5px 0;
       opacity: 0;
       transition: opacity linear 100ms;
     }
@@ -3986,7 +4001,8 @@ table {
 
     .checkbox {
       @include floatleft;
-      @include margin(7px, 0, 0, 7px);
+      margin-inline: 7px 0;
+      margin-block: 7px 0;
     }
   }
 
@@ -4356,7 +4372,8 @@ ul.tree,
 }
 
 .tree li .toggle {
-  @include margin(7px, 0, 0, -15px);
+  margin-inline: -15px 0;
+  margin-block: 7px 0;
 }
 
 /* status indicators */
@@ -4574,7 +4591,8 @@ $statusLabelBgShade: '500';
 
   .status,
   .cp-icon {
-    @include margin(0, 0, 0, -3px);
+    margin-inline: -3px 0;
+    margin-block: 0 0;
   }
 
   .status-label-text {
@@ -5319,7 +5337,8 @@ table.data tbody tr:not(.disabled).active-drop-target {
     }
 
     .ui-datepicker {
-      @include margin(0, 0, 0, -8px);
+      margin-inline: -8px 0;
+      margin-block: 0 0;
     }
   }
 
@@ -6076,7 +6095,8 @@ $min2ColWidth: 400px;
 
     &::before {
       @include icon;
-      @include margin(-6px, 0, 0, -58px);
+      margin-inline: -58px 0;
+      margin-block: -6px 0;
       @include floatleft;
       content: 'alert';
       font-size: 40px;
@@ -6089,7 +6109,8 @@ $min2ColWidth: 400px;
 
     &::before {
       @include icon;
-      @include margin(-14px, 0, 0, -56px);
+      margin-inline: -56px 0;
+      margin-block: -14px 0;
       @include floatleft;
       content: 'secure';
       font-size: 58px;
@@ -6864,7 +6885,8 @@ $min2ColWidth: 400px;
           &.sel {
             &:not([data-icon])::before {
               @include floatleft;
-              @include margin(4px, 0, 0, calc(-18rem / 16 - 4px));
+              margin-inline: calc(-18rem / 16 - 4px) 0;
+              margin-block: 4px 0;
               font-size: 14px;
               width: 14px;
               content: 'check';
@@ -7069,7 +7091,8 @@ $min2ColWidth: 400px;
   .add {
     position: relative;
     z-index: 1;
-    @include margin(7px, 7px, 0, 0);
+    margin-inline: 0 7px;
+    margin-block: 7px 0;
     display: inline-block;
     width: 12em;
 
@@ -7093,7 +7116,8 @@ $min2ColWidth: 400px;
 
         &::before {
           @include floatleft;
-          @include margin(3px, 0, 0, -18px);
+          margin-inline: -18px 0;
+          margin-block: 3px 0;
         }
       }
     }
@@ -7275,7 +7299,8 @@ textarea.text.fullwidth {
 .chars-left {
   position: relative;
   @include floatright;
-  @include margin(calc(-27rem / 16), 7px, 0, 0);
+  margin-inline: 0 7px;
+  margin-block: calc(-27rem / 16) 0;
   color: var(--light-text-color);
 
   .input.ltr > & {
@@ -8160,7 +8185,8 @@ body .selectize-dropdown {
 
     & > .remove {
       position: static;
-      @include margin(-1px, -3px, 0, 3px);
+      margin-inline: 3px -3px;
+      margin-block: -1px 0;
       border-inline-start: none;
       padding: 0;
       font-size: 0;

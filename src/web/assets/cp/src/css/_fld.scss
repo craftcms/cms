@@ -380,7 +380,8 @@ $gridColor: var(--gray-100);
   }
 
   & > .spinner {
-    @include margin(0, var(--neg-padding), 0, 0);
+    margin-inline: 0 var(--neg-padding);
+    margin-block: 0 0;
   }
 }
 

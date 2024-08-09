@@ -195,7 +195,8 @@ body,
             @include icon;
             content: 'check';
             @include floatleft;
-            @include margin(3px, 0, 0, -17px);
+            margin-inline: -17px 0;
+            margin-block: 3px 0;
             font-size: 14px;
             color: var(--light-text-color);
           }

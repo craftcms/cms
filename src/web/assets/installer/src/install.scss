@@ -130,7 +130,8 @@ body {
 
     &::after {
       @include icon;
-      @include margin(-2px, 0, 0, 4px);
+      margin-inline: 4px 0;
+      margin-block: -2px 0;
       font-size: 20px;
       width: 20px;
       height: 20px;

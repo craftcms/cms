@@ -171,7 +171,8 @@ input.error {
     }
 
     .badge {
-      @include margin(0, 0, 0, -6px);
+      margin-inline: -6px 0;
+      margin-block: 0 0;
       @apply tw-relative tw-inline-block tw-flex-shrink tw-text-white;
       inset-block-start: -1px;
       padding-block: 0;
