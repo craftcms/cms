@@ -415,7 +415,7 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin border-top-right-radius($params...) {
   @warn "border-top-right-radius mixin is deprecated. Use border-end-start-radius instead.";
-  border-end-start-radius: $params;
+  border-start-end-radius: $params;
 }
 
 @mixin border-bottom-left-radius($params...) {
