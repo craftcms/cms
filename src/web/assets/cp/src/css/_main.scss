@@ -930,7 +930,7 @@ i em {
 }
 
 .rightalign {
-  @include alignright;
+  text-align: end;
 }
 
 .centeralign {
@@ -1026,7 +1026,7 @@ body.rtl table[dir='ltr'] {
 th.right,
 td.right {
   float: none;
-  @include alignright;
+  text-align: end;
 }
 
 .clear {
@@ -2961,7 +2961,7 @@ table {
 
       td {
         &.timestamp {
-          @include alignright;
+          text-align: end;
           vertical-align: bottom;
           white-space: nowrap;
           color: var(--light-text-color);
@@ -5426,7 +5426,7 @@ $min2ColWidth: 400px;
           position: absolute;
           inset-inline-start: 0;
           width: 31px;
-          @include alignright;
+          text-align: end;
           @include icon;
           content: 'plus';
           color: var(--light-text-color);
