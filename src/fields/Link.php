@@ -347,8 +347,14 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $linkTypes = $this->getLinkTypes();
+
         /** @var LinkData|null $value */
-        $valueTypeId = $value?->type ?? UrlType::id();
+        if ($value) {
+            $valueTypeId = $value->type;
+        } else {
+            $valueTypeId = in_array(UrlType::id(), $this->types) ? UrlType::id() : reset($this->types);
+        }
+
         $allowedTypeIds = in_array($valueTypeId, $this->types) ? $this->types : array_merge($this->types, [$valueTypeId]);
         $allowedTypeIds = array_filter($allowedTypeIds, fn(string $typeId) => isset($linkTypes[$typeId]));
         $id = $this->getInputId();
