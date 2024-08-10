@@ -118,20 +118,9 @@
                 height: 0;
                 border-style: solid;
                 transition: border-color linear 100ms;
-
-                body.ltr & {
-                  inset-inline-start: -7px;
-                  border-width: 0 7px 16px 0;
-                  border-color: transparent var(--medium-text-color) transparent
-                    transparent;
-                }
-
-                body.rtl & {
-                  inset-inline-end: -7px;
-                  border-width: 0 0 16px 7px;
-                  border-color: transparent transparent transparent
-                    var(--medium-text-color);
-                }
+                inset-inline-start: -7px;
+                border-block-end: 16px solid transparent;
+                border-inline-end: 7px solid var(--medium-text-color);
               }
             }
           }
@@ -150,15 +139,9 @@
 
             & .edition-name + .edition-trial {
               &::before {
-                body.ltr & {
-                  inset-inline-start: -7px;
-                  border-width: 0 7px 16px 0;
-                  border-inline-end-color: var(--link-color);
-                }
-
-                body.rtl & {
-                  border-inline-start-color: var(--link-color);
-                }
+                inset-inline-start: -7px;
+                border-width: 0 7px 16px 0;
+                border-inline-end-color: var(--link-color);
               }
             }
           }

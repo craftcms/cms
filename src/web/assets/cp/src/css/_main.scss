@@ -509,18 +509,11 @@ fieldset:last-child,
     padding linear 200ms;
 }
 
-body.dragging.ltr .offset-drag-helper {
+body.dragging .offset-drag-helper {
   margin-block: -50px 0;
   margin-inline: -50px 0;
   padding-block: 60px 0;
   padding-inline: 60px 0;
-}
-
-body.dragging.rtl .offset-drag-helper {
-  margin-block: -50px 0;
-  margin-inline: 0 -50px;
-  padding-block: 60px 0;
-  padding-inline: 0 60px;
 }
 
 img {
@@ -1204,14 +1197,14 @@ td {
   vertical-align: middle;
 }
 
-body.ltr table[dir='rtl'] {
+body table[dir='rtl'] {
   th,
   td {
     text-align: end;
   }
 }
 
-body.rtl table[dir='ltr'] {
+body table[dir='ltr'] {
   th,
   td {
     text-align: start;
@@ -2092,28 +2085,14 @@ ul.icons {
       margin-inline-end: 1px;
     }
 
-    body.ltr & {
-      &:not(:first-child, .btngroup-btn-first) {
-        border-start-start-radius: 0;
-        border-end-start-radius: 0;
-      }
-
-      &:not(:last-child, .btngroup-btn-last) {
-        border-start-end-radius: 0;
-        border-end-end-radius: 0;
-      }
+    &:not(:first-child, .btngroup-btn-first) {
+      border-start-start-radius: 0;
+      border-end-start-radius: 0;
     }
 
-    body.rtl & {
-      &:not(:first-child, .btngroup-btn-first) {
-        border-start-end-radius: 0;
-        border-end-end-radius: 0;
-      }
-
-      &:not(:last-child, .btngroup-btn-last) {
-        border-start-start-radius: 0;
-        border-end-start-radius: 0;
-      }
+    &:not(:last-child, .btngroup-btn-last) {
+      border-start-end-radius: 0;
+      border-end-end-radius: 0;
     }
   }
 }
@@ -2134,29 +2113,15 @@ ul.icons {
   white-space: nowrap;
   align-items: center;
 
-  body.ltr & {
-    .text {
-      border-start-end-radius: 0;
-      border-end-end-radius: 0;
-      min-width: 0;
-    }
-
-    .btn {
-      border-start-start-radius: 0;
-      border-end-start-radius: 0;
-    }
+  .text {
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    min-width: 0;
   }
 
-  body.rtl & {
-    .text {
-      border-start-start-radius: 0;
-      border-end-start-radius: 0;
-    }
-
-    .btn {
-      border-start-end-radius: 0;
-      border-end-end-radius: 0;
-    }
+  .btn {
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
   }
 }
 
@@ -2746,10 +2711,6 @@ div.btn.submit input {
       &[data-toggle='off'] {
         margin-inline-end: 7px;
         text-align: end;
-
-        body.rtl & {
-          text-align: start;
-        }
       }
     }
   }
@@ -3620,14 +3581,7 @@ table {
       inset-block: 0;
       @include shadow;
       width: 10px;
-
-      body.ltr & {
-        inset-inline-end: -10px;
-      }
-
-      body.rtl & {
-        inset-inline-start: -10px;
-      }
+      inset-inline-end: -10px;
     }
 
     &,
@@ -5211,6 +5165,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   body.rtl & {
     animation-name: pendingprogress-rtl;
   }
+
   animation-timing-function: linear;
   animation-duration: 250ms;
   animation-iteration-count: infinite;
@@ -6075,15 +6030,8 @@ $min2ColWidth: 400px;
     height: 100%;
 
     @media screen and (prefers-reduced-motion: no-preference) {
-      body.ltr & {
-        transition: inset-inline-start linear 250ms;
-        will-change: inset-inline-start;
-      }
-
-      body.rtl & {
-        transition: inset-inline-end linear 250ms;
-        will-change: inset-inline-end;
-      }
+      transition: inset-inline-start linear 250ms;
+      will-change: inset-inline-start;
     }
   }
 
@@ -6979,14 +6927,7 @@ $min2ColWidth: 400px;
   text-transform: uppercase;
   font-weight: 500;
   margin-block-end: 0.75rem;
-
-  .ltr & {
-    margin-inline-end: 0.5rem;
-  }
-
-  .rtl & {
-    margin-inline-start: 0.5rem;
-  }
+  margin-inline-end: 0.5rem;
 }
 
 /* logout warning/login/elevated session modals */
@@ -7633,18 +7574,16 @@ textarea.text.fullwidth {
 .chars-left {
   position: relative;
   float: inline-end;
-  margin-inline: 0 7px;
+  margin-inline: 7px;
   margin-block: calc(-27rem / 16) 0;
   color: var(--light-text-color);
 
   .input.ltr > & {
-    float: inline-end !important;
-    margin-inline-end: 7px !important;
+    float: inline-end;
   }
 
   .input.rtl > & {
-    float: inline-start !important;
-    margin-inline-start: 7px !important;
+    float: inline-start;
   }
 
   &.negative-chars-left {
@@ -7750,7 +7689,7 @@ fieldset {
 }
 
 .field > .instructions,
-// BC
+  // BC
 .field > .heading > .instructions,
 .checkboxfield .instructions {
   color: var(--custom-text-color, var(--medium-text-color));
@@ -8555,6 +8494,7 @@ body {
       &:not(:first-child) {
         border-block-start: 1px solid var(--hairline-color);
       }
+
       padding-block-start: 5px;
 
       .option {

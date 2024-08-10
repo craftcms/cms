@@ -105,13 +105,7 @@ body {
   min-height: 100vh;
 
   @media screen and (prefers-reduced-motion: no-preference) {
-    body.ltr & {
-      transition: inset-inline-start 100ms cubic-bezier(0.33, 1, 0.68, 1);
-    }
-
-    body.rtl & {
-      transition: inset-inline-end 100ms cubic-bezier(0.33, 1, 0.68, 1);
-    }
+    transition: inset-inline-start 100ms cubic-bezier(0.33, 1, 0.68, 1);
   }
 }
 
@@ -1322,12 +1316,8 @@ li.breadcrumb-toggle-wrapper {
     inset-inline-start: -$sidebarWidth;
     width: calc(100vw + #{$sidebarWidth});
 
-    body.ltr.showing-nav & {
+    .showing-nav & {
       inset-inline-start: 0;
-    }
-
-    body.rtl.showing-nav & {
-      inset-inline-end: 0;
     }
   }
 

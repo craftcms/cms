@@ -365,7 +365,6 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 // RTL stuff
-// RTL stuff
 
 @mixin left($left) {
   @warn "left mixin is deprecated. Use inset-inline-start instead.";
