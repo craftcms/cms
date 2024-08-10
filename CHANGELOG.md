@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.3.2 - 2024-08-10
 
 - Added `craft\db\afterDown()`.
 - Added `craft\db\afterUp()`.
