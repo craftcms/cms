@@ -1,5 +1,6 @@
 @charset "UTF-8";
-@import '@craftcms/sass/mixins';
+@use 'sass:color';
+@use '@craftcms/sass/mixins';
 
 .lp-editor-container,
 .lp-preview-container {
@@ -13,7 +14,7 @@
     padding-block: 5px;
     padding-inline: var(--pane-padding, var(--xl));
     background-color: var(--gray-100);
-    box-shadow: 0 1px 0 transparentize($grey700, 0.8);
+    box-shadow: 0 1px 0 color.adjust(mixins.$grey700, $alpha: -0.8);
     box-sizing: border-box;
     position: relative;
     z-index: 1;
@@ -26,7 +27,7 @@
         inset-block-start: 0;
         inset-inline-start: 0;
         width: 100%;
-        background-color: transparentize($grey100, 0.25);
+        background-color: color.adjust(mixins.$grey100, $alpha: -0.25);
         backdrop-filter: blur(10px);
 
         & + .lp-content {
@@ -138,7 +139,7 @@
 .lp-preview-container {
   display: flex;
   flex-direction: column;
-  box-shadow: -1px 0 0 transparentize($grey700, 0.8);
+  box-shadow: -1px 0 0 color.adjust(mixins.$grey700, $alpha: -0.8);
 
   &.dragging::after {
     position: absolute;
@@ -154,7 +155,7 @@
     display: flex;
 
     @supports (not (backdrop-filter: blur(10px))) {
-      background-color: transparentize($grey100, 0.25);
+      background-color: color.adjust(mixins.$grey100, $alpha: -0.25);
     }
 
     .buttons {

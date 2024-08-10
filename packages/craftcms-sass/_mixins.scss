@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'sass:list';
+@use 'sass:string';
 $white: #fff;
 $black: #000;
 
@@ -134,9 +137,9 @@ $menuOptionActiveColor: $textColor;
 $menuOptionActiveBackgroundColor: $grey050;
 
 // hairline colors
-$hairlineColor: transparentize($grey800, 0.9);
-$mediumHairlineColor: transparentize($grey600, 0.75);
-$darkHairlineColor: transparentize($grey400, 0.5);
+$hairlineColor: color.adjust($grey800, $alpha: -0.9);
+$mediumHairlineColor: color.adjust($grey600, $alpha: -0.75);
+$darkHairlineColor: color.adjust($grey400, $alpha: -0.5);
 
 // focus colors
 $lightFocusColor: $blue300;
@@ -146,13 +149,13 @@ $darkFocusColor: #0f74b1;
 // focus rings
 $lightFocusRing:
   0 0 0 1px $lightFocusColor,
-  0 0 0 3px transparentize($lightFocusColor, 0.3);
+  0 0 0 3px color.adjust($lightFocusColor, $alpha: -0.3);
 $mediumFocusRing:
   0 0 0 1px $mediumFocusColor,
-  0 0 0 3px transparentize($mediumFocusColor, 0.3);
+  0 0 0 3px color.adjust($mediumFocusColor, $alpha: -0.3);
 $darkFocusRing:
   0 0 0 1px $darkFocusColor,
-  0 0 0 3px transparentize($darkFocusColor, 0.3);
+  0 0 0 3px color.adjust($darkFocusColor, $alpha: -0.3);
 
 // selection colors
 $lightSelColor: $grey200;
@@ -194,11 +197,11 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @function toRem($values...) {
-  $max: length($values);
+  $max: list.length($values);
   $remValues: '';
 
   @for $i from 1 through $max {
-    $remValues: #{$remValues + calc(nth($values, $i) / 16)}rem;
+    $remValues: #{$remValues + calc(list.nth($values, $i) / 16)}rem;
 
     @if $i < $max {
       $remValues: #{$remValues + ' '};
@@ -303,14 +306,14 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin shadow {
-  box-shadow: 0 1px 5px -1px transparentize($grey900, 0.8);
+  box-shadow: 0 1px 5px -1px color.adjust($grey900, $alpha: -0.8);
 }
 
 @mixin pane {
   background: $white;
   box-shadow:
     0 0 0 1px $grey200,
-    0 2px 12px transparentize($grey200, 0.5);
+    0 2px 12px color.adjust($grey200, $alpha: -0.5);
 
   &:focus {
     box-shadow: var(--focus-ring);
@@ -320,7 +323,7 @@ $menuBorderRadius: $mediumBorderRadius;
 @mixin modal {
   border-radius: $largeBorderRadius;
   background-color: $white;
-  box-shadow: 0 25px 100px transparentize($grey900, 0.5) !important;
+  box-shadow: 0 25px 100px color.adjust($grey900, $alpha: -0.5) !important;
 }
 
 @mixin light-on-dark-text() {
@@ -332,13 +335,21 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin light-focus-ring() {
   --focus-ring: 0 0 0 1px
-      hsl(#{hue($blue200)}, #{saturation($blue200)}, #{lightness($blue200)}),
+      hsl(
+        #{color.hue($blue200)},
+        #{color.saturation($blue200)},
+        #{color.lightness($blue200)}
+      ),
     0 0 0 3px hsla(var(--light-focus-hsl), 1);
 }
 
 @mixin dark-btn-light-bg-focus-ring() {
   --focus-ring: 0 0 0 1px
-      hsl(#{hue($blue200)}, #{saturation($blue200)}, #{lightness($blue200)}),
+      hsl(
+        #{color.hue($blue200)},
+        #{color.saturation($blue200)},
+        #{color.lightness($blue200)}
+      ),
     0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
 }
 
@@ -446,8 +457,8 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin margin($t, $r, $b, $l, $important: '') {
   @warn "margin mixin is deprecated. Use logical margin properties instead.";
-  margin-block: $t $b unquote($important);
-  margin-inline: $l $r unquote($important);
+  margin-block: $t $b string.unquote($important);
+  margin-inline: $l $r string.unquote($important);
 }
 
 @mixin margin-left($margin...) {
@@ -462,8 +473,8 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin padding($t, $r, $b, $l, $important: '') {
   @warn "padding mixin is deprecated. Use padding logical properties instead.";
-  padding-block: $t $b unquote($important);
-  padding-inline: $l $r unquote($important);
+  padding-block: $t $b string.unquote($important);
+  padding-inline: $l $r string.unquote($important);
 }
 
 @mixin padding-left($padding...) {
@@ -487,13 +498,13 @@ $menuBorderRadius: $mediumBorderRadius;
 
     &:focus,
     &:hover {
-      background-color: darken($grey200, 5%);
+      background-color: color.adjust($grey200, $lightness: -5%);
     }
 
     &:active,
     &.active,
     &[aria-expanded='true'] {
-      background-color: darken($grey200, 10%);
+      background-color: color.adjust($grey200, $lightness: -10%);
     }
   }
 
@@ -501,7 +512,7 @@ $menuBorderRadius: $mediumBorderRadius;
     background-color: $grey200;
 
     &:focus {
-      background-color: darken($grey200, 5%);
+      background-color: color.adjust($grey200, $lightness: -5%);
     }
   }
 }
@@ -516,7 +527,7 @@ $menuBorderRadius: $mediumBorderRadius;
     background-color: transparent;
   }
   &:not(:active):not(.active):not([aria-expanded='true']):hover {
-    background-color: transparentize($grey300, 0.85);
+    background-color: color.adjust($grey300, $alpha: -0.85);
   }
 }
 
@@ -550,8 +561,8 @@ $menuBorderRadius: $mediumBorderRadius;
   background: $white;
   user-select: none;
   box-shadow:
-    0 0 0 1px transparentize($grey900, 0.9),
-    0 5px 20px transparentize($grey900, 0.75);
+    0 0 0 1px color.adjust($grey900, $alpha: -0.9),
+    0 5px 20px color.adjust($grey900, $alpha: -0.75);
 }
 
 @mixin menu-item-styles {
@@ -580,7 +591,7 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin input-styles {
   border-radius: $smallBorderRadius;
-  border: 1px solid transparentize($inputColor, 0.75);
+  border: 1px solid color.adjust($inputColor, $alpha: -0.75);
   background-color: hsl(212, 50%, 99%);
   background-clip: padding-box;
 }
@@ -862,23 +873,23 @@ $menuBorderRadius: $mediumBorderRadius;
   $halfSize: $size * 0.5;
   background-image: linear-gradient(
       45deg,
-      #{transparentize($grey300, 0.75)} 25%,
+      #{color.adjust($grey300, $alpha: -0.75)} 25%,
       transparent 25%
     ),
     linear-gradient(
       135deg,
-      #{transparentize($grey300, 0.75)} 25%,
+      #{color.adjust($grey300, $alpha: -0.75)} 25%,
       transparent 25%
     ),
     linear-gradient(
       45deg,
       transparent 75%,
-      #{transparentize($grey300, 0.75)} 75%
+      #{color.adjust($grey300, $alpha: -0.75)} 75%
     ),
     linear-gradient(
       135deg,
       transparent 75%,
-      #{transparentize($grey300, 0.75)} 75%
+      #{color.adjust($grey300, $alpha: -0.75)} 75%
     );
   background-size: $size $size;
   background-position:

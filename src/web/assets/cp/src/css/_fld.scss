@@ -1,5 +1,6 @@
 @charset "UTF-8";
-@import '@craftcms/sass/mixins';
+@use 'sass:color';
+@use '@craftcms/sass/mixins';
 
 $base: 24px;
 $tabPadding: 14px;
@@ -21,7 +22,7 @@ $gridColor: var(--gray-100);
   display: flex;
   align-items: stretch;
   position: relative;
-  @include input-styles;
+  @include mixins.input-styles;
   overflow: hidden;
   box-shadow: none;
   padding-inline-end: $tabWidth + 1;
@@ -41,7 +42,7 @@ $gridColor: var(--gray-100);
     padding-block: $base;
     @include workspace-bg;
     background-position: -1px -1px;
-    box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
+    box-shadow: inset 0 1px 3px -1px color.adjust(mixins.$grey200, $lightness: -10%);
 
     .fld-tabs {
       display: flex;
@@ -118,8 +119,8 @@ $gridColor: var(--gray-100);
 .fld-new-tab-btn:hover {
   background-color: var(--white);
   box-shadow:
-    0 0 0 1px transparentize($grey900, 0.9),
-    0 2px 5px -2px transparentize($grey900, 0.8);
+    0 0 0 1px color.adjust(mixins.$grey900, $alpha: -0.9),
+    0 2px 5px -2px color.adjust(mixins.$grey900, $alpha: -0.8);
 }
 
 .fld-tab .settings::before,
@@ -239,7 +240,7 @@ $gridColor: var(--gray-100);
   }
 
   &.draghelper {
-    @include shadow;
+    @include mixins.shadow;
   }
 
   &.fld-field {
@@ -267,7 +268,7 @@ $gridColor: var(--gray-100);
     }
 
     svg {
-      @include svg-mask(var(--ui-control-color));
+      @include mixins.svg-mask(var(--ui-control-color));
     }
   }
 
@@ -363,7 +364,7 @@ $gridColor: var(--gray-100);
   margin-inline: var(--neg-padding);
   padding-block: 5px;
   padding-inline: var(--padding);
-  @include pane;
+  @include mixins.pane;
   background-color: var(--gray-050);
   z-index: 3;
 

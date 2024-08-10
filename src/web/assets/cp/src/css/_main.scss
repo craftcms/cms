@@ -1,7 +1,9 @@
 @charset "UTF-8";
-@import '@craftcms/sass/mixins';
+@use 'sass:color';
+@use 'variables';
+@use '@craftcms/sass/mixins';
 
-@mixin striped-bg($size, $color: $grey100) {
+@mixin striped-bg($size, $color: mixins.$grey100) {
   // h/t https://css-tricks.com/stripes-css/
   $halfSize: $size * 0.5;
 
@@ -46,34 +48,33 @@
   --ui-control-color: var(--gray-550);
   --ui-control-hover-color: var(--gray-600);
   --ui-control-active-color: var(--gray-700);
-  --ui-control-static-bg-color: #{transparentize($inputColor, 0.75)};
+  --ui-control-static-bg-color: #{color.adjust(
+      mixins.$inputColor,
+      $alpha: -0.75
+    )};
   --ui-control-bg-color: var(--ui-control-static-bg-color);
-  --ui-control-hover-bg-color: #{transparentize($inputColor, 0.7)};
-  --ui-control-active-bg-color: #{transparentize($inputColor, 0.5)};
+  --ui-control-hover-bg-color: #{color.adjust(mixins.$inputColor, $alpha: -0.7)};
+  --ui-control-active-bg-color: #{color.adjust(mixins.$inputColor, $alpha: -0.5)};
   --ui-control-border-radius: var(--large-border-radius);
   --ui-control-height: calc(34rem / 16);
   --ui-control-height--small: calc(30rem / 16);
   --focus-ring-alpha: 0.85;
-  --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
-    #{lightness($lightFocusColor)};
-  --medium-focus-hsl: #{hue($mediumFocusColor)},
-    #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
-  --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)},
-    #{lightness($darkFocusColor)};
+  --light-focus-hsl: #{color.hue(mixins.$lightFocusColor)},
+    #{color.saturation(mixins.$lightFocusColor)},
+    #{color.lightness(mixins.$lightFocusColor)};
+  --medium-focus-hsl: #{color.hue(mixins.$mediumFocusColor)},
+    #{color.saturation(mixins.$mediumFocusColor)},
+    #{color.lightness(mixins.$mediumFocusColor)};
+  --dark-focus-hsl: #{color.hue(mixins.$darkFocusColor)},
+    #{color.saturation(mixins.$darkFocusColor)},
+    #{color.lightness(mixins.$darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
     0 0 0 3px hsl(var(--dark-focus-hsl) var(--focus-ring-alpha));
   --focus-ring-outset: inset 0 0 0 1px currentcolor,
     0 0 0 3px hsl(var(--dark-focus-hsl) var(--focus-ring-alpha));
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsl(var(--dark-focus-hsl) var(--focus-ring-alpha));
-  --touch-target-size: calc(
-    24rem / 16
-  ); /* Minimum recommended touch target size */
-
-  --thumb-size: calc(20rem / 16);
-  --icon-size: 1rem;
-  --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
-  --lh: 1.42em;
+  --touch-target-size: calc(24rem / 16);
 }
 
 body,
@@ -90,7 +91,7 @@ html.noscroll body {
 body {
   width: 100vw;
   overflow-x: hidden;
-  @include fontSize(14);
+  @include mixins.fontSize(14);
   line-height: var(--lh);
   color: var(--text-color);
   -webkit-font-smoothing: subpixel-antialiased;
@@ -104,7 +105,7 @@ body,
 input,
 select,
 textarea {
-  @include sans-serif-font;
+  @include mixins.sans-serif-font;
 }
 
 .first,
@@ -550,7 +551,7 @@ table.editable textarea {
 .action-btn::before,
 [data-icon]::before,
 [data-icon-after]::after {
-  @include icon;
+  @include mixins.icon;
 }
 
 .badge-icon {
@@ -721,7 +722,7 @@ h5,
 
 h6,
 .h6 {
-  @include h6-styles;
+  @include mixins.h6-styles;
 }
 
 h1[data-icon]::before {
@@ -788,7 +789,7 @@ ol {
 /* code */
 code,
 .code {
-  @include fixed-width-font;
+  @include mixins.fixed-width-font;
 
   &.smalltext {
     font-size: 0.8em !important;
@@ -798,7 +799,7 @@ code,
 .code {
   input,
   textarea {
-    @include fixed-width-font;
+    @include mixins.fixed-width-font;
     font-size: 1em !important;
   }
 }
@@ -823,7 +824,7 @@ a {
   }
 
   .cp-icon svg {
-    @include svg-mask(var(--icon-color, var(--link-color)));
+    @include mixins.svg-mask(var(--icon-color, var(--link-color)));
   }
 }
 
@@ -873,7 +874,7 @@ button {
   cursor: pointer;
 
   &::before {
-    @include icon;
+    @include mixins.icon;
   }
 }
 
@@ -934,16 +935,16 @@ button {
     body.ltr & {
       background-image: linear-gradient(
         to bottom right,
-        transparentize($blue600, 0.8),
-        transparentize($blue600, 1) 50%
+        color.adjust(mixins.$blue600, $alpha: -0.8),
+        color.adjust(mixins.$blue600, $alpha: -1) 50%
       );
     }
 
     body.rtl & {
       background-image: linear-gradient(
         to left,
-        transparentize($blue600, 0.8),
-        transparentize($blue600, 1)
+        color.adjust(mixins.$blue600, $alpha: -0.8),
+        color.adjust(mixins.$blue600, $alpha: -1)
       );
     }
   }
@@ -962,7 +963,7 @@ button {
     justify-content: center;
     align-items: center;
     border-radius: 100%;
-    border: 2px solid transparentize($blue800, 0.8);
+    border: 2px solid color.adjust(mixins.$blue800, $alpha: -0.8);
     box-sizing: border-box;
     box-shadow: 0 1px 1px 1px var(--white);
 
@@ -979,7 +980,7 @@ button {
       position: absolute;
       inset: -2px;
       border-radius: 100%;
-      box-shadow: inset 0 2px 0 transparentize($blue900, 0.8);
+      box-shadow: inset 0 2px 0 color.adjust(mixins.$blue900, $alpha: -0.8);
     }
   }
 
@@ -991,11 +992,11 @@ button {
 
     &:hover,
     &:focus {
-      border-color: darken($blue600, 5%);
+      border-color: color.adjust(mixins.$blue600, $lightness: -5%);
     }
 
     &:active {
-      border-color: darken($blue600, 10%);
+      border-color: color.adjust(mixins.$blue600, $lightness: -10%);
     }
   }
 }
@@ -1026,7 +1027,7 @@ button {
     justify-content: center;
     align-items: center;
     border-radius: 100%;
-    border: 2px solid transparentize($grey800, 0.8);
+    border: 2px solid color.adjust(mixins.$grey800, $alpha: -0.8);
     box-sizing: border-box;
     box-shadow: 0 1px 1px 1px var(--white);
 
@@ -1043,7 +1044,7 @@ button {
       position: absolute;
       inset: -2px;
       border-radius: 100%;
-      box-shadow: inset 0 2px 0 transparentize($blue900, 0.8);
+      box-shadow: inset 0 2px 0 color.adjust(mixins.$blue900, $alpha: -0.8);
     }
   }
 }
@@ -1059,7 +1060,7 @@ button.toggle {
 
 .toggle::before,
 a.fieldtoggle::before {
-  @include angle(right);
+  @include mixins.angle(right);
   transition: transform linear 100ms;
 }
 
@@ -1105,7 +1106,7 @@ i em {
 
 /* readable blocks */
 .readable {
-  @include readable;
+  @include mixins.readable;
 }
 
 /* text styles */
@@ -1228,7 +1229,7 @@ td.right {
 }
 
 .token {
-  @include token-styles;
+  @include mixins.token-styles;
 }
 
 .token[data-name='*'] {
@@ -1241,7 +1242,7 @@ td.right {
 }
 
 .token[data-name='*']::before {
-  @include icon;
+  @include mixins.icon;
   display: block;
   position: absolute;
   inset-block-start: 0;
@@ -1254,7 +1255,7 @@ td.right {
 }
 
 .token:focus {
-  @include active-token-styles;
+  @include mixins.active-token-styles;
 }
 
 // Override .token for Prism
@@ -1296,7 +1297,7 @@ td.right {
     &::before {
       margin-inline: 0 2px;
       margin-block: -2px 0;
-      @include icon;
+      @include mixins.icon;
       width: 1em;
     }
   }
@@ -1383,7 +1384,7 @@ td.right {
 
 // Visually hide without hiding from screen readers
 .visually-hidden {
-  @include visually-hidden;
+  @include mixins.visually-hidden;
 }
 
 .invisible {
@@ -1391,7 +1392,7 @@ td.right {
 }
 
 .clearafter::after {
-  @include clearafter;
+  @include mixins.clearafter;
 }
 
 .info {
@@ -1404,7 +1405,7 @@ td.right {
   overflow: hidden;
 
   &::before {
-    @include icon;
+    @include mixins.icon;
     vertical-align: baseline;
     width: 100%;
     line-height: 1.375;
@@ -1462,7 +1463,7 @@ td.right {
 }
 
 .content::after {
-  @include clearafter;
+  @include mixins.clearafter;
 }
 
 .customize-sources-modal {
@@ -1543,7 +1544,7 @@ td.right {
   }
 
   &.sel {
-    @include dark-btn-light-bg-focus-ring;
+    @include mixins.dark-btn-light-bg-focus-ring;
 
     --ui-control-color: var(--selected-item-color);
     background-color: var(--dark-sel-color);
@@ -1616,7 +1617,7 @@ ul.path {
     &:not(:last-child)::after {
       margin-inline: 2px 5px;
       margin-block: 0 0;
-      @include angle(right, var(--light-text-color), calc(1rem / 16));
+      @include mixins.angle(right, var(--light-text-color), calc(1rem / 16));
     }
   }
 }
@@ -1666,7 +1667,7 @@ ul.icons {
         }
 
         &.icon-mask svg {
-          @include svg-mask(var(--text-color));
+          @include mixins.svg-mask(var(--text-color));
         }
       }
 
@@ -1676,7 +1677,7 @@ ul.icons {
         border-color: var(--gray-100);
 
         .icon.icon-mask svg {
-          @include svg-mask(var(--link-color));
+          @include mixins.svg-mask(var(--link-color));
         }
       }
     }
@@ -2015,7 +2016,7 @@ ul.icons {
   }
 
   .cp-icon svg {
-    @include svg-mask(currentColor); // Matches color of font icons
+    @include mixins.svg-mask(currentColor); // Matches color of font icons
   }
 }
 
@@ -2102,7 +2103,7 @@ ul.icons {
     --focus-ring: var(--focus-ring-outset);
     background-color: var(--gray-500);
     color: var(--white);
-    @include dark-btn-light-bg-focus-ring;
+    @include mixins.dark-btn-light-bg-focus-ring;
   }
 }
 
@@ -2173,7 +2174,7 @@ ul.icons {
   user-select: none;
 
   &::after {
-    @include angle;
+    @include mixins.angle;
     position: relative;
   }
 
@@ -2342,7 +2343,7 @@ ul.icons {
 
     --ui-control-active-color: var(--white);
     --focus-ring: var(--focus-ring-outset);
-    @include light-on-dark-text;
+    @include mixins.light-on-dark-text;
   }
 
   &.submit {
@@ -2352,13 +2353,19 @@ ul.icons {
       &:hover,
       &.hover,
       &:focus {
-        background-color: darken($primaryColor, 5%) !important;
+        background-color: color.adjust(
+          mixins.$primaryColor,
+          $lightness: -5%
+        ) !important;
       }
 
       &:active,
       &.active,
       &[aria-expanded='true'] {
-        background-color: darken($primaryColor, 10%) !important;
+        background-color: color.adjust(
+          mixins.$primaryColor,
+          $lightness: -10%
+        ) !important;
       }
     }
   }
@@ -2370,7 +2377,10 @@ ul.icons {
     &:hover,
     &.hover,
     &:focus {
-      background-color: darken($red050, 5%) !important;
+      background-color: color.adjust(
+        mixins.$red050,
+        $lightness: -5%
+      ) !important;
     }
 
     &:active,
@@ -2392,7 +2402,10 @@ ul.icons {
 .btn.secondary:not(.disabled, .inactive, .loading):hover,
 .btn.secondary:not(.disabled, .inactive, .loading).hover,
 .btn.secondary:not(.disabled, .inactive, .loading):focus {
-  background-color: darken($secondaryColor, 5%) !important;
+  background-color: color.adjust(
+    mixins.$secondaryColor,
+    $lightness: -5%
+  ) !important;
 }
 
 .secondary-buttons .btn.submit:not(.disabled, .inactive, .loading):active,
@@ -2402,7 +2415,10 @@ ul.icons {
 .btn.secondary:not(.disabled, .inactive, .loading):active,
 .btn.secondary:not(.disabled, .inactive, .loading).active,
 .btn.secondary:not(.disabled, .inactive, .loading)[aria-expanded='true'] {
-  background-color: darken($secondaryColor, 10%) !important;
+  background-color: color.adjust(
+    mixins.$secondaryColor,
+    $lightness: -10%
+  ) !important;
 }
 
 div.btn.submit {
@@ -2426,7 +2442,7 @@ div.btn.submit input {
   }
 
   &:focus {
-    background-color: transparentize($grey200, 0.9);
+    background-color: color.adjust(mixins.$grey200, $alpha: -0.9);
     border-color: transparent;
 
     .reduce-focus-visibility &:not(:focus-visible) {
@@ -2438,7 +2454,7 @@ div.btn.submit input {
     &:active,
     &.active,
     &[aria-expanded='true'] {
-      background-color: transparentize($grey200, 0.75);
+      background-color: color.adjust(mixins.$grey200, $alpha: -0.75);
     }
   }
 }
@@ -2461,13 +2477,19 @@ div.btn.submit input {
       --text-color: var(--white);
       --ui-control-color: var(--white);
       --ui-control-bg-color: var(--gray-500);
-      --ui-control-hover-bg-color: #{darken($grey500, 5%)};
-      --ui-control-active-bg-color: #{darken($grey500, 10%)};
+      --ui-control-hover-bg-color: #{color.adjust(
+          mixins.$grey500,
+          $lightness: -5%
+        )};
+      --ui-control-active-bg-color: #{color.adjust(
+          mixins.$grey500,
+          $lightness: -10%
+        )};
     }
 
     &.current-step {
-      @include light-on-dark-text;
-      @include light-focus-ring;
+      @include mixins.light-on-dark-text;
+      @include mixins.light-focus-ring;
     }
 
     &:focus {
@@ -2504,7 +2526,7 @@ div.btn.submit input {
         padding: 3px;
 
         &::after {
-          @include angle;
+          @include mixins.angle;
           position: relative;
         }
       }
@@ -2622,7 +2644,7 @@ div.btn.submit input {
 }
 
 .color-input {
-  @include fixed-width-font;
+  @include mixins.fixed-width-font;
   padding-inline-start: calc(7px + 1em);
 }
 
@@ -2640,13 +2662,13 @@ div.btn.submit input {
   }
 
   &:not(.small) {
-    @include checkered-bg(17px);
+    @include mixins.checkered-bg(17px);
   }
 
   &.small {
     width: 16px;
     height: 16px;
-    @include checkered-bg(8px);
+    @include mixins.checkered-bg(8px);
   }
 
   .color-preview {
@@ -2656,10 +2678,10 @@ div.btn.submit input {
     width: 100%;
     height: 100%;
     border-radius: 17px;
-    box-shadow: inset 0 0 0 1px transparentize($black, 0.85);
+    box-shadow: inset 0 0 0 1px color.adjust(mixins.$black, $alpha: -0.85);
 
     &:focus-within {
-      @include input-focused-styles;
+      @include mixins.input-focused-styles;
     }
 
     & > .color-preview-input {
@@ -2836,12 +2858,12 @@ div.btn.submit input {
     }
 
     &.prev-page::after {
-      @include angle(left, var(--light-text-color));
+      @include mixins.angle(left, var(--light-text-color));
       inset-inline-end: -1px;
     }
 
     &.next-page::after {
-      @include angle(right, var(--light-text-color));
+      @include mixins.angle(right, var(--light-text-color));
       inset-inline-start: -1px;
     }
 
@@ -2859,7 +2881,7 @@ div.btn.submit input {
         }
       }
 
-      @include focus-styles {
+      @include mixins.focus-styles {
         box-shadow:
           inset 0 0 0 1px var(--hairline-color),
           var(--focus-ring);
@@ -3055,7 +3077,7 @@ table {
 
             &:not(.loading) {
               button::after {
-                @include angle(up);
+                @include mixins.angle(up);
                 position: absolute;
                 inset-inline-end: var(--m);
                 inset-block-start: calc(50% - 3px);
@@ -3123,7 +3145,9 @@ table {
             --light-text-color: var(--white);
             --link-color: var(--white);
             --ui-control-color: var(--white);
-            @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+            @include mixins.custom-color-focus-ring(
+              hsl(var(--light-focus-hsl))
+            );
 
             .status-label .status-label-text {
               --status-label-text-color: var(--white) !important;
@@ -3206,7 +3230,7 @@ table {
         border-block-end: 1px dotted var(--hairline-color);
 
         &::after {
-          @include clearafter;
+          @include mixins.clearafter;
         }
       }
 
@@ -3242,7 +3266,7 @@ table {
 .datatablesorthelper,
 .editabletablesorthelper {
   background-color: var(--white);
-  @include shadow;
+  @include mixins.shadow;
 }
 
 .datatablesorthelper,
@@ -3356,7 +3380,7 @@ table {
     --light-text-color: var(--white);
     --link-color: var(--white);
     --ui-control-color: var(--white);
-    @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+    @include mixins.custom-color-focus-ring(hsl(var(--light-focus-hsl)));
     color: var(--white);
     background-color: var(
       --custom-sel-bg-color,
@@ -3380,15 +3404,15 @@ table {
 
       img {
         box-shadow:
-          0 0 0 1px transparentize($darkSelColor, 0.9),
-          0 6px 4px -4px transparentize($darkSelColor, 0.8);
+          0 0 0 1px color.adjust(mixins.$darkSelColor, $alpha: -0.9),
+          0 6px 4px -4px color.adjust(mixins.$darkSelColor, $alpha: -0.8);
       }
     }
   }
 
   .offset-drag-helper & {
     background-color: var(--gray-050);
-    @include shadow;
+    @include mixins.shadow;
   }
 
   & > .thumb {
@@ -3409,7 +3433,7 @@ table {
     }
 
     &.checkered img {
-      @include checkered-bg(8px);
+      @include mixins.checkered-bg(8px);
     }
 
     img,
@@ -3440,7 +3464,7 @@ table {
     height: var(--icon-size);
     max-width: var(--icon-size) !important;
     max-height: var(--icon-size) !important;
-    @include svg-mask(var(--icon-color, var(--ui-control-color)));
+    @include mixins.svg-mask(var(--icon-color, var(--ui-control-color)));
   }
 
   &.large {
@@ -3530,7 +3554,7 @@ table {
     --light-text-color: var(--white);
     --link-color: var(--white);
     --ui-control-color: var(--white);
-    @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+    @include mixins.custom-color-focus-ring(hsl(var(--light-focus-hsl)));
     color: var(--white);
     background-color: var(
       --custom-sel-bg-color,
@@ -3579,7 +3603,7 @@ table {
       font-size: 0;
       position: absolute;
       inset-block: 0;
-      @include shadow;
+      @include mixins.shadow;
       width: 10px;
       inset-inline-end: -10px;
     }
@@ -3770,10 +3794,10 @@ table {
       inset-block-start: -2px;
       margin-inline: 2px 5px;
       margin-block: 0 0;
-      @include angle(right, var(--light-text-color), calc(1rem / 16));
+      @include mixins.angle(right, var(--light-text-color), calc(1rem / 16));
 
       .sel & {
-        @include angle(right, var(--white), calc(1rem / 16));
+        @include mixins.angle(right, var(--white), calc(1rem / 16));
       }
     }
   }
@@ -3836,13 +3860,19 @@ table {
     border-radius: 3px;
 
     --ui-control-bg-color: var(--light-sel-color);
-    --ui-control-hover-bg-color: #{darken($lightSelColor, 5%)};
-    --ui-control-active-bg-color: #{darken($lightSelColor, 10%)};
+    --ui-control-hover-bg-color: #{color.adjust(
+        mixins.$lightSelColor,
+        $lightness: -5%
+      )};
+    --ui-control-active-bg-color: #{color.adjust(
+        mixins.$lightSelColor,
+        $lightness: -10%
+      )};
 
     .chevron-btns {
       display: inline-flex;
       position: relative;
-      background: $white;
+      background: mixins.$white;
 
       --ui-control-height: calc((30rem / 16)); // 1rem == 16px
 
@@ -3855,7 +3885,8 @@ table {
         width: 0;
         height: 0;
         inset-inline-end: 0;
-        border-block-start: calc(var(--ui-control-height) / 2) solid $grey050;
+        border-block-start: calc(var(--ui-control-height) / 2) solid
+          mixins.$grey050;
         border-inline-start: calc(var(--ui-control-height) / 2) solid
           transparent;
       }
@@ -3867,7 +3898,8 @@ table {
         position: absolute;
         inset-block-start: calc(var(--ui-control-height) / 2);
         inset-inline-end: 0;
-        border-block-end: calc(var(--ui-control-height) / 2) solid $grey050;
+        border-block-end: calc(var(--ui-control-height) / 2) solid
+          mixins.$grey050;
         border-inline-start: calc(var(--ui-control-height) / 2) solid
           transparent;
       }
@@ -3993,7 +4025,7 @@ table {
       inset-inline-start: calc(var(--pane-padding, 24px) * -1);
       width: calc(100% + var(--pane-padding, 24px) + var(--pane-padding, 24px));
       height: 100%;
-      background: transparentize($white, 0.25);
+      background: color.adjust(mixins.$white, $alpha: -0.25);
       border-radius: var(--large-border-radius);
     }
   }
@@ -4180,7 +4212,7 @@ table {
     }
 
     .row::after {
-      @include clearafter;
+      @include mixins.clearafter;
     }
 
     .move,
@@ -4491,7 +4523,7 @@ table.editable {
             inset-inline-start: 0;
             width: 100%;
             height: 100%;
-            background-color: transparentize($grey050, 0.25);
+            background-color: color.adjust(mixins.$grey050, $alpha: -0.25);
             user-select: none;
           }
         }
@@ -5192,7 +5224,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
 }
 
 .elementselect .progress-shade {
-  background-color: transparentize($white, 0.2);
+  background-color: color.adjust(mixins.$white, $alpha: -0.2);
   width: 100%;
   height: 100%;
   position: absolute;
@@ -5263,7 +5295,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
 .pane {
   --pane-padding: var(--xl);
   --border: 1px solid var(--hairline-color);
-  @include pane;
+  @include mixins.pane;
   position: relative;
   margin-block: 14px;
   margin-inline: 0;
@@ -5288,7 +5320,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   &.hairline {
     background-color: transparent !important;
     box-shadow: none;
-    border: 1px solid #{transparentize($inputColor, 0.75)} !important;
+    border: 1px solid #{color.adjust(mixins.$inputColor, $alpha: -0.75)} !important;
   }
 
   &.no-border {
@@ -5334,14 +5366,14 @@ table.data tbody tr:not(.disabled).active-drop-target {
   padding-inline: var(--xl);
   min-height: 45px;
   box-sizing: border-box;
-  box-shadow: inset 0 -1px 0 0 transparentize($grey300, 0.75);
+  box-shadow: inset 0 -1px 0 0 color.adjust(mixins.$grey300, $alpha: -0.75);
   border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
   background-color: var(--gray-050);
 
   .header-btn {
     margin-block: 2px;
     margin-inline: 0;
-    @include header-btn;
+    @include mixins.header-btn;
   }
 
   .spinner {
@@ -5418,7 +5450,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
         text-decoration: none;
       }
 
-      @include focus-styles {
+      @include mixins.focus-styles {
         box-shadow: none;
 
         .tab-label {
@@ -5442,7 +5474,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
         cursor: default;
         box-shadow:
           inset 0 2px 0 var(--custom-text-color, var(--highlight-color)),
-          0 0 0 1px $hairlineColor,
+          0 0 0 1px mixins.$hairlineColor,
           0 2px 12px var(--custom-sel-tab-shadow-color, var(--gray-200));
         color: var(--tab-label-color);
         background-color: var(--white) !important;
@@ -5532,7 +5564,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
       background-color: var(--yellow-050) !important;
       box-shadow:
         0 0 0 1px var(--yellow-300),
-        0 2px 12px transparentize($grey200, 0.5);
+        0 2px 12px color.adjust(mixins.$grey200, $alpha: -0.5);
 
       p {
         margin-block-end: 5px;
@@ -5543,12 +5575,12 @@ table.data tbody tr:not(.disabled).active-drop-target {
 
         &:hover,
         &:focus {
-          background-color: darken($yellow300, 10%);
+          background-color: color.adjust(mixins.$yellow300, $lightness: -10%);
         }
 
         &:active,
         &[aria-expanded='true'] {
-          background-color: darken($yellow300, 15%);
+          background-color: color.adjust(mixins.$yellow300, $lightness: -15%);
         }
       }
     }
@@ -5586,7 +5618,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
     border-block-start-color: var(--hairline-color);
   }
 
-  @include placeholder-styles(var(--gray-500));
+  @include mixins.placeholder-styles(var(--gray-500));
 
   .text {
     background-color: transparent !important;
@@ -5637,7 +5669,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
     margin-block-end: var(--spacing);
 
     &:not(:focus) {
-      border-color: transparentize($inputColor, 0.6);
+      border-color: color.adjust(mixins.$inputColor, $alpha: -0.6);
     }
   }
 }
@@ -5673,14 +5705,14 @@ $min2ColWidth: 400px;
       }
 
       &.add {
-        background-color: darken($grey050, 2%);
+        background-color: color.adjust(mixins.$grey050, $lightness: -2%);
 
         &::before {
           position: absolute;
           inset-inline-start: 0;
           width: 31px;
           text-align: end;
-          @include icon;
+          @include mixins.icon;
           content: 'plus';
           color: var(--light-text-color);
         }
@@ -5866,7 +5898,7 @@ $min2ColWidth: 400px;
       margin-inline: -24px !important;
       padding-block: 14px;
       padding-inline: 24px;
-      background-color: darken($grey050, 2%);
+      background-color: color.adjust(mixins.$grey050, $lightness: -2%);
     }
 
     blockquote.note {
@@ -5951,7 +5983,7 @@ $min2ColWidth: 400px;
 
 .modal,
 .hud {
-  @include modal;
+  @include mixins.modal;
 }
 
 .slideout-shade {
@@ -5989,8 +6021,8 @@ $min2ColWidth: 400px;
   position: absolute;
   background-color: var(--white);
   box-shadow:
-    0 0 0 1px transparentize($grey400, 0.75),
-    0 25px 100px transparentize($grey900, 0.5) !important;
+    0 0 0 1px color.adjust(mixins.$grey400, $alpha: -0.75),
+    0 25px 100px color.adjust(mixins.$grey900, $alpha: -0.5) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -6128,7 +6160,7 @@ $min2ColWidth: 400px;
     & > .so-sidebar {
       position: absolute;
       inset-block-start: 0;
-      @include pane;
+      @include mixins.pane;
       width: 350px;
       height: 100%;
       max-width: 100%;
@@ -6155,7 +6187,7 @@ $min2ColWidth: 400px;
     margin-inline: var(--neg-padding);
     padding-block: 5px;
     padding-inline: var(--padding);
-    @include pane;
+    @include mixins.pane;
     background-color: var(--gray-050);
     z-index: 3;
 
@@ -6288,11 +6320,11 @@ $min2ColWidth: 400px;
 .slideout-shade,
 .modal-shade {
   &:not(.dark) {
-    background-color: transparentize($grey400, 0.65) !important;
+    background-color: color.adjust(mixins.$grey400, $alpha: -0.65) !important;
   }
 
   &.dark {
-    background-color: transparentize($grey900, 0.5) !important;
+    background-color: color.adjust(mixins.$grey900, $alpha: -0.5) !important;
   }
 
   &.blurred {
@@ -6328,7 +6360,7 @@ $min2ColWidth: 400px;
     padding-inline-start: 76px;
 
     &::before {
-      @include icon;
+      @include mixins.icon;
       margin-inline: -58px 0;
       margin-block: -6px 0;
       float: inline-start;
@@ -6342,7 +6374,7 @@ $min2ColWidth: 400px;
     padding-inline-start: 76px;
 
     &::before {
-      @include icon;
+      @include mixins.icon;
       margin-inline: -56px 0;
       margin-block: -14px 0;
       float: inline-start;
@@ -6452,7 +6484,7 @@ $min2ColWidth: 400px;
   ::-webkit-scrollbar-thumb {
     border-radius: 8px;
     border: 2px solid transparent;
-    background-color: transparentize($black, 0.5);
+    background-color: color.adjust(mixins.$black, $alpha: -0.5);
   }
 
   ::-webkit-scrollbar-track {
@@ -6474,7 +6506,7 @@ $min2ColWidth: 400px;
 
   &.checkered img {
     background-color: var(--white);
-    @include checkered-bg(17px);
+    @include mixins.checkered-bg(17px);
   }
 
   &.editable {
@@ -6491,7 +6523,7 @@ $min2ColWidth: 400px;
       height: 100%;
       inset-inline-start: 0;
       inset-block-start: 0;
-      background-color: transparentize($grey900, 0.2);
+      background-color: color.adjust(mixins.$grey900, $alpha: -0.2);
     }
 
     .spinner {
@@ -6545,8 +6577,8 @@ $min2ColWidth: 400px;
       --interaction-background-color: var(--gray-700);
       background-color: var(--gray-600);
       color: var(--white);
-      @include light-on-dark-text;
-      @include two-color-focus-ring($light-button: false);
+      @include mixins.light-on-dark-text;
+      @include mixins.two-color-focus-ring($light-button: false);
 
       &:hover {
         background-color: var(--interaction-background-color) !important;
@@ -6684,7 +6716,7 @@ $min2ColWidth: 400px;
 
   .nav-toggle {
     margin-inline-start: 4px;
-    @include touch-target;
+    @include mixins.touch-target;
     color: var(--ui-control-color);
 
     &:hover {
@@ -6701,7 +6733,7 @@ $min2ColWidth: 400px;
   }
 
   .nav-close {
-    @include touch-target;
+    @include mixins.touch-target;
   }
 }
 
@@ -6742,7 +6774,7 @@ $min2ColWidth: 400px;
           background: var(--gray-050);
           overflow: hidden;
           border: 2px solid var(--white);
-          box-shadow: 0 1px 2px 1px transparentize($grey900, 0.9);
+          box-shadow: 0 1px 2px 1px color.adjust(mixins.$grey900, $alpha: -0.9);
 
           img,
           svg {
@@ -6962,7 +6994,7 @@ $min2ColWidth: 400px;
     gap: 8px;
     justify-content: space-between;
     flex-wrap: wrap;
-    @include pane;
+    @include mixins.pane;
     padding-block: var(--s);
     padding-inline: var(--padding);
     background-color: var(--gray-050);
@@ -7034,7 +7066,7 @@ $min2ColWidth: 400px;
   font-size: 1rem;
   position: relative;
 
-  @include focus-styles {
+  @include mixins.focus-styles {
     // Unset default
     box-shadow: none;
     color: var(--white);
@@ -7055,7 +7087,7 @@ $min2ColWidth: 400px;
 .menu,
 .ui-datepicker,
 .ui-timepicker-list {
-  @include menu-styles;
+  @include mixins.menu-styles;
 }
 
 .ui-datepicker,
@@ -7164,8 +7196,8 @@ $min2ColWidth: 400px;
           padding-inline: 4px;
           border-radius: var(--medium-border-radius);
           box-shadow:
-            0 0 0 1px transparentize($grey600, 0.75),
-            0 1px 3px -1px transparentize($grey600, 0.5);
+            0 0 0 1px color.adjust(mixins.$grey600, $alpha: -0.75),
+            0 1px 3px -1px color.adjust(mixins.$grey600, $alpha: -0.5);
         }
       }
     }
@@ -7204,7 +7236,7 @@ $min2ColWidth: 400px;
   &:not(.menu--disclosure) ul li a,
   ul li .menu-item,
   ul li .menu-option {
-    color: $menuOptionColor;
+    color: mixins.$menuOptionColor;
     text-decoration: none;
     cursor: default;
   }
@@ -7237,7 +7269,7 @@ $min2ColWidth: 400px;
       inset-block-start: 1px;
       width: 100%;
       height: 100%;
-      @include svg-mask(var(--icon-color, var(--ui-control-color)));
+      @include mixins.svg-mask(var(--icon-color, var(--ui-control-color)));
     }
 
     &.error {
@@ -7247,7 +7279,7 @@ $min2ColWidth: 400px;
       }
 
       span.icon:not([data-icon]) svg {
-        @include svg-mask(var(--error-color));
+        @include mixins.svg-mask(var(--error-color));
       }
     }
   }
@@ -7260,7 +7292,7 @@ $min2ColWidth: 400px;
 .menu:not(.menu--disclosure, :hover) ul li a:not(.disabled).hover,
 .menu:not(.menu--disclosure, :hover) ul li .menu-item:not(.sel, .disabled).hover,
 .menu:not(.menu--disclosure, :hover) ul li .menu-option:not(.sel, .disabled).hover {
-  @include menu-item-active-styles;
+  @include mixins.menu-item-active-styles;
 
   // Pretty gnarly, but needs to override the default hover styles with this selector
   .status:not(.on, .live, .active, .enabled, .all) {
@@ -7295,7 +7327,7 @@ $min2ColWidth: 400px;
     --focus-ring: var(--inner-focus-ring);
 
     &:hover {
-      @include disclosure-link-hover-styles;
+      @include mixins.disclosure-link-hover-styles;
     }
   }
 }
@@ -7361,7 +7393,7 @@ $min2ColWidth: 400px;
 .shadow-box {
   border-radius: var(--large-border-radius);
   border: 1px solid var(--gray-200);
-  @include shadow;
+  @include mixins.shadow;
 }
 
 table.shadow-box,
@@ -7418,7 +7450,7 @@ table.editable {
 .border-box,
 .selectize.multiselect .selectize-input,
 .multiselect > select {
-  @include input-styles;
+  @include mixins.input-styles;
 }
 
 .text,
@@ -7426,11 +7458,11 @@ table.editable {
 .border-box,
 .selectize.multiselect .selectize-input {
   &.focus {
-    @include input-focused-styles;
+    @include mixins.input-focused-styles;
   }
 
-  @include focus-styles {
-    @include input-focused-styles;
+  @include mixins.focus-styles {
+    @include mixins.input-focused-styles;
   }
 }
 
@@ -7458,7 +7490,7 @@ textarea.text.fullwidth {
 
 .multitext .multitextrow {
   &::after {
-    @include clearafter;
+    @include mixins.clearafter;
   }
 
   &:first-child .text {
@@ -7527,7 +7559,7 @@ textarea.text.fullwidth {
   & > .flex {
     & > div {
       &.text-link {
-        border: 1px solid transparentize($inputColor, 0.75);
+        border: 1px solid color.adjust(mixins.$inputColor, $alpha: -0.75);
         border-radius: var(--large-border-radius);
         cursor: text;
 
@@ -7782,7 +7814,7 @@ div.checkbox {
     content: '';
     font-size: 0;
     background-color: hsl(212deg 50% 99%);
-    border: 1px solid transparentize($inputColor, 0.6);
+    border: 1px solid color.adjust(mixins.$inputColor, $alpha: -0.6);
     background-clip: padding-box;
   }
 
@@ -7817,7 +7849,7 @@ div.checkbox.indeterminate::before,
   .elements
   .disabled
   .checkbox::before {
-  @include icon;
+  @include mixins.icon;
   line-height: var(--checkbox-size);
   color: var(--gray-900);
 }
@@ -7847,14 +7879,14 @@ div.checkbox.indeterminate::before {
 body:not(.reduce-focus-visibility) {
   input.checkbox:focus + label::before,
   :focus div.checkbox::before {
-    @include input-focused-styles;
+    @include mixins.input-focused-styles;
   }
 }
 
 body.reduce-focus-visibility {
   input.checkbox:focus-visible + label::before,
   :focus-visible div.checkbox::before {
-    @include input-focused-styles;
+    @include mixins.input-focused-styles;
   }
 }
 
@@ -7867,7 +7899,7 @@ body.reduce-focus-visibility {
 
   &::before {
     --checkbox-size: 14px;
-    @include icon;
+    @include mixins.icon;
     content: 'check';
     line-height: var(--checkbox-size);
     font-size: var(--checkbox-size);
@@ -7879,7 +7911,7 @@ body.reduce-focus-visibility {
 }
 
 .monaco-mouse-cursor-text {
-  @include focus-styles {
+  @include mixins.focus-styles {
     box-shadow: none !important;
   }
 }
@@ -7949,7 +7981,7 @@ div.radio::before {
   width: var(--radio-size);
   height: var(--radio-size);
   background-color: hsl(212deg 50% 99%);
-  border: 1px solid transparentize($inputColor, 0.6);
+  border: 1px solid color.adjust(mixins.$inputColor, $alpha: -0.6);
 }
 
 input.radio + label::after,
@@ -7970,14 +8002,14 @@ div.radio.checked::after,
 body:not(.reduce-focus-visibility) {
   input.radio:focus + label::before,
   :focus div.radio::before {
-    @include input-focused-styles;
+    @include mixins.input-focused-styles;
   }
 }
 
 body.reduce-focus-visibility {
   input.radio:focus-visible + label::before,
   :focus-visible div.radio::before {
-    @include input-focused-styles;
+    @include mixins.input-focused-styles;
   }
 }
 
@@ -7987,8 +8019,8 @@ body.reduce-focus-visibility {
   font-size: 14px;
   appearance: none;
 
-  @include focus-styles {
-    @include input-focused-styles;
+  @include mixins.focus-styles {
+    @include mixins.input-focused-styles;
   }
 
   option {
@@ -8103,7 +8135,7 @@ td.errors .text,
       border-radius: 13px;
 
       &::before {
-        @include icon;
+        @include mixins.icon;
         content: 'filter';
         color: var(--medium-text-color);
       }
@@ -8190,7 +8222,7 @@ td.errors .text,
   background: transparent;
 
   &::before {
-    @include icon;
+    @include mixins.icon;
     content: 'remove';
   }
 
@@ -8283,7 +8315,7 @@ td.errors .text,
   width: 7em;
 }
 
-@include placeholder-styles(var(--gray-400));
+@include mixins.placeholder-styles(var(--gray-400));
 
 /* Kill IE's special text features */
 ::-ms-reveal,
@@ -8320,33 +8352,33 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
 // Selects
 .select:not(.selectize),
 .select:not(.selectize) select {
-  @include select-styles;
+  @include mixins.select-styles;
 }
 
 .select:not(.selectize) {
-  @include select-container-styles;
+  @include mixins.select-container-styles;
 }
 
 .select:not(.selectize)::after {
-  @include select-arrow-styles;
+  @include mixins.select-arrow-styles;
 }
 
 .select:not(.selectize) select {
-  @include select-input-styles;
+  @include mixins.select-input-styles;
   white-space: pre;
 }
 
 .select:not(.selectize).fullwidth select {
-  @include select-input-fullwidth-styles;
+  @include mixins.select-input-fullwidth-styles;
 }
 
 .select:not(.selectize) select {
   &:hover {
-    @include select-input-focused-styles;
+    @include mixins.select-input-focused-styles;
   }
 
-  @include focus-styles {
-    @include select-input-focused-styles;
+  @include mixins.focus-styles {
+    @include mixins.select-input-focused-styles;
   }
 }
 
@@ -8398,7 +8430,7 @@ body .selectize-dropdown {
 
 /* single select styles */
 .selectize.select {
-  @include placeholder-styles(var(--gray-700));
+  @include mixins.placeholder-styles(var(--gray-700));
   height: 34px;
 
   &:not(.fullwidth) {
@@ -8412,15 +8444,15 @@ body .selectize-dropdown {
 }
 
 .selectize.select .selectize-control {
-  @include select-container-styles;
+  @include mixins.select-container-styles;
 
   &::after {
-    @include select-arrow-styles;
+    @include mixins.select-arrow-styles;
   }
 }
 
 .selectize.select .selectize-input {
-  @include select-styles;
+  @include mixins.select-styles;
 
   &.focus {
     box-shadow: var(--focus-ring);
@@ -8428,7 +8460,7 @@ body .selectize-dropdown {
 }
 
 .selectize.select .selectize-input {
-  @include select-input-styles;
+  @include mixins.select-input-styles;
 }
 
 .selectize.select .selectize-control,
@@ -8442,18 +8474,18 @@ body .selectize-dropdown {
   padding-block-end: 3px;
 
   &.focus {
-    @include input-focused-styles;
+    @include mixins.input-focused-styles;
   }
 
   & > .item {
-    @include token-styles;
+    @include mixins.token-styles;
     display: inline-flex;
     flex-direction: row;
     padding-block: 3px !important;
     padding-inline: 7px !important;
 
     &.active {
-      @include active-token-styles;
+      @include mixins.active-token-styles;
     }
 
     & > .remove {
@@ -8472,7 +8504,7 @@ body .selectize-dropdown {
 
       &::before {
         font-size: 14px;
-        @include icon;
+        @include mixins.icon;
         content: 'remove';
       }
     }
@@ -8487,7 +8519,7 @@ body {
     [data-selectable],
     .option,
     .optgroup-header {
-      @include menu-item-styles;
+      @include mixins.menu-item-styles;
     }
 
     .optgroup {
@@ -8503,7 +8535,7 @@ body {
     }
 
     .optgroup-header {
-      @include h6-styles;
+      @include mixins.h6-styles;
       margin: 0;
       padding-block: 4px;
       padding-inline: 0;
@@ -8515,7 +8547,7 @@ body {
     }
 
     .selected {
-      @include menu-item-active-styles;
+      @include mixins.menu-item-active-styles;
       cursor: default !important;
 
       .light {
@@ -8525,7 +8557,7 @@ body {
   }
 
   .selectize-dropdown-content {
-    @include menu-styles;
+    @include mixins.menu-styles;
     max-height: 70vh;
 
     .option {
@@ -8534,7 +8566,7 @@ body {
 
     & > div[data-value='new'] {
       &::before {
-        @include icon;
+        @include mixins.icon;
         content: 'plus';
         margin-inline-end: 5px;
       }
@@ -8592,11 +8624,11 @@ body {
 }
 
 .ui-datepicker-prev::after {
-  @include angle(left);
+  @include mixins.angle(left);
 }
 
 .ui-datepicker-next::after {
-  @include angle(right);
+  @include mixins.angle(right);
 }
 
 .ui-datepicker-title {
@@ -8634,7 +8666,7 @@ body {
 .ui-datepicker-calendar td a.ui-state-active {
   background-color: var(--dark-sel-color);
   color: var(--white);
-  @include light-on-dark-text;
+  @include mixins.light-on-dark-text;
   cursor: default;
 }
 
@@ -8670,7 +8702,7 @@ body {
 .ui-timepicker-list li.ui-timepicker-selected {
   background-color: var(--dark-sel-color);
   color: var(--white);
-  @include light-on-dark-text;
+  @include mixins.light-on-dark-text;
   cursor: default;
 }
 
@@ -8747,7 +8779,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  @include input-styles;
+  @include mixins.input-styles;
   border-radius: var(--ui-control-border-radius);
   width: var(--ui-control-height);
   height: var(--ui-control-height);
@@ -8756,7 +8788,7 @@ body {
   svg {
     width: calc(20rem / 16);
     height: calc(20rem / 16);
-    @include svg-mask(var(--ui-control-color));
+    @include mixins.svg-mask(var(--ui-control-color));
   }
 }
 
@@ -8842,7 +8874,7 @@ ul.errors li {
   height: 100%;
 
   &.no-access {
-    background-color: transparentize($grey900, 0.5);
+    background-color: color.adjust(mixins.$grey900, $alpha: -0.5);
   }
 
   .pane {
@@ -8850,7 +8882,7 @@ ul.errors li {
     margin-block-start: -33px !important;
     margin-inline: auto;
     width: 320px;
-    box-shadow: 0 25px 100px transparentize($grey900, 0.5);
+    box-shadow: 0 25px 100px color.adjust(mixins.$grey900, $alpha: -0.5);
   }
 }
 
@@ -8920,27 +8952,27 @@ body.licensing-issues {
   width: 100%;
   border-radius: var(--large-border-radius);
   background-color: var(--white);
-  @include shadow;
+  @include mixins.shadow;
   box-sizing: border-box;
   padding-block: 0;
   padding-inline: 14px;
   text-align: start;
-  @include sans-serif-font;
+  @include mixins.sans-serif-font;
   font-size: 1em !important;
 
   .autosuggest__results-before {
-    @include h6-styles;
+    @include mixins.h6-styles;
     margin-block-start: 14px !important;
   }
 
   .autosuggest__results-item {
-    @include menu-item-styles;
+    @include mixins.menu-item-styles;
     overflow: hidden;
     text-overflow: ellipsis;
 
     &:hover,
     &.autosuggest__results-item--highlighted {
-      @include menu-item-active-styles;
+      @include mixins.menu-item-active-styles;
       cursor: pointer;
     }
   }

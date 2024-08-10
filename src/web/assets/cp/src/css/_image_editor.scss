@@ -1,5 +1,6 @@
 @charset "UTF-8";
-@import '@craftcms/sass/mixins';
+@use 'sass:color';
+@use '@craftcms/sass/mixins';
 
 /* No Scroll */
 html.noscroll,
@@ -13,8 +14,8 @@ html.noscroll body {
 .modal.imageeditor {
   background-color: var(--gray-900);
   color: var(--white);
-  @include light-on-dark-text;
-  @include light-focus-ring;
+  @include mixins.light-on-dark-text;
+  @include mixins.light-focus-ring;
   opacity: 0;
   user-select: none;
 }
@@ -109,7 +110,7 @@ html.noscroll body {
   }
 
   &.selected {
-    background-color: darken($grey900, 5%);
+    background-color: color.adjust(mixins.$grey900, $lightness: -5%);
 
     &::before {
       width: 2px;
@@ -137,7 +138,7 @@ html.noscroll body {
 }
 
 .modal.imageeditor .body .tabs ul li:hover {
-  background-color: darken($grey900, 2%);
+  background-color: color.adjust(mixins.$grey900, $lightness: -2%);
 }
 
 .modal.imageeditor .body .tabs ul li:hover {
@@ -385,7 +386,7 @@ html.noscroll body {
     box-shadow: none;
   }
 
-  @include focus-styles {
+  @include mixins.focus-styles {
     .cursor::after {
       box-shadow: var(--focus-ring);
     }
@@ -491,8 +492,8 @@ html.noscroll body {
   background-image: linear-gradient(
     to right,
     var(--gray-900) 0%,
-    transparentize($grey900, 1) 15%,
-    transparentize($grey900, 1) 85%,
+    color.adjust(mixins.$grey900, $alpha: -1) 15%,
+    color.adjust(mixins.$grey900, $alpha: -1) 85%,
     var(--gray-900) 100%
   );
 }
@@ -501,7 +502,7 @@ html.noscroll body {
 
 .menu.dark {
   background-color: var(--gray-600);
-  @include light-on-dark-text;
+  @include mixins.light-on-dark-text;
 
   ul {
     li {

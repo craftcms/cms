@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import '../../../../../../node_modules/@craftcms/sass/mixins';
+@use '../../../../../../node_modules/@craftcms/sass/mixins';
 
 .login-container {
   .login-form-container {
@@ -124,7 +124,7 @@ body.login {
     padding-inline-start: 68px;
 
     &::before {
-      @include icon;
+      @include mixins.icon;
       display: block;
       position: absolute;
       inset-block-start: 24px;
