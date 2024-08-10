@@ -1586,13 +1586,20 @@ ul.icons {
       }
 
       .icon {
+        position: absolute;
+        top: 12px;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
         img,
         svg {
-          width: 40px;
+          // give Users, Addresses, Categories, and Filesystems icons a little extra breathing room
+          max-width: 50px;
           height: 40px;
-          position: absolute;
-          top: 12px;
-          left: calc(50% - 20px);
         }
 
         &.icon-mask svg {

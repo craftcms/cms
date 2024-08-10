@@ -1,7 +1,12 @@
 # Release Notes for Craft CMS 5
 
 ## Unreleased
+
+- Added `craft\db\afterDown()`.
+- Added `craft\db\afterUp()`.
+- Improved the appearance of some system settings icons.
 - Fixed a bug where Link fields weren’t allowing category groups to be selected, if they didn’t have a URI format for the primary site.
+- Fixed an error that occurred when installing Craft in PostgreSQL. ([#15504](https://github.com/craftcms/cms/issues/15504))
 
 ## 5.3.1 - 2024-08-07
 

@@ -81,8 +81,16 @@ class Install extends Migration
         $this->createIndexes();
         $this->addForeignKeys();
         $this->db->getSchema()->refresh();
-        $this->insertDefaultData();
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function afterUp(): void
+    {
+        $this->insertDefaultData();
+        parent::afterUp();
     }
 
     /**
