@@ -10,6 +10,7 @@
 - Fixed a bug where Matrix fields weren’t retaining the sort order for disabled nested entries. ([#15505](https://github.com/craftcms/cms/issues/15505))
 - Fixed a bug where Link fields weren’t displaying their input if they only had one type selected, and it wasn’t URL. ([#15512](https://github.com/craftcms/cms/issues/15512))
 - Fixed a bug where elements’ `searchScore` values were `null` when ordering an element query by `score`. ([#15513](https://github.com/craftcms/cms/issues/15513))
+- Fixed a bug where Assets fields weren’t storing files that were uploaded to them directly on element save requests. ([#15511](https://github.com/craftcms/cms/issues/15511))
 
 ## 5.3.1 - 2024-08-07
 
