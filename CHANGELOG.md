@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that could occur if a new element was saved recursively. ([#15517](https://github.com/craftcms/cms/issues/15517))
+- Fixed a bug where plugins were being instantiated at the beginning of Craft installation requests, rather than after Craft was installed. ([#15506](https://github.com/craftcms/cms/issues/15506))
 
 ## 4.11.1 - 2024-08-07
 
