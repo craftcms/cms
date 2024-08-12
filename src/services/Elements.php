@@ -1279,6 +1279,11 @@ class Elements extends Component
         $duplicateOf = $element->duplicateOf;
         $element->duplicateOf = null;
 
+        // Force isNewForSite = false here, in case the element is getting saved recursively
+        // (see https://github.com/craftcms/cms/issues/15517)
+        $isNewForSite = $element->isNewForSite;
+        $element->isNewForSite = false;
+
         $success = $this->_saveElementInternal(
             $element,
             $runValidation,
@@ -1290,6 +1295,7 @@ class Elements extends Component
         );
 
         $element->duplicateOf = $duplicateOf;
+        $element->isNewForSite = $isNewForSite;
 
         return $success;
     }

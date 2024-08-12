@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\base\FieldLayoutElement;
-use yii\base\Event;
 
 /**
  * DefineFieldLayoutElementsEvent event class.
