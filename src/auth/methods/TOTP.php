@@ -72,12 +72,20 @@ class TOTP extends BaseAuthMethod
         return self::secretFromDb($this->user->id) !== null;
     }
 
+    public function getSetupData(): array
+    {
+        $secret = $this->secret();
+        return [
+            'secret' => trim($secret),
+            'qrCode' => $this->generateQrCode($secret),
+        ];
+    }
+
     /**
      * @inheritdoc
      */
     public function getSetupHtml(string $containerId): string
     {
-        $secret = $this->secret();
         $totpFormId = sprintf('totp-form-%s', mt_rand());
         $view = Craft::$app->getView();
 
@@ -92,12 +100,11 @@ JS, [
             $containerId,
         ]);
 
-        return $view->renderTemplate('_components/auth/methods/TOTP/setup.twig', [
-            'secret' => $secret,
-            'user' => $this->user,
-            'qrCode' => $this->generateQrCode($secret),
+        $templateData = array_merge($this->getSetupData(), [
             'totpFormId' => $totpFormId,
-        ], View::TEMPLATE_MODE_CP);
+        ]);
+
+        return $view->renderTemplate('_components/auth/methods/TOTP/setup.twig', $templateData, View::TEMPLATE_MODE_CP);
     }
 
     /**
@@ -107,7 +114,7 @@ JS, [
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(TotpAsset::class);
-        return $view->renderTemplate('_components/auth/methods/TOTP/form.twig');
+        return $view->renderTemplate('_components/auth/methods/TOTP/form.twig', [], View::TEMPLATE_MODE_CP);
     }
 
     /**
