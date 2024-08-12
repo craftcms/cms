@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\models\FieldGroup;
-use yii\base\Event;
 
 /**
  * FieldGroupEvent class.
