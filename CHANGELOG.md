@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed an error that could occur if a new element was saved recursively. ([#15517](https://github.com/craftcms/cms/issues/15517))
+
 ## 4.11.1 - 2024-08-07
 
 - Fixed a PHP error that could occur when generating URLs via console requests. ([#15374](https://github.com/craftcms/cms/issues/15374))
