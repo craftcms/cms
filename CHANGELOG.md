@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error that could occur if a new element was saved recursively. ([#15517](https://github.com/craftcms/cms/issues/15517))
+
 ## 5.3.2 - 2024-08-10
 
 - Added `craft\db\afterDown()`.
