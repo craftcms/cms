@@ -65,15 +65,15 @@
   --medium-focus-hsl: #{color.hue(mixins.$mediumFocusColor)},
     #{color.saturation(mixins.$mediumFocusColor)},
     #{color.lightness(mixins.$mediumFocusColor)};
-  --dark-focus-hsl: #{color.hue(mixins.$darkFocusColor)},
-    #{color.saturation(mixins.$darkFocusColor)},
-    #{color.lightness(mixins.$darkFocusColor)};
-  --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    0 0 0 3px hsl(var(--dark-focus-hsl) var(--focus-ring-alpha));
+  --dark-focus-hsl: #{color.hue(mixins.$darkFocusColor)} #{color.saturation(
+      mixins.$darkFocusColor
+    )} #{color.lightness(mixins.$darkFocusColor)};
+  --focus-ring: #{0 0 0 1px hsl(var(--dark-focus-hsl)),
+    0 0 0 3px hsl(var(--dark-focus-hsl) / var(--focus-ring-alpha))};
   --focus-ring-outset: inset 0 0 0 1px currentcolor,
-    0 0 0 3px hsl(var(--dark-focus-hsl) var(--focus-ring-alpha));
+    0 0 0 3px hsl(var(--dark-focus-hsl) / var(--focus-ring-alpha));
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    inset 0 0 0 3px hsl(var(--dark-focus-hsl) var(--focus-ring-alpha));
+    inset 0 0 0 3px hsl(var(--dark-focus-hsl) / var(--focus-ring-alpha));
   --touch-target-size: calc(24rem / 16);
 }
 
