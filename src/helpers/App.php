@@ -973,7 +973,7 @@ class App
             return [
                 'class' => MysqlMutex::class,
                 'db' => $dbConfig,
-                'keyPrefix' => Craft::$app->id,
+                'keyPrefix' => Craft::$app->getEnvId(),
             ];
         }
 
@@ -1027,7 +1027,7 @@ class App
      */
     public static function sessionConfig(): array
     {
-        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->id);
+        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->getEnvId());
 
         return [
             'class' => Session::class,
@@ -1057,7 +1057,7 @@ class App
             $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         }
 
-        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->id);
+        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->getEnvId());
 
         return [
             'class' => WebUser::class,

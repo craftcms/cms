@@ -293,6 +293,19 @@ trait ApplicationTrait
     private array $afterRequestCallbacks = [];
 
     /**
+     * Returns the application ID combined with the environment name.
+     *
+     * @return string
+     * @since 4.12.0
+     * @see id
+     * @see env
+     */
+    public function getEnvId(): string
+    {
+        return $this->env ? sprintf('%s--%s', $this->id, $this->env) : $this->id;
+    }
+
+    /**
      * @inheritdoc
      */
     public function setVendorPath($path): void
