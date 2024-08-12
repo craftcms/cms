@@ -42,8 +42,8 @@ export default Base.extend(
         return;
       }
 
-      const triggerId = this.$trigger.attr('aria-controls');
-      this.$container = $('#' + triggerId);
+      const containerId = this.$trigger.attr('aria-controls');
+      this.$container = $('#' + containerId);
       if (!this.$container.length) {
         // see if it's the next element
         const $next = this.$trigger.next();

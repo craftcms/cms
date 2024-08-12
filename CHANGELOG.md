@@ -1,5 +1,17 @@
 # Release Notes for Craft CMS 4
 
+## 4.11.2 - 2024-08-12
+
+- Fixed an error that could occur if a new element was saved recursively. ([#15517](https://github.com/craftcms/cms/issues/15517))
+- Fixed a bug where plugins were being instantiated at the beginning of Craft installation requests, rather than after Craft was installed. ([#15506](https://github.com/craftcms/cms/issues/15506))
+- Fixed a bug where an unhelpful error message was output when `config/general.php` returned an array with unsupported config settings. ([#15514](https://github.com/craftcms/cms/discussions/15514))
+
+## 4.11.1 - 2024-08-07
+
+- Fixed a PHP error that could occur when generating URLs via console requests. ([#15374](https://github.com/craftcms/cms/issues/15374))
+- Fixed a bug where `craft\filters\Headers` and `craft\filters\Cors` were applied to control panel requests rather than site requests. ([#15495](https://github.com/craftcms/cms/issues/15495))
+- Fixed a JavaScript error.
+
 ## 4.11.0.2 - 2024-08-06
 
 - Fixed an error that could occur on console requests.
