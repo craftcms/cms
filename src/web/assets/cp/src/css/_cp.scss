@@ -115,8 +115,12 @@ $sidebarLinkSecondaryColor: var(--gray-200);
   @include light-focus-ring;
   background-color: var(--gray-800);
 
+  #system-name,
   a {
     color: $sidebarLinkStaticColor;
+  }
+
+  a {
     text-decoration: none;
   }
 
@@ -161,7 +165,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   &:after {
     display: none;
   }
+}
 
+div#system-info {
+  cursor: default;
+}
+
+a#system-info {
   &:focus,
   &:hover {
     background-color: $systemInfoHoverBgColor !important;
