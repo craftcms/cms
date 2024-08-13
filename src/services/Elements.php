@@ -1257,7 +1257,7 @@ class Elements extends Component
      * @param bool $forceTouch Whether to force the `dateUpdated` timestamp to be updated for the element,
      * regardless of whether it’s being resaved
      * @param bool|null $crossSiteValidate Whether the element should be validated across all supported sites
-     * @param bool $saveContent Whether the element’s content should be saved
+     * @param bool $saveContent Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
@@ -1270,7 +1270,7 @@ class Elements extends Component
         ?bool $updateSearchIndex = null,
         bool $forceTouch = false,
         ?bool $crossSiteValidate = false,
-        bool $saveContent = true,
+        bool $saveContent = false,
     ): bool {
         // Force propagation for new elements
         $propagate = !$element->id || $propagate;
@@ -1580,7 +1580,7 @@ class Elements extends Component
 
                     if ($e === null) {
                         try {
-                            $this->_saveElementInternal($element, true, true, $updateSearchIndex, forceTouch: $touch);
+                            $this->_saveElementInternal($element, true, true, $updateSearchIndex, forceTouch: $touch, saveContent: true);
                         } catch (Throwable $e) {
                             if (!$continueOnError) {
                                 throw $e;
@@ -1867,7 +1867,7 @@ class Elements extends Component
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 // Start with $element’s site
-                if (!$this->_saveElementInternal($mainClone, false, false, null, $supportedSites)) {
+                if (!$this->_saveElementInternal($mainClone, false, false, null, $supportedSites, saveContent: true)) {
                     throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
                 }
 
@@ -1958,7 +1958,7 @@ class Elements extends Component
                             }
                         }
 
-                        if (!$this->_saveElementInternal($siteClone, false, false, supportedSites: $supportedSites)) {
+                        if (!$this->_saveElementInternal($siteClone, false, false, supportedSites: $supportedSites, saveContent: true)) {
                             throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site $siteElement->siteId: " . implode(', ', $siteClone->getFirstErrors()));
                         }
 
@@ -3441,7 +3441,7 @@ class Elements extends Component
      * @param bool $forceTouch Whether to force the `dateUpdated` timestamp to be updated for the element,
      * regardless of whether it’s being resaved
      * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
-     * @param bool $saveContent Whether the element’s content should be saved
+     * @param bool $saveContent Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
@@ -3455,7 +3455,7 @@ class Elements extends Component
         ?array $supportedSites = null,
         bool $forceTouch = false,
         bool $crossSiteValidate = false,
-        bool $saveContent = true,
+        bool $saveContent = false,
     ): bool {
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
@@ -3718,19 +3718,30 @@ class Elements extends Component
                     }
                 }
 
-                if ($saveContent) {
-                    // Set the field values
+                // if we're supposed to save all the content
+                if ($saveContent || !empty($dirtyFields)) {
+                    $oldContent = $siteSettingsRecord->content; // we'll need that if we're not saving all the content
                     $content = [];
                     if ($fieldLayout) {
                         foreach ($fieldLayout->getCustomFields() as $field) {
-                            if ($field::dbType() !== null) {
+                            if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
                                 $serializedValue = $field->serializeValue($element->getFieldValue($field->handle), $element);
                                 if ($serializedValue !== null) {
                                     $content[$field->layoutElement->uid] = $serializedValue;
+                                } elseif (!$saveContent) {
+                                    // if serialized value is null, and we're not saving all the content,
+                                    // we need to register the fact that the new value is empty
+                                    unset($oldContent[$field->layoutElement->uid]);
                                 }
                             }
                         }
                     }
+
+                    // if we're only saving dirty fields, we need to merge the new dirty values with what's already in the db
+                    if (!$saveContent && $oldContent) {
+                        $content = $content + $oldContent;
+                    }
+
                     $siteSettingsRecord->content = $content ?: null;
                 }
 
@@ -3781,7 +3792,7 @@ class Elements extends Component
                                     $siteId,
                                     $siteElement,
                                     crossSiteValidate: $runValidation && $crossSiteValidate,
-                                    saveContent: $saveContent,
+                                    saveContent: true,
                                 )) {
                                     throw new InvalidConfigException();
                                 }

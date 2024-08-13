@@ -930,7 +930,7 @@ class Cp
             function() use ($component): string {
                 $actionMenuItems = array_filter(
                     $component->getActionMenuItems(),
-                    fn(array $item) => !($item['destructive'] ?? false),
+                    fn(array $item) => $item['showInChips'] ?? !($item['destructive'] ?? false)
                 );
 
                 if (empty($actionMenuItems)) {

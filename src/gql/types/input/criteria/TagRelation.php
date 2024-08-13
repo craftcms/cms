@@ -8,27 +8,28 @@
 namespace craft\gql\types\input\criteria;
 
 use craft\gql\arguments\elements\Tag as TagArguments;
+use craft\gql\arguments\RelationCriteria;
 use craft\gql\GqlEntityRegistry;
 use GraphQL\Type\Definition\InputObjectType;
 
 /**
- * Class Tag
+ * Class TagRelation
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.6.0
+ * @since 5.4.0
  */
-class Tag extends InputObjectType
+class TagRelation extends InputObjectType
 {
     /**
      * @return mixed
      */
     public static function getType(): mixed
     {
-        $typeName = 'TagCriteriaInput';
+        $typeName = 'TagRelationCriteriaInput';
 
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => fn() => TagArguments::getArguments(),
+            'fields' => fn() => TagArguments::getArguments() + RelationCriteria::getArguments(),
         ]));
     }
 }
