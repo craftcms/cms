@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where the system name in the control panel’s global sidebar was getting hyperlinked even if the primary site didn’t have a URL. ([#15525](https://github.com/craftcms/cms/issues/15525))
 - Fixed a right-to-left styling issue.
 
 ## 4.11.2 - 2024-08-12
