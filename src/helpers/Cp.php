@@ -2784,7 +2784,7 @@ JS;
         array $config = [],
     ): array {
         if ($sites === null) {
-            $sites = Craft::$app->getSites()->getAllSites();
+            $sites = Craft::$app->getSites()->getEditableSites();
         }
 
         $config += [

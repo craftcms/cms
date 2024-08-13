@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where site crumbs on global set edit pages were including sites the user didn’t have permission to access. ([#15524](https://github.com/craftcms/cms/issues/15524))
 - Fixed a right-to-left styling issue.
 
 ## 5.3.3 - 2024-08-12
