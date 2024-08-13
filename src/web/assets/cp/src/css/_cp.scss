@@ -145,7 +145,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   &:after {
     display: none;
   }
+}
 
+div#system-info {
+  cursor: default;
+}
+
+a#system-info {
   &:focus,
   &:hover {
     text-decoration: none;

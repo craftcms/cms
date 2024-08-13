@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fixed a bug where the system name in the control panel’s global sidebar was getting hyperlinked even if the primary site didn’t have a URL. ([#15525](https://github.com/craftcms/cms/issues/15525))
+- Fixed a bug where site crumbs on global set edit pages were including sites the user didn’t have permission to access. ([#15524](https://github.com/craftcms/cms/issues/15524))
+- Fixed a bug where multi-instance relation fields could get combined field values. ([#15526](https://github.com/craftcms/cms/issues/15526))
 - Fixed a right-to-left styling issue.
 
 ## 5.3.3 - 2024-08-12
