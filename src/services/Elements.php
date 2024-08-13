@@ -775,7 +775,7 @@ class Elements extends Component
         ];
 
         try {
-            $rootElement = ElementHelper::rootElement($element);
+            $rootElement = $element->getRootOwner();
         } catch (Throwable) {
             $rootElement = $element;
         }
