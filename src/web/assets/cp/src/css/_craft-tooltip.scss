@@ -37,22 +37,23 @@
   border-width: 1px;
   border-color: transparent;
 
+  // Not using logical properties here because `data-placement` will change based on direction via JS
   &[data-placement^='bottom'] {
-    border-inline-color: var(--dark-hairline-color) transparent;
-    border-block-color: var(--dark-hairline-color) transparent;
+    border-color: var(--dark-hairline-color) transparent transparent
+      var(--dark-hairline-color);
   }
 
   &[data-placement^='top'] {
-    border-inline-color: transparent var(--dark-hairline-color);
-    border-block-color: transparent var(--dark-hairline-color);
+    border-color: transparent var(--dark-hairline-color)
+      var(--dark-hairline-color) transparent;
   }
 
   &[data-placement^='right'] {
-    border-inline-color: var(--dark-hairline-color) transparent;
-    border-block-color: transparent var(--dark-hairline-color);
+    border-color: transparent transparent var(--dark-hairline-color)
+      var(--dark-hairline-color);
   }
   &[data-placement^='left'] {
-    border-inline-color: transparent var(--dark-hairline-color);
-    border-block-color: var(--dark-hairline-color) transparent;
+    border-color: var(--dark-hairline-color) var(--dark-hairline-color)
+      transparent transparent;
   }
 }
