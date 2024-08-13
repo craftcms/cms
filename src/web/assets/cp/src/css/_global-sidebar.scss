@@ -229,6 +229,11 @@
       top: 50%;
       background-color: currentColor;
       transform: translateY(-50%) translateX(-50%);
+
+      // No logical properties for transforms
+      .rtl & {
+        transform: translateY(-50%) translateX(50%);
+      }
     }
   }
 
