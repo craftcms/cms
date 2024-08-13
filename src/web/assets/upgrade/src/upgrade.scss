@@ -6,41 +6,43 @@ $iconSize: 46px;
 #content {
   #graphic {
     display: block;
-    margin: 200px auto 0;
+    margin-block: 200px 0;
+    margin-inline: auto;
 
     &.success {
-      background-image: url(images/success.png);
+      background-image: url('images/success.png');
     }
 
     &.error {
-      background-image: url(images/error.png);
+      background-image: url('images/error.png');
     }
   }
 
   #status {
-    margin: 20px auto 250px;
+    margin-block: 20px 250px;
+    margin-inline: auto;
     text-align: center;
     font-size: 16px;
     color: $grey500;
   }
 
   .readable:not(:first-child) {
-    margin-top: 24px;
+    margin-block-start: 24px;
   }
 
   #plugins {
-    margin-top: 24px;
+    margin-block-start: 24px;
 
     tbody {
       th {
         position: relative;
-        padding-left: $iconSize + 12 + 12;
+        padding-inline-start: $iconSize + 12 + 12;
         height: $iconSize + 20;
 
         .plugin-icon {
           position: absolute;
-          top: 10px;
-          left: 12px;
+          inset-block-start: 10px;
+          inset-inline-start: 12px;
           width: $iconSize;
           height: $iconSize;
 
@@ -53,12 +55,13 @@ $iconSize: 46px;
       }
 
       .plugin-developer {
-        margin-top: 3px;
-        &:before {
+        margin-block-start: 3px;
+
+        &::before {
           @include icon;
           content: 'building';
-          margin-top: -3px;
-          @include margin-right(4px);
+          margin-block-start: -3px;
+          margin-inline-end: 4px;
           color: $grey300;
         }
 
@@ -69,7 +72,7 @@ $iconSize: 46px;
       }
 
       .plugin-badges > div:not(:last-child) {
-        @include margin-right(5px);
+        margin-inline-end: 5px;
       }
 
       .plugin-status,
@@ -77,8 +80,10 @@ $iconSize: 46px;
         display: inline-block;
         border: 1px solid $grey600;
         border-radius: $smallBorderRadius;
-        padding: 0 7px 1px;
+        padding-block: 0 1px;
+        padding-inline: 7px;
       }
+
       .plugin-status {
         text-transform: uppercase;
         color: $grey600;
@@ -104,27 +109,23 @@ $iconSize: 46px;
       }
 
       .plugin-note {
-        margin-top: 3px;
+        margin-block-start: 3px;
         color: $lightTextColor;
       }
     }
   }
 }
 
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-  only screen and (-moz-min-device-pixel-ratio: 1.5),
-  only screen and (-o-min-device-pixel-ratio: 3/2),
-  only screen and (min-device-pixel-ratio: 1.5),
-  only screen and (min-resolution: 1.5dppx) {
+@media only screen and (resolution >= 1.5dppx) {
   #content {
     #graphic {
       &.success {
-        background-image: url(images/success_2x.png);
+        background-image: url('images/success_2x.png');
         background-size: 48px;
       }
 
       &.error {
-        background-image: url(images/error_2x.png);
+        background-image: url('images/error_2x.png');
         background-size: 48px;
       }
     }
