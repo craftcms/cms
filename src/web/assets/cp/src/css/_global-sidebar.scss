@@ -186,6 +186,11 @@
     height: 95%;
     width: var(--nav-item-indicator-size);
     border-radius: var(--small-border-radius);
+
+    // No logical properties for transforms
+    .rtl & {
+      transform: translateY(-50%) translateX(150%);
+    }
   }
 
   &:focus-visible,
