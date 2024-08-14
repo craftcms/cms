@@ -181,6 +181,7 @@
   min-height: 30px;
   font-weight: 500;
 
+  // Active indicator
   &::before {
     content: '';
     position: absolute;
@@ -190,6 +191,11 @@
     height: 95%;
     width: var(--nav-item-indicator-size);
     border-radius: var(--small-border-radius);
+
+    // No logical properties for transforms
+    .rtl & {
+      transform: translateY(-50%) translateX(150%);
+    }
   }
 
   &:focus-visible,
@@ -211,16 +217,28 @@
   min-height: 26px;
 
   &::before {
-    transform: translateY(-50%);
-    inset-inline-start: calc(
-      var(--xs) + calc(var(--nav-item-prefix-width) / 2) -
-        (var(--nav-item-indicator-size) / 2)
-    );
-    width: var(--nav-item-indicator-size);
-    height: var(--nav-item-indicator-size);
-    border-radius: 100%;
-    inset-block-start: 50%;
-    background-color: currentcolor;
+    display: none;
+  }
+
+  .sidebar-action__prefix {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 50%;
+      width: var(--nav-item-indicator-size);
+      height: var(--nav-item-indicator-size);
+      border-radius: 100%;
+      inset-block-start: 50%;
+      background-color: currentcolor;
+      transform: translateY(-50%) translateX(-50%);
+
+      // No logical properties for transforms
+      .rtl & {
+        transform: translateY(-50%) translateX(50%);
+      }
+    }
   }
 
   &[aria-current='page'],
@@ -287,7 +305,6 @@
   width: var(--nav-item-prefix-width);
   aspect-ratio: var(--nav-item-prefix-ratio);
   line-height: 0;
-  flex-shrink: 0;
 }
 
 .sidebar-action__label {
@@ -375,12 +392,6 @@ States
 
     .sidebar-action--sub {
       min-height: 26px;
-
-      &::before {
-        inset-inline-start: 50%;
-        inset-block-start: 50%;
-        transform: translateX(-50%) translateY(-50%);
-      }
     }
 
     .global-nav > ul > li + li {
