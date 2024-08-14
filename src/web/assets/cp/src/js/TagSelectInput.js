@@ -141,11 +141,18 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
       return $legend.innerText;
     },
 
-    // focusOption: function ($option) {
-    //   this.searchMenu.$options.removeClass('hover');
-    //   $option.addClass('hover');
-    //   this.$addTagInput.attr('aria-activedescendant', $option.attr('id'));
-    // },
+    focusOption: function ($option) {
+      this.searchMenu.$options.removeClass('hover');
+      this.searchMenu.$ariaOptions.attr('aria-selected', 'false');
+
+      const activeDescendant = $option.parent('li').attr('id');
+
+      $option.addClass('hover');
+      this.$addTagInput.attr(
+        'aria-activedescendant',
+        $option.parent('li').attr('id')
+      );
+    },
 
     // No "add" button
     getAddElementsBtn: function () {
@@ -236,12 +243,12 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
             if (!response.data.exactMatch) {
               $li = $('<li/>').appendTo($ul);
-              $('<button class="menu-item" data-icon="plus"/>')
+              $('<div class="menu-item" data-icon="plus"/>')
                 .appendTo($li)
                 .text(data.search);
             }
 
-            $ul.find('button:not(.disabled):first').addClass('hover');
+            $ul.find('.menu-item:not(.disabled):first').addClass('hover');
 
             this.searchMenu = new Garnish.Menu($menu, {
               anchor: this.$addTagInput,
@@ -295,19 +302,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
     focusFirstOption: function () {
       const $option = this.searchMenu.$options.first();
       this.focusOption($option);
-    },
-
-    focusOption: function ($option) {
-      this.searchMenu.$options.removeClass('hover');
-      this.searchMenu.$ariaOptions.attr('aria-selected', 'false');
-
-      const activeDescendant = $option.parent('li').attr('id');
-
-      $option.addClass('hover');
-      this.$addTagInput.attr(
-        'aria-activedescendant',
-        $option.parent('li').attr('id')
-      );
     },
 
     selectTag: function (option) {
