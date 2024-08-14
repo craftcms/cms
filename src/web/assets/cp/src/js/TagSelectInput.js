@@ -242,7 +242,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             $ul.find('button:not(.disabled):first').addClass('hover');
 
             this.searchMenu = new Garnish.Menu($menu, {
-              attachToElement: this.$addTagInput,
+              anchor: this.$addTagInput,
               onOptionSelect: this.selectTag.bind(this),
             });
 
