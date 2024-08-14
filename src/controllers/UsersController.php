@@ -2834,7 +2834,10 @@ JS);
         ];
 
         if ($user->getIsCurrent()) {
-            $data['headerPhotoHtml'] = $view->renderTemplate('_layouts/components/header-photo.twig');
+            $data['headerPhotoHtml'] = $view->renderTemplate(
+                '_layouts/components/header-photo.twig',
+                templateMode: View::TEMPLATE_MODE_CP,
+            );
         }
 
         return $this->asJson($data);
