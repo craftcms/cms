@@ -1950,10 +1950,7 @@ var JobProgressIcon = Garnish.Base.extend({
     this._arcRadius = 7 * m;
     this._lineWidth = 3 * m;
 
-    this._$bgCanvas = this._createCanvas(
-      'bg',
-      '#a3afbb'
-    );
+    this._$bgCanvas = this._createCanvas('bg', '#a3afbb');
     this._$staticCanvas = this._createCanvas('static', this.$li.css('color'));
     this._$hoverCanvas = this._createCanvas('hover', this.$li.css('color'));
     this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();

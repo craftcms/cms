@@ -10,7 +10,6 @@ class CraftGlobalSidebar extends HTMLElement {
       this.trigger.addEventListener('open', this.expand.bind(this));
       this.trigger.addEventListener('close', this.collapse.bind(this));
     }
-
   }
 
   disconnectedCallback() {
