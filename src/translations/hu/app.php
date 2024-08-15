@@ -1064,6 +1064,7 @@ return [
     'No' => 'Nem',
     'None' => 'Nincs',
     'Normal' => 'Normál',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => 'Nincs elég memóri a kép művelet végrehajtásához.',
     'Not installed' => 'Nem telepített',
     'Not ready' => 'Nem kész',
