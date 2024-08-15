@@ -12,11 +12,6 @@
 ### Extensibility
 - Added `craft\base\ApplicationTrait::getEnvId()`. ([#15313](https://github.com/craftcms/cms/issues/15313))
 - Added `craft\elements\conditions\NotRelatedToConditionRule`.
-- Added `craft\elements\db\ElementQuery::$notRelatedTo`.
-- Added `craft\elements\db\ElementQuery::andNotRelatedTo()`.
-- Added `craft\elements\db\ElementQuery::notRelatedTo()`.
-- Added `craft\elements\db\ElementQueryInterface::andNotRelatedTo()`.
-- Added `craft\elements\db\ElementQueryInterface::notRelatedTo()`.
 - Added `craft\gql\arguments\RelationCriteria`.
 - Added `craft\gql\types\input\criteria\AssetRelation`.
 - Added `craft\gql\types\input\criteria\CategoryRelation`.
