@@ -3989,6 +3989,20 @@ JS, [
 
     /**
      * @inheritdoc
+     */
+    public function getRootOwner(): ElementInterface
+    {
+        if ($this instanceof NestedElementInterface) {
+            $owner = $this->getOwner();
+            if ($owner) {
+                return $owner->getRootOwner();
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.0
      */
     public function getLocalized(): ElementQueryInterface|ElementCollection

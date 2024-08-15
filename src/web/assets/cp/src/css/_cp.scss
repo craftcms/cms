@@ -1766,7 +1766,7 @@ li.breadcrumb-toggle-wrapper {
   .error-summary {
     border: 1px solid var(--error-color);
     box-shadow: none;
-    background-color: rgb(var(--error-color-rgb) 0.03);
+    background-color: rgb(var(--error-color-rgb) / 3%);
     padding: var(--m);
   }
 
