@@ -1064,6 +1064,7 @@ return [
     'No' => '否',
     'None' => '无',
     'Normal' => '正常',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => '没有足够的内存来执行此图像操作。',
     'Not installed' => '未安装',
     'Not ready' => '未就绪',
