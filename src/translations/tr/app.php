@@ -1064,6 +1064,7 @@ return [
     'No' => 'Hayır',
     'None' => 'Hiçbiri',
     'Normal' => 'Normal',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => 'Bu resim operasyonunu gerçekleştirmek için yeterli bellek yok.',
     'Not installed' => 'Yüklenmemiş',
     'Not ready' => 'Hazır değil',
