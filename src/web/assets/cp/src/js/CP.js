@@ -1963,7 +1963,6 @@ var JobProgressIcon = Garnish.Base.extend({
   },
 
   setDescription: function (description, progressLabel) {
-    this.$a.attr('title', description);
     this.$label.text(description);
     if (progressLabel) {
       this.$progressLabel.text(progressLabel).show();
