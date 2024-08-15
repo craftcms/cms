@@ -1,7 +1,5 @@
 /** global: Craft */
 /** global: Garnish */
-import Garnish from '../../../garnish/src';
-
 /**
  * Tag select input
  */
