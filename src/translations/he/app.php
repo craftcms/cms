@@ -1064,6 +1064,7 @@ return [
     'No' => 'לא',
     'None' => 'כלום',
     'Normal' => 'רגיל',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => 'לא נותר מספיק זיכרון זמין כדי לבצע פעולת תמונה זו.',
     'Not installed' => 'לא הותקן',
     'Not ready' => 'לא מוכן',
