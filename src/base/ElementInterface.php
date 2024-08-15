@@ -980,6 +980,14 @@ interface ElementInterface extends
     public function setEnabledForSite(array|bool $enabledForSite): void;
 
     /**
+     * Returns the root owner element.
+     *
+     * @return self
+     * @since 5.4.0
+     */
+    public function getRootOwner(): self;
+
+    /**
      * Returns the same element in other locales.
      *
      * @return ElementQueryInterface|ElementCollection
