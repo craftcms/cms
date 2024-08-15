@@ -1064,6 +1064,7 @@ return [
     'No' => 'Ні',
     'None' => 'Немає',
     'Normal' => 'Звичайне',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => 'Недостатньо пам\'яті для виконання операції із цим зображенням.',
     'Not installed' => 'Не встановлено',
     'Not ready' => 'Не готово',
