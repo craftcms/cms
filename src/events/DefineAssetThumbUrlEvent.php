@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\elements\Asset;
-use yii\base\Event;
 
 /**
  * Class DefineAssetThumbUrlEvent

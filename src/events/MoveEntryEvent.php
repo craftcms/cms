@@ -7,9 +7,9 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\elements\Entry;
 use craft\models\Section;
-use yii\base\Event;
 
 /**
  * Move entry event class.

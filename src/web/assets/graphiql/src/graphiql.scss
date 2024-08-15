@@ -63,6 +63,7 @@ body,
       font-size: 14px;
     }
   }
+
   .graphiql-container,
   .graphiql-container .editorWrap {
     overflow: visible;
@@ -73,7 +74,8 @@ body,
       body.rtl & {
         direction: rtl;
       }
-      padding: 14px 24px;
+      padding-block: 14px;
+      padding-inline: 24px;
       height: 100%;
 
       .title {
@@ -86,7 +88,8 @@ body,
     }
 
     .docExplorerShow {
-      padding: 14px 24px;
+      padding-block: 14px;
+      padding-inline: 24px;
     }
   }
 
@@ -108,7 +111,8 @@ body,
   }
 
   .queryWrap {
-    margin: 0 0 24px 24px;
+    margin-block: 0 24px;
+    margin-inline: 24px 0;
     border-radius: var(--large-border-radius);
 
     .CodeMirror-gutters {
@@ -136,13 +140,15 @@ body,
 
   .graphiql-container {
     .toolbar {
-      margin-left: 16px;
+      margin-inline-start: 16px;
     }
+
     .toolbar-button {
       display: inline-block;
       background-color: var(--gray-200);
       border-radius: var(--large-border-radius);
-      padding: 7px 14px;
+      padding-block: 7px;
+      padding-inline: 14px;
       border: none;
       text-align: center;
       white-space: nowrap;
@@ -161,20 +167,20 @@ body,
       }
 
       svg {
-        @include margin-left(5px);
+        margin-inline-start: 5px;
       }
     }
 
     .execute-options,
     .toolbar-menu-items {
       min-width: 100%;
-      margin-top: 0;
+      margin-block-start: 0;
       @include menu-styles;
 
       li {
         @include menu-item-styles;
-        text-align: left;
-        padding-left: 24px;
+        text-align: start;
+        padding-inline-start: 24px;
         max-width: unset;
 
         &:hover {
@@ -185,11 +191,12 @@ body,
           cursor: default;
           background: none;
 
-          &:before {
+          &::before {
             @include icon;
             content: 'check';
-            @include floatleft;
-            @include margin(3px, 0, 0, -17px);
+            float: inline-start;
+            margin-inline: -17px 0;
+            margin-block: 3px 0;
             font-size: 14px;
             color: var(--light-text-color);
           }
@@ -202,7 +209,7 @@ body,
     }
 
     .execute-options li {
-      padding-left: 14px;
+      padding-inline-start: 14px;
     }
 
     .execute-button {
@@ -214,7 +221,8 @@ body,
       padding: 0 !important;
 
       & > div:first-child {
-        padding: 7px 14px;
+        padding-block: 7px;
+        padding-inline: 14px;
       }
 
       .graphiql-explorer-actions {
@@ -228,14 +236,15 @@ body,
         letter-spacing: normal;
 
         & > span {
-          margin-right: 7px;
+          margin-inline-end: 7px;
         }
 
         .toolbar-button {
           margin: 0 !important;
-          padding: 0 4px;
+          padding-block: 0;
+          padding-inline: 4px;
 
-          &:before {
+          &::before {
             @include icon;
             content: 'plus';
             font-size: 14.4px;

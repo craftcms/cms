@@ -45,7 +45,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     use RelationalFieldTrait;
 
     /**
-     * @event DefineLinkOptionsEvent The event that is triggered when registering the link types for Link fields.
+     * @event RegisterComponentTypesEvent The event that is triggered when registering the link types for Link fields.
      * @see types()
      */
     public const EVENT_REGISTER_LINK_TYPES = 'registerLinkTypes';
@@ -196,7 +196,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         if (isset($config['types'], $config['typeSettings'])) {
             // Filter out any unneeded type settings
             foreach (array_keys($config['typeSettings']) as $typeId) {
-                if (!in_array($typeId, $config)) {
+                if (!in_array($typeId, $config['types'])) {
                     unset($config['typeSettings'][$typeId]);
                 }
             }
@@ -347,8 +347,14 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $linkTypes = $this->getLinkTypes();
+
         /** @var LinkData|null $value */
-        $valueTypeId = $value?->type ?? UrlType::id();
+        if ($value) {
+            $valueTypeId = $value->type;
+        } else {
+            $valueTypeId = in_array(UrlType::id(), $this->types) ? UrlType::id() : reset($this->types);
+        }
+
         $allowedTypeIds = in_array($valueTypeId, $this->types) ? $this->types : array_merge($this->types, [$valueTypeId]);
         $allowedTypeIds = array_filter($allowedTypeIds, fn(string $typeId) => isset($linkTypes[$typeId]));
         $id = $this->getInputId();

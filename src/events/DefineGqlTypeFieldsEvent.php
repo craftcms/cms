@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use yii\base\Event;
+use craft\base\Event;
 
 /**
  * DefineGqlTypeFields class.
