@@ -75,6 +75,11 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results to elements that relate to the provided element IDs. This argument is ignored, if `relatedToAll` is also used.',
             ],
+            'notRelatedTo' => [
+                'name' => 'notRelatedTo',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results to elements that do not relate to the provided element IDs.',
+            ],
             'relatedToAssets' => [
                 'name' => 'relatedToAssets',
                 'type' => fn() => Type::listOf(AssetRelation::getType()),
