@@ -1064,6 +1064,7 @@ return [
     'No' => 'خیر',
     'None' => 'هیچ کدام',
     'Normal' => 'نرمال',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => 'حافظه کافی برای انجام این عمل بر روی تصویر موجود نیست.',
     'Not installed' => 'نصب نیست',
     'Not ready' => 'آماده نیست',
