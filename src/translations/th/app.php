@@ -1064,6 +1064,7 @@ return [
     'No' => 'No',
     'None' => 'None',
     'Normal' => 'Normal',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => 'Not enough memory available to perform this image operation.',
     'Not installed' => 'Not installed',
     'Not ready' => 'ไม่พร้อม',
