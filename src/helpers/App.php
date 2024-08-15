@@ -435,12 +435,26 @@ class App
      */
     public static function normalizeValue(mixed $value): mixed
     {
-        return match (is_string($value) ? strtolower($value) : $value) {
-            'true' => true,
-            'false' => false,
-            'null' => null,
-            default => Number::isIntOrFloat($value) ? Number::toIntOrFloat($value) : $value,
-        };
+        if (is_string($value)) {
+            switch (strtolower($value)) {
+                case 'true':
+                    return true;
+                case 'false':
+                    return false;
+                case 'null':
+                    return null;
+            }
+
+            if (Number::isIntOrFloat($value)) {
+                $intOrFloat = Number::toIntOrFloat($value);
+                // make sure we didn't lose any precision
+                if ((string)$intOrFloat === $value) {
+                    return $intOrFloat;
+                }
+            }
+        }
+
+        return $value;
     }
 
     /**
