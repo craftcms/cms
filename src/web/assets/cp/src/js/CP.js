@@ -1894,6 +1894,7 @@ var JobProgressIcon = Garnish.Base.extend({
   $a: null,
   $label: null,
   $progressLabel: null,
+  $tooltip: $(),
 
   progress: null,
   failMode: false,
@@ -1944,6 +1945,16 @@ var JobProgressIcon = Garnish.Base.extend({
       .appendTo($labelContainer)
       .hide();
 
+    // If the sidebar is collapsed, make sure to add a tooltip.
+    // CraftGlobalSidebar.js will handle removing it and adding it back on expand/contract
+    if (Garnish.$bod.data('sidebar') === 'collapsed') {
+      this.$tooltip = $('<craft-tooltip/>', {
+        placement: 'right',
+        'self-managed': true,
+        'aria-label': this.$label.text(),
+      }).appendTo(this.$a);
+    }
+
     let m = window.devicePixelRatio > 1 ? 2 : 1;
     this._canvasSize = 18 * m;
     this._arcPos = this._canvasSize / 2;
@@ -1968,6 +1979,10 @@ var JobProgressIcon = Garnish.Base.extend({
       this.$progressLabel.text(progressLabel).show();
     } else {
       this.$progressLabel.hide();
+    }
+
+    if (this.$tooltip.length) {
+      this.$tooltip.attr('aria-label', description);
     }
   },
 
