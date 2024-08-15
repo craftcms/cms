@@ -1064,6 +1064,7 @@ return [
     'No' => '아니요',
     'None' => '없음',
     'Normal' => '일반',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => '이 이미지 작업을 실행기에는 메모리가 충분하지 않습니다.',
     'Not installed' => '설치되지 않음',
     'Not ready' => '준비 안 됨',
