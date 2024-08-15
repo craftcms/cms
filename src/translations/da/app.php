@@ -1064,6 +1064,7 @@ return [
     'No' => 'Ingen',
     'None' => 'Ingen',
     'Normal' => 'Normal',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => 'Ikke nok hukommelse tilgængelig til at udføre billedhandlingen',
     'Not installed' => 'Ikke installeret',
     'Not ready' => 'Ikke klar',
