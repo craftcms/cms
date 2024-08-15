@@ -5,7 +5,8 @@
 - Asset chips and cards no longer include the “Replace file” action. ([#15498](https://github.com/craftcms/cms/issues/15498))
 
 ### Development
-- Added the `notRelatedTo` argument to GraphQL element queries. ([#15496](https://github.com/craftcms/cms/pull/15496))
+- Added the `notRelatedTo` and `andNotRelatedTo` element query params. ([#15496](https://github.com/craftcms/cms/pull/15496))
+- Added the `notRelatedTo` GraphQL element query argument. ([#15496](https://github.com/craftcms/cms/pull/15496))
 - `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` GraphQL arguments now support passing `relatedViaField` and `relatedViaSite` keys to their criteria objects. ([#15508](https://github.com/craftcms/cms/pull/15508))
 
 ### Extensibility
