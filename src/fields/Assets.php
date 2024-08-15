@@ -512,7 +512,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
         // Only handle file uploads for the initial site
         if (!$element->propagating) {
             // No special treatment for revisions
-            $rootElement = ElementHelper::rootElement($element);
+            $rootElement = $element->getRootOwner();
             if (!$rootElement->getIsRevision()) {
                 // Figure out what we're working with and set up some initial variables.
                 $isCanonical = $rootElement->getIsCanonical();

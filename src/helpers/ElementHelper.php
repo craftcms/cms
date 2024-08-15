@@ -437,22 +437,16 @@ class ElementHelper
     }
 
     /**
-     * Returns the root element of a given element.
+     * Returns the root owner of a given element.
      *
      * @param ElementInterface $element
      * @return ElementInterface
      * @since 3.2.0
+     * @deprecated in 5.4.0. Use [[ElementInterface::getRootOwner()]] instead.
      */
     public static function rootElement(ElementInterface $element): ElementInterface
     {
-        if ($element instanceof NestedElementInterface) {
-            $owner = $element->getOwner();
-            if ($owner) {
-                return static::rootElement($owner);
-            }
-        }
-
-        return $element;
+        return $element->getRootOwner();
     }
 
     /**
@@ -559,8 +553,7 @@ class ElementHelper
      */
     public static function isCanonical(ElementInterface $element): bool
     {
-        $root = static::rootElement($element);
-        return $root->getIsCanonical();
+        return $element->getRootOwner()->getIsCanonical();
     }
 
     /**
@@ -572,8 +565,7 @@ class ElementHelper
      */
     public static function isDerivative(ElementInterface $element): bool
     {
-        $root = static::rootElement($element);
-        return $root->getIsDerivative();
+        return $element->getRootOwner()->getIsDerivative();
     }
 
     /**
