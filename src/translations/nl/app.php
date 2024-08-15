@@ -1064,6 +1064,7 @@ return [
     'No' => 'Nee',
     'None' => 'Geen',
     'Normal' => 'Normaal',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => 'Onvoldoende geheugen beschikbaar om deze beeldverwerking uit te voeren.',
     'Not installed' => 'Niet geïnstalleerd',
     'Not ready' => 'Niet gereed',
