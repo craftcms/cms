@@ -8,8 +8,8 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
+use craft\base\Event;
 use craft\models\FieldLayout;
-use yii\base\Event;
 
 /**
  * DefineShowFieldLayoutComponentInFormEvent event class.

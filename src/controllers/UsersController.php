@@ -830,15 +830,15 @@ class UsersController extends Controller
 
         // Can they access the control panel?
         if ($user->can('accessCp')) {
-            // Send them to the control panel login page
+            // Send them to the control panel login page by default
             $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         } else {
-            // Send them to the 'setPasswordSuccessPath'.
+            // Send them to the 'setPasswordSuccessPath' by default
             $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
             $url = UrlHelper::siteUrl($setPasswordSuccessPath);
         }
 
-        return $this->redirect($url);
+        return $this->redirectToPostedUrl($user, $url);
     }
 
     /**

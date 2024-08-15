@@ -1110,11 +1110,6 @@ JS, [
             ($element->duplicateOf || $element->isFieldDirty($this->handle) || $this->maintainHierarchy) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
-            // Reset the field value?
-            if ($element->duplicateOf !== null || $element->mergingCanonicalChanges || $isNew) {
-                $element->setFieldValue($this->handle, null);
-            }
-
             if (!$this->localizeRelations && ElementHelper::shouldTrackChanges($element)) {
                 // Mark the field as dirty across all of the element’s sites
                 // (this is a little hacky but there’s not really a non-hacky alternative unfortunately.)
