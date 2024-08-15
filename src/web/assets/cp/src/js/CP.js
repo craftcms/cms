@@ -13,6 +13,7 @@ Craft.CP = Garnish.Base.extend(
 
     $nav: null,
     $navToggle: null,
+    $globalLiveRegion: null,
     $globalSidebar: null,
     $globalContainer: null,
     $mainContainer: null,
@@ -77,6 +78,7 @@ Craft.CP = Garnish.Base.extend(
       // Find all the key elements
       this.$nav = $('#nav');
       this.$navToggle = $('#primary-nav-toggle');
+      this.$globalLiveRegion = $('#global-live-region');
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
       this.$mainContainer = $('#main-container');
@@ -922,7 +924,28 @@ Craft.CP = Garnish.Base.extend(
     },
 
     /**
-     * Dispays a notification.
+     * Updates the global live region with a screen reader announcement
+     *
+     * @param {string} message
+     */
+    announce: function (message) {
+      if (!message) return;
+
+      this.$globalLiveRegion.empty().text(message);
+
+      // Clear message after interval
+      setTimeout(() => {
+        const currentMessage = this.$globalLiveRegion.text();
+
+        // Check that this is the same message and hasn't been updated since
+        if (message !== currentMessage) return;
+
+        this.$globalLiveRegion.empty();
+      }, 5000);
+    },
+
+    /**
+     * Displays a notification.
      *
      * @param {string} type `notice`, `success`, or `error`
      * @param {string} message

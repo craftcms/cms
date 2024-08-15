@@ -13,7 +13,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
     $elements: null,
     $addTagInput: null,
     $spinner: null,
-    $liveRegion: null,
 
     _ignoreBlur: false,
 
@@ -42,7 +41,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
       this.$addTagInput = this.$container.children('.add').children('.text');
       this.$spinner = this.$addTagInput.next();
-      this.$liveRegion = this.$container.find('[role="status"]');
 
       this.addListener(this.$addTagInput, 'input', () => {
         if (this.searchTimeout) {
@@ -164,22 +162,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
       return 'x';
     },
 
-    updateLiveRegion: function (message) {
-      if (!message) return;
-
-      this.$liveRegion.empty().text(message);
-
-      // Clear message after interval
-      setTimeout(() => {
-        const currentMessage = this.$liveRegion.text();
-
-        // Check that this is the same message and hasn't been updated since
-        if (message !== currentMessage) return;
-
-        this.$liveRegion.empty();
-      }, 5000);
-    },
-
     searchForTags: function () {
       if (this.searchMenu) {
         this.killSearchMenu();
@@ -189,7 +171,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
       if (val) {
         this.$spinner.removeClass('hidden');
-        this.updateLiveRegion(Craft.t('app', 'Loading'));
+        Craft.cp.announce(Craft.t('app', 'Loading'));
 
         var excludeIds = [];
 
@@ -221,7 +203,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
               this.killSearchMenu();
             }
             this.$spinner.addClass('hidden');
-            this.updateLiveRegion(Craft.t('app', 'Loading complete'));
+            Craft.cp.announce(Craft.t('app', 'Loading complete'));
             var $menu = $('<div class="menu tagmenu"/>')
                 .attr('aria-label', this.fieldName)
                 .appendTo(Garnish.$bod),
@@ -289,7 +271,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             }
 
             this.$spinner.addClass('hidden');
-            this.updateLiveRegion(Craft.t('app', 'Loading complete'));
+            Craft.cp.announce(Craft.t('app', 'Loading complete'));
           });
       } else {
         // No need to update the live region here
