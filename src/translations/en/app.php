@@ -640,6 +640,7 @@ return [
     'Error' => 'Error',
     'Error:' => 'Error:',
     'Everything in {edition}, plus…' => 'Everything in {edition}, plus…',
+    'Existing {type}' => 'Existing {type}',
     'Expand' => 'Expand',
     'Expanded' => 'Expanded',
     'Expired' => 'Expired',
