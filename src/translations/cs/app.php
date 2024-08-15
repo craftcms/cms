@@ -1064,6 +1064,7 @@ return [
     'No' => 'Ne',
     'None' => 'Poznámka',
     'Normal' => 'Normální',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => 'Pro zpracování požadované operace s tímto obrázkem není dost operační paměti.',
     'Not installed' => 'Nenainstalováno',
     'Not ready' => 'Ne',
