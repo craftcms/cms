@@ -1064,6 +1064,7 @@ return [
     'No' => 'Nej',
     'None' => 'Inget',
     'Normal' => 'Normal',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => 'Det finns inte tillräckligt med minne för att utföra åtgärden.',
     'Not installed' => 'Inte installerad',
     'Not ready' => 'Inte klar',
