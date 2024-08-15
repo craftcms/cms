@@ -1064,6 +1064,7 @@ return [
     'No' => 'Nie',
     'None' => 'Žiadne',
     'Normal' => 'Normálne',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => 'Na vykonanie tejto operácie s obrázkom nie je k dispozícii dostatok pamäte.',
     'Not installed' => 'Nie je nainštalované',
     'Not ready' => 'Nie je pripravený',
