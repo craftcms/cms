@@ -1064,6 +1064,7 @@ return [
     'No' => 'いいえ',
     'None' => 'なし',
     'Normal' => 'ノーマル',
+    'Not Related To' => 'Not Related To',
     'Not enough memory available to perform this image operation.' => '画像の変形を行うためのメモリーが足りません。',
     'Not installed' => 'インストールしていません',
     'Not ready' => '準備ができていません',
