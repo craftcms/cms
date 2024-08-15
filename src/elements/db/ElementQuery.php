@@ -1146,10 +1146,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @param $value
      * @param $currentValue
-     * @return array|false
+     * @return array|string|false
      * @throws NotSupportedException
      */
-    private function _andRelatedToCriteria($value, $currentValue): array|false
+    private function _andRelatedToCriteria($value, $currentValue): array|string|false
     {
         if (!$value) {
             return false;
