@@ -11,7 +11,7 @@ use craft\elements\db\ElementQueryInterface;
  *
  * @property int[] $elementIds
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.x.x
+ * @since 5.4.0
  */
 class NotRelatedToConditionRule extends RelatedToConditionRule
 {

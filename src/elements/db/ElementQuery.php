@@ -335,7 +335,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * See [Relations](https://craftcms.com/docs/4.x/relations.html) for supported syntax options.
      *
      * @used-by notRelatedTo()
-     * @since 5.x.x
+     * @since 5.4.0
      */
     public mixed $notRelatedTo = null;
 
@@ -1093,7 +1093,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $notRelatedTo
-     * @since 5.x.x
+     * @since 5.4.0
      */
     public function notRelatedTo($value): static
     {
@@ -1104,7 +1104,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $notRelatedTo
-     * @since 5.x.x
+     * @since 5.4.0
      */
     public function andNotRelatedTo($value): static
     {

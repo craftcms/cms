@@ -856,7 +856,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * @param mixed $value The property value
      * @return static self reference
-     * @since 5.x.x
+     * @since 5.4.0
      */
     public function notRelatedTo(mixed $value): static;
 
@@ -885,7 +885,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * @param mixed $value The property value
      * @return static self reference
-     * @since 5.x.x
+     * @since 5.4.0
      */
     public function andNotRelatedTo(mixed $value): static;
 
