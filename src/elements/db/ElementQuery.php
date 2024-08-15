@@ -2803,7 +2803,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         $condition = $parser->parse($notRelatedToParam, $this->siteId !== '*' ? $this->siteId : null);
 
         if ($condition === false) {
-            throw new QueryAbortedException();
+            // just don't modify the query
+            return;
         }
 
         // Prepend `not` as this is not expect to be provided
