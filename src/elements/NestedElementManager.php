@@ -1012,7 +1012,11 @@ JS, [
                     ], updateTimestamp: false);
                     $newElementId = $element->id;
                 } else {
-                    $newElementId = $elementsService->duplicateElement($element, $newAttributes)->id;
+                    $newElementId = $elementsService->duplicateElement(
+                        $element,
+                        $newAttributes,
+                        asUnpublishedDraft: $element->getIsUnpublishedDraft(),
+                    )->id;
                 }
 
                 $newElementIds[$element->id] = $newElementId;
