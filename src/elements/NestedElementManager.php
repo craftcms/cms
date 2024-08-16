@@ -190,10 +190,15 @@ class NestedElementManager extends Component
 
         if ($fetchAll && $query->getCachedResult() === null) {
             $query
-                ->drafts(null)
-                ->savedDraftsOnly()
                 ->status(null)
                 ->limit(null);
+
+            /** @phpstan-ignore-next-line */
+            if (property_exists($this->field, 'viewMode') && $this->field->viewMode === self::VIEW_MODE_INDEX) {
+                $query
+                    ->drafts(null)
+                    ->savedDraftsOnly();
+            }
         }
 
         return $query;
