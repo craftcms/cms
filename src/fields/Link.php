@@ -327,6 +327,14 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
             }
 
             $typeId = $this->resolveType($value);
+
+            // if typeId is no longer allowed by the field
+            // don't freak out and return an empty value
+            // @see https://github.com/craftcms/cms/issues/15542
+            if (!isset($linkTypes[$typeId])) {
+                return null;
+            }
+
             $linkType = $linkTypes[$typeId];
         }
 
