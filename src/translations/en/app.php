@@ -2073,6 +2073,7 @@ return [
     '{attribute} must be no less than {min}.' => '{attribute} must be no less than {min}.',
     '{attribute} must be set to a new password.' => '{attribute} must be set to a new password.',
     '{attribute} must contain “{slug}”' => '{attribute} must contain “{slug}”',
+    '{attribute} no longer allows {type} links.' => '{attribute} no longer allows {type} links.',
     '{attribute} should contain at least {min, number} {min, plural, one{address} other{addresses}}.' => '{attribute} should contain at least {min, number} {min, plural, one{address} other{addresses}}.',
     '{attribute} should contain at least {min, number} {min, plural, one{entry} other{entries}}.' => '{attribute} should contain at least {min, number} {min, plural, one{entry} other{entries}}.',
     '{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.' => '{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.',
