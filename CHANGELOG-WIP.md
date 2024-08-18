@@ -4,6 +4,9 @@
 - Element conditions can now have a “Not Related To” rule. ([#15496](https://github.com/craftcms/cms/pull/15496))
 - Asset chips and cards no longer include the “Replace file” action. ([#15498](https://github.com/craftcms/cms/issues/15498))
 
+### Accessibility
+- Improved the accessibility of Tags fields.
+
 ### Development
 - Added the `notRelatedTo` and `andNotRelatedTo` element query params. ([#15496](https://github.com/craftcms/cms/pull/15496))
 - Added the `notRelatedTo` GraphQL element query argument. ([#15496](https://github.com/craftcms/cms/pull/15496))

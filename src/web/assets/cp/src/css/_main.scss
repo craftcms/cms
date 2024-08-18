@@ -7251,7 +7251,8 @@ $min2ColWidth: 400px;
 
 .menu li {
   & > a,
-  & > button {
+  & > button,
+  & > .menu-item {
     &[data-icon]::before,
     [data-icon]::before,
     span.icon:not([data-icon]) {
