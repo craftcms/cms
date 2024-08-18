@@ -32,6 +32,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             'CraftSolo' => CmsEdition::Solo->value,
             'CraftTeam' => CmsEdition::Team->value,
             'CraftPro' => CmsEdition::Pro->value,
+            'CraftEnterprise' => CmsEdition::Enterprise->value,
             'requestedSite' => Cp::requestedSite(),
         ];
     }

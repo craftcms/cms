@@ -1,4 +1,10 @@
-<a id="system-info" href="{{ siteUrl }}" rel="noopener" target="_blank" title="{{ 'View site'|t('app') }}">
+{% tag siteUrl ? 'a' : 'div' with {
+    id: 'system-info',
+    href: siteUrl ?? false,
+    rel: siteUrl ? 'noopener' : false,
+    target: siteUrl ? '_blank' : false,
+    title: siteUrl ? 'View site'|t('app') : false,
+} %}
     <div id="site-icon">
         {% if hasSystemIcon %}
             <img src="{{ craft.rebrand.icon.url }}" alt="">
@@ -9,4 +15,4 @@
     <div id="system-name">
         <span class="h2">{{ systemName }}</span>
     </div>
-</a>
+{% endtag %}

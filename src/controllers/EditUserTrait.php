@@ -189,7 +189,7 @@ trait EditUserTrait
             Craft::$app->edition->value >= CmsEdition::Team->value &&
             (
                 (Craft::$app->edition === CmsEdition::Team && $currentUser->admin) ||
-                (Craft::$app->edition === CmsEdition::Pro && $currentUser->can('assignUserPermissions')) ||
+                (Craft::$app->edition->value >= CmsEdition::Pro->value && $currentUser->can('assignUserPermissions')) ||
                 $currentUser->canAssignUserGroups()
             )
         );

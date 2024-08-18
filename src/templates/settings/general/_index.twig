@@ -77,7 +77,7 @@
         includeEnvVars: true,
     }) }}
 
-    {% if CraftEdition == CraftPro %}
+    {% if CraftEdition >= CraftPro %}
         <hr>
 
         {% do view.registerTranslations('app', [

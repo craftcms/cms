@@ -196,7 +196,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
         $item->resaving = true;
 
         try {
-            $elementsService->saveElement($item, updateSearchIndex: false);
+            $elementsService->saveElement($item, updateSearchIndex: false, saveContent: true);
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
         }

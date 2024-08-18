@@ -3572,6 +3572,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return array
      * @see getActionMenuItems()
+     * @see Cp::disclosureMenu()
      * @since 5.0.0
      */
     protected function safeActionMenuItems(): array
@@ -3633,6 +3634,7 @@ JS, [
      *
      * @return array
      * @see getActionMenuItems()
+     * @see Cp::disclosureMenu()
      * @since 5.0.0
      */
     protected function destructiveActionMenuItems(): array
@@ -3983,6 +3985,20 @@ JS, [
         }
 
         return self::STATUS_ENABLED;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRootOwner(): ElementInterface
+    {
+        if ($this instanceof NestedElementInterface) {
+            $owner = $this->getOwner();
+            if ($owner) {
+                return $owner->getRootOwner();
+            }
+        }
+        return $this;
     }
 
     /**

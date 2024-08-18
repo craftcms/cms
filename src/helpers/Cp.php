@@ -177,7 +177,7 @@ class Cp
         }
 
         // Do any plugins require a higher edition?
-        if (Craft::$app->edition !== CmsEdition::Pro) {
+        if (Craft::$app->edition < CmsEdition::Pro) {
             foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
                 if ($plugin->minCmsEdition->value > Craft::$app->edition->value) {
                     $alerts[] = Craft::t('app', '{plugin} requires Craft CMS {edition} edition.', [
@@ -930,7 +930,7 @@ class Cp
             function() use ($component): string {
                 $actionMenuItems = array_filter(
                     $component->getActionMenuItems(),
-                    fn(array $item) => !($item['destructive'] ?? false),
+                    fn(array $item) => $item['showInChips'] ?? !($item['destructive'] ?? false)
                 );
 
                 if (empty($actionMenuItems)) {
@@ -2784,7 +2784,7 @@ JS;
         array $config = [],
     ): array {
         if ($sites === null) {
-            $sites = Craft::$app->getSites()->getAllSites();
+            $sites = Craft::$app->getSites()->getEditableSites();
         }
 
         $config += [

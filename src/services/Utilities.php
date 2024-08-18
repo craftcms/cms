@@ -73,7 +73,7 @@ class Utilities extends Component
             PhpInfo::class,
         ];
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             $utilityTypes[] = SystemMessagesUtility::class;
         }
 
