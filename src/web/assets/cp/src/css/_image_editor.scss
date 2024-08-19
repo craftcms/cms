@@ -212,7 +212,7 @@ html.noscroll body {
 
 .modal.imageeditor .body .image-container .image-tools .straightening {
   max-width: 400px;
-  min-height: torem(60);
+  min-height: calc(60 / 16 * 1rem);
   display: block;
   margin-block: 0;
   margin-inline: auto;
@@ -395,8 +395,8 @@ html.noscroll body {
   .cursor {
     &::after {
       content: '';
-      width: torem(20);
-      height: torem(50);
+      width: calc(20 / 16 * 1rem);
+      height: calc(50 / 16 * 1rem);
       position: absolute;
       inset-block-start: -15px;
       inset-inline-start: 50%;
@@ -407,15 +407,15 @@ html.noscroll body {
 
 .slide-rule .cursor {
   position: absolute;
-  margin-inline-start: torem(-4);
+  margin-inline-start: calc(-4 / 16 * 1rem);
   margin-block-start: 4px;
   inset-inline-start: 50%;
   z-index: 1;
   width: 0;
   height: 0;
-  border-inline-start: torem(5) solid transparent;
-  border-inline-end: torem(5) solid transparent;
-  border-block-start: torem(5) solid #63a6e1;
+  border-inline-start: calc(5 / 16 * 1rem) solid transparent;
+  border-inline-end: calc(5 / 16 * 1rem) solid transparent;
+  border-block-start: calc(5 / 16 * 1rem) solid #63a6e1;
 }
 
 .slide-rule .graduations {
