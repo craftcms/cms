@@ -233,10 +233,12 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
   },
 
-  closeDateTimeFields: function() {
+  closeDateTimeFields: function () {
     // ensure opened date/time pickers don't linger after activating the Cancel btn
     this.elementIndex.$elements.find('.timewrapper input').timepicker('remove');
-    this.elementIndex.$elements.find('.datewrapper input').datepicker('destroy');
+    this.elementIndex.$elements
+      .find('.datewrapper input')
+      .datepicker('destroy');
   },
 
   serializeInputs: function () {
