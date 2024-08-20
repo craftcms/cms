@@ -100,7 +100,9 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
         // Config normalization
         foreach (['defaultValue', 'min', 'max'] as $name) {
             if (isset($config[$name])) {
-                $config[$name] = $this->_normalizeNumber($config[$name]);
+                // at this point the currency property isn't set yet, so we need to explicitly pass it to the _normalizeNumber()
+                // see https://github.com/craftcms/cms/issues/15565 for more details
+                $config[$name] = $this->_normalizeNumber($config[$name], $config['currency']);
             }
         }
 
@@ -209,9 +211,10 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
 
     /**
      * @param mixed $value
+     * @param string|null $currency
      * @return string|null
      */
-    private function _normalizeNumber(mixed $value): ?string
+    private function _normalizeNumber(mixed $value, ?string $currency = null): ?string
     {
         if ($value === '') {
             return null;
@@ -223,12 +226,12 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
                 return null;
             }
 
-            $value['currency'] = $this->currency;
+            $value['currency'] = $currency ?? $this->currency;
             $money = MoneyHelper::toMoney($value);
             return $money ? $money->getAmount() : null;
         }
 
-        $money = new MoneyLibrary($value, new Currency($this->currency));
+        $money = new MoneyLibrary($value, new Currency($currency ?? $this->currency));
         return $money->getAmount();
     }
 
