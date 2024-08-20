@@ -215,7 +215,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
         // Try to normalize the value if there are any non-numeric characters (except minus sign at the start)
         if (is_string($value) && !preg_match('/^(-?)\d+$/', $value)) {
             try {
-                $value = MoneyHelper::normalizeString($value);
+                $value = MoneyHelper::normalizeString($value, new Currency($this->currency));
             } catch (ParserException) {
                 // Catch a parse and return appropriately
                 if (isset($this->defaultValue) && $this->isFresh($element)) {
