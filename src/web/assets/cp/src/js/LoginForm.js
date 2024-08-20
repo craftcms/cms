@@ -297,6 +297,7 @@ Craft.LoginForm = Garnish.Base.extend(
         .velocity('fadeIn');
 
       this.$errors.removeClass('hidden');
+      Craft.cp.announce(error);
       this.onResize();
     },
 
