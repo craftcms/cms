@@ -7,6 +7,7 @@
 - Fixed a bug where the `users/set-password` action wasn’t respecting `redirect` params. ([#15538](https://github.com/craftcms/cms/issues/15538))
 - Fixed a bug where the “Default Values” Table field setting wasn’t escaping column headings. ([#15552](https://github.com/craftcms/cms/issues/15552))
 - Fixed a bug where Craft couldn’t be installed with existing project config files, if any plugins specified their schema version via `composer.json`. ([#15559](https://github.com/craftcms/cms/issues/15559))
+- Fixed a bug where Money fields’ min, max, and default values weren’t being set to the correct currency. ([#15565](https://github.com/craftcms/cms/issues/15565), [#15566](https://github.com/craftcms/cms/pull/15566))
 
 ## 4.11.3 - 2024-08-13
 
