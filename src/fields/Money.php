@@ -102,7 +102,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             if (isset($config[$name])) {
                 // at this point the currency property isn't set yet, so we need to explicitly pass it to the _normalizeNumber()
                 // see https://github.com/craftcms/cms/issues/15565 for more details
-                $config[$name] = $this->_normalizeNumber($config[$name], $config['currency']);
+                $config[$name] = $this->_normalizeNumber($config[$name], $config['currency'] ?? null);
             }
         }
 
@@ -220,18 +220,20 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             return null;
         }
 
+        $currency ??= $this->currency;
+
         // Was this submitted with a locale ID? (This means the data is coming from the settings form)
         if (isset($value['locale'], $value['value'])) {
             if ($value['value'] === '') {
                 return null;
             }
 
-            $value['currency'] = $currency ?? $this->currency;
+            $value['currency'] = $currency;
             $money = MoneyHelper::toMoney($value);
             return $money ? $money->getAmount() : null;
         }
 
-        $money = new MoneyLibrary($value, new Currency($currency ?? $this->currency));
+        $money = new MoneyLibrary($value, new Currency($currency));
         return $money->getAmount();
     }
 
