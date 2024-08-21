@@ -14,6 +14,7 @@ use craft\web\twig\variables\Paginate;
 use craft\web\View;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
+use Twig\Extension\CoreExtension;
 use Twig\Extension\SandboxExtension;
 use Twig\Markup;
 use Twig\Source;
@@ -25,7 +26,6 @@ use yii\base\UnknownMethodException;
 use yii\base\UnknownPropertyException;
 use yii\db\Query;
 use yii\db\QueryInterface;
-use function twig_get_attribute;
 
 /**
  * Class Template
@@ -145,7 +145,7 @@ class Template
         }
 
         try {
-            return twig_get_attribute(
+            return CoreExtension::getAttribute(
                 $env,
                 $source,
                 $object,
