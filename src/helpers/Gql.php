@@ -402,8 +402,7 @@ class Gql
 
         // Remap handle to transform to work with image transform normalization
         if (isset($arguments['handle'])) {
-            $arguments['transform'] = $arguments['handle'];
-            unset($arguments['handle']);
+            $arguments = $arguments['handle'];
         }
 
         return $arguments;
