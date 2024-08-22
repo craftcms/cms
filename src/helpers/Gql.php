@@ -400,13 +400,15 @@ class Gql
     {
         unset($arguments['immediately']);
 
-        // Remap handle to transform to work with image transform normalization
-        if (isset($arguments['handle'])) {
-            $arguments['transform'] = $arguments['handle'];
-            unset($arguments['handle']);
+        if (!empty($arguments['handle'])) {
+            $transform = $arguments['handle'];
+        } elseif (!empty($arguments['transform'])) {
+            $transform = $arguments['transform'];
+        } else {
+            $transform = $arguments;
         }
 
-        return $arguments;
+        return $transform;
     }
 
     /**
