@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.11.4 - 2024-08-21
 
 - Updated jQuery UI to 1.13.3. ([#15558](https://github.com/craftcms/cms/issues/15558))
 - Fixed a bug where `craft\helpers\App::env()` and `normalizeValue()` could return incorrect results for values that looked like floats. ([#15533](https://github.com/craftcms/cms/issues/15533))
