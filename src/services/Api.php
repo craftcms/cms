@@ -43,6 +43,7 @@ class Api extends Component
         if (!isset($this->client)) {
             $this->client = Craft::createGuzzleClient([
                 'base_uri' => Craft::$app->baseApiUrl,
+                'connect_timeout' => 15,
             ]);
         }
     }
