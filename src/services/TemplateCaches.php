@@ -368,7 +368,7 @@ class TemplateCaches extends Component
             } else {
                 // Don't enable template caches for tokenized requests
                 $request = Craft::$app->getRequest();
-                if ($request->getHadToken()) {
+                if ($request->getIsPreview() || $request->getHadToken()) {
                     $this->_enabled = $this->_enabledGlobally = false;
                 } else {
                     $this->_enabled = !$request->getIsConsoleRequest();
