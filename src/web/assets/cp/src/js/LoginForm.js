@@ -429,6 +429,7 @@ Craft.LoginForm.ResetPasswordForm = Garnish.Base.extend({
 
     this.loginForm.clearErrors();
     this.$submitBtn.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
     const data = {
       loginName: this.$usernameInput.val(),
