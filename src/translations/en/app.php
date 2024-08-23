@@ -1710,6 +1710,7 @@ return [
     'Top-Right' => 'Top-Right',
     'Total Price' => 'Total Price',
     'Total releases' => 'Total releases',
+    'Town/City' => 'Town/City',
     'Townland' => 'Townland',
     'Transcript' => 'Transcript',
     'Transfer it to:' => 'Transfer it to:',

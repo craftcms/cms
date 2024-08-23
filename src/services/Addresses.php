@@ -274,9 +274,10 @@ class Addresses extends Component implements FieldLayoutProviderInterface
     public function getLocalityTypeLabel(?string $type): string
     {
         return match ($type) {
-            LocalityType::SUBURB => Craft::t('app', 'Suburb'),
             LocalityType::DISTRICT => Craft::t('app', 'District'),
             LocalityType::POST_TOWN => Craft::t('app', 'Post Town'),
+            LocalityType::SUBURB => Craft::t('app', 'Suburb'),
+            LocalityType::TOWN_CITY => Craft::t('app', 'Town/City'),
             default => Craft::t('app', 'City'),
         };
     }
