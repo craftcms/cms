@@ -1398,7 +1398,7 @@ JS, [
      *
      * For the dependentLocality:
      *      - as above but taking locality into consideration too; e.g. China has all 3 levels of subdivisions and has lists for all 3 of them
-     *          (China => Hoilongjiang Sheng > Gegang Shi > Dongshan Qu)
+     *          (China => Heilongjiang Sheng > Hegang Shi > Dongshan Qu)
      *
      * @param Address $address
      * @param array $visibleFields
