@@ -119,6 +119,11 @@ class Country extends Field implements InlineEditableFieldInterface, MergeableFi
         if (!$value) {
             return '';
         }
+
+        if ($value instanceof CountryModel) {
+            $value = $value->getCountryCode();
+        }
+
         $list = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
         return $list[$value] ?? $value;
     }
