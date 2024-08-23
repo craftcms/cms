@@ -43,6 +43,7 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
       }
 
       button.classList.add('loading');
+      Craft.cp.announce(Craft.t('app', 'Loading'));
 
       Craft.elevatedSessionManager.requireElevatedSession(
         () => {
