@@ -1937,6 +1937,53 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    protected function inlineAttributeInputHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'postDate':
+                return Cp::dateTimeFieldHtml([
+                    'name' => 'postDate',
+                    'value' => $this->postDate,
+                ]);
+            case 'expiryDate':
+                return Cp::dateTimeFieldHtml([
+                    'name' => 'expiryDate',
+                    'value' => $this->expiryDate,
+                ]);
+            case 'slug':
+                return Cp::textHtml([
+                    'name' => 'slug',
+                    'value' => $this->slug,
+                ]);
+            case 'authors':
+                $authors = $this->getAuthors();
+                $section = $this->getSection();
+                return Cp::elementSelectHtml([
+                    'status' => $this->getAttributeStatus('authorIds'),
+                    'label' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
+                        'max' => $section->maxAuthors,
+                    ]),
+                    'id' => 'authorIds',
+                    'name' => 'authorIds',
+                    'elementType' => User::class,
+                    'selectionLabel' => Craft::t('app', 'Choose'),
+                    'criteria' => [
+                        'can' => "viewEntries:$section->uid",
+                    ],
+                    'single' => false,
+                    'elements' => $authors ?: null,
+                    'disabled' => false,
+                    'errors' => $this->getErrors('authorIds'),
+                    'limit' => $section->maxAuthors,
+                ]);
+            default:
+                return parent::inlineAttributeInputHtml($attribute);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function htmlAttributes(string $context): array
     {
         return [
