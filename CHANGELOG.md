@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where it wasn’t possible to override named transforms in GraphQL queries. ([#15572](https://github.com/craftcms/cms/issues/15572))
+
 ## 4.11.4 - 2024-08-21
 
 - Updated jQuery UI to 1.13.3. ([#15558](https://github.com/craftcms/cms/issues/15558))
