@@ -1654,8 +1654,8 @@ li.breadcrumb-toggle-wrapper {
           inset-block-start: 1px;
           margin-inline-end: 10px;
           flex-shrink: 1;
-          width: torem(18);
-          height: torem(18);
+          width: calc(18 / 16 * 1rem);
+          height: calc(18 / 16 * 1rem);
           word-break: normal;
           transition:
             margin-inline-start linear 150ms,
