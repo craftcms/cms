@@ -955,7 +955,7 @@ class Request extends \yii\web\Request
         $value = $this->getBodyParam($name);
 
         if ($value === null) {
-            throw new BadRequestHttpException("Request missing required body param");   
+            throw new BadRequestHttpException("Request missing required body param");
         }
 
         $value = Craft::$app->getSecurity()->validateData($value);
