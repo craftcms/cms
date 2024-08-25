@@ -590,8 +590,7 @@ class Matrix extends Field implements
             return false;
         }
 
-        // Make sure we aren't hitting the Min Entries limit
-        return !$this->minEntriesReached($owner);
+        return true;
     }
 
     /**
@@ -600,14 +599,6 @@ class Matrix extends Field implements
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): ?bool
     {
         return false;
-    }
-
-    private function minEntriesReached(ElementInterface $owner): bool
-    {
-        return (
-            $this->minEntries &&
-            $this->minEntries >= $this->totalEntries($owner)
-        );
     }
 
     private function maxEntriesReached(ElementInterface $owner): bool
