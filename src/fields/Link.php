@@ -26,6 +26,7 @@ use craft\fields\linktypes\Email as EmailType;
 use craft\fields\linktypes\Entry;
 use craft\fields\linktypes\Phone;
 use craft\fields\linktypes\Url as UrlType;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -161,9 +162,27 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
 
     private function resolveType(string $value): string
     {
-        foreach ($this->getLinkTypes() as $id => $linkType) {
-            if ($id !== UrlType::id() && $linkType->supports($value)) {
+        $linkTypes = $this->getLinkTypes();
+
+        // check URL last, if it's selected
+        $urlType = ArrayHelper::remove($linkTypes, UrlType::id());
+        if ($urlType) {
+            $linkTypes[UrlType::id()] = $urlType;
+        }
+
+        foreach ($linkTypes as $id => $linkType) {
+            if ($linkType->supports($value)) {
                 return $id;
+            }
+        }
+
+        // See if any unselected types support it
+        foreach (self::types() as $typeId => $type) {
+            if (!isset($linkTypes[$typeId]) && $type !== UrlType::class) {
+                $linkType = Component::createComponent($type, BaseLinkType::class);
+                if ($linkType->supports($value)) {
+                    return $linkType::id();
+                }
             }
         }
 
@@ -311,15 +330,20 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
             $typeId = $value['type'] ?? UrlType::id();
             $value = trim($value[$typeId]['value'] ?? '');
 
-            if (!isset($linkTypes[$typeId])) {
-                throw new InvalidArgumentException("Invalid link type: $typeId");
-            }
-
             if (!$value) {
                 return null;
             }
 
-            $linkType = $linkTypes[$typeId];
+            if (isset($linkTypes[$typeId])) {
+                $linkType = $linkTypes[$typeId];
+            } else {
+                $type = self::types()[$typeId] ?? null;
+                if (!$type) {
+                    throw new InvalidArgumentException("Invalid link type: $typeId");
+                }
+                $linkType = Component::createComponent($type, BaseLinkType::class);
+            }
+
             $value = $linkType->normalizeValue(str_replace(' ', '+', $value));
         } else {
             if (!$value) {
@@ -327,7 +351,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
             }
 
             $typeId = $this->resolveType($value);
-            $linkType = $linkTypes[$typeId];
+            $linkType = $linkTypes[$typeId] ?? Component::createComponent(self::types()[$typeId], BaseLinkType::class);
         }
 
         return new LinkData($value, $linkType);
@@ -347,16 +371,26 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $linkTypes = $this->getLinkTypes();
+        $valueTypeId = null;
 
         /** @var LinkData|null $value */
         if ($value) {
             $valueTypeId = $value->type;
-        } else {
+
+            if (!isset($linkTypes[$valueTypeId])) {
+                $type = self::types()[$valueTypeId] ?? null;
+                if ($type) {
+                    $linkTypes[$valueTypeId] = Component::createComponent($type, BaseLinkType::class);
+                } else {
+                    $value = null;
+                }
+            }
+        }
+
+        if (!$value) {
             $valueTypeId = in_array(UrlType::id(), $this->types) ? UrlType::id() : reset($this->types);
         }
 
-        $allowedTypeIds = in_array($valueTypeId, $this->types) ? $this->types : array_merge($this->types, [$valueTypeId]);
-        $allowedTypeIds = array_filter($allowedTypeIds, fn(string $typeId) => isset($linkTypes[$typeId]));
         $id = $this->getInputId();
 
         $view = Craft::$app->getView();
@@ -371,7 +405,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
 
         $typeInputName = "$this->handle[type]";
 
-        if (count($allowedTypeIds) === 1) {
+        if (count($linkTypes) === 1) {
             $innerHtml = Html::hiddenInput($typeInputName, $valueTypeId);
         } else {
             $namespacedId = $view->namespaceInputId($id);
@@ -389,10 +423,10 @@ JS;
                 'id' => "$id-type",
                 'describedBy' => $this->describedBy,
                 'name' => $typeInputName,
-                'options' => array_map(fn(string $typeId) => [
-                    'label' => $linkTypes[$typeId]::displayName(),
-                    'value' => $linkTypes[$typeId]::id(),
-                ], $allowedTypeIds),
+                'options' => array_map(fn(BaseLinkType $linkType) => [
+                    'label' => $linkType::displayName(),
+                    'value' => $linkType::id(),
+                ], $linkTypes),
                 'value' => $valueTypeId,
                 'inputAttributes' => [
                     'aria' => [
@@ -404,12 +438,12 @@ JS;
             ]);
         }
 
-        foreach ($allowedTypeIds as $typeId) {
+        foreach ($linkTypes as $typeId => $linkType) {
             $containerId = "$id-$typeId";
             $nsContainerId = $view->namespaceInputId($containerId);
             $selected = $typeId === $valueTypeId;
             $typeValue = $selected ? $value?->serialize() : null;
-            $isTextLink = is_subclass_of($linkTypes[$typeId], BaseTextLinkType::class);
+            $isTextLink = is_subclass_of($linkType, BaseTextLinkType::class);
             $innerHtml .=
                 Html::beginTag('div', [
                     'id' => $containerId,
@@ -420,7 +454,7 @@ JS;
                     ])),
                 ]) .
                 $view->namespaceInputs(
-                    fn() => $linkTypes[$typeId]->inputHtml($this, $typeValue, $nsContainerId),
+                    fn() => $linkType->inputHtml($this, $typeValue, $nsContainerId),
                     "$this->handle[$typeId]",
                 ) .
                 Html::endTag('div');
@@ -450,6 +484,14 @@ JS;
                     /** @var LinkData $value */
                     $value = $element->getFieldValue($this->handle);
                     $linkTypes = $this->getLinkTypes();
+                    if (!isset($linkTypes[$value->type])) {
+                        $type = self::types()[$value->type] ?? null;
+                        $element->addError("field:$this->handle", Craft::t('app', '{attribute} no longer allows {type} links.', [
+                            'attribute' => $this->getUiLabel(),
+                            'type' => is_subclass_of($type, BaseLinkType::class) ? $type::displayName() : $type,
+                        ]));
+                        return;
+                    }
                     $linkType = $linkTypes[$value->type];
                     $error = null;
                     if (!$linkType->validateValue($value->serialize(), $error)) {

@@ -143,6 +143,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
       this.addListener(this.$saveBtn, 'activate', () => {
         this.$saveBtn.addClass('loading');
+        this.closeDateTimeFields();
+
         this.saveChanges()
           .then((data) => {
             if (data.errors) {
@@ -191,6 +193,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         ) {
           this.$cancelBtn.addClass('loading');
           this.elementIndex.inlineEditing = false;
+          this.closeDateTimeFields();
+
           this.elementIndex.updateElements(true, false).then(() => {
             this.elementIndex.$elements.removeClass('inline-editing');
           });
@@ -227,6 +231,14 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         });
       });
     }
+  },
+
+  closeDateTimeFields: function () {
+    // ensure opened date/time pickers don't linger after activating the Cancel btn
+    this.elementIndex.$elements.find('.timewrapper input').timepicker('remove');
+    this.elementIndex.$elements
+      .find('.datewrapper input')
+      .datepicker('destroy');
   },
 
   serializeInputs: function () {

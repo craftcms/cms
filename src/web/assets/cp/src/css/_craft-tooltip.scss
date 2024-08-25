@@ -8,8 +8,11 @@
   transition:
     opacity 100ms ease-in-out,
     transform 150ms ease-in-out;
-  inset-block-start: 0;
-  inset-inline-start: 0;
+  /* stylelint-disable */
+  /* We need to keep these non-logical so floating-ui can override them */
+  top: 0;
+  left: 0;
+  /* stylelint-enable */
   z-index: 99;
 }
 

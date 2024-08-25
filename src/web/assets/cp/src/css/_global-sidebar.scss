@@ -248,13 +248,12 @@
 }
 
 .sidebar-action--job {
-  grid-column: 2/4 !important;
-  align-items: flex-start;
+  align-items: start;
 
   .sidebar-action__label {
     flex-wrap: wrap;
-    padding-block: var(--xs);
-    gap: var(--xs);
+    padding-block: var(--2xs);
+    gap: var(--2xs);
   }
 
   .label {
