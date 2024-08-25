@@ -926,6 +926,48 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Validates and returns the named request body parameter value, or bails on the request with a 400 error if that parameter doesn’t exist or doesn’t pass validation.
+     *
+     * ---
+     *
+     * ```php
+     * // get required and validated $_POST['foo']
+     * $foo = Craft::$app->request->getRequiredValidatedBodyParam('foo');
+     *
+     * // get required and validated $_POST['foo']['bar']
+     * $bar = Craft::$app->request->getRequiredValidatedBodyParam('foo.bar');
+     * ```
+     * ```twig
+     * {# get required and validated $_POST['foo'] #}
+     * {% set foo = craft.app.request.getRequiredValidatedBodyParam('foo') %}
+     *
+     * {# get required and validated $_POST['foo']['bar'] #}
+     * {% set bar = craft.app.request.getRequiredValidatedBodyParam('foo.bar') %}
+     * ```
+     *
+     * @param string $name The parameter name.
+     * @return mixed The parameter value
+     * @throws BadRequestHttpException if the request does not have the body param or if the param value doesn’t pass validation
+     * @see getBodyParam()
+     */
+    public function getRequiredValidatedBodyParam(string $name): mixed
+    {
+        $value = $this->getBodyParam($name);
+
+        if ($value === null) {
+            throw new BadRequestHttpException("Request missing required body param");   
+        }
+
+        $value = Craft::$app->getSecurity()->validateData($value);
+
+        if ($value === false) {
+            throw new BadRequestHttpException('Request contained an invalid body param');
+        }
+
+        return $value;
+    }
+
+    /**
      * Validates and returns the named request body parameter value, or bails on the request with a 400 error if that parameter doesn’t pass validation.
      *
      * ---
