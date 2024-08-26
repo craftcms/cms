@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => '関連{type}を検証する',
     'Validation errors for site: “{siteName}“' => 'サイトの検証エラー: 「{siteName}」',
     'Validation errors found in {attribute} {type}; please fix them.' => '検証エラーが{attribute}{type}で見つかりました。修正してください。',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => '*{fieldName}* フィールド内の{count, plural, =1{1件のネストされたエントリ} other{{count, spellout}件のネストされたエントリ}}で検証エラーが見つかりました。修正してください。',
     'Value prefixed by “{prefix}”.' => '「{prefix}」で始まる値。',
     'Value suffixed by “{suffix}”.' => '「{suffix}」で終わる値。',
