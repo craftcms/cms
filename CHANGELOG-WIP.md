@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 4.12 (WIP)
 
+### Development
+- Country field values and `craft\elements\Address::getCountry()` now return the country in the current application locale.
+
 ### Extensibility
 - Added `craft\base\ApplicationTrait::getEnvId()`. ([#15313](https://github.com/craftcms/cms/issues/15313))
 - Added `craft\base\ElementInterface::getRootOwner()`. ([#15534](https://github.com/craftcms/cms/discussions/15534))
