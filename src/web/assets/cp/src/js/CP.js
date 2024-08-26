@@ -11,7 +11,7 @@ Craft.CP = Garnish.Base.extend(
     elementThumbLoader: null,
     authManager: null,
     announcerTimeout: null,
-    modalLayers: 0,
+    modalLayers: [],
 
     $nav: null,
     $navToggle: null,
@@ -802,11 +802,13 @@ Craft.CP = Garnish.Base.extend(
       if (Garnish.uiLayerManager.modalLayers.length === this.modalLayers.length)
         return;
 
+      // Store modal layers
+      this.modalLayers = Garnish.uiLayerManager.modalLayers;
+
       if (this.announcerTimeout) {
         clearTimeout(this.announcerTimeout);
       }
 
-      // Set appropriate live region based on modal layers
       if (Garnish.uiLayerManager.modalLayers.length === 0) {
         this.$activeLiveRegion = this.$globalLiveRegion;
       } else {
