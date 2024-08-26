@@ -1,8 +1,14 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where it wasn’t possible to override named transforms in GraphQL queries. ([#15572](https://github.com/craftcms/cms/issues/15572))
+- Fixed a bug where address subdivision fields could be incorrectly labelled and/or populated with the wrong options. ([#15551](https://github.com/craftcms/cms/issues/15551), [#15584](https://github.com/craftcms/cms/pull/15584))
+- Fixed a bug where Country fields were displaying the selected country code within element index tables, rather than the country name.
+
 ## 4.11.4 - 2024-08-21
 
-- Updated jQuery UI to 1.13.3. ([#15558](https://github.com/craftcms/cms/issues/15558))
+- Updated jQuery UI to 1.14.0. ([#15558](https://github.com/craftcms/cms/issues/15558))
 - Fixed a bug where `craft\helpers\App::env()` and `normalizeValue()` could return incorrect results for values that looked like floats. ([#15533](https://github.com/craftcms/cms/issues/15533))
 - Fixed a bug where the `users/set-password` action wasn’t respecting `redirect` params. ([#15538](https://github.com/craftcms/cms/issues/15538))
 - Fixed a bug where the “Default Values” Table field setting wasn’t escaping column headings. ([#15552](https://github.com/craftcms/cms/issues/15552))
