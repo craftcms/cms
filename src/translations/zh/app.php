@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => '选择访问控制面板时必须使用两步验证的用户。',
     'Choose' => '选择',
     'City' => '城市',
+    'City/Town' => 'City/Town',
     'Clear Caches' => '清除缓存',
     'Clear all' => '全部清除',
     'Clear caches' => '清除缓存',
