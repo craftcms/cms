@@ -1009,9 +1009,9 @@ JS;
                 }
 
                 if (!$entry->validate()) {
-                    $key = $entry->uid ?? sprintf('new%s', ++$new);
                     // we only want to show the nested entries errors when the matrix field is in blocks view mode;
                     if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+                        $key = $entry->uid ?? sprintf('new%s', ++$new);
                         $element->addModelErrors($entry, sprintf('%s[%s]', $this->handle, $key));
                     }
                     $invalidEntryIds[] = $entry->id;

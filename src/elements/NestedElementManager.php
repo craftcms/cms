@@ -389,7 +389,6 @@ class NestedElementManager extends Component
                     'class' => 'nested-element-cards',
                 ]);
 
-
                 /** @var ElementQueryInterface|ElementCollection $value */
                 $value = $this->getValue($owner, true);
                 if ($value instanceof ElementCollection) {
