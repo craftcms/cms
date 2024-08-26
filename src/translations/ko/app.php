@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => '관련 {type} 유효화',
     'Validation errors for site: “{siteName}“' => '사이트 유효성 검사 오류: “{siteName}“',
     'Validation errors found in {attribute} {type}; please fix them.' => '{attribute} {type}에서 유효성 검사 오류가 발견되었습니다. 수정해주십시오.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => '*{fieldName}* 필드 내의 {count, plural, =1{1개 중첩 항목} other{{count, spellout}개 중첩 항목}}에서 유효성 검사 오류가 발견되었습니다. 오류를 수정하십시오.',
     'Value prefixed by “{prefix}”.' => '“{prefix}” 접두사가 있는 값입니다.',
     'Value suffixed by “{suffix}”.' => '“{suffix}” 접미사가 있는 값입니다.',
