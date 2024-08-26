@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'Válassza ki, hogy mely felhasználóknak kell kétlépéses ellenőrzést használniuk a vezérlőpult elérésekor.',
     'Choose' => 'Kiválasztás',
     'City' => 'Város',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'Gyorsítótárak tisztítása',
     'Clear all' => 'Minden törlése',
     'Clear caches' => 'Gyorsítótárak kiürítése',
