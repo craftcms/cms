@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'Escolha que utilizadores têm de utilizar a verificação em dois passos ao aceder ao painel de controlo.',
     'Choose' => 'Escolher',
     'City' => 'Cidade',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'Limpar caches',
     'Clear all' => 'Limpar tudo',
     'Clear caches' => 'Limpar caches',
