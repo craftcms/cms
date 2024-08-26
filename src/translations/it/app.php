@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'Convalida {type} correlato',
     'Validation errors for site: “{siteName}“' => 'Errori di convalida per il sito: “{siteName}“',
     'Validation errors found in {attribute} {type}; please fix them.' => 'Errori di convalida trovati in {attribute} {type}; correggere.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'Errori di convalida riscontrati in {count, plural, one {}=1{un articolo annidato} other{{count, spellout} articoli annidati}} nel campo *{fieldName}*; si prega di risolverli.',
     'Value prefixed by “{prefix}”.' => 'Valore preceduto da “{prefix}”.',
     'Value suffixed by “{suffix}”.' => 'Valore seguito da “{suffix}”.',
