@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'Kontrol paneline erişirken hangi kullanıcıların iki adımlı doğrulamayı kullanacağını seçin.',
     'Choose' => 'Seçiniz',
     'City' => 'Şehir',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'Önbellekleri Temizle',
     'Clear all' => 'Hepsini Temizle',
     'Clear caches' => 'Önbellekleri temizle',
