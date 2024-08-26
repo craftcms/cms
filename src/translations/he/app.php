@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'אמת את ה{type} הקשור',
     'Validation errors for site: “{siteName}“' => 'תיקוף שגיאות לאתר: "{siteName}"',
     'Validation errors found in {attribute} {type}; please fix them.' => 'נמצאו שגיאות תיקוף ב-{type} {attribute}; נא לתקן אותן.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'שגיאות תיקוף נמצאו בשדה {count, plural, =1{רשומה מקוננת אחת} other{{count, spellout} רשומות מקוננות}}  *{fieldName}* ; נא לתקן אותן.',
     'Value prefixed by “{prefix}”.' => 'ערך עם קידומת "{prefix}".',
     'Value suffixed by “{suffix}”.' => 'ערך עם סיומת "{suffix}".',
