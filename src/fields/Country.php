@@ -99,11 +99,6 @@ class Country extends Field implements PreviewableFieldInterface
     public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         /** @var CountryModel|null $value */
-        if (!$value) {
-            return '';
-        }
-
-        $list = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
-        return $list[$value->getCountryCode()] ?? $value;
+        return $value?->getName() ?? '';
     }
 }
