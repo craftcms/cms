@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'Ověřit příslušný {type}',
     'Validation errors for site: “{siteName}“' => 'Chyby při ověřování webu: "{siteName}"',
     'Validation errors found in {attribute} {type}; please fix them.' => 'V atributu {attribute} {type} byly nalezeny chyby ověření; opravte je prosím.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => '{count, plural, one {} few {Ve {count, spellout} vnořených záznamech} many {V {count, spellout} vnořeného záznamu}=1{V jednom vnořeném záznamu} other{V {count, spellout} vnořených záznamech}} v poli *{fieldName}* byly nalezeny chyby ověření. Opravte je prosím.',
     'Value prefixed by “{prefix}”.' => 'Hodnota s předponou „{prefix}“.',
     'Value suffixed by “{suffix}”.' => 'Hodnota s příponou „{suffix}“.',
