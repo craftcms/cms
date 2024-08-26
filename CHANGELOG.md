@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Fixed a bug where it wasn’t possible to override named transforms in GraphQL queries. ([#15572](https://github.com/craftcms/cms/issues/15572))
+- Fixed a bug where it wasn’t possible to remove nested entries in Matrix fields if the Min Entries setting had been reached. ([#15575](https://github.com/craftcms/cms/issues/15575))
+- Fixed a bug where Matrix and Addresses fields weren’t displaying or validating unpublished drafts. ([#15536](https://github.com/craftcms/cms/issues/15536))
 
 ## 5.3.5 - 2024-08-21
 

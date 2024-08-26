@@ -693,7 +693,12 @@ class Addresses extends Field implements
         $value = $element->getFieldValue($this->handle);
 
         if ($value instanceof AddressQuery) {
-            $addresses = $value->getCachedResult() ?? (clone $value)->status(null)->limit(null)->all();
+            $addresses = $value->getCachedResult() ?? (clone $value)
+                ->drafts(null)
+                ->savedDraftsOnly()
+                ->status(null)
+                ->limit(null)
+                ->all();
 
             $allAddressesValidate = true;
             $scenario = $element->getScenario();
