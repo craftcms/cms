@@ -37,13 +37,13 @@ class Url extends BaseTextLinkType
      * @var bool Whether root-relative URLs should be allowed.
      * @since 5.4.0
      */
-    public bool $allowRootRelativeUrls = true;
+    public bool $allowRootRelativeUrls = false;
 
     /**
      * @var bool Whether anchors should be allowed.
      * @since 5.4.0
      */
-    public bool $allowAnchors = true;
+    public bool $allowAnchors = false;
 
     protected function urlPrefix(): array
     {
