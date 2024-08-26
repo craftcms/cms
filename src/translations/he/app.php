@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'בחר אילו משתמשים חייבים להשתמש באימות דו-שלבי בעת הגישה ללוח הבקרה.',
     'Choose' => 'בחר',
     'City' => 'עיר',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'ניקוי מטמונים',
     'Clear all' => 'נקה הכל',
     'Clear caches' => 'ניקוי מטמונים',
