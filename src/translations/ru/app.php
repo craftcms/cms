@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'Выберите, какие пользователи должны проходить двухэтапную проверку подлинности для получения доступа к панели управления.',
     'Choose' => 'Выбрать',
     'City' => 'Город',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'Очистить кэш',
     'Clear all' => 'Очистить все',
     'Clear caches' => 'Очистить кэши',
