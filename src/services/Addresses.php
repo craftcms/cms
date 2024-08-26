@@ -277,7 +277,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
             LocalityType::DISTRICT => Craft::t('app', 'District'),
             LocalityType::POST_TOWN => Craft::t('app', 'Post Town'),
             LocalityType::SUBURB => Craft::t('app', 'Suburb'),
-            LocalityType::TOWN_CITY => Craft::t('app', 'Town/City'),
+            LocalityType::TOWN_CITY => Craft::t('app', 'City/Town'),
             default => Craft::t('app', 'City'),
         };
     }
