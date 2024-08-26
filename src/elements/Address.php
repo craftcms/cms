@@ -409,7 +409,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     }
 
     /**
-     * Returns a [[Country]] object representing the address’ coutry.
+     * Returns a [[Country]] object representing the address’ country.
      *
      * @return Country
      * @since 4.11.0
