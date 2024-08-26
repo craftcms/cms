@@ -285,9 +285,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
         return true;
       }
 
-      const total = this.getTotalElements();
-
-      return total !== null && total - (num || 1) >= this.settings.minElements;
+      return this.getTotalElements() !== null;
     },
 
     getElementIds() {
