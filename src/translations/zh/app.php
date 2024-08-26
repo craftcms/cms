@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => '验证相关{type}',
     'Validation errors for site: “{siteName}“' => '站点验证错误：“{siteName}”',
     'Validation errors found in {attribute} {type}; please fix them.' => '在“{attribute}”{type}中发现验证错误；请修正。',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => '在 *{fieldName}* 字段内的 {count, plural, =1{1 个嵌套条目} other{{count, spellout} 个嵌套条目}}中找到验证错误，请修正。',
     'Value prefixed by “{prefix}”.' => '值以“{prefix}”为前缀。',
     'Value suffixed by “{suffix}”.' => '值以“{suffix}”为后缀。',
