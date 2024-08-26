@@ -4,6 +4,7 @@
 
 - Fixed a bug where it wasn’t possible to override named transforms in GraphQL queries. ([#15572](https://github.com/craftcms/cms/issues/15572))
 - Fixed a bug where address subdivision fields could be incorrectly labelled and/or populated with the wrong options. ([#15551](https://github.com/craftcms/cms/issues/15551), [#15584](https://github.com/craftcms/cms/pull/15584))
+- Fixed a bug where Country fields were displaying the selected country code within element index tables, rather than the country name.
 
 ## 4.11.4 - 2024-08-21
 
