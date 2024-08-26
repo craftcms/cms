@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'เลือกว่าผู้ใช้คนใดจำเป็นต้องใช้การยืนยันตัวตนแบบสองขั้นตอนขณะเข้าไปยังแผงควบคุม',
     'Choose' => 'Choose',
     'City' => 'City',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'Clear Caches',
     'Clear all' => 'Clear all',
     'Clear caches' => 'Clear caches',
