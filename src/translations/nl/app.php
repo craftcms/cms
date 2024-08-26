@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'Kies welke gebruikers tweestapsverificatie moeten gebruiken bij toegang tot het configuratiescherm.',
     'Choose' => 'Kiezen',
     'City' => 'Plaats',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'Caches wissen',
     'Clear all' => 'Alles wissen',
     'Clear caches' => 'Caches leegmaken',
