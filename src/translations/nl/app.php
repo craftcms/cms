@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'Betreffende {type} valideren',
     'Validation errors for site: “{siteName}“' => 'Validatiefouten voor site: "{siteName}"',
     'Validation errors found in {attribute} {type}; please fix them.' => 'Validatiefouten gevonden in {type} {attribute}; los ze op.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'Validatiefouten gevonden in {count, plural, one {}=1{één genest bericht} other{{count, spellout} geneste berichten}} in het veld *{fieldName}*. Los deze op.',
     'Value prefixed by “{prefix}”.' => 'Waarde met prefix “{prefix}”.',
     'Value suffixed by “{suffix}”.' => 'Waarde met suffix "{suffix}".',
