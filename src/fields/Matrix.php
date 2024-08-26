@@ -987,7 +987,12 @@ JS;
 
         if ($value instanceof EntryQuery) {
             /** @var Entry[] $entries */
-            $entries = $value->getCachedResult() ?? (clone $value)->status(null)->limit(null)->all();
+            $entries = $value->getCachedResult() ?? (clone $value)
+                ->drafts(null)
+                ->savedDraftsOnly()
+                ->status(null)
+                ->limit(null)
+                ->all();
 
             $invalidEntryIds = [];
             $scenario = $element->getScenario();
