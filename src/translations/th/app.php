@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'Validate related {type}',
     'Validation errors for site: “{siteName}“' => 'เกิดข้อผิดพลาดในการตรวจสอบยืนยันสำหรับเว็บไซต์: “{siteName}“',
     'Validation errors found in {attribute} {type}; please fix them.' => 'เกิดข้อผิดพลาดในการตรวจสอบยืนยันใน {attribute} {type} โปรดดำเนินการแก้ไข',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'พบข้อผิดพลาดในการตรวจสอบในรายการที่ซ้อนกัน {count, plural, =1{หนึ่งรายการ} other{{count, spellout} รายการ}} ภายในฟิลด์ *{fieldName}* โปรดดำเนินการแก้ไข',
     'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
     'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
