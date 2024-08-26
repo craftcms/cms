@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'Vyberte, ktorí používatelia musia pri prístupe k ovládaciemu panelu používať dvojfázové overenie.',
     'Choose' => 'Vybrať',
     'City' => 'Mesto',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'Vymazať Cache',
     'Clear all' => 'Vymazať Všetko',
     'Clear caches' => 'Vymazať cache',
