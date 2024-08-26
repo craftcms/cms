@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'Виберіть, які користувачі повинні проходити двоетапну перевірку для отримання доступу до панелі керування.',
     'Choose' => 'Вибрати',
     'City' => 'Місто',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'Очистити кеш',
     'Clear all' => 'Очистити все',
     'Clear caches' => 'Очистити кеші',
