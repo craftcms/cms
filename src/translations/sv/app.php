@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'Välj vilka användare som måste använda tvåstegsverifiering när de får åtkomst till kontrollpanelen.',
     'Choose' => 'Välj',
     'City' => 'Stad',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'Rensa cache',
     'Clear all' => 'Rensa alla',
     'Clear caches' => 'Rensa cache',
