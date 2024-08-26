@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => '제어판에 액세스할 때 2단계 인증을 사용해야 하는 사용자를 선택하십시오.',
     'Choose' => '선택',
     'City' => '도시명',
+    'City/Town' => 'City/Town',
     'Clear Caches' => '캐시 지우기',
     'Clear all' => '모두 지우기',
     'Clear caches' => '캐시 지우기',
