@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'Validar {type} relacionado',
     'Validation errors for site: “{siteName}“' => 'Erros de validação para o site: “{siteName}“',
     'Validation errors found in {attribute} {type}; please fix them.' => 'Foram encontrados erros de validação em {attribute} de {type}; por favor, corrija os mesmos.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'Foram encontrados erros de validação em {count, plural, =1{uma entrada aninhada} other{{count, spellout} entradas aninhadas}} dentro do campo *{fieldName}*; Corrija os mesmos.',
     'Value prefixed by “{prefix}”.' => 'Valor com prefixo “{prefix}”.',
     'Value suffixed by “{suffix}”.' => 'Valor com sufixo “{suffix}”.',
