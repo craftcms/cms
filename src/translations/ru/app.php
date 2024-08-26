@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'Проверить связанный тип {type}',
     'Validation errors for site: “{siteName}“' => 'Ошибки проверки для сайта: "{siteName}"',
     'Validation errors found in {attribute} {type}; please fix them.' => 'В {attribute} {type} обнаружены ошибки проверки; исправьте их.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'В {count, plural, one {} few {{count, spellout} вложенных записях} many {{count, spellout} nested entries}=1{одной вложенной записи} other{{count, spellout} вложенных записях}} в поле *{fieldName}* обнаружены ошибки проверки; исправьте их.',
     'Value prefixed by “{prefix}”.' => 'Значение с префиксом “{prefix}”.',
     'Value suffixed by “{suffix}”.' => 'Значение с суффиксом “{suffix}”.',
