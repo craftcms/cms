@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'Sprawdź poprawność powiązanego elementu {type}',
     'Validation errors for site: “{siteName}“' => 'Błędy walidacji dla witryny: „{siteName}”',
     'Validation errors found in {attribute} {type}; please fix them.' => 'Znaleziono błędy walidacji w {attribute} {type}; napraw je.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'Znaleziono błędy walidacji w {count, plural, =1{jednym wpisie zagnieżdżonym} other{{count, spellout} wpisach zagnieżdżonych}} w polu *{fieldName}*; napraw je.',
     'Value prefixed by “{prefix}”.' => 'Wartość z prefiksem „{prefix}”.',
     'Value suffixed by “{suffix}”.' => 'Wartość z sufiksem „{suffix}”.',
