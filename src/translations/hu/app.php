@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'A kapcsolódó {type} ellenőrzése',
     'Validation errors for site: “{siteName}“' => 'Hitelesítési hibák a webhelynél: „{siteName}”',
     'Validation errors found in {attribute} {type}; please fix them.' => 'Hitelesítési hibákat találtunk a(z) {attribute} {type} esetében; kérjük, javítsa ki őket.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'Érvényesítési hibákat találtunk {count, plural, one {}=1{egy beágyazott bejegyzésben} other{{count, spellout} beágyazott bejegyzésben}} a *{fieldName}* mezőben; kérjük, javítsa ki őket.',
     'Value prefixed by “{prefix}”.' => 'Az érték előtagja „{prefix}”.',
     'Value suffixed by “{suffix}”.' => 'Az érték utótagja „{suffix}”.',
