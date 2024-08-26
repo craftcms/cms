@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'اختر المستخدمين الذين يجب أن يستخدموا التحقق بخطوتين عند الوصول إلى لوحة التحكم.',
     'Choose' => 'اختر',
     'City' => 'المدينة',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'مسح التخزين المؤقت',
     'Clear all' => 'مسح الكل',
     'Clear caches' => 'مسح ذاكرة التخزين المؤقت',
