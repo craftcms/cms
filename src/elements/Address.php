@@ -374,7 +374,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getCountry(): Country
     {
-        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode);
+        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode, Craft::$app->language);
     }
 
     /**

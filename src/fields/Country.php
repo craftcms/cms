@@ -72,7 +72,7 @@ class Country extends Field implements InlineEditableFieldInterface, MergeableFi
         }
 
         try {
-            return Craft::$app->getAddresses()->getCountryRepository()->get($value);
+            return Craft::$app->getAddresses()->getCountryRepository()->get($value, Craft::$app->language);
         } catch (UnknownCountryException) {
             return null;
         }
