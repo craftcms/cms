@@ -55,7 +55,7 @@
     "iframe-resizer": "^4.3.2",
     "inputmask": "^5.0.9",
     "jquery": "^3.6.0",
-    "jquery-ui": "^1.13.3",
+    "jquery-ui": "^1.14.0",
     "jquery.payment": "^3.0.0",
     "picturefill": "^3.0.3",
     "punycode": "^2.3.1",
