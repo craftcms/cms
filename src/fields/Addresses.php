@@ -700,7 +700,7 @@ class Addresses extends Field implements
                 ->limit(null)
                 ->all();
 
-            $allAddressesValidate = true;
+            $invalidAddressIds = [];
             $scenario = $element->getScenario();
 
             foreach ($addresses as $i => $address) {
@@ -713,14 +713,20 @@ class Addresses extends Field implements
                 }
 
                 if (!$address->validate()) {
-                    $element->addModelErrors($address, "$this->handle[$i]");
-                    $allAddressesValidate = false;
+                    $invalidAddressIds[] = $address->id;
                 }
             }
 
-            if (!$allAddressesValidate) {
+            if (!empty($invalidAddressIds)) {
                 // Just in case the addresses weren't already cached
                 $value->setCachedResult($addresses);
+                $element->addInvalidNestedElementIds($invalidAddressIds);
+
+                // show a top level error to let users know that there are validation errors in the nested entries
+                $element->addError($this->handle, Craft::t('app', 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.', [
+                    'count' => count($invalidAddressIds),
+                    'fieldName' => $this->getUiLabel(),
+                ]));
             }
         } else {
             $addresses = $value->all();

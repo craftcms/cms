@@ -5,6 +5,7 @@
 - Asset chips and cards no longer include the “Replace file” action. ([#15498](https://github.com/craftcms/cms/issues/15498))
 - Category slugs are now inline-editable from the Categories index page. ([#15560](https://github.com/craftcms/cms/pull/15560))
 - Entry post dates, expiry dates, slugs, and authors are now inline-editable from the Entries index page. ([#15560](https://github.com/craftcms/cms/pull/15560))
+- Improved Addresses field validation to be more consistent with Matrix fields.
 
 ### Accessibility
 - Improved the accessibility of Tags fields.
