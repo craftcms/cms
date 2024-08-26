@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'التحقق من صحة {type} ذات الصلة',
     'Validation errors for site: “{siteName}“' => 'أخطاء التحقق من الصحة للموقع: "{siteName}"',
     'Validation errors found in {attribute} {type}; please fix them.' => 'تم العثور على أخطاء تحقق من الصحة في {attribute} {type}؛ يُرجى إصلاحها.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'تم العثور على أخطاء في المصادقة في {count, plural, zero {} one {{count, spellout} إدخال متداخل} two {{count, spellout} إدخالَين متداخلَين} few {{count, spellout} إدخالات متداخلة} many {{count, spellout} إدخالًا متداخلًا}=1{one إدخال متداخل} other{{count, spellout} إدخال متداخل}} في حقل *{fieldName}*؛ ويُرجى الإصلاح.',
     'Value prefixed by “{prefix}”.' => 'القيمة مسبوقة بـ "{prefix}".',
     'Value suffixed by “{suffix}”.' => 'القيمة ملحقة بـ "{suffix}".',
