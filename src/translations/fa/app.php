@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'کاربرانی را باید هنگام دسترسی به پانل کنترل از تایید دو مرحله‌ای استفاده کنند، انتخاب کنید.',
     'Choose' => 'انتخاب کردن',
     'City' => 'شهر',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'پاک کردن حافظه های نهان',
     'Clear all' => 'پاک کردن همه',
     'Clear caches' => 'پاک کردن حافظه های نهان',
