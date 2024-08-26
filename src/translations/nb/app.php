@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'Valider relatert {type}',
     'Validation errors for site: “{siteName}“' => 'Valideringsfeil for nettstedet: «{siteName}»',
     'Validation errors found in {attribute} {type}; please fix them.' => 'Valideringsfeil funnet i {attribute} {type} – fiks dem.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'Valideringsfeil funnet i {count, plural, =1{én nestet oppføring} other{{count, spellout} nestede oppføringer}} i *{fieldName}*-feltet – fiks dem.',
     'Value prefixed by “{prefix}”.' => 'Verdi med prefikset «{prefix}».',
     'Value suffixed by “{suffix}”.' => 'Verdi med suffikset «{suffix}».',
