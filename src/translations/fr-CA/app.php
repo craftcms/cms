@@ -1834,6 +1834,7 @@ return [
     'Validate related {type}' => 'Valider le {type} concerné',
     'Validation errors for site: “{siteName}“' => 'Erreurs de validation pour le site : « {siteName} »',
     'Validation errors found in {attribute} {type}; please fix them.' => 'Des erreurs de validation ont été trouvées dans {attribute} {type}; veuillez les corriger.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'Des erreurs de validation ont été trouvées dans {count, plural,=1{une entrée imbriquée} other{{count, spellout} entrées imbriquées}} dans le champ *{fieldName}*; veuillez les corriger.',
     'Value prefixed by “{prefix}”.' => 'Valeur avec préfixe « {prefix} ».',
     'Value suffixed by “{suffix}”.' => 'Valeur avec suffixe « {suffix} ».',
