@@ -32,6 +32,7 @@ use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
+use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 
@@ -255,17 +256,28 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
      */
     public function getSettingsHtml(): ?string
     {
-        $types = self::types();
-        $linkTypeOptions = array_map(fn(string $type) => [
+        // Sort them by label, with URL at the top
+        /** @var Collection<string|BaseLinkType> $types */
+        /** @phpstan-var Collection<class-string<BaseLinkType>> $types */
+        $types = Collection::make(self::types())
+            ->sort(function(string $a, string $b) {
+                /** @var string|BaseLinkType $a */
+                /** @var string|BaseLinkType $b */
+                /** @phpstan-var class-string<BaseLinkType> $a */
+                /** @phpstan-var class-string<BaseLinkType> $b */
+                if ($a === UrlType::class) {
+                    return -1;
+                }
+                if ($b === UrlType::class) {
+                    return 1;
+                }
+                return $a::displayName() <=> $b::displayName();
+            });
+
+        $linkTypeOptions = $types->map(fn(string $type) => [
             'label' => $type::displayName(),
             'value' => $type::id(),
-        ], $types);
-
-        // Sort them by label, with URL at the top
-        $urlOption = $linkTypeOptions[UrlType::id()];
-        unset($linkTypeOptions[UrlType::id()]);
-        usort($linkTypeOptions, fn(array $a, array $b) => $a['label'] <=> $b['label']);
-        $linkTypeOptions = [$urlOption, ...$linkTypeOptions];
+        ])->all();
 
         $html = Cp::checkboxSelectFieldHtml([
             'label' => Craft::t('app', 'Allowed Link Types'),
@@ -281,7 +293,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         $linkTypes = $this->getLinkTypes();
         $view = Craft::$app->getView();
 
-        foreach ($types as $typeId => $typeClass) {
+        foreach ($types->all() as $typeId => $typeClass) {
             $linkType = $linkTypes[$typeId] ?? Component::createComponent($typeClass, BaseLinkType::class);
             $typeSettingsHtml = $view->namespaceInputs(fn() => $linkType->getSettingsHtml(), "typeSettings[$typeId]");
             if ($typeSettingsHtml) {
