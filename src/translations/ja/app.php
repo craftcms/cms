@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'コントロールパネルにアクセスする場合に、どのユーザーが2段階認証を使用する必要があるのかを選択してください。',
     'Choose' => '選択',
     'City' => '市区町村',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'キャッシュをクリア',
     'Clear all' => 'すべてクリア',
     'Clear caches' => 'キャッシュをクリア',
