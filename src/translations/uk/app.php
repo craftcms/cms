@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'Перевіряти пов\'язаний об\'єкт ({type})',
     'Validation errors for site: “{siteName}“' => 'Помилки валідації для сайту: “{siteName}“',
     'Validation errors found in {attribute} {type}; please fix them.' => '{attribute} {type} містить помилки валідації; виправте їх.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'Виявлено помилки валідації в {count, plural, one {{count, spellout}вкладеному записі} few {{count, spellout} вкладених записах} many {{count, spellout} вкладених записах}=1{одному вкладеному записі} other{{count, spellout} вкладеному записі}} у полі *{fieldName}* field; виправте помилки. ',
     'Value prefixed by “{prefix}”.' => 'Значення з префіксом «{prefix}».',
     'Value suffixed by “{suffix}”.' => 'Значення із суфіксом «{suffix}».',
