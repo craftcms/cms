@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => 'اعتبارسنجی {type}ی مرتبط',
     'Validation errors for site: “{siteName}“' => 'خطاهای اعتبارسنجی برای سایت: «{siteName}»',
     'Validation errors found in {attribute} {type}; please fix them.' => 'در {attribute} {type} خطاهای اعتبارسنجی یافت شد؛ لطفا آنها را رفع کنید.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'خطاهای اعتبارسنجی در {count, plural, =1{one insted entry} other{{count, spellout} insted entry}} در قسمت *{fieldName}* یافت شد. لطفا آنها را تصحیح کنید.',
     'Value prefixed by “{prefix}”.' => 'مقدار دارای پیشوند “{prefix}”.',
     'Value suffixed by “{suffix}”.' => 'مقدار دارای پسوند “{suffix}”.',
