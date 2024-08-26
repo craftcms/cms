@@ -287,6 +287,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'Velg hvilke brukere som må bruke totrinnsverifiesring når de får tilgang til kontrollpanelet.',
     'Choose' => 'Velg',
     'City' => 'By',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'Tøm hurtigbufferene',
     'Clear all' => 'Tøm alt',
     'Clear caches' => 'Tøm hurtigbufferene',
