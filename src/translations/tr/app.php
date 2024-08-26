@@ -1833,6 +1833,7 @@ return [
     'Validate related {type}' => '{type} ile ilgili doğrulama',
     'Validation errors for site: “{siteName}“' => 'Site için doğrulama hataları: "{siteName}"',
     'Validation errors found in {attribute} {type}; please fix them.' => '{attribute} {type} içinde bulunan doğrulama hataları; lütfen bu hataları düzeltin.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => '*{fieldName}* içindeki {count, plural, =1{bir yerleştirilmiş kayıtta} other{{count, spellout} yerleştirilmiş kayıtta}} doğrulama hataları bulundu; lütfen bunları düzeltin.',
     'Value prefixed by “{prefix}”.' => '“{prefix}” ön ekine sahip değer.',
     'Value suffixed by “{suffix}”.' => '“{suffix}” son ekine sahip değer.',
