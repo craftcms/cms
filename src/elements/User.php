@@ -38,6 +38,7 @@ use craft\helpers\Json;
 use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\helpers\User as UserHelper;
 use craft\i18n\Formatter;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
@@ -298,7 +299,7 @@ class User extends Element implements IdentityInterface
             ],
         ];
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             $sources = array_merge($sources, [
                 [
                     'key' => 'admins',
@@ -786,6 +787,10 @@ class User extends Element implements IdentityInterface
             $this->email = StringHelper::idnToUtf8Email($this->email);
         }
 
+        if (empty($this->username) && Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            $this->username = $this->email;
+        }
+
         $this->normalizeNames();
     }
 
@@ -987,7 +992,7 @@ class User extends Element implements IdentityInterface
                 // are they allowed to set the email?
                 if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
                     if (
-                        Craft::$app->edition === CmsEdition::Pro &&
+                        Craft::$app->edition->value >= CmsEdition::Pro->value &&
                         Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
                         !$userSession->checkPermission('administrateUsers')
                     ) {
@@ -1310,7 +1315,7 @@ class User extends Element implements IdentityInterface
             return $this->_groups;
         }
 
-        if (Craft::$app->edition !== CmsEdition::Pro || !isset($this->id)) {
+        if (Craft::$app->edition < CmsEdition::Pro || !isset($this->id)) {
             return [];
         }
 
@@ -1324,7 +1329,7 @@ class User extends Element implements IdentityInterface
      */
     public function setGroups(array $groups): void
     {
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             $this->_groups = $groups;
         }
     }
@@ -1337,7 +1342,7 @@ class User extends Element implements IdentityInterface
      */
     public function isInGroup(UserGroup|int|string $group): bool
     {
-        if (Craft::$app->edition !== CmsEdition::Pro) {
+        if (Craft::$app->edition < CmsEdition::Pro) {
             return false;
         }
 
@@ -1669,7 +1674,7 @@ XML;
      */
     public function canAssignUserGroups(): bool
     {
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
                 if ($this->can("assignUserGroup:$group->uid")) {
                     return true;
@@ -2504,6 +2509,8 @@ JS, [
 
     /**
      * Returns the [[authError]] value for [[authenticate()]] and [[authenticateWithPasskey()]].
+     *
+     * @todo Nate! Duplicate of UserHelper::getAuthStatus()
      *
      * @return self::AUTH_*|null
      */

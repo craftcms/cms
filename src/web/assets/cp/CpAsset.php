@@ -162,6 +162,7 @@ JS;
             'Couldn’t reorder items.',
             'Couldn’t save new order.',
             'Create',
+            'Create {type}',
             'Customize sources',
             'Default Sort',
             'Default Table Columns',
@@ -197,6 +198,7 @@ JS;
             'Enter the name of the folder',
             'Enter your password to log back in.',
             'Error',
+            'Existing {type}',
             'Export Type',
             'Export',
             'Export…',
@@ -234,6 +236,7 @@ JS;
             'License transferred.',
             'Limit',
             'Loading',
+            'Loading complete',
             'Make not required',
             'Make optional',
             'Make required',
@@ -444,9 +447,10 @@ JS;
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
 
         $data = [
-            'Pro' => CmsEdition::Pro->value,
-            'Team' => CmsEdition::Team->value,
             'Solo' => CmsEdition::Solo->value,
+            'Team' => CmsEdition::Team->value,
+            'Pro' => CmsEdition::Pro->value,
+            'Enterprise' => CmsEdition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],

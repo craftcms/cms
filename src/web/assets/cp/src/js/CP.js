@@ -13,6 +13,7 @@ Craft.CP = Garnish.Base.extend(
 
     $nav: null,
     $navToggle: null,
+    $globalLiveRegion: null,
     $globalSidebar: null,
     $globalContainer: null,
     $mainContainer: null,
@@ -77,6 +78,7 @@ Craft.CP = Garnish.Base.extend(
       // Find all the key elements
       this.$nav = $('#nav');
       this.$navToggle = $('#primary-nav-toggle');
+      this.$globalLiveRegion = $('#global-live-region');
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
       this.$mainContainer = $('#main-container');
@@ -922,7 +924,28 @@ Craft.CP = Garnish.Base.extend(
     },
 
     /**
-     * Dispays a notification.
+     * Updates the global live region with a screen reader announcement
+     *
+     * @param {string} message
+     */
+    announce: function (message) {
+      if (!message) return;
+
+      this.$globalLiveRegion.empty().text(message);
+
+      // Clear message after interval
+      setTimeout(() => {
+        const currentMessage = this.$globalLiveRegion.text();
+
+        // Check that this is the same message and hasn't been updated since
+        if (message !== currentMessage) return;
+
+        this.$globalLiveRegion.empty();
+      }, 5000);
+    },
+
+    /**
+     * Displays a notification.
      *
      * @param {string} type `notice`, `success`, or `error`
      * @param {string} message
@@ -1894,6 +1917,7 @@ var JobProgressIcon = Garnish.Base.extend({
   $a: null,
   $label: null,
   $progressLabel: null,
+  $tooltip: $(),
 
   progress: null,
   failMode: false,
@@ -1944,11 +1968,15 @@ var JobProgressIcon = Garnish.Base.extend({
       .appendTo($labelContainer)
       .hide();
 
-    this.$tooltip = $('<craft-tooltip/>', {
-      placement: 'right',
-      'self-managed': true,
-      'aria-label': this.$label.text(),
-    }).appendTo(this.$a);
+    // If the sidebar is collapsed, make sure to add a tooltip.
+    // CraftGlobalSidebar.js will handle removing it and adding it back on expand/contract
+    if (Garnish.$bod.data('sidebar') === 'collapsed') {
+      this.$tooltip = $('<craft-tooltip/>', {
+        placement: 'right',
+        'self-managed': true,
+        'aria-label': this.$label.text(),
+      }).appendTo(this.$a);
+    }
 
     let m = window.devicePixelRatio > 1 ? 2 : 1;
     this._canvasSize = 18 * m;
@@ -1956,12 +1984,9 @@ var JobProgressIcon = Garnish.Base.extend({
     this._arcRadius = 7 * m;
     this._lineWidth = 3 * m;
 
-    this._$bgCanvas = this._createCanvas(
-      'bg',
-      this.$li.css('background-color')
-    );
+    this._$bgCanvas = this._createCanvas('bg', '#a3afbb');
     this._$staticCanvas = this._createCanvas('static', this.$li.css('color'));
-    this._$hoverCanvas = this._createCanvas('hover', '#fff');
+    this._$hoverCanvas = this._createCanvas('hover', this.$li.css('color'));
     this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
 
     this._staticCtx = this._$staticCanvas[0].getContext('2d');
@@ -1972,7 +1997,6 @@ var JobProgressIcon = Garnish.Base.extend({
   },
 
   setDescription: function (description, progressLabel) {
-    this.$a.attr('title', description);
     this.$label.text(description);
     if (progressLabel) {
       this.$progressLabel.text(progressLabel).show();
@@ -1980,7 +2004,9 @@ var JobProgressIcon = Garnish.Base.extend({
       this.$progressLabel.hide();
     }
 
-    this.$tooltip.attr('aria-label', description);
+    if (this.$tooltip.length) {
+      this.$tooltip.attr('aria-label', description);
+    }
   },
 
   setProgress: function (progress) {

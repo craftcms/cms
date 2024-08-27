@@ -165,6 +165,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             DateCreatedConditionRule::class,
             DateUpdatedConditionRule::class,
             IdConditionRule::class,
+            NotRelatedToConditionRule::class,
             RelatedToConditionRule::class,
             SlugConditionRule::class,
         ];

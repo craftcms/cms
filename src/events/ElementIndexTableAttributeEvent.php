@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\elements\db\ElementQueryInterface;
-use yii\base\Event;
 
 /**
  * Table attribute Element Query preparation event

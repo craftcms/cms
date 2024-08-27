@@ -85,7 +85,7 @@
         errors: (freshSettings ? null : settings.getErrors('fromName'))
     }) }}
 
-    {% if CraftEdition == CraftPro %}
+    {% if CraftEdition >= CraftPro %}
         {{ forms.autosuggestField({
             label: "HTML Email Template"|t('app'),
             instructions: "The template Craft CMS will use for HTML emails"|t('app'),

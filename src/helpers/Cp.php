@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
@@ -177,7 +178,7 @@ class Cp
         }
 
         // Do any plugins require a higher edition?
-        if (Craft::$app->edition !== CmsEdition::Pro) {
+        if (Craft::$app->edition < CmsEdition::Pro) {
             foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
                 if ($plugin->minCmsEdition->value > Craft::$app->edition->value) {
                     $alerts[] = Craft::t('app', '{plugin} requires Craft CMS {edition} edition.', [
@@ -930,7 +931,7 @@ class Cp
             function() use ($component): string {
                 $actionMenuItems = array_filter(
                     $component->getActionMenuItems(),
-                    fn(array $item) => !($item['destructive'] ?? false),
+                    fn(array $item) => $item['showInChips'] ?? !($item['destructive'] ?? false)
                 );
 
                 if (empty($actionMenuItems)) {
@@ -2088,6 +2089,8 @@ JS, [
                 $addressesService->getUsedSubdivisionFields($address->countryCode),
             )) + $requiredFields;
 
+        $parents = self::_getSubdivisionParents($address, $visibleFields);
+
         return
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine1'),
@@ -2143,10 +2146,7 @@ JS, [
                 $belongsToCurrentUser ? 'address-level2' : 'off',
                 isset($visibleFields['locality']),
                 isset($requiredFields['locality']),
-                array_values(array_filter([
-                    $address->countryCode,
-                    array_key_exists('administrativeArea', $visibleFields) ? $address->administrativeArea : false,
-                ], fn($v) => $v !== false)),
+                $parents['locality'],
                 true,
             ) .
             self::_subdivisionField(
@@ -2155,11 +2155,7 @@ JS, [
                 $belongsToCurrentUser ? 'address-level3' : 'off',
                 isset($visibleFields['dependentLocality']),
                 isset($requiredFields['dependentLocality']),
-                array_values(array_filter([
-                    $address->countryCode,
-                    array_key_exists('administrativeArea', $visibleFields) ? $address->administrativeArea : false,
-                    array_key_exists('locality', $visibleFields) ? $address->locality : false,
-                ], fn($v) => $v !== false)),
+                $parents['dependentLocality'],
                 false,
             ) .
             static::textFieldHtml([
@@ -2195,6 +2191,49 @@ JS, [
                     'error-key' => 'sortingCode',
                 ],
             ]);
+    }
+
+    /**
+     * Get parents array that needs to be passed to the subdivision repository getList() method to get the list of subdivisions back.
+     *
+     * For the administrativeArea, the parent is always just the country code.
+     *
+     * For the locality:
+     *      - it could be just the country code
+     *          - for countries that don't use administrativeArea field; that's the case with Andorra
+     *      - it could be the country code and the administrative area code
+     *          - for countries that use both administrative areas and localities; e.g. Chile (Chile => Araucania > Carahue)
+     *          - the administrative area can be passed as null too;
+     *              this will be triggered for the United Kingdom (GB), where you can conditionally turn on administrativeArea;
+     *              in the case of GB, not passing null as the second value would result
+     *              in the administrativeAreas list being returned for the locality field (https://github.com/craftcms/cms/issues/15551);
+     *
+     * For the dependentLocality:
+     *      - as above but taking locality into consideration too; e.g. China has all 3 levels of subdivisions and has lists for all 3 of them
+     *          (China => Heilongjiang Sheng > Hegang Shi > Dongshan Qu)
+     *
+     * @param Address $address
+     * @param array $visibleFields
+     * @return array
+     */
+    private static function _getSubdivisionParents(Address $address, array $visibleFields): array
+    {
+        $baseSubdivisionRepository = new BaseSubdivisionRepository();
+
+        $localityParents = [$address->countryCode];
+        $administrativeAreas = $baseSubdivisionRepository->getList([$address->countryCode]);
+
+        if (array_key_exists('administrativeArea', $visibleFields) || empty($administrativeAreas)) {
+            $localityParents[] = $address->administrativeArea;
+        }
+
+        $dependentLocalityParents = $localityParents;
+        $localities = $baseSubdivisionRepository->getList($localityParents);
+        if (array_key_exists('locality', $visibleFields) || empty($localities)) {
+            $dependentLocalityParents[] = $address->locality;
+        }
+
+        return ['locality' => $localityParents, 'dependentLocality' => $dependentLocalityParents];
     }
 
     private static function _subdivisionField(
@@ -2887,7 +2926,7 @@ JS;
         array $config = [],
     ): array {
         if ($sites === null) {
-            $sites = Craft::$app->getSites()->getAllSites();
+            $sites = Craft::$app->getSites()->getEditableSites();
         }
 
         $config += [

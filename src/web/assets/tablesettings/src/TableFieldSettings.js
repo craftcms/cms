@@ -173,7 +173,7 @@
           theadHtml +=
             '<th scope="col">' +
             (this.columnsData[colId].heading
-              ? this.columnsData[colId].heading
+              ? Craft.escapeHtml(this.columnsData[colId].heading)
               : '&nbsp;') +
             '</th>';
         }

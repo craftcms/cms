@@ -184,7 +184,7 @@ EOD,
                 $reason = null;
                 return $others->doesntContain(fn(MergeableFieldInterface $other) => (
                     !$other->canMergeInto($first, $reason) ||
-                    !$first->canmergeFrom($other, $reason)
+                    !$first->canMergeFrom($other, $reason)
                 ));
             });
 

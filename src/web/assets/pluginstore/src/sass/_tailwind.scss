@@ -5,9 +5,8 @@ html {
 }
 
 *,
-:after,
-:before {
-  -moz-box-sizing: inherit;
+::after,
+::before {
   box-sizing: inherit;
 }
 

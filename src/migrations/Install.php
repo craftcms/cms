@@ -31,6 +31,7 @@ use craft\models\Section;
 use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
+use ReflectionClass;
 
 /**
  * Installation Migration
@@ -81,8 +82,16 @@ class Install extends Migration
         $this->createIndexes();
         $this->addForeignKeys();
         $this->db->getSchema()->refresh();
-        $this->insertDefaultData();
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function afterUp(): void
+    {
+        $this->insertDefaultData();
+        parent::afterUp();
     }
 
     /**
@@ -632,6 +641,14 @@ class Install extends Migration
             'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
+        $this->createTable(Table::SSO_IDENTITIES, [
+            'provider' => $this->string()->notNull(),
+            'identityId' => $this->string()->notNull(),
+            'userId' => $this->integer()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'PRIMARY KEY([[provider]], [[identityId]], [[userId]])',
+        ]);
         $this->createTable(Table::STRUCTUREELEMENTS, [
             'id' => $this->primaryKey(),
             'structureId' => $this->integer()->notNull(),
@@ -1052,6 +1069,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::SESSIONS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SHUNNEDMESSAGES, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SITES, ['groupId'], Table::SITEGROUPS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::SSO_IDENTITIES, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::STRUCTUREELEMENTS, ['structureId'], Table::STRUCTURES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::TAGGROUPS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::TAGS, ['groupId'], Table::TAGGROUPS, ['id'], 'CASCADE', null);
@@ -1178,21 +1196,23 @@ class Install extends Migration
         // and that they have the same schema as project.yaml
         foreach ($pluginConfigs as $handle => $pluginConfig) {
             try {
-                $plugin = $pluginsService->createPlugin($handle);
+                $pluginInfo = $pluginsService->getPluginInfo($handle);
             } catch (InvalidPluginException) {
                 $error = "The “{$handle}” plugin is not Composer-installed, but project.yaml expects it to be.";
                 return false;
             }
 
-            if (!$plugin) {
-                $error = "“{$handle}” is not a valid plugin.";
-                return false;
+            if (isset($pluginInfo['schemaVersion'])) {
+                $schemaVersion = $pluginInfo['schemaVersion'];
+            } else {
+                $pluginRef = new ReflectionClass($pluginInfo['class']);
+                $schemaVersion = $pluginRef->getProperty('schemaVersion')->getDefaultValue();
             }
 
             $expectedSchemaVersion = $pluginConfig['schemaVersion'] ?? null;
 
-            if ($plugin->schemaVersion && $expectedSchemaVersion && $plugin->schemaVersion != $expectedSchemaVersion) {
-                $error = "$plugin->name is installed with schema version $plugin->schemaVersion, but project.yaml expects $expectedSchemaVersion.";
+            if ($schemaVersion && $expectedSchemaVersion && $schemaVersion != $expectedSchemaVersion) {
+                $error = "{$pluginInfo['name']} is installed with schema version $schemaVersion, but project.yaml expects $expectedSchemaVersion.";
                 return false;
             }
         }

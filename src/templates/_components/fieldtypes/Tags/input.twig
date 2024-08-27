@@ -9,6 +9,8 @@
 {% from "_includes/forms" import text %}
 
 <div id="{{ id }}" class="elementselect tagselect">
+    <span class="visually-hidden" role="status"></span>
+
     <ul class="elements">
         {%- apply spaceless  %}
         {% for element in elements %}
@@ -27,6 +29,8 @@
             width: 'auto',
             placeholder: selectionLabel,
             describedBy: describedBy ?? false,
+            role: 'combobox',
+            labelledBy: labelId ?? false,
         }) }}
         <div class="spinner hidden"></div>
     </div>

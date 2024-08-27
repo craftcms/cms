@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\models\SiteGroup;
-use yii\base\Event;
 
 /**
  * SiteGroupEvent class.
