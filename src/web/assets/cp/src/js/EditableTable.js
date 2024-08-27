@@ -491,7 +491,7 @@ Craft.EditableTable = Garnish.Base.extend(
           var name = baseName + '[' + rowId + '][' + colId + ']';
 
           $cell = $('<td/>', {
-            class: `${col.class} ${col.type}-cell`,
+            class: `${col.class ?? ''} ${col.type}-cell`,
             width: col.width,
           });
 
