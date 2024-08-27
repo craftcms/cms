@@ -1,4 +1,4 @@
-'<?php
+<?php
 
 return [
     '(blank)' => '(blank)',
@@ -93,8 +93,10 @@ return [
     'All users' => 'All users',
     'All' => 'All',
     'Allow Upscaling' => 'Allow Upscaling',
+    'Allow anchors' => 'Allow anchors',
     'Allow line breaks' => 'Allow line breaks',
     'Allow public registration' => 'Allow public registration',
+    'Allow root-relative URLs' => 'Allow root-relative URLs',
     'Allow self relations' => 'Allow self relations',
     'Allow subfolders' => 'Allow subfolders',
     'Allow uploading directly to the field' => 'Allow uploading directly to the field',
@@ -287,6 +289,7 @@ return [
     'Choose which users must use two-step verification when accessing the control panel.' => 'Choose which users must use two-step verification when accessing the control panel.',
     'Choose' => 'Choose',
     'City' => 'City',
+    'City/Town' => 'City/Town',
     'Clear Caches' => 'Clear Caches',
     'Clear all' => 'Clear all',
     'Clear caches' => 'Clear caches',
@@ -1329,10 +1332,10 @@ return [
     'Route deleted.' => 'Route deleted.',
     'Routes' => 'Routes',
     'Row actions' => 'Row actions',
-    'Row {index}' => 'Row {index}',
     'Row could not be added. Maximum number of rows reached.' => 'Row could not be added. Maximum number of rows reached.',
     'Row could not be deleted. Minimum number of rows reached.' => 'Row could not be deleted. Minimum number of rows reached.',
     'Row heading' => 'Row heading',
+    'Row {index}' => 'Row {index}',
     'Rule Type' => 'Rule Type',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'SVG file recommended. The logo will be displayed at {size} wide.',
     'Same as asset filesystem' => 'Same as asset filesystem',
@@ -1833,6 +1836,7 @@ return [
     'Validate related {type}' => 'Validate related {type}',
     'Validation errors for site: “{siteName}“' => 'Validation errors for site: “{siteName}“',
     'Validation errors found in {attribute} {type}; please fix them.' => 'Validation errors found in {attribute} {type}; please fix them.',
+    'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.',
     'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.' => 'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.',
     'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
     'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
@@ -2076,6 +2080,7 @@ return [
     '{attribute} must be no less than {min}.' => '{attribute} must be no less than {min}.',
     '{attribute} must be set to a new password.' => '{attribute} must be set to a new password.',
     '{attribute} must contain “{slug}”' => '{attribute} must contain “{slug}”',
+    '{attribute} no longer allows {type} links.' => '{attribute} no longer allows {type} links.',
     '{attribute} should contain at least {min, number} {min, plural, one{address} other{addresses}}.' => '{attribute} should contain at least {min, number} {min, plural, one{address} other{addresses}}.',
     '{attribute} should contain at least {min, number} {min, plural, one{entry} other{entries}}.' => '{attribute} should contain at least {min, number} {min, plural, one{entry} other{entries}}.',
     '{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.' => '{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.',

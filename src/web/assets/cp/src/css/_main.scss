@@ -91,7 +91,7 @@ html.noscroll body {
 body {
   width: 100vw;
   overflow-x: hidden;
-  @include mixins.fontSize(14);
+  font-size: calc(14 / 16 * 1rem);
   line-height: var(--lh);
   color: var(--text-color);
   -webkit-font-smoothing: subpixel-antialiased;
@@ -8651,7 +8651,7 @@ body {
 .ui-datepicker-calendar th span,
 .ui-datepicker-calendar td a {
   display: block;
-  width: torem(26);
+  width: calc(26 / 16 * 1rem);
   line-height: 26px;
   text-align: center;
   color: var(--text-color);

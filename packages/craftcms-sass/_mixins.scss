@@ -197,6 +197,7 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @function toRem($values...) {
+  @warn "torem mixin is deprecated. Use calc($value / 16 * 1rem) instead.";
   $max: list.length($values);
   $remValues: '';
 
@@ -212,6 +213,7 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin fontSize($size) {
+  @warn "fontsize mixin is deprecated. Use CSS values instead.";
   font-size: toRem($size);
 }
 

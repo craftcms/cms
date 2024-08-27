@@ -3,14 +3,21 @@
 ### Content Management
 - Element conditions can now have a “Not Related To” rule. ([#15496](https://github.com/craftcms/cms/pull/15496))
 - Asset chips and cards no longer include the “Replace file” action. ([#15498](https://github.com/craftcms/cms/issues/15498))
+- Category slugs are now inline-editable from the Categories index page. ([#15560](https://github.com/craftcms/cms/pull/15560))
+- Entry post dates, expiry dates, slugs, and authors are now inline-editable from the Entries index page. ([#15560](https://github.com/craftcms/cms/pull/15560))
+- Improved Addresses field validation to be more consistent with Matrix fields.
 
 ### Accessibility
 - Improved the accessibility of Tags fields.
+
+### Administration
+- Link fields now have “Allow root-relative URLs” and “Allow anchors” settings. ([#15579](https://github.com/craftcms/cms/issues/15579))
 
 ### Development
 - Added the `notRelatedTo` and `andNotRelatedTo` element query params. ([#15496](https://github.com/craftcms/cms/pull/15496))
 - Added the `notRelatedTo` GraphQL element query argument. ([#15496](https://github.com/craftcms/cms/pull/15496))
 - `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` GraphQL arguments now support passing `relatedViaField` and `relatedViaSite` keys to their criteria objects. ([#15508](https://github.com/craftcms/cms/pull/15508))
+- Country field values and `craft\elements\Address::getCountry()` now return the country in the current application locale.
 
 ### Extensibility
 - Added `craft\base\ApplicationTrait::getEnvId()`. ([#15313](https://github.com/craftcms/cms/issues/15313))
@@ -23,9 +30,14 @@
 - Added `craft\gql\types\input\criteria\TagRelation`.
 - Added `craft\gql\types\input\criteria\UserRelation`.
 - `craft\services\Elements::saveContent()`’ now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
+- Deprecated `craft\db\mysql\Schema::quoteDatabaseName()`.
+- Deprecated `craft\db\pgqsl\Schema::quoteDatabaseName()`.
 - Deprecated `craft\helpers\ElementHelper::rootElement()`. `craft\base\ElementInterface::getRootOwner()` should be used instead.
 - Element action menu items returned by `craft\base\Element::safeActionMenuItems()` and `destructiveActionMenuItems()` can now include a `showInChips` key to explicitly opt into/out of being shown within element chips and cards.
 - Control panel CSS selectors that take orientation into account now use logical properties. ([#15522](https://github.com/craftcms/cms/pull/15522))
 
 ### System
 - MySQL mutex locks and PHP session names are now namespaced using the application ID combined with the environment name. ([#15313](https://github.com/craftcms/cms/issues/15313))
+- Added support for “City/Town” address locality labels. ([#15585](https://github.com/craftcms/cms/pull/15585))
+- `x-craft-preview` and `x-craft-live-preview` params are now hashed, and `craft\web\Request::getIsPreview()` will only return `true` if the param validates. ([#15605](https://github.com/craftcms/cms/discussions/15605))
+- Fixed styling issues. ([#15537](https://github.com/craftcms/cms/pull/15537))
