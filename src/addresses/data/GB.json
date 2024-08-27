@@ -1,6 +1,10 @@
 {
   "extraLocale": "cy",
   "subdivisions": {
+    "Aberdeen City": {
+      "name": "Aberdeen City",
+      "local_name": "Aberdeen City"
+    },
     "Cambridgeshire": {
       "name": "Cambridgeshire",
       "local_name": "Cambridgeshire"
