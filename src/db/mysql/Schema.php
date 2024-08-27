@@ -92,6 +92,19 @@ class Schema extends \yii\db\mysql\Schema
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function findTableNames($schema = ''): array
+    {
+        $sql = 'SHOW FULL TABLES';
+        if ($schema !== '') {
+            $sql .= ' FROM ' . $this->quoteSimpleTableName($schema);
+        }
+        $sql .= " WHERE `Table_Type` = 'BASE TABLE'";
+        return $this->db->createCommand($sql)->queryColumn();
+    }
+
+    /**
      * Creates a query builder for the database.
      *
      * This method may be overridden by child classes to create a DBMS-specific query builder.
