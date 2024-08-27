@@ -630,7 +630,6 @@ Craft.EditableTable = Garnish.Base.extend(
               type: 'button',
             })
           )
-          .append('&nbsp;')
           .append($actionsBtn)
           .append($menuContainer)
           .appendTo($tr);
