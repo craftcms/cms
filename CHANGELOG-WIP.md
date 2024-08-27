@@ -39,4 +39,5 @@
 ### System
 - MySQL mutex locks and PHP session names are now namespaced using the application ID combined with the environment name. ([#15313](https://github.com/craftcms/cms/issues/15313))
 - Added support for “City/Town” address locality labels. ([#15585](https://github.com/craftcms/cms/pull/15585))
+- `x-craft-preview` and `x-craft-live-preview` params are now hashed, and `craft\web\Request::getIsPreview()` will only return `true` if the param validates. ([#15605](https://github.com/craftcms/cms/discussions/15605))
 - Fixed styling issues. ([#15537](https://github.com/craftcms/cms/pull/15537))
