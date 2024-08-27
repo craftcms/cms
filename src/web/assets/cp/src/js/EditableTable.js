@@ -619,8 +619,12 @@ Craft.EditableTable = Garnish.Base.extend(
           class: 'menu menu--disclosure',
         });
 
-        $('<td/>', {
+        const $td = $('<td/>', {
           class: 'thin action',
+        }).appendTo($tr);
+
+        $('<div/>', {
+          class: 'flex flex-nowrap',
         })
           .append(
             $('<a/>', {
@@ -632,7 +636,7 @@ Craft.EditableTable = Garnish.Base.extend(
           )
           .append($actionsBtn)
           .append($menuContainer)
-          .appendTo($tr);
+          .appendTo($td);
 
         const menu = $actionsBtn.disclosureMenu().data('disclosureMenu');
 
