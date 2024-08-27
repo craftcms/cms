@@ -11,9 +11,7 @@ export default Base.extend(
     $container: null,
     $shade: null,
     $triggerElement: null,
-    $liveRegion: $(
-      '<span class="visually-hidden" role="status" data-status-message></span>'
-    ),
+    $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
 
     visible: false,
 

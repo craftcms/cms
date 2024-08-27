@@ -813,12 +813,23 @@ Craft.CP = Garnish.Base.extend(
         this.$activeLiveRegion = this.$globalLiveRegion;
       } else {
         const $modal = Garnish.uiLayerManager.highestModalLayer.$container;
-        const modal = $modal.closest('.modal').data('modal');
+        let modalObj;
 
-        if (!modal.$liveRegion) {
+        if ($modal.hasClass('modal')) {
+          modalObj = $modal.data('modal');
+        } else if ($modal.hasClass('slideout-container')) {
+          modalObj = $modal.find('.slideout').data('slideout');
+        }
+
+        if (!modalObj) {
+          console.warn('There is no modal object');
+        }
+
+        if (!modalObj.$liveRegion) {
           console.warn('There is no live region in the active modal layer.');
+          this.$activeLiveRegion = null;
         } else {
-          this.$activeLiveRegion = modal.$liveRegion;
+          this.$activeLiveRegion = modalObj.$liveRegion;
         }
       }
 
@@ -971,7 +982,10 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} message
      */
     announce: function (message) {
-      if (!message) return;
+      if (!message || !this.$activeLiveRegion) {
+        console.warn('There was an error announcing this message.');
+        return;
+      }
 
       if (this.announcerTimeout) {
         clearTimeout(this.announcerTimeout);
