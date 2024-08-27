@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a SQL error that occurred when running the `db/convert-charset` command if there were any custom database views or sequences. ([#15598](https://github.com/craftcms/cms/issues/15598))
+
 ## 5.3.6 - 2024-08-26
 
 - Fixed a bug where it wasn’t possible to override named transforms in GraphQL queries. ([#15572](https://github.com/craftcms/cms/issues/15572))
