@@ -375,6 +375,13 @@ class DbController extends Controller
 
         $schema = $db->getSchema();
         $tableNames = $schema->getTableNames();
+        $dbName= Craft::$app->getConfig()->getDb()->database;
+
+        // See if there are any views to skip from this command.
+        $views = $db->createCommand("SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = '" . $dbName . "' AND TABLE_TYPE = 'VIEW'")->queryColumn();
+
+        // Remove any views from the list of tables
+        $tableNames = array_diff($tableNames, $views);
 
         if (empty($tableNames)) {
             $this->stderr('Could not find any database tables.' . PHP_EOL, Console::FG_RED);

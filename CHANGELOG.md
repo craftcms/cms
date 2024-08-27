@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a MySQL error that would occur if you ran `php craft db/convert-charset` with custom views defined in the database. ([#15598](https://github.com/craftcms/cms/issues/15598))
+
 ## 4.11.5 - 2024-08-26
 
 - Fixed a bug where it wasn’t possible to override named transforms in GraphQL queries. ([#15572](https://github.com/craftcms/cms/issues/15572))
