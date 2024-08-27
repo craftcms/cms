@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Fixed a SQL error that occurred when running the `db/convert-charset` command if there were any custom database views or sequences. ([#15598](https://github.com/craftcms/cms/issues/15598))
-- Fixed a bug where `craft\helpers\Db::supportsTimeZones()` could return incorrect timezone information on some environments.  ([#15592](https://github.com/craftcms/cms/issues/15592))
+- Fixed a bug where `craft\helpers\Db::supportsTimeZones()` could return `false` on databases that supported time zone conversion. ([#15592](https://github.com/craftcms/cms/issues/15592))
 
 ## 4.11.5 - 2024-08-26
 
