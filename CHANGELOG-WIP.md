@@ -30,6 +30,8 @@
 - Added `craft\gql\types\input\criteria\TagRelation`.
 - Added `craft\gql\types\input\criteria\UserRelation`.
 - `craft\services\Elements::saveContent()`’ now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
+- Deprecated `craft\db\mysql\Schema::quoteDatabaseName()`.
+- Deprecated `craft\db\pgqsl\Schema::quoteDatabaseName()`.
 - Deprecated `craft\helpers\ElementHelper::rootElement()`. `craft\base\ElementInterface::getRootOwner()` should be used instead.
 - Element action menu items returned by `craft\base\Element::safeActionMenuItems()` and `destructiveActionMenuItems()` can now include a `showInChips` key to explicitly opt into/out of being shown within element chips and cards.
 - Control panel CSS selectors that take orientation into account now use logical properties. ([#15522](https://github.com/craftcms/cms/pull/15522))
