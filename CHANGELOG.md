@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where `craft\helpers\Db::supportsTimeZones()` could return incorrect timezone information on some environments.  ([#15592](https://github.com/craftcms/cms/issues/15592))
+
 ## 4.11.5 - 2024-08-26
 
 - Fixed a bug where it wasn’t possible to override named transforms in GraphQL queries. ([#15572](https://github.com/craftcms/cms/issues/15572))
