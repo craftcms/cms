@@ -75,6 +75,7 @@
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsl(var(--dark-focus-hsl) / var(--focus-ring-alpha));
   --touch-target-size: calc(24rem / 16);
+  --icon-size: 1rem;
 }
 
 body,
