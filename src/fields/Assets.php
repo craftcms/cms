@@ -242,11 +242,19 @@ class Assets extends BaseRelationField
             [
                 'sources',
                 'defaultUploadLocationSource',
-                'restrictedLocationSource',
                 'defaultUploadLocationSubpath',
+            ],
+            'validateNotTempVolume',
+            'when' => fn() => !$this->restrictLocation,
+        ];
+
+        $rules[] = [
+            [
+                'restrictedLocationSource',
                 'restrictedLocationSubpath',
             ],
             'validateNotTempVolume',
+            'when' => fn() => $this->restrictLocation,
         ];
 
         $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
