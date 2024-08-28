@@ -245,9 +245,7 @@ class Assets extends BaseRelationField
                 'defaultUploadLocationSubpath',
             ],
             'validateNotTempVolume',
-            'when' => function(self $field): bool {
-                return (bool)$field->restrictLocation === false;
-            },
+            'when' => fn() => !$this->restrictLocation,
         ];
 
         $rules[] = [
@@ -256,9 +254,7 @@ class Assets extends BaseRelationField
                 'restrictedLocationSubpath',
             ],
             'validateNotTempVolume',
-            'when' => function(self $field): bool {
-                return (bool)$field->restrictLocation;
-            },
+            'when' => fn() => $this->restrictLocation,
         ];
 
         $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
