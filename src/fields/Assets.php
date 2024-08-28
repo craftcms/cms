@@ -242,11 +242,23 @@ class Assets extends BaseRelationField
             [
                 'sources',
                 'defaultUploadLocationSource',
-                'restrictedLocationSource',
                 'defaultUploadLocationSubpath',
+            ],
+            'validateNotTempVolume',
+            'when' => function(self $field): bool {
+                return (bool)$field->restrictLocation === false;
+            },
+        ];
+
+        $rules[] = [
+            [
+                'restrictedLocationSource',
                 'restrictedLocationSubpath',
             ],
             'validateNotTempVolume',
+            'when' => function(self $field): bool {
+                return (bool)$field->restrictLocation;
+            },
         ];
 
         $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
