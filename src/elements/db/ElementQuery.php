@@ -240,6 +240,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     public mixed $id = null;
 
     /**
+     * @var mixed The element ID(s). Prefix IDs with `'not '` to exclude them.
+     * @used-by andId()
+     */
+    public mixed $andId = null;
+
+    /**
      * @var mixed The element UID(s). Prefix UIDs with `'not '` to exclude them.
      * @used-by uid()
      */
@@ -846,7 +852,25 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function id($value): static
     {
+        if ($this->id !== null) {
+            return $this->andId($value);
+        }
+
         $this->id = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $andId
+     */
+    public function andId($value): static
+    {
+        if (!$this->id) {
+            return $this->id($value);
+        }
+
+        $this->andId[] = $value;
         return $this;
     }
 
@@ -1575,6 +1599,12 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->id) {
             $this->subQuery->andWhere(Db::parseNumericParam('elements.id', $this->id));
+        }
+
+        if ($this->andId) {
+            foreach ($this->andId as $id) {
+                $this->subQuery->andWhere(Db::parseNumericParam('elements.id', $id));
+            }
         }
 
         if ($this->uid) {

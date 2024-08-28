@@ -426,6 +426,45 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function id(mixed $value): static;
 
     /**
+     * Narrows the query results based on the {elements}’ IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | with an ID of 1.
+     * | `'not 1'` | not with an ID of 1.
+     * | `[1, 2]` | with an ID of 1 or 2.
+     * | `['not', 1, 2]` | not with an ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch the {element} by its ID #}
+     * {% set {element-var} = {twig-method}
+     *   .id(1)
+     *   .one() %}
+     * ```
+     *
+     * ```php
+     * // Fetch the {element} by its ID
+     * ${element-var} = {php-method}
+     *     ->id(1)
+     *     ->one();
+     * ```
+     *
+     * ---
+     *
+     * ::: tip
+     * This can be combined with [[fixedOrder()]] if you want the results to be returned in a specific order.
+     * :::
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     */
+    public function andId(mixed $value): static;
+
+    /**
      * Narrows the query results based on the {elements}’ UIDs.
      *
      * ---
