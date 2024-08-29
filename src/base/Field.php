@@ -43,7 +43,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Field extends SavableComponent implements FieldInterface
+abstract class Field extends SavableComponent implements FieldInterface, Iconic, Actionable
 {
     use FieldTrait;
 
@@ -513,9 +513,52 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getIcon(): ?string
+    {
+        return static::icon();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCpEditUrl(): ?string
     {
         return $this->id ? UrlHelper::cpUrl("settings/fields/edit/$this->id") : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getActionMenuItems(): array
+    {
+        $items = [];
+
+        if (
+            $this->id &&
+            Craft::$app->getUser()->getIsAdmin() &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            $editId = sprintf('action-edit-%s', mt_rand());
+            $items[] = [
+                'id' => $editId,
+                'icon' => 'edit',
+                'label' => Craft::t('app', 'Edit'),
+            ];
+
+            $view = Craft::$app->getView();
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
+$('#' + $id).on('click', () => {
+  new Craft.CpScreenSlideout('fields/edit-field', {
+    params: $params,
+  });
+});
+JS, [
+                $view->namespaceInputId($editId),
+                ['fieldId' => $this->id],
+            ]);
+        }
+
+        return $items;
     }
 
     /**
