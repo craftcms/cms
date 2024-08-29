@@ -783,14 +783,8 @@ abstract class Field extends SavableComponent implements FieldInterface
         // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
         // see https://github.com/craftcms/cms/issues/15609
         $db = Craft::$app->getDb();
-        if ($db->getIsMysql()) {
-            $castType = match (Db::parseColumnType($dbType)) {
-                Schema::TYPE_TEXT => 'CHAR(255)',
-                default => null,
-            };
-            if ($castType !== null) {
-                $orderBy = "CAST($orderBy AS $castType)";
-            }
+        if ($db->getIsMysql() && Db::parseColumnType($dbType) === Schema::TYPE_TEXT) {
+            $orderBy = "CAST($orderBy AS CHAR(255))";
         }
 
         // The attribute name should match the table attribute name,
