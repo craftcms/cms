@@ -2114,6 +2114,7 @@ return [
     '{name} should be at least {value}.' => '{name} צריך להיות לפחות {value}.',
     '{name} sorted by {attribute}, {direction}' => '{name} ממוין על פי {attribute}, {direction}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} יכול להיווצר רק לאחר שמירת {ownerType}.',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural,=1{עדכון זמין} other{עדכונים זמינים}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural,=1{עמודה} other{עמודות}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural,=1{יום} other{ימים}}',
