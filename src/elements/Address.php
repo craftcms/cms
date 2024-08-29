@@ -409,14 +409,14 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     }
 
     /**
-     * Returns a [[Country]] object representing the address’ coutry.
+     * Returns a [[Country]] object representing the address’ country.
      *
      * @return Country
      * @since 4.11.0
      */
     public function getCountry(): Country
     {
-        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode);
+        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode, Craft::$app->language);
     }
 
     /**

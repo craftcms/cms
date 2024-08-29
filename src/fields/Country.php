@@ -54,7 +54,7 @@ class Country extends Field implements PreviewableFieldInterface
         }
 
         try {
-            return Craft::$app->getAddresses()->getCountryRepository()->get($value);
+            return Craft::$app->getAddresses()->getCountryRepository()->get($value, Craft::$app->language);
         } catch (UnknownCountryException) {
             return null;
         }
@@ -96,12 +96,9 @@ class Country extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getPreviewHtml(mixed $value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
-        if (!$value) {
-            return '';
-        }
-        $list = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
-        return $list[$value] ?? $value;
+        /** @var CountryModel|null $value */
+        return $value?->getName() ?? '';
     }
 }

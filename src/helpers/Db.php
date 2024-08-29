@@ -1470,7 +1470,7 @@ class Db
             return true;
         }
 
-        $result = $db->createCommand("SELECT CONVERT_TZ('2007-03-11 2:00:00','US/Eastern','US/Central') AS time1")->queryScalar();
+        $result = $db->createCommand("SELECT CONVERT_TZ('2007-03-11 02:00:00','America/Los_Angeles','America/New_York') AS time1")->queryScalar();
         return (bool)$result;
     }
 

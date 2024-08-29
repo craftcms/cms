@@ -24,6 +24,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
@@ -440,6 +441,7 @@ class ElementsController extends Controller
                         'isUnpublishedDraft' => $isUnpublishedDraft,
                         'previewTargets' => $previewTargets,
                         'previewToken' => $previewTargets ? $security->generateRandomString() : null,
+                        'previewParamValue' => $previewTargets ? $security->hashData(StringHelper::randomString(10)) : null,
                         'revisionId' => $element->revisionId,
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
@@ -1423,11 +1425,13 @@ JS, [
 
             if ($this->request->getIsCpRequest()) {
                 [$docTitle, $title] = $this->_editElementTitles($element);
+                $previewTargets = $element->getPreviewTargets();
                 $data += $this->_fieldLayoutData($element);
                 $data += [
                     'docTitle' => $docTitle,
                     'title' => $title,
-                    'previewTargets' => $element->getPreviewTargets(),
+                    'previewTargets' => $previewTargets,
+                    'previewParamValue' => $previewTargets ? Craft::$app->getSecurity()->hashData(StringHelper::randomString(10)) : null,
                     'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
                     'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
                     'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),

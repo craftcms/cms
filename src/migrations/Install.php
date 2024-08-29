@@ -1201,8 +1201,13 @@ class Install extends Migration
                 return false;
             }
 
-            $pluginRef = new ReflectionClass($pluginInfo['class']);
-            $schemaVersion = $pluginRef->getProperty('schemaVersion')->getDefaultValue();
+            if (isset($pluginInfo['schemaVersion'])) {
+                $schemaVersion = $pluginInfo['schemaVersion'];
+            } else {
+                $pluginRef = new ReflectionClass($pluginInfo['class']);
+                $schemaVersion = $pluginRef->getProperty('schemaVersion')->getDefaultValue();
+            }
+
             $expectedSchemaVersion = $pluginConfig['schemaVersion'] ?? null;
 
             if ($schemaVersion && $expectedSchemaVersion && $schemaVersion != $expectedSchemaVersion) {
