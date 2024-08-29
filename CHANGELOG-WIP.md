@@ -13,4 +13,5 @@
 ### System
 - MySQL mutex locks and PHP session names are now namespaced using the application ID combined with the environment name. ([#15313](https://github.com/craftcms/cms/issues/15313))
 - `x-craft-preview` and `x-craft-live-preview` params are now hashed, and `craft\web\Request::getIsPreview()` will only return `true` if the param validates. ([#15605](https://github.com/craftcms/cms/discussions/15605))
+- Generated URLs no longer include `x-craft-preview` or `x-craft-live-preview` query string params based on the requested URL, if either were set to an unverified string. ([#15605](https://github.com/craftcms/cms/discussions/15605))
 - Updated Twig to 3.12. ([#15568](https://github.com/craftcms/cms/discussions/15568))
