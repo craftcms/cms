@@ -2116,6 +2116,7 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{name} should be at least {value}.' => '{name} by mělo být alespoň {value}.',
     '{name} sorted by {attribute}, {direction}' => '{name} seřazené dle {attribute}; {direction}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} lze vytvořit až po uložení {ownerType}.',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{Dostupná aktualizace} other{Dostupné aktualizace}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, =1{sloupec} other{sloupce}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, =1{rok} other{roky}}',
