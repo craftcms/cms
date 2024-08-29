@@ -172,7 +172,7 @@ body ol.widget__list {
 
   .icon {
     inset-block-start: 11px;
-    @include left(var(--m));
+    inset-inline-start: var(--m);
     width: 1rem;
   }
 }
