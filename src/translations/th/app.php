@@ -2114,6 +2114,7 @@ return [
     '{name} should be at least {value}.' => '{name} should be at least {value}.',
     '{name} sorted by {attribute}, {direction}' => '{name} ได้รับการจัดเรียงตาม {attribute}, {direction}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => 'สร้าง {nestedType} ได้ หลังจากที่บันทึก {ownerType} แล้วเท่านั้น',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, =1{column} other{columns}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, =1{day} other{days}}',
