@@ -2114,6 +2114,7 @@ return [
     '{name} should be at least {value}.' => '{name} 至少应为 {value}。',
     '{name} sorted by {attribute}, {direction}' => '{name}按 {attribute}、{direction}排序',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType}只能在保存{ownerType}后创建。',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} 个{num, plural, =1{可用更新} other{可用更新}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, =1{列} other{列}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, =1{天} other{天}}',
