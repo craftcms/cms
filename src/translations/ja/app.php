@@ -2114,6 +2114,7 @@ return [
     '{name} should be at least {value}.' => '{name}は{value}以上である必要があります。',
     '{name} sorted by {attribute}, {direction}' => '{attribute}で{direction}に並べ替えられた{name}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType}は{ownerType}が保存された後でのみ作成できます。',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number}{num, plural, =1{件のアップデートがあります} other{件のアップデートがあります}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number}{num, plural, =1{列} other{列}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number}{num, plural, =1{日} other{日}}',
