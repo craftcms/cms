@@ -638,7 +638,11 @@ class UrlHelper
                 if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
                     $params[$generalConfig->tokenParam] = $token;
                 }
-                if (!isset($params['x-craft-preview']) && !isset($params['x-craft-live-preview'])) {
+                if (
+                    !isset($params['x-craft-preview']) &&
+                    !isset($params['x-craft-live-preview']) &&
+                    $request->getIsPreview()
+                ) {
                     if (($previewToken = $request->getQueryParam('x-craft-preview')) !== null) {
                         $params['x-craft-preview'] = $previewToken;
                     } elseif (($previewToken = $request->getQueryParam('x-craft-live-preview')) !== null) {
