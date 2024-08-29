@@ -2114,6 +2114,7 @@ return [
     '{name} should be at least {value}.' => '{name} deve ser pelo menos {value}.',
     '{name} sorted by {attribute}, {direction}' => '{name} ordenado(a) por {attribute}, {direction}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} só pode ser criado(a) após {ownerType} ter sido guardado(a).',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, one {} =1{atualização disponível} other{atualizações disponíveis}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, one {} =1{coluna} other{colunas}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, one {} =1{dia} other{dias}}',
