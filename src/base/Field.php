@@ -816,15 +816,25 @@ JS, [
      */
     public function getSortOption(): array
     {
-        if (static::dbType() === null || !isset($this->layoutElement)) {
+        $dbType = static::dbType();
+        if ($dbType === null || !isset($this->layoutElement)) {
             throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
+        }
+
+        $orderBy = $this->getValueSql();
+
+        // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
+        // see https://github.com/craftcms/cms/issues/15609
+        $db = Craft::$app->getDb();
+        if ($db->getIsMysql() && Db::parseColumnType($dbType) === Schema::TYPE_TEXT) {
+            $orderBy = "CAST($orderBy AS CHAR(255))";
         }
 
         // The attribute name should match the table attribute name,
         // per ElementSources::getTableAttributesForFieldLayouts()
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => $this->getValueSql(),
+            'orderBy' => $orderBy,
             'attribute' => isset($this->layoutElement->handle)
                 ? "fieldInstance:{$this->layoutElement->uid}"
                 : "field:$this->uid",
