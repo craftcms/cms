@@ -2116,6 +2116,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{name} should be at least {value}.' => '{name}, en az {value} değerinde olmalıdır.',
     '{name} sorted by {attribute}, {direction}' => '{name}, {attribute}, {direction} olarak sıralandı',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} yalnızca {ownerType} kaydedildikten sonra oluşturulabilir.',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, one {} =1{Güncelleme Mevcut} other{Güncelleme Mevcut}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, one {} =1{sütun} other{sütun}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, one {} =1{gün} other{gün}}',
