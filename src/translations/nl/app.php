@@ -2114,6 +2114,7 @@ return [
     '{name} should be at least {value}.' => '{name} moet minimaal {value} lang zijn.',
     '{name} sorted by {attribute}, {direction}' => '{name} gesorteerd op {attribute}, {direction}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} kan alleen worden gemaakt nadat de {ownerType} is opgeslagen.',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{beschikbare update} other{beschikbare updates}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, =1{kolom} other{kolommen}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, =1{dag} other{dagen}}',
