@@ -2116,6 +2116,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{name} should be at least {value}.' => '{name} sollte mindestens {value} sein.',
     '{name} sorted by {attribute}, {direction}' => '{name} sortiert nach {attribute}, {direction}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} kann erst erstellt werden, nachdem {ownerType} gespeichert wurde.',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{verfügbares Update} other{verfügbare Updates}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, =1{Spalte} other{Spalten}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, =1{Tag} other{Tage}}',
