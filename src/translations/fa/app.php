@@ -2114,6 +2114,7 @@ return [
     '{name} should be at least {value}.' => '{name} باید حداقل {value} باشد.',
     '{name} sorted by {attribute}, {direction}' => '{name} مرتب شده بر اساس {attribute}، {direction}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} تنها پس از ذخیره {ownerType} قابل ایجاد است.',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, one {} =1{به روز رسانی‌ موجود} other{به روز رسانی‌های موجود}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, one {} =1{ستون} other{ستون‌ها}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, one {} =1{روز} other{روزها}}',
