@@ -171,7 +171,6 @@ body ol.widget__list {
   padding-inline-start: calc(var(--m) + 10px + 1rem);
 
   .icon {
-    position: absolute;
     inset-block-start: 11px;
     @include left(var(--m));
     width: 1rem;
