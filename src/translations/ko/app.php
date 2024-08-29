@@ -2114,6 +2114,7 @@ return [
     '{name} should be at least {value}.' => '{name}은(는) 최소 {value} 이상이어야 합니다.',
     '{name} sorted by {attribute}, {direction}' => '{name}이(가) {attribute}, {direction} 기준으로 정렬됨',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType}은(는) {ownerType}이(가) 저장된 후에만 생성할 수 있습니다.',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{업데이트 이용 가능} other{업데이트 이용 가능}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number}{num, plural, =1{개 열} other{개 열}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number}{num, plural, =1{일} other{일}}',
