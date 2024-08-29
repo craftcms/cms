@@ -2118,6 +2118,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{name} should be at least {value}.' => '{name} legalább {value} legyen.',
     '{name} sorted by {attribute}, {direction}' => '{name} rendezve {attribute} szerint, {direction}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} csak a(z) {ownerType} elmentése után hozható létre.',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{elérhető frissítés} other{elérhető frissítés}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, =1{oszlop} other{oszlop}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, =1{nap} other{nap}}',
