@@ -165,18 +165,6 @@ body ol.widget__list {
   margin: 0;
 }
 
-/* New Widget Menu */
-.newwidgetmenu ul li a {
-  position: relative;
-  padding-inline-start: calc(var(--m) + 10px + 1rem);
-
-  .icon {
-    inset-block-start: 11px;
-    inset-inline-start: var(--m);
-    width: 1rem;
-  }
-}
-
 .newwidgetmenu ul li a .icon svg,
 .widgetmanagerhud-icon svg {
   width: 1rem;
