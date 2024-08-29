@@ -137,7 +137,7 @@ Craft.EntryMover = Garnish.Base.extend({
     }
 
     this.$selectBtn.addClass('loading');
-    this.modal.updateLiveRegion(Craft.t('app', 'Loading'));
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
     let data = {
       sectionId: this.sectionSelect.$selectedItems.data('id'),
@@ -149,7 +149,7 @@ Craft.EntryMover = Garnish.Base.extend({
     })
       .then((response) => {
         Craft.cp.displaySuccess(response.data.message);
-        this.modal.updateLiveRegion(response.data.message);
+        Craft.cp.announce(response.data.message);
 
         this.elementIndex.updateElements();
         this.elementIndex.$elements.attr('tabindex', '-1').focus();
@@ -157,7 +157,7 @@ Craft.EntryMover = Garnish.Base.extend({
       })
       .catch((e) => {
         Craft.cp.displayError(e?.response?.data?.message);
-        this.modal.updateLiveRegion(e?.response?.data?.message);
+        Craft.cp.announce(e?.response?.data?.message);
       })
       .finally(() => {
         this.$selectBtn.removeClass('loading');
