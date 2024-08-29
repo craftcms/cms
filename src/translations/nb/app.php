@@ -2116,6 +2116,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{name} should be at least {value}.' => '{name} må være minst {value}.',
     '{name} sorted by {attribute}, {direction}' => '{name} sortert etter {attribute}, {direction}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} kan bare opprettes etter at {ownerType} er lagret.',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, one {} =1{tilgjengelig oppdatering} other{tilgjengelige oppdateringer}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, one {} =1{kolonne} other{kolonner}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, one {} =1{dag} other{dager}}',
