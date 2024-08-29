@@ -44,7 +44,7 @@ class NavNode extends ForNode
         $this->navItemNode = new NavItem_Node($valueTarget, $indent, $outdent, $lowerBody, $lineno, $tag);
         $body = new Node([$this->navItemNode, $upperBody]);
 
-        parent::__construct($keyTarget, $valueTarget, $seq, null, $body, null, $lineno, $tag);
+        parent::__construct($keyTarget, $valueTarget, $seq, null, $body, null, $lineno);
     }
 
     /**
