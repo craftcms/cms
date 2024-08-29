@@ -2116,6 +2116,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{name} should be at least {value}.' => '{name} musi mieć wartość co najmniej {value}.',
     '{name} sorted by {attribute}, {direction}' => '{name}, sortowanie według {attribute}, {direction}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} można utworzyć dopiero po zapisaniu {ownerType}.',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{dostępna aktualizacja} other{dostępne aktualizacje}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, =1{kolumna} other{kolumn(y)}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, =1{dzień} other{dni}}',
