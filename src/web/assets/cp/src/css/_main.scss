@@ -75,6 +75,7 @@
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsl(var(--dark-focus-hsl) / var(--focus-ring-alpha));
   --touch-target-size: calc(24rem / 16);
+  --icon-size: 1rem;
 }
 
 body,
@@ -314,6 +315,34 @@ fieldset:last-child,
 
 .my-xl {
   margin-block: var(--xl) !important;
+}
+
+.p-0 {
+  padding: 0 !important;
+}
+
+.p-2xs {
+  padding: var(--2xs) !important;
+}
+
+.p-xs {
+  padding: var(--xs) !important;
+}
+
+.p-s {
+  padding: var(--s) !important;
+}
+
+.p-m {
+  padding: var(--m) !important;
+}
+
+.p-l {
+  padding: var(--l) !important;
+}
+
+.p-xl {
+  padding: var(--xl) !important;
 }
 
 .pt-0 {
@@ -3300,6 +3329,11 @@ table {
 .card {
   color: var(--custom-text-color, var(--text-color));
   background-color: var(--custom-bg-color, var(--gray-050));
+
+  &.hairline {
+    border: 1px solid var(--medium-hairline-color);
+    background-color: transparent;
+  }
 }
 
 /* chips */
@@ -5312,6 +5346,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   box-sizing: border-box;
 
   .pane &,
+  .slideout &,
   #content & {
     background-color: var(--gray-050);
     border: 1px solid var(--hairline-color);
