@@ -2114,6 +2114,7 @@ return [
     '{name} should be at least {value}.' => '{name} должно быть не менее {value}.',
     '{name} sorted by {attribute}, {direction}' => '{name} отсортировано по {attribute}, {direction}',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} можно создать только после сохранения {ownerType}.',
+    '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{Доступное Обновление} other{Доступные Обновления}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, =1{столбец} other{столбцы}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, =1{день} other{дни}}',
