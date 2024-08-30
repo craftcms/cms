@@ -13,6 +13,7 @@
 ### Administration
 - Link fields now have “Allow root-relative URLs” and “Allow anchors” settings. ([#15579](https://github.com/craftcms/cms/issues/15579))
 - Custom field selectors within field layouts now display a pencil icon if their name, instructions, or handle have been overridden. ([#15597](https://github.com/craftcms/cms/discussions/15597))
+- Custom field settings within field layouts now display a chip for the associated global field. ([#15619](https://github.com/craftcms/cms/pull/15619), [#15597](https://github.com/craftcms/cms/discussions/15597))
 
 ### Development
 - Added the `notRelatedTo` and `andNotRelatedTo` element query params. ([#15496](https://github.com/craftcms/cms/pull/15496))
