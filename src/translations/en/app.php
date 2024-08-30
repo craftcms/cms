@@ -277,7 +277,6 @@ return [
     'Choose the available content for querying with this schema:' => 'Choose the available content for querying with this schema:',
     'Choose the available mutations for this schema:' => 'Choose the available mutations for this schema:',
     'Choose the site-specific settings for nested entries.' => 'Choose the site-specific settings for nested entries.',
-    'Choose the type of entry this section will have.' => 'Choose the type of entry this section will have.',
     'Choose the types of entries that can be created in this field.' => 'Choose the types of entries that can be created in this field.',
     'Choose the types of entries that can be included in this section.' => 'Choose the types of entries that can be included in this section.',
     'Choose which filesystem assets should be stored in.' => 'Choose which filesystem assets should be stored in.',
