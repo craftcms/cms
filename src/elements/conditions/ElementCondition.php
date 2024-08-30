@@ -127,6 +127,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
         if (Craft::$app->getIsMultiSite() && (!$elementType || $elementType::isLocalized())) {
             $types[] = SiteConditionRule::class;
+
+            if (count(Craft::$app->getSites()->getAllGroups()) > 1) {
+                $types[] = SiteGroupConditionRule::class;
+            }
         }
 
         if ($elementType !== null) {
