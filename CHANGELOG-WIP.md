@@ -29,6 +29,7 @@
 - Added `craft\gql\types\input\criteria\EntryRelation`.
 - Added `craft\gql\types\input\criteria\TagRelation`.
 - Added `craft\gql\types\input\criteria\UserRelation`.
+- Added `craft\helpers\Inflector`.
 - `craft\services\Elements::saveContent()`’ now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
 - Deprecated `craft\db\mysql\Schema::quoteDatabaseName()`.
 - Deprecated `craft\db\pgqsl\Schema::quoteDatabaseName()`.
