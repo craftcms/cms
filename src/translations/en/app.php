@@ -1656,6 +1656,8 @@ return [
     'This draft’s entry type is no longer available. You can still view it, but not apply it.' => 'This draft’s entry type is no longer available. You can still view it, but not apply it.',
     'This element is conditional' => 'This element is conditional',
     'This field has been modified.' => 'This field has been modified.',
+    'This field has a tip' => 'This field has a tip',
+    'This field has a warning' => 'This field has a warning',
     'This field is conditional' => 'This field is conditional',
     'This field is included in element cards' => 'This field is included in element cards',
     'This field is not set to a valid category group.' => 'This field is not set to a valid category group.',
