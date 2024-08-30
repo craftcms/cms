@@ -1466,6 +1466,7 @@ return [
     'Single' => 'Single',
     'Single-line text' => 'Single-line text',
     'Singles' => 'Singles',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Site Icon',
     'Site Settings' => 'Site Settings',
     'Site saved.' => 'Site saved.',

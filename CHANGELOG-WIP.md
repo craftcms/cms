@@ -2,6 +2,7 @@
 
 ### Content Management
 - Element conditions can now have a “Not Related To” rule. ([#15496](https://github.com/craftcms/cms/pull/15496))
+- Element conditions can now have a “Site Group” rule, if there are two or more site groups. ([#15625](https://github.com/craftcms/cms/discussions/15625))
 - Asset chips and cards no longer include the “Replace file” action. ([#15498](https://github.com/craftcms/cms/issues/15498))
 - Category slugs are now inline-editable from the Categories index page. ([#15560](https://github.com/craftcms/cms/pull/15560))
 - Entry post dates, expiry dates, slugs, and authors are now inline-editable from the Entries index page. ([#15560](https://github.com/craftcms/cms/pull/15560))
@@ -25,6 +26,7 @@
 - Added `craft\base\ApplicationTrait::getEnvId()`. ([#15313](https://github.com/craftcms/cms/issues/15313))
 - Added `craft\base\ElementInterface::getRootOwner()`. ([#15534](https://github.com/craftcms/cms/discussions/15534))
 - Added `craft\elements\conditions\NotRelatedToConditionRule`.
+- Added `craft\elements\conditions\SiteGroupConditionRule`.
 - Added `craft\gql\arguments\RelationCriteria`.
 - Added `craft\gql\types\input\criteria\AssetRelation`.
 - Added `craft\gql\types\input\criteria\CategoryRelation`.
@@ -32,6 +34,7 @@
 - Added `craft\gql\types\input\criteria\TagRelation`.
 - Added `craft\gql\types\input\criteria\UserRelation`.
 - Added `craft\helpers\Inflector`.
+- Added `craft\services\Sites::getEditableSitesByGroupId()`.
 - `craft\services\Elements::saveContent()`’ now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
 - Deprecated `craft\db\mysql\Schema::quoteDatabaseName()`.
 - Deprecated `craft\db\pgqsl\Schema::quoteDatabaseName()`.
