@@ -11,6 +11,7 @@
 - Fixed a bug where relational fields’ element query results weren’t limited to the selected relations if the `id` param was overridden. ([#15570](https://github.com/craftcms/cms/issues/15570))
 - Fixed a bug where ordering element queries by textual custom fields would factor in character marks. ([#15609](https://github.com/craftcms/cms/issues/15609))
 - Fixed a bug where Money fields’ condition rules could display incorrect values based on a user’s formatting locale.
+- Fixed an error that occurred when eager-loading user addresses. ([#15629](https://github.com/craftcms/cms/pull/15629))
 
 ## 5.3.6 - 2024-08-26
 
