@@ -2099,6 +2099,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => 'Количество объектов в {attribute} не должно превышать {max, number}{max, plural, one{} other{}}.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => 'Количество выбранных в {attribute} не должно превышать {max, number}{max, plural, one{} other{}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'Количество объектов, которое должно находиться в {attribute}: {count, number}{count, plural, one{} other{}}.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} {count, plural, one {} few {обновления} many {обновлений}=1{обновление} other{обновления}} плагинов',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, one {} few {плагина} many {плагинов}=1{плагин} other{плагина}}',
     '{ctrl}C to copy.' => '{ctrl}C, чтобы скопировать.',
