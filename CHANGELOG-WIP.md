@@ -17,6 +17,7 @@
 - Custom field settings within field layouts now display a chip for the associated global field. ([#15619](https://github.com/craftcms/cms/pull/15619), [#15597](https://github.com/craftcms/cms/discussions/15597))
 - Field layouts can now define tips and warnings that should be displayed for fields. ([#15632](https://github.com/craftcms/cms/discussions/15632))
 - Single sections can now have multiple entry types. ([#15630](https://github.com/craftcms/cms/discussions/15630))
+- Increased the text size for handle buttons within admin tables.
 
 ### Development
 - Added the `notRelatedTo` and `andNotRelatedTo` element query params. ([#15496](https://github.com/craftcms/cms/pull/15496))

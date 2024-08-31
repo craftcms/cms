@@ -18,7 +18,7 @@
         $(this.$el).html(
           Craft.ui.createCopyTextBtn({
             value: this.value,
-            class: 'code small light',
+            class: 'code light',
           })
         );
       }
