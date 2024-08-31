@@ -2099,6 +2099,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} mag maximaal {max, number} {max, plural, one{onderdeel} other{onderdelen}} bevatten.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} mag maximaal {max, number} {max, plural, one{selectie} other{selecties}} bevatten.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} moet {count, number} {count, plural, one{onderdeel} other{onderdelen}} bevatten.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} plug-in{count, plural, one {}=1{update} other{updates}}',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, one {}=1{plug-in} other{plug-ins}}',
     '{ctrl}C to copy.' => '{ctrl}C om te kopiëren.',
