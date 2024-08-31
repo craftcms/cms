@@ -2099,6 +2099,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} devrait contenir au plus {max, number} {max, plural, one{item} other{items}}.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} devrait contenir au plus {max, number} {max, plural, one{selection} other{selections}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} devrait contenir {count, number} {count, plural, one{item} other{items}}.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} plug-in {count, plural, one {}=1{mise à jour} other{mises à jour}}',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, one {}=1{plug-in} other{plug-ins}}',
     '{ctrl}C to copy.' => '{ctrl}C pour copier.',
