@@ -2101,6 +2101,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} en fazla {max, number} {max, plural, one{öğe} other{öğe}} içerebilir.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} en fazla {max, number} {max, plural, one{seçim} other{seçim}} içerebilir.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} {count, number} {count, plural, one{öğe} other{öğe}} içermelidir.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} eklenti {count, plural, one {}=1{güncellemesi} other{güncellemesi}}',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, one {}=1{eklenti} other{eklenti}}',
     '{ctrl}C to copy.' => 'Kopyalamak için {ctrl}C',
