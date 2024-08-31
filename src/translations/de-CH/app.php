@@ -2101,6 +2101,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} darf höchstens {max, number} {max, plural, one{Element} other{Elemente}} enthalten.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} darf höchstens {max, number} {max, plural, one{gewähltes Element} other{gewählte Elemente}} enthalten.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} sollte {count, number} {count, plural, one{Element} other{Elemente}} enthalten.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} Plug-in {count, plural, =1{Update} other{Updates}}',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, =1{Plug-in} other{Plug-ins}}',
     '{ctrl}C to copy.' => '{ctrl}C zum Kopieren.',
