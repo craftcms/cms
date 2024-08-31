@@ -16,6 +16,8 @@
 - Custom field selectors within field layouts now display a pencil icon if their name, instructions, or handle have been overridden. ([#15597](https://github.com/craftcms/cms/discussions/15597))
 - Custom field settings within field layouts now display a chip for the associated global field. ([#15619](https://github.com/craftcms/cms/pull/15619), [#15597](https://github.com/craftcms/cms/discussions/15597))
 - Field layouts can now define tips and warnings that should be displayed for fields. ([#15632](https://github.com/craftcms/cms/discussions/15632))
+- The Fields index page now has a “Used by” column that shows how many field layouts each field is used by. ([#14984](https://github.com/craftcms/cms/discussions/14984))
+- The Entry Types index page now has a “Used by” column that lists the sections and custom fields that each entry type is used by. ([#14984](https://github.com/craftcms/cms/discussions/14984))
 - Single sections can now have multiple entry types. ([#15630](https://github.com/craftcms/cms/discussions/15630))
 - Increased the text size for handle buttons within admin tables.
 
@@ -36,8 +38,10 @@
 - Added `craft\gql\types\input\criteria\EntryRelation`.
 - Added `craft\gql\types\input\criteria\TagRelation`.
 - Added `craft\gql\types\input\criteria\UserRelation`.
+- Added `craft\helpers\Cp::componentPreviewHtml()`.
 - Added `craft\helpers\Inflector`.
 - Added `craft\services\Sites::getEditableSitesByGroupId()`.
+- `craft\helpers\Cp::chipHtml()` now supports a `hyperlink` option.
 - `craft\services\Elements::saveContent()`’ now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
 - Deprecated `craft\db\mysql\Schema::quoteDatabaseName()`.
 - Deprecated `craft\db\pgqsl\Schema::quoteDatabaseName()`.

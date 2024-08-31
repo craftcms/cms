@@ -3557,10 +3557,12 @@ table {
   display: flex;
   flex-flow: row wrap;
   align-items: center;
-  gap: var(--xs);
+  gap: var(--s);
 
   .chip {
     margin: 0 !important;
+    padding: 0;
+    background-color: transparent;
   }
 }
 
