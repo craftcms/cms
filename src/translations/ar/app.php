@@ -2099,6 +2099,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => 'يجب أن تحتوي {attribute} كحد أقصى على {max, number} {max, plural, one{عنصر} other{عناصر}}.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => 'يجب أن تحتوي {attribute} كحد أقصى على{max, number} {max, plural, one{تحديد} other{تحديدات}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'يجب أن تحتوي {attribute} على {count, number} {count, plural, one{عنصر} other{عناصر}}.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} {count, plural, =1{تحديث} other{من التحديثات}} للملحقات',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, =1{ملحق} other{من الملحقات}}',
     '{ctrl}C to copy.' => 'C{ctrl} للنسخ.',
