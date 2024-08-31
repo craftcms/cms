@@ -2101,6 +2101,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => 'Atrybut {attribute} powinien zawierać maksymalnie do {max, number} {max, plural, one{pozycji} other{pozycji}}.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => 'Atrybut {attribute} powinien zawierać maksymalnie do {max, number} {max, plural, one{wyboru} other{wyborów}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'Atrybut {attribute} powinien zawierać {count, number} {count, plural, one{pozycję} other{poz}}.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} plugin {count, plural, =1{aktualizacja} other{aktualizacje}}',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, =1{wtyczka} other{wtyczki}}',
     '{ctrl}C to copy.' => '{ctrl}C, aby skopiować.',
