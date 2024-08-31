@@ -2099,6 +2099,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} має (мають) містити щонайбільше {max, number} {max, plural, one{об\'єкт} few {об\'єкти} many {об\'єктів} other{об\'єкта}}.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} має (мають) містити щонайбільше {max, number} {max, plural, one{вибір} few {вибори} many {виборів} other{вибора}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} має (мають) містити {count, number} {count, plural, one{об\'єкт} few {об\'єкти} many {об\'єктів} other{об\'єкта}}.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} {count, plural, one {оновлення} few {оновлення} many {оновлень}=1{оновлення} other{оновлення}} плагінів',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, one {плагін} few {плагіна} many {плагінів} =1{плагін} other{плагіна}}',
     '{ctrl}C to copy.' => '{ctrl}C, щоб скопіювати.',
