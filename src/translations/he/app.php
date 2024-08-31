@@ -2099,6 +2099,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} צריך להכיל {max, number} {max, plural, one{פריט} other{פריטים}} לכל היותר.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} צריך להכיל {max, number} {max, plural, one{בחירה} other{בחירות}} לכל היותר.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} צריך להכיל {count, number} {count, plural, one{פריט} other{פריטים}}.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} {count, plural, =1{עדכון} other{עדכוני}} תוסף/ים',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, =1{תוסף} other{תוספים}}',
     '{ctrl}C to copy.' => 'C{ctrl} כדי להעתיק.',
