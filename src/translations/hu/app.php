@@ -2103,6 +2103,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => 'A(z) {attribute} elem legfeljebb {max, number} {max, plural, one{elemet} other{elemet}} tartalmazhat.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => 'A(z) {attribute} elemnek legalább {max, number} {max, plural, one{kijelölést} other{kijelölést}} kell tartalmaznia.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'A(z) {attribute} elemnek tartalmaznia kell a(z) {count, number} {count, plural, one{elemet} other{elemet}}.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} beépülő modul {count, plural, one {}=1{frissítés} other{frissítés}}',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, one {}=1{beépülő modul} other{beépülő modul}}',
     '{ctrl}C to copy.' => '{ctrl}C a másoláshoz',
