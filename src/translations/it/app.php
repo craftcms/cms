@@ -2101,6 +2101,7 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} deve contenere al massimo {max, number} {max, plural, one{elemento} other{elementi}}.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} deve contenere al massimo {max, number} {max, plural, one{selezione} other{selezioni}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} deve contenere {count, number} {count, plural, one{elemento} other{elementi}}.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} plugin {count, plural, one {}=1{aggiornamento} other{aggiornamenti}}',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, one {}=1{plugin} other{plugin}}',
     '{ctrl}C to copy.' => '{ctrl}C per copiare.',
