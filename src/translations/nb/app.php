@@ -2101,6 +2101,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} kan inneholde maks {max, number} {max, plural, one{element} other{elementer}}.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} kan inneholde maks {max, number} {max, plural, one{valg} other{valg}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} skal inneholde {count, number} {count, plural, one{element} other{elementer}}.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} utvidelse-{count, plural, one {} =1{oppdatering} other{oppdateringer}}',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, one {} =1{utvidelse} other{utvidelser}}',
     '{ctrl}C to copy.' => '{ctrl}C for å kopiere.',
