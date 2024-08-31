@@ -2099,6 +2099,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute}은(는) 최대 {max, number} {max, plural, one{개의 항목} other{개의 항목}}을 포함해야 합니다.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute}은(는) 최대 {max, number} {max, plural, one{개의 선택사항} other{개의 선택사항}}을 포함해야 합니다.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute}은(는) {count, number} {count, plural, one{개의 항목} other{개의 항목}}을 포함해야 합니다.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout}개 플러그인 {count, plural, =1{업데이트} other{업데이트}}',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout}개 {count, plural, =1{플러그인} other{플러그인}}',
     '{ctrl}C to copy.' => '복사하려면 {ctrl}C.',
