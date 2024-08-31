@@ -2099,6 +2099,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.',
+    '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, plural, =1{อัปเดต} other{อัปเดต}}ปลั๊กอิน {count, spellout} รายการ',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, plural, =1{ปลั๊กอิน} other{ปลั๊กอิน}} {count, spellout} รายการ',
     '{ctrl}C to copy.' => '{ctrl}C to copy.',
