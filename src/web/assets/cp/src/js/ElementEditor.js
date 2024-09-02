@@ -1868,7 +1868,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.trigger('update');
 
-      if (this.settings.isProvisionalDraft && Craft.broadcaster) {
+      if (
+        (this.settings.isProvisionalDraft ||
+          this.settings.isUnpublishedDraft) &&
+        Craft.broadcaster
+      ) {
         // Broadcast a saveMessage event, in case any chips/cards should be
         // updated to show the provisional changes
         Craft.broadcaster.postMessage({
@@ -2051,6 +2055,17 @@ Craft.ElementEditor = Garnish.Base.extend(
           this.submittingForm = false;
           this.trigger('afterSubmit');
         }
+
+        if (this.settings.isUnpublishedDraft) {
+          // Remove the draft-id data from existing chips/cards
+          const $elements = $(
+            `div.element[data-id="${this.settings.elementId}"][data-settings]`
+          );
+          for (let i = 0; i < $elements.length; i++) {
+            $elements.eq(i).removeData('draft-id').removeAttr('data-draft-id');
+          }
+        }
+
         this.settings.handleSubmitResponse(response);
       }
     },

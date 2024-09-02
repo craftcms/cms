@@ -8,6 +8,7 @@
 - Entry post dates, expiry dates, slugs, and authors are now inline-editable from the Entries index page. ([#15560](https://github.com/craftcms/cms/pull/15560))
 - Improved Addresses field validation to be more consistent with Matrix fields.
 - Entry chips and cards no longer include status indicators, if their entry type’s “Show thet Status field” setting is disabled. ([#15636](https://github.com/craftcms/cms/discussions/15636))
+- Matrix and Addresses fields now show newly-created elements on first edit, rather than after they’ve been fully saved. ([#15641](https://github.com/craftcms/cms/issues/15641)) 
 
 ### Accessibility
 - Improved the accessibility of Tags fields.
