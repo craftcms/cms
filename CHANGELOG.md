@@ -13,6 +13,7 @@
 - Fixed a bug where Money fields’ condition rules could display incorrect values based on a user’s formatting locale.
 - Fixed an error that occurred when eager-loading user addresses. ([#15629](https://github.com/craftcms/cms/pull/15629))
 - Fixed styling issues with classic Live Preview. ([#15640](https://github.com/craftcms/cms/issues/15640))
+- Fixed a bug where fields were bleeding out of the content pane on smaller viewports.
 
 ## 5.3.6 - 2024-08-26
 
