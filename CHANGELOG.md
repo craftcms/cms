@@ -12,6 +12,7 @@
 - Fixed a bug where ordering element queries by textual custom fields would factor in character marks. ([#15609](https://github.com/craftcms/cms/issues/15609))
 - Fixed a bug where Money fields’ condition rules could display incorrect values based on a user’s formatting locale.
 - Fixed an error that occurred when eager-loading user addresses. ([#15629](https://github.com/craftcms/cms/pull/15629))
+- Fixed styling issues with classic Live Preview. ([#15640](https://github.com/craftcms/cms/issues/15640))
 
 ## 5.3.6 - 2024-08-26
 
