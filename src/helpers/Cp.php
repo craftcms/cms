@@ -512,7 +512,7 @@ class Cp
             $config['attributes'],
         );
 
-        $config['showStatus'] = $config['showStatus'] && ($element->getIsDraft() || $element::hasStatuses());
+        $config['showStatus'] = $config['showStatus'] && ($element->getIsDraft() || $element->showStatusIndicator());
 
         if ($config['showLabel']) {
             $config['labelHtml'] = self::elementLabelHtml(
@@ -611,7 +611,7 @@ class Cp
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
         $labels = array_filter([
-            $element::hasStatuses() ? static::componentStatusLabelHtml($element) : null,
+            $element->showStatusIndicator() ? static::componentStatusLabelHtml($element) : null,
             $element->isProvisionalDraft ? self::changeStatusLabelHtml() : null,
         ]);
 

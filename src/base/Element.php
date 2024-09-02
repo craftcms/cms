@@ -3287,6 +3287,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function showStatusIndicator(): bool
+    {
+        return static::hasStatuses();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCardBodyHtml(): ?string
     {
         $previews = array_filter(array_map(

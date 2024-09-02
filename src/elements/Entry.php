@@ -1187,6 +1187,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public function showStatusIndicator(): bool
+    {
+        return $this->getType()->showStatusField;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCardBodyHtml(): ?string
     {
         $html = parent::getCardBodyHtml();

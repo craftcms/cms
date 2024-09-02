@@ -7,6 +7,7 @@
 - Category slugs are now inline-editable from the Categories index page. ([#15560](https://github.com/craftcms/cms/pull/15560))
 - Entry post dates, expiry dates, slugs, and authors are now inline-editable from the Entries index page. ([#15560](https://github.com/craftcms/cms/pull/15560))
 - Improved Addresses field validation to be more consistent with Matrix fields.
+- Entry chips and cards no longer include status indicators, if their entry type’s “Show thet Status field” setting is disabled. ([#15636](https://github.com/craftcms/cms/discussions/15636))
 
 ### Accessibility
 - Improved the accessibility of Tags fields.
@@ -30,6 +31,7 @@
 ### Extensibility
 - Added `craft\base\ApplicationTrait::getEnvId()`. ([#15313](https://github.com/craftcms/cms/issues/15313))
 - Added `craft\base\ElementInterface::getRootOwner()`. ([#15534](https://github.com/craftcms/cms/discussions/15534))
+- Added `craft\base\ElementInterface::showStatusIndicator()`.
 - Added `craft\elements\conditions\NotRelatedToConditionRule`.
 - Added `craft\elements\conditions\SiteGroupConditionRule`.
 - Added `craft\gql\arguments\RelationCriteria`.

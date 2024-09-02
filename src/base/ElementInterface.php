@@ -791,6 +791,14 @@ interface ElementInterface extends
     public function getChipLabelHtml(): string;
 
     /**
+     * Returns whether chips and cards for this element should include a status indicator.
+     *
+     * @return bool
+     * @since 5.4.0
+     */
+    public function showStatusIndicator(): bool;
+
+    /**
      * Returns the body HTML for element cards.
      *
      * @return string|null
