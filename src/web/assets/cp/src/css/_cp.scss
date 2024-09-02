@@ -1804,7 +1804,7 @@ li.breadcrumb-toggle-wrapper {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 calc(var(--padding) * -1) calc(var(--row-gap) * -1);
+  margin: 0 calc(var(--padding) * -1) calc(var(--padding) * -1);
   width: calc(100% + var(--padding) * 2);
 
   & > :not(.error-summary) {
