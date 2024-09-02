@@ -825,7 +825,7 @@ Craft.CP = Garnish.Base.extend(
           console.warn('There is no modal object');
         }
 
-        if (!modalObj.$liveRegion) {
+        if (!modalObj?.$liveRegion) {
           console.warn('There is no live region in the active modal layer.');
           this.$activeLiveRegion = null;
         } else {
@@ -834,7 +834,7 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Empty in case it was already populated and not cleared
-      this.$activeLiveRegion.empty();
+      this.$activeLiveRegion?.empty();
     },
 
     updateResponsiveTables: function () {
@@ -991,11 +991,11 @@ Craft.CP = Garnish.Base.extend(
         clearTimeout(this.announcerTimeout);
       }
 
-      this.$activeLiveRegion.empty().text(message);
+      this.$activeLiveRegion?.empty().text(message);
 
       // Clear message after interval
       this.announcerTimeout = setTimeout(() => {
-        this.$activeLiveRegion.empty();
+        this.$activeLiveRegion?.empty();
       }, 5000);
     },
 
