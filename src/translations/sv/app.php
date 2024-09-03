@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Enskild',
     'Single-line text' => 'Enradig text',
     'Singles' => 'Singlar',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Sidikon',
     'Site Settings' => 'Webbplatsinställningar',
     'Site saved.' => 'Webbplatsen har sparats.',
