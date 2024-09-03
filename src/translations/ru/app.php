@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Сингл',
     'Single-line text' => 'Однострочный текст',
     'Singles' => 'Синглы',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Значок сайта',
     'Site Settings' => 'Настройки сайта',
     'Site saved.' => 'Сайт сохранен.',
