@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Односторінковий',
     'Single-line text' => 'Однорядковий текст',
     'Singles' => 'Односторінкові',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Значок сайту',
     'Site Settings' => 'Налаштування сайту',
     'Site saved.' => 'Сайт збережено.',
