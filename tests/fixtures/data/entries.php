@@ -15,6 +15,14 @@ return [
         'appointments' => [['col1' => 'foo', 'col2' => '2019-06-25 07:00:00', 'col3' => '7', 'col4' => '1']],
     ],
 
+    // Authors
+    [
+        'authorIds' => [1, 2, 3],
+        'sectionId' => '1011',
+        'typeId' => '1011',
+        'title' => 'Theories of life multi-author',
+    ],
+
     // Deleted
     [
         'authorId' => '1',

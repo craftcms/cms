@@ -18,14 +18,13 @@
             :error="action.error"
             :ajax="action.ajax"
             v-on:reload="reload"
+            v-on:click="handleActionClick"
           >
           </admin-table-action-button>
         </div>
 
-        <div
-          v-if="search && !tableData.length"
-          class="flex-grow texticon search icon clearable"
-        >
+        <div v-if="search" class="flex-grow texticon search icon clearable">
+          <span class="texticon-icon search icon" aria-hidden="true"></span>
           <input
             class="text fullwidth"
             type="text"
@@ -33,8 +32,16 @@
             :placeholder="searchPlaceholderText"
             v-model="searchTerm"
             @input="handleSearch"
+            :autofocus="autofocusPreferred"
           />
-          <div class="clear hidden" :title="searchClearTitle"></div>
+          <button
+            v-if="searchTerm.length"
+            class="clear-btn"
+            :title="searchClearTitle"
+            role="button"
+            :aria-label="searchClearTitle"
+            @click="resetSearch"
+          ></button>
         </div>
 
         <div class="vue-admin-table-buttons" v-if="buttons && buttons.length">
@@ -49,8 +56,8 @@
                   isLoading
                     ? false
                     : button.enabled != undefined
-                    ? button.enabled
-                    : true
+                      ? button.enabled
+                      : true
                 "
               ></admin-table-button>
             </div>
@@ -61,18 +68,25 @@
 
     <div :class="{'content-pane': fullPage}">
       <div v-if="this.isEmpty" class="zilch">
-        <p>{{ emptyMessage }}</p>
+        <p v-if="this.searchTerm.length">{{ noSearchResults }}</p>
+        <p v-else>{{ emptyMessage }}</p>
       </div>
 
       <div
         class="tableview"
         :class="{loading: isLoading, hidden: this.isEmpty}"
       >
-        <div :class="{'vue-admin-tablepane': true, tablepane: fullPane}">
+        <div
+          :class="{
+            'vue-admin-tablepane': true,
+            tablepane: fullPane,
+            'mt-0': showToolbar && fullPane,
+          }"
+        >
           <vuetable
             ref="vuetable"
             :append-params="appendParams"
-            :api-mode="apiUrl ? true : false"
+            :api-mode="isApiMode"
             :api-url="apiUrl"
             :css="tableCss"
             :data="tableData"
@@ -81,11 +95,17 @@
             :per-page="perPage"
             :no-data-template="noDataTemplate"
             :query-params="queryParams"
+            :row-class="rowClass"
+            :http-fetch="fetch"
             pagination-path="pagination"
             @vuetable:loaded="init"
             @vuetable:loading="loading"
             @vuetable:pagination-data="onPaginationData"
             @vuetable:load-success="onLoadSuccess"
+            @vuetable:cell-clicked="handleCellClicked"
+            @vuetable:cell-dblclicked="handleCellDoubleClicked"
+            @vuetable:row-clicked="handleRowClicked"
+            @vuetable:row-dblclicked="handleRowDoubleClicked"
           >
             <template slot="checkbox" slot-scope="props">
               <admin-table-checkbox
@@ -96,11 +116,19 @@
                 v-on:removeCheck="removeCheck"
               ></admin-table-checkbox>
             </template>
-            <template slot="title" slot-scope="props">
+            <div slot="title" slot-scope="props" class="flex flex-nowrap gap-s">
+              <span
+                v-if="props.rowData.icon"
+                :class="['cp-icon', 'small', props.rowData.iconColor]"
+                v-html="props.rowData.icon"
+              ></span>
               <span
                 v-if="props.rowData.status !== undefined"
                 class="status"
-                :class="{enabled: props.rowData.status}"
+                :class="{
+                  enabled: props.rowData.status,
+                  disabled: !props.rowData.status,
+                }"
               ></span>
               <a
                 :class="{'cell-bold': props.rowData.status === undefined}"
@@ -113,7 +141,7 @@
                 v-else
                 >{{ props.rowData.title }}</span
               >
-            </template>
+            </div>
 
             <template slot="handle" slot-scope="props">
               <admin-table-copy-text-button
@@ -124,9 +152,15 @@
             <template slot="menu" slot-scope="props">
               <template v-if="props.rowData.menu.showItems">
                 <a :href="props.rowData.menu.url"
-                  >{{ props.rowData.menu.label }} ({{
-                    props.rowData.menu.items.length
-                  }})</a
+                  >{{ props.rowData.menu.label
+                  }}<template
+                    v-if="
+                      props.rowData.menu.showCount ||
+                      typeof props.rowData.menu.showCount === 'undefined'
+                    "
+                  >
+                    ({{ props.rowData.menu.items.length }})</template
+                  ></a
                 >
                 <a class="menubtn" :title="props.rowData.menu.label"></a>
                 <div class="menu">
@@ -160,8 +194,7 @@
                 @click="handleDetailRow(props.rowData.id)"
                 v-if="
                   props.rowData.detail.content &&
-                  (!props.rowData.detail.handle ||
-                    props.rowData.detail.handle == undefined) &&
+                  !props.rowData.detail.handle &&
                   (Object.keys(props.rowData.detail.content).length ||
                     props.rowData.detail.content.length)
                 "
@@ -190,19 +223,56 @@
                 v-on:finishloading="loading(false)"
                 v-on:reload="remove(props.rowIndex, props.rowData.id)"
                 v-if="
-                  props.rowData._showDelete == undefined ||
+                  typeof props.rowData._showDelete === 'undefined' ||
                   props.rowData._showDelete == true
                 "
               ></admin-table-delete-button>
             </template>
           </vuetable>
         </div>
-        <admin-table-pagination
-          ref="pagination"
-          :itemLabels="itemLabels"
-          @vuetable-pagination:change-page="onChangePage"
-        ></admin-table-pagination>
+        <div class="flex flex-justify vue-admin-table-footer" v-if="showFooter">
+          <admin-table-pagination
+            ref="pagination"
+            :itemLabels="itemLabels"
+            @vuetable-pagination:change-page="onChangePage"
+          ></admin-table-pagination>
+          <div
+            v-if="checkboxes && itemActions.length"
+            :class="{hidden: !checks.length}"
+          >
+            <admin-table-action-button
+              label=""
+              class="vue-admin-table-footer-actions"
+              :icon="'settings'"
+              :actions="itemActions"
+              :allow-multiple="true"
+              menu-btn-class="secondary"
+              :ids="checks"
+              :enabled="checks.length ? true : false"
+              v-on:reload="reload"
+              v-on:click="handleActionClick"
+            >
+            </admin-table-action-button>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <div class="hidden" v-if="moveToPageAction && lastPage !== 1">
+      <admin-table-move-to-page-hud
+        ref="move-to-page-hud"
+        trigger=".vue-admin-table-footer-actions"
+        :action="moveToPageAction"
+        :current-page="currentPage"
+        :per-page="perPage"
+        :pages="lastPage"
+        :move-to-page-action="moveToPageAction"
+        :reorder-success-message="reorderSuccessMessage"
+        :ids="checks"
+        v-on:reload="reload"
+        v-on:submit="loading()"
+        v-on:error="loading(false)"
+      ></admin-table-move-to-page-hud>
     </div>
   </div>
 </template>
@@ -216,11 +286,13 @@
   import AdminTableDetailRow from './components/AdminTableDetailRow';
   import AdminTableButton from './components/AdminTableButton';
   import AdminTableCopyTextButton from './components/AdminTableCopyTextButton';
+  import AdminTableMoveToPageHud from './components/AdminTableMoveToPageHud.vue';
   import Sortable from 'sortablejs';
   import {debounce, map} from 'lodash';
 
   export default {
     components: {
+      AdminTableMoveToPageHud,
       AdminTableCopyTextButton,
       AdminTableActionButton,
       AdminTableCheckbox,
@@ -231,14 +303,16 @@
     },
 
     props: {
-      container: {
-        type: String,
-      },
+      // NOTE: all the properties here, should also be listed in the src/web/assets/admintable/src/main.js file, under defaults
       actions: {
         type: Array,
         default: () => {
           return [];
         },
+      },
+      allowMultipleDeletions: {
+        type: Boolean,
+        default: false,
       },
       allowMultipleSelections: {
         type: Boolean,
@@ -272,6 +346,9 @@
           return [];
         },
       },
+      container: {
+        type: String,
+      },
       deleteAction: {
         type: String,
         default: null,
@@ -291,6 +368,12 @@
       emptyMessage: {
         type: String,
         default: Craft.t('app', 'No data available.'),
+      },
+      footerActions: {
+        type: Array,
+        default: () => {
+          return [];
+        },
       },
       fullPage: {
         type: Boolean,
@@ -312,28 +395,48 @@
       minItems: {
         type: Number,
       },
+      moveToPageAction: {
+        type: String,
+      },
+      noSearchResults: {
+        type: String,
+        default: Craft.t('app', 'No results.'),
+      },
       padded: {
         type: Boolean,
         default: false,
       },
+      paginatedReorderAction: {
+        type: String,
+      },
       perPage: {
         type: Number,
-        default: 40,
+        default: 100,
       },
       reorderAction: {
         type: String,
-      },
-      reorderSuccessMessage: {
-        type: String,
-        default: Craft.t('app', 'Items reordered.'),
       },
       reorderFailMessage: {
         type: String,
         default: Craft.t('app', 'Couldn’t reorder items.'),
       },
+      reorderSuccessMessage: {
+        type: String,
+        default: Craft.t('app', 'Items reordered.'),
+      },
       search: {
         type: Boolean,
         default: false,
+      },
+      searchClear: {
+        type: String,
+        default: Craft.t('app', 'Clear'),
+      },
+      searchParams: {
+        type: Array,
+        default: () => {
+          return [];
+        },
       },
       searchPlaceholder: {
         type: String,
@@ -350,36 +453,52 @@
       },
 
       // Events
+      onCellClicked: {
+        default: function () {},
+      },
+      onCellDoubleClicked: {
+        default: function () {},
+      },
+      onData: {
+        default: function () {},
+      },
       onLoaded: {
         default: function () {},
       },
       onLoading: {
         default: function () {},
       },
-      onData: {
-        default: function () {},
-      },
       onPagination: {
         default: function () {},
       },
-      onSelect: {
+      onQueryParams: {
         default: function () {},
       },
-      onQueryParams: {
+      onRowClicked: {
+        default: function () {},
+      },
+      onRowDoubleClicked: {
+        default: function () {},
+      },
+      onSelect: {
         default: function () {},
       },
     },
 
     data() {
       return {
+        autofocusPreferred: Craft.autofocusPreferred ?? false,
         checks: [],
         currentPage: 1,
+        lastPage: 1,
         detailRow: AdminTableDetailRow,
         dragging: false,
+        endpointResponse: null,
+        initTableData: [],
         isEmpty: false,
         isLoading: true,
         searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
-        searchTerm: null,
+        searchTerm: '',
         selectAll: null,
         sortable: null,
         tableBodySelector: '.vuetable-body',
@@ -413,7 +532,24 @@
             }
 
             if (this.tableDataEndpoint) {
-              Craft.initUiElements(this.container);
+              new Promise(async (resolve) => {
+                if (this.endpointResponse) {
+                  // Check to see if `headHtml` is in the response
+                  if (this.endpointResponse['headHtml']) {
+                    // Append the headHtml to the page
+                    await Craft.appendHeadHtml(this.endpointResponse.headHtml);
+                  }
+
+                  // Check to see if `bodyHtml` is in the response
+                  if (this.endpointResponse['bodyHtml']) {
+                    // Append the bodyHtml to the page
+                    await Craft.appendBodyHtml(this.endpointResponse.bodyHtml);
+                  }
+                }
+                resolve();
+              }).finally(() => {
+                Craft.initUiElements(this.container);
+              });
             }
           }
         });
@@ -424,6 +560,10 @@
           !this.tableDataEndpoint
         ) {
           this.$emit('data', this.tableData);
+
+          this.$nextTick(() => {
+            this.initTableData = this.$refs.vuetable.tableData;
+          });
         }
 
         this.isLoading = false;
@@ -436,6 +576,10 @@
         if (!this.tableDataEndpoint && this.onData instanceof Function) {
           this.onData(this.tableData);
         }
+      },
+
+      fetch(url, options) {
+        return Craft.sendActionRequest('GET', url, options);
       },
 
       loading(isLoading = true) {
@@ -454,10 +598,38 @@
         this.dragging = false;
       },
 
+      rowClass(data, index) {
+        if (!data) {
+          return '';
+        }
+
+        if (!this.checks.length) {
+          return '';
+        }
+
+        if (this.checks.indexOf(data.id) >= 0) {
+          return 'sel';
+        }
+
+        return '';
+      },
+
+      handleActionClick(param, value, action, ajax) {
+        if (param === 'moveToPage' && value === true) {
+          this.$refs['move-to-page-hud'].show();
+        } else if (ajax) {
+          this.loading();
+        }
+      },
+
       handleReorder(ev) {
-        let elements = [
-          ...ev.target.querySelectorAll('.vue-table-move-handle'),
-        ];
+        // Paginated reordering must be used when supplying table data from an endpoint
+        const isPaginatedReorder = this.tableDataEndpoint ? true : false;
+        const reorderAction = isPaginatedReorder
+          ? this.paginatedReorderAction
+          : this.reorderAction;
+
+        let elements = [...ev.to.querySelectorAll('.vue-table-move-handle')];
 
         if (elements.length) {
           let ids = map(elements, (element) => {
@@ -472,7 +644,7 @@
                 : 0) + 1,
           };
 
-          Craft.sendActionRequest('POST', this.reorderAction, {data}).then(
+          Craft.sendActionRequest('POST', reorderAction, {data}).then(
             (response) => {
               Craft.cp.displayNotice(
                 Craft.escapeHtml(this.reorderSuccessMessage)
@@ -506,8 +678,51 @@
       },
 
       handleSearch: debounce(function () {
-        this.reload();
-      }, 350),
+        // in data mode - match and show/hide via JS
+        if (!this.isApiMode && this.tableData.length) {
+          let tableData = this.initTableData;
+          let searchTerm = this.searchTerm.toLowerCase();
+
+          if (searchTerm !== '') {
+            tableData = tableData.filter((row) => {
+              let includes = false;
+
+              this.searchParams.some((param) => {
+                Object.entries(row).some(([key, value]) => {
+                  // Force string values
+                  value = String(value);
+
+                  if (
+                    key === param &&
+                    value.toLowerCase().includes(searchTerm)
+                  ) {
+                    return (includes = true);
+                  }
+                });
+
+                // Break if we have a match
+                return includes;
+              });
+
+              return includes;
+            });
+          }
+
+          this.isEmpty = tableData.length == 0;
+          this.$refs.vuetable.tableData = tableData;
+        } else {
+          // in API mode - send to the endpoint to handle
+          if (this.$refs.vuetable.currentPage !== 1) {
+            this.$refs.vuetable.changePage(1);
+          }
+          this.reload();
+        }
+      }, 500),
+
+      resetSearch: function () {
+        this.searchTerm = '';
+        this.handleSearch();
+      },
 
       handleSelectAll() {
         var tableData = this.$refs.vuetable.tableData;
@@ -540,7 +755,11 @@
 
       reload() {
         if (this.$refs.vuetable) {
-          this.$refs.vuetable.gotoPage(1);
+          const reloadToPage =
+            this.$refs.vuetable.currentPage > 1
+              ? this.$refs.vuetable.currentPage
+              : 1;
+          this.$refs.vuetable.gotoPage(reloadToPage);
         }
 
         this.isLoading = true;
@@ -572,7 +791,9 @@
       },
 
       onLoadSuccess(data) {
+        this.endpointResponse = null;
         if (data && data.data && data.data.data) {
+          this.endpointResponse = data.data;
           let emitData = data.data.data;
           this.$emit('data', emitData);
           if (this.onData instanceof Function) {
@@ -581,8 +802,37 @@
         }
       },
 
+      handleCellClicked(data, field, event) {
+        this.$emit('onCellClicked', data, field, event);
+        if (this.onCellClicked instanceof Function) {
+          this.onCellClicked(data, field, event);
+        }
+      },
+
+      handleCellDoubleClicked(data, field, event) {
+        this.$emit('onCellDoubleClicked', data, field, event);
+        if (this.onCellDoubleClicked instanceof Function) {
+          this.onCellDoubleClicked(data, field, event);
+        }
+      },
+
+      handleRowClicked(data, event) {
+        this.$emit('onRowClicked', data, event);
+        if (this.onRowClicked instanceof Function) {
+          this.onRowClicked(data, event);
+        }
+      },
+
+      handleRowDoubleClicked(data, event) {
+        this.$emit('onRowDoubleClicked', data, event);
+        if (this.onRowDoubleClicked instanceof Function) {
+          this.onRowDoubleClicked(data, event);
+        }
+      },
+
       onPaginationData(paginationData) {
         this.currentPage = paginationData.current_page;
+        this.lastPage = paginationData.last_page;
         this.$refs.pagination.setPaginationData(paginationData);
         this.deselectAll();
         if (this.onPagination instanceof Function) {
@@ -629,6 +879,10 @@
         return '';
       },
 
+      isApiMode() {
+        return this.apiUrl ? true : false;
+      },
+
       apiUrl() {
         if (!this.tableDataEndpoint) {
           return '';
@@ -653,12 +907,52 @@
         );
       },
 
+      itemActions() {
+        let itemActions = [];
+
+        if (this.paginatedReorderAction && this.moveToPageAction) {
+          itemActions.push({
+            label: Craft.t('app', 'Move to'),
+            action: this.moveToPageAction,
+            allowMultiple: false,
+            ajax: true,
+            handleClick: false,
+            param: 'moveToPage',
+            value: true,
+            class: {'footer-actions': true},
+          });
+        }
+
+        itemActions = [...itemActions, ...this.footerActions];
+
+        if (this.deleteAction) {
+          itemActions.push({
+            label: Craft.t('app', 'Delete'),
+            action: this.deleteAction,
+            error: true,
+            ajax: this.tableDataEndpoint ? true : false,
+            allowMultiple: this.allowMultipleDeletions,
+            separator: itemActions.length ? true : false,
+          });
+        }
+
+        return itemActions;
+      },
+
       canReorder() {
+        if (
+          typeof this.$refs.vuetable === 'undefined' ||
+          typeof this.$refs.vuetable.tableData === 'undefined'
+        ) {
+          return false;
+        }
+
         return (
           this.$refs.vuetable.tableData.length > 1 &&
-          this.reorderAction &&
           this.$el.querySelector(this.tableBodySelector) &&
-          !this.$refs.vuetable.tablePagination
+          ((this.reorderAction && !this.$refs.vuetable.tablePagination) ||
+            (this.paginatedReorderAction &&
+              this.$refs.vuetable.tablePagination))
         );
       },
 
@@ -717,7 +1011,10 @@
 
         let customColumns = map(this.columns, (item) => {
           // Do not allow sorting for if you can manually reorder items
-          if (this.reorderAction && item.hasOwnProperty('sortField')) {
+          if (
+            (this.reorderAction || this.paginatedReorderAction) &&
+            item.hasOwnProperty('sortField')
+          ) {
             delete item.sortField;
           }
 
@@ -729,7 +1026,7 @@
 
         columns = [...columns, ...customColumns];
 
-        if (this.reorderAction) {
+        if (this.reorderAction || this.paginatedReorderAction) {
           columns.push({
             name: '__slot:reorder',
             title: '',
@@ -747,12 +1044,22 @@
         return columns;
       },
 
+      searchClearTitle() {
+        return Craft.escapeHtml(this.searchClear);
+      },
+
       searchPlaceholderText() {
         return Craft.escapeHtml(this.searchPlaceholder);
       },
 
       showToolbar() {
-        return this.actions.length || (this.search && !this.tableData.length);
+        return this.actions.length || this.search;
+      },
+
+      showFooter() {
+        return (
+          (this.checkboxes && this.itemActions.length) || this.tableDataEndpoint
+        );
       },
 
       tableCss() {
@@ -836,7 +1143,7 @@
   }
 
   .vue-admin-table .toolbar {
-    margin-bottom: 32px;
+    margin-bottom: var(--padding);
   }
 
   .vue-admin-table.vue-admin-table-padded .toolbar {
@@ -848,7 +1155,7 @@
   }
 
   .vue-admin-table-drag {
-    background: #f3f7fc;
+    opacity: 0;
   }
 
   table thead th.sortable:hover {
@@ -865,6 +1172,24 @@
 
   .vue-admin-table-buttons .flex:not(.flex-nowrap) > * {
     margin-bottom: 0;
+  }
+
+  .vue-admin-table-footer {
+    background-color: #fff;
+    border-top: 1px solid #f3f7fc;
+    bottom: 0;
+    margin-bottom: calc(var(--xl) * -1);
+    margin-top: 14px;
+    position: sticky;
+    min-height: 44px;
+  }
+
+  .vue-admin-tablepane + .vue-admin-table-footer {
+    --pane-padding-default: calc(var(--padding) - 2px);
+    margin-left: calc(var(--pane-padding, var(--pane-padding-default)) * -1);
+    margin-right: calc(var(--pane-padding, var(--pane-padding-default)) * -1);
+    padding-left: calc(var(--pane-padding, var(--pane-padding-default)));
+    padding-right: calc(var(--pane-padding, var(--pane-padding-default)));
   }
 
   .detail-cursor-pointer {

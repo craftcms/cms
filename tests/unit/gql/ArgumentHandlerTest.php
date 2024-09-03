@@ -85,7 +85,7 @@ class ArgumentHandlerTest extends TestCase
         });
 
         $result = $gql->executeQuery(new GqlSchema(['id' => 1]), "{integrationQuery ($argumentString)}");
-        $this->assertEquals($expectedResult, json_decode($result['data']['integrationQuery'], true));
+        self::assertEquals($expectedResult, json_decode($result['data']['integrationQuery'], true));
     }
 
     /**
@@ -109,13 +109,13 @@ class ArgumentHandlerTest extends TestCase
 
         $arguments = $argumentManager->prepareArguments($arguments);
 
-        $this->assertSame($expectedRelatedTo, $arguments['relatedTo']);
+        self::assertSame($expectedRelatedTo, $arguments['relatedTo']);
     }
 
     public function relationArgumentHandlerProvider(): array
     {
         $getIds = function(string $elementClass, array $criteria = []) {
-            $this->assertSame($criteria['expected'], $elementClass);
+            self::assertSame($criteria['expected'], $elementClass);
             return $criteria['return'];
         };
 
@@ -176,7 +176,7 @@ class ArgumentHandlerTest extends TestCase
         ];
     }
 
-    public function integrationTestDataProvider(): array
+    public static function integrationTestDataProvider(): array
     {
         return [
             ['initial: 5 multiplier: 2', ['initial' => 5, 'multiplier' => 2, 'result' => 10]],

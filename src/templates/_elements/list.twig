@@ -1,16 +1,31 @@
 {% set elements = elements ?? [] %}
 {% set disabled = disabled ?? null %}
 {% set viewMode = viewMode ?? null %}
+{% set size = size ?? (viewMode == 'large' ? 'large' : 'small') %}
 
-<div class="elements">
+{% apply spaceless %}
+  {% tag 'ul' with {
+    class: [
+      'elements',
+      'chips',
+      "chips-#{size}",
+      (inline ?? false) ? 'inline-chips' : null,
+    ]|filter,
+  } %}
     {% for element in elements %}
-        {% set element = include('_elements/element', {
-            context: 'field',
-            size: (viewMode == 'large' ? 'large' : 'small')
+      <li>
+        {% set element = elementChip(element, {
+          context: context ?? 'index',
+          size,
+          inputName: inputName ?? ((name ?? false) ? ((single ?? false) ? name : "#{name}[]") : null),
+          showActionMenu: showActionMenu ?? false,
+          checkbox: selectable ?? false,
         }) %}
         {% if disabled %}
-            {% set element = element|removeClass('removable') %}
+          {% set element = element|removeClass('removable') %}
         {% endif %}
         {{ element|raw }}
+      </li>
     {% endfor %}
-</div>
+  {% endtag %}
+{% endapply %}

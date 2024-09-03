@@ -74,7 +74,7 @@ class PgsqlDbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function parseParamDataProvider(): array
+    public static function parseParamDataProvider(): array
     {
         return [
             'multi-:empty:-param' => [
@@ -109,7 +109,7 @@ class PgsqlDbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getTextualColumnTypeByContentLengthDataProvider(): array
+    public static function getTextualColumnTypeByContentLengthDataProvider(): array
     {
         return [
             ['text', 254],
@@ -122,7 +122,7 @@ class PgsqlDbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function sqlTypesDataProvider(): array
+    public static function sqlTypesDataProvider(): array
     {
         $mysqlSchema = new \craft\db\mysql\Schema();
         $pgsqlSchema = new Schema();
@@ -143,7 +143,7 @@ class PgsqlDbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getTextualColumnStorageCapacityDataProvider(): array
+    public static function getTextualColumnStorageCapacityDataProvider(): array
     {
         return [
             [null, Schema::TYPE_TEXT],

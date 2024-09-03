@@ -11,7 +11,9 @@
             <div class="row{% if element.id in disabledElementIds %} disabled{% endif %}" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
                 {%- apply spaceless %}
                     {% block element %}
-                        {% include "_elements/element" %}
+                        {{ elementChip(element, {
+                            context: context ?? 'index',
+                        }) }}
 
                         {% if sortable %}
                             <a class="move icon" title="{{ 'Move'|t('app') }}" aria-label="{{ 'Move'|t('app') }}"></a>

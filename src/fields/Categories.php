@@ -15,7 +15,6 @@ use craft\elements\ElementCollection;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
@@ -43,6 +42,14 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'sitemap';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function elementType(): string
     {
         return Category::class;
@@ -59,7 +66,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', CategoryQuery::class, ElementCollection::class, Category::class);
     }
@@ -88,7 +95,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (is_array($value) && $this->maintainHierarchy) {
             /** @var Category[] $categories */
@@ -107,7 +114,7 @@ class Categories extends BaseRelationField
                 $structuresService->applyBranchLimitToElements($categories, $this->branchLimit);
             }
 
-            $value = ArrayHelper::getColumn($categories, 'id');
+            $value = array_map(fn(Category $category) => $category->id, $categories);
         }
 
         return parent::normalizeValue($value, $element);
@@ -116,7 +123,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
@@ -127,7 +134,7 @@ class Categories extends BaseRelationField
             return '<p class="error">' . Craft::t('app', 'This field is not set to a valid category group.') . '</p>';
         }
 
-        return parent::inputHtml($value, $element);
+        return parent::inputHtml($value, $element, $inline);
     }
 
     /**

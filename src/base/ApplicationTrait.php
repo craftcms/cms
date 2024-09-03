@@ -21,6 +21,7 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
@@ -38,17 +39,22 @@ use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\fieldlayoutelements\TitleField;
-use craft\fieldlayoutelements\users\AddressesField;
+use craft\fieldlayoutelements\users\EmailField;
+use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
+use craft\fieldlayoutelements\users\PhotoField;
+use craft\fieldlayoutelements\users\UsernameField;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
+use craft\log\Dispatcher;
 use craft\mail\Mailer;
 use craft\markdown\GithubMarkdown;
 use craft\markdown\Markdown;
 use craft\markdown\MarkdownExtra;
+use craft\markdown\PreEncodedMarkdown;
 use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
@@ -57,11 +63,11 @@ use craft\services\Announcements;
 use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
+use craft\services\Auth;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Conditions;
 use craft\services\Config;
-use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
 use craft\services\Drafts;
@@ -75,7 +81,6 @@ use craft\services\Globals;
 use craft\services\Gql;
 use craft\services\Images;
 use craft\services\ImageTransforms;
-use craft\services\Matrix;
 use craft\services\Path;
 use craft\services\Plugins;
 use craft\services\PluginStore;
@@ -84,9 +89,9 @@ use craft\services\Relations;
 use craft\services\Revisions;
 use craft\services\Routes;
 use craft\services\Search;
-use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
+use craft\services\Sso;
 use craft\services\Structures;
 use craft\services\SystemMessages;
 use craft\services\Tags;
@@ -128,19 +133,19 @@ use yii\web\ServerErrorHttpException;
  * ApplicationTrait
  *
  * @property bool $isInstalled Whether Craft is installed
- * @property int $edition The active Craft edition
  * @property-read Addresses $addresses The addresses service
  * @property-read Announcements $announcements The announcements service
  * @property-read Api $api The API service
  * @property-read AssetIndexer $assetIndexer The asset indexer service
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read Assets $assets The assets service
+ * @property-read Auth $auth The user authentication service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
  * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
- * @property-read Content $content The content service
+ * @property-read Connection $db2 The database connection component used for mutex locks and element bulk op records
  * @property-read Dashboard $dashboard The dashboard service
  * @property-read Deprecator $deprecator The deprecator service
  * @property-read Drafts $drafts The drafts service
@@ -159,7 +164,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read Locale $locale The Locale object for the target language
  * @property-read Mailer $mailer The mailer component
- * @property-read Matrix $matrix The matrix service
  * @property-read MigrationManager $contentMigrator The content migration manager
  * @property-read MigrationManager $migrator The application’s migration manager
  * @property-read Mutex $mutex The application’s mutex service
@@ -168,13 +172,13 @@ use yii\web\ServerErrorHttpException;
  * @property-read Plugins $plugins The plugins service
  * @property-read ProjectConfig $projectConfig The project config service
  * @property-read Queue|QueueInterface $queue The job queue
- * @property-read Relations $relations The relations service
+ * @property-read Relations $relations The relations service (deprecated)
  * @property-read Revisions $revisions The revisions service
  * @property-read Routes $routes The routes service
  * @property-read Search $search The search service
- * @property-read Sections $sections The sections service
  * @property-read Security $security The security component
  * @property-read Sites $sites The sites service
+ * @property-read Sso $sso The SSO service
  * @property-read Structures $structures The structures service
  * @property-read SystemMessages $systemMessages The system email messages service
  * @property-read Tags $tags The tags service
@@ -198,6 +202,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read string $installedSchemaVersion The installed schema version
  * @method AssetManager getAssetManager() Returns the asset manager component.
  * @method Connection getDb() Returns the database connection component.
+ * @method Dispatcher getLog() Returns the log dispatcher component.
  * @method Formatter getFormatter() Returns the formatter component.
  * @method I18N getI18n() Returns the internationalization (i18n) component.
  * @method Security getSecurity() Returns the security component.
@@ -223,6 +228,12 @@ trait ApplicationTrait
      * @var string|null The environment ID Craft is currently running in.
      */
     public ?string $env = null;
+
+    /**
+     * @var CmsEdition The installed Craft CMS edition.
+     * @since 5.0.0
+     */
+    public CmsEdition $edition;
 
     /**
      * @var string The base Craftnet API URL to use.
@@ -262,12 +273,6 @@ trait ApplicationTrait
     private bool $_isMultiSiteWithTrashed;
 
     /**
-     * @var int The Craft edition
-     * @see getEdition()
-     */
-    private int $_edition;
-
-    /**
      * @var Info|null
      */
     private ?Info $_info = null;
@@ -282,6 +287,12 @@ trait ApplicationTrait
      * @see saveInfoAfterRequest()
      */
     private bool $_waitingToSaveInfo = false;
+
+    /**
+     * @var callable[]
+     * @see onAfterRequest()
+     */
+    private array $afterRequestCallbacks = [];
 
     /**
      * @inheritdoc
@@ -302,7 +313,7 @@ trait ApplicationTrait
         }
 
         // Override where Yii should find its asset deps
-        $assetsPath = Craft::getAlias('@craft') . '/web/assets';
+        $assetsPath = Craft::getAlias('@app/web/assets');
         Craft::setAlias('@bower/jquery/dist', $assetsPath . '/jquery/dist');
         Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
         Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');
@@ -333,6 +344,12 @@ trait ApplicationTrait
         }
 
         $this->language = $this->getTargetLanguage($useUserLanguage);
+        setlocale(
+            LC_COLLATE,
+            str_replace('-', '_', $this->language), // target language
+            'C.UTF-8',  // libc >= 2.13
+            'C.utf8' // different spelling
+        );
         $this->_gettingLanguage = false;
     }
 
@@ -494,10 +511,26 @@ trait ApplicationTrait
         ], true)) {
             $callback();
         } else {
-            $this->on(Application::EVENT_AFTER_REQUEST, function() use ($callback) {
-                $callback();
-            });
+            $this->afterRequestCallbacks[] = $callback;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function trigger($name, Event $event = null)
+    {
+        // call the onAfterRequest() callbacks directly
+        if ($name === self::EVENT_AFTER_REQUEST && !empty($this->afterRequestCallbacks)) {
+            $event ??= new Event();
+            $event->sender = $this;
+            $event->name = $name;
+            while ($callback = array_shift($this->afterRequestCallbacks)) {
+                $callback($event);
+            }
+        }
+
+        parent::trigger($name, $event);
     }
 
     /**
@@ -533,27 +566,25 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the Craft edition.
+     * Returns the installed Craft CMS edition’s ID.
      *
      * @return int
+     * @deprecated in 5.0.0. [[$edition]] should be used instead.
      */
     public function getEdition(): int
     {
-        if (!isset($this->_edition)) {
-            $handle = $this->getProjectConfig()->get('system.edition') ?? 'solo';
-            $this->_edition = App::editionIdByHandle($handle);
-        }
-        return $this->_edition;
+        return $this->edition->value;
     }
 
     /**
      * Returns the name of the Craft edition.
      *
      * @return string
+     * @deprecated in 5.0.0. [[$edition]] should be used instead.
      */
     public function getEditionName(): string
     {
-        return App::editionName($this->getEdition());
+        return $this->edition->name;
     }
 
     /**
@@ -561,19 +592,19 @@ trait ApplicationTrait
      *
      * @return string
      * @since 4.4.0
+     * @deprecated in 5.0.0. [[$edition]] should be used instead.
      */
     public function getEditionHandle(): string
     {
-        /** @var WebApplication|ConsoleApplication $this */
-        return App::editionHandle($this->getEdition());
+        return $this->edition->handle();
     }
 
     /**
      * Returns the edition Craft is actually licensed to run in.
      *
-     * @return int|null
+     * @return CmsEdition|null
      */
-    public function getLicensedEdition(): ?int
+    public function getLicensedEdition(): ?CmsEdition
     {
         $licenseInfo = $this->getCache()->get('licenseInfo') ?: [];
 
@@ -581,23 +612,18 @@ trait ApplicationTrait
             return null;
         }
 
-        return App::editionIdByHandle($licenseInfo['craft']['edition']);
+        return CmsEdition::fromHandle($licenseInfo['craft']['edition']);
     }
 
     /**
      * Returns the name of the edition Craft is actually licensed to run in.
      *
      * @return string|null
+     * @deprecated in 5.0.0. [[getLicensedEdition()]] should be used instead.
      */
     public function getLicensedEditionName(): ?string
     {
-        $licensedEdition = $this->getLicensedEdition();
-
-        if ($licensedEdition !== null) {
-            return App::editionName($licensedEdition);
-        }
-
-        return null;
+        return $this->getLicensedEdition()?->name;
     }
 
     /**
@@ -608,29 +634,36 @@ trait ApplicationTrait
     public function getHasWrongEdition(): bool
     {
         $licensedEdition = $this->getLicensedEdition();
-
-        return ($licensedEdition !== null && $licensedEdition !== $this->getEdition() && !$this->getCanTestEditions());
+        return (
+            $licensedEdition !== null &&
+            $licensedEdition !== $this->edition &&
+            !$this->getCanTestEditions()
+        );
     }
 
     /**
-     * Sets the Craft edition.
+     * Sets the installed Craft CMS edition.
      *
-     * @param int $edition The edition to set.
+     * @param CmsEdition|int $edition The edition to set.
      * @return bool
      */
-    public function setEdition(int $edition): bool
+    public function setEdition(CmsEdition|int $edition): bool
     {
-        $oldEdition = $this->getEdition();
-        $this->getProjectConfig()->set('system.edition', App::editionHandle($edition), "Craft CMS edition change");
-        $this->_edition = $edition;
+        if (is_int($edition)) {
+            $edition = CmsEdition::from($edition);
+        }
+
+        $oldEdition = $this->edition ?? CmsEdition::Solo;
+        $this->getProjectConfig()->set('system.edition', $edition->handle(), 'Craft CMS edition change');
+        $this->edition = $edition;
 
         // Fire an 'afterEditionChange' event
         /** @var WebRequest|ConsoleRequest $request */
         $request = $this->getRequest();
         if (!$request->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
             $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
-                'oldEdition' => $oldEdition,
-                'newEdition' => $edition,
+                'oldEdition' => $oldEdition->value,
+                'newEdition' => $edition->value,
             ]));
         }
 
@@ -640,18 +673,22 @@ trait ApplicationTrait
     /**
      * Requires that Craft is running an equal or better edition than what's passed in
      *
-     * @param int $edition The Craft edition to require.
+     * @param CmsEdition|int $edition The Craft edition to require.
      * @param bool $orBetter If true, makes $edition the minimum edition required.
      * @throws WrongEditionException if attempting to do something not allowed by the current Craft edition
      */
-    public function requireEdition(int $edition, bool $orBetter = true): void
+    public function requireEdition(CmsEdition|int $edition, bool $orBetter = true): void
     {
-        if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingExternalChanges()) {
-            $installedEdition = $this->getEdition();
+        if (is_int($edition)) {
+            $edition = CmsEdition::from($edition);
+        }
 
-            if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
-                $editionName = App::editionName($edition);
-                throw new WrongEditionException("Craft $editionName is required for this");
+        if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingExternalChanges()) {
+            if (!match ($orBetter) {
+                true => $this->edition->value >= $edition->value,
+                false => $this->edition === $edition
+            }) {
+                throw new WrongEditionException("Craft $edition->name is required for this.");
             }
         }
     }
@@ -669,12 +706,11 @@ trait ApplicationTrait
             Craft::$app->getConfig()->getGeneral()->allowAdminChanges
         ) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
-            $activeEdition = $this->getEdition();
             $licensedEdition = $this->getLicensedEdition();
 
             return (
-                ($activeEdition < Craft::Pro) ||
-                ($licensedEdition !== null && $licensedEdition < Craft::Pro)
+                ($this->edition->value < CmsEdition::Pro->value) ||
+                ($licensedEdition !== null && $licensedEdition->value < CmsEdition::Pro->value)
             );
         }
 
@@ -682,9 +718,11 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether Craft is running on a domain that is eligible to test out the editions.
+     * Returns whether Craft is running on a domain that is eligible to test
+     * unlicensed Craft and plugin editions/updates.
      *
      * @return bool
+     * @internal
      */
     public function getCanTestEditions(): bool
     {
@@ -698,7 +736,12 @@ trait ApplicationTrait
 
         /** @var Cache $cache */
         $cache = $this->getCache();
-        return $cache->get(sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName()));
+        $cacheKey = sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName());
+        if (!$cache->exists($cacheKey)) {
+            // err on the side of allowing it
+            return true;
+        }
+        return (bool)$cache->get($cacheKey);
     }
 
     /**
@@ -877,8 +920,9 @@ trait ApplicationTrait
      */
     public function getSystemName(): string
     {
-        if (($name = Craft::$app->getProjectConfig()->get('system.name')) !== null) {
-            return App::parseEnv($name);
+        $name = App::parseEnv(Craft::$app->getProjectConfig()->get('system.name'));
+        if ($name !== null) {
+            return $name;
         }
 
         try {
@@ -937,7 +981,6 @@ trait ApplicationTrait
      */
     public function getAddresses(): Addresses
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('addresses');
     }
 
@@ -949,7 +992,6 @@ trait ApplicationTrait
      */
     public function getAnnouncements(): Announcements
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('announcements');
     }
 
@@ -960,7 +1002,6 @@ trait ApplicationTrait
      */
     public function getApi(): Api
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('api');
     }
 
@@ -971,7 +1012,6 @@ trait ApplicationTrait
      */
     public function getAssets(): Assets
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('assets');
     }
 
@@ -982,8 +1022,18 @@ trait ApplicationTrait
      */
     public function getAssetIndexer(): AssetIndexer
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('assetIndexer');
+    }
+
+    /**
+     * Returns the user authentication service.
+     *
+     * @return Auth The Auth service
+     * @since 5.0.0
+     */
+    public function getAuth(): Auth
+    {
+        return $this->get('auth');
     }
 
     /**
@@ -993,7 +1043,6 @@ trait ApplicationTrait
      */
     public function getImageTransforms(): ImageTransforms
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('imageTransforms');
     }
 
@@ -1004,7 +1053,6 @@ trait ApplicationTrait
      */
     public function getCategories(): Categories
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('categories');
     }
 
@@ -1015,7 +1063,6 @@ trait ApplicationTrait
      */
     public function getComposer(): Composer
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('composer');
     }
 
@@ -1027,7 +1074,6 @@ trait ApplicationTrait
      */
     public function getConditions(): Conditions
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('conditions');
     }
 
@@ -1038,19 +1084,7 @@ trait ApplicationTrait
      */
     public function getConfig(): Config
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('config');
-    }
-
-    /**
-     * Returns the content service.
-     *
-     * @return Content The content service
-     */
-    public function getContent(): Content
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('content');
     }
 
     /**
@@ -1060,7 +1094,6 @@ trait ApplicationTrait
      */
     public function getContentMigrator(): MigrationManager
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('contentMigrator');
     }
 
@@ -1071,8 +1104,21 @@ trait ApplicationTrait
      */
     public function getDashboard(): Dashboard
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('dashboard');
+    }
+
+    /**
+     * Returns the database connection used for mutex locks and element bulk op records.
+     *
+     * This helps avoid erratic behavior when locks are used during transactions
+     * (see https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions).
+     *
+     * @return Connection
+     * @since 5.3.0
+     */
+    public function getDb2(): Connection
+    {
+        return $this->get('db2');
     }
 
     /**
@@ -1082,7 +1128,6 @@ trait ApplicationTrait
      */
     public function getDeprecator(): Deprecator
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('deprecator');
     }
 
@@ -1094,7 +1139,6 @@ trait ApplicationTrait
      */
     public function getDrafts(): Drafts
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('drafts');
     }
 
@@ -1106,7 +1150,6 @@ trait ApplicationTrait
      */
     public function getDumper(): AbstractDumper
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('dumper');
     }
 
@@ -1117,7 +1160,6 @@ trait ApplicationTrait
      */
     public function getElementSources(): ElementSources
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('elementSources');
     }
 
@@ -1128,7 +1170,6 @@ trait ApplicationTrait
      */
     public function getElements(): Elements
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('elements');
     }
 
@@ -1139,7 +1180,6 @@ trait ApplicationTrait
      */
     public function getSystemMessages(): SystemMessages
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('systemMessages');
     }
 
@@ -1150,7 +1190,6 @@ trait ApplicationTrait
      */
     public function getEntries(): Entries
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('entries');
     }
 
@@ -1161,7 +1200,6 @@ trait ApplicationTrait
      */
     public function getFields(): Fields
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('fields');
     }
 
@@ -1173,7 +1211,6 @@ trait ApplicationTrait
      */
     public function getFs(): Fs
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('fs');
     }
 
@@ -1185,7 +1222,6 @@ trait ApplicationTrait
      */
     public function getFormattingLocale(): Locale
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('formattingLocale');
     }
 
@@ -1196,7 +1232,6 @@ trait ApplicationTrait
      */
     public function getGc(): Gc
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('gc');
     }
 
@@ -1207,7 +1242,6 @@ trait ApplicationTrait
      */
     public function getGlobals(): Globals
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('globals');
     }
 
@@ -1219,7 +1253,6 @@ trait ApplicationTrait
      */
     public function getGql(): Gql
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('gql');
     }
 
@@ -1230,7 +1263,6 @@ trait ApplicationTrait
      */
     public function getImages(): Images
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('images');
     }
 
@@ -1241,7 +1273,6 @@ trait ApplicationTrait
      */
     public function getLocale(): Locale
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('locale');
     }
 
@@ -1252,19 +1283,7 @@ trait ApplicationTrait
      */
     public function getMailer(): Mailer
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('mailer');
-    }
-
-    /**
-     * Returns the matrix service.
-     *
-     * @return Matrix The matrix service
-     */
-    public function getMatrix(): Matrix
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('matrix');
     }
 
     /**
@@ -1274,7 +1293,6 @@ trait ApplicationTrait
      */
     public function getMigrator(): MigrationManager
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
     }
 
@@ -1285,7 +1303,6 @@ trait ApplicationTrait
      */
     public function getMutex(): Mutex
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('mutex');
     }
 
@@ -1296,7 +1313,6 @@ trait ApplicationTrait
      */
     public function getPath(): Path
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('path');
     }
 
@@ -1307,7 +1323,6 @@ trait ApplicationTrait
      */
     public function getPlugins(): Plugins
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('plugins');
     }
 
@@ -1318,7 +1333,6 @@ trait ApplicationTrait
      */
     public function getPluginStore(): PluginStore
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('pluginStore');
     }
 
@@ -1329,7 +1343,6 @@ trait ApplicationTrait
      */
     public function getProjectConfig(): ProjectConfig
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('projectConfig');
     }
 
@@ -1340,7 +1353,6 @@ trait ApplicationTrait
      */
     public function getQueue(): Queue
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('queue');
     }
 
@@ -1348,10 +1360,10 @@ trait ApplicationTrait
      * Returns the relations service.
      *
      * @return Relations The relations service
+     * @deprecated in 5.3.0
      */
     public function getRelations(): Relations
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('relations');
     }
 
@@ -1363,7 +1375,6 @@ trait ApplicationTrait
      */
     public function getRevisions(): Revisions
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('revisions');
     }
 
@@ -1374,7 +1385,6 @@ trait ApplicationTrait
      */
     public function getRoutes(): Routes
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('routes');
     }
 
@@ -1385,19 +1395,7 @@ trait ApplicationTrait
      */
     public function getSearch(): Search
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('search');
-    }
-
-    /**
-     * Returns the sections service.
-     *
-     * @return Sections The sections service
-     */
-    public function getSections(): Sections
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('sections');
     }
 
     /**
@@ -1407,8 +1405,18 @@ trait ApplicationTrait
      */
     public function getSites(): Sites
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('sites');
+    }
+
+    /**
+     * Returns the SSO service.
+     *
+     * @return Sso The SSO service
+     * @since 5.3.0
+     */
+    public function getSso(): Sso
+    {
+        return $this->get('sso');
     }
 
     /**
@@ -1418,7 +1426,6 @@ trait ApplicationTrait
      */
     public function getStructures(): Structures
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('structures');
     }
 
@@ -1429,7 +1436,6 @@ trait ApplicationTrait
      */
     public function getTags(): Tags
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('tags');
     }
 
@@ -1440,7 +1446,6 @@ trait ApplicationTrait
      */
     public function getTemplateCaches(): TemplateCaches
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('templateCaches');
     }
 
@@ -1451,7 +1456,6 @@ trait ApplicationTrait
      */
     public function getTokens(): Tokens
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('tokens');
     }
 
@@ -1462,7 +1466,6 @@ trait ApplicationTrait
      */
     public function getUpdates(): Updates
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('updates');
     }
 
@@ -1473,7 +1476,6 @@ trait ApplicationTrait
      */
     public function getUserGroups(): UserGroups
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('userGroups');
     }
 
@@ -1484,7 +1486,6 @@ trait ApplicationTrait
      */
     public function getUserPermissions(): UserPermissions
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('userPermissions');
     }
 
@@ -1495,7 +1496,6 @@ trait ApplicationTrait
      */
     public function getUsers(): Users
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('users');
     }
 
@@ -1506,7 +1506,6 @@ trait ApplicationTrait
      */
     public function getUtilities(): Utilities
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('utilities');
     }
 
@@ -1517,7 +1516,6 @@ trait ApplicationTrait
      */
     public function getVolumes(): Volumes
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('volumes');
     }
 
@@ -1529,7 +1527,6 @@ trait ApplicationTrait
      */
     public function getWebpack(): Webpack
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('webpack');
     }
 
@@ -1568,6 +1565,10 @@ trait ApplicationTrait
         $request = $this->getRequest();
         $this->getLog();
 
+        // Set the Craft edition
+        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
+        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
+
         // Set the timezone
         $this->_setTimeZone();
 
@@ -1589,13 +1590,14 @@ trait ApplicationTrait
         // Use our own Markdown parser classes
         $flavors = [
             'original' => Markdown::class,
+            'pre-encoded' => PreEncodedMarkdown::class,
             'gfm' => GithubMarkdown::class,
             'gfm-comment' => GithubMarkdown::class,
             'extra' => MarkdownExtra::class,
         ];
 
         foreach ($flavors as $flavor => $class) {
-            if (isset(MarkdownHelper::$flavors[$flavor]) && !is_object(MarkdownHelper::$flavors[$flavor])) {
+            if (!isset(MarkdownHelper::$flavors[$flavor]) || !is_object(MarkdownHelper::$flavors[$flavor])) {
                 MarkdownHelper::$flavors[$flavor]['class'] = $class;
             }
         }
@@ -1707,7 +1709,12 @@ trait ApplicationTrait
                     $event->fields[] = EntryTitleField::class;
                     break;
                 case User::class:
-                    $event->fields[] = AddressesField::class;
+                    if (!$this->getConfig()->getGeneral()->useEmailAsUsername) {
+                        $event->fields[] = UsernameField::class;
+                    }
+                    $event->fields[] = UserFullNameField::class;
+                    $event->fields[] = PhotoField::class;
+                    $event->fields[] = EmailField::class;
                     break;
             }
         });
@@ -1723,18 +1730,10 @@ trait ApplicationTrait
             ->onAdd(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
             ->onUpdate(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
             ->onRemove(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
-            // Field groups
-            ->onAdd(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))
-            ->onUpdate(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))
-            ->onRemove(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleDeletedGroup'))
             // Fields
             ->onAdd(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleChangedField'))
             ->onUpdate(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleChangedField'))
             ->onRemove(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleDeletedField'))
-            // Block types
-            ->onAdd(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
-            ->onUpdate(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
-            ->onRemove(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleDeletedBlockType'))
             // Volumes
             ->onAdd(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
             ->onUpdate(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
@@ -1776,13 +1775,13 @@ trait ApplicationTrait
             ->onUpdate(ProjectConfig::PATH_GLOBAL_SETS . '.{uid}', $this->_proxy('globals', 'handleChangedGlobalSet'))
             ->onRemove(ProjectConfig::PATH_GLOBAL_SETS . '.{uid}', $this->_proxy('globals', 'handleDeletedGlobalSet'))
             // Sections
-            ->onAdd(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('sections', 'handleChangedSection'))
-            ->onUpdate(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('sections', 'handleChangedSection'))
-            ->onRemove(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('sections', 'handleDeletedSection'))
+            ->onAdd(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('entries', 'handleChangedSection'))
+            ->onUpdate(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('entries', 'handleChangedSection'))
+            ->onRemove(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('entries', 'handleDeletedSection'))
             // Entry types
-            ->onAdd(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('sections', 'handleChangedEntryType'))
-            ->onUpdate(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('sections', 'handleChangedEntryType'))
-            ->onRemove(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('sections', 'handleDeletedEntryType'))
+            ->onAdd(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('entries', 'handleChangedEntryType'))
+            ->onUpdate(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('entries', 'handleChangedEntryType'))
+            ->onRemove(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('entries', 'handleDeletedEntryType'))
             // GraphQL schemas
             ->onAdd(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.{uid}', $this->_proxy('gql', 'handleChangedSchema'))
             ->onUpdate(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.{uid}', $this->_proxy('gql', 'handleChangedSchema'))
@@ -1796,7 +1795,7 @@ trait ApplicationTrait
             if (!Craft::$app->getProjectConfig()->getIsApplyingExternalChanges()) {
                 $this->getRoutes()->handleDeletedSite($event);
                 $this->getCategories()->pruneDeletedSite($event);
-                $this->getSections()->pruneDeletedSite($event);
+                $this->getEntries()->pruneDeletedSite($event);
             }
         });
     }

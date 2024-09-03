@@ -5,13 +5,12 @@
  */
 Craft.AuthManager = Garnish.Base.extend(
   {
-    remainingSessionTime: null,
     checkRemainingSessionTimer: null,
-    showLoginModalTimer: null,
     decrementLogoutWarningInterval: null,
 
     showingLogoutWarningModal: false,
     showingLoginModal: false,
+    renewingSession: false,
 
     logoutWarningModal: null,
     loginModal: null,
@@ -19,16 +18,21 @@ Craft.AuthManager = Garnish.Base.extend(
     $logoutWarningPara: null,
     $passwordInput: null,
     $loginBtn: null,
-    $loginErrorPara: null,
+    loginBtn: null,
 
-    submitLoginIfLoggedOut: false,
+    /**
+     * @deprecated
+     */
+    get remainingSessionTime() {
+      return Craft.remainingSessionTime;
+    },
 
     /**
      * Init
      */
     init: function () {
       if (Craft.username) {
-        this.updateRemainingSessionTime(Craft.remainingSessionTime);
+        this.updateRemainingSessionTime(Craft.remainingSessionTime, false);
       }
     },
 
@@ -40,100 +44,93 @@ Craft.AuthManager = Garnish.Base.extend(
         clearTimeout(this.checkRemainingSessionTimer);
       }
 
-      this.checkRemainingSessionTimer = setTimeout(
-        this.checkRemainingSessionTime.bind(this),
-        seconds * 1000
-      );
+      this.checkRemainingSessionTimer = setTimeout(() => {
+        this.checkRemainingSessionTime();
+      }, seconds * 1000);
     },
 
     /**
      * Pings the server to see how many seconds are left on the current user session, and handles the response.
      */
-    checkRemainingSessionTime: function (extendSession) {
-      $.ajax({
-        url: Craft.getActionUrl(
-          'users/session-info',
-          extendSession ? null : 'dontExtendSession=1'
-        ),
-        type: 'GET',
-        dataType: 'json',
-        complete: (jqXHR, textStatus) => {
-          if (textStatus === 'success') {
-            if (
-              typeof jqXHR.responseJSON.csrfTokenValue !== 'undefined' &&
-              typeof Craft.csrfTokenValue !== 'undefined'
-            ) {
-              Craft.csrfTokenValue = jqXHR.responseJSON.csrfTokenValue;
-            }
-
-            this.updateRemainingSessionTime(jqXHR.responseJSON.timeout);
-            this.submitLoginIfLoggedOut = false;
-          } else {
-            this.updateRemainingSessionTime(-1);
-          }
-        },
-      });
+    async checkRemainingSessionTime(extendSession) {
+      const url = Craft.getActionUrl(
+        'users/session-info',
+        !extendSession ? 'dontExtendSession=1' : null
+      );
+      try {
+        const {data} = await Craft.sendActionRequest('GET', url);
+        if (typeof Craft.csrfTokenValue !== 'undefined') {
+          Craft.csrfTokenValue = data.csrfTokenValue;
+        }
+        this.updateRemainingSessionTime(data.timeout, data.isGuest);
+      } catch (e) {
+        this.updateRemainingSessionTime(-1, false);
+      }
     },
 
     /**
      * Updates our record of the auth timeout, and handles it.
      */
-    updateRemainingSessionTime: function (remainingSessionTime) {
-      this.remainingSessionTime = parseInt(remainingSessionTime);
+    updateRemainingSessionTime: function (remainingSessionTime, isGuest) {
+      if (this.checkRemainingSessionTimer) {
+        clearTimeout(this.checkRemainingSessionTimer);
+      }
+
+      // Keep track of whether we just logged in
+      const loggedIn = !Craft.remainingSessionTime && remainingSessionTime;
+
+      Craft.remainingSessionTime = parseInt(remainingSessionTime);
 
       // Are we within the warning window?
       if (
-        this.remainingSessionTime !== -1 &&
-        this.remainingSessionTime < Craft.AuthManager.minSafeSessionTime
+        Craft.remainingSessionTime !== -1 &&
+        Craft.remainingSessionTime < Craft.AuthManager.minSafeSessionTime
       ) {
         // Is there still time to renew the session?
-        if (this.remainingSessionTime) {
+        if (!isGuest || Craft.remainingSessionTime) {
           if (!this.showingLogoutWarningModal) {
             // Show the warning modal
             this.showLogoutWarningModal();
           }
 
-          // Will the session expire before the next checkup?
-          if (this.remainingSessionTime < Craft.AuthManager.checkInterval) {
-            if (this.showLoginModalTimer) {
-              clearTimeout(this.showLoginModalTimer);
-            }
-
-            this.showLoginModalTimer = setTimeout(
-              this.showLoginModal.bind(this),
-              this.remainingSessionTime * 1000
-            );
-          }
+          const seconds = Math.min(
+            Craft.AuthManager.checkInterval,
+            Craft.remainingSessionTime
+          );
+          this.setCheckRemainingSessionTimer(Math.max(1, seconds));
         } else {
-          if (this.showingLoginModal) {
-            if (this.submitLoginIfLoggedOut) {
-              this.submitLogin();
-            }
-          } else {
-            // Show the login modal
+          // Show the login modal
+          if (!this.showingLoginModal && !this.renewingSession) {
+            this.hideLogoutWarningModal();
             this.showLoginModal();
           }
+          this.setCheckRemainingSessionTimer(Craft.AuthManager.checkInterval);
         }
-
-        this.setCheckRemainingSessionTimer(Craft.AuthManager.checkInterval);
       } else {
         // Everything's good!
         this.hideLogoutWarningModal();
         this.hideLoginModal();
 
-        // Will be be within the minSafeSessionTime before the next update?
+        // Will we be within the minSafeSessionTime before the next update?
         if (
-          this.remainingSessionTime !== -1 &&
-          this.remainingSessionTime <
+          Craft.remainingSessionTime !== -1 &&
+          Craft.remainingSessionTime <
             Craft.AuthManager.minSafeSessionTime +
               Craft.AuthManager.checkInterval
         ) {
           this.setCheckRemainingSessionTimer(
-            this.remainingSessionTime - Craft.AuthManager.minSafeSessionTime + 1
+            Craft.remainingSessionTime -
+              Craft.AuthManager.minSafeSessionTime +
+              1
           );
         } else {
           this.setCheckRemainingSessionTimer(Craft.AuthManager.checkInterval);
         }
+      }
+
+      if (loggedIn) {
+        window.am = this;
+        this.trigger('login');
       }
     },
 
@@ -181,14 +178,17 @@ Craft.AuthManager = Garnish.Base.extend(
             if (!Garnish.isMobileBrowser(true)) {
               // Auto-focus the renew button
               setTimeout(function () {
-                $renewSessionBtn.trigger('focus');
+                $renewSessionBtn.focus();
               }, 100);
             }
           },
         });
 
         this.addListener($logoutBtn, 'activate', 'logout');
-        this.addListener($form, 'submit', 'renewSession');
+        this.addListener($form, 'submit', (ev) => {
+          ev.preventDefault();
+          this.renewSession();
+        });
       }
 
       if (quickShow) {
@@ -211,7 +211,7 @@ Craft.AuthManager = Garnish.Base.extend(
     updateLogoutWarningMessage: function () {
       this.$logoutWarningPara.text(
         Craft.t('app', 'Your session will expire in {time}.', {
-          time: Craft.secondsToHumanTimeDuration(this.remainingSessionTime),
+          time: Craft.secondsToHumanTimeDuration(Craft.remainingSessionTime),
         })
       );
 
@@ -219,12 +219,12 @@ Craft.AuthManager = Garnish.Base.extend(
     },
 
     decrementLogoutWarning: function () {
-      if (this.remainingSessionTime > 0) {
-        this.remainingSessionTime--;
+      if (Craft.remainingSessionTime > 0) {
+        Craft.remainingSessionTime--;
         this.updateLogoutWarningMessage();
       }
 
-      if (this.remainingSessionTime === 0) {
+      if (Craft.remainingSessionTime === 0) {
         clearInterval(this.decrementLogoutWarningInterval);
       }
     },
@@ -251,102 +251,76 @@ Craft.AuthManager = Garnish.Base.extend(
     /**
      * Shows the login modal.
      */
-    showLoginModal: function () {
-      var quickShow;
-
-      if (this.showingLogoutWarningModal) {
-        this.hideLogoutWarningModal(true);
-        quickShow = true;
-      } else {
-        quickShow = false;
+    async showLoginModal() {
+      if (this.showingLoginModal) {
+        return;
       }
 
       this.showingLoginModal = true;
 
-      if (!this.loginModal) {
-        var $form = $('<form id="loginmodal" class="modal alert fitted"/>'),
-          $body = $(
-            '<div class="body"><h2>' +
-              Craft.t('app', 'Your session has ended.') +
-              '</h2><p>' +
-              Craft.t('app', 'Enter your password to log back in.') +
-              '</p></div>'
-          ).appendTo($form),
-          $inputContainer = $('<div class="inputcontainer">').appendTo($body),
-          $inputsFlexContainer = $('<div class="flex"/>').appendTo(
-            $inputContainer
-          ),
-          $passwordContainer = $('<div class="flex-grow"/>').appendTo(
-            $inputsFlexContainer
-          ),
-          $buttonContainer = $('<div/>').appendTo($inputsFlexContainer),
-          $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo(
-            $passwordContainer
-          );
-
-        this.$passwordInput = $(
-          '<input type="password" class="text password fullwidth" autocomplete="current-password" placeholder="' +
-            Craft.t('app', 'Password') +
-            '"/>'
-        ).appendTo($passwordWrapper);
-        this.$loginBtn = Craft.ui
-          .createSubmitButton({
-            class: 'disabled',
-            label: Craft.t('app', 'Sign in'),
-            spinner: true,
-          })
-          .attr('aria-disabled', 'true')
-          .appendTo($buttonContainer);
-        this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
-
-        this.loginModal = new Garnish.Modal($form, {
-          autoShow: false,
-          closeOtherModals: false,
-          hideOnEsc: false,
-          hideOnShadeClick: false,
-          shadeClass: 'modal-shade dark loginmodalshade',
-          onFadeIn: () => {
-            if (!Garnish.isMobileBrowser(true)) {
-              // Auto-focus the password input
-              setTimeout(() => {
-                this.$passwordInput.trigger('focus');
-              }, 100);
-            }
-          },
-          onFadeOut: () => {
-            this.$passwordInput.val('');
-          },
-        });
-
-        new Craft.PasswordInput(this.$passwordInput, {
-          onToggleInput: ($newPasswordInput) => {
-            this.$passwordInput = $newPasswordInput;
-          },
-        });
-
-        this.addListener(this.$passwordInput, 'input', 'validatePassword');
-        this.addListener($form, 'submit', 'login');
+      if (this.loginModal) {
+        this.loginModal.destroy();
       }
 
-      if (quickShow) {
-        this.loginModal.quickShow();
-      } else {
-        this.loginModal.show();
+      const {data} = await Craft.sendActionRequest(
+        'POST',
+        'users/login-modal',
+        {
+          data: {
+            email: Craft.userEmail,
+          },
+        }
+      );
+      const $container = $(data.html);
+
+      // Remove lang attr if it matches the one on html
+      const htmlLang = document.documentElement.lang;
+      const modalLang = $container.attr('lang');
+
+      if (modalLang === htmlLang && modalLang) {
+        $container.removeAttr('lang');
       }
+
+      this.loginModal = new Garnish.Modal($container, {
+        closeOtherModals: false,
+        hideOnEsc: false,
+        hideOnShadeClick: false,
+        shadeClass: 'modal-shade dark blurred login-modal-shade',
+        onFadeIn: async () => {
+          Craft.initUiElements($container);
+          new Craft.LoginForm($container.find('.login-container'), {
+            showPasskeyBtn: Craft.userHasPasskeys,
+            onLogin: () => {
+              this.loginModal.hide();
+              this.checkRemainingSessionTime();
+            },
+          });
+          await Craft.appendHeadHtml(data.headHtml);
+          await Craft.appendBodyHtml(data.bodyHtml);
+        },
+        onFadeOut: () => {
+          this.loginModal?.destroy();
+          this.loginModal = null;
+        },
+        onHide: () => {
+          this.showingLoginModal = false;
+        },
+      });
     },
 
     /**
      * Hides the login modal.
      */
     hideLoginModal: function (quick) {
-      this.showingLoginModal = false;
-
       if (this.loginModal) {
         if (quick) {
           this.loginModal.quickHide();
         } else {
           this.loginModal.hide();
         }
+        // reset the modal
+        this.loginModal.destroy();
+        this.loginModal = null;
       }
     },
 
@@ -360,81 +334,18 @@ Craft.AuthManager = Garnish.Base.extend(
       });
     },
 
-    renewSession: function (ev) {
-      if (ev) {
-        ev.preventDefault();
-      }
-
+    renewSession: async function () {
       this.hideLogoutWarningModal();
-      this.checkRemainingSessionTime(true);
+      this.renewingSession = true;
+      this.checkRemainingSessionTime(true, () => {
+        this.renewingSession = false;
+      });
     },
 
-    validatePassword: function () {
-      if (this.$passwordInput.val().length >= 6) {
-        this.$loginBtn.removeClass('disabled');
-        this.$loginBtn.removeAttr('aria-disabled');
-        return true;
-      } else {
-        this.$loginBtn.addClass('disabled');
-        this.$loginBtn.attr('aria-disabled', 'true');
-        return false;
-      }
-    },
-
-    login: function (ev) {
-      if (ev) {
-        ev.preventDefault();
-      }
-
-      if (this.validatePassword()) {
-        this.$loginBtn.addClass('loading');
-        this.clearLoginError();
-
-        if (typeof Craft.csrfTokenValue !== 'undefined') {
-          // Check the auth status one last time before sending this off,
-          // in case the user has already logged back in from another window/tab
-          this.submitLoginIfLoggedOut = true;
-          this.checkRemainingSessionTime();
-        } else {
-          this.submitLogin();
-        }
-      }
-    },
-
-    submitLogin: function () {
-      var data = {
-        loginName: Craft.username,
-        password: this.$passwordInput.val(),
-      };
-
-      Craft.sendActionRequest('POST', 'users/login', {data})
-        .then((response) => {
-          this.$loginBtn.removeClass('loading');
-          this.hideLoginModal();
-          this.checkRemainingSessionTime();
-        })
-        .catch(({response}) => {
-          this.$loginBtn.removeClass('loading');
-          this.showLoginError(response.data.message || null);
-          Garnish.shake(this.loginModal.$container);
-
-          if (!Garnish.isMobileBrowser(true)) {
-            this.$passwordInput.trigger('focus');
-          }
-        });
-    },
-
-    showLoginError: function (error) {
-      if (error === null || typeof error === 'undefined') {
-        error = Craft.t('app', 'A server error occurred.');
-      }
-
-      this.$loginErrorPara.text(error);
-      this.loginModal.updateSizeAndPosition();
-    },
-
-    clearLoginError: function () {
-      this.showLoginError('');
+    closeModal: function () {
+      this.loginBtn.successEvent();
+      this.hideLoginModal();
+      this.checkRemainingSessionTime();
     },
   },
   {

@@ -51,9 +51,9 @@ class EditImage extends ElementAction
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: false,
-        validateSelection: \$selectedItems => Garnish.hasAttr(\$selectedItems.find('.element'), 'data-editable-image'),
-        activate: \$selectedItems => {
-            const \$element = \$selectedItems.find('.element:first');
+        validateSelection: (selectedItems, elementIndex) => Garnish.hasAttr(selectedItems.find('.element'), 'data-editable-image'),
+        activate: (selectedItems, elementIndex) => {
+            const \$element = selectedItems.find('.element:first');
             new Craft.AssetImageEditor(\$element.data('id'));
         },
     });

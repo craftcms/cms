@@ -7,18 +7,15 @@
 
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Component;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use craft\models\FieldLayout;
 use GuzzleHttp\Client;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
-use yii\db\Expression;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 use function GuzzleHttp\default_user_agent;
@@ -33,14 +30,28 @@ use function GuzzleHttp\default_user_agent;
  */
 class Craft extends Yii
 {
-    // Edition constants
+    /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Solo]] should be used instead. */
     public const Solo = 0;
-    public const Pro = 1;
+    /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Pro]] should be used instead. */
+    public const Pro = 2;
 
     /**
      * @var array The default cookie configuration.
      */
     private static array $_baseCookieConfig;
+
+    /**
+     * @inheritdoc
+     */
+    public static function getAlias($alias, $throwException = true)
+    {
+        // @app/icons/file.svg => @appicons/file.svg
+        if (preg_match('/^@app\/icons\/([\w\-]+\.svg)$/', $alias, $match)) {
+            $alias = "@appicons/$match[1]";
+        }
+
+        return parent::getAlias($alias, $throwException);
+    }
 
     /**
      * @inheritdoc
@@ -237,27 +248,21 @@ class Craft extends Yii
             // First generate a basic version without real field value types, and load it into memory
             $fieldHandles = [];
             foreach ($fields as $field) {
-                $fieldHandles[$field['handle']]['mixed'] = true;
+                $fieldHandles[$field->handle]['mixed'] = true;
             }
             self::_generateCustomFieldBehavior($fieldHandles, $filePath, false, true);
 
             // Now generate it again, this time with the correct field value types
             $fieldHandles = [];
             foreach ($fields as $field) {
-                /** @var FieldInterface|string $fieldClass */
-                $fieldClass = $field['type'];
-                if (Component::validateComponentClass($fieldClass, FieldInterface::class)) {
-                    $types = explode('|', $fieldClass::valueType());
-                } else {
-                    $types = ['mixed'];
-                }
+                $types = explode('|', $field::phpType());
                 foreach ($types as $type) {
                     $type = trim($type, ' \\');
                     // Add a leading `\` if it’s not a variable, self-reference, or primitive type
                     if (!preg_match('/^(\$.*|(self|static|bool|boolean|int|integer|float|double|string|array|object|callable|callback|iterable|resource|null|mixed|number|void)(\[\])?)$/i', $type)) {
                         $type = '\\' . $type;
                     }
-                    $fieldHandles[$field['handle']][$type] = true;
+                    $fieldHandles[$field->handle][$type] = true;
                 }
             }
             self::_generateCustomFieldBehavior($fieldHandles, $filePath, true, false);
@@ -288,7 +293,7 @@ class Craft extends Yii
 
         foreach ($fieldHandles as $handle => $types) {
             $methods[] = <<<EOD
- * @method static $handle(mixed \$value) Sets the [[$handle]] property
+ * @method \$this $handle(mixed \$value) Sets the [[$handle]] property
 EOD;
 
             $handles[] = <<<EOD
@@ -353,22 +358,23 @@ EOD;
     }
 
     /**
-     * @return array
+     * @return FieldInterface[]
      */
     private static function _fields(): array
     {
-        // Properties are case-sensitive, so get all the binary-unique field handles
-        if (static::$app->getDb()->getIsMysql()) {
-            $handleColumn = new Expression('binary [[handle]] as [[handle]]');
-        } else {
-            $handleColumn = 'handle';
-        }
+        // Return all fields merged with all layouts' field instances, to be sure we're not missing anything
+        $fields = array_merge(
+            static::$app->getFields()->getAllFields(false),
+            ...array_map(
+                fn(FieldLayout $fieldLayout) => $fieldLayout->getCustomFields(),
+                Craft::$app->getFields()->getAllLayouts(),
+            ),
+        );
 
-        // Create an array of field handles and their types
-        return (new Query())
-            ->from([Table::FIELDS])
-            ->select([$handleColumn, 'type'])
-            ->all();
+        // Sort by handle
+        usort($fields, fn(FieldInterface $a, FieldInterface $b) => $a->handle <=> $b->handle);
+
+        return $fields;
     }
 
     /**

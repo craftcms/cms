@@ -4,6 +4,8 @@
         {% for action in actions %}
             <li>
                 {% set linkAttributes = {
+                    tabindex: '0',
+                    role: 'button',
                     class: [
                         'formsubmit',
                         (destructive ?? false) ? 'error',
@@ -13,6 +15,7 @@
                         redirect: action.redirect ?? false,
                         confirm: action.confirm ?? false,
                         params: action.params ?? false,
+                        'retain-scroll': action.retainScroll ?? false,
                         'event-data': action.eventData ?? false,
                     },
                 } %}
@@ -30,7 +33,7 @@
 {% set safeActions = formActions|filter(a => not (a.destructive ?? false)) %}
 {% set destructiveActions = formActions|filter(a => a.destructive ?? false) %}
 
-<div class="menu" data-align="right">
+<div id="form-action-menu" class="menu menu--disclosure" data-align="right">
     {% if safeActions %}
         {{ _self.actionList(safeActions, false) }}
     {% endif %}

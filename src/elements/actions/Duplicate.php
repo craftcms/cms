@@ -10,6 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
+use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use Throwable;
 
@@ -50,17 +51,24 @@ class Duplicate extends ElementAction
         // Only enable for duplicatable elements, per canDuplicate()
         Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-duplicatable')) {
-                    return false;
-                }
-            }
-            return true;
-        },
-    });
+  new Craft.ElementActionTrigger({
+    type: $type,
+    validateSelection: (selectedItems, elementIndex) => {
+      for (let i = 0; i < selectedItems.length; i++) {
+        if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-duplicatable')) {
+          return false;
+        }
+      }
+
+      return elementIndex.settings.canDuplicateElements(selectedItems);
+    },
+    beforeActivate: async (selectedItems, elementIndex) => {
+      await elementIndex.settings.onBeforeDuplicateElements(selectedItems);
+    },
+    afterActivate: async (selectedItems, elementIndex) => {
+      await elementIndex.settings.onDuplicateElements(selectedItems);
+    },
+  });
 })();
 JS, [static::class]);
 
@@ -118,8 +126,16 @@ JS, [static::class]);
                 continue;
             }
 
+            $attributes = [];
+
+            // If the element was loaded for a non-primary owner, set its primary owner to it
+            if ($element instanceof NestedElementInterface) {
+                $attributes['primaryOwner'] = $element->getOwner();
+                $attributes['sortOrder'] = null; // clear our sort order too
+            }
+
             try {
-                $duplicate = $elementsService->duplicateElement($element);
+                $duplicate = $elementsService->duplicateElement($element, $attributes);
             } catch (Throwable) {
                 // Validation error
                 $failCount++;

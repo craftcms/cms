@@ -125,7 +125,8 @@ body,
 
       .variable-editor-title {
         background: var(--gray-050);
-        box-shadow: 0 -1px 0 var(--hairline-color),
+        box-shadow:
+          0 -1px 0 var(--hairline-color),
           0 1px 0 var(--hairline-color);
         z-index: 4;
         color: var(--light-text-color);
@@ -171,7 +172,7 @@ body,
       @include menu-styles;
 
       li {
-        @include menu-option-styles;
+        @include menu-item-styles;
         text-align: left;
         padding-left: 24px;
         max-width: unset;

@@ -24,27 +24,37 @@ use DateTime;
 class TypecastHelperTest extends TestCase
 {
     /**
+     * @dataProvider scalarPropertiesDataProvider
      *
+     * @param string $class
+     * @param string $property
+     * @param mixed $expected
+     * @param mixed $value
      */
-    public function testScalarProperties(): void
+    public function testScalarProperties(string $class, string $property, mixed $expected, mixed $value): void
     {
         $config = [
-            'aliases' => 'foo,bar',
-            'allowAdminChanges' => '1',
-            'allowUpdates' => '0',
-            'baseCpUrl' => '',
-            'blowfishHashCost' => 123,
+            $property => $value,
         ];
 
-        Typecast::properties(GeneralConfig::class, $config);
+        Typecast::properties($class, $config);
 
         self::assertSame([
-            'aliases' => ['foo', 'bar'],
-            'allowAdminChanges' => true,
-            'allowUpdates' => false,
-            'baseCpUrl' => null,
-            'blowfishHashCost' => 123,
+            $property => $expected,
         ], $config);
+    }
+
+    public static function scalarPropertiesDataProvider(): array
+    {
+        return [
+            [GeneralConfig::class, 'aliases', ['foo', 'bar'], 'foo,bar'],
+            [GeneralConfig::class, 'allowAdminChanges', true, '1'],
+            [GeneralConfig::class, 'allowUpdates', false, '0'],
+            [GeneralConfig::class, 'baseCpUrl', null, ''],
+            [GeneralConfig::class, 'blowfishHashCost', 123, 123],
+            [GeneralConfig::class, 'maxUploadFileSize', 123, '123'],
+            [GeneralConfig::class, 'maxUploadFileSize', '123abc', '123abc'],
+        ];
     }
 
     /**
@@ -77,7 +87,6 @@ class TypecastHelperTest extends TestCase
 
         $config = [
             'suit' => 'H',
-            /** @phpstan-ignore-next-line */
             'anotherSuit' => Suit::Hearts,
             'nullableSuit' => '',
         ];
@@ -85,9 +94,7 @@ class TypecastHelperTest extends TestCase
         Typecast::properties(EnumModel::class, $config);
 
         self::assertSame([
-            /** @phpstan-ignore-next-line */
             'suit' => Suit::Hearts,
-            /** @phpstan-ignore-next-line */
             'anotherSuit' => Suit::Hearts,
             'nullableSuit' => null,
         ], $config);

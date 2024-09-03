@@ -63,7 +63,7 @@ class AssetElementTest extends TestCase
         Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
         $url = $asset->getUrl(['transform' => 'mockedTransform', 'width' => 200]);
 
-        $this->assertSame('w=200&h=200', $url);
+        self::assertSame('w=200&h=200', $url);
 
         Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = $previousValue;
     }

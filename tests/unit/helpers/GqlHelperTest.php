@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Craft;
 use craft\errors\GqlException;
+use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\test\TestCase;
@@ -85,7 +86,6 @@ class GqlHelperTest extends TestCase
         $permissionSet = [
             'usergroups.allUsers:read',
             'globalsets.someSet:read',
-            'entrytypes.someEntry:read',
             'sections.someSection:read',
         ];
 
@@ -172,7 +172,7 @@ class GqlHelperTest extends TestCase
     }
 
 
-    public function actionExtractionDataProvider(): array
+    public static function actionExtractionDataProvider(): array
     {
         return [
             [
@@ -217,7 +217,7 @@ class GqlHelperTest extends TestCase
         ];
     }
 
-    public function schemaPermissionDataProvider(): array
+    public static function schemaPermissionDataProvider(): array
     {
         return [
             [
@@ -225,7 +225,6 @@ class GqlHelperTest extends TestCase
                     'usergroups.allUsers:read',
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
-                    'entrytypes.someEntry:read',
                     'sections.someSection:read',
                 ],
                 'volumes.someVolume',
@@ -238,7 +237,6 @@ class GqlHelperTest extends TestCase
                     'volumes.someVolume:read',
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
-                    'entrytypes.someEntry:write',
                     'sections.someSection:write',
                 ],
                 'volumes.someVolume',
@@ -255,7 +253,7 @@ class GqlHelperTest extends TestCase
         ];
     }
 
-    public function schemaPermissionDataProviderForExtraction(): array
+    public static function schemaPermissionDataProviderForExtraction(): array
     {
         return [
             [
@@ -263,14 +261,12 @@ class GqlHelperTest extends TestCase
                     'usergroups.allUsers:read',
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
-                    'entrytypes.someEntry:read',
                     'sections.someSection:read',
                 ],
                 [
                     'usergroups' => ['allUsers'],
                     'volumes' => ['someVolume'],
                     'globalsets' => ['someSet'],
-                    'entrytypes' => ['someEntry'],
                     'sections' => ['someSection'],
                 ],
             ],
@@ -296,22 +292,9 @@ class GqlHelperTest extends TestCase
                     'usergroups.allUsers:write',
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
-                    'entrytypes.someEntry:write',
                     'sections.someSection:write',
                 ],
                 [],
-            ],
-            [
-                [
-                    'usergroups.allUsers:write',
-                    'volumes.someVolume:write',
-                    'globalsets.someSet:write',
-                    'entrytypes.someEntry:read',
-                    'sections.someSection:write',
-                ],
-                [
-                    'entrytypes' => ['someEntry'],
-                ],
             ],
             [
                 [],
@@ -330,5 +313,107 @@ class GqlHelperTest extends TestCase
         $gqlService = Craft::$app->getGql();
         $schema = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'scope' => $scopeSet]);
         $gqlService->setActiveSchema($schema);
+    }
+
+    /**
+     * @dataProvider isIntrospectionQueryDataProvider
+     *
+     * @param bool $expected
+     * @param string $query
+     */
+    public function testIsIntrospectionQuery(bool $expected, string $query): void
+    {
+        self::assertEquals($expected, Gql::isIntrospectionQuery($query));
+    }
+
+    public static function isIntrospectionQueryDataProvider(): array
+    {
+        return [
+            [
+                true,
+                <<<GRAPHQL
+{
+  __schema {
+    directives {
+      name
+      description
+    }
+    subscriptionType {
+      name
+      description
+    }
+    types {
+      name
+      description
+    }
+    queryType {
+      name
+      description
+    }
+    mutationType {
+      name
+      description
+    }
+    queryType {
+      name
+      description
+    }
+  }
+}
+GRAPHQL,
+            ],
+            [
+                true,
+                <<<GRAPHQL
+query IntrospectionQuery {
+  __schema {
+    queryType {
+      name
+    }
+    mutationType {
+      name
+    }
+    types {
+      ...FullType
+    }
+    directives {
+      name
+      description
+      locations
+      args {
+        ...InputValue
+      }
+    }
+  }
+}
+GRAPHQL,
+            ],
+            [
+                true,
+                <<<GRAPHQL
+query introspectionPlanetType {
+  __type(name: "Planet") {
+    ...FullType
+  }
+}
+GRAPHQL,
+            ],
+            [
+                false,
+                <<<GRAPHQL
+{
+  planets {
+    nodes {
+      id
+      name
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+}
+GRAPHQL,
+            ],
+        ];
     }
 }

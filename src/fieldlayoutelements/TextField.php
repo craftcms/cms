@@ -19,7 +19,14 @@ use craft\base\ElementInterface;
 class TextField extends BaseNativeField
 {
     /**
+     * @var string|null The input type
+     * @since 4.5.12
+     */
+    public ?string $inputType = null;
+
+    /**
      * @var string The input type
+     * @deprecated in 4.5.12. [[$inputType]] should be used instead.
      */
     public string $type = 'text';
 
@@ -123,7 +130,7 @@ class TextField extends BaseNativeField
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
-            'type' => $this->type,
+            'type' => $this->inputType ?? $this->type,
             'autocomplete' => $this->autocomplete,
             'class' => $this->class,
             'id' => $this->id(),
@@ -143,6 +150,36 @@ class TextField extends BaseNativeField
             'step' => $this->step,
             'min' => $this->min,
             'max' => $this->max,
+            'inputAttributes' => $this->inputAttributes($element, $static),
         ]);
+    }
+
+    /**
+     * Returns text input attributes.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return array
+     * @since 5.0.0
+     */
+    protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function baseInputName(): string
+    {
+        return $this->name ?? parent::baseInputName();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function errorKey(): string
+    {
+        return $this->name ?? parent::errorKey();
     }
 }

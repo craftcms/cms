@@ -29,7 +29,7 @@ class PathHelperTest extends TestCase
         self::assertSame($expected, Path::ensurePathIsContained($path));
     }
 
-    public function ensurePathIsContainedDataProvider(): array
+    public static function ensurePathIsContainedDataProvider(): array
     {
         return [
             [true, '/'],

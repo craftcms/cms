@@ -62,6 +62,14 @@ class OrganizationField extends TextField
     /**
      * @inheritdoc
      */
+    public function previewable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::t('app', 'Organization');

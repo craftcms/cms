@@ -3,10 +3,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - develop
+      - 5.x
   pull_request:
-    types:
-      - opened
 permissions:
   contents: read
 concurrency:
@@ -17,7 +15,9 @@ jobs:
     name: ci
     uses: craftcms/.github/.github/workflows/ci.yml@v3
     with:
-      craft_version: '4'
+      php_version: '8.2'
+      craft_version: '5'
+      node_version: '20'
       jobs: '["ecs", "prettier", "phpstan", "tests"]'
       notify_slack: true
       slack_subteam: <!subteam^SGFL9NKNZ>

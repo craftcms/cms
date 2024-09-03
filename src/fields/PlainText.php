@@ -10,12 +10,11 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
-use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use yii\db\Schema;
 
 /**
  * PlainText represents a Plain Text field.
@@ -23,7 +22,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class PlainText extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class PlainText extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
 {
     /**
      * @inheritdoc
@@ -36,7 +35,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'string|null';
     }
@@ -80,11 +79,6 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     public ?int $byteLimit = null;
 
     /**
-     * @var string|null The type of database column the field should have in the content table
-     */
-    public ?string $columnType = null;
-
-    /**
      * @inheritdoc
      */
     public function __construct(array $config = [])
@@ -99,12 +93,8 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             unset($config['limitUnit'], $config['fieldLimit']);
         }
 
-        if (($config['columnType'] ?? null) === 'auto') {
-            unset($config['columnType']);
-        }
-
-        // This existed at one point way back in the day.
-        unset($config['maxLengthUnit']);
+        // remove unused settings
+        unset($config['maxLengthUnit'], $config['columnType']);
 
         parent::__construct($config);
     }
@@ -140,26 +130,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     {
         $rules = parent::defineRules();
         $rules[] = [['initialRows', 'charLimit', 'byteLimit'], 'integer', 'min' => 1];
-        $rules[] = [['charLimit', 'byteLimit'], 'validateFieldLimit'];
         return $rules;
-    }
-
-    /**
-     * Validates that the Character Limit isn't set to something higher than the Column Type will hold.
-     *
-     * @param string $attribute
-     */
-    public function validateFieldLimit(string $attribute): void
-    {
-        if ($bytes = $this->$attribute) {
-            if ($attribute === 'charLimit') {
-                $bytes *= 4;
-            }
-            $columnTypeMax = Db::getTextualColumnStorageCapacity($this->getContentColumnType());
-            if ($columnTypeMax && $columnTypeMax < $bytes) {
-                $this->addError($attribute, Craft::t('app', 'Field Limit is too big for your chosen Column Type.'));
-            }
-        }
     }
 
     /**
@@ -176,41 +147,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
-    {
-        if ($this->columnType) {
-            return $this->columnType;
-        }
-
-        if ($this->byteLimit) {
-            $bytes = $this->byteLimit;
-        } elseif ($this->charLimit) {
-            $bytes = $this->charLimit * 4;
-        }
-
-        if (Craft::$app->getDb()->getIsPgsql()) {
-            if (isset($bytes)) {
-                return Schema::TYPE_STRING . "($bytes)";
-            } else {
-                return Schema::TYPE_TEXT;
-            }
-        } else {
-            if (!isset($bytes)) {
-                return Schema::TYPE_TEXT;
-            }
-
-            if ($bytes <= 1020) {
-                return sprintf('%s(%s)', Schema::TYPE_STRING, $bytes);
-            }
-
-            return Db::getTextualColumnTypeByContentLength($bytes);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
@@ -218,7 +155,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
     }
@@ -239,7 +176,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input.twig', [
             'name' => $this->handle,
@@ -267,7 +204,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value !== null && !Craft::$app->getDb()->getSupportsMb4()) {
             $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));

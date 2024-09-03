@@ -2,6 +2,15 @@
 
 {% set fullPageForm = true %}
 
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/tags/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
 {% import '_includes/forms.twig' as forms %}
 
 {% block content %}

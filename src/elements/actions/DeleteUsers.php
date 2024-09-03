@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use yii\base\Exception;
 
 /**
@@ -83,24 +84,24 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: true,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                if ($.inArray(\$selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1) {
+        validateSelection: (selectedItems, elementIndex) => {
+            for (let i = 0; i < selectedItems.length; i++) {
+                if ($.inArray(selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1) {
                     return false;
                 }
             }
             return true;
         },
-        activate: () => {
-            Craft.elementIndex.setIndexBusy();
-            const ids = Craft.elementIndex.getSelectedElementIds();
+        activate: (selectedItems, elementIndex) => {
+            elementIndex.setIndexBusy();
+            const ids = elementIndex.getSelectedElementIds();
             const data = {userId: ids};
             Craft.sendActionRequest('POST', 'users/user-content-summary', {data})
                 .then((response) => {
                     const modal = new Craft.DeleteUserModal(ids, {
                         contentSummary: response.data,
                         onSubmit: () => {
-                            Craft.elementIndex.submitAction($type, Garnish.getPostData(modal.\$container));
+                            elementIndex.submitAction($type, Garnish.getPostData(modal.\$container));
                             modal.hide();
                             return false;
                         },
@@ -108,7 +109,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
                     });                    
                 })
                 .finally(() => {
-                    Craft.elementIndex.setIndexAvailable();
+                    elementIndex.setIndexAvailable();
                 });
         },
     });
@@ -117,7 +118,7 @@ JS,
             [
                 static::class,
                 $this->_getUndeletableUserIds(),
-                Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
+                Craft::$app->getSecurity()->hashData(Craft::$app->edition === CmsEdition::Solo ? 'dashboard' : 'users'),
             ]);
 
         return null;

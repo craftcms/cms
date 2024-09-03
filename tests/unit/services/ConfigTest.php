@@ -29,6 +29,6 @@ class ConfigTest extends TestCase
 
         $config = Craft::$app->getConfig();
         $path = $config->getDotEnvPath();
-        $this->assertEquals(CRAFT_TESTS_PATH . '/.env', $path);
+        self::assertEquals(CRAFT_TESTS_PATH . '/.env', $path);
     }
 }

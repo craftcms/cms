@@ -50,7 +50,7 @@ class ImageTransformsTest extends Unit
         $transform = ImageTransforms::createTransformFromString($string);
 
         foreach ($expected as $property => $value) {
-            $this->assertSame($transform->{$property}, $value);
+            self::assertSame($transform->{$property}, $value);
         }
     }
 
@@ -120,12 +120,12 @@ class ImageTransformsTest extends Unit
         $transform = ImageTransforms::normalizeTransform($input);
 
         if ($expected === null) {
-            $this->assertSame($expected, $transform);
+            self::assertSame($expected, $transform);
         } else {
-            $this->assertInstanceOf(ImageTransform::class, $transform);
+            self::assertInstanceOf(ImageTransform::class, $transform);
 
             foreach ($expected as $property => $value) {
-                $this->assertSame($transform->$property, $value);
+                self::assertSame($transform->$property, $value);
             }
         }
     }
@@ -201,7 +201,7 @@ class ImageTransformsTest extends Unit
     public function testGetTransformString($expected, $input): void
     {
         $transform = new ImageTransform($input);
-        $this->assertSame($expected, ImageTransforms::getTransformString($transform));
+        self::assertSame($expected, ImageTransforms::getTransformString($transform));
     }
 
     public function getTransformStringProvider(): array
@@ -268,10 +268,10 @@ class ImageTransformsTest extends Unit
     {
         $transform = new ImageTransform($config);
         $str = ImageTransforms::getTransformString($transform);
-        $this->assertSame($config, ImageTransforms::parseTransformString($str));
+        self::assertSame($config, ImageTransforms::parseTransformString($str));
     }
 
-    public function parseTransformStringDataProvider(): array
+    public static function parseTransformStringDataProvider(): array
     {
         return [
             [

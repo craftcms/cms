@@ -9,6 +9,8 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\Cp;
+use craft\helpers\Html as HtmlHelper;
 
 /**
  * Class FullNameField.
@@ -56,6 +58,80 @@ class FullNameField extends TextField
             $fields['autofocus']
         );
         return $fields;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        if (
+            $element &&
+            Craft::$app->getConfig()->getGeneral()->showFirstAndLastNameFields &&
+            count(array_intersect($element->safeAttributes(), ['firstName', 'lastName'])) === 2
+        ) {
+            return $this->firstAndLastNameFields($element, $static);
+        }
+
+        return parent::formHtml($element, $static);
+    }
+
+    private function firstAndLastNameFields(?ElementInterface $element, bool $static): string
+    {
+        $statusClass = $this->statusClass($element);
+        $status = $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null;
+        $required = !$static && $this->required;
+
+        return HtmlHelper::beginTag('div', ['class' => ['flex', 'flex-nowrap', 'fullwidth']]) .
+            Cp::textFieldHtml([
+                'id' => 'firstName',
+                'status' => $status,
+                'fieldClass' => 'flex-grow',
+                'label' => Craft::t('app', 'First Name'),
+                'attribute' => 'firstName',
+                'showAttribute' => $this->showAttribute(),
+                'required' => $required,
+                'autocomplete' => false,
+                'name' => 'firstName',
+                'value' => $element->firstName ?? null,
+                'errors' => !$static ? $this->errors($element) : [],
+                'disabled' => $static,
+            ]) .
+            Cp::textFieldHtml([
+                'id' => 'lastName',
+                'status' => $status,
+                'fieldClass' => 'flex-grow',
+                'label' => Craft::t('app', 'Last Name'),
+                'attribute' => 'lastName',
+                'showAttribute' => $this->showAttribute(),
+                'required' => $required,
+                'autocomplete' => false,
+                'name' => 'lastName',
+                'value' => $element->lastName ?? null,
+                'disabled' => $static,
+            ]) .
+            HtmlHelper::endTag('div');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function settingsHtml(): ?string
+    {
+        if (Craft::$app->getConfig()->getGeneral()->showFirstAndLastNameFields) {
+            // can't know for sure if the element will support firstName and lastName, but probably?
+            return null;
+        }
+
+        return parent::settingsHtml();
     }
 
     /**

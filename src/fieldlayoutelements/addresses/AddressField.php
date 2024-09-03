@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\Cp;
+use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -22,6 +23,11 @@ use yii\base\InvalidArgumentException;
  */
 class AddressField extends BaseField
 {
+    /**
+     * @inheritdoc
+     */
+    public bool $includeInCards = true;
+
     /**
      * @inheritdoc
      */
@@ -49,6 +55,25 @@ class AddressField extends BaseField
     /**
      * @inheritdoc
      */
+    public function previewable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewHtml(ElementInterface $element): string
+    {
+        /** @var Address $element */
+        return Html::tag('div', Craft::$app->getAddresses()->formatAddress($element), [
+            'class' => 'no-truncate',
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function showLabel(): bool
     {
         return false;
@@ -68,7 +93,7 @@ class AddressField extends BaseField
     public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException('AddressField can only be used in address field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', __CLASS__));
         }
 
         $view = Craft::$app->getView();
@@ -81,6 +106,7 @@ class AddressField extends BaseField
             'countryCode',
             'addressLine1',
             'addressLine2',
+            'addressLine3',
             'administrativeArea',
             'locality',
             'dependentLocality',
@@ -122,7 +148,7 @@ class AddressField extends BaseField
                     params: Object.assign({}, hotValues, {
                         namespace: $namespace,
                     }),
-                }).then(response => {
+                }).then(async (response) => {
                     const values = Object.assign(
                         Object.fromEntries(fieldNames.map(name => [name, fields[name].val()])),
                         Object.fromEntries(hotFieldNames.map(name => [name, hotValues[name] || null]))
@@ -135,8 +161,8 @@ class AddressField extends BaseField
                     );
                     \$addressFields.eq(0).replaceWith(response.data.fieldsHtml);
                     \$addressFields.remove();
-                    Craft.appendHeadHtml(response.data.headHtml);
-                    Craft.appendBodyHtml(response.data.bodyHtml);
+                    await Craft.appendHeadHtml(response.data.headHtml);
+                    await Craft.appendBodyHtml(response.data.bodyHtml);
                     initFields(values);
                     if (activeElementId) {
                         $('#' + activeElementId).focus();                        

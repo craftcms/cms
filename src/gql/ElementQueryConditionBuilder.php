@@ -305,12 +305,10 @@ class ElementQueryConditionBuilder extends Component
                 self::LOCALIZED_NODENAME => [CategoryField::class, EntryField::class],
             ];
 
+            // Fire a 'registerGqlEagerLoadableFields' event
             if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS)) {
-                $event = new RegisterGqlEagerLoadableFields([
-                    'fieldList' => $list,
-                ]);
+                $event = new RegisterGqlEagerLoadableFields(['fieldList' => $list]);
                 $this->trigger(self::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS, $event);
-
                 $list = $event->fieldList;
             }
 

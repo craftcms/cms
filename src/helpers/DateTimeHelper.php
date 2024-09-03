@@ -57,6 +57,37 @@ class DateTimeHelper
     public const SECONDS_YEAR = 31556874;
 
     /**
+     * @var string[] Supported relative time units.
+     * @see relativeTimeStatement()
+     * @see relativeTimeToSeconds()
+     * @since 5.2.0
+     */
+    public const RELATIVE_TIME_UNITS = [
+        'sec',
+        'secs',
+        'second',
+        'seconds',
+        'min',
+        'mins',
+        'minute',
+        'minutes',
+        'hour',
+        'hours',
+        'day',
+        'days',
+        'fortnight',
+        'fortnights',
+        'forthnight',
+        'forthnights',
+        'month',
+        'months',
+        'year',
+        'years',
+        'week',
+        'weeks',
+    ];
+
+    /**
      * @var DateTime[]
      * @see pause()
      * @see resume()
@@ -256,17 +287,25 @@ class DateTimeHelper
      * Converts a date to an ISO-8601 string.
      *
      * @param mixed $date The date, in any format that [[toDateTime()]] supports.
+     * @param bool $setToUtc Whether the resulting string should be set to UTC.
      * @return string|false The date formatted as an ISO-8601 string, or `false` if $date was not a valid date
      */
-    public static function toIso8601(mixed $date): string|false
+    public static function toIso8601(mixed $date, bool $setToUtc = false): string|false
     {
-        $date = static::toDateTime($date);
-
-        if ($date !== false) {
-            return $date->format(DateTime::ATOM);
+        if ($date instanceof DateTime && $setToUtc) {
+            $date = clone $date;
+        } else {
+            $date = static::toDateTime($date);
+            if (!$date) {
+                return false;
+            }
         }
 
-        return false;
+        if ($setToUtc) {
+            $date->setTimezone(new DateTimeZone('UTC'));
+        }
+
+        return $date->format(DateTime::ATOM);
     }
 
     /**
@@ -461,7 +500,7 @@ class DateTimeHelper
      */
     public static function nextYear(?DateTimeZone $timeZone = null): DateTime
     {
-        return static::thisMonth($timeZone)->modify('+1 year');
+        return static::thisYear($timeZone)->modify('+1 year');
     }
 
     /**
@@ -473,7 +512,7 @@ class DateTimeHelper
      */
     public static function lastYear(?DateTimeZone $timeZone = null): DateTime
     {
-        return static::thisMonth($timeZone)->modify('-1 year');
+        return static::thisYear($timeZone)->modify('-1 year');
     }
 
     /**
@@ -810,6 +849,45 @@ class DateTimeHelper
     }
 
     /**
+     * Returns a [relative time statement](https://www.php.net/manual/en/datetime.formats.php#datetime.formats.relative)
+     * based on the given number and unit.
+     *
+     * @param int $number
+     * @param string $unit
+     * @return string
+     * @since 5.2.0
+     */
+    public static function relativeTimeStatement(int $number, string $unit): string
+    {
+        // PHP doesn't support "+1 week"
+        if ($unit === 'week') {
+            if ($number == 1) {
+                $number = 7;
+                $unit = 'days';
+            } else {
+                $unit = 'weeks';
+            }
+        }
+
+        return "+$number $unit";
+    }
+
+    /**
+     * Converts a relative time (number and unit) to seconds.
+     *
+     * @param int $number
+     * @param string $unit
+     * @return int
+     * @since 5.2.0
+     */
+    public static function relativeTimeToSeconds(int $number, string $unit): int
+    {
+        $now = new DateTimeImmutable();
+        $then = $now->modify(static::relativeTimeStatement($number, $unit));
+        return $then->getTimestamp() - $now->getTimestamp();
+    }
+
+    /**
      * Normalizes and returns a date string along with the format it was set in.
      *
      * @param string $value
@@ -820,11 +898,14 @@ class DateTimeHelper
     {
         $value = trim($value);
 
-        // First see if it's in YYYY-MM-DD or YYYY-MM-DD HH:MM:SS.MU formats
-        if (preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2}\.\d+)?$/', $value, $match)) {
+        // First see if it's in YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, or YYYY-MM-DD HH:MM:SS.MU formats
+        if (preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2}(\.\d+)?)?$/', $value, $match)) {
             $format = 'Y-m-d';
             if (!empty($match[1])) {
-                $format .= ' H:i:s.u';
+                $format .= ' H:i:s';
+                if (!empty($match[2])) {
+                    $format .= '.u';
+                }
             }
             return [$value, $format];
         }
@@ -995,7 +1076,11 @@ class DateTimeHelper
             return new DateTime("@$value");
         }
 
-        return null;
+        try {
+            return new DateTime($value);
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     /**

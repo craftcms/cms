@@ -1,0 +1,93 @@
+{% import '_includes/forms.twig' as forms %}
+{% set title = "Sign In"|t('app') %}
+{% set bodyClass = 'login' %}
+{% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
+
+{% set generalConfig = craft.app.config.general %}
+{% set username = generalConfig.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '' %}
+
+{% if generalConfig.useEmailAsUsername %}
+    {% set usernameLabel = 'Email'|t('app') %}
+    {% set usernameType = 'email' %}
+{% else %}
+    {% set usernameLabel = 'Username or Email'|t('app') %}
+    {% set usernameType = 'text' %}
+{% endif %}
+
+{% set formAttributes = {
+    id: 'login-form',
+    method: 'post',
+    class: generalConfig.rememberedUserSessionDuration ? 'remember-me' : '',
+    'accept-charset': 'UTF-8',
+} %}
+
+<form {{ attr(formAttributes) }}>
+    {{ actionInput(actionPath) }}
+    {{ hiddenInput('provider', provider.handle) }}
+    {{ csrfInput() }}
+
+    <div id="login-form-top">
+        {{ forms.textField({
+            id: 'loginName',
+            name: 'username',
+            placeholder: usernameLabel,
+            value: username,
+            autocomplete: 'username',
+            autocapitalize: false,
+            type: usernameType,
+            inputAttributes: {
+                aria: {
+                    label: usernameLabel,
+                    required: 'true',
+                },
+            },
+        }) }}
+        {{ forms.passwordField({
+            id: 'password',
+            name: 'password',
+            placeholder: 'Password'|t('app'),
+            autocomplete: 'current-password',
+            inputAttributes: {
+                aria: {
+                    label: 'Password'|t('app'),
+                    required: 'true',
+                },
+            },
+        }) }}
+    </div>
+
+    <div id="login-form-bottom">
+        {% if generalConfig.rememberedUserSessionDuration %}
+            {{ forms.checkboxField({
+                id: 'rememberMe',
+                label: 'Keep me signed in for {duration}'|t('app', {
+                    duration: generalConfig.getRememberedUserSessionDuration()|duration,
+                })
+            }) }}
+        {% endif %}
+    </div>
+
+    <div id="login-form-buttons" class="buttons">
+        {{ forms.submitButton({
+            id: 'submit',
+            label: 'Sign in'|t('app'),
+            spinner: false,
+            busyMessage: 'Signing in'|t('app'),
+            successMessage: 'Signed in'|t('app'),
+            failureMessage: 'Sign in unsuccessful'|t('app'),
+            retryMessage: 'Try again'|t('app'),
+        }) }}
+    </div>
+
+    <div id="login-form-extra">
+        <button id="forgot-password" type="button">{{ 'Forgot your password?'|t('app') }}</button>
+        <button id="remember-password" type="button">{{ 'Remember your password?'|t('app') }}</button>
+    </div>
+</form>
+
+<div id="login-errors" role="status">
+</div>
+
+<a id="poweredby" href="http://craftcms.com/" title="{{ 'Powered by Craft CMS'|t('app') }}" aria-label="Craft CMS">
+    {{ svg('@app/web/assets/cp/dist/images/craftcms.svg') }}
+</a>

@@ -19,6 +19,7 @@
         },
     } %}
         {% for containerId, tab in tabs %}
+            {% set containerId = containerId|namespaceInputId %}
             {% tag 'a' with {
                 id: tab.tabId ?? "tab-#{containerId}",
                 class: (tab.selected ? ['sel'] : [])|merge(tab.class),
@@ -60,19 +61,26 @@
         title: 'List all tabs'|t('app'),
         aria: {
             label: 'List all tabs'|t('app'),
+            controls: 'tab-menu',
         },
+        data: {
+            'disclosure-trigger': true,
+        }
     } %}
-        {% if tabsHaveErrors %}
-            {{ tag('span', {
-                data: {
-                    icon: 'alert',
-                }
-            }) }}
-        {% endif %}
+        {%- apply spaceless %}
+            {% if tabsHaveErrors %}
+                {{ tag('span', {
+                    data: {
+                        icon: 'alert',
+                    }
+                }) }}
+            {% endif %}
+        {% endapply -%}
     {% endtag %}
-    <div class="menu">
-        <ul class="padded" role="listbox">
+    <div id="tab-menu" class="menu menu--disclosure">
+        <ul class="padded">
             {% for containerId, tab in tabs %}
+                {% set containerId = containerId|namespaceInputId %}
                 <li>
                     {% tag 'a' with {
                         class: (tab.selected ? 'sel' : null) ~ ('error' in tab.class ? ' error' : null),
@@ -80,6 +88,7 @@
                         data: {
                             id: containerId,
                         },
+                        role: 'button'
                     } %}
                         {{ tab.label }}
                         {% if 'error' in tab.class %}

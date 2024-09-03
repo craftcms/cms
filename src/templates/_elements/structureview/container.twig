@@ -1,9 +1,13 @@
-{% include "_elements/structure" with {
-    context:             context,
-    elements:            elements,
-    disabledElementIds:  disabledElementIds,
-    collapsedElementIds: collapsedElementIds,
-    structure:           structure,
-    sortable:            (context == 'index'),
-    newChildUrl:         (context == 'index' and newChildUrl is defined ? newChildUrl : null),
-} only %}
+{% if elements is not empty %}
+  {% include "_elements/structure" with {
+    context,
+    elements,
+    disabledElementIds,
+    collapsedElementIds,
+    structure,
+    sortable: context == 'index',
+    newChildUrl: context == 'index' and newChildUrl is defined ? newChildUrl : null,
+  } only %}
+{% else %}
+  <div class="zilch small">{{ 'Nothing yet.'|t('app') }}</div>
+{% endif %}

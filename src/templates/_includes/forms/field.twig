@@ -5,6 +5,7 @@
 {%- set errorsId = errorsId ?? "#{id}-errors" %}
 
 {%- set fieldLabel = fieldLabel ?? label ?? block('label') ?? null %}
+{%- set labelExtra = labelExtra ?? block('labelExtra') ?? null %}
 {%- set instructions = instructions ?? block('instructions') ?? null %}
 {%- set tip = tip ?? block('tip') ?? null %}
 {%- set warning = warning ?? block('warning') ?? null %}

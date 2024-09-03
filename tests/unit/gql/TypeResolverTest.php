@@ -12,13 +12,11 @@ use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
-use craft\elements\MatrixBlock;
 use craft\elements\User;
 use craft\gql\base\Resolver;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
-use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\elements\ExampleElement;
@@ -74,7 +72,7 @@ class TypeResolverTest extends TestCase
         // Not using a data provider for this because of fixture load/unload on *every* iteration.
         $data = [
             // Assets
-            [Asset::class, ['filename' => 'product.jpg'], AssetResolver::class],
+            [Asset::class, ['filename' => 'shinybrad.png'], AssetResolver::class],
             [Asset::class, ['folderId' => 1000], AssetResolver::class],
             [Asset::class, ['filename' => StringHelper::randomString(128)], AssetResolver::class],
 
@@ -93,11 +91,6 @@ class TypeResolverTest extends TestCase
             [User::class, ['username' => ['user1', 'admin']], UserResolver::class],
             [User::class, ['username' => ['user1', 'admin', 'user2', 'user3']], UserResolver::class],
             [User::class, ['username' => StringHelper::randomString(128)], UserResolver::class],
-
-            // Matrix Blocks
-            [MatrixBlock::class, ['type' => 'aBlock'], MatrixBlockResolver::class],
-            [MatrixBlock::class, ['site' => 'testSite1'], MatrixBlockResolver::class],
-            [MatrixBlock::class, ['type' => 'MISSING'], MatrixBlockResolver::class],
         ];
 
         foreach ($data as $testData) {

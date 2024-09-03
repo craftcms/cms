@@ -27,7 +27,7 @@ class Temp extends Local
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Temp Folder');
+        return 'Temp';
     }
 
     /**
@@ -40,7 +40,7 @@ class Temp extends Local
             $config['path'] = Craft::$app->getPath()->getTempAssetUploadsPath();
         }
         if (!isset($config['name'])) {
-            $config['name'] = Craft::t('app', 'Temporary filesystem');
+            $config['name'] = Craft::t('app', 'Temporary Uploads');
         }
 
         parent::__construct($config);

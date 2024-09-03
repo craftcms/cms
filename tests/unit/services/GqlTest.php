@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Table;
 use craft\elements\GlobalSet;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\GqlException;
 use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlDirectivesEvent;
@@ -31,9 +32,9 @@ use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\UserGroup;
 use craft\services\Categories;
+use craft\services\Entries;
 use craft\services\Globals;
 use craft\services\Gql;
-use craft\services\Sections;
 use craft\services\Tags;
 use craft\services\UserGroups;
 use craft\services\Volumes;
@@ -234,7 +235,7 @@ class GqlTest extends TestCase
     {
         // Generate types by creating the interface.
         UserInterface::getType();
-        $typeName = User::gqlTypeNameByContext(null);
+        $typeName = User::GQL_TYPE_NAME;
 
         self::assertNotFalse(GqlEntityRegistry::getEntity($typeName));
         self::assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
@@ -271,34 +272,44 @@ class GqlTest extends TestCase
      */
     public function testPermissionListGenerated(): void
     {
-        $sectionService = $this->make(Sections::class, [
+        $typeA = new EntryType([
+            'id' => 1,
+            'uid' => 'entryTypeUid',
+            'name' => 'Test entry type',
+        ]);
+        $typeB = new EntryType([
+            'id' => 2,
+            'uid' => 'entryTypeUid',
+            'name' => 'Test entry type',
+        ]);
+
+        $sectionA = new Section([
+            'id' => 1,
+            'uid' => 'sectionUid',
+            'name' => 'Test section',
+            'type' => 'channel',
+            'entryTypes' => [
+                $typeA,
+            ],
+        ]);
+        $sectionB = new Section([
+            'id' => 2,
+            'uid' => 'otherSectionUid',
+            'name' => 'Other test section',
+            'type' => 'single',
+            'entryTypes' => [
+                $typeB,
+            ],
+        ]);
+
+        $entriesService = $this->make(Entries::class, [
             'getAllSections' => [
-                new Section([
-                    'id' => 1,
-                    'uid' => 'sectionUid',
-                    'name' => 'Test section',
-                    'type' => 'channel',
-                ]),
-                new Section([
-                    'id' => 2,
-                    'uid' => 'otherSectionUid',
-                    'name' => 'Other test section',
-                    'type' => 'single',
-                ]),
+                $sectionA,
+                $sectionB,
             ],
             'getAllEntryTypes' => [
-                new EntryType([
-                    'id' => 1,
-                    'uid' => 'entryTypeUid',
-                    'name' => 'Test entry type',
-                    'sectionId' => 1,
-                ]),
-                new EntryType([
-                    'id' => 2,
-                    'uid' => 'entryTypeUid',
-                    'name' => 'Test entry type',
-                    'sectionId' => 2,
-                ]),
+                $typeA,
+                $typeB,
             ],
         ]);
 
@@ -350,32 +361,35 @@ class GqlTest extends TestCase
             ],
         ]);
 
-        Craft::$app->set('sections', $sectionService);
+        Craft::$app->set('entries', $entriesService);
         Craft::$app->set('volumes', $volumeService);
         Craft::$app->set('globals', $globalService);
         Craft::$app->set('categories', $categoryService);
         Craft::$app->set('tags', $tagService);
         Craft::$app->set('userGroups', $userGroupService);
 
-
+        $edition = Craft::$app->edition;
+        Craft::$app->edition = CmsEdition::Pro;
         $allSchemaComponents = Craft::$app->getGql()->getAllSchemaComponents();
+
         self::assertNotEmpty($allSchemaComponents);
         self::assertArrayHasKey('queries', $allSchemaComponents);
         self::assertArrayHasKey('mutations', $allSchemaComponents);
 
         self::assertNotEmpty($allSchemaComponents['queries']['Entries'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Assets'] ?? []);
-        self::assertNotEmpty($allSchemaComponents['queries']['Global sets'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['queries']['Global Sets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Users'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Categories'] ?? []);
         self::assertNotEmpty($allSchemaComponents['queries']['Tags'] ?? []);
 
-
         self::assertNotEmpty($allSchemaComponents['mutations']['Entries'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Assets'] ?? []);
-        self::assertNotEmpty($allSchemaComponents['mutations']['Global sets'] ?? []);
+        self::assertNotEmpty($allSchemaComponents['mutations']['Global Sets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Categories'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Tags'] ?? []);
+
+        Craft::$app->edition = $edition;
     }
 
     /**

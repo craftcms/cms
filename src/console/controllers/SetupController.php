@@ -7,8 +7,6 @@
 
 namespace craft\console\controllers;
 
-use Composer\IO\ConsoleIO;
-use Composer\Util\Platform;
 use Craft;
 use craft\config\DbConfig;
 use craft\console\Controller;
@@ -25,10 +23,6 @@ use craft\migrations\CreatePhpSessionTable;
 use m150207_210500_i18n_init;
 use PDOException;
 use Seld\CliPrompt\CliPrompt;
-use Symfony\Component\Console\Helper\HelperSet;
-use Symfony\Component\Console\Helper\QuestionHelper;
-use Symfony\Component\Console\Input\StringInput;
-use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -603,14 +597,15 @@ EOD;
         ));
         $this->stdout(" → $message\n\n");
 
-        $input = new StringInput('');
-        $input->setInteractive(false);
-        $output = new StreamOutput(fopen('php://output', 'w'));
-        $io = new ConsoleIO($input, $output, new HelperSet([new QuestionHelper()]));
-
         Craft::$app->getComposer()->install([
-            'craftcms/cloud' => '^1.0.0',
-        ], $io);
+            'craftcms/cloud' => '*',
+        ], function($type, $buffer) {
+            if ($type === Process::ERR) {
+                $this->stderr($buffer);
+            } else {
+                $this->stdout($buffer);
+            }
+        });
 
         $message = sprintf('Extension %s', $moduleInstalled ? 'updated' : 'installed');
         $this->stdout("\n ✓ $message\n" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
@@ -647,7 +642,7 @@ EOD;
     private function _outputCommand(string $command): void
     {
         $script = FileHelper::normalizePath($this->request->getScriptFile());
-        if (!Platform::isWindows() && ($home = App::env('HOME')) !== null) {
+        if (!App::isWindows() && ($home = App::env('HOME')) !== null) {
             $home = FileHelper::normalizePath($home);
             if (str_starts_with($script, $home . DIRECTORY_SEPARATOR)) {
                 $script = '~' . substr($script, strlen($home));

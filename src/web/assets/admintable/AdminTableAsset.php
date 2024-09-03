@@ -10,6 +10,7 @@ namespace craft\web\assets\admintable;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
+use craft\web\View;
 
 /**
  * Asset bundle for admin tables
@@ -53,5 +54,20 @@ class AdminTableAsset extends AssetBundle
         }
 
         parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetFiles($view): void
+    {
+        parent::registerAssetFiles($view);
+
+        if ($view instanceof View) {
+            $view->registerTranslations('app', [
+                'item',
+                'items',
+            ]);
+        }
     }
 }

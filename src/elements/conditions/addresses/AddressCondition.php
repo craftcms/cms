@@ -15,11 +15,21 @@ class AddressCondition extends ElementCondition
     /**
      * @inheritdoc
      */
-    protected function conditionRuleTypes(): array
+    protected function selectableConditionRules(): array
     {
-        return array_merge(parent::conditionRuleTypes(), [
-            CountryConditionRule::class,
+        return array_merge(parent::selectableConditionRules(), [
+            AddressLine1ConditionRule::class,
+            AddressLine2ConditionRule::class,
+            AddressLine3ConditionRule::class,
             AdministrativeAreaConditionRule::class,
+            CountryConditionRule::class,
+            DependentLocalityConditionRule::class,
+            FullNameConditionRule::class,
+            LocalityConditionRule::class,
+            OrganizationConditionRule::class,
+            OrganizationTaxIdConditionRule::class,
+            PostalCodeConditionRule::class,
+            SortingCodeConditionRule::class,
         ]);
     }
 }

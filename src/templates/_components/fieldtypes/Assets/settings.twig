@@ -40,11 +40,11 @@
 
 
 {% block fieldSettings %}
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
         id: 'restrict-location-toggle',
         label: 'Restrict assets to a single location'|t('app'),
         name: 'restrictLocation',
-        checked: field.restrictLocation,
+        on: field.restrictLocation,
         toggle: 'restricted-location-settings',
         reverseToggle: 'unrestricted-location-settings'
     }) }}
@@ -65,10 +65,10 @@
             errors: field.getErrors('restrictedLocationSubpath')
         }) }}
 
-        {{ forms.checkboxField({
+        {{ forms.lightswitchField({
             label: 'Allow subfolders'|t('app'),
             name: 'allowSubfolders',
-            checked: field.allowSubfolders,
+            on: field.allowSubfolders,
             toggle: 'allow-subfolders-settings',
         }) }}
 
@@ -111,33 +111,33 @@
 
     {{ block('selectionConditionField') }}
 
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
         label: 'Show unpermitted volumes'|t('app'),
         instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
         id: 'showUnpermittedVolumes',
         name: 'showUnpermittedVolumes',
-        checked: field.showUnpermittedVolumes,
+        on: field.showUnpermittedVolumes,
     }) }}
 
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
         label: 'Show unpermitted files'|t('app'),
         instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('app'),
         id: 'showUnpermittedFiles',
         name: 'showUnpermittedFiles',
-        checked: field.showUnpermittedFiles,
+        on: field.showUnpermittedFiles,
     }) }}
 
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
         label: 'Restrict allowed file types'|t('app'),
         class: 'restrictFiles',
         id: 'restrictFiles',
         name: 'restrictFiles',
         value: 1,
-        checked: field.restrictFiles,
+        on: field.restrictFiles,
         toggle: 'restrict-allowed-types'
     }) }}
 
-    <fieldset id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %}>
+    <fieldset id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %} data-error-key="allowedKinds">
         {% for option in field.getFileKindOptions() %}
             {{ forms.checkboxField({
                 label: option.label,
@@ -150,12 +150,12 @@
         {{ forms.errorList(field.getErrors('allowedKinds')) }}
     </fieldset>
 
-    {{ forms.checkboxField({
+    {{ forms.lightswitchField({
         label: 'Allow uploading directly to the field'|t('app'),
         instructions: 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'|t('app'),
         id: 'allow-uploads',
         name: 'allowUploads',
-        checked: field.allowUploads,
+        on: field.allowUploads,
     }) }}
 
     {{ block('limitFields') }}
@@ -178,6 +178,7 @@
         ],
         value: field.previewMode,
         errors: field.getErrors('previewMode'),
+        data: {'error-key': 'previewMode'},
     }) }}
 
     {{ block('advancedSettings') }}

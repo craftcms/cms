@@ -1,10 +1,17 @@
 {% extends "_layouts/cp" %}
 
-{% requireEdition CraftPro %}
-
 {% set selectedSubnavItem = 'schemas' %}
 
 {% set fullPageForm = true %}
+
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: (schema.isPublic ? 'graphql/schemas/public' : 'graphql/schemas/{id}')|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
 
 {% set crumbs = [
     { label: "GraphQL Schemas"|t('app'), url: url('graphql/schemas') }
@@ -85,7 +92,7 @@
 
     {% set schemaComponents = craft.app.gql.getAllSchemaComponents %}
 
-    {% for category, catPermissions in schemaComponents.queries %}
+    {% for category, catPermissions in schemaComponents.queries|filter %}
         <div class="user-permissions">
             <h3>{{ category }}</h3>
             <div class="select-all"></div>
@@ -97,7 +104,7 @@
     <hr/>
     <h2>{{ 'Choose the available mutations for this schema:'|t('app') }}</h2>
 
-    {% for category, catPermissions in schemaComponents.mutations %}
+    {% for category, catPermissions in schemaComponents.mutations|filter %}
         <div class="user-permissions">
             <h3>{{ category }}</h3>
             <div class="select-all"></div>

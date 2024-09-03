@@ -20,24 +20,20 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
      * @returns {*|void}
      */
     init: function (assetId, elementSelect, settings) {
+      // (assetId, settings)
+      if (
+        typeof settings === 'undefined' &&
+        jQuery.isPlainObject(elementSelect)
+      ) {
+        settings = elementSelect;
+        elementSelect = null;
+      }
+
       settings = $.extend(this.defaultSettings, settings);
       this.$triggerElement = Garnish.getFocusedElement();
 
-      settings.onHide = this._onHide.bind(this);
-
       if (Craft.PreviewFileModal.openInstance) {
-        var instance = Craft.PreviewFileModal.openInstance;
-
-        if (instance.assetId !== assetId) {
-          instance.loadAsset(
-            assetId,
-            settings.startingWidth,
-            settings.startingHeight
-          );
-          instance.elementSelect = elementSelect;
-        }
-
-        return this.destroy();
+        Craft.PreviewFileModal.openInstance.quickHide();
       }
 
       Craft.PreviewFileModal.openInstance = this;
@@ -58,15 +54,13 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
       );
 
       // Cut the flicker, just show the nice person the preview.
-      if (this.$container) {
-        this.$container.velocity('stop');
-        this.$container.show().css('opacity', 1);
+      this.$container.velocity('stop');
+      this.$container.show().css('opacity', 1);
 
-        this.$shade.velocity('stop');
-        this.$shade.show().css('opacity', 1);
+      this.$shade.velocity('stop');
+      this.$shade.show().css('opacity', 1);
 
-        Garnish.setFocusWithin(this.$container);
-      }
+      Garnish.setFocusWithin(this.$container);
 
       // Add bumper elements to maintain focus trap
       this.$bumperButtonStart = Craft.ui.createButton({
@@ -80,23 +74,77 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
       this.$bumperButtonEnd = this.$bumperButtonStart.clone(true);
 
       this.loadAsset(assetId, settings.startingWidth, settings.startingHeight);
+
+      this.addListener(this.$container, 'keydown', (ev) => {
+        switch (ev.keyCode) {
+          case Garnish.LEFT_KEY:
+          case Garnish.UP_KEY:
+            ev.preventDefault();
+            this.previewPreviousAsset();
+            break;
+          case Garnish.RIGHT_KEY:
+          case Garnish.DOWN_KEY:
+            ev.preventDefault();
+            this.previewNextAsset();
+            break;
+          case Garnish.SPACE_KEY:
+            ev.preventDefault();
+            if (ev.shiftKey) {
+              this.hide();
+            }
+        }
+      });
+    },
+
+    getSelectItem: function () {
+      const $item = this.elementSelect?.$items.filter(
+        `[data-id=${this.assetId}]`
+      );
+      return $item?.length ? $item : null;
+    },
+
+    previewPreviousAsset: function () {
+      const $element = this.getSelectItem();
+      if ($element) {
+        const index = this.elementSelect.getItemIndex($element);
+        let $prev = this.elementSelect.getPreviousItem(index);
+        if ($prev?.length) {
+          if (Craft.PreviewFileModal.showForAsset($prev, this.elementSelect)) {
+            this.elementSelect.deselectAll();
+            this.elementSelect.selectItem($prev, false, false);
+          }
+        }
+      }
+    },
+
+    previewNextAsset: function () {
+      const $element = this.getSelectItem();
+      if ($element) {
+        const index = this.elementSelect.getItemIndex($element);
+        let $next = this.elementSelect.getNextItem(index);
+        if ($next?.length) {
+          if (Craft.PreviewFileModal.showForAsset($next, this.elementSelect)) {
+            this.elementSelect.deselectAll();
+            this.elementSelect.selectItem($next, false, false);
+          }
+        }
+      }
     },
 
     /**
      * When hiding, remove all traces and focus last focused element.
-     * @private
      */
-    _onHide: function () {
-      Craft.PreviewFileModal.openInstance = null;
-      if (this.elementSelect) {
-        this.elementSelect.focusItem(this.elementSelect.$focusedItem);
+    onFadeOut: function () {
+      this.base();
+
+      const $element = this.getSelectItem();
+      if ($element) {
+        this.elementSelect.focusItem($element);
       } else if (this.$triggerElement && this.$triggerElement.length) {
-        this.$triggerElement.trigger('focus');
+        this.$triggerElement.focus();
       }
 
-      this.$shade.remove();
-
-      return this.destroy();
+      this.destroy();
     },
 
     _addBumperButtons: function () {
@@ -118,21 +166,21 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
     },
 
     /**
-     * Disappear immediately forever.
-     * @returns {boolean}
+     * @deprecated
      */
     selfDestruct: function () {
-      var instance = Craft.PreviewFileModal.openInstance;
-
-      instance.hide();
-      instance.$shade.remove();
-      instance.destroy();
-
-      Craft.PreviewFileModal.openInstance = null;
-      Craft.focalPoint.destruct();
-      Craft.focalPoint = null;
-
+      this.quickHide();
       return true;
+    },
+
+    destroy: function () {
+      this.base();
+
+      if (Craft.PreviewFileModal.openInstance === this) {
+        Craft.PreviewFileModal.openInstance = null;
+        Craft.focalPoint?.destruct();
+        Craft.focalPoint = null;
+      }
     },
 
     /**
@@ -204,7 +252,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         this.loaded = true;
       };
       Craft.sendActionRequest('POST', 'assets/preview-file', {data})
-        .then((response) => {
+        .then(async (response) => {
           onResponse();
 
           if (response.data.requestId != this.requestId) {
@@ -225,8 +273,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
           this.$container.append(response.data.previewHtml);
           this._addBumperButtons();
           this._addModalName();
-          Craft.appendHeadHtml(response.data.headHtml);
-          Craft.appendBodyHtml(response.data.bodyHtml);
+          await Craft.appendHeadHtml(response.data.headHtml);
+          await Craft.appendBodyHtml(response.data.bodyHtml);
         })
         .catch(({response}) => {
           onResponse();
@@ -255,9 +303,124 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
     },
   },
   {
+    openInstance: null,
+
     defaultSettings: {
+      minGutter: 50,
       startingWidth: null,
       startingHeight: null,
+    },
+
+    resizePreviewImage() {
+      const instance = Craft.PreviewFileModal.openInstance;
+      if (!instance) {
+        return;
+      }
+
+      let containerHeight = Garnish.$win.height() * 0.66;
+      let containerWidth = Math.min(
+        (containerHeight / 3) * 4,
+        Garnish.$win.width() - instance.settings.minGutter * 2
+      );
+      containerHeight = (containerWidth / 4) * 3;
+
+      const $img = instance.$container.find('img');
+
+      $img.css({
+        width: containerWidth,
+        height: containerHeight,
+      });
+
+      let imageRatio;
+
+      if (instance.loaded && $img.length) {
+        // Make sure we maintain the ratio
+
+        const maxWidth = $img.data('maxwidth');
+        const maxHeight = $img.data('maxheight');
+        imageRatio = maxWidth / maxHeight;
+        const desiredWidth = instance.desiredWidth
+          ? instance.desiredWidth
+          : instance.getWidth();
+        const desiredHeight = instance.desiredHeight
+          ? instance.desiredHeight
+          : instance.getHeight();
+        let width = Math.min(desiredWidth, maxWidth);
+        let height = Math.round(Math.min(maxHeight, width / imageRatio));
+
+        if (height > desiredHeight) {
+          height = desiredHeight;
+        }
+
+        width = Math.round(height * imageRatio);
+
+        $img.css({width: width, height: height});
+        instance._resizeContainer(width, height);
+
+        instance.desiredWidth = width;
+        instance.desiredHeight = height;
+      }
+
+      instance.base();
+
+      if (instance.loaded && $img.length) {
+        // Correct anomalies
+        containerWidth = Math.round(
+          Math.min(
+            Math.max($img.height() * imageRatio),
+            Garnish.$win.width() - instance.settings.minGutter * 2
+          )
+        );
+        containerHeight = Math.round(
+          Math.min(
+            Math.max(containerWidth / imageRatio),
+            Garnish.$win.height() - instance.settings.minGutter * 2
+          )
+        );
+        containerWidth = Math.round(containerHeight * imageRatio);
+
+        // This might actually have put width over the viewport limits, so double-check that
+        if (
+          containerWidth >
+          Math.min(
+            containerWidth,
+            Garnish.$win.width() - instance.settings.minGutter * 2
+          )
+        ) {
+          containerWidth = Math.min(
+            containerWidth,
+            Garnish.$win.width() - instance.settings.minGutter * 2
+          );
+          containerHeight = containerWidth / imageRatio;
+        }
+
+        instance._resizeContainer(containerWidth, containerHeight);
+        $img.css({width: containerWidth, height: containerHeight});
+
+        if (window.imageFocalPoint) {
+          window.imageFocalPoint.renderFocal();
+        }
+      }
+    },
+
+    showForAsset: function ($element, elementSelect) {
+      if (!$element.hasClass('element')) {
+        $element = $element.find('.element:first');
+      }
+      if (
+        !$element.hasClass('element') ||
+        Garnish.hasAttr($element, 'data-folder-id')
+      ) {
+        return false;
+      }
+
+      const settings = {};
+      if ($element.data('image-width')) {
+        settings.startingWidth = $element.data('image-width');
+        settings.startingHeight = $element.data('image-height');
+      }
+      new Craft.PreviewFileModal($element.data('id'), elementSelect, settings);
+      return true;
     },
   }
 );

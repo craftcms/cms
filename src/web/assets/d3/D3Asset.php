@@ -38,18 +38,6 @@ class D3Asset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init(): void
-    {
-        $this->js = [
-            'd3.js',
-        ];
-
-        parent::init();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function registerAssetFiles($view): void
     {
         parent::registerAssetFiles($view);

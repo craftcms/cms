@@ -8,7 +8,6 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Element as BaseElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
@@ -39,7 +38,7 @@ class ElementType implements GeneratorInterface, SingleGeneratorInterface
      */
     public static function generateType(mixed $context): ObjectType
     {
-        $typeName = BaseElement::gqlTypeNameByContext(null);
+        $typeName = 'Element';
 
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new Element([
             'name' => $typeName,

@@ -7,15 +7,14 @@
 
 namespace craft\queue\jobs;
 
-use Craft;
-use craft\base\FieldInterface;
+use craft\base\Batchable;
+use craft\db\Query;
+use craft\db\QueryBatcher;
 use craft\db\Table;
-use craft\fields\Matrix;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
+use craft\helpers\Json;
 use craft\i18n\Translation;
-use craft\queue\BaseJob;
-use yii\base\Exception;
+use craft\queue\BaseBatchedJob;
 
 /**
  * FindAndReplace job
@@ -23,7 +22,7 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class FindAndReplace extends BaseJob
+class FindAndReplace extends BaseBatchedJob
 {
     /**
      * @var string|null The search text
@@ -35,36 +34,53 @@ class FindAndReplace extends BaseJob
      */
     public ?string $replace = null;
 
-    /**
-     * @var array
-     */
-    private array $_textColumns;
-
-    /**
-     * @inheritdoc
-     * @throws Exception
-     */
-    public function execute($queue): void
+    protected function loadData(): Batchable
     {
-        // Find all the textual field columns
-        $this->_textColumns = [
-            [Table::CONTENT, 'title'],
-        ];
+        return new QueryBatcher(
+            (new Query())
+                ->select(['id', 'title', 'content'])
+                ->from(Table::ELEMENTS_SITES)
+                ->orderBy(['id' => SORT_ASC])
+                ->where([
+                    'or',
+                    ['like', 'title', $this->find],
+                    ['like', 'content', $this->find],
+                ]),
+        );
+    }
 
-        foreach (Craft::$app->getFields()->getAllFields() as $field) {
-            if ($field instanceof Matrix) {
-                $this->_checkMatrixField($field);
-            } else {
-                $this->_checkField($field, Table::CONTENT, 'field_');
-            }
+    protected function processItem(mixed $item): void
+    {
+        if (is_string($item['content'])) {
+            $item['content'] = Json::decode($item['content']);
         }
 
-        // Now loop through them and perform the find/replace
-        $totalTextColumns = count($this->_textColumns);
-        foreach ($this->_textColumns as $i => [$table, $column]) {
-            $this->setProgress($queue, $i / $totalTextColumns);
+        $this->replaceRecursive($item['title']);
+        $this->replaceRecursive($item['content']);
 
-            Db::replace($table, $column, $this->find, $this->replace);
+        Db::update(Table::ELEMENTS_SITES, [
+            'title' => $item['title'],
+            'content' => $item['content'],
+        ], [
+            'id' => $item['id'],
+        ], updateTimestamp: false);
+    }
+
+    private function replaceRecursive(string|array|null &$value): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        if (is_string($value)) {
+            $value = str_replace($this->find, $this->replace, $value);
+            return;
+        }
+
+        foreach ($value as &$v) {
+            if (is_string($v) || is_array($v)) {
+                $this->replaceRecursive($v);
+            }
         }
     }
 
@@ -77,52 +93,5 @@ class FindAndReplace extends BaseJob
             'find' => $this->find,
             'replace' => $this->replace,
         ]);
-    }
-
-    /**
-     * Checks whether the given field is saving data into a textual column, and saves it accordingly.
-     *
-     * @param FieldInterface $field
-     * @param string $table
-     * @param string $fieldColumnPrefix
-     */
-    private function _checkField(FieldInterface $field, string $table, string $fieldColumnPrefix): void
-    {
-        if (!$field::hasContentColumn()) {
-            return;
-        }
-
-        $columnType = $field->getContentColumnType();
-
-        if (is_array($columnType)) {
-            foreach (array_keys($columnType) as $i => $key) {
-                if (Db::isTextualColumnType($columnType[$key])) {
-                    $column = ElementHelper::fieldColumn($fieldColumnPrefix, $field->handle, $field->columnSuffix, $i !== 0 ? $key : null);
-                    $this->_textColumns[] = [$table, $column];
-                }
-            }
-        } elseif (Db::isTextualColumnType($columnType)) {
-            $column = ElementHelper::fieldColumn($fieldColumnPrefix, $field->handle, $field->columnSuffix);
-            $this->_textColumns[] = [$table, $column];
-        }
-    }
-
-    /**
-     * Registers any textual columns associated with the given Matrix field.
-     *
-     * @param Matrix $matrixField
-     * @throws Exception if the content table can't be determined
-     */
-    private function _checkMatrixField(Matrix $matrixField): void
-    {
-        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixField->id);
-
-        foreach ($blockTypes as $blockType) {
-            $fieldColumnPrefix = 'field_' . $blockType->handle . '_';
-
-            foreach ($blockType->getCustomFields() as $field) {
-                $this->_checkField($field, $matrixField->contentTable, $fieldColumnPrefix);
-            }
-        }
     }
 }

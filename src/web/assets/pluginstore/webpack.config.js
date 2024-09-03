@@ -14,6 +14,14 @@ module.exports = getConfig({
       filename: 'js/app.js',
       chunkFilename: 'js/[name].js',
     },
+    module: {
+      rules: [
+        {
+          test: /\.svg$/,
+          type: 'asset/source',
+        },
+      ],
+    },
     plugins: [
       new CopyWebpackPlugin({
         patterns: [

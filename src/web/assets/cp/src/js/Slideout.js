@@ -28,6 +28,10 @@
           .data('slideout', this)
           .appendTo(this.$outerContainer);
 
+        if (this.$container.attr('id')) {
+          Craft.Slideout.instances[this.$container.attr('id')] = this;
+        }
+
         Garnish.addModalAttributes(this.$outerContainer);
 
         Craft.trapFocusWithin(this.$container);
@@ -199,6 +203,11 @@
         this.$outerContainer = null;
         this.$container = null;
 
+        Craft.Slideout.instances = Craft.filterObject(
+          Craft.Slideout.instances,
+          (instance) => instance !== this
+        );
+
         this.base();
       },
     },
@@ -211,6 +220,7 @@
         closeOnShadeClick: true,
         triggerElement: null,
       },
+      instances: {},
       openPanels: [],
       addPanel: function (panel) {
         Craft.Slideout.openPanels.unshift(panel);
@@ -236,7 +246,7 @@
         Craft.Slideout.openPanels.forEach((panel, i) => {
           panel.$container.css(
             Garnish.ltr ? 'left' : 'right',
-            `${50 * ((totalPanels - i) / totalPanels)}vw`
+            `${45 * ((totalPanels - i) / totalPanels)}vw`
           );
         });
 

@@ -48,7 +48,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
           '<div id="transferselect' +
           this.id +
           '" class="elementselect">' +
-          '<div class="elements"></div>' +
+          '<ul class="elements"></ul>' +
           '<button type="button" class="btn add icon dashed">' +
           Craft.t('app', 'Choose a user') +
           '</button>' +
@@ -68,14 +68,15 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         text: Craft.t('app', 'Cancel'),
       }).appendTo($buttons);
 
+      const $contentSummary = $body.find('.content-summary');
       if (settings.contentSummary.length) {
         for (let i = 0; i < settings.contentSummary.length; i++) {
-          $body
+          $contentSummary
             .find('ul')
             .append($('<li/>', {text: settings.contentSummary[i]}));
         }
       } else {
-        $body.find('ul').remove();
+        $contentSummary.find('ul').remove();
       }
 
       this.$deleteActionRadios = $body.find('input[type=radio]');
@@ -196,7 +197,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
     onFadeIn: function () {
       // Auto-focus the first radio
       if (!Garnish.isMobileBrowser(true)) {
-        this.$deleteActionRadios.first().trigger('focus');
+        this.$deleteActionRadios.first().focus();
       }
 
       this.base();

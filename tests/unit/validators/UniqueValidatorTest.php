@@ -70,7 +70,7 @@ class UniqueValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function uniqueValidatorValidateDataProvider(): array
+    public static function uniqueValidatorValidateDataProvider(): array
     {
         return [
             'existing' => ['handle', 1000, ['targetClass' => UserGroupRecord::class], true],

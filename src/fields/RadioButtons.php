@@ -31,9 +31,9 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function icon(): string
     {
-        return sprintf('\\%s', SingleOptionFieldData::class);
+        return 'circle-dot';
     }
 
     /**
@@ -47,7 +47,7 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var SingleOptionFieldData $value */
         if (!$value->valid) {

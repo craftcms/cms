@@ -1,0 +1,17 @@
+<div class="modal login-modal fitted" lang="{{ craft.app.getTargetLanguage() }}">
+  <div class="body">
+    <div class="login-modal-intro readable">
+      {% if forElevatedSession %}
+        <h1>{{ 'Confirm your identity.'|t('app') }}</h1>
+        <p>{{ 'You must reverify your identity before proceeding.'|t('app') }}</p>
+      {% else %}
+        <h1>{{ 'Your session has ended.'|t('app')|widont }}</h1>
+        <p>{{ 'Sign back in to continue.'|t('app') }}</p>
+      {% endif %}
+    </div>
+
+    <div class="login-modal-form">
+      {% include '_special/login.twig' %}
+    </div>
+  </div>
+</div>

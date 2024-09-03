@@ -67,7 +67,7 @@ class DateRangeHelperTest extends TestCase
     /**
      * @return array[]
      */
-    public function dateRangeByTypeDataProvider(): array
+    public static function dateRangeByTypeDataProvider(): array
     {
         return [
             'today' => [
@@ -109,41 +109,38 @@ class DateRangeHelperTest extends TestCase
     }
 
     /**
+     * @param DateInterval $expected
      * @param float|int $length
      * @param string $periodType
-     * @param DateInterval $expected
      * @return void
      * @dataProvider getDateIntervalByTimePeriodDataProvider
      */
-    public function testGetDateIntervalByTimePeriod(float|int $length, string $periodType, DateInterval $expected): void
+    public function testGetDateIntervalByTimePeriod(DateInterval $expected, float|int $length, string $periodType): void
     {
+        $now = DateTimeHelper::now();
         $dateInterval = DateRange::dateIntervalByTimePeriod($length, $periodType);
-        self::assertEquals($expected, $dateInterval);
+        self::assertEquals((clone $now)->add($expected)->getTimestamp(), (clone $now)->add($dateInterval)->getTimestamp());
     }
 
     /**
      * @return array[]
      * @throws Exception
      */
-    public function getDateIntervalByTimePeriodDataProvider(): array
+    public static function getDateIntervalByTimePeriodDataProvider(): array
     {
-        $now = new DateTime('now', new DateTimeZone('America/Los_Angeles'));
-        $then = (clone $now)->modify("+" . (86400 * 4) . " seconds");
-        $fourDays = $now->diff($then);
-        $then->modify('+43200 seconds');
-        $fourAndHalfDays = $now->diff($then);
-        $fourAndHalfHours = (new DateInterval('PT4H'));
-        $fourAndHalfHours->i = 30;
-        $fourAndHalfMinutes = (new DateInterval('PT4M'));
-        $fourAndHalfMinutes->s = 30;
-
         return [
-            'daysFull' => [4, DateRange::PERIOD_DAYS_FROM_NOW, $fourDays],
-            'daysDecimal' => [4.5, DateRange::PERIOD_DAYS_FROM_NOW, $fourAndHalfDays],
-            'hoursFull' => [4, DateRange::PERIOD_HOURS_FROM_NOW, new DateInterval('PT4H')],
-            'hoursDecimal' => [4.5, DateRange::PERIOD_HOURS_FROM_NOW, $fourAndHalfHours],
-            'minutesFull' => [4, DateRange::PERIOD_MINUTES_FROM_NOW, new DateInterval('PT4M')],
-            'minutesDecimal' => [4.5, DateRange::PERIOD_MINUTES_FROM_NOW, $fourAndHalfMinutes],
+            'daysFull' => [DateInterval::createFromDateString('4 days'), 4, DateRange::PERIOD_DAYS_FROM_NOW],
+            'daysDecimal' => [DateInterval::createFromDateString('4 days + 12 hours'), 4.5, DateRange::PERIOD_DAYS_FROM_NOW],
+            'hoursFull' => [DateInterval::createFromDateString('4 hours'), 4, DateRange::PERIOD_HOURS_FROM_NOW],
+            'hoursDecimal' => [DateInterval::createFromDateString('4 hours + 30 minutes'), 4.5, DateRange::PERIOD_HOURS_FROM_NOW],
+            'minutesFull' => [DateInterval::createFromDateString('4 minutes'), 4, DateRange::PERIOD_MINUTES_FROM_NOW],
+            'minutesDecimal' => [DateInterval::createFromDateString('4 minutes + 30 seconds'), 4.5, DateRange::PERIOD_MINUTES_FROM_NOW],
+            'daysFullNeg' => [DateInterval::createFromDateString('-4 days'), -4, DateRange::PERIOD_DAYS_FROM_NOW],
+            'daysDecimalNeg' => [DateInterval::createFromDateString('-4 days - 12 hours'), -4.5, DateRange::PERIOD_DAYS_FROM_NOW],
+            'hoursFullNeg' => [DateInterval::createFromDateString('-4 hours'), -4, DateRange::PERIOD_HOURS_FROM_NOW],
+            'hoursDecimalNeg' => [DateInterval::createFromDateString('-4 hours - 30 minutes'), -4.5, DateRange::PERIOD_HOURS_FROM_NOW],
+            'minutesFullNeg' => [DateInterval::createFromDateString('-4 minutes'), -4, DateRange::PERIOD_MINUTES_FROM_NOW],
+            'minutesDecimalNeg' => [DateInterval::createFromDateString('-4 minutes - 30 seconds'), -4.5, DateRange::PERIOD_MINUTES_FROM_NOW],
         ];
     }
 

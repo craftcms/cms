@@ -8,14 +8,15 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
-use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
-use craft\models\EntryType as EntryTypeModel;
+use craft\models\EntryType;
 use craft\models\GqlSchema;
+use craft\models\Section;
 use craft\models\Site;
 use craft\services\Gql as GqlService;
 use GraphQL\Language\AST\ListValueNode;
@@ -139,25 +140,6 @@ class Gql
     }
 
     /**
-     * Return true if active schema can mutate entries.
-     *
-     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
-     * @return bool
-     * @since 3.5.0
-     */
-    public static function canMutateEntries(?GqlSchema $schema = null): bool
-    {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
-
-        // Singles don't have the `edit` action.
-        if (!isset($allowedEntities['entrytypes'])) {
-            $allowedEntities = self::extractAllowedEntitiesFromSchema('save', $schema);
-        }
-
-        return isset($allowedEntities['entrytypes']);
-    }
-
-    /**
      * Return true if active schema can mutate tags.
      *
      * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
@@ -218,7 +200,10 @@ class Gql
     public static function canQueryEntries(?GqlSchema $schema = null): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
-        return isset($allowedEntities['sections'], $allowedEntities['entrytypes']);
+        return (
+            isset($allowedEntities['sections']) ||
+            isset($allowedEntities['nestedentryfields'])
+        );
     }
 
     /**
@@ -286,7 +271,7 @@ class Gql
      *
      * @param string $typeName The union type name.
      * @param array $includedTypes The type the union should include
-     * @param ?callable $resolveFunction The resolver function to use to resolve a specific type. If not provided,
+     * @param callable|null $resolveFunction The resolver function to use to resolve a specific type. If not provided,
      * a default one will be used that is able to resolve Craft elements.
      * @return mixed
      */
@@ -400,15 +385,12 @@ class Gql
     {
         unset($arguments['immediately']);
 
-        if (!empty($arguments['handle'])) {
-            $transform = $arguments['handle'];
-        } elseif (!empty($arguments['transform'])) {
-            $transform = $arguments['transform'];
-        } else {
-            $transform = $arguments;
+        // Remap handle to transform to work with image transform normalization
+        if (isset($arguments['handle'])) {
+            $arguments = $arguments['handle'];
         }
 
-        return $transform;
+        return $arguments;
     }
 
     /**
@@ -589,14 +571,59 @@ class Gql
     /**
      * Return all entry types a given (or loaded) schema contains.
      *
-     * @return EntryTypeModel[]
+     * @return EntryType[]
      */
     public static function getSchemaContainedEntryTypes(?GqlSchema $schema = null): array
     {
+        $entryTypes = [];
+
+        foreach (static::getSchemaContainedSections($schema) as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $entryTypes[$entryType->uid] = $entryType;
+            }
+        }
+
+        foreach (static::getSchemaContainedNestedEntryFields($schema) as $field) {
+            foreach ($field->getFieldLayoutProviders() as $provider) {
+                if ($provider instanceof EntryType) {
+                    $entryTypes[$provider->uid] = $provider;
+                }
+            }
+        }
+
+        return array_values($entryTypes);
+    }
+
+    /**
+     * Returns all sections a given (or loaded) schema contains.
+     *
+     * @return Section[]
+     * @since 5.0.0
+     */
+    public static function getSchemaContainedSections(?GqlSchema $schema = null): array
+    {
         return array_filter(
-            Craft::$app->getSections()->getAllEntryTypes(),
-            static fn($entryType) => self::isSchemaAwareOf(EntryElement::gqlScopesByContext($entryType), $schema)
+            Craft::$app->getEntries()->getAllSections(),
+            fn(Section $section) => static::isSchemaAwareOf("sections.$section->uid", $schema),
         );
+    }
+
+    /**
+     * Returns all nested entry fields a given (or loaded) schema contains.
+     *
+     * @return ElementContainerFieldInterface[]
+     * @since 5.0.0
+     */
+    public static function getSchemaContainedNestedEntryFields(?GqlSchema $schema = null): array
+    {
+        $fieldsService = Craft::$app->getFields();
+        /** @var ElementContainerFieldInterface[] $fields */
+        $fields = array_merge(...array_map(
+            fn(string $type) => $fieldsService->getFieldsByType($type),
+            $fieldsService->getNestedEntryFieldTypes()
+        ));
+        return array_filter($fields, fn(ElementContainerFieldInterface $field) =>
+            static::isSchemaAwareOf("nestedentryfields.$field->uid", $schema));
     }
 
     /**
@@ -617,5 +644,28 @@ class Gql
             Craft::$app->getErrorHandler()->logException($e);
             throw $e;
         }
+    }
+
+    /**
+     * Returns whether the given GraphQL query looks like an introspection query.
+     *
+     * @param string $query
+     * @return bool
+     * @since 5.1.8
+     */
+    public static function isIntrospectionQuery(string $query): bool
+    {
+        // strtok() won’t find a token if the string starts with it
+        /** @var string|false $tok */
+        $tok = strtok(" $query", '{');
+        if ($tok === false) {
+            return false;
+        }
+        $tok = strtok('({}');
+        if ($tok === false) {
+            return false;
+        }
+        $tok = trim($tok);
+        return in_array($tok, ['__schema', '__type']);
     }
 }

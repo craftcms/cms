@@ -8,6 +8,7 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\console\Controller;
 use craft\elements\Address;
@@ -16,11 +17,10 @@ use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
-use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
-use craft\events\BatchElementActionEvent;
+use craft\events\MultiElementActionEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -54,7 +54,7 @@ class ResaveController extends Controller
         // empty
         if ($to === ':empty:') {
             return function() {
-                return null;
+                return '';
             };
         }
 
@@ -170,6 +170,12 @@ class ResaveController extends Controller
     public ?string $section = null;
 
     /**
+     * @var bool Whether all sections’ entries should be saved.
+     * @since 5.2.0
+     */
+    public bool $allSections = false;
+
+    /**
      * @var string|null The type handle(s) of the elements to resave.
      * @since 3.1.16
      */
@@ -181,7 +187,7 @@ class ResaveController extends Controller
     public ?string $volume = null;
 
     /**
-     * @var string|null The field handle to save Matrix blocks for.
+     * @var string|null The field handle to save nested entries for.
      */
     public ?string $field = null;
 
@@ -230,6 +236,12 @@ class ResaveController extends Controller
     public bool $ifEmpty = false;
 
     /**
+     * @var bool Whether the `--set` attribute should only be set if the current value doesn’t validate.
+     * @since 5.1.0
+     */
+    public bool $ifInvalid = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID): array
@@ -260,6 +272,9 @@ class ResaveController extends Controller
                 break;
             case 'entries':
                 $options[] = 'section';
+                $options[] = 'allSections';
+                $options[] = 'field';
+                $options[] = 'ownerId';
                 $options[] = 'type';
                 $options[] = 'drafts';
                 $options[] = 'provisionalDrafts';
@@ -267,16 +282,12 @@ class ResaveController extends Controller
                 $options[] = 'propagateTo';
                 $options[] = 'setEnabledForSite';
                 break;
-            case 'matrix-blocks':
-                $options[] = 'field';
-                $options[] = 'ownerId';
-                $options[] = 'type';
-                break;
         }
 
         $options[] = 'set';
         $options[] = 'to';
         $options[] = 'ifEmpty';
+        $options[] = 'ifInvalid';
 
         return $options;
     }
@@ -371,26 +382,11 @@ class ResaveController extends Controller
     public function actionEntries(): int
     {
         $criteria = [];
-        if (isset($this->section)) {
+        if ($this->allSections) {
+            $criteria['section'] = '*';
+        } elseif (isset($this->section)) {
             $criteria['section'] = explode(',', $this->section);
         }
-        if (isset($this->type)) {
-            $criteria['type'] = explode(',', $this->type);
-        }
-        return $this->resaveElements(Entry::class, $criteria);
-    }
-
-    /**
-     * Re-saves Matrix blocks.
-     *
-     * You must supply the `--field` or `--element-id` argument for this to work properly.
-     *
-     * @return int
-     * @since 3.2.0
-     */
-    public function actionMatrixBlocks(): int
-    {
-        $criteria = [];
         if (isset($this->field)) {
             $criteria['field'] = explode(',', $this->field);
         }
@@ -400,7 +396,7 @@ class ResaveController extends Controller
         if (isset($this->type)) {
             $criteria['type'] = explode(',', $this->type);
         }
-        return $this->resaveElements(MatrixBlock::class, $criteria);
+        return $this->resaveElements(Entry::class, $criteria);
     }
 
     /**
@@ -451,6 +447,7 @@ class ResaveController extends Controller
                 'set' => $this->set,
                 'to' => $this->to,
                 'ifEmpty' => $this->ifEmpty,
+                'ifInvalid' => $this->ifInvalid,
                 'touch' => $this->touch,
                 'updateSearchIndex' => $this->updateSearchIndex,
             ]));
@@ -561,7 +558,7 @@ class ResaveController extends Controller
         $elementsService = Craft::$app->getElements();
         $fail = false;
 
-        $beforeCallback = function(BatchElementActionEvent $e) use ($query, $count, $to) {
+        $beforeCallback = function(MultiElementActionEvent $e) use ($query, $count, $to) {
             if ($e->query === $query) {
                 $label = isset($this->propagateTo) ? 'Propagating' : 'Resaving';
                 $element = $e->element;
@@ -581,8 +578,22 @@ class ResaveController extends Controller
                     }
 
                     try {
-                        if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($element, $this->set))) {
-                            $element->{$this->set} = $to($element);
+                        if (isset($this->set)) {
+                            $set = true;
+                            if ($this->ifEmpty) {
+                                if (!ElementHelper::isAttributeEmpty($element, $this->set)) {
+                                    $set = false;
+                                }
+                            } elseif ($this->ifInvalid) {
+                                $element->setScenario(Element::SCENARIO_LIVE);
+                                if ($element->validate($this->set) && $element->validate("field:$this->set")) {
+                                    $set = false;
+                                }
+                            }
+
+                            if ($set) {
+                                $element->{$this->set} = $to($element);
+                            }
                         }
                     } catch (Throwable $e) {
                         throw new InvalidElementException($element, $e->getMessage());
@@ -591,7 +602,7 @@ class ResaveController extends Controller
             }
         };
 
-        $afterCallback = function(BatchElementActionEvent $e) use ($query, &$fail) {
+        $afterCallback = function(MultiElementActionEvent $e) use ($query, &$fail) {
             if ($e->query === $query) {
                 $element = $e->element;
                 if ($e->exception) {

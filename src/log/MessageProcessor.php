@@ -3,6 +3,7 @@
 namespace craft\log;
 
 use Illuminate\Support\Collection;
+use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
 
 /**
@@ -18,13 +19,21 @@ class MessageProcessor implements ProcessorInterface
     /**
      * @inheritdoc
      */
-    public function __invoke(array $record): array
+    public function __invoke(LogRecord $record): LogRecord
     {
         $record = Collection::make($record);
         $record = $this->_extractCategory($record);
         $record = $this->_filterEmptyContext($record, 'trace');
 
-        return $record->all();
+        return new LogRecord(
+            datetime: $record->get('datetime'),
+            channel: $record->get('channel'),
+            level: $record->get('level'),
+            message: $record->get('message'),
+            context: $record->get('context'),
+            extra: $record->get('extra'),
+            formatted: $record->get('formatted'),
+        );
     }
 
     private function _extractCategory(Collection $record): Collection

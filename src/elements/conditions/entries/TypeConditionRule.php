@@ -9,7 +9,6 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use craft\models\Section;
 
 /**
  * Entry type condition rule.
@@ -36,21 +35,6 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
     }
 
     /**
-     * @var Section[]
-     */
-    private array $_sections = [];
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        $this->_sections = Craft::$app->getSections()->getAllSections();
-
-        parent::init();
-    }
-
-    /**
      * @inheritdoc
      */
     public function setAttributes($values, $safeOnly = true): void
@@ -69,12 +53,9 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
     protected function options(): array
     {
         $options = [];
-        foreach ($this->_sections as $section) {
-            foreach ($section->getEntryTypes() as $entryType) {
-                $options[$entryType->uid] = sprintf('%s - %s', $section->name, $entryType->name);
-            }
+        foreach (Craft::$app->getEntries()->getAllEntryTypes() as $entryType) {
+            $options[$entryType->uid] = $entryType->getUiLabel();
         }
-
         return $options;
     }
 
@@ -84,8 +65,8 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $sections = Craft::$app->getSections();
-        $query->typeId($this->paramValue(fn($uid) => $sections->getEntryTypeByUid($uid)->id ?? null));
+        $entriesService = Craft::$app->getEntries();
+        $query->typeId($this->paramValue(fn($uid) => $entriesService->getEntryTypeByUid($uid)->id ?? null));
     }
 
     /**

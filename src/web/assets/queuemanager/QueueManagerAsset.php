@@ -37,6 +37,13 @@ class QueueManagerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
+    public $css = [
+        'css/queue-manager.css',
+    ];
+
+    /**
+     * @inheritdoc
+     */
     public $js = [
         'queue-manager.js',
     ];

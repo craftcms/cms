@@ -2,20 +2,23 @@
 {% set keyPrefix = keyPrefix ?? '' %}
 {% set isTopLevel = not keyPrefix %}
 
-{% if isTopLevel %}
+{% if isTopLevel and (baseSortOptions is not defined or tableColumns is not defined) %}
     {% set elementInstance = craft.app.elements.createElement(elementType) %}
-    {% set baseSortOptions = elementInstance.sortOptions()|map((option, key) => {
+    {% set baseSortOptions = baseSortOptions ?? elementInstance.sortOptions()|map((option, key) => {
         label: option.label ?? option,
         attr: option.attribute ?? option.orderBy ?? key,
         defaultDir: option.defaultDir ?? 'asc',
     })|values %}
-    {% set tableColumns = craft.app.elementSources.getAvailableTableAttributes(elementType) %}
+    {% set tableColumns = tableColumns ?? craft.app.elementSources.getAvailableTableAttributes(elementType) %}
 {% endif %}
 
-{% macro sourceLink(key, source, isTopLevel, elementType, baseSortOptions, tableColumns) %}
+{% macro sourceLink(key, source, isTopLevel, elementType, baseSortOptions, tableColumns, defaultTableColumns) %}
     {{ tag('a', {
+        role: 'button',
+        tabindex: '0',
         data: {
             key: key,
+            'label': source.label,
             'has-thumbs': (source.hasThumbs ?? false) ? true : false,
             'has-structure': (source.structureId ?? null)|boolean,
             'default-sort': source.defaultSort ?? false,
@@ -27,6 +30,7 @@
                         defaultDir: option.defaultDir ?? 'asc'
                     })|values)
                 : false,
+            'source-item': true,
             'table-col-opts': isTopLevel
                 ? tableColumns
                     |merge(craft.app.elementSources.getSourceTableAttributes(elementType, key))
@@ -34,14 +38,14 @@
                     |values
                 : false,
             'default-table-cols': isTopLevel
-                ? craft.app.elementSources.getTableAttributes(elementType, key)
+                ? (defaultTableColumns ?? craft.app.elementSources.getTableAttributes(elementType, key))
                     |map(a => a[0])
                     |filter(a => a != 'title')
                     |values
                 : false,
             'default-source-path': (source.defaultSourcePath ?? false) ? source.defaultSourcePath|json_encode : false,
             sites: (source.sites ?? false) ? source.sites|join(',') : false,
-            'override-status': (source.criteria.status ?? false) ? true : false,
+            criteria: source.criteria ?? {},
             disabled: source.disabled ?? false,
             'default-filter': source.defaultFilter ?? false,
         }|merge(source.data ?? {}),
@@ -61,15 +65,21 @@
             {{ (svg(source.iconMask, sanitize=true, namespace=true) ?: "<span data-icon='#{source.iconMask}'></span>")|raw }}
         </span>
     {% endif %}
-    <span class="label">{{ source.label|trim is not same as('') ? source.label : '(blank)'|t('app') }}</span>
-    {% if source.badgeCount is defined %}
+    <span class="label">
+        {% if source.label|trim is not same as('') %}
+            {{ (source.type ?? null) == 'custom' ? source.label|t('site') : source.label }}
+        {% else %}
+            {{ '(blank)'|t('app') }}
+        {% endif %}
+    </span>
+    {% if source.badgeCount ?? false %}
         <span class="badge" aria-hidden="true">{{ source.badgeCount|number(decimals=0) }}</span>
         {{ tag('span', {
             class: 'visually-hidden',
             data: {
                 notification: true,
             },
-            text: '{num, number} {num, plural, =1{notification} other{notifications}}'|t('app', {
+            text: source.badgeLabel ?? '{num, number} {num, plural, =1{notification} other{notifications}}'|t('app', {
                 num: source.badgeCount,
             }),
         }) }}
@@ -91,14 +101,14 @@
                 <span>{{ source.heading|t('site') }}</span>
                 <ul>
             {% set nestedUnderHeading = true %}
-        {% else %}
+        {% elseif (source.sites ?? null) is not same as([]) %}
             {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}
             {% tag 'li' with {
                 class: [
                     (source.disabled ?? false) ? 'hidden' : null,
                 ]|filter,
             } %}
-                {{ _self.sourceLink(key, source, isTopLevel, elementType, baseSortOptions ?? null, tableColumns ?? null) }}
+                {{ _self.sourceLink(key, source, isTopLevel, elementType, baseSortOptions ?? null, tableColumns ?? null, defaultTableColumns ?? null) }}
                 {% if source.nested is defined and source.nested is not empty %}
                     <button class="toggle" aria-expanded="false" aria-label="{{ 'Show nested sources'|t('app') }}"></button>
                     {% include "_elements/sources" with {

@@ -10,7 +10,8 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
@@ -20,6 +21,7 @@ use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
 use yii\base\InvalidArgumentException;
+use yii\db\Schema;
 
 /**
  * Number represents a Number field.
@@ -27,7 +29,7 @@ use yii\base\InvalidArgumentException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Number extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -53,9 +55,35 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function icon(): string
+    {
+        return 'input-numeric';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function phpType(): string
     {
         return 'int|float|null';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        $db = Craft::$app->getDb();
+        return $db->getIsMysql() ? sprintf('%s(65,16)', Schema::TYPE_DECIMAL) : Schema::TYPE_DECIMAL;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): ?array
+    {
+        $valueSql = static::valueSql($instances);
+        return Db::parseNumericParam($valueSql, $value, columnType: static::dbType());
     }
 
     /**
@@ -130,6 +158,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         $rules = parent::defineRules();
         $rules[] = [['defaultValue', 'min', 'max'], 'number'];
         $rules[] = [['decimals', 'size'], 'integer'];
+
         $rules[] = [
             ['max'],
             'compare',
@@ -166,15 +195,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
-    {
-        return Db::getNumericalColumnType($this->min, $this->max, $this->decimals);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value === null) {
             if (isset($this->defaultValue) && $this->isFresh($element)) {
@@ -216,7 +237,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
         $formatter = Craft::$app->getFormatter();
@@ -290,13 +311,20 @@ JS;
      */
     public function getElementConditionRuleType(): array|string|null
     {
+        if ($this->decimals) {
+            return [
+                'class' => NumberFieldConditionRule::class,
+                'step' => null,
+            ];
+        }
+
         return NumberFieldConditionRule::class;
     }
 
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if ($value === null) {
             return '';

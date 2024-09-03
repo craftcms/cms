@@ -8,6 +8,8 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Chippable;
+use craft\base\CpEditable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
@@ -16,6 +18,7 @@ use craft\elements\Category;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -29,12 +32,24 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class CategoryGroup extends Model implements FieldLayoutProviderInterface
+class CategoryGroup extends Model implements
+    Chippable,
+    CpEditable,
+    FieldLayoutProviderInterface
 {
     /** @since 3.7.0 */
     public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
     /** @since 3.7.0 */
     public const DEFAULT_PLACEMENT_END = 'end';
+
+    /**
+     * @inheritdoc
+     */
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getCategories()->getGroupById($id);
+    }
 
     /**
      * @var int|null ID
@@ -105,6 +120,30 @@ class CategoryGroup extends Model implements FieldLayoutProviderInterface
     /**
      * @inheritdoc
      */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl(): ?string
+    {
+        return $this->id ? UrlHelper::cpUrl("settings/categories/$this->id") : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels(): array
     {
         return [
@@ -167,6 +206,14 @@ class CategoryGroup extends Model implements FieldLayoutProviderInterface
     public function __toString(): string
     {
         return Craft::t('site', $this->name) ?: static::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
     }
 
     /**

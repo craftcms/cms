@@ -11,7 +11,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
   init: function () {
     this.base.apply(this, arguments);
-
     if (this.settings.canUpload) {
       this._attachUploader();
     }
@@ -23,7 +22,12 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       'keydown',
       this._onKeyDown.bind(this)
     );
-    this.elementSelect.on('focusItem', this._onElementFocus.bind(this));
+  },
+
+  elementSelectSettings() {
+    return Object.assign(this.base(), {
+      makeFocusable: true,
+    });
   },
 
   /**
@@ -38,23 +42,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  onAddElements: function () {
-    this.$elements
-      .find('.elementthumb')
-      .addClass('open-preview')
-      .on('click', (ev) => {
-        this.clearOpenPreviewTimeout();
-        this.openPreviewTimeout = setTimeout(() => {
-          this.openPreview();
-          this.openPreviewTimeout = null;
-        }, 500);
-      })
-      .on('dblclick', (ev) => {
-        this.clearOpenPreviewTimeout();
-      });
-    this.base();
-  },
-
   clearOpenPreviewTimeout: function () {
     if (this.openPreviewTimeout) {
       clearTimeout(this.openPreviewTimeout);
@@ -62,49 +49,20 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  openPreview: function () {
+  openPreview: function ($element) {
     if (Craft.PreviewFileModal.openInstance) {
-      Craft.PreviewFileModal.openInstance.selfDestruct();
+      Craft.PreviewFileModal.openInstance.hide();
     } else {
-      var $element = this.elementSelect.$focusedItem;
+      if (!$element) {
+        $element = this.$elements
+          .filter(':focus')
+          .add(this.$elements.has(':focus'));
+      }
 
       if ($element.length) {
-        this._loadPreview($element);
+        Craft.PreviewFileModal.showForAsset($element, this.elementSelect);
       }
     }
-  },
-
-  /**
-   * Handle element being focused
-   * @private
-   */
-  _onElementFocus: function (ev) {
-    var $element = $(ev.item);
-
-    if (Craft.PreviewFileModal.openInstance && $element.length) {
-      this._loadPreview($element);
-    }
-  },
-
-  /**
-   * Load the preview for an asset
-   * @private
-   */
-  _loadPreview: function ($element) {
-    var settings = {
-      minGutter: 50,
-    };
-
-    if ($element.data('image-width')) {
-      settings.startingWidth = $element.data('image-width');
-      settings.startingHeight = $element.data('image-height');
-    }
-
-    new Craft.PreviewFileModal(
-      $element.data('id'),
-      this.elementSelect,
-      settings
-    );
   },
 
   /**
@@ -210,19 +168,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
 
     var $newElement = element.$element;
 
-    // Make a couple tweaks
-    $newElement.addClass('removable');
-    $newElement.prepend(
-      '<input type="hidden" name="' +
-        this.settings.name +
-        '[]" value="' +
-        element.id +
-        '">' +
-        '<a class="delete icon" title="' +
-        Craft.t('app', 'Remove') +
-        '"></a>'
-    );
-
     $newElement.appendTo(this.$elementsContainer);
 
     var margin = -($newElement.outerWidth() + 10);
@@ -254,7 +199,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   /**
    * On upload progress.
    */
-  _onUploadProgress: function (event, data) {
+  _onUploadProgress: function (event, data = null) {
     data = event instanceof CustomEvent ? event.detail : data;
 
     var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
@@ -264,22 +209,37 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   /**
    * On a file being uploaded.
    */
-  _onUploadComplete: function (event, data) {
+  _onUploadComplete: function (event, data = null) {
     const result = event instanceof CustomEvent ? event.detail : data.result;
 
-    const parameters = {
-      elementId: result.assetId,
-      siteId: this.settings.criteria.siteId,
-      thumbSize: this.settings.viewMode,
-    };
-
-    Craft.sendActionRequest('POST', 'elements/get-element-html', {
-      data: parameters,
+    Craft.sendActionRequest('POST', 'app/render-elements', {
+      data: {
+        elements: [
+          {
+            type: 'craft\\elements\\Asset',
+            id: result.assetId,
+            siteId: this.settings.criteria.siteId,
+            instances: [
+              {
+                context: 'field',
+                ui: ['list', 'large'].includes(this.settings.viewMode)
+                  ? 'chip'
+                  : 'card',
+                size: this.settings.viewMode === 'large' ? 'large' : 'small',
+              },
+            ],
+          },
+        ],
+      },
     })
-      .then((response) => {
-        var html = $(response.data.html);
-        Craft.appendHeadHtml(response.data.headHtml);
-        this.selectUploadedFile(Craft.getElementInfo(html));
+      .then(async ({data}) => {
+        const elementInfo = Craft.getElementInfo(
+          data.elements[result.assetId][0]
+        );
+        this.selectElements([elementInfo]);
+
+        await Craft.appendHeadHtml(data.headHtml);
+        await Craft.appendBodyHtml(data.bodyHtml);
 
         // Last file
         if (this.uploader.isLastUpload()) {
@@ -288,8 +248,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
           this.$container.trigger('change');
         }
       })
-      .catch(({response}) => {
-        Craft.cp.displayError(response.data.message);
+      .catch((error) => {
+        if (error && error.response) {
+          Craft.cp.displayError(response.data.message);
+        } else {
+          Craft.cp.displayError();
+          throw error;
+        }
       });
 
     Craft.cp.runQueue();
@@ -298,16 +263,24 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   /**
    * On Upload Failure.
    */
-  _onUploadFailure: function (event, data) {
+  _onUploadFailure: function (event, data = null) {
     const response =
       event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
-    let {message, filename} = response || {};
+    let {message, filename, errors} = response || {};
+
+    filename = filename || data?.files?.[0].name;
+
+    let errorMessages = errors ? Object.values(errors).flat() : [];
 
     if (!message) {
-      message = filename
-        ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
-        : Craft.t('app', 'Upload failed.');
+      if (errorMessages.length) {
+        message = errorMessages.join('\n');
+      } else if (filename) {
+        message = Craft.t('app', 'Upload failed for “{filename}”.', {filename});
+      } else {
+        message = Craft.t('app', 'Upload failed.');
+      }
     }
 
     Craft.cp.displayError(message);

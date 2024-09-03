@@ -60,7 +60,7 @@ class TypeManagerTest extends TestCase
         self::assertSame($fields, $this->_gqlService->prepareFieldDefinitions($fields, $cachedName));
     }
 
-    public function fieldModificationDataProvider(): array
+    public static function fieldModificationDataProvider(): array
     {
         return [
             [

@@ -3,11 +3,11 @@
 namespace craft\elements\conditions;
 
 use Craft;
-use craft\base\BlockElementInterface;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
+use craft\fields\BaseRelationField;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
@@ -94,15 +94,14 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     private function _elementTypeOptions(): array
     {
         $options = [];
-        foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+        foreach (Craft::$app->getFields()->getRelationalFieldTypes() as $field) {
+            /** @var string|BaseRelationField $field */
             /** @var string|ElementInterface $elementType */
-            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-            if (!is_subclass_of($elementType, BlockElementInterface::class)) {
-                $options[] = [
-                    'value' => $elementType,
-                    'label' => $elementType::displayName(),
-                ];
-            }
+            $elementType = $field::elementType();
+            $options[] = [
+                'value' => $elementType,
+                'label' => $elementType::displayName(),
+            ];
         }
         return $options;
     }

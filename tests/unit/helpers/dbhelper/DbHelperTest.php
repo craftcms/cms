@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\helpers\dbhelper;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
@@ -74,7 +73,7 @@ class DbHelperTest extends TestCase
 
     /**
      * @dataProvider parseParamDataProvider
-     * @param string|array $expected
+     * @param array|null $expected
      * @param string $column
      * @param mixed $value
      * @param string $defaultOperator
@@ -82,7 +81,7 @@ class DbHelperTest extends TestCase
      * @param string|null $columnType
      */
     public function testParseParam(
-        string|array $expected,
+        ?array $expected,
         string $column,
         mixed $value,
         string $defaultOperator = '=',
@@ -118,20 +117,6 @@ class DbHelperTest extends TestCase
     public function testEscapeForLike(string $expected, string $value): void
     {
         self::assertSame($expected, Db::escapeForLike($value));
-    }
-
-    /**
-     * @dataProvider extractGlueDataProvider
-     *
-     * @param string|null $expectedGlue
-     * @param mixed $expectedValue
-     * @param mixed $value
-     */
-    public function testExtractGlue(?string $expectedGlue, $expectedValue, $value): void
-    {
-        $glue = Db::extractGlue($value);
-        self::assertEquals($expectedGlue, $glue);
-        self::assertEquals($expectedValue, $value);
     }
 
     /**
@@ -378,7 +363,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function parseParamDataProvider(): array
+    public static function parseParamDataProvider(): array
     {
         return [
             'basic' => [
@@ -425,27 +410,27 @@ class DbHelperTest extends TestCase
                 'raaa',
             ],
             [
-                '',
+                null,
                 'foo',
                 'not',
             ],
             [
-                '',
+                null,
                 'foo',
                 [],
             ],
             [
-                '',
+                null,
                 '',
                 '',
             ],
             [
-                '',
+                null,
                 'foo',
                 null,
             ],
             [
-                '',
+                null,
                 'foo',
                 '',
             ],
@@ -541,7 +526,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function escapeParamDataProvider(): array
+    public static function escapeParamDataProvider(): array
     {
         return [
             ['\*', '*'],
@@ -562,7 +547,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function escapeCommasDataProvider(): array
+    public static function escapeCommasDataProvider(): array
     {
         return [
             ['foo\, bar', 'foo, bar'],
@@ -574,7 +559,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function escapeForLikeDataProvider(): array
+    public static function escapeForLikeDataProvider(): array
     {
         return [
             ['\\_foo', '_foo'],
@@ -586,22 +571,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function extractGlueDataProvider(): array
-    {
-        return [
-            ['and', ['foo', 'bar'], ['and', 'foo', 'bar']],
-            ['or', ['foo', 'bar'], ['or', 'foo', 'bar']],
-            ['not', ['foo', 'bar'], ['not', 'foo', 'bar']],
-            ['and', ['foo', 'bar'], ['AND', 'foo', 'bar']],
-            [null, ['foo', 'bar'], ['foo', 'bar']],
-            [null, 'foo', 'foo'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function parseColumnTypeDataProvider(): array
+    public static function parseColumnTypeDataProvider(): array
     {
         return [
             ['string', 'STRING(255)'],
@@ -613,7 +583,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getNumericalColumnTypeDataProvider(): array
+    public static function getNumericalColumnTypeDataProvider(): array
     {
         return [
             'smallint1-minus' => ['smallint(1)', -0, -5],
@@ -634,7 +604,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function parseColumnLengthDataProvider(): array
+    public static function parseColumnLengthDataProvider(): array
     {
         return [
             [2, 'integer(2)'],
@@ -650,7 +620,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getSimplifiedColumnTypeDataProvider(): array
+    public static function getSimplifiedColumnTypeDataProvider(): array
     {
         return [
             ['textual', 'Textual'],
@@ -667,7 +637,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function deleteIfExistsDataProvider(): array
+    public static function deleteIfExistsDataProvider(): array
     {
         return [
             [0, Table::USERS, ['id' => 1234567890]],
@@ -678,7 +648,7 @@ class DbHelperTest extends TestCase
      * @return array
      * @throws \Exception
      */
-    public function prepareValueForDbDataProvider(): array
+    public static function prepareValueForDbDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
         $jsonableClass = new stdClass();
@@ -701,7 +671,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function areColumnTypesCompatibleDataProvider(): array
+    public static function areColumnTypesCompatibleDataProvider(): array
     {
         return [
             [true, 'Tinytext', 'Longtext'],
@@ -717,7 +687,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isNumericColumnTypeDataProvider(): array
+    public static function isNumericColumnTypeDataProvider(): array
     {
         return [
             [true, 'smallint'],
@@ -734,7 +704,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isTextualColumnTypeDataProvider(): array
+    public static function isTextualColumnTypeDataProvider(): array
     {
         return [
             [true, 'string(255)'],
@@ -758,7 +728,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getTextualColumnStorageCapacityDataProvider(): array
+    public static function getTextualColumnStorageCapacityDataProvider(): array
     {
         return [
             [1, Schema::TYPE_CHAR],
@@ -773,7 +743,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getMaxAllowedValueForNumericColumnDataProvider(): array
+    public static function getMaxAllowedValueForNumericColumnDataProvider(): array
     {
         return [
             [2147483647, 'integer(9)'],
@@ -785,7 +755,7 @@ class DbHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getMinAllowedValueForNumericColumnDataProvider(): array
+    public static function getMinAllowedValueForNumericColumnDataProvider(): array
     {
         return [
             [-2147483648, 'integer(9)'],
@@ -797,7 +767,7 @@ class DbHelperTest extends TestCase
      * @return array
      * @throws \Exception
      */
-    public function prepareValuesForDbDataProvider(): array
+    public static function prepareValuesForDbDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
         $jsonableClass = new stdClass();
@@ -816,7 +786,7 @@ class DbHelperTest extends TestCase
         ];
     }
 
-    public function rawTableShortNameDataProvider(): array
+    public static function rawTableShortNameDataProvider(): array
     {
         return [
             ['foo', 'foo'],

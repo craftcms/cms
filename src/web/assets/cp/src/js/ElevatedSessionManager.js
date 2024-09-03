@@ -1,5 +1,10 @@
 /** global: Craft */
 /** global: Garnish */
+import {
+  browserSupportsWebAuthn,
+  platformAuthenticatorIsAvailable,
+} from '@simplewebauthn/browser';
+
 /**
  * Elevated Session Manager
  */
@@ -7,12 +12,12 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
   {
     fetchingTimeout: false,
 
-    passwordModal: null,
-    $passwordInput: null,
-    $submitBtn: null,
-    $errorPara: null,
+    loginModal: null,
+    showingLoginModal: false,
 
-    callback: null,
+    onSuccess: null,
+    onCancel: null,
+    success: false,
 
     /**
      * @callback requireElevatedSessionCallback
@@ -20,151 +25,101 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
     /**
      * Requires that the user has an elevated session.
      *
-     * @param {requireElevatedSessionCallback} callback The callback function that should be called once the user has an elevated session
+     * @param {requireElevatedSessionCallback} onSuccess The callback function that should be called once the user has an elevated session
+     * @param {requireElevatedSessionCallback} [onCancel] The callback function that should be called if establishing an elevated session is cancelled
+     * @param {number} [minSafeElevatedSessionTimeout] The minimum amount of time that must be remaining on an existing elevated session
+     * (in seconds), for it to be considered safe. (Defaults to 5.)
      */
-    requireElevatedSession: function (callback) {
-      this.callback = callback;
+    async requireElevatedSession(
+      onSuccess,
+      onCancel,
+      minSafeElevatedSessionTimeout
+    ) {
+      this.onSuccess = onSuccess;
+      this.onCancel = onCancel;
 
       // Check the time remaining on the user’s elevated session (if any)
       this.fetchingTimeout = true;
 
-      Craft.sendActionRequest('POST', 'users/get-elevated-session-timeout')
-        .then((response) => {
-          this.fetchingTimeout = false;
-          if (
-            response.data.timeout === false ||
-            response.data.timeout >=
-              Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout
-          ) {
-            this.callback();
-          } else {
-            // Show the password modal
-            this.showPasswordModal();
-          }
-        })
-        .catch(() => {
-          this.fetchingTimeout = false;
-        });
-    },
+      let data;
 
-    showPasswordModal: function () {
-      if (!this.passwordModal) {
-        var $passwordModal = $(
-            '<form id="elevatedsessionmodal" class="modal secure fitted"/>'
-          ),
-          $body = $(
-            '<div class="body"><p>' +
-              Craft.t('app', 'Enter your password to continue.') +
-              '</p></div>'
-          ).appendTo($passwordModal),
-          $inputContainer = $('<div class="inputcontainer">').appendTo($body),
-          $inputsFlexContainer = $('<div class="flex"/>').appendTo(
-            $inputContainer
-          ),
-          $passwordContainer = $('<div class="flex-grow"/>').appendTo(
-            $inputsFlexContainer
-          ),
-          $buttonContainer = $('<td/>').appendTo($inputsFlexContainer),
-          $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo(
-            $passwordContainer
-          );
+      try {
+        const response = await Craft.sendActionRequest(
+          'POST',
+          'users/get-elevated-session-timeout'
+        );
+        data = response.data;
+      } finally {
+        this.fetchingTimeout = false;
+      }
 
-        this.$passwordInput = $(
-          '<input type="password" class="text password fullwidth" placeholder="' +
-            Craft.t('app', 'Password') +
-            '" autocomplete="current-password"/>'
-        ).appendTo($passwordWrapper);
-        this.$submitBtn = Craft.ui
-          .createSubmitButton({
-            class: 'disabled',
-            label: Craft.t('app', 'Submit'),
-            spinner: true,
-          })
-          .appendTo($buttonContainer);
-        this.$errorPara = $('<p class="error"/>').appendTo($body);
-
-        this.passwordModal = new Garnish.Modal($passwordModal, {
-          closeOtherModals: false,
-          onFadeIn: () => {
-            setTimeout(this.focusPasswordInput.bind(this), 100);
-          },
-          onFadeOut: () => {
-            this.$passwordInput.val('');
-          },
-        });
-
-        new Craft.PasswordInput(this.$passwordInput, {
-          onToggleInput: ($newPasswordInput) => {
-            this.$passwordInput = $newPasswordInput;
-          },
-        });
-
-        this.addListener(this.$passwordInput, 'input', 'validatePassword');
-        this.addListener($passwordModal, 'submit', 'submitPassword');
+      if (
+        data.timeout === false ||
+        data.timeout >=
+          (minSafeElevatedSessionTimeout ||
+            Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout)
+      ) {
+        this.onSuccess();
       } else {
-        this.passwordModal.show();
+        // Show the login modal
+        this.showLoginModal();
       }
     },
 
-    focusPasswordInput: function () {
-      if (!Garnish.isMobileBrowser(true)) {
-        this.$passwordInput.trigger('focus');
-      }
-    },
-
-    validatePassword: function () {
-      if (this.$passwordInput.val().length >= 6) {
-        this.$submitBtn.removeClass('disabled');
-        return true;
-      } else {
-        this.$submitBtn.addClass('disabled');
-        return false;
-      }
-    },
-
-    submitPassword: function (ev) {
-      if (ev) {
-        ev.preventDefault();
-      }
-
-      if (!this.validatePassword()) {
+    /**
+     * Shows the login modal.
+     */
+    async showLoginModal() {
+      if (this.showingLoginModal) {
         return;
       }
 
-      this.$submitBtn.addClass('loading');
-      this.clearLoginError();
+      this.showingLoginModal = true;
 
-      var data = {
-        currentPassword: this.$passwordInput.val(),
-      };
-
-      Craft.sendActionRequest('POST', 'users/start-elevated-session', {data})
-        .then((response) => {
-          this.$submitBtn.removeClass('loading');
-          this.passwordModal.hide();
-          this.callback();
-        })
-        .catch(({response}) => {
-          this.$submitBtn.removeClass('loading');
-          this.showPasswordError(
-            response.data.message || Craft.t('app', 'Incorrect password.')
-          );
-          Garnish.shake(this.passwordModal.$container);
-          this.focusPasswordInput();
-        });
-    },
-
-    showPasswordError: function (error) {
-      if (error === null || typeof error === 'undefined') {
-        error = Craft.t('app', 'A server error occurred.');
+      if (this.loginModal) {
+        this.loginModal.destroy();
       }
 
-      this.$errorPara.text(error);
-      this.passwordModal.updateSizeAndPosition();
-    },
+      const {data} = await Craft.sendActionRequest(
+        'POST',
+        'users/login-modal',
+        {
+          data: {
+            email: Craft.userEmail,
+            forElevatedSession: true,
+          },
+        }
+      );
+      const $container = $(data.html);
 
-    clearLoginError: function () {
-      this.showPasswordError('');
+      this.loginModal = new Garnish.Modal($container, {
+        closeOtherModals: false,
+        shadeClass: 'modal-shade dark login-modal-shade',
+        onFadeIn: async () => {
+          Craft.initUiElements($container);
+          new Craft.LoginForm($container.find('.login-container'), {
+            showPasskeyBtn: Craft.userHasPasskeys,
+            onLogin: () => {
+              this.success = true;
+              this.loginModal.hide();
+            },
+          });
+          await Craft.appendHeadHtml(data.headHtml);
+          await Craft.appendBodyHtml(data.bodyHtml);
+        },
+        onFadeOut: () => {
+          this.loginModal.destroy();
+          this.loginModal = null;
+        },
+        onHide: () => {
+          this.showingLoginModal = false;
+          if (this.success) {
+            this.onSuccess();
+          } else if (this.onCancel) {
+            this.onCancel();
+          }
+        },
+      });
     },
   },
   {

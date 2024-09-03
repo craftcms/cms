@@ -58,6 +58,11 @@
 {% endmacro %}
 
 
+{% macro colorSelect(config) %}
+    {% include "_includes/forms/colorSelect" with config only %}
+{% endmacro %}
+
+
 {% macro textarea(config) %}
     {% include "_includes/forms/textarea" with config only %}
 {% endmacro %}
@@ -65,6 +70,11 @@
 
 {% macro select(config) %}
     {% include "_includes/forms/select" with config only %}
+{% endmacro %}
+
+
+{% macro customSelect(config) %}
+    {% include "_includes/forms/customSelect" with config only %}
 {% endmacro %}
 
 
@@ -123,6 +133,16 @@
 {% endmacro %}
 
 
+{% macro componentSelect(config) %}
+    {% include "_includes/forms/componentSelect" with config only %}
+{% endmacro %}
+
+
+{% macro entryTypeSelect(config) %}
+    {% include "_includes/forms/entryTypeSelect" with config only %}
+{% endmacro %}
+
+
 {% macro autosuggest(config) %}
     {% include "_includes/forms/autosuggest" with config only %}
 {% endmacro %}
@@ -130,6 +150,11 @@
 
 {% macro timeZone(config) %}
     {% include "_includes/forms/timeZone" with config only %}
+{% endmacro %}
+
+
+{% macro iconPicker(config) %}
+    {% include '_includes/forms/iconPicker' with config only %}
 {% endmacro %}
 
 
@@ -145,6 +170,11 @@
 
 {% macro booleanMenu(config) %}
     {% include "_includes/forms/booleanMenu" with config only %}
+{% endmacro %}
+
+
+{% macro languageMenu(config) %}
+    {% include "_includes/forms/languageMenu" with config only %}
 {% endmacro %}
 
 
@@ -205,6 +235,12 @@
 {% endmacro %}
 
 
+{% macro colorSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "colorselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/colorSelect') }}
+{% endmacro %}
+
+
 {% macro dateTimeField(config) %}
     {% set config = config|merge({
         id: config.id ?? "datetime#{random()}",
@@ -223,6 +259,12 @@
 {% macro selectField(config) %}
     {% set config = config|merge({id: config.id ?? "select#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/select') }}
+{% endmacro %}
+
+
+{% macro customSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "customselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/customSelect') }}
 {% endmacro %}
 
 
@@ -313,6 +355,18 @@
 {% endmacro %}
 
 
+{% macro componentSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "componentselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/componentSelect') }}
+{% endmacro %}
+
+
+{% macro entryTypeSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "entrytypeselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/entryTypeSelect') }}
+{% endmacro %}
+
+
 {% macro autosuggestField(config) %}
     {% set config = config|merge({
         id: config.id ?? "autosuggest#{random()}",
@@ -331,9 +385,9 @@
                     text: 'Learn more'|t('app'),
                 }),
             }) %}
-        {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') and craft.app.request.isWebAliasSetDynamically %}
+        {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') %}
             {% set config = config|merge({
-                warning: 'The `@web` alias is not recommended if it is determined automatically.'|t('app')
+                warning: 'The `@web` alias is not recommended.'|t('app'),
             }) %}
         {% endif %}
     {% endif %}
@@ -352,6 +406,12 @@
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/timeZone') }}
+{% endmacro %}
+
+
+{% macro iconPickerField(config) %}
+    {% set config = config|merge({id: config.id ?? "iconpicker#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/iconPicker') }}
 {% endmacro %}
 
 
@@ -387,6 +447,19 @@
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/booleanMenu') }}
+{% endmacro %}
+
+
+{% macro languageMenuField(config) %}
+    {% set config = config|merge({id: config.id ?? "languagemenu#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable with a valid language ID ({examples}).'|t('app', {
+                examples: '`en`/`en-GB`',
+            }),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/languageMenu') }}
 {% endmacro %}
 
 

@@ -8,13 +8,21 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   $tableCaption: null,
   $selectedSortHeader: null,
   $statusMessage: null,
+  $editBtn: null,
+  $saveBtn: null,
+  $cancelBtn: null,
 
-  structureTableSort: null,
+  tableSort: null,
 
   _totalVisiblePostStructureTableDraggee: null,
   _morePendingPostStructureTableDraggee: false,
 
   _broadcastListener: null,
+
+  initialSerializedValue: null,
+
+  stickyScrollbar: null,
+  stickyScrollbarObserver: null,
 
   getElementContainer: function () {
     // Save a reference to the table
@@ -26,32 +34,37 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // Set table caption
     this.$tableCaption = this.$table.find('caption');
 
-    this.$statusMessage = this.$table.parent().find('[data-status-message]');
-
     // Set the sort header
     this.initTableHeaders();
 
-    // Add callback for after elements are updated
-    this.elementIndex.on('updateElements', () => {
-      this._updateScreenReaderStatus();
-    });
+    this.createScrollbar();
 
-    // Create the Structure Table Sorter
+    // Create the table sorter
     if (
-      this.elementIndex.settings.context === 'index' &&
-      this.elementIndex.viewMode === 'structure' &&
-      Garnish.hasAttr(this.$table, 'data-structure-id')
+      (this.settings.sortable ||
+        (this.elementIndex.isAdministrative &&
+          this.elementIndex.viewMode === 'structure' &&
+          Garnish.hasAttr(this.$table, 'data-structure-id'))) &&
+      !this.elementIndex.inlineEditing
     ) {
-      this.structureTableSort = new Craft.StructureTableSorter(
+      this.tableSort = new Craft.ElementTableSorter(
         this,
-        this.getAllElements()
+        this.getAllElements(),
+        {
+          structureId: this.$table.data('structure-id'),
+          maxLevels: this.$table.attr('data-max-levels'),
+          onSortChange: () => {
+            this.settings.onSortChange(this.tableSort.$draggee);
+          },
+        }
       );
-    } else {
-      this.structureTableSort = null;
     }
 
     // Handle expand/collapse toggles for Structures
-    if (this.elementIndex.viewMode === 'structure') {
+    if (
+      this.elementIndex.viewMode === 'structure' &&
+      !this.elementIndex.inlineEditing
+    ) {
       this.addListener(this.$elementContainer, 'click', function (ev) {
         var $target = $(ev.target);
 
@@ -63,6 +76,14 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       });
     }
 
+    if (
+      this.elementIndex.isAdministrative &&
+      this.elementIndex.settings.inlineEditable !== false &&
+      this.$elementContainer.has('> tr[data-id] > th .element[data-editable]')
+    ) {
+      this.initForInlineEditing();
+    }
+
     // Set up the broadcast listener
     if (Craft.messageReceiver) {
       this._broadcastListener = (ev) => {
@@ -71,12 +92,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             `> tbody > tr[data-id="${ev.data.id}"]`
           );
           if ($rows.length) {
-            const data = {
-              elementType: this.elementIndex.elementType,
-              source: this.elementIndex.sourceKey,
+            const data = Object.assign(this.elementIndex.getViewParams(), {
               id: ev.data.id,
-              siteId: this.elementIndex.siteId,
-            };
+            });
             Craft.sendActionRequest(
               'POST',
               'element-indexes/element-table-html',
@@ -84,9 +102,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             ).then(({data}) => {
               for (let i = 0; i < $rows.length; i++) {
                 const $row = $rows.eq(i);
-                $row
-                  .find('> th[data-titlecell] .element')
-                  .replaceWith(data.elementHtml);
                 for (let attribute in data.attributeHtml) {
                   if (data.attributeHtml.hasOwnProperty(attribute)) {
                     $row
@@ -108,7 +123,172 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
   },
 
+  initForInlineEditing: function () {
+    if (this.elementIndex.inlineEditing) {
+      Craft.initUiElements(this.$elementContainer);
+      this.initialSerializedValue = this.serializeInputs();
+
+      this.$saveBtn = Craft.ui
+        .createSubmitButton({
+          label: Craft.t('app', 'Save'),
+          spinner: true,
+        })
+        .insertBefore(this.elementIndex.$exportBtn);
+      this.$cancelBtn = Craft.ui
+        .createButton({
+          label: Craft.t('app', 'Cancel'),
+          spinner: true,
+        })
+        .insertBefore(this.elementIndex.$exportBtn);
+
+      this.addListener(this.$saveBtn, 'activate', () => {
+        this.$saveBtn.addClass('loading');
+        this.saveChanges()
+          .then((data) => {
+            if (data.errors) {
+              for (let elementId in data.errors) {
+                if (data.errors.hasOwnProperty(elementId)) {
+                  const $row = this.$elementContainer.children(
+                    `[data-id="${elementId}"]`
+                  );
+                  for (let attribute in data.errors[elementId]) {
+                    $row
+                      .find(`[name*="${attribute}"]`)
+                      .closest('td')
+                      .addClass('errors');
+                  }
+                }
+              }
+
+              this.elementIndex.setIndexAvailable();
+              Craft.cp.displayError(
+                Craft.t('app', 'Could not save due to validation errors.')
+              );
+              return;
+            }
+
+            Craft.cp.displaySuccess(Craft.t('app', 'Changes saved.'));
+            this.elementIndex.inlineEditing = false;
+            this.elementIndex.updateElements(true, false).then(() => {
+              this.elementIndex.$elements.removeClass('inline-editing');
+            });
+          })
+          .catch(() => {
+            this.elementIndex.setIndexAvailable();
+            Craft.cp.displayError();
+          })
+          .finally(() => {
+            this.$saveBtn.removeClass('loading');
+          });
+      });
+
+      this.addListener(this.$cancelBtn, 'activate', () => {
+        if (
+          !this.getDeltaInputChanges() ||
+          confirm(
+            Craft.t('app', 'Are you sure you want to discard your changes?')
+          )
+        ) {
+          this.$cancelBtn.addClass('loading');
+          this.elementIndex.inlineEditing = false;
+          this.elementIndex.updateElements(true, false).then(() => {
+            this.elementIndex.$elements.removeClass('inline-editing');
+          });
+        }
+      });
+
+      this.addListener(this.$elementContainer, 'keydown', (event) => {
+        if (
+          event.keyCode === Garnish.RETURN_KEY &&
+          Garnish.isCtrlKeyPressed(event)
+        ) {
+          this.$saveBtn.trigger('click');
+        } else if (
+          event.keyCode === Garnish.S_KEY &&
+          Garnish.isCtrlKeyPressed(event)
+        ) {
+          event.stopPropagation();
+          event.preventDefault();
+          this.$saveBtn.trigger('click');
+        }
+      });
+    } else {
+      this.$editBtn = Craft.ui
+        .createButton({
+          label: Craft.t('app', 'Edit'),
+          spinner: true,
+        })
+        .insertBefore(this.elementIndex.$exportBtn);
+      this.addListener(this.$editBtn, 'activate', () => {
+        this.$editBtn.addClass('loading');
+        this.elementIndex.inlineEditing = true;
+        this.elementIndex.updateElements(true, false).then(() => {
+          this.elementIndex.$elements.addClass('inline-editing');
+        });
+      });
+    }
+  },
+
+  serializeInputs: function () {
+    const data = Garnish.getPostData(this.$elementContainer);
+    const serialized = [];
+    for (let i in data) {
+      serialized.push(encodeURIComponent(`${i}=${data[i]}`));
+    }
+    return serialized.join('&');
+  },
+
+  getDeltaInputChanges: function () {
+    const deltaNames = this.$elementContainer
+      .children()
+      .toArray()
+      .map(
+        (e) =>
+          `${this.elementIndex.nestedInputNamespace}[element-${$(e).data(
+            'id'
+          )}]`
+      );
+    return Craft.findDeltaData(
+      this.initialSerializedValue,
+      this.serializeInputs(),
+      deltaNames
+    );
+  },
+
+  haveInputsChanged: function () {
+    return this.serializeInputs() !== this.initialSerializedValue;
+  },
+
+  saveChanges: async function () {
+    let data = this.getDeltaInputChanges();
+    if (!data) {
+      return {};
+    }
+
+    data +=
+      '&' +
+      $.param({
+        elementType: this.elementIndex.elementType,
+        siteId: this.elementIndex.siteId,
+        namespace: this.elementIndex.nestedInputNamespace,
+      });
+
+    const response = await Craft.sendActionRequest(
+      'POST',
+      'element-indexes/save-elements',
+      {
+        data,
+      }
+    );
+
+    return response.data;
+  },
+
   initTableHeaders: function () {
+    if (this.settings.sortable || this.elementIndex.inlineEditing) {
+      return;
+    }
+
     let selectedSortAttr, selectedSortDir;
     if (this.elementIndex.viewMode === 'structure') {
       selectedSortAttr = 'structure';
@@ -216,8 +396,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // If we are dragging the last elements on the page,
     // tell the controller to only load elements positioned after the draggee.
     if (this._isStructureTableDraggingLastElements()) {
-      params.criteria.positionedAfter =
-        this.structureTableSort.$targetItem.data('id');
+      params.criteria.positionedAfter = this.tableSort.$targetItem.data('id');
     }
 
     return params;
@@ -226,8 +405,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   appendElements: function ($newElements) {
     this.base($newElements);
 
-    if (this.structureTableSort) {
-      this.structureTableSort.addItems($newElements);
+    if (this.tableSort) {
+      this.tableSort.addItems($newElements);
     }
 
     Craft.cp.updateResponsiveTables();
@@ -242,7 +421,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     $toggle.attr('aria-expanded', 'false');
 
     // Find and remove the descendant rows
-    var $row = $toggle.parent().parent(),
+    var $row = $toggle.closest('tr'),
       id = $row.data('id'),
       level = $row.data('level'),
       $nextRow = $row.next();
@@ -257,8 +436,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
           this.elementSelect.removeItems($nextRow);
         }
 
-        if (this.structureTableSort) {
-          this.structureTableSort.removeItems($nextRow);
+        if (this.tableSort) {
+          this.tableSort.removeItems($nextRow);
         }
 
         this._totalVisible--;
@@ -294,7 +473,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     // Remove this element from our list of collapsed elements
     if (this.elementIndex.instanceState.collapsedElementIds) {
-      var $row = $toggle.parent().parent(),
+      var $row = $toggle.closest('tr'),
         id = $row.data('id'),
         index = $.inArray(
           id,
@@ -318,7 +497,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         Craft.sendActionRequest('POST', this.settings.loadMoreElementsAction, {
           data,
         })
-          .then((response) => {
+          .then(async (response) => {
             // Do we even care about this anymore?
             if (!$spinnerRow.parent().length) {
               return;
@@ -340,8 +519,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                 this.elementSelect.removeItems($nextRows);
               }
 
-              if (this.structureTableSort) {
-                this.structureTableSort.removeItems($nextRows);
+              if (this.tableSort) {
+                this.tableSort.removeItems($nextRows);
               }
 
               $nextRows.remove();
@@ -361,12 +540,12 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
               this.elementIndex.updateActionTriggers();
             }
 
-            if (this.structureTableSort) {
-              this.structureTableSort.addItems($newElements);
+            if (this.tableSort) {
+              this.tableSort.addItems($newElements);
             }
 
-            Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendBodyHtml(response.data.bodyHtml);
+            await Craft.appendHeadHtml(response.data.headHtml);
+            await Craft.appendBodyHtml(response.data.bodyHtml);
             Craft.cp.updateResponsiveTables();
 
             this.setTotalVisible(totalVisible);
@@ -399,9 +578,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
   _isStructureTableDraggingLastElements: function () {
     return (
-      this.structureTableSort &&
-      this.structureTableSort.dragging &&
-      this.structureTableSort.draggingLastElements
+      this.tableSort &&
+      this.tableSort.dragging &&
+      this.tableSort.draggingLastElements
     );
   },
 
@@ -451,39 +630,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     this.elementIndex.setIndexAvailable();
   },
 
-  _updateScreenReaderStatus: function () {
-    let attr, dir;
-    if (this.elementIndex.viewMode === 'structure') {
-      attr = 'structure';
-      dir = 'asc';
-    } else {
-      [attr, dir] = this.elementIndex.getSortAttributeAndDirection();
-    }
-
-    const attrLabel = this.elementIndex.getSortLabel(attr);
-    if (!attrLabel) {
-      return;
-    }
-
-    const dirLabel =
-      dir === 'asc'
-        ? Craft.t('app', 'Ascending')
-        : Craft.t('app', 'Descending');
-
-    const message = Craft.t(
-      'app',
-      'Table {name} sorted by {attribute}, {direction}',
-      {
-        name: this.$table.attr('data-name'),
-        attribute: attrLabel,
-        direction: dirLabel,
-      }
-    );
-
-    this.$statusMessage.empty();
-    this.$statusMessage.text(message);
-  },
-
   _updateTableAttributes: function ($element, tableAttributes) {
     var $tr = $element.closest('tr');
 
@@ -499,6 +645,20 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   destroy: function () {
+    if (this.$editBtn) {
+      this.$editBtn.remove();
+    } else if (this.$cancelBtn) {
+      this.$saveBtn.remove();
+      this.$cancelBtn.remove();
+    }
+
+    if (this.stickyScrollbar) {
+      this.stickyScrollbar.remove();
+    }
+    if (this.stickyScrollbarObserver) {
+      this.stickyScrollbarObserver.disconnect();
+    }
+
     if (this._broadcastListener) {
       Craft.messageReceiver.removeEventListener(
         'message',
@@ -508,5 +668,40 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     this.base();
+  },
+
+  createScrollbar() {
+    if (this.elementIndex.settings.context !== 'index') {
+      return;
+    }
+
+    const footer = document.querySelector('#content > #footer');
+    if (!footer) {
+      return;
+    }
+
+    this.stickyScrollbar = document.createElement('craft-proxy-scrollbar');
+    this.stickyScrollbar.setAttribute('scroller', '.tablepane');
+    this.stickyScrollbar.setAttribute('content', '.tablepane > table');
+
+    this.stickyScrollbar.style.bottom = `${
+      footer.getBoundingClientRect().height + 2
+    }px`;
+
+    let $scrollbar = $(this.stickyScrollbar);
+    this.stickyScrollbarObserver = new IntersectionObserver(
+      ([ev]) => {
+        if (ev.intersectionRatio < 1) {
+          $scrollbar.insertAfter(this.$container);
+        } else {
+          $scrollbar.remove();
+        }
+      },
+      {
+        rootMargin: '0px 0px -1px 0px',
+        threshold: [1],
+      }
+    );
+    this.stickyScrollbarObserver.observe(footer);
   },
 });

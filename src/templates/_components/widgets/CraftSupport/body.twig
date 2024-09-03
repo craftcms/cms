@@ -34,7 +34,7 @@
                 <div class="cs-search-params"></div>
                 {% tag 'div' with { class: 'cs-button-wrapper' }%}
                     <button type="submit" class="btn submit fullwidth disabled">{{ submitText }}</button>
-                    {% if CraftEdition == CraftPro %}
+                    {% if CraftEdition >= CraftPro %}
                         <p>{{ "or <a>send to Developer Support</a>"|t('app')|raw }}</p>
                     {% endif %}
                     {{ tag('button', {
@@ -70,11 +70,11 @@
                 </div>
                 <div class="cs-icon-resources">
                     {% set documentationLinkHtml %}
-                        {{ svg('@appicons/book.svg')|attr({ 'aria-hidden': 'true' }) }}
+                        {{ iconSvg('book') }}
                         <span>{{ 'Documentation'|t('app') }}</span>
                     {% endset %}
                     {% set knowledgeBaseLinkHtml %}
-                        {{ svg('@appicons/magnifying-glass.svg', namespace=true)|attr({ 'aria-hidden': 'true' }) }}
+                        {{ iconSvg('magnifying-glass') }}
                         <span>{{ 'Knowledge Base'|t('app') }}</span>
                     {% endset %}
                     {{ links.externalLink({
@@ -152,17 +152,37 @@
 
 <div class="cs-screen cs-screen-home">
     <button type="button" class="cs-opt" data-screen="help" aria-controls="cs-screen-help" aria-expanded="false">
-        <div class="cs-opt-icon">{{ svg(buoeyIcon, sanitize=false)|attr({ 'aria-hidden': 'true' }) }}</div>
+        <div class="cs-opt-icon">{{ iconSvg('life-ring') }}</div>
         <h2>{{ "Get help"|t('app') }}</h2>
         <p>{{ "How-to’s and other questions"|t('app') }}</p>
     </button>
     <button type="button" class="cs-opt" data-screen="feedback" aria-controls="cs-screen-feedback" aria-expanded="false">
-        <div class="cs-opt-icon">{{ svg(bullhornIcon, sanitize=false)|attr({ 'aria-hidden': 'true' }) }}</div>
+        <div class="cs-opt-icon">{{ iconSvg('bullhorn') }}</div>
         <h2>{{ "Give feedback"|t('app') }}</h2>
         <p>{{ "Bug reports and feature requests"|t('app') }}</p>
     </button>
 </div>
 
-{{ screen(widget, showBackupOption, bundleUrl, 'help', "Briefly describe your question."|t('app'), seIcon, "Similar questions on Stack Exchange"|t('app'), 'https://craftcms.stackexchange.com/questions/ask', "Ask on Stack Exchange"|t('app')) }}
+{{ screen(
+    widget,
+    showBackupOption,
+    bundleUrl,
+    'help',
+    'Briefly describe your question.'|t('app'),
+    iconSvg('craft-stack-exchange'),
+    'Similar questions on Stack Exchange'|t('app'),
+    'https://craftcms.stackexchange.com/questions/ask',
+    'Ask on Stack Exchange'|t('app'),
+) }}
 
-{{ screen(widget, showBackupOption, bundleUrl, 'feedback', "Briefly describe your issue or idea."|t('app'), ghIcon, "Similar issues on GitHub"|t('app'), 'https://github.com/craftcms/cms/issues/new', "Post on GitHub"|t('app')) }}
+{{ screen(
+    widget,
+    showBackupOption,
+    bundleUrl,
+    'feedback',
+    'Briefly describe your issue or idea.'|t('app'),
+    iconSvg('github'),
+    'Similar issues on GitHub'|t('app'),
+    'https://github.com/craftcms/cms/issues/new',
+    'Post on GitHub'|t('app'),
+) }}

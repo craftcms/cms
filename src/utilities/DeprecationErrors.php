@@ -38,9 +38,9 @@ class DeprecationErrors extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath(): ?string
+    public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/bug.svg');
+        return 'bug';
     }
 
     /**

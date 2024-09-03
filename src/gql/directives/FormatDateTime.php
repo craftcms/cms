@@ -92,7 +92,7 @@ class FormatDateTime extends Directive
             }
 
             if (!empty($arguments['locale'])) {
-                $formatter = (new Locale($arguments['locale']))->getFormatter();
+                $formatter = Craft::$app->getI18n()->getLocaleById($arguments['locale'])->getFormatter();
             } else {
                 $formatter = Craft::$app->getFormatter();
             }

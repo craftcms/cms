@@ -45,7 +45,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
       this.setTotalVisible($elements.length);
       this.setMorePending(
-        this.settings.batchSize && $elements.length == this.settings.batchSize
+        this.elementIndex.settings.batchSize &&
+          $elements.length == this.elementIndex.settings.batchSize
       );
 
       // Load thumbnails
@@ -58,12 +59,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           {
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
-            handle:
-              this.settings.context === 'index'
-                ? '.checkbox, .element:first'
-                : null,
-            filter: ':not(a):not(.toggle)',
+            filter: (target) => {
+              return !$(target).closest('a[href],.toggle,.btn,[role=button]')
+                .length;
+            },
             checkboxMode: this.settings.checkboxMode,
+            waitForDoubleClicks: this.settings.waitForDoubleClicks,
             onSelectionChange: this.onSelectionChange.bind(this),
           }
         );
@@ -83,28 +84,29 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
 
       // Enable inline element editing if this is an index page
-      if (this.settings.context === 'index') {
+      if (this.elementIndex.isAdministrative) {
         this._handleElementEditing = (ev) => {
-          var $target = $(ev.target);
-
-          if ($target.prop('nodeName') === 'A') {
-            // Let the link do its thing
+          if (
+            this.elementIndex.inlineEditing ||
+            $(ev.target).closest('a[href],button,[role=button]').length
+          ) {
+            // Let the link/button do its thing
             return;
           }
 
-          var $element;
-
-          if ($target.hasClass('element')) {
-            $element = $target;
-          } else {
-            $element = $target.closest('.element');
-
+          const $target = $(ev.target);
+          let $element = $target.closest('.element');
+          if (!$element.length) {
+            $element = $target.closest('tr').find('.element:first');
             if (!$element.length) {
               return;
             }
           }
 
-          if (Garnish.hasAttr($element, 'data-editable')) {
+          if (
+            Garnish.hasAttr($element, 'data-editable') &&
+            !$element.closest('.elementselect').length
+          ) {
             Craft.createElementEditor($element.data('type'), $element);
           }
         };
@@ -122,7 +124,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       this.afterInit();
 
       // Set up lazy-loading
-      if (this.settings.batchSize) {
+      if (
+        !this.elementIndex.paginated &&
+        this.elementIndex.settings.batchSize
+      ) {
         if (this.settings.context === 'index') {
           this.$scroller = Garnish.$scrollContainer;
         } else {
@@ -136,17 +141,30 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     filterSelectableElements: function ($elements) {
-      return $(
-        $elements
-          .toArray()
-          .filter((element) => this.canSelectElement($(element)))
-      );
+      const selectable = [];
+
+      for (let i = 0; i < $elements.length; i++) {
+        const $element = $elements.eq(i);
+        if ($element.hasClass('disabled')) {
+          // remove checkbox from tab order and mark as checked
+          $element.find('.checkbox').attr({
+            tabindex: '-1',
+            'aria-checked': 'true',
+          });
+          continue;
+        }
+        if (this.canSelectElement($element)) {
+          selectable.push($element[0]);
+        } else {
+          // make sure it doesn't have a checkbox
+          $element.find('.checkbox').remove();
+        }
+      }
+
+      return $(selectable);
     },
 
     canSelectElement: function ($element) {
-      if ($element.hasClass('disabled')) {
-        return false;
-      }
       if (this.settings.canSelectElement) {
         return this.settings.canSelectElement($element);
       }
@@ -154,7 +172,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     getElementContainer: function () {
-      throw 'Classes that extend Craft.BaseElementIndexView must supply a getElementContainer() method.';
+      return this.$container;
     },
 
     afterInit: function () {},
@@ -238,7 +256,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     getElementCheckbox: function (element) {
-      return $(element).find('[role="checkbox"]');
+      return $(element).find('.checkbox');
     },
 
     isVerticalList: function () {
@@ -274,7 +292,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
      * Returns whether the user has reached the bottom of the scroll area.
      */
     canLoadMore: function () {
-      if (!this.getMorePending() || !this.settings.batchSize) {
+      if (!this.getMorePending() || !this.elementIndex.settings.batchSize) {
         return false;
       }
 
@@ -306,7 +324,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       if (
         !this.getMorePending() ||
         this.loadingMore ||
-        !this.settings.batchSize
+        !this.elementIndex.settings.batchSize
       ) {
         return;
       }
@@ -318,15 +336,25 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       Craft.sendActionRequest('POST', this.settings.loadMoreElementsAction, {
         data: this.getLoadMoreParams(),
       })
-        .then((response) => {
+        .then(async (response) => {
           this.loadingMore = false;
           this.$loadingMoreSpinner.addClass('hidden');
 
+          if (this.isAdministrative) {
+            // set Craft.currentElementIndex for actions
+            Craft.currentElementIndex = this;
+          }
+
           let $newElements = $(response.data.html);
 
+          if (this.elementIndex.selectable) {
+            const role = this.elementIndex.multiSelect ? 'checkbox' : 'radio';
+            $newElements.find('.checkbox').attr('role', role);
+          }
+
           this.appendElements($newElements);
-          Craft.appendHeadHtml(response.data.headHtml);
-          Craft.appendBodyHtml(response.data.bodyHtml);
+          await Craft.appendHeadHtml(response.data.headHtml);
+          await Craft.appendBodyHtml(response.data.bodyHtml);
 
           if (this.elementSelect) {
             this.elementSelect.addItems(
@@ -336,7 +364,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           }
 
           this.setTotalVisible(this.getTotalVisible() + $newElements.length);
-          this.setMorePending($newElements.length == this.settings.batchSize);
+          this.setMorePending(
+            $newElements.length == this.elementIndex.settings.batchSize
+          );
 
           // Is there room to load more right now?
           this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
@@ -371,17 +401,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     onSelectionChange: function () {
       this.settings.onSelectionChange();
       this.trigger('selectionChange');
-
-      // Update checkboxes
-      if (this.settings.checkboxMode) {
-        const $items = this.elementSelect.$items.each((index, item) => {
-          if (this.elementSelect.isSelected(item)) {
-            this.getElementCheckbox(item).attr('aria-checked', 'true');
-          } else {
-            this.getElementCheckbox(item).attr('aria-checked', 'false');
-          }
-        });
-      }
     },
 
     disable: function () {
@@ -421,9 +440,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       multiSelect: false,
       canSelectElement: null,
       checkboxMode: false,
+      waitForDoubleClicks: false,
+      sortable: false,
       loadMoreElementsAction: 'element-indexes/get-more-elements',
       onAppendElements: $.noop,
       onSelectionChange: $.noop,
+      onSortChange: $.noop,
     },
   }
 );

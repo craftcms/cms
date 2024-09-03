@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
+use craft\errors\MutexException;
 use Throwable;
 use yii\db\Exception;
 
@@ -50,7 +51,7 @@ class Sequence
         $lockName = 'seq--' . str_replace(['/', '\\'], '-', $name);
 
         if (!$mutex->acquire($lockName, 3)) {
-            throw new Exception('Could not acquire a lock for the sequence "' . $name . '".');
+            throw new MutexException($lockName, sprintf('Could not acquire a lock for the sequence "%s".', $name));
         }
 
         try {

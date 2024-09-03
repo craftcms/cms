@@ -1,6 +1,6 @@
 {% extends '_layouts/cp.twig' %}
 
-{% import '_includes/forms.twig' as forms %}
+{% set fullPageForm = true %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') },
@@ -8,7 +8,16 @@
     { label: "Image Transforms"|t('app'), url: url('settings/assets/transforms') }
 ] %}
 
-{% set fullPageForm = true %}
+{% set formActions = [
+  {
+    label: 'Save and continue editing'|t('app'),
+    redirect: 'settings/assets/transforms/{handle}'|hash,
+    shortcut: true,
+    retainScroll: true,
+  },
+] %}
+
+{% import '_includes/forms.twig' as forms %}
 
 
 {% block content %}

@@ -20,9 +20,9 @@ use DateTime;
  * @property DateTime|string|null $dateCreated Date created
  * @property DateTime|string|null $dateUpdated Date updated
  * @property string $uid UUID
- * @method ActiveQuery hasMany(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasMany()]] for more info.
- * @method ActiveQuery hasOne(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasOne()]] for more info.
- * @method ActiveQuery findBySql(string $sql, array $params) See [[\yii\db\ActiveRecord::findBySql()]] for more info.
+ * @method static ActiveQuery hasMany(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasMany()]] for more info.
+ * @method static ActiveQuery hasOne(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasOne()]] for more info.
+ * @method static ActiveQuery findBySql(string $sql, array $params) See [[\yii\db\ActiveRecord::findBySql()]] for more info.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -63,9 +63,13 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
     public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
-        $event = new DefineBehaviorsEvent();
-        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
-        return $event->behaviors;
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
+            $event = new DefineBehaviorsEvent();
+            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+            return $event->behaviors;
+        }
+
+        return [];
     }
 
     /**

@@ -14,11 +14,10 @@ use craft\base\ElementInterface;
 use craft\db\QueryBatcher;
 use craft\db\Table;
 use craft\errors\UnsupportedSiteException;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
-use craft\queue\BaseBatchedJob;
+use craft\queue\BaseBatchedElementJob;
 use craft\services\Structures;
 use Throwable;
 
@@ -30,7 +29,7 @@ use Throwable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.8
  */
-class ApplyNewPropagationMethod extends BaseBatchedJob
+class ApplyNewPropagationMethod extends BaseBatchedElementJob
 {
     /**
      * @var string The element type to use
@@ -91,7 +90,10 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
 
         // See what sites the element should exist in going forward
         /** @var ElementInterface $item */
-        $newSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($item), 'siteId');
+        $newSiteIds = array_map(
+            fn(array $siteInfo) => $siteInfo['siteId'],
+            ElementHelper::supportedSitesForElement($item),
+        );
 
         // What other sites are there?
         $otherSiteIds = array_diff($allSiteIds, $newSiteIds);
@@ -120,7 +122,7 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
         Db::update(Table::ELEMENTS_SITES, [
             'uri' => null,
         ], [
-            'id' => ArrayHelper::getColumn($otherSiteElements, 'siteSettingsId'),
+            'id' => array_map(fn(ElementInterface $element) => $element->siteSettingsId, $otherSiteElements),
         ], [], false);
 
         // Duplicate those elements so their content can live on
@@ -179,7 +181,10 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
             }
 
             // This may support more than just the site it was saved in
-            $newElementSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($newElement), 'siteId');
+            $newElementSiteIds = array_map(
+                fn(array $siteInfo) => $siteInfo['siteId'],
+                ElementHelper::supportedSitesForElement($newElement),
+            );
             foreach ($newElementSiteIds as $newElementSiteId) {
                 unset($otherSiteElements[$newElementSiteId]);
                 $this->duplicatedElementIds[$item->id][$newElementSiteId] = $newElement->id;

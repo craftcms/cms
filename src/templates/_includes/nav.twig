@@ -1,10 +1,34 @@
-<nav {% if label is defined and label %}aria-label="{{ label }}"{% endif %}>
-    <ul>
-        {% for itemId, item in items %}
-            {% if item %}
-                {% set itemIsSelected = ((selectedItem is not defined and loop.first) or (selectedItem is defined and selectedItem == itemId)) -%}
-                <li><a{% if itemIsSelected %} class="sel"{% endif %} href="{{ item.url }}">{{ item.label }}</a></li>
-            {% endif %}
-        {% endfor %}
-    </ul>
-</nav>
+{% macro list(items, selectedItem) %}
+  <ul>
+    {% for key, item in items %}
+      {% if item %}
+        {% tag 'li' with {
+          class: {
+            heading: item.heading is defined,
+          }|filter|keys,
+        } %}
+          {% if item.heading is defined %}
+            <span>{{ item.heading }}</span>
+            {{ _self.list(item.nested, selectedItem) }}
+          {% else %}
+            {{ tag('a', {
+              class: {
+                sel: (item.selected ?? false) or (selectedItem and key == selectedItem),
+              }|filter|keys,
+              href: url(item.url),
+              text: item.label,
+            }) }}
+          {% endif %}
+        {% endtag %}
+      {% endif %}
+    {% endfor %}
+  </ul>
+{% endmacro %}
+
+{% tag 'nav' with {
+  aria: {
+    label: label ?? false,
+  },
+} %}
+  {{ _self.list(items, selectedItem ?? null) }}
+{% endtag %}

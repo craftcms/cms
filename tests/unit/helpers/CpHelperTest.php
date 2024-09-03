@@ -41,14 +41,17 @@ class CpHelperTest extends TestCase
     /**
      *
      */
-    public function testElementHtml(): void
+    public function testElementChipHtml(): void
     {
         /** @var User $user */
         $user = User::findOne(1);
         self::assertInstanceOf(User::class, $user);
 
-        $indexHtml = Cp::elementHtml($user);
-        $fieldHtml = Cp::elementHtml($user, 'field', Cp::ELEMENT_SIZE_SMALL, 'myFieldName');
+        $indexHtml = Cp::elementChipHtml($user);
+        $fieldHtml = Cp::elementChipHtml($user, [
+            'context' => 'field',
+            'inputName' => 'myFieldName[]',
+        ]);
 
         // field
         self::assertStringContainsString('removable', $fieldHtml);
@@ -56,20 +59,65 @@ class CpHelperTest extends TestCase
 
         // status
         self::assertStringContainsString('<span class="status', $indexHtml);
-        self::assertStringNotContainsString('<span class="status', Cp::elementHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, false));
+        self::assertStringNotContainsString('<span class="status', Cp::elementChipHtml($user, ['showStatus' => false]));
 
         // thumb
-        self::assertStringContainsString('elementthumb', $indexHtml);
-        self::assertStringNotContainsString('elementthumb', Cp::elementHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, false));
+        self::assertStringContainsString('thumb', $indexHtml);
+        self::assertStringNotContainsString('thumb', Cp::elementChipHtml($user, ['showThumb' => false]));
 
         // label
-        self::assertStringContainsString('<div class="label">', $indexHtml);
-        self::assertStringNotContainsString('<div class="label">', Cp::elementHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, true, false));
+        $labelPattern = '/<craft-element-label id="[^"]+" class="label">/';
+        self::assertEquals(1, preg_match($labelPattern, $indexHtml));
+        self::assertEquals(0, preg_match($labelPattern, Cp::elementChipHtml($user, ['showLabel' => false])));
 
         // errors
         self::assertStringNotContainsString('error', $indexHtml);
         $user->addError('foo', 'bad error');
-        self::assertStringContainsString('error', Cp::elementHtml($user));
+        self::assertStringContainsString('error', Cp::elementChipHtml($user, [
+            'context' => 'field',
+        ]));
+        $user->clearErrors();
+
+        // trashed
+        self::assertStringNotContainsString('data-trashed', $indexHtml);
+        $user->trashed = true;
+        self::assertStringContainsString('data-trashed', Cp::elementChipHtml($user));
+        $user->trashed = false;
+    }
+
+    /**
+     *
+     */
+    public function testElementHtml(): void
+    {
+        /** @var User $user */
+        $user = User::findOne(1);
+        self::assertInstanceOf(User::class, $user);
+
+        $indexHtml = Cp::elementHtml($user);
+        $fieldHtml = Cp::elementHtml($user, 'field', inputName: 'myFieldName');
+
+        // field
+        self::assertStringContainsString('removable', $fieldHtml);
+        self::assertStringContainsString('name="myFieldName[]"', $fieldHtml);
+
+        // status
+        self::assertStringContainsString('<span class="status', $indexHtml);
+        self::assertStringNotContainsString('<span class="status', Cp::elementHtml($user, showStatus: false));
+
+        // thumb
+        self::assertStringContainsString('thumb', $indexHtml);
+        self::assertStringNotContainsString('thumb', Cp::elementHtml($user, showThumb: false));
+
+        // label
+        $labelPattern = '/<craft-element-label id="[^"]+" class="label">/';
+        self::assertEquals(1, preg_match($labelPattern, $indexHtml));
+        self::assertEquals(0, preg_match($labelPattern, Cp::elementHtml($user, showLabel: false)));
+
+        // errors
+        self::assertStringNotContainsString('error', $indexHtml);
+        $user->addError('foo', 'bad error');
+        self::assertStringContainsString('error', Cp::elementHtml($user, 'field'));
         $user->clearErrors();
 
         // trashed
@@ -135,7 +183,7 @@ class CpHelperTest extends TestCase
     /**
      * @return array
      */
-    public function fieldMethodsDataProvider(): array
+    public static function fieldMethodsDataProvider(): array
     {
         return [
             ['type="checkbox"', 'checkboxFieldHtml'],

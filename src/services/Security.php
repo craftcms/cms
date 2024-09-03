@@ -40,7 +40,14 @@ class Security extends \yii\base\Security
     public function init(): void
     {
         parent::init();
+
         $this->_blowFishHashCost = Craft::$app->getConfig()->getGeneral()->blowfishHashCost;
+
+        // normalize the sensitive keywords
+        $this->sensitiveKeywords = array_map(
+            fn(string $word) => Inflector::camel2words($word, false),
+            $this->sensitiveKeywords,
+        );
     }
 
     /**

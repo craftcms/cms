@@ -83,4 +83,54 @@ class Json extends \yii\helpers\Json
             throw new InvalidArgumentException("`$file` doesn’t contain valid JSON.");
         }
     }
+
+    /**
+     * Detects and returns the indentation sequence used by the given JSON string.
+     *
+     * @param string $json
+     * @return string
+     * @since 5.0.0
+     */
+    public static function detectIndent(string $json): string
+    {
+        if (!preg_match('/^\s*\{\s*[\r\n]+([ \t]+)"/', $json, $match)) {
+            return '  ';
+        }
+        return $match[1];
+    }
+
+    /**
+     * Writes out a JSON file for the given value, maintaining its current
+     * indentation sequence if the file already exists.
+     *
+     * @param string $path The file path
+     * @param mixed $value the data to be encoded.
+     * @param int $options The encoding options. `JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT`
+     * is used by default.
+     * @param string $defaultIndent The default indentation sequence to use if the file doesn’t exist
+     */
+    public static function encodeToFile(
+        string $path,
+        mixed $value,
+        int $options = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT,
+        string $defaultIndent = '  ',
+    ): void {
+        $json = static::encode($value, $options);
+
+        if ($options & JSON_PRETTY_PRINT) {
+            if (file_exists($path)) {
+                $indent = static::detectIndent(file_get_contents($path));
+            } else {
+                $indent = $defaultIndent;
+            }
+
+            if ($indent !== '    ') {
+                $json = preg_replace_callback('/^ {4,}/m', function(array $match) use ($indent) {
+                    return strtr($match[0], ['    ' => $indent]);
+                }, $json);
+            }
+        }
+
+        FileHelper::writeToFile($path, $json);
+    }
 }

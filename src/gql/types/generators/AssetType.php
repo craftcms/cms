@@ -55,7 +55,7 @@ class AssetType extends Generator implements GeneratorInterface, SingleGenerator
      */
     public static function generateType(mixed $context): ObjectType
     {
-        $typeName = AssetElement::gqlTypeNameByContext($context);
+        $typeName = AssetElement::gqlTypeName($context);
 
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new Asset([
             'name' => $typeName,

@@ -1,0 +1,45 @@
+{% requireAdmin %}
+
+{% extends "_layouts/cp" %}
+
+{% block actionButton %}
+    <a href="{{ url('settings/globals/new') }}" class="btn submit add icon">
+        {{ buttonLabel }}
+    </a>
+{% endblock %}
+
+{% block content %}
+    <div id="sets-vue-admin-table"></div>
+{% endblock %}
+
+{% set tableData = [] %}
+{% for globalSet in globalSets %}
+    {% set tableData = tableData|merge([{
+        id: globalSet.id,
+        title: globalSet.name|t('site'),
+        url: url('settings/globals/' ~ globalSet.id),
+        handle: globalSet.handle,
+    }]) %}
+{% endfor %}
+
+{% js %}
+var columns = [
+    {
+        name: '__slot:title',
+        title: Craft.t('app', 'Global Set Name'),
+    },
+    {
+        name: '__slot:handle',
+        title: Craft.t('app', 'Handle'),
+    },
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#sets-vue-admin-table',
+    deleteAction: 'globals/delete-set',
+    emptyMessage: Craft.t('app', 'No global sets exist yet.'),
+    reorderAction: '{{ globalSets|length > 1 ? 'globals/reorder-sets' : ''}}',
+    tableData: {{ tableData|json_encode|raw }}
+});
+{% endjs %}

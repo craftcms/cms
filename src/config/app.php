@@ -3,9 +3,9 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '4.5.11',
-    'schemaVersion' => '4.5.3.0',
-    'minVersionRequired' => '3.7.11',
+    'version' => '5.3.6',
+    'schemaVersion' => '5.3.0.2',
+    'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
@@ -26,6 +26,9 @@ return [
         'assetIndexer' => [
             'class' => craft\services\AssetIndexer::class,
         ],
+        'auth' => [
+            'class' => craft\services\Auth::class,
+        ],
         'categories' => [
             'class' => craft\services\Categories::class,
         ],
@@ -34,9 +37,6 @@ return [
         ],
         'conditions' => [
             'class' => craft\services\Conditions::class,
-        ],
-        'content' => [
-            'class' => craft\services\Content::class,
         ],
         'dashboard' => [
             'class' => craft\services\Dashboard::class,
@@ -80,9 +80,6 @@ return [
         'log' => [
             'class' => craft\log\Dispatcher::class,
         ],
-        'matrix' => [
-            'class' => craft\services\Matrix::class,
-        ],
         'mutex' => [
             'class' => craft\mutex\Mutex::class,
         ],
@@ -110,18 +107,13 @@ return [
         'search' => [
             'class' => craft\services\Search::class,
         ],
-        'sections' => [
-            'class' => craft\services\Sections::class,
-        ],
         'security' => [
             'class' => craft\services\Security::class,
             'sensitiveKeywords' => [
                 'key',
                 'pass',
                 'password',
-                'pgpassword',
                 'pw',
-                'pwd',
                 'secret',
                 'sk',
                 'tok',
@@ -185,6 +177,9 @@ return [
             'class' => craft\services\Sites::class,
             'currentSite' => craft\helpers\App::env('CRAFT_SITE'),
         ],
+        'sso' => [
+            'class' => craft\services\Sso::class,
+        ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,
             'messageFormatter' => [
@@ -223,6 +218,11 @@ return [
         },
 
         'db' => function() {
+            $config = craft\helpers\App::dbConfig();
+            return Craft::createObject($config);
+        },
+
+        'db2' => function() {
             $config = craft\helpers\App::dbConfig();
             return Craft::createObject($config);
         },

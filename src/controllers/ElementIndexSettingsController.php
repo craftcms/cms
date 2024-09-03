@@ -146,6 +146,13 @@ class ElementIndexSettingsController extends BaseElementsController
                     $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
                 }
 
+                if (isset($source['sites'])) {
+                    $sitesService = Craft::$app->getSites();
+                    $source['sites'] = array_values(array_filter(array_map(
+                        fn(int $siteId) => $sitesService->getSiteById($siteId)?->uid,
+                        $source['sites'] ?: [],
+                    )));
+                }
                 if (isset($source['sites']) && $source['sites'] === false) {
                     $source['sites'] = [];
                 }
@@ -158,7 +165,14 @@ class ElementIndexSettingsController extends BaseElementsController
         unset($source);
 
         // Get the default sort options for custom sources
-        $defaultSortOptions = $sourcesService->getSourceSortOptions($elementType, 'custom:x');
+        $defaultSortOptions = Collection::make($sourcesService->getSourceSortOptions($elementType, 'custom:x'))
+            ->map(fn(array $option) => [
+                'label' => $option['label'],
+                'attr' => $option['attribute'] ?? $option['orderBy'],
+                'defaultDir' => $option['defaultDir'] ?? 'asc',
+            ])
+            ->values()
+            ->all();
 
         // Get the available table attributes
         $availableTableAttributes = [];

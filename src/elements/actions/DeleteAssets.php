@@ -8,46 +8,15 @@
 namespace craft\elements\actions;
 
 use Craft;
-use craft\base\ElementAction;
-use craft\elements\Asset;
-use craft\elements\db\ElementQueryInterface;
-use yii\base\Exception;
 
 /**
- * DeleteAssets represents a Delete Assets element action.
+ * DeleteAssets represents a Delete element action, tuned for assets.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 4.1.0. [[Delete]] should be used instead.
  */
-class DeleteAssets extends ElementAction
+class DeleteAssets extends Delete
 {
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerLabel(): string
-    {
-        return Craft::t('app', 'Delete');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function isDestructive(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getConfirmationMessage(): ?string
-    {
-        return Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
-            'type' => Asset::pluralLowerDisplayName(),
-        ]);
-    }
-
     /**
      * @inheritdoc
      * @since 3.5.15
@@ -57,46 +26,47 @@ class DeleteAssets extends ElementAction
         // Only enable for deletable elements, per canDelete()
         Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-deletable')) {
-                    return false;
-                }
-            }
-            return true;
-        },
-    });
+  const trigger = new Craft.ElementActionTrigger({
+    type: $type,
+    requireId: false,
+    validateSelection: (selectedItems, elementIndex) => {
+      for (let i = 0; i < selectedItems.length; i++) {
+        const element = selectedItems.eq(i).find('.element');
+        if (Garnish.hasAttr(element, 'data-is-folder')) {
+          if (selectedItems.length !== 1) {
+            // only one folder at a time
+            return false;
+          }
+          const sourcePath = element.data('source-path') || [];
+          if (!sourcePath.length || !sourcePath[sourcePath.length - 1].canDelete) {
+            return false;
+          }
+        } else {
+          if (!Garnish.hasAttr(element, 'data-deletable')) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    },
+
+    activate: (selectedItems, elementIndex) => {
+      const element = selectedItems.find('.element:first');
+      if (Garnish.hasAttr(element, 'data-is-folder')) {
+        const sourcePath = element.data('source-path');
+        elementIndex.deleteFolder(sourcePath[sourcePath.length - 1])
+          .then(() => {
+            elementIndex.updateElements();
+          });
+      } else {
+        elementIndex.submitAction(trigger.\$trigger.data('action'), Garnish.getPostData(trigger.\$trigger));
+      }
+    },
+  });
 })();
 JS, [static::class]);
 
         return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function performAction(ElementQueryInterface $query): bool
-    {
-        $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
-
-        try {
-            foreach ($query->all() as $asset) {
-                if ($elementsService->canView($asset, $user) && $elementsService->canDelete($asset, $user)) {
-                    $elementsService->deleteElement($asset);
-                }
-            }
-        } catch (Exception $exception) {
-            $this->setMessage($exception->getMessage());
-            return false;
-        }
-
-        $this->setMessage(Craft::t('app', '{type} deleted.', [
-            'type' => Asset::pluralDisplayName(),
-        ]));
-
-        return true;
     }
 }

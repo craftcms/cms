@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\UtilityInterface;
+use craft\enums\CmsEdition;
 use craft\events\RegisterComponentTypesEvent;
 use craft\queue\QueueInterface;
 use craft\utilities\AssetIndexes;
@@ -48,14 +49,14 @@ class Utilities extends Component
      * use yii\base\Event;
      *
      * Event::on(Utilities::class,
-     *     Utilities::EVENT_REGISTER_UTILITY_TYPES,
+     *     Utilities::EVENT_REGISTER_UTILITIES,
      *     function(RegisterComponentTypesEvent $event) {
      *         $event->types[] = MyUtilityType::class;
      *     }
      * );
      * ```
      */
-    public const EVENT_REGISTER_UTILITY_TYPES = 'registerUtilityTypes';
+    public const EVENT_REGISTER_UTILITIES = 'registerUtilities';
 
     /**
      * Returns all available utility type classes.
@@ -72,7 +73,7 @@ class Utilities extends Component
             PhpInfo::class,
         ];
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             $utilityTypes[] = SystemMessagesUtility::class;
         }
 
@@ -87,16 +88,28 @@ class Utilities extends Component
 
         $utilityTypes[] = ClearCaches::class;
         $utilityTypes[] = DeprecationErrors::class;
-        $utilityTypes[] = DbBackup::class;
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->backupCommand !== false) {
+            $utilityTypes[] = DbBackup::class;
+        }
+
         $utilityTypes[] = FindAndReplace::class;
         $utilityTypes[] = Migrations::class;
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $utilityTypes,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_UTILITY_TYPES, $event);
+        // Fire a 'registerUtilities' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_UTILITIES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $utilityTypes]);
+            $this->trigger(self::EVENT_REGISTER_UTILITIES, $event);
+            $utilityTypes = $event->types;
+        }
 
-        return $event->types;
+        $disabledUtilities = array_flip($generalConfig->disabledUtilities);
+
+        return array_values(array_filter($utilityTypes, function(string $class) use ($disabledUtilities) {
+            /** @var string|UtilityInterface $class */
+            return !isset($disabledUtilities[$class::id()]);
+        }));
     }
 
     /**

@@ -30,7 +30,7 @@ class NamespaceNode extends Node
             ->write('$_namespace = ')
             ->subcompile($this->getNode('namespace'))
             ->raw(";\n")
-            ->write("if (\$_namespace) {\n")
+            ->write("if (\$_namespace !== null && \$_namespace !== '') {\n")
             ->indent()
             ->write('$_originalNamespace = ' . Craft::class . "::\$app->getView()->getNamespace();\n")
             ->write(Craft::class . '::$app->getView()->setNamespace(' . Craft::class . "::\$app->getView()->namespaceInputName(\$_namespace));\n")

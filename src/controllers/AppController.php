@@ -8,8 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Chippable;
 use craft\base\ElementInterface;
+use craft\base\Iconic;
 use craft\base\UtilityInterface;
+use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
@@ -19,7 +22,10 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
+use craft\helpers\Search;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
@@ -28,8 +34,11 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use DateInterval;
 use Throwable;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\caching\FileDependency;
 use yii\web\BadRequestHttpException;
+use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -52,6 +61,7 @@ class AppController extends Controller
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'health-check' => self::ALLOW_ANONYMOUS_LIVE,
+        'resource-js' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -385,11 +395,78 @@ class AppController extends Controller
         $currentTime = DateTimeHelper::currentUTCDateTime();
         $tomorrow = $currentTime->add(new DateInterval('P1D'));
 
-        if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
-            return $this->asSuccess();
+        Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow);
+        return $this->asSuccess();
+    }
+
+    /**
+     * Displays a licensing issues takeover page.
+     *
+     * @param array $issues
+     * @param string $hash
+     * @return Response
+     * @internal
+     */
+    public function actionLicensingIssues(array $issues, string $hash): Response
+    {
+        $this->requireCpRequest();
+
+        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
+            'items' => array_map(fn($issue) => $issue[2], $issues),
+        ]);
+
+        $cookie = $this->request->getCookies()->get(App::licenseShunCookieName());
+        $data = $cookie ? Json::decode($cookie->value) : null;
+        if (($data['hash'] ?? null) !== $hash) {
+            $data = null;
         }
 
-        return $this->asFailure(Craft::t('app', 'A server error occurred.'));
+        $duration = match ($data['count'] ?? 0) {
+            0 => 21,
+            1 => 34,
+            2 => 55,
+            3 => 89,
+            4 => 144,
+            5 => 233,
+            6 => 377,
+            7 => 610,
+            8 => 987,
+            default => 1597,
+        };
+
+        return $this->renderTemplate('_special/licensing-issues.twig', [
+            'issues' => $issues,
+            'hash' => $hash,
+            'cartUrl' => $cartUrl,
+            'duration' => $duration,
+        ])->setStatusCode(402);
+    }
+
+    /**
+     * Sets the license shun cookie.
+     *
+     * @return Response
+     * @internal
+     */
+    public function actionSetLicenseShunCookie(): Response
+    {
+        $cookieName = App::licenseShunCookieName();
+        $oldCookie = $this->request->getCookies()->get($cookieName);
+        $data = $oldCookie ? Json::decode($oldCookie->value) : [];
+
+        $newCookie = new Cookie(Craft::cookieConfig([
+            'name' => $cookieName,
+            'value' => Json::encode([
+                'hash' => $this->request->getRequiredBodyParam('hash'),
+                'timestamp' => DateTimeHelper::toIso8601(DateTimeHelper::now()),
+                'count' => ($data['count'] ?? 0) + 1,
+            ]),
+            'expire' => DateTimeHelper::now()->modify('+1 year')->getTimestamp(),
+        ], $this->request));
+
+        $this->response->getCookies()->add($newCookie);
+        return $this->asSuccess();
     }
 
     /**
@@ -405,24 +482,22 @@ class AppController extends Controller
         $this->requireAdmin();
 
         $edition = $this->request->getRequiredBodyParam('edition');
-        $licensedEdition = Craft::$app->getLicensedEdition();
+        $licensedEdition = Craft::$app->getLicensedEdition() ?? CmsEdition::Solo;
 
-        if ($licensedEdition === null) {
-            $licensedEdition = 0;
+        try {
+            $edition = CmsEdition::fromHandle($edition);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }
 
-        $edition = match ($edition) {
-            'solo' => Craft::Solo,
-            'pro' => Craft::Pro,
-            default => throw new BadRequestHttpException('Invalid Craft edition: ' . $edition),
-        };
-
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
-        if ($edition > $licensedEdition && !Craft::$app->getCanTestEditions()) {
+        if ($edition->value > $licensedEdition->value && !Craft::$app->getCanTestEditions()) {
             throw new BadRequestHttpException('Craft is not permitted to test edition upgrades from this server');
         }
 
-        Craft::$app->setEdition($edition);
+        if (!Craft::$app->setEdition($edition)) {
+            return $this->asFailure();
+        }
 
         return $this->asSuccess();
     }
@@ -502,20 +577,15 @@ class AppController extends Controller
         $arr['name'] = $name;
         $arr['latestVersion'] = $update->getLatest()->version ?? null;
 
-        if ($update->abandoned) {
-            $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
-            if ($update->replacementName) {
-                if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
-                    $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
-                } else {
-                    $replacementUrl = $update->replacementUrl;
-                }
-                $arr['statusText'] .= ' ' .
-                    Craft::t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', [
-                        'url' => $replacementUrl,
-                        'name' => $update->replacementName,
-                    ]);
-            }
+        // Make sure that the platform & composer.json PHP version are compatible
+        $phpConstraintError = null;
+        if (
+            $update->phpConstraint &&
+            !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)
+        ) {
+            $arr['status'] = 'phpIssue';
+            $arr['statusText'] = $phpConstraintError;
+            $arr['ctaUrl'] = false;
         } elseif ($update->status === Update::STATUS_EXPIRED) {
             $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
                 'name' => $name,
@@ -524,23 +594,33 @@ class AppController extends Controller
                 'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
             ]);
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
-        } else {
-            // Make sure that the platform & composer.json PHP version are compatible
-            $phpConstraintError = null;
-            if ($update->phpConstraint && !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)) {
-                $arr['status'] = 'phpIssue';
-                $arr['statusText'] = $phpConstraintError;
-                $arr['ctaUrl'] = false;
-            } else {
-                if ($update->status === Update::STATUS_BREAKPOINT) {
-                    $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
-                        'update' => $name . ' ' . ($update->getLatest()->version ?? ''),
-                    ]);
-                }
 
-                if ($allowUpdates) {
-                    $arr['ctaText'] = Craft::t('app', 'Update');
+            if ($allowUpdates && Craft::$app->getCanTestEditions()) {
+                $arr['altCtaText'] = Craft::t('app', 'Update anyway');
+            }
+        } else {
+            if ($update->abandoned) {
+                $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
+                if ($update->replacementName) {
+                    if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+                        $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
+                    } else {
+                        $replacementUrl = $update->replacementUrl;
+                    }
+                    $arr['statusText'] .= ' ' .
+                        Craft::t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', [
+                            'url' => $replacementUrl,
+                            'name' => $update->replacementName,
+                        ]);
                 }
+            } elseif ($update->status === Update::STATUS_BREAKPOINT) {
+                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
+                    'update' => $name . ' ' . ($update->getLatest()->version ?? ''),
+                ]);
+            }
+
+            if ($allowUpdates) {
+                $arr['ctaText'] = Craft::t('app', 'Update');
             }
         }
 
@@ -589,7 +669,7 @@ class AppController extends Controller
                             'isEnabled' => false,
                             'licenseKey' => $pluginLicenseInfo['key'],
                             'licensedEdition' => $pluginLicenseInfo['edition'],
-                            'licenseKeyStatus' => LicenseKeyStatus::Valid,
+                            'licenseKeyStatus' => LicenseKeyStatus::Valid->value,
                             'licenseIssues' => [],
                             'name' => $pluginInfo['name'],
                             'description' => $pluginInfo['shortDescription'],
@@ -657,60 +737,217 @@ class AppController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException
-     * @since 4.0.0
+     * @since 5.0.0
      */
-    public function actionRenderElement(): Response
+    public function actionRenderElements(): Response
     {
         $this->requireCpRequest();
         $this->requireAcceptsJson();
 
-        /** @var string|ElementInterface $elementType */
-        $elementType = $this->request->getRequiredBodyParam('type');
-        $id = $this->request->getRequiredBodyParam('id');
-        $draftId = $this->request->getBodyParam('draftId');
-        $revisionId = $this->request->getBodyParam('revisionId');
-        $instances = $this->request->getRequiredBodyParam('instances');
-
-        if (!$id || !is_numeric($id)) {
-            throw new BadRequestHttpException("Invalid element ID: $id");
-        }
-
-        $siteIds = [];
-        foreach ($instances as $instance) {
-            $siteIds[$instance['siteId']] = true;
-        }
-
-        $elements = $elementType::find()
-            ->id($id)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->revisions(null)
-            ->siteId(array_keys($siteIds))
-            ->status(null)
-            ->indexBy('siteId')
-            ->all();
+        $criteria = $this->request->getRequiredBodyParam('elements');
 
         $elementHtml = [];
 
-        foreach ($instances as $instance) {
-            if (isset($elements[$instance['siteId']])) {
-                $elementHtml[] = Cp::elementHtml(
-                    $elements[$instance['siteId']],
-                    $instance['context'],
-                    $instance['size'],
-                    null,
-                    $instance['showStatus'],
-                    $instance['showThumb'],
-                    $instance['showLabel'],
-                    $instance['showDraftName'],
-                );
-            } else {
-                $elementHtml[] = null;
+        foreach ($criteria as $criterion) {
+            /** @var string|ElementInterface $elementType */
+            $elementType = $criterion['type'];
+            $id = $criterion['id'];
+            $siteId = $criterion['siteId'];
+            $instances = $criterion['instances'];
+
+            if (!$id || (!is_numeric($id) && !(is_array($id) && ArrayHelper::isNumeric($id)))) {
+                throw new BadRequestHttpException('Invalid element ID');
+            }
+
+            $elements = $elementType::find()
+                ->id($id)
+                ->fixedOrder()
+                ->drafts(null)
+                ->revisions(null)
+                ->siteId($siteId)
+                ->status(null)
+                ->all();
+
+            // See if there are any provisional drafts we should swap these out with
+            ElementHelper::swapInProvisionalDrafts($elements);
+
+            foreach ($elements as $element) {
+                foreach ($instances as $key => $instance) {
+                    $id = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
+                    /** @var 'chip'|'card' $ui */
+                    $ui = $instance['ui'] ?? 'chip';
+                    $elementHtml[$id][$key] = match ($ui) {
+                        'chip' => Cp::elementChipHtml($element, $instance),
+                        'card' => Cp::elementCardHtml($element, $instance),
+                    };
+                }
             }
         }
 
+        $view = Craft::$app->getView();
+
         return $this->asJson([
-            'elementHtml' => $elementHtml,
+            'elements' => $elementHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
         ]);
+    }
+
+    /**
+     * Renders component chips the control panel.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 5.0.0
+     */
+    public function actionRenderComponents(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+
+        $components = $this->request->getRequiredBodyParam('components');
+        $withMenuItems = (bool)$this->request->getBodyParam('withMenuItems');
+        $menuId = $this->request->getBodyParam('menuId');
+
+        $componentHtml = [];
+        $menuItemHtml = [];
+
+        foreach ($components as $componentInfo) {
+            /** @var string|Chippable $componentType */
+            $componentType = $componentInfo['type'];
+            $id = $componentInfo['id'];
+
+            if (!$id) {
+                throw new BadRequestHttpException('Missing component ID');
+            }
+
+            $component = $componentType::get($id);
+            if ($component) {
+                foreach ($componentInfo['instances'] as $config) {
+                    $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
+                }
+
+                if ($withMenuItems) {
+                    $menuItemHtml[$componentType][$id] = Cp::menuItem([
+                        'label' => $component->getUiLabel(),
+                        'icon' => $component instanceof Iconic ? $component->getIcon() : null,
+                        'attributes' => [
+                            'data' => [
+                                'type' => get_class($component),
+                                'id' => $component->getId(),
+                            ],
+                        ],
+                    ], $menuId);
+                }
+            }
+        }
+
+        $view = Craft::$app->getView();
+        $data = [
+            'components' => $componentHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ];
+
+        if ($withMenuItems) {
+            $data['menuItems'] = $menuItemHtml;
+        }
+
+        return $this->asJson($data);
+    }
+
+    /**
+     * Returns icon picker options.
+     *
+     * @return Response
+     * @since 5.0.0
+     */
+    public function actionIconPickerOptions(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+
+        $search = $this->request->getRequiredBodyParam('search');
+        $freeOnly = (bool)($this->request->getBodyParam('freeOnly') ?? false);
+        $noSearch = $search === '';
+
+        if ($noSearch) {
+            $cache = Craft::$app->getCache();
+            $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
+            $listHtml = $cache->get($cacheKey);
+            if ($listHtml !== false) {
+                return $this->asJson([
+                    'listHtml' => $listHtml,
+                ]);
+            }
+            $searchTerms = null;
+        } else {
+            $searchTerms = explode(' ', Search::normalizeKeywords($search));
+        }
+
+        $indexPath = '@app/icons/index.php';
+        $icons = require Craft::getAlias($indexPath);
+        $output = [];
+        $scores = [];
+
+        foreach ($icons as $name => $icon) {
+            if ($freeOnly && $icon['pro']) {
+                continue;
+            }
+
+            if ($searchTerms) {
+                $score = $this->matchTerms($searchTerms, $icon['name']) * 5 + $this->matchTerms($searchTerms, $icon['terms']);
+                if ($score === 0) {
+                    continue;
+                }
+                $scores[] = $score;
+            }
+
+            $file = Craft::getAlias("@appicons/$name.svg");
+            $output[] = Html::beginTag('li') .
+                Html::button(file_get_contents($file), [
+                    'class' => 'icon-picker--icon',
+                    'title' => $name,
+                    'aria' => [
+                        'label' => $name,
+                    ],
+                ]) .
+                Html::endTag('li');
+        }
+
+        if ($searchTerms) {
+            array_multisort($scores, SORT_DESC, $output);
+        }
+
+        $listHtml = implode('', $output);
+
+        if ($noSearch) {
+            /** @phpstan-ignore-next-line */
+            $cache->set($cacheKey, $listHtml, dependency: new FileDependency([
+                'fileName' => $indexPath,
+            ]));
+        }
+
+        return $this->asJson([
+            'listHtml' => $listHtml,
+        ]);
+    }
+
+    private function matchTerms(array $searchTerms, string $indexTerms): int
+    {
+        $score = 0;
+
+        foreach ($searchTerms as $searchTerm) {
+            // extra points for whole word matches
+            if (str_contains($indexTerms, " $searchTerm ")) {
+                $score += 10;
+            } elseif (str_contains($indexTerms, " $searchTerm")) {
+                $score += 1;
+            } else {
+                return 0;
+            }
+        }
+
+        return $score;
     }
 }

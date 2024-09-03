@@ -187,13 +187,13 @@ class ElementHelperTest extends TestCase
      */
     public function testRootSource(string $expected, string $sourceKey): void
     {
-        $this->assertEquals($expected, ElementHelper::rootSourceKey($sourceKey));
+        self::assertEquals($expected, ElementHelper::rootSourceKey($sourceKey));
     }
 
     /**
      * @return array
      */
-    public function generateSlugDataProvider(): array
+    public static function generateSlugDataProvider(): array
     {
         return [
             ['wordWord', 'wordWord'],
@@ -214,7 +214,7 @@ class ElementHelperTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeSlugDataProvider(): array
+    public static function normalizeSlugDataProvider(): array
     {
         return [
             ['wordWord', 'wordWord'],
@@ -236,7 +236,7 @@ class ElementHelperTest extends TestCase
     /**
      * @return array
      */
-    public function doesUriHaveSlugTagDataProvider(): array
+    public static function doesUriHaveSlugTagDataProvider(): array
     {
         return [
             [false, ''],
@@ -252,7 +252,7 @@ class ElementHelperTest extends TestCase
     /**
      * @return array
      */
-    public function setUniqueUriDataProvider(): array
+    public static function setUniqueUriDataProvider(): array
     {
         return [
             [['uri' => null], ['uriFormat' => null]],
@@ -276,7 +276,7 @@ class ElementHelperTest extends TestCase
     /**
      * @return array
      */
-    public function rootSourceDataProvider(): array
+    public static function rootSourceDataProvider(): array
     {
         return [
             ['foo', 'foo'],

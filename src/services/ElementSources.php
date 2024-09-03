@@ -12,11 +12,16 @@ use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\db\CoalesceColumnsExpression;
+use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
+use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
+use Illuminate\Support\Collection;
 use yii\base\Component;
 
 /**
@@ -100,6 +105,9 @@ class ElementSources extends Component
                             continue;
                         }
                         $source = $elementType::modifyCustomSource($source);
+                        if (!$withDisabled && ($source['disabled'] ?? false)) {
+                            continue;
+                        }
                     }
                     $sources[] = $source;
                 }
@@ -123,6 +131,24 @@ class ElementSources extends Component
             }
         } else {
             $sources = $nativeSources;
+        }
+
+        // Normalize the site IDs
+        foreach ($sources as &$source) {
+            if (isset($source['sites'])) {
+                $sitesService = null;
+                $source['sites'] = array_filter(array_map(function(int|string $siteId) use (&$sitesService): ?int {
+                    if (is_string($siteId) && StringHelper::isUUID($siteId)) {
+                        $sitesService ??= Craft::$app->getSites();
+                        try {
+                            return $sitesService->getSiteByUid($siteId)->id;
+                        } catch (SiteNotFoundException) {
+                            return null;
+                        }
+                    }
+                    return (int)$siteId;
+                }, $source['sites'] ?: []));
+            }
         }
 
         return $sources;
@@ -184,6 +210,10 @@ class ElementSources extends Component
             } elseif (!isset($info['label'])) {
                 $attributes[$key]['label'] = '';
             }
+
+            if (isset($attributes[$key]['icon']) && in_array($attributes[$key]['icon'], ['world', 'earth'])) {
+                $attributes[$key]['icon'] = Cp::earthIcon();
+            }
         }
 
         return $attributes;
@@ -206,9 +236,15 @@ class ElementSources extends Component
             $sourceKey = substr($sourceKey, 0, $slash);
         }
 
+        if ($sourceKey === '__IMP__') {
+            $sourceAttributes = $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null));
+        } else {
+            $sourceAttributes = $this->getSourceTableAttributes($elementType, $sourceKey);
+        }
+
         $availableAttributes = array_merge(
             $this->getAvailableTableAttributes($elementType),
-            $this->getSourceTableAttributes($elementType, $sourceKey)
+            $sourceAttributes,
         );
 
         $attributeKeys = $customAttributes
@@ -270,32 +306,67 @@ class ElementSources extends Component
      */
     public function getSourceSortOptions(string $elementType, string $sourceKey): array
     {
-        $event = new DefineSourceSortOptionsEvent([
-            'elementType' => $elementType,
-            'source' => $sourceKey,
-        ]);
+        $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
+        $sortOptions = $this->getSortOptionsForFieldLayouts($fieldLayouts);
 
-        $processedFieldIds = [];
+        // Fire a 'defineSourceSortOptions' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS)) {
+            $event = new DefineSourceSortOptionsEvent([
+                'elementType' => $elementType,
+                'source' => $sourceKey,
+                'sortOptions' => $sortOptions,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
+            $sortOptions = $event->sortOptions;
+        }
 
-        foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
+        // Combine duplicate attributes. If any attributes map to multiple sort
+        // options and each option has a string orderBy value, cmobine them
+        // with a CoalesceColumnsExpression.
+        return Collection::make($sortOptions)
+            ->groupBy('attribute')
+            ->map(function(Collection $group) {
+                $orderBys = $group->pluck('orderBy');
+                if ($orderBys->count() === 1 || $orderBys->doesntContain(fn($orderBy) => is_string($orderBy))) {
+                    return $group->first();
+                }
+                $expression = new CoalesceColumnsExpression($orderBys->all());
+                return array_merge($group->first(), [
+                    'orderBy' => $expression,
+                ]);
+            })
+            ->all();
+    }
+
+    /**
+     * Returns additional sort options that should be available for an element index source that includes the given
+     * field layouts.
+     *
+     * @param FieldLayout[] $fieldLayouts
+     * @return array[]
+     * @since 5.0.0
+     */
+    public function getSortOptionsForFieldLayouts(array $fieldLayouts): array
+    {
+        $sortOptions = [];
+
+        foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
-                if (
-                    $field instanceof SortableFieldInterface &&
-                    !isset($processedFieldIds[$field->id])
-                ) {
+                if ($field instanceof SortableFieldInterface) {
                     $sortOption = $field->getSortOption();
                     if (!isset($sortOption['attribute'])) {
                         $sortOption['attribute'] = $sortOption['orderBy'];
                     }
-                    $event->sortOptions[] = $sortOption;
-                    $processedFieldIds[$field->id] = true;
+                    if (!isset($sortOption['defaultDir'])) {
+                        $sortOption['defaultDir'] = 'asc';
+                    }
+                    $sortOptions[] = $sortOption;
                 }
             }
         }
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
-        return $event->sortOptions;
+        return $sortOptions;
     }
 
     /**
@@ -308,13 +379,39 @@ class ElementSources extends Component
      */
     public function getSourceTableAttributes(string $elementType, string $sourceKey): array
     {
-        $event = new DefineSourceTableAttributesEvent([
-            'elementType' => $elementType,
-            'source' => $sourceKey,
-        ]);
+        if ($sourceKey === '__IMP__') {
+            return [];
+        }
 
-        $user = Craft::$app->getUser()->getIdentity();
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
+        $attributes = $this->getTableAttributesForFieldLayouts($fieldLayouts);
+
+        // Fire a 'defineSourceTableAttributes' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES)) {
+            $event = new DefineSourceTableAttributesEvent([
+                'elementType' => $elementType,
+                'source' => $sourceKey,
+                'attributes' => $attributes,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
+            return $event->attributes;
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Returns any table attributes that should be available for an element index source that includes the given
+     * field layouts.
+     *
+     * @param FieldLayout[] $fieldLayouts
+     * @return array[]
+     * @since 5.0.0
+     */
+    public function getTableAttributesForFieldLayouts(array $fieldLayouts): array
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */
         $groupedFieldElements = [];
 
@@ -335,7 +432,16 @@ class ElementSources extends Component
                         $field instanceof PreviewableFieldInterface &&
                         (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
-                        $groupedFieldElements[$field->id][] = $layoutElement;
+                        if ($layoutElement->handle === null) {
+                            // The handle wasn't overridden, so combine it with any other instances (from other layouts)
+                            // where the handle also wasn't overridden
+                            $groupedFieldElements[$field->id][] = $layoutElement;
+                        } else {
+                            // The handle was overridden, so it gets its own table attribute
+                            $attributes["fieldInstance:$layoutElement->uid"] = [
+                                'label' => Craft::t('site', $field->name),
+                            ];
+                        }
                     }
                 }
             }
@@ -344,13 +450,12 @@ class ElementSources extends Component
         foreach ($groupedFieldElements as $fieldElements) {
             $field = $fieldElements[0]->getField();
             $labels = array_unique(array_map(fn(CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
-            $event->attributes["field:$field->uid"] = [
+            $attributes["field:$field->uid"] = [
                 'label' => count($labels) === 1 ? $labels[0] : Craft::t('site', $field->name),
             ];
         }
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
-        return $event->attributes;
+        return $attributes;
     }
 
     /**

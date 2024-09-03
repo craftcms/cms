@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\ThumbableFieldInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
@@ -37,7 +38,6 @@ use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Collection;
 use Twig\Error\RuntimeError;
 use yii\base\InvalidConfigException;
 
@@ -47,7 +47,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Assets extends BaseRelationField
+class Assets extends BaseRelationField implements ThumbableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -76,6 +76,14 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'image';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function elementType(): string
     {
         return Asset::class;
@@ -92,7 +100,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', AssetQuery::class, ElementCollection::class, Asset::class);
     }
@@ -281,10 +289,10 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         try {
-            return parent::inputHtml($value, $element);
+            return parent::inputHtml($value, $element, $inline);
         } catch (InvalidSubpathException) {
             return Html::tag('p', Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
                 'path' => '<code>' . $this->restrictedLocationSubpath . '</code>',
@@ -388,7 +396,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (is_array($value) && isset($value['data']) && !empty($value['data'])) {
@@ -471,9 +479,26 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(Collection $elements): string
+    protected function previewHtml(ElementCollection $elements): string
     {
-        return Cp::elementPreviewHtml($elements->all(), Cp::ELEMENT_SIZE_SMALL, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
+        return Cp::elementPreviewHtml(
+            $elements->all(),
+            showLabel: $this->previewMode === self::PREVIEW_MODE_FULL,
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
+    {
+        /** @var AssetQuery|ElementCollection $value */
+        if ($value instanceof AssetQuery) {
+            $handle = sprintf('%s-%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id, $size);
+            $value = (clone $value)->eagerly($handle);
+        }
+
+        return $value->one()?->getThumbHtml($size);
     }
 
     // Events
@@ -482,22 +507,22 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew): void
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
-        // No special treatment for revisions
-        $rootElement = ElementHelper::rootElement($element);
-        if (!$rootElement->getIsRevision()) {
-            // Figure out what we're working with and set up some initial variables.
-            $isCanonical = $rootElement->getIsCanonical();
-            $query = $element->getFieldValue($this->handle);
-            $assetsService = Craft::$app->getAssets();
+        // Only handle file uploads for the initial site
+        if (!$element->propagating) {
+            // No special treatment for revisions
+            $rootElement = ElementHelper::rootElement($element);
+            if (!$rootElement->getIsRevision()) {
+                // Figure out what we're working with and set up some initial variables.
+                $isCanonical = $rootElement->getIsCanonical();
+                $query = $element->getFieldValue($this->handle);
+                $assetsService = Craft::$app->getAssets();
 
-            $getUploadFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
-                return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
-            };
+                $getUploadFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
+                    return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
+                };
 
-            // Only handle file uploads for the initial site
-            if (!$element->propagating) {
                 // Were there any uploaded files?
                 $uploadedFiles = $this->_getUploadedFiles($element);
 
@@ -553,6 +578,27 @@ class Assets extends BaseRelationField
                     }
                 }
             }
+        }
+
+        return parent::beforeElementSave($element, $isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
+    {
+        // No special treatment for revisions
+        $rootElement = ElementHelper::rootElement($element);
+        if (!$rootElement->getIsRevision()) {
+            // Figure out what we're working with and set up some initial variables.
+            $isCanonical = $rootElement->getIsCanonical();
+            $query = $element->getFieldValue($this->handle);
+            $assetsService = Craft::$app->getAssets();
+
+            $getUploadFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
+                return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
+            };
 
             // Are there any related assets?
             /** @var AssetQuery $query */
@@ -585,7 +631,7 @@ class Assets extends BaseRelationField
                     // Find the files with temp sources and just move those.
                     /** @var Asset[] $assetsToMove */
                     $assetsToMove = $assetsService->createTempAssetQuery()
-                        ->id(ArrayHelper::getColumn($assets, 'id'))
+                        ->id(array_map(fn(Asset $asset) => $asset->id, $assets))
                         ->all();
                 }
 
@@ -731,7 +777,6 @@ class Assets extends BaseRelationField
                 $variables['defaultSourcePath'] = array_map(function(VolumeFolder $folder) {
                     return $folder->getSourcePathInfo();
                 }, $folders);
-                $variables['preferStoredSource'] = true;
             }
         }
 
@@ -824,12 +869,17 @@ class Assets extends BaseRelationField
             }
         }
 
-        $event = new LocateUploadedFilesEvent([
-            'element' => $element,
-            'files' => $files,
-        ]);
-        $this->trigger(self::EVENT_LOCATE_UPLOADED_FILES, $event);
-        return $event->files;
+        // Fire a 'locateUploadedFiles' event
+        if ($this->hasEventHandlers(self::EVENT_LOCATE_UPLOADED_FILES)) {
+            $event = new LocateUploadedFilesEvent([
+                'element' => $element,
+                'files' => $files,
+            ]);
+            $this->trigger(self::EVENT_LOCATE_UPLOADED_FILES, $event);
+            return $event->files;
+        }
+
+        return $files;
     }
 
     /**

@@ -180,29 +180,25 @@ import './plugins.scss';
                     )
                     .append(Craft.getCsrfInput())
                     .append(
-                      $('<div/>', {class: 'btngroup'})
-                        .append(
-                          $('<button/>', {
-                            type: 'button',
-                            class: 'btn menubtn',
-                            'data-icon': 'settings',
-                          })
-                        )
-                        .append(
-                          $('<div/>', {
-                            class: 'menu',
-                            'data-align': 'right',
-                          }).append(
-                            $('<ul/>').append(
-                              $('<li/>').append(
-                                $('<a/>', {
-                                  class: 'formsubmit',
-                                  text: Craft.t('app', 'Install'),
-                                })
-                              )
-                            )
+                      $('<button/>', {
+                        type: 'button',
+                        class: 'btn menubtn action-btn hairline',
+                      })
+                    )
+                    .append(
+                      $('<div/>', {
+                        class: 'menu',
+                        'data-align': 'right',
+                      }).append(
+                        $('<ul/>').append(
+                          $('<li/>').append(
+                            $('<a/>', {
+                              class: 'formsubmit',
+                              text: Craft.t('app', 'Install'),
+                            })
                           )
                         )
+                      )
                     )
                 )
               : $()

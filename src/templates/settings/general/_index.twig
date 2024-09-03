@@ -7,6 +7,15 @@
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/general'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
 {# set defaults #}
 {% set system = {
     name: null,
@@ -68,7 +77,7 @@
         includeEnvVars: true,
     }) }}
 
-    {% if CraftEdition == CraftPro %}
+    {% if CraftEdition >= CraftPro %}
         <hr>
 
         {% do view.registerTranslations('app', [

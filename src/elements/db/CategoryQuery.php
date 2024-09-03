@@ -16,15 +16,15 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
-use yii\db\Connection;
 
 /**
  * CategoryQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of Category
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @property-write string|string[]|CategoryGroup|null $group The category group(s) that resulting categories must belong to
- * @method Category[]|array all($db = null)
- * @method Category|array|null one($db = null)
- * @method Category|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path categories.md
@@ -86,10 +86,10 @@ class CategoryQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $editable
      */
-    public function editable(bool $value = true): self
+    public function editable(bool $value = true): static
     {
         $this->editable = $value;
         return $this;
@@ -125,10 +125,10 @@ class CategoryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function group(mixed $value): self
+    public function group(mixed $value): static
     {
         if ($value instanceof CategoryGroup) {
             // Special case for a single category group, since we also want to capture the structure ID
@@ -181,10 +181,10 @@ class CategoryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function groupId(mixed $value): self
+    public function groupId(mixed $value): static
     {
         $this->groupId = $value;
         return $this;
@@ -195,6 +195,10 @@ class CategoryQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         $this->_normalizeGroupId();
 
         // See if 'group' was set to an invalid handle
@@ -204,7 +208,7 @@ class CategoryQuery extends ElementQuery
 
         $this->joinElementTable(Table::CATEGORIES);
 
-        $this->query->select([
+        $this->query->addSelect([
             'categories.groupId',
         ]);
 
@@ -212,7 +216,7 @@ class CategoryQuery extends ElementQuery
         $this->_applyGroupIdParam();
         $this->_applyRefParam();
 
-        return parent::beforePrepare();
+        return true;
     }
 
     /**
@@ -322,5 +326,25 @@ class CategoryQuery extends ElementQuery
             }
         }
         return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        if ($this->groupId) {
+            $fieldLayouts = [];
+            $categoriesService = Craft::$app->getCategories();
+            foreach ($this->groupId as $groupId) {
+                $group = $categoriesService->getGroupById($groupId);
+                if ($group) {
+                    $fieldLayouts[] = $group->getFieldLayout();
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
     }
 }

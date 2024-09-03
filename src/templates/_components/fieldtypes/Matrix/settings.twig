@@ -1,270 +1,57 @@
 {% import "_includes/forms" as forms %}
 
-{% set blockTypeInput %}
-    <div class="mc-sidebar block-types">
-        <div class="mc-col-inner-container">
-            <div class="mc-col-heading">
-                <h5>{{ "Block Types"|t('app') }}</h5>
-            </div>
-            <div class="mc-col-items">
-                <div class="mc-blocktypes">
-                    {% for blockTypeId, blockType in blockTypes %}
-                        <div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockTypeId }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
-                            <div class="mci-name">
-                                {% tag 'h4' with {
-                                    title: blockType.name,
-                                } %}
-                                    {{ blockType.name }}
-                                    {% if blockType.hasFieldErrors %}
-                                        <span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>
-                                    {% endif %}
-                                {% endtag %}
-                                {{ tag('div', {
-                                    class: ['smalltext', 'light', 'code'],
-                                    text: blockType.handle,
-                                    title: blockType.handle,
-                                }) }}
-                            </div>
-                            <a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" aria-label="{{ 'Settings'|t('app') }}" role="button"></a>
-                            <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
-                            <input class="hidden" name="blockTypes[{{ blockTypeId }}][name]" value="{{ blockType.name }}">
-                            <input class="hidden" name="blockTypes[{{ blockTypeId }}][handle]" value="{{ blockType.handle }}">
-                        </div>
-                    {% endfor %}
-                </div>
-                <button type="button" class="btn add icon">{{ "New block type"|t('app') }}</button>
-            </div>
-        </div>
-    </div>
-    <div class="mc-sidebar mc-fields">
-        <div class="mc-col-inner-container hidden">
-            <div class="mc-col-heading">
-                <h5>{{ "Fields"|t('app') }}</h5>
-            </div>
-            <div class="mc-col-items">
-                {% for blockTypeId, blockType in blockTypes %}
-                    <div data-id="{{ blockTypeId }}" class="hidden">
-                        {% for fieldId, layoutElement in blockTypeFields[blockTypeId] %}
-                            {% set field = layoutElement.getField() %}
-                            {% set hasName = field.name and field.name != '__blank__' %}
-                            <div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ fieldId }}">
-                                <div class="mci-name">
-                                    {% tag 'h4' with {
-                                        class: layoutElement.required ? 'mci-required' : null,
-                                        title: hasName ? field.name : null,
-                                    } %}
-                                        {%- if hasName -%}
-                                            {{ field.name }}
-                                        {%- else -%}
-                                            <em class="light">{{ '(blank)'|t('app') }}</em>
-                                        {%- endif -%}
-                                        {%- if field.hasErrors() %} <span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif -%}
-                                    {% endtag %}
-                                    {{ tag('div', {
-                                        class: ['smalltext', 'light', 'code'],
-                                        text: field.handle,
-                                        title: field.handle,
-                                    }) }}
-                                </div>
-                                <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-                <button type="button" class="btn add icon">{{ "New field"|t('app') }}</button>
-            </div>
-        </div>
-    </div>
-    <div class="mc-field-settings">
-        <div class="mc-col-inner-container hidden">
-            <div class="mc-col-heading">
-                <h5>{{ "Field Settings"|t('app') }}</h5>
-            </div>
-            <div class="mc-col-items">
-                {% for blockTypeId, blockType in blockTypes %}
-                    <div data-id="{{ blockTypeId }}">
-                        {% for fieldId, layoutElement in blockTypeFields[blockTypeId] %}
-                            {% set field = layoutElement.getField() %}
-                            <div data-id="{{ fieldId }}" class="hidden">
-                                {% namespace 'blockTypes['~blockTypeId~'][fields]['~fieldId~']' %}
-                                    {% if layoutElement.uid %}
-                                        {{ hiddenInput('uid', layoutElement.uid) }}
-                                    {% endif %}
-
-                                    {% if field.columnSuffix %}
-                                        {{ hiddenInput('columnSuffix', field.columnSuffix) }}
-                                    {% endif %}
-
-                                    {{ forms.textField({
-                                        label: "Name"|t('app'),
-                                        id: 'name',
-                                        name: 'name',
-                                        value: (field.name != '__blank__' ? field.name),
-                                        errors: field.getErrors('name'),
-                                        first: true,
-                                        autofocus: true
-                                    }) }}
-
-                                    {{ forms.textField({
-                                        label: "Handle"|t('app'),
-                                        id: 'handle',
-                                        name: 'handle',
-                                        class: 'code',
-                                        autocorrect: false,
-                                        autocapitalize: false,
-                                        maxlength: 64,
-                                        value: field.handle,
-                                        errors: field.getErrors('handle'),
-                                        required: true,
-                                    }) }}
-
-                                    {{ forms.textareaField({
-                                        label: "Instructions"|t('app'),
-                                        id: 'instructions',
-                                        class: 'nicetext',
-                                        name: 'instructions',
-                                        value: field.instructions,
-                                        errors: field.getErrors('instructions'),
-                                    }) }}
-
-                                    <fieldset>
-                                        {{ forms.checkboxField({
-                                            label: "This field is required"|t('app'),
-                                            id: 'required',
-                                            name: 'required',
-                                            checked: layoutElement.required
-                                        }) }}
-
-                                        {{ forms.checkboxField({
-                                            label: 'Use this field’s values as search keywords'|t('app'),
-                                            id: 'searchable',
-                                            name: 'searchable',
-                                            checked: field.searchable
-                                        }) }}
-                                    </fieldset>
-
-                                    {{ forms.selectField({
-                                        label: "Field Type"|t('app'),
-                                        warning: (not field.getIsNew() and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
-                                        id: 'type',
-                                        name: 'type',
-                                        options: fieldId[0:3] != 'new' ? fieldTypes[fieldId] : fieldTypes.new,
-                                        value: className(field),
-                                        errors: field.getErrors('type') ?? null
-                                    }) }}
-
-                                    {% if craft.app.getIsMultiSite() %}
-                                        {% set translationMethods = field.supportedTranslationMethods %}
-                                        <div id="translation-settings"{% if translationMethods|length < 2 %} class="hidden"{% endif %}>
-                                            {{ forms.selectField({
-                                                label: "Translation Method"|t('app'),
-                                                id: 'translation-method',
-                                                name: 'translationMethod',
-                                                options: [
-                                                    'none' in translationMethods ? { value: 'none', label: "Not translatable"|t('app') },
-                                                    'site' in translationMethods ? { value: 'site', label: "Translate for each site"|t('app') },
-                                                    'siteGroup' in translationMethods ? { value: 'siteGroup', label: "Translate for each site group"|t('app') },
-                                                    'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
-                                                    'custom' in translationMethods ? { value: 'custom', label: "Custom…"|t('app') }
-                                                ]|filter,
-                                                value: field.translationMethod,
-                                                toggle: true,
-                                                targetPrefix: 'translation-method-'
-                                            }) }}
-
-                                            {% if 'custom' in translationMethods %}
-                                                <div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
-                                                    {{ forms.textField({
-                                                        label: "Translation Key Format"|t('app'),
-                                                        id: 'translation-key-format',
-                                                        name: 'translationKeyFormat',
-                                                        value: field.translationKeyFormat,
-                                                        errors: field.getErrors('translationKeyFormat')
-                                                    }) }}
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
-
-                                    {{ hiddenInput('width', layoutElement.width, {
-                                        id: 'width',
-                                    }) }}
-                                {% endnamespace %}
-
-                                <hr>
-
-                                <div class="mc-fieldtype-settings">
-                                    <div>
-                                        {% namespace 'blockTypes['~blockTypeId~'][fields]['~fieldId~'][typesettings]' %}
-                                            {{ field.getSettingsHtml()|raw  }}
-                                        {% endnamespace %}
-                                    </div>
-                                </div>
-
-                                <hr>
-
-                                <a class="error delete">{{ "Delete"|t('app') }}</a>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ hiddenInput('blockTypes', '') }}
-
-<div id="matrix-configurator" class="matrix-configurator">
-    {{ forms.field({
-        label: "Configuration"|t('app'),
-        instructions: "Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of."|t('app'),
-        name: 'config',
-        errors: matrixField.getErrors('blockTypes'),
-    }, blockTypeInput) }}
-</div>
+{{ forms.entryTypeSelectField({
+    label: 'Entry Types'|t('app'),
+    instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
+    id: 'entry-types',
+    name: 'entryTypes[]',
+    values: field.getEntryTypes(),
+    create: true,
+    errors: field.getErrors('entryTypes'),
+    data: {'error-key': 'entryTypes'},
+}) }}
 
 {% if craft.app.getIsMultiSite() %}
     {{ forms.selectField({
         label: 'Propagation Method'|t('app'),
-        instructions: 'Which sites should blocks be saved to?'|t('app'),
+        instructions: 'Which sites should entries be saved to?'|t('app'),
         id: 'propagationMethod',
         name: 'propagationMethod',
         options: [
-            { value: 'none', label: 'Only save blocks to the site they were created in'|t('app') },
-            { value: 'siteGroup', label: 'Save blocks to other sites in the same site group'|t('app') },
-            { value: 'language', label: 'Save blocks to other sites with the same language'|t('app') },
-            { value: 'all', label: 'Save blocks to all sites the owner element is saved in'|t('app') },
+            { value: 'none', label: 'Only save entries to the site they were created in'|t('app') },
+            { value: 'siteGroup', label: 'Save entries to other sites in the same site group'|t('app') },
+            { value: 'language', label: 'Save entries to other sites with the same language'|t('app') },
+            { value: 'all', label: 'Save entries to all sites the owner element is saved in'|t('app') },
             { value: 'custom', label: 'Custom…'|t('app') },
         ],
-        value: matrixField.propagationMethod,
+        value: field.propagationMethod.value,
         toggle: true,
         targetPrefix: 'propagation-method-',
     }) }}
 
     {% tag 'div' with {
         id: 'propagation-method-custom',
-        class: matrixField.propagationMethod != 'custom' ? 'hidden' : null,
+        class: field.propagationMethod.value != 'custom' ? 'hidden' : null,
     } %}
         {{ forms.textField({
             label: 'Propagation Key Format'|t('app'),
-            instructions: 'Template that defines the field’s custom “propagation key” format. Blocks will be saved to all sites that produce the same key.'|t('app'),
+            instructions: 'Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.'|t('app'),
             id: 'propagation-key-format',
             class: 'code',
             name: 'propagationKeyFormat',
-            value: matrixField.propagationKeyFormat,
-            errors: matrixField.getErrors('propagationKeyFormat'),
+            value: field.propagationKeyFormat,
+            errors: field.getErrors('propagationKeyFormat'),
         }) }}
     {% endtag %}
 
-    {% if matrixField.id and matrixField.propagationMethod != 'none' %}
+    {% if field.id and field.propagationMethod.value != 'none' %}
         {% js %}
             (function() {
                 var showingWarning = false;
                 $("#{{ 'propagationMethod'|namespaceInputId }}").on('change', function() {
-                    if ($(this).val() !== '{{ matrixField.propagationMethod }}') {
+                    if ($(this).val() !== '{{ field.propagationMethod.value }}') {
                         if (!showingWarning) {
-                            $('<p/>', {'class': 'warning', text: "{{ 'Applying this change to existing blocks can take some time.'|t('app')|e('js') }}"})
+                            $('<p/>', {'class': 'warning', text: "{{ 'Applying this change to existing entries can take some time.'|t('app')|e('js') }}"})
                                 .appendTo($("#{{ 'propagationMethod-field'|namespaceInputId }}"));
                             showingWarning = true;
                         }
@@ -278,22 +65,212 @@
     {% endif %}
 {% endif %}
 
-{{ forms.textField({
-    label: "Min Blocks"|t('app'),
-    instructions: "The minimum number of blocks the field is allowed to have."|t('app'),
-    id: 'minBlocks',
-    name: 'minBlocks',
-    value: matrixField.minBlocks,
-    size: 3,
-    errors: matrixField.getErrors('minBlocks')
+{% set headlessMode = craft.app.config.general.headlessMode %}
+{% set siteRows = [] %}
+{% set siteErrors = [] %}
+
+{% for site in craft.app.sites.getAllSites() %}
+    {% set siteSettings = field.siteSettings[site.uid] ?? null %}
+    {% if siteSettings %}
+        {% for attribute, errors in siteSettings.errors ?? [] %}
+            {% set siteErrors = siteErrors|merge(errors) %}
+        {% endfor %}
+    {% endif %}
+    {% set siteRows = siteRows|merge({
+        (site.uid): {
+            heading: site.name|t('site')|e,
+            uriFormat: {
+                value: siteSettings.uriFormat ?? null,
+                hasErrors: siteSettings.errors.uriFormat is defined,
+            },
+            template: not headlessMode ? {
+                value: siteSettings.template ?? null,
+                hasErrors: siteSettings.errors.template is defined,
+            },
+        }|filter
+    }) %}
+{% endfor %}
+
+{{ forms.editableTableField({
+    label: 'Site Settings'|t('app'),
+    instructions: 'Choose the site-specific settings for nested entries.'|t('app'),
+    id: 'site-settings',
+    name: 'siteSettings',
+    cols: {
+        heading: {
+            type: 'heading',
+            heading: 'Site'|t('app'),
+            thin: true
+        },
+        uriFormat: {
+            type: 'singleline',
+            heading: 'Entry URI Format'|t('app'),
+            info: 'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.'|t('app'),
+            placeholder: 'Leave blank if entries don’t have URLs'|t('app'),
+            code: true,
+        },
+        template: not headlessMode ? {
+            type: 'template',
+            heading: 'Template'|t('app'),
+            info: 'Which template should be loaded when an entry’s URL is requested.'|t('app'),
+            code: true
+        },
+    }|filter,
+    rows: siteRows,
+    fullWidth: true,
+    allowAdd: false,
+    allowDelete: false,
+    allowReorder: false,
+    errors: siteErrors|unique,
+    data: {'error-key': 'siteSettings'},
 }) }}
 
 {{ forms.textField({
-    label: "Max Blocks"|t('app'),
-    instructions: "The maximum number of blocks the field is allowed to have."|t('app'),
-    id: 'maxBlocks',
-    name: 'maxBlocks',
-    value: matrixField.maxBlocks,
+    label: 'Min {type}'|t('app', {
+        type: 'Entries'|t('app'),
+    }),
+    instructions: 'The minimum number of {type} the field is allowed to have.'|t('app', {
+        type: 'entries'|t('app'),
+    }),
+    id: 'min-entries',
+    name: 'minEntries',
+    value: field.minEntries,
     size: 3,
-    errors: matrixField.getErrors('maxBlocks')
+    errors: field.getErrors('minEntries'),
+    data: {'error-key': 'minEntries'},
 }) }}
+
+{{ forms.textField({
+    label: 'Max {type}'|t('app', {
+        type: 'Entries'|t('app'),
+    }),
+    instructions: 'The maximum number of {type} the field is allowed to have.'|t('app', {
+        type: 'entries'|t('app'),
+    }),
+    id: 'max-entries',
+    name: 'maxEntries',
+    value: field.maxEntries,
+    size: 3,
+    errors: field.getErrors('maxEntries'),
+    data: {'error-key': 'maxEntries'},
+}) }}
+
+<hr>
+
+{{ forms.selectField({
+    label: 'View Mode'|t('app'),
+    instructions: 'Choose how nested {type} should be presented to authors.'|t('app', {
+        type: 'entries'|t('app'),
+    }),
+    id: 'view-mode',
+    name: 'viewMode',
+    options: [
+        {label: 'As cards'|t('app'), value: constant('VIEW_MODE_CARDS', field)},
+        {label: 'As inline-editable blocks'|t('app'), value: constant('VIEW_MODE_BLOCKS', field)},
+        {label: 'As an element index'|t('app'), value: constant('VIEW_MODE_INDEX', field)},
+    ],
+    value: field.viewMode,
+    toggle: true,
+    targetPrefix: 'view-mode--',
+}) }}
+
+{% tag 'div' with {
+    id: "view-mode--#{constant('VIEW_MODE_CARDS', field)}",
+    class: field.viewMode != constant('VIEW_MODE_CARDS', field) ? 'hidden' : null,
+} %}
+    {{ forms.lightswitchField({
+        label: 'Show cards in a grid'|t('app'),
+        instructions: 'Whether cards should be shown in a multi-column grid on wide viewports.'|t('app'),
+        id: 'show-cards-in-grid',
+        name: 'showCardsInGrid',
+        on: field.showCardsInGrid,
+    }) }}
+{% endtag %}
+
+{% tag 'div' with {
+    id: "view-mode--#{constant('VIEW_MODE_INDEX', field)}",
+    class: field.viewMode != constant('VIEW_MODE_INDEX', field) ? 'hidden' : null,
+} %}
+    {{ forms.lightswitchField({
+        label: 'Include Table View'|t('app'),
+        instructions: 'Whether the element index should allow viewing nested {type} in a table.'|t('app', {
+            type: 'entries'|t('app'),
+        }),
+        id: 'include-table-view',
+        name: 'includeTableView',
+        on: field.includeTableView,
+        toggle: '#default-table-columns-container',
+    }) }}
+
+    {% tag 'div' with {
+        id: 'default-table-columns-container',
+        class: not field.includeTableView ? 'hidden' : null,
+    } %}
+        {% embed '_includes/forms/field.twig' with {
+            label: 'Default Table Columns'|t('app'),
+            instructions: 'Choose which table columns should be visible by default.'|t('app'),
+            id: 'default-table-columns',
+        } %}
+            {% block input %}
+                <div id="default-table-columns-input"></div>
+            {% endblock %}
+        {% endembed %}
+    {% endtag %}
+
+    {{ forms.selectField({
+        label: '{type} Per Page'|t('app', {
+            type: 'Entries'|t('app'),
+        }),
+        instructions: 'The total number of {type} to display per page within the element index.'|t('app', {
+            type: 'entries'|t('app'),
+        }),
+        id: 'page-size',
+        name: 'pageSize',
+        options: [10, 20, 50, 100]|map(num => {label: num, value: num}),
+        value: field.pageSize ?? 50,
+    }) }}
+{% endtag %}
+
+{{ forms.textField({
+    label: '“New” Button Label'|t('app'),
+    instructions: 'The text label for the entry creation button.'|t('app'),
+    id: 'create-button-label',
+    name: 'createButtonLabel',
+    value: field.createButtonLabel,
+    placeholder: defaultCreateButtonLabel,
+    errors: field.getErrors('createButtonLabel')
+}) }}
+
+{% js %}
+  (() => {
+    const $defaultColumnsContainer = $('#{{ 'default-table-columns-input'|namespaceInputId }}');
+
+    Craft.ui.createCheckboxSelect({
+      name: {{ 'defaultTableColumns'|namespaceInputName|json_encode|raw }},
+      options: {{ defaultTableColumnOptions|json_encode|raw }},
+      values: {{ field.defaultTableColumns|json_encode|raw }},
+      sortable: true,
+    }).appendTo($defaultColumnsContainer);
+
+    const componentSelect = $('#{{ 'entry-types'|namespaceInputId }}').data('componentSelect');
+
+    componentSelect.on('change', () => {
+      const values = $defaultColumnsContainer.find('input:checked').toArray().map(input => input.value);
+      Craft.sendActionRequest('POST', 'matrix/default-table-column-options', {
+        data: {
+          entryTypeIds: componentSelect.getSelectedComponentIds(),
+        },
+      }).then(({data}) => {
+        $defaultColumnsContainer.empty().append(
+          Craft.ui.createCheckboxSelect({
+            name: {{ 'defaultTableColumns'|namespaceInputName|json_encode|raw }},
+            options: data.options,
+            values: values,
+            sortable: true,
+          })
+        );
+
+      });
+    });
+  })();
+{% endjs %}

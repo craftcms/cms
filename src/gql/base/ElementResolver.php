@@ -12,11 +12,11 @@ use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
+use craft\elements\ElementCollection;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
-use Illuminate\Support\Collection;
 
 /**
  * Class ElementResolver
@@ -74,9 +74,9 @@ abstract class ElementResolver extends Resolver
      * @param array $arguments
      * @param array|null $context
      * @param ResolveInfo $resolveInfo
-     * @return ElementQuery|Collection
+     * @return ElementQuery|ElementCollection
      */
-    protected static function prepareElementQuery(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): ElementQuery|Collection
+    protected static function prepareElementQuery(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): ElementQuery|ElementCollection
     {
         /** @var ArgumentManager $argumentManager */
         $argumentManager = empty($context['argumentManager']) ? Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];

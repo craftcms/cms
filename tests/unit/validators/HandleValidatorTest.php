@@ -86,7 +86,7 @@ class HandleValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function handleValidationDataProvider(): array
+    public static function handleValidationDataProvider(): array
     {
         return [
             [true, 'iamAHandle'],

@@ -17,6 +17,7 @@ use yii\base\Module;
  *
  * @mixin PluginTrait
  * @mixin Module
+ * @phpstan-require-extends Module
  * @property string $handle The plugin’s handle (alias of [[id]])
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

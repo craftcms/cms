@@ -13,10 +13,9 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\console\controllers\ResaveController;
 use craft\db\QueryBatcher;
-use craft\errors\InvalidElementException;
 use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
-use craft\queue\BaseBatchedJob;
+use craft\queue\BaseBatchedElementJob;
 use Throwable;
 
 /**
@@ -25,7 +24,7 @@ use Throwable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class ResaveElements extends BaseBatchedJob
+class ResaveElements extends BaseBatchedElementJob
 {
     /**
      * @var string The element type that should be resaved
@@ -63,6 +62,12 @@ class ResaveElements extends BaseBatchedJob
     public bool $ifEmpty = false;
 
     /**
+     * @var bool Whether the [[set]] attribute should only be set if the current value doesn’t validate.
+     * @since 5.1.0
+     */
+    public bool $ifInvalid = false;
+
+    /**
      * @var bool Whether to update the `dateUpdated` timestamp for the elements.
      * @since 4.2.6
      */
@@ -91,20 +96,27 @@ class ResaveElements extends BaseBatchedJob
      */
     protected function processItem(mixed $item): void
     {
-        // Make sure the element was queried with its content
-        /** @var ElementInterface $item */
-        if ($item::hasContent() && $item->contentId === null) {
-            throw new InvalidElementException($item, "Skipped resaving {$item->getUiLabel()} ($item->id) because it wasn’t loaded with its content.");
-        }
+        if (isset($this->set)) {
+            $set = true;
+            if ($this->ifEmpty) {
+                if (!ElementHelper::isAttributeEmpty($item, $this->set)) {
+                    $set = false;
+                }
+            } elseif ($this->ifInvalid) {
+                $item->setScenario(Element::SCENARIO_LIVE);
+                if ($item->validate($this->set) && $item->validate("field:$this->set")) {
+                    $set = false;
+                }
+            }
 
+            if ($set) {
+                $to = ResaveController::normalizeTo($this->to);
+                $item->{$this->set} = $to($item);
+            }
+        }
 
         $item->setScenario(Element::SCENARIO_ESSENTIALS);
         $item->resaving = true;
-
-        if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($item, $this->set))) {
-            $to = ResaveController::normalizeTo($this->to);
-            $item->{$this->set} = $to($item);
-        }
 
         try {
             Craft::$app->getElements()->saveElement($item,

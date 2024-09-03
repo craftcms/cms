@@ -9,10 +9,10 @@ namespace craft\mail;
 
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\View;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -52,7 +52,7 @@ class Mailer extends \yii\symfonymailer\Mailer
     /**
      * Composes a new email based on a given key.
      *
-     * Craft has four predefined email keys: account_activation, verify_new_email, forgot_password, and test_email.
+     * Craft has four predefined email keys: account_activation, verify_new_email, forgot_password and test_email.
      * Plugins can register additional email keys using the
      * [registerEmailMessages](http://craftcms.com/docs/plugins/hooks-reference#registerEmailMessages) hook, and
      * by providing the corresponding language strings.
@@ -87,7 +87,7 @@ class Mailer extends \yii\symfonymailer\Mailer
      */
     public function send($message): bool
     {
-        // fire a beforePrep event
+        // Fire a 'beforePrep' event
         $this->trigger(self::EVENT_BEFORE_PREP, new MailEvent([
             'message' => $message,
         ]));
@@ -134,7 +134,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             $message->setTextBody($textBody);
 
             // Is there a custom HTML template set?
-            if (Craft::$app->getEdition() === Craft::Pro && $this->template) {
+            if (Craft::$app->edition->value >= CmsEdition::Pro->value && $this->template) {
                 $template = $this->template;
                 $templateMode = View::TEMPLATE_MODE_SITE;
             } else {
@@ -175,22 +175,6 @@ class Mailer extends \yii\symfonymailer\Mailer
             $message->setBcc([]);
         }
 
-        try {
-            return parent::send($message);
-        } catch (TransportExceptionInterface $e) {
-            $eMessage = $e->getMessage();
-
-            // Remove the stack trace to get rid of any sensitive info.
-            $eMessage = substr($eMessage, 0, strpos($eMessage, 'Stack trace:') - 1);
-            Craft::warning('Error sending email: ' . $eMessage);
-
-            // Save the exception on the message, for plugins to make use of
-            if ($message instanceof Message) {
-                $message->error = $e;
-            }
-
-            $this->afterSend($message, false);
-            return false;
-        }
+        return parent::send($message);
     }
 }

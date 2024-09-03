@@ -47,7 +47,7 @@ class DiffHelperTest extends TestCase
     /**
      * @return array
      */
-    public function compareDataProvider(): array
+    public static function compareDataProvider(): array
     {
         return [
             [true, 1, '1', false],
@@ -61,7 +61,7 @@ class DiffHelperTest extends TestCase
     /**
      * @return array
      */
-    public function diffDataProvider(): array
+    public static function diffDataProvider(): array
     {
         return [
             ['', 'foo', 'foo'],

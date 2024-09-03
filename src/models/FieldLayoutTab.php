@@ -11,15 +11,16 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
-use craft\db\Query;
-use craft\db\Table;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use DateTime;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -44,6 +45,23 @@ class FieldLayoutTab extends FieldLayoutComponent
     {
         static::updateConfig($config);
         return new self($config);
+    }
+
+    /**
+     * Returns the label HTML that should be displayed within field layout designers.
+     *
+     * @return string
+     * @since 5.1.0
+     */
+    public function labelHtml(): string
+    {
+        return
+            Html::tag('span', Html::encode($this->name)) .
+            ($this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
+                'class' => array_filter(array_merge(['cp-icon', 'puny', 'orange'])),
+                'title' => Craft::t('app', 'This tab is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
+            ]) : '');
     }
 
     /**
@@ -104,7 +122,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      * @see getElements()
      * @see setElements()
      */
-    private array $_elements;
+    private array $_elements = [];
 
     /**
      * @inheritdoc
@@ -127,38 +145,6 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * @inheritdoc
      */
-    public function init(): void
-    {
-        parent::init();
-
-        if (!isset($this->_elements) && isset($this->id)) {
-            // No element configs for this tab yet, so create the elements ourselves
-            $fieldsService = Craft::$app->getFields();
-            $layoutElements = [];
-
-            $fieldInfo = (new Query())
-                ->select(['fieldId', 'required'])
-                ->from([Table::FIELDLAYOUTFIELDS])
-                ->where(['tabId' => $this->id])
-                ->orderBy(['sortOrder' => SORT_ASC])
-                ->all();
-
-            foreach ($fieldInfo as $row) {
-                $field = $fieldsService->getFieldById($row['fieldId']);
-                if ($field) {
-                    $layoutElements[] = new CustomField($field, [
-                        'required' => $row['required'],
-                    ]);
-                }
-            }
-
-            $this->setElements($layoutElements);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function fields(): array
     {
         $fields = parent::fields();
@@ -176,6 +162,14 @@ class FieldLayoutTab extends FieldLayoutComponent
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['sortOrder'], 'string', 'max' => 4];
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasSettings()
+    {
+        return true;
     }
 
     /**
@@ -221,7 +215,14 @@ class FieldLayoutTab extends FieldLayoutComponent
             if (!isset($layoutElement->uid)) {
                 $layoutElement->uid = StringHelper::UUID();
             }
-            $elementConfigs[] = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
+            $elementConfig = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
+            if (!isset($elementConfig['dateAdded'])) {
+                // Default `dateAdded` to a minute ago, so there’s no chance that an element that predated 5.3 would get
+                // the same timestamp as a newly-added element, if the layout was saved within a minute of being edited,
+                // after updating to Craft 5.3+.
+                $elementConfig['dateAdded'] = DateTimeHelper::toIso8601((new DateTime())->modify('-1 minute'));
+            }
+            $elementConfigs[] = $elementConfig;
         }
         return $elementConfigs;
     }
@@ -280,6 +281,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     public function setElements(array $elements): void
     {
         $fieldsService = Craft::$app->getFields();
+        $pluginsService = Craft::$app->getPlugins();
         $this->_elements = [];
 
         foreach ($elements as $layoutElement) {
@@ -296,8 +298,17 @@ class FieldLayoutTab extends FieldLayoutComponent
                 }
             }
 
-            $layoutElement->setLayout($this->getLayout());
-            $this->_elements[] = $layoutElement;
+            // if layout element belongs to a plugin, ensure the plugin is installed
+            $pluginHandle = $pluginsService->getPluginHandleByClass($layoutElement::class);
+            if ($pluginHandle === null || $pluginsService->isPluginEnabled($pluginHandle)) {
+                $layoutElement->setLayout($this->getLayout());
+                $this->_elements[] = $layoutElement;
+            }
+        }
+
+        // Clear caches
+        if (isset($this->_layout)) {
+            $this->_layout->reset();
         }
     }
 
@@ -318,8 +329,7 @@ class FieldLayoutTab extends FieldLayoutComponent
         // ensure unique tab id even if there are multiple tabs with the same name
         $tabOrder = StringHelper::pad((string)$this->sortOrder, 2, '0', 'left');
 
-        // Use two dashes here in case a tab name starts with “Tab”
-        return "tab$tabOrder--$asciiName";
+        return Html::id("tab$tabOrder-$asciiName");
     }
 
     /**

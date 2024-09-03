@@ -1,4 +1,5 @@
-{% if name ?? false %}
+{% set name = name ?? false %}
+{% if name %}
     {{ hiddenInput(name, '') }}
 {% endif -%}
 
@@ -11,13 +12,15 @@
 {% set sourceElementId = sourceElementId ?? null -%}
 {% set storageKey = storageKey ?? null -%}
 {% set viewMode = viewMode ?? 'list' %}
-{% set sortable = sortable ?? true %}
 {% set prevalidate = prevalidate ?? false %}
 {% set fieldId = fieldId ?? null %}
 {% set single = single ?? false %}
 {% set limit = single ? 1 : (limit ?? null) %}
+{% set showActionMenu = showActionMenu ?? true %}
+{% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
 {% set disabled = (disabled ?? false) ? true : false %}
 {% set maintainHierarchy = maintainHierarchy ?? false %}
+{% set registerJs = registerJs ?? true %}
 
 {% set containerAttributes = {
     id: id,
@@ -34,12 +37,32 @@
 
 {% tag 'div' with containerAttributes %}
     {% if maintainHierarchy %}
-        {{ include('_elements/structurelist.twig', { elements, id })}}
+        {{ include('_elements/structurelist.twig', {
+            id,
+            elements,
+            context: 'field',
+            sortable: false,
+        }) }}
+    {% elseif viewMode == 'cards' %}
+        {{ include('_elements/cards.twig', {
+            elements,
+            viewMode,
+            showInGrid: showCardsInGrid ?? false,
+            disabled,
+            context: 'field',
+            sortable: false,
+        }) }}
     {% else %}
-        {{ include('_elements/list.twig', { elements, viewMode, disabled }) }}
+        {{ include('_elements/list.twig', {
+            elements,
+            viewMode,
+            disabled,
+            context: 'field',
+            sortable: false,
+        }) }}
     {% endif %}
 
-    <div class="flex flex-nowrap">
+    <div class="flex">
         {{ tag('button', {
             type: 'button',
             class: [
@@ -61,10 +84,10 @@
     </div>
 {% endtag %}
 
-{% if not disabled %}
+{% if not disabled and registerJs %}
     {% set jsSettings = {
         id: id|namespaceInputId,
-        name: name|namespaceInputName,
+        name: name ? name|namespaceInputName : null,
         elementType: elementType,
         sources: sources,
         condition: condition ? condition.getConfig() : null,
@@ -83,6 +106,7 @@
         modalStorageKey: storageKey,
         fieldId: fieldId,
         sortable: sortable,
+        showActionMenu: showActionMenu,
         prevalidate: prevalidate,
         modalSettings: modalSettings ?? {},
     } %}

@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use craft\models\Site;
 use yii\base\Behavior;
 
 /**
@@ -61,6 +62,20 @@ class CpScreenResponseBehavior extends Behavior
      * @see selectedSubnavItem()
      */
     public ?string $selectedSubnavItem = null;
+
+    /**
+     * @var Site|null The site that should be displayed within the breadcrumbs.
+     * @see site()
+     * @since 5.0.0
+     */
+    public ?Site $site = null;
+
+    /**
+     * @var array<Site|array{site:Site,status?:string}>|null The sites that should be selectable by the site breadcrumb menu.
+     * @see selectableSites()
+     * @since 5.0.0
+     */
+    public ?array $selectableSites = null;
 
     /**
      * @var array|callable|null Breadcrumbs.
@@ -142,14 +157,18 @@ class CpScreenResponseBehavior extends Behavior
     public ?string $saveShortcutRedirectUrl = null;
 
     /**
-     * @var string|callable|null The context menu HTML.
-     *
-     * This will only be used by full-page screens.
-     *
-     * @see contextMenu()
-     * @see contextMenuTemplate()
+     * @var callable|null Context menu items factory.
+     * @see contextMenuItems()
+     * @since 5.0.0
      */
-    public $contextMenu = null;
+    public $contextMenuItems = null;
+
+    /**
+     * @var callable|null Action menu items factory.
+     * @see actionMenuItems()
+     * @since 5.0.0
+     */
+    public $actionMenuItems = null;
 
     /**
      * @var string|null The submit button label.
@@ -162,39 +181,43 @@ class CpScreenResponseBehavior extends Behavior
      *
      * This will only be used by full-page screens.
      *
-     * @see additionalButtons()
+     * @see additionalButtonsHtml()
      * @see additionalButtonsTemplate()
+     * @since 5.0.0
      */
-    public $additionalButtons = null;
+    public $additionalButtonsHtml = null;
 
     /**
      * @var string|callable|null The content HTML.
-     * @see content()
+     * @see contentHtml()
      * @see contentTemplate()
+     * @since 5.0.0
      */
-    public $content = null;
+    public $contentHtml = null;
 
     /**
-     * @var string|callable|null The right-hand sidebar HTML.
-     * @see sidebar()
-     * @see sidebarTemplate()
+     * @var string|callable|null The right-hand meta sidebar HTML.
+     * @see metaSidebarHtml()
+     * @see metaSidebarTemplate()
+     * @since 5.0.0
      */
-    public $sidebar = null;
+    public $metaSidebarHtml = null;
 
     /**
      * @var string|callable|null The left-hand page sidebar HTML (only used by full-page screens).
-     * @see pageSidebar()
+     * @see pageSidebarHtml()
      * @see pageSidebarTemplate()
-     * @since 4.5.0
+     * @since 5.0.0
      */
-    public $pageSidebar = null;
+    public $pageSidebarHtml = null;
 
     /**
      * @var string|callable|null The content notice HTML.
-     * @see notice()
+     * @see noticeHtml()
      * @see noticeTemplate()
+     * @since 5.0.0
      */
-    public $notice = null;
+    public $noticeHtml = null;
 
     /**
      * @var string|callable|null The errors summary HTML (DEV-212).
@@ -273,7 +296,14 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the breadcrumbs.
      *
-     * Each breadcrumb should be represented by a nested array with `label` and `url` keys.
+     * Breadcrumbs should be defined by arrays with the following keys:
+     *
+     * - `label` – The breadcrumb label, to be HTML-encoded
+     * - `url` – The URL that the breadcrumb should link to
+     * - `icon` – The icon which should be displayed beside the label
+     * - `menu` – The menu items which should be displayed alongside the breadcrumb
+     *   (see [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties)
+     * - `current` – Whether the breadcrumb represents the current page
      *
      * This will only be used by full-page screens.
      *
@@ -304,6 +334,32 @@ class CpScreenResponseBehavior extends Behavior
             'label' => $label,
             'url' => UrlHelper::cpUrl($url),
         ];
+        return $this->owner;
+    }
+
+    /**
+     * Sets the site that should be displayed within the breadcrumbs.
+     *
+     * @param Site|null $value
+     * @return Response
+     * @since 5.0.0
+     */
+    public function site(?Site $value): Response
+    {
+        $this->site = $value;
+        return $this->owner;
+    }
+
+    /**
+     * Sets the sites that should be selectable by the site breadcrumb menu.
+     *
+     * @param array<Site|array{site:Site,status?:string}>|null $value
+     * @return Response
+     * @since 5.0.0
+     */
+    public function selectableSites(?array $value): Response
+    {
+        $this->selectableSites = $value;
         return $this->owner;
     }
 
@@ -468,33 +524,33 @@ class CpScreenResponseBehavior extends Behavior
     }
 
     /**
-     * Sets the context menu HTML.
+     * Sets the context menu items.
      *
-     * This will only be used by full-page screens.
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
      *
-     * @param callable|string|null $value
+     * @param callable|null $value A callback function which returns the menu items
      * @return Response
+     * @since 5.0.0
      */
-    public function contextMenu(callable|string|null $value): Response
+    public function contextMenuItems(?callable $value): Response
     {
-        $this->contextMenu = $value;
+        $this->contextMenuItems = $value;
         return $this->owner;
     }
 
     /**
-     * Sets a template that should be used to render the context menu HTML.
+     * Sets the action menu items.
      *
-     * This will only be used by full-page screens.
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
      *
-     * @param string $template
-     * @param array $variables
+     * @param callable|null $value A callback function which returns the menu items
      * @return Response
+     * @since 5.0.0
      */
-    public function contextMenuTemplate(string $template, array $variables = []): Response
+    public function actionMenuItems(?callable $value): Response
     {
-        return $this->contextMenu(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
-        );
+        $this->actionMenuItems = $value;
+        return $this->owner;
     }
 
     /**
@@ -516,10 +572,11 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
-    public function additionalButtons(callable|string|null $value): Response
+    public function additionalButtonsHtml(callable|string|null $value): Response
     {
-        $this->additionalButtons = $value;
+        $this->additionalButtonsHtml = $value;
         return $this->owner;
     }
 
@@ -534,7 +591,7 @@ class CpScreenResponseBehavior extends Behavior
      */
     public function additionalButtonsTemplate(string $template, array $variables = []): Response
     {
-        return $this->additionalButtons(
+        return $this->additionalButtonsHtml(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }
@@ -544,10 +601,11 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
-    public function content(callable|string|null $value): Response
+    public function contentHtml(callable|string|null $value): Response
     {
-        $this->content = $value;
+        $this->contentHtml = $value;
         return $this->owner;
     }
 
@@ -560,33 +618,34 @@ class CpScreenResponseBehavior extends Behavior
      */
     public function contentTemplate(string $template, array $variables = []): Response
     {
-        return $this->content(
+        return $this->contentHtml(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }
 
     /**
-     * Sets the right-hand sidebar HTML.
+     * Sets the right-hand meta sidebar HTML.
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
-    public function sidebar(callable|string|null $value): Response
+    public function metaSidebarHtml(callable|string|null $value): Response
     {
-        $this->sidebar = $value;
+        $this->metaSidebarHtml = $value;
         return $this->owner;
     }
 
     /**
-     * Sets a template that should be used to render the right-hand sidebar HTML.
+     * Sets a template that should be used to render the right-hand meta sidebar HTML.
      *
      * @param string $template
      * @param array $variables
      * @return Response
      */
-    public function sidebarTemplate(string $template, array $variables = []): Response
+    public function metaSidebarTemplate(string $template, array $variables = []): Response
     {
-        return $this->sidebar(
+        return $this->metaSidebarHtml(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }
@@ -596,11 +655,11 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
-     * @since 4.5.0
+     * @since 5.0.0
      */
-    public function pageSidebar(callable|string|null $value): Response
+    public function pageSidebarHtml(callable|string|null $value): Response
     {
-        $this->pageSidebar = $value;
+        $this->pageSidebarHtml = $value;
         return $this->owner;
     }
 
@@ -614,7 +673,7 @@ class CpScreenResponseBehavior extends Behavior
      */
     public function pageSidebarTemplate(string $template, array $variables = []): Response
     {
-        return $this->pageSidebar(
+        return $this->pageSidebarHtml(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }
@@ -624,10 +683,11 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param callable|string|null $value
      * @return Response
+     * @since 5.0.0
      */
-    public function notice(callable|string|null $value): Response
+    public function noticeHtml(callable|string|null $value): Response
     {
-        $this->notice = $value;
+        $this->noticeHtml = $value;
         return $this->owner;
     }
 
@@ -640,7 +700,7 @@ class CpScreenResponseBehavior extends Behavior
      */
     public function noticeTemplate(string $template, array $variables = []): Response
     {
-        return $this->notice(
+        return $this->noticeHtml(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }

@@ -48,9 +48,9 @@ class InputTypeTest extends TestCase
         }
 
         if ($isMulti) {
-            $this->assertInstanceOf(ListOfType::class, $type);
+            self::assertInstanceOf(ListOfType::class, $type);
         } else {
-            $this->assertNotInstanceOf(ListOfType::class, $type);
+            self::assertNotInstanceOf(ListOfType::class, $type);
         }
     }
 
@@ -83,19 +83,19 @@ class InputTypeTest extends TestCase
         self::assertEquals($normalized, Matrix::normalizeValue($input));
     }
 
-    public function matrixInputValueNormalizerDataProvider(): array
+    public static function matrixInputValueNormalizerDataProvider(): array
     {
         return [
             [
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             ['blockType' => ['id' => 2, 'one', 'two']],
                             ['blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3], 'blockTypeB' => ['id' => 88, 'stuff' => 'ok']],
                         ],
                 ],
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             2 => [
                                 'type' => 'blockType',
@@ -103,6 +103,7 @@ class InputTypeTest extends TestCase
                                     'one',
                                     'two',
                                 ],
+                                'title' => null,
                             ],
                             'new:1' => [
                                 'type' => 'blockTypeA',
@@ -111,20 +112,21 @@ class InputTypeTest extends TestCase
                                     'crackle' => 2,
                                     'pop' => 3,
                                 ],
+                                'title' => null,
                             ],
                         ],
                 ],
             ],
             [
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             ['blockType' => ['id' => 2, 'one', 'two']],
                             ['blockTypeB' => ['id' => 88, 'stuff' => 'ok'], 'blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3]],
                         ],
                 ],
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             2 => [
                                 'type' => 'blockType',
@@ -132,19 +134,21 @@ class InputTypeTest extends TestCase
                                     'one',
                                     'two',
                                 ],
+                                'title' => null,
                             ],
                             88 => [
                                 'type' => 'blockTypeB',
                                 'fields' => [
                                     'stuff' => 'ok',
                                 ],
+                                'title' => null,
                             ],
                         ],
                 ],
             ],
             [
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             ['blockType' => ['one']],
                             ['blockType' => ['two']],
@@ -153,23 +157,27 @@ class InputTypeTest extends TestCase
                         ],
                 ],
                 [
-                    'blocks' =>
+                    'entries' =>
                         [
                             'new:1' => [
                                 'type' => 'blockType',
                                 'fields' => ['one'],
+                                'title' => null,
                             ],
                             'new:2' => [
                                 'type' => 'blockType',
                                 'fields' => ['two'],
+                                'title' => null,
                             ],
                             'new:3' => [
                                 'type' => 'blockType',
                                 'fields' => ['three'],
+                                'title' => null,
                             ],
                             'new:4' => [
                                 'type' => 'blockType',
                                 'fields' => ['four'],
+                                'title' => null,
                             ],
                         ],
                 ],
@@ -177,7 +185,7 @@ class InputTypeTest extends TestCase
         ];
     }
 
-    public function multipleOptionsDataProvider(): array
+    public static function multipleOptionsDataProvider(): array
     {
         return [
             [new RadioButtons(['handle' => 'someField']), false],

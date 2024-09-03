@@ -1,0 +1,73 @@
+{% import '_includes/forms' as forms %}
+
+{% tag 'div' with {
+  id: 'auth-method-setup',
+  class: ['pane', 'fullwidth']|merge((paneClass ?? [])|explodeClass),
+} %}
+  {% for method in craft.app.auth.getAvailableMethods() %}
+    {% set isActive = method.isActive() %}
+    {% set headingId = "auth-method-heading-#{loop.index0}" %}
+
+    {% tag 'div' with {
+      class: 'auth-method',
+      data: {
+        method: className(method),
+        active: isActive,
+      },
+    } %}
+      <div class="auth-method-details">
+        <h3 id="{{ headingId }}">{{ method.displayName() }}</h3>
+        <div class="instructions">
+          {{ method.description() }}
+        </div>
+        {% if isActive %}
+          {% set actionMenuItems = method.getActionMenuItems()
+            |push({type: 'hr'})
+            |push({
+            label: 'Remove'|t('app'),
+            icon: 'remove',
+            destructive: true,
+            action: 'auth/remove-method',
+            params: {method: className(method)},
+            confirm: 'Are you sure you want to remove {name} verification?'|t('app', {
+              name: method.displayName(),
+            }),
+            requireElevatedSession: true,
+          }) %}
+          <div class="auth-method-footer">
+            <div class="auth-method-active">
+              <div data-icon="checkmark"></div>
+              <div class="smalltext">{{ 'Active'|t('app') }}</div>
+            </div>
+            {{ disclosureMenu(actionMenuItems, {
+              buttonAttributes: {
+                class: ['auth-method-action-btn', 'action-btn', 'hairline'],
+                title: 'Actions'|t('app'),
+                'aria-label': 'Actions'|t('app'),
+                'aria-describedby': headingId,
+              },
+            }) }}
+          </div>
+        {% endif %}
+      </div>
+
+      {% if not isActive %}
+        {{ forms.button({
+          class: ['auth-method-setup-btn', 'hairline'],
+          spinner: true,
+          type: 'button',
+          label: 'Set up'|t('app'),
+          attributes: {
+            data: {
+              method: className(method),
+            }
+          },
+        }) }}
+      {% endif %}
+    {% endtag %}
+
+    {% if not loop.last %}
+      <hr />
+    {% endif %}
+  {% endfor %}
+{% endtag %}

@@ -15,7 +15,6 @@ parameters:
         - tests/_data/*
         - tests/_output/*
         - tests/_support/_generated/
-        - tests/unit/helpers/typecast/
     scanFiles:
         - lib/craft/behaviors/CustomFieldBehavior.php
         - tests/_support/_generated/AcceptanceTesterActions.php

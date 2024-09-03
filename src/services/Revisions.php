@@ -13,6 +13,7 @@ use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
+use craft\errors\MutexException;
 use craft\events\RevisionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -21,7 +22,6 @@ use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
 use Throwable;
 use yii\base\Component;
-use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -77,7 +77,7 @@ class Revisions extends Component
         $lockKey = 'revision:' . $canonical->id;
         $mutex = Craft::$app->getMutex();
         if (!$mutex->acquire($lockKey, 3)) {
-            throw new Exception('Could not acquire a lock to save a revision for element ' . $canonical->id);
+            throw new MutexException($lockKey, sprintf('Could not acquire a lock to save a revision for element %s', $canonical->id));
         }
 
         $db = Craft::$app->getDb();
@@ -100,7 +100,7 @@ class Revisions extends Component
                 $lastRevisionInfo &&
                 DateTimeHelper::toDateTime($lastRevisionInfo['dateCreated'])->getTimestamp() === $canonical->dateUpdated->getTimestamp() &&
                 // Make sure all its data is in-tact
-                $canonical::find()->revisionId($lastRevisionInfo['id'])->status(null)->exists()
+                $canonical::find()->id($lastRevisionInfo['id'])->revisions()->status(null)->siteId($canonical->siteId)->exists()
             ) {
                 // The canonical element hasn't been updated since the last revision's creation date,
                 // so there's no need to create a new one
@@ -122,16 +122,18 @@ class Revisions extends Component
         }
 
         // Fire a 'beforeCreateRevision' event
-        $event = new RevisionEvent([
-            'canonical' => $canonical,
-            'creatorId' => $creatorId,
-            'revisionNum' => $num,
-            'revisionNotes' => $notes,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
-        $notes = $event->revisionNotes;
-        $creatorId = $event->creatorId;
-        $canonical = $event->canonical;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_REVISION)) {
+            $event = new RevisionEvent([
+                'canonical' => $canonical,
+                'creatorId' => $creatorId,
+                'revisionNum' => $num,
+                'revisionNotes' => $notes,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
+            $notes = $event->revisionNotes;
+            $creatorId = $event->creatorId;
+            $canonical = $event->canonical;
+        }
 
         $elementsService = Craft::$app->getElements();
 
@@ -218,7 +220,7 @@ class Revisions extends Component
             ]));
         }
 
-        // "Duplicate" the revision with the source element’s ID, UID, and content ID
+        // "Duplicate" the revision with the source element’s ID and UID
         $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
             'revisionCreatorId' => $creatorId,
             'revisionNotes' => Craft::t('app', 'Reverted content from revision {num}.', ['num' => $revision->revisionNum]),

@@ -12,10 +12,15 @@
     requestedSite ? "site--#{requestedSite.handle}",
 ])|filter -%}
 
+{% set sidebarState = craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~ ':sidebar') ?? 'expanded' %}
 {% set bodyAttributes = {
     class: bodyClass,
     dir: orientation,
+    data: {
+        sidebar: sidebarState
+    }
 }|merge(bodyAttributes ?? {}, recursive=true) -%}
+
 
 {% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}
 {% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true) -%}
@@ -56,6 +61,7 @@
 <body {{ attr(bodyAttributes) }}>
     {{ beginBody() }}
     {% block body %}{% endblock %}
+    {% include '_layouts/components/notifications' %}
     {% block foot %}{% endblock %}
     {{ endBody() }}
 </body>

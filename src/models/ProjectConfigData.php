@@ -67,7 +67,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
             ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue)
         );
 
-        if ($valueChanged || $force) {
+        if (($valueChanged || $force) && !str_starts_with($path, ProjectConfigService::PATH_META_NAMES)) {
             $this->updateContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue, $newValue);
         }
 
@@ -100,7 +100,6 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
             // Memoize the new config data
             $this->projectConfig->rememberAppliedChanges($path, $oldValue, $newValue, $message);
             $this->setInternal($path, $newValue);
-            $this->projectConfig->updateStoredConfigAfterRequest();
 
             if ($this->projectConfig->writeYamlAutomatically) {
                 $this->projectConfig->updateParsedConfigTimesAfterRequest();

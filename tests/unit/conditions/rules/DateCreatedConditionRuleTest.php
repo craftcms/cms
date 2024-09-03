@@ -36,17 +36,17 @@ class DateCreatedConditionRuleTest extends TestCase
     public function testSetAttributes(array $config, ?array $expected = null): void
     {
         $expected = $expected ?? $config;
-        $ruleConfig = array_merge([
+        $rule = Craft::$app->getConditions()->createConditionRule(array_merge([
+            'condition' => Entry::createCondition(),
             'class' => DateCreatedConditionRule::class,
-        ], $config);
-        $rule = Craft::$app->getConditions()->createConditionRule($ruleConfig);
+        ], $config));
 
         foreach ($expected as $attribute => $value) {
             self::assertEquals($value, $rule->$attribute);
         }
     }
 
-    public function setAttributesDataProvider(): array
+    public static function setAttributesDataProvider(): array
     {
         return [
             [
@@ -69,6 +69,7 @@ class DateCreatedConditionRuleTest extends TestCase
     {
         /** @var DateCreatedConditionRule $rule */
         $rule = Craft::$app->getConditions()->createConditionRule(array_merge([
+            'condition' => Entry::createCondition(),
             'class' => DateCreatedConditionRule::class,
         ], $config));
 
@@ -95,15 +96,15 @@ class DateCreatedConditionRuleTest extends TestCase
     /**
      * @return array
      */
-    public function queryParamValueDataProvider(): array
+    public static function queryParamValueDataProvider(): array
     {
-        $startDate = DateTimeHelper::now()->sub(new DateInterval('P1D'));
-        $endDate = DateTimeHelper::now()->add(new DateInterval('P1D'));
+        $startDate = DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->sub(new DateInterval('P1D'));
+        $endDate = DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->add(new DateInterval('P1D'));
 
         return [
             'start-and-end' => [
                 ['rangeType' => DateRange::TYPE_RANGE, 'startDate' => $startDate, 'endDate' => $endDate],
-                ['and', '>= ' . $startDate->format(DateTime::ATOM), '< ' . $endDate->format(DateTime::ATOM)],
+                ['and', '>= ' . $startDate->format(DateTime::ATOM), '< ' . (clone $endDate)->modify('+1 day')->format(DateTime::ATOM)],
             ],
             'today' => [
                 ['rangeType' => DateRange::TYPE_TODAY],

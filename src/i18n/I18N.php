@@ -60,7 +60,8 @@ class I18N extends \yii\i18n\I18N
      */
     public function getLocaleById(string $localeId): Locale
     {
-        return new Locale($localeId);
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        return new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
     }
 
     /**
@@ -78,6 +79,14 @@ class I18N extends \yii\i18n\I18N
             foreach ($this->_allLocaleIds as $i => $locale) {
                 $this->_allLocaleIds[$i] = str_replace('_', '-', $locale);
             }
+
+            // Merge in any custom aliases
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            if (!empty($generalConfig->localeAliases)) {
+                $this->_allLocaleIds = array_merge($this->_allLocaleIds, array_keys($generalConfig->localeAliases));
+                $this->_allLocaleIds = array_unique($this->_allLocaleIds);
+                sort($this->_allLocaleIds);
+            }
         }
 
         return $this->_allLocaleIds;
@@ -93,9 +102,10 @@ class I18N extends \yii\i18n\I18N
     {
         $locales = [];
         $localeIds = $this->getAllLocaleIds();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         foreach ($localeIds as $localeId) {
-            $locales[] = new Locale($localeId);
+            $locales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
         }
 
         return $locales;
@@ -118,9 +128,10 @@ class I18N extends \yii\i18n\I18N
         }
 
         $this->_appLocales = [];
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         foreach ($this->getAppLocaleIds() as $localeId) {
-            $this->_appLocales[] = new Locale($localeId);
+            $this->_appLocales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
         }
 
         return $this->_appLocales;
@@ -202,9 +213,10 @@ class I18N extends \yii\i18n\I18N
     public function getSiteLocales(): array
     {
         $locales = [];
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         foreach ($this->getSiteLocaleIds() as $localeId) {
-            $locales[] = new Locale($localeId);
+            $locales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
         }
 
         return $locales;
@@ -215,11 +227,11 @@ class I18N extends \yii\i18n\I18N
      * control panel.
      *
      * @return Locale A [[Locale]] object representing the primary locale.
+     * @deprecated in 5.0.0. [[\craft\models\Site::getLocale()]] should be used instead.
      */
     public function getPrimarySiteLocale(): Locale
     {
-        $site = Craft::$app->getSites()->getPrimarySite();
-        return new Locale($site->language);
+        return Craft::$app->getSites()->getPrimarySite()->getLocale();
     }
 
     /**
@@ -227,6 +239,7 @@ class I18N extends \yii\i18n\I18N
      * control panel.
      *
      * @return string The primary locale ID.
+     * @deprecated in 5.0.0. [[\craft\models\Site::$language]] should be used instead.
      */
     public function getPrimarySiteLocaleId(): string
     {

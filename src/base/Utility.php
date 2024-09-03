@@ -18,7 +18,7 @@ abstract class Utility extends Component implements UtilityInterface
     /**
      * @inheritdoc
      */
-    public static function iconPath(): ?string
+    public static function icon(): ?string
     {
         return null;
     }

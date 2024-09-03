@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\StructureElementArguments;
 use craft\gql\types\QueryArgument;
+use craft\models\EntryType;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -41,6 +42,26 @@ class Entry extends StructureElementArguments
                 'name' => 'sectionId',
                 'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results based on the sections the entries belong to, per the sections’ IDs.',
+            ],
+            'field' => [
+                'name' => 'field',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'Narrows the query results based on the field the entries are contained by.',
+            ],
+            'fieldId' => [
+                'name' => 'fieldId',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results based on the field the entries are contained by, per the fields’ IDs.',
+            ],
+            'primaryOwnerId' => [
+                'name' => 'primaryOwnerId',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results based on the primary owner element of the entries, per the owners’ IDs.',
+            ],
+            'ownerId' => [
+                'name' => 'ownerId',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results based on the owner element of the entries, per the owners’ IDs.',
             ],
             'type' => [
                 'name' => 'type',
@@ -95,8 +116,15 @@ class Entry extends StructureElementArguments
      */
     public static function getContentArguments(): array
     {
-        $entryTypeFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getSections()->getAllEntryTypes(), EntryElement::class);
-
-        return array_merge(parent::getContentArguments(), $entryTypeFieldArguments);
+        $gqlService = Craft::$app->getGql();
+        return $gqlService->getOrSetContentArguments(EntryElement::class, function() use ($gqlService): array {
+            // include all entry types' field layouts, not just the ones from sections in the schema
+            // because they could be used by Matrix fields
+            $fieldLayouts = array_map(
+                fn(EntryType $entryType) => $entryType->getFieldLayout(),
+                Craft::$app->getEntries()->getAllEntryTypes(),
+            );
+            return $gqlService->defineContentArgumentsForFieldLayouts(EntryElement::class, $fieldLayouts);
+        });
     }
 }

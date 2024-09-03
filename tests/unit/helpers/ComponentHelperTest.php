@@ -15,6 +15,7 @@ use craft\errors\MissingComponentException;
 use craft\fieldlayoutelements\HorizontalRule;
 use craft\fields\PlainText;
 use craft\helpers\Component;
+use craft\helpers\Cp;
 use craft\test\mockclasses\components\ComponentExample;
 use craft\test\mockclasses\components\DependencyHeavyComponentExample;
 use craft\test\mockclasses\components\ExtendedComponentExample;
@@ -112,7 +113,11 @@ class ComponentHelperTest extends TestCase
      */
     public function testIconSvg(string $needle, ?string $icon, string $label): void
     {
-        self::assertStringContainsString($needle, Component::iconSvg($icon, $label));
+        if ($icon === null) {
+            self::assertStringContainsString($needle, Cp::fallbackIconSvg($label));
+        } else {
+            self::assertStringContainsString($needle, Cp::iconSvg($icon, $label));
+        }
     }
 
     /**
@@ -128,7 +133,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function validateComponentClassDataProvider(): array
+    public static function validateComponentClassDataProvider(): array
     {
         return [
             [true, PlainText::class],
@@ -146,7 +151,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function successfulComponentCreationDataProvider(): array
+    public static function successfulComponentCreationDataProvider(): array
     {
         return [
             'string-to-class-conversion' => [
@@ -173,9 +178,9 @@ class ComponentHelperTest extends TestCase
                         ],
                     ]);
 
-                    $this->assertEquals('value1', $component->dependency1);
-                    $this->assertEquals('value2', $component->dependency2);
-                    $this->assertEquals('value', $component->settingsdependency1);
+                    self::assertEquals('value1', $component->dependency1);
+                    self::assertEquals('value2', $component->dependency2);
+                    self::assertEquals('value', $component->settingsdependency1);
                     return $component;
                 },
             ],
@@ -188,7 +193,7 @@ class ComponentHelperTest extends TestCase
      *
      * @return array
      */
-    public function failingComponentCreationDataProvider(): array
+    public static function failingComponentCreationDataProvider(): array
     {
         return [
             'invalid-required-parent-class' => [
@@ -234,7 +239,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function mergeSettingsDataProvider(): array
+    public static function mergeSettingsDataProvider(): array
     {
         $mergedComponentArray = [
             'name' => 'Component',
@@ -303,11 +308,11 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function iconSvgDataProvider(): array
+    public static function iconSvgDataProvider(): array
     {
         return [
             'default' => ['<title>Default</title>', null, 'Default'],
-            'svg-contents' => ['<svg aria-hidden="true"/>', '<svg/>', 'Testing'],
+            'svg-contents' => ['<svg aria-hidden="true">', '<svg/>', 'Testing'],
             'svg-file' => ['<svg ', dirname(__DIR__, 2) . '/_data/assets/files/craft-logo.svg', 'Default'],
             'file-does-not-exist' => ['<title>Default</title>', '/file/does/not/exist.svg', 'Default'],
             'not-an-svg' => ['<title>Default</title>', dirname(__DIR__, 2) . '/_data/assets/files/background.jpeg', 'Default'],
@@ -318,7 +323,7 @@ class ComponentHelperTest extends TestCase
     /**
      * @return array
      */
-    public function cleanseConfigDataProvider(): array
+    public static function cleanseConfigDataProvider(): array
     {
         return [
             [

@@ -42,7 +42,7 @@ class AppTest extends TestCase
     /**
      * @return array
      */
-    public function craftAppGetMethodsDataProvider(): array
+    public static function craftAppGetMethodsDataProvider(): array
     {
         $content = TestSetup::getCraftServiceMap();
 

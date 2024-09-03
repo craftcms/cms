@@ -66,6 +66,7 @@
           allowAdd: true,
           allowReorder: true,
           allowDelete: true,
+          lazyInitRows: false,
           onAddRow: this.onAddColumn.bind(this),
           onDeleteRow: this.reconstructDefaultsTable.bind(this),
         }
@@ -131,9 +132,9 @@
         if (this.columnsData.hasOwnProperty(colId)) {
           switch (this.columnsData[colId].type) {
             case 'select':
-              const rowObj = this.columnsTable.$tbody
-                .find('tr[data-id="' + colId + '"]')
-                .data('editable-table-row');
+              const rowObj = this.columnsTable.getRowObj(
+                this.columnsTable.$tbody.find(`tr[data-id="${colId}"]`)
+              );
               this.columnsData[colId].options = rowObj.options || [];
               break;
             case 'heading':
@@ -172,7 +173,7 @@
           theadHtml +=
             '<th scope="col">' +
             (this.columnsData[colId].heading
-              ? this.columnsData[colId].heading
+              ? Craft.escapeHtml(this.columnsData[colId].heading)
               : '&nbsp;') +
             '</th>';
         }
@@ -337,7 +338,7 @@
       }
 
       setTimeout(() => {
-        this.optionsTable.$tbody.find('textarea').first().trigger('focus');
+        this.optionsTable.$tbody.find('textarea').first().focus();
       }, 100);
     },
 

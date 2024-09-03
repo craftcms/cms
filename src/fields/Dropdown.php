@@ -8,9 +8,12 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\enums\AttributeStatus;
+use craft\fields\data\MultiOptionsFieldData;
+use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\Cp;
 
@@ -20,8 +23,13 @@ use craft\helpers\Cp;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Dropdown extends BaseOptionsField implements SortableFieldInterface
+class Dropdown extends BaseOptionsField implements SortableFieldInterface, InlineEditableFieldInterface
 {
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optgroups = true;
+
     /**
      * @inheritdoc
      */
@@ -33,16 +41,14 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function icon(): string
     {
-        return sprintf('\\%s', SingleOptionFieldData::class);
+        return 'ballot-check';
     }
 
     /**
      * @inheritdoc
      */
-    protected bool $optgroups = true;
-
     public function getStatus(ElementInterface $element): ?array
     {
         // If the value is invalid and has a default value (which is going to be pulled in via inputHtml()),
@@ -52,7 +58,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
 
         if (!$value->valid && $this->defaultValue() !== null) {
             return [
-                Element::ATTR_STATUS_MODIFIED,
+                AttributeStatus::Modified,
                 Craft::t('app', 'This field has been modified.'),
             ];
         }
@@ -63,7 +69,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->inputHtmlInternal($value, $element, false);
     }
@@ -84,8 +90,11 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
         $hasBlankOption = false;
         foreach ($options as &$option) {
             if (isset($option['value']) && $option['value'] === '') {
-                $option['value'] = '__BLANK__';
+                $option['value'] = '__blank__';
                 $hasBlankOption = true;
+            }
+            if (isset($option['label']) && $option['label'] === '') {
+                $option['label'] = ' ';
             }
         }
 
@@ -96,30 +105,31 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             $default = $this->defaultValue();
 
             if ($default !== null) {
-                $value = $this->normalizeValue($this->defaultValue());
+                $value = $this->normalizeValue($this->defaultValue(), null);
             } else {
                 $value = null;
 
                 // Add a blank option to the beginning if one doesn't already exist
                 if (!$hasBlankOption) {
-                    array_unshift($options, ['label' => '', 'value' => '__BLANK__']);
+                    array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
                 }
             }
-        }
-
-        $encValue = $this->encodeValue($value);
-        if ($encValue === null || $encValue === '') {
-            $encValue = '__BLANK__';
         }
 
         return Cp::selectizeHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'value' => $encValue,
+            'value' => $this->encodeValue($value),
             'options' => $options,
             'disabled' => $static,
         ]);
+    }
+
+    protected function encodeValue(MultiOptionsFieldData|OptionData|string|null $value): string|array|null
+    {
+        $encValue = parent::encodeValue($value);
+        return $encValue === null || $encValue === '' ? '__blank__' : $encValue;
     }
 
     /**

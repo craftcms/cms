@@ -2,12 +2,21 @@
 
 {% extends '_layouts/cp.twig' %}
 
+{% set title = 'Email Settings'|t('app') %}
+{% set fullPageForm = true %}
+
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-{% set fullPageForm = true %}
-{% set title = "Email Settings"|t('app') %}
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/email'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
 
 {% import '_includes/forms.twig' as forms %}
 
@@ -76,7 +85,7 @@
         errors: (freshSettings ? null : settings.getErrors('fromName'))
     }) }}
 
-    {% if CraftEdition == CraftPro %}
+    {% if CraftEdition >= CraftPro %}
         {{ forms.autosuggestField({
             label: "HTML Email Template"|t('app'),
             instructions: "The template Craft CMS will use for HTML emails"|t('app'),
@@ -106,7 +115,7 @@
     {% for _adapter in allTransportAdapters %}
         {% set isCurrent = (className(_adapter) == className(adapter)) %}
         <div id="{{ className(_adapter)|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-            {% namespace 'transportTypes['~className(_adapter)~']' %}
+            {% namespace 'transportTypes['~className(_adapter)|id~']' %}
                 {{ (isCurrent ? adapter : _adapter).getSettingsHtml()|raw }}
             {% endnamespace %}
         </div>

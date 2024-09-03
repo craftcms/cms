@@ -17,6 +17,7 @@ use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
+use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
@@ -40,6 +41,14 @@ class Entries extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'newspaper';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function elementType(): string
     {
         return Entry::class;
@@ -56,7 +65,7 @@ class Entries extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
     }
@@ -91,26 +100,28 @@ class Entries extends BaseRelationField
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $sectionUids = $allowedEntities['sections'] ?? [];
-        $entryTypeUids = $allowedEntities['entrytypes'] ?? [];
+        $sectionUids = array_flip($allowedEntities['sections'] ?? []);
 
-        if (empty($sectionUids) || empty($entryTypeUids)) {
+        if (empty($sectionUids)) {
             return null;
         }
 
-        $sectionsService = Craft::$app->getSections();
-        $sectionIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
-            $section = $sectionsService->getSectionByUid($uid);
-            return $section->id ?? null;
-        }, $sectionUids));
-        $entryTypeIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
-            $entryType = $sectionsService->getEntryTypeByUid($uid);
-            return $entryType->id ?? null;
-        }, $entryTypeUids));
+        $sectionIds = [];
+        $entryTypeIds = [];
+
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+            if (isset($sectionUids[$section->uid])) {
+                $sectionIds[] = $section->id;
+                array_push(
+                    $entryTypeIds,
+                    ...array_map(fn(EntryType $entryType) => $entryType->id, $section->getEntryTypes()),
+                );
+            }
+        }
 
         return [
             'sectionId' => $sectionIds,
-            'typeId' => $entryTypeIds,
+            'typeId' => array_unique($entryTypeIds),
         ];
     }
 
