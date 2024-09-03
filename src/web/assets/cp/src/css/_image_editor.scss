@@ -1,5 +1,6 @@
 @charset "UTF-8";
-@import '@craftcms/sass/mixins';
+@use 'sass:color';
+@use '@craftcms/sass/mixins';
 
 /* No Scroll */
 html.noscroll,
@@ -13,8 +14,8 @@ html.noscroll body {
 .modal.imageeditor {
   background-color: var(--gray-900);
   color: var(--white);
-  @include light-on-dark-text;
-  @include light-focus-ring;
+  @include mixins.light-on-dark-text;
+  @include mixins.light-focus-ring;
   opacity: 0;
   user-select: none;
 }
@@ -23,53 +24,53 @@ html.noscroll body {
   border-radius: 0;
 }
 
-.modal.imageeditor.modal .body:after {
+.modal.imageeditor.modal .body::after {
   display: none;
 }
 
-.modal.imageeditor .btn:not(.submit):not(.noborder) {
+.modal.imageeditor .btn:not(.submit, .noborder) {
   background-color: var(--gray-600);
   color: var(--white);
 }
 
-.modal.imageeditor .btn:not(.submit):not(.noborder):hover {
+.modal.imageeditor .btn:not(.submit, .noborder):hover {
   background-color: var(--gray-700);
 }
 
-.modal.imageeditor .btn:not(.submit):not(.noborder).active {
+.modal.imageeditor .btn:not(.submit, .noborder).active {
   background-color: var(--gray-800);
 }
 
 .modal.imageeditor .icon::before {
   width: 24px;
   height: 24px;
-  margin-left: -3px;
+  margin-inline-start: -3px;
   display: inline-block;
   content: '';
 }
 
 .modal.imageeditor .icon.rotate-left::before {
-  background-image: url(../images/image-editor/rotate-left.svg);
+  background-image: url('../images/image-editor/rotate-left.svg');
 }
 
 .modal.imageeditor .icon.rotate-right::before {
-  background-image: url(../images/image-editor/rotate-right.svg);
+  background-image: url('../images/image-editor/rotate-right.svg');
 }
 
 .modal.imageeditor .icon.flip-vertical::before {
-  background-image: url(../images/image-editor/flip-vertical.svg);
+  background-image: url('../images/image-editor/flip-vertical.svg');
 }
 
 .modal.imageeditor .icon.flip-horizontal::before {
-  background-image: url(../images/image-editor/flip-horizontal.svg);
+  background-image: url('../images/image-editor/flip-horizontal.svg');
 }
 
 .modal.imageeditor .icon.constraint::before {
-  background-image: url(../images/image-editor/unconstrained.svg);
+  background-image: url('../images/image-editor/unconstrained.svg');
 }
 
 .modal.imageeditor .icon.focal-point::before {
-  background-image: url(../images/image-editor/focal-point.svg);
+  background-image: url('../images/image-editor/focal-point.svg');
 }
 
 .modal.imageeditor .body {
@@ -82,7 +83,7 @@ html.noscroll body {
 }
 
 .modal.imageeditor .body .tabs {
-  border-right: 1px solid var(--gray-1000);
+  border-inline-end: 1px solid var(--gray-1000);
 }
 
 .modal.imageeditor .body .tabs ul {
@@ -95,21 +96,21 @@ html.noscroll body {
   position: relative;
   padding: 14px;
   text-align: center;
-  border-bottom: 1px solid var(--gray-1000);
+  border-block-end: 1px solid var(--gray-1000);
   cursor: pointer;
 
   &::before {
     position: absolute;
-    top: 0;
-    @include left(0);
+    inset-block-start: 0;
+    inset-inline-start: 0;
     content: '';
     width: 0;
     height: 100%;
-    background-color: currentColor;
+    background-color: currentcolor;
   }
 
   &.selected {
-    background-color: darken($grey900, 5%);
+    background-color: color.adjust(mixins.$grey900, $lightness: -5%);
 
     &::before {
       width: 2px;
@@ -125,19 +126,19 @@ html.noscroll body {
 }
 
 .modal.imageeditor .body .tabs ul li[data-view='rotate'] i {
-  background-image: url(../images/image-editor/rotate-left.svg);
+  background-image: url('../images/image-editor/rotate-left.svg');
 }
 
 .modal.imageeditor .body .tabs ul li[data-view='crop'] i {
-  background-image: url(../images/image-editor/crop.svg);
+  background-image: url('../images/image-editor/crop.svg');
 }
 
 .modal.imageeditor .body .tabs ul li[data-view='filters'] i {
-  background-image: url(../images/image-editor/filters.svg);
+  background-image: url('../images/image-editor/filters.svg');
 }
 
 .modal.imageeditor .body .tabs ul li:hover {
-  background-color: darken($grey900, 2%);
+  background-color: color.adjust(mixins.$grey900, $lightness: -2%);
 }
 
 .modal.imageeditor .body .tabs ul li:hover {
@@ -150,7 +151,7 @@ html.noscroll body {
 }
 
 .modal.imageeditor .body .views .btngroup {
-  margin-bottom: 24px;
+  margin-block-end: 24px;
 }
 
 .modal.imageeditor .body .views .filters ul {
@@ -159,12 +160,12 @@ html.noscroll body {
 
 .modal.imageeditor .body .views .filters ul li {
   text-align: center;
-  margin-right: 14px;
-  margin-bottom: 14px;
+  margin-inline-end: 14px;
+  margin-block-end: 14px;
 }
 
 .modal.imageeditor .body .views .filters ul li:last-child {
-  margin-right: 0;
+  margin-inline-end: 0;
 }
 
 .modal.imageeditor .body .views .filters ul li img {
@@ -201,8 +202,8 @@ html.noscroll body {
 
 .modal.imageeditor .body .image-container .image canvas {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset-block-start: 0;
+  inset-inline-start: 0;
 }
 
 .modal.imageeditor .body .image-container .image-tools {
@@ -211,22 +212,23 @@ html.noscroll body {
 
 .modal.imageeditor .body .image-container .image-tools .straightening {
   max-width: 400px;
-  min-height: toRem(60);
+  min-height: calc(60 / 16 * 1rem);
   display: block;
-  margin: 0 auto;
+  margin-block: 0;
+  margin-inline: auto;
   overflow: hidden;
 }
 
 .modal.imageeditor .footer {
   position: absolute;
   background-color: transparent;
-  bottom: 0;
-  left: 0;
+  inset-block-end: 0;
+  inset-inline-start: 0;
   width: 100%;
-  border-top: 1px solid #000;
+  border-block-start: 1px solid #000;
 
   body.has-debug-toolbar & {
-    padding-bottom: calc(8px + 42px);
+    padding-block-end: calc(8px + 42px);
   }
 }
 
@@ -236,7 +238,8 @@ html.noscroll body {
   }
 
   .custom-constraint-spacer {
-    padding: 0 var(--xs);
+    padding-block: 0;
+    padding-inline: var(--xs);
   }
 
   .constraint-group {
@@ -245,7 +248,7 @@ html.noscroll body {
   }
 
   .custom {
-    @include padding-left(calc(1rem + 5px));
+    padding-inline-start: calc(1rem + 5px);
   }
 
   .orientation {
@@ -254,31 +257,30 @@ html.noscroll body {
     justify-content: center;
 
     input {
-      -webkit-appearance: none;
-      -moz-appearance: none;
       appearance: none;
       background-position: center center;
       background-repeat: no-repeat;
-      margin: 0 4px;
+      margin-block: 0;
+      margin-inline: 4px;
       cursor: pointer;
 
       &[value='landscape'] {
         width: 30px;
         height: 20px;
-        background-image: url(../images/image-editor/orientation-landscape-unchecked.svg);
+        background-image: url('../images/image-editor/orientation-landscape-unchecked.svg');
 
         &:checked {
-          background-image: url(../images/image-editor/orientation-landscape-checked.svg);
+          background-image: url('../images/image-editor/orientation-landscape-checked.svg');
         }
       }
 
       &[value='portrait'] {
         width: 20px;
         height: 30px;
-        background-image: url(../images/image-editor/orientation-portrait-unchecked.svg);
+        background-image: url('../images/image-editor/orientation-portrait-unchecked.svg');
 
         &:checked {
-          background-image: url(../images/image-editor/orientation-portrait-checked.svg);
+          background-image: url('../images/image-editor/orientation-portrait-checked.svg');
         }
       }
     }
@@ -293,7 +295,7 @@ html.noscroll body {
 
 .modal.imageeditor:not(.vertical) .body .views .crop {
   .constraint.custom {
-    margin-top: var(--xs);
+    margin-block-start: var(--xs);
   }
 }
 
@@ -316,19 +318,20 @@ html.noscroll body {
   display: flex;
   flex-direction: row;
   width: 100%;
-  border-top: 1px solid #000;
-  border-bottom: 1px solid #000;
+  border-block-start: 1px solid #000;
+  border-block-end: 1px solid #000;
 }
 
 .vertical.imageeditor .body .tabs ul li {
   flex-grow: 1;
   border: 0;
-  border-right: 1px solid #000;
-  padding: 10px 7px;
+  border-inline-end: 1px solid #000;
+  padding-block: 10px;
+  padding-inline: 7px;
 
   &::before {
-    top: unset;
-    top: 0;
+    inset-block-start: unset;
+    inset-block-start: 0;
     width: 100%;
     height: 0;
   }
@@ -347,11 +350,12 @@ html.noscroll body {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: -14px;
+  margin-block-end: -14px;
 }
 
 .vertical.imageeditor .body .views .rotate .btngroup {
-  margin: 0 7px 14px;
+  margin-block: 0 14px;
+  margin-inline: 7px;
 }
 
 .vertical.imageeditor .body .views .filters ul {
@@ -359,28 +363,30 @@ html.noscroll body {
   height: 109px;
   overflow: auto;
   white-space: nowrap;
-  margin: 0 -24px;
-  margin-bottom: -24px;
+  margin-block: 0;
+  margin-inline: -24px;
+  margin-block-end: -24px;
   padding: 24px;
   text-align: center;
 }
 
 .vertical.imageeditor .body .views .filters ul li {
   display: inline-block;
-  margin-bottom: 0;
+  margin-block-end: 0;
 }
 
 /* Slide Rule */
 
 .slide-rule {
   position: relative;
-  padding: 10px 0;
+  padding-block: 10px;
+  padding-inline: 0;
 
   &:focus {
     box-shadow: none;
   }
 
-  @include focus-styles {
+  @include mixins.focus-styles {
     .cursor::after {
       box-shadow: var(--focus-ring);
     }
@@ -389,11 +395,11 @@ html.noscroll body {
   .cursor {
     &::after {
       content: '';
-      width: toRem(20);
-      height: toRem(50);
+      width: calc(20 / 16 * 1rem);
+      height: calc(50 / 16 * 1rem);
       position: absolute;
-      top: -15px;
-      left: 50%;
+      inset-block-start: -15px;
+      inset-inline-start: 50%;
       transform: translateX(-50%);
     }
   }
@@ -401,15 +407,15 @@ html.noscroll body {
 
 .slide-rule .cursor {
   position: absolute;
-  margin-left: toRem(-4);
-  margin-top: 4px;
-  left: 50%;
+  margin-inline-start: calc(-4 / 16 * 1rem);
+  margin-block-start: 4px;
+  inset-inline-start: 50%;
   z-index: 1;
   width: 0;
   height: 0;
-  border-left: toRem(5) solid transparent;
-  border-right: toRem(5) solid transparent;
-  border-top: toRem(5) solid #63a6e1;
+  border-inline-start: calc(5 / 16 * 1rem) solid transparent;
+  border-inline-end: calc(5 / 16 * 1rem) solid transparent;
+  border-block-start: calc(5 / 16 * 1rem) solid #63a6e1;
 }
 
 .slide-rule .graduations {
@@ -420,7 +426,7 @@ html.noscroll body {
 
 .slide-rule .graduations ul {
   position: relative;
-  float: left;
+  float: inline-start;
 }
 
 .slide-rule .graduations ul li {
@@ -431,11 +437,11 @@ html.noscroll body {
 }
 
 .slide-rule .graduations ul li:not(.main-graduation) {
-  left: 1px;
+  inset-inline-start: 1px;
 }
 
-.slide-rule .graduations ul li.main-graduation:before {
-  border-left-width: 3px;
+.slide-rule .graduations ul li.main-graduation::before {
+  border-inline-start-width: 3px;
 }
 
 .slide-rule .graduations ul li.main-graduation .label {
@@ -443,24 +449,24 @@ html.noscroll body {
   cursor: default;
 }
 
-.slide-rule .graduations ul li.selected:before {
-  border-left-color: #63a6e1;
+.slide-rule .graduations ul li.selected::before {
+  border-inline-start-color: #63a6e1;
 }
 
-.slide-rule .graduations ul li:before {
+.slide-rule .graduations ul li::before {
   content: '';
   position: absolute;
-  border-left: 1px solid var(--white);
+  border-inline-start: 1px solid var(--white);
   height: 10px;
-  top: 0px;
-  left: 0;
+  inset-block-start: 0;
+  inset-inline-start: 0;
 }
 
 .slide-rule .graduations ul li .label {
   width: 20px;
   position: absolute;
-  top: 10px;
-  left: -9px;
+  inset-block-start: 10px;
+  inset-inline-start: -9px;
   display: none;
   text-align: center;
 }
@@ -468,28 +474,26 @@ html.noscroll body {
 .slide-rule .value {
   display: none;
   position: absolute;
-  bottom: 0;
-  left: 50%;
+  inset-block-end: 0;
+  inset-inline-start: 50%;
   z-index: 1;
   box-sizing: border-box;
   padding: 5px;
   width: 50px;
-  margin-left: -25px;
+  margin-inline-start: -25px;
   background: var(--gray-600);
 }
 
 .slide-rule .overlay {
   z-index: 2;
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 1px;
-  left: 0;
+  inset-block: 0 1px;
+  inset-inline: 0;
   background-image: linear-gradient(
     to right,
     var(--gray-900) 0%,
-    transparentize($grey900, 1) 15%,
-    transparentize($grey900, 1) 85%,
+    color.adjust(mixins.$grey900, $alpha: -1) 15%,
+    color.adjust(mixins.$grey900, $alpha: -1) 85%,
     var(--gray-900) 100%
   );
 }
@@ -498,14 +502,14 @@ html.noscroll body {
 
 .menu.dark {
   background-color: var(--gray-600);
-  @include light-on-dark-text;
+  @include mixins.light-on-dark-text;
 
   ul {
     li {
       a {
         color: var(--white) !important;
 
-        &:not(.sel):not(.disabled):hover {
+        &:not(.sel, .disabled):hover {
           background-color: var(--gray-700);
         }
       }

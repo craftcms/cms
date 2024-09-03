@@ -389,15 +389,14 @@ class NestedElementManager extends Component
                     'class' => 'nested-element-cards',
                 ]);
 
-
                 /** @var ElementQueryInterface|ElementCollection $value */
-                $value = $this->getValue($owner);
+                $value = $this->getValue($owner, true);
                 if ($value instanceof ElementCollection) {
                     /** @var NestedElementInterface[] $elements */
                     $elements = $value->all();
                 } else {
                     /** @var NestedElementInterface[] $elements */
-                    $elements = $value
+                    $elements = $value->getCachedResult() ?? $value
                         ->status(null)
                         ->limit(null)
                         ->all();
@@ -1237,6 +1236,7 @@ JS, [
             $elementsService = Craft::$app->getElements();
             $query = $this->nestedElementQuery($owner)
                 ->status(null)
+                ->trashed(null)
                 ->siteId($siteId);
             $query->{$this->ownerIdParam} = null;
             $query->{$this->primaryOwnerIdParam} = $owner->id;

@@ -7,10 +7,12 @@
 
 namespace craft\helpers;
 
+use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
 use craft\base\Colorable;
+use craft\base\CpEditable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
@@ -326,6 +328,7 @@ class Cp
             'autoReload' => true,
             'id' => sprintf('chip-%s', mt_rand()),
             'class' => null,
+            'hyperlink' => false,
             'inputName' => null,
             'inputValue' => null,
             'labelHtml' => null,
@@ -344,7 +347,6 @@ class Cp
         $config['showStatus'] = $config['showStatus'] && $component instanceof Statusable;
         $config['showThumb'] = $config['showThumb'] && ($component instanceof Thumbable || $component instanceof Iconic);
 
-        $labelHtml = $component->getUiLabel();
         $color = $component instanceof Colorable ? $component->getColor() : null;
 
         $attributes = ArrayHelper::merge([
@@ -365,6 +367,7 @@ class Cp
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => Craft::$app->getView()->namespaceInputId($config['id']),
+                    'hyperlink' => $config['hyperlink'],
                     'showLabel' => $config['showLabel'],
                     'showHandle' => $config['showHandle'],
                     'showStatus' => $config['showStatus'],
@@ -406,7 +409,10 @@ class Cp
         if (isset($config['labelHtml'])) {
             $html .= $config['labelHtml'];
         } elseif ($config['showLabel']) {
-            $labelHtml = Html::encode($labelHtml);
+            $labelHtml = Html::encode($component->getUiLabel());
+            if ($config['hyperlink'] && $component instanceof CpEditable) {
+                $labelHtml = Html::a($labelHtml, $component->getCpEditUrl());
+            }
             if ($config['showHandle']) {
                 /** @var Chippable&Grippable $component */
                 $handle = $component->getHandle();
@@ -506,7 +512,7 @@ class Cp
             $config['attributes'],
         );
 
-        $config['showStatus'] = $config['showStatus'] && ($element->getIsDraft() || $element::hasStatuses());
+        $config['showStatus'] = $config['showStatus'] && ($element->getIsDraft() || $element->showStatusIndicator());
 
         if ($config['showLabel']) {
             $config['labelHtml'] = self::elementLabelHtml(
@@ -605,7 +611,7 @@ class Cp
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
         $labels = array_filter([
-            $element::hasStatuses() ? static::componentStatusLabelHtml($element) : null,
+            $element->showStatusIndicator() ? static::componentStatusLabelHtml($element) : null,
             $element->isProvisionalDraft ? self::changeStatusLabelHtml() : null,
         ]);
 
@@ -930,7 +936,7 @@ class Cp
             function() use ($component): string {
                 $actionMenuItems = array_filter(
                     $component->getActionMenuItems(),
-                    fn(array $item) => !($item['destructive'] ?? false),
+                    fn(array $item) => $item['showInChips'] ?? !($item['destructive'] ?? false)
                 );
 
                 if (empty($actionMenuItems)) {
@@ -1071,6 +1077,44 @@ class Cp
                 'role' => 'button',
                 'onclick' => sprintf(
                     'const r=jQuery(%s);jQuery(this).replaceWith(r);Craft.cp.elementThumbLoader.load(r);',
+                    Json::encode($otherHtml),
+                ),
+            ]);
+        }
+
+        $html .= Html::endTag('div'); // .inline-chips
+        return $html;
+    }
+
+    /**
+     * Returns component preview HTML, for a list of elements.
+     *
+     * @param Chippable[] $components The components
+     * @param array $chipConfig
+     * @return string
+     * @since 5.4.0
+     */
+    public static function componentPreviewHtml(array $components, array $chipConfig = []): string
+    {
+        if (empty($components)) {
+            return '';
+        }
+
+        $first = array_shift($components);
+        $html = Html::beginTag('div', ['class' => 'inline-chips']) .
+            static::chipHtml($first, $chipConfig);
+
+        if (!empty($components)) {
+            $otherHtml = '';
+            foreach ($components as $other) {
+                $otherHtml .= static::chipHtml($other, $chipConfig);
+            }
+            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($components)), [
+                'title' => implode(', ', array_map(fn(Chippable $component) => $component->getId(), $components)),
+                'class' => 'btn small',
+                'role' => 'button',
+                'onclick' => sprintf(
+                    'const r=jQuery(%s);jQuery(this).replaceWith(r);',
                     Json::encode($otherHtml),
                 ),
             ]);
@@ -2088,6 +2132,8 @@ JS, [
                 $addressesService->getUsedSubdivisionFields($address->countryCode),
             )) + $requiredFields;
 
+        $parents = self::_getSubdivisionParents($address, $visibleFields);
+
         return
             static::textFieldHtml([
                 'status' => $address->getAttributeStatus('addressLine1'),
@@ -2143,10 +2189,7 @@ JS, [
                 $belongsToCurrentUser ? 'address-level2' : 'off',
                 isset($visibleFields['locality']),
                 isset($requiredFields['locality']),
-                array_values(array_filter([
-                    $address->countryCode,
-                    array_key_exists('administrativeArea', $visibleFields) ? $address->administrativeArea : false,
-                ], fn($v) => $v !== false)),
+                $parents['locality'],
                 true,
             ) .
             self::_subdivisionField(
@@ -2155,11 +2198,7 @@ JS, [
                 $belongsToCurrentUser ? 'address-level3' : 'off',
                 isset($visibleFields['dependentLocality']),
                 isset($requiredFields['dependentLocality']),
-                array_values(array_filter([
-                    $address->countryCode,
-                    array_key_exists('administrativeArea', $visibleFields) ? $address->administrativeArea : false,
-                    array_key_exists('locality', $visibleFields) ? $address->locality : false,
-                ], fn($v) => $v !== false)),
+                $parents['dependentLocality'],
                 false,
             ) .
             static::textFieldHtml([
@@ -2195,6 +2234,49 @@ JS, [
                     'error-key' => 'sortingCode',
                 ],
             ]);
+    }
+
+    /**
+     * Get parents array that needs to be passed to the subdivision repository getList() method to get the list of subdivisions back.
+     *
+     * For the administrativeArea, the parent is always just the country code.
+     *
+     * For the locality:
+     *      - it could be just the country code
+     *          - for countries that don't use administrativeArea field; that's the case with Andorra
+     *      - it could be the country code and the administrative area code
+     *          - for countries that use both administrative areas and localities; e.g. Chile (Chile => Araucania > Carahue)
+     *          - the administrative area can be passed as null too;
+     *              this will be triggered for the United Kingdom (GB), where you can conditionally turn on administrativeArea;
+     *              in the case of GB, not passing null as the second value would result
+     *              in the administrativeAreas list being returned for the locality field (https://github.com/craftcms/cms/issues/15551);
+     *
+     * For the dependentLocality:
+     *      - as above but taking locality into consideration too; e.g. China has all 3 levels of subdivisions and has lists for all 3 of them
+     *          (China => Heilongjiang Sheng > Hegang Shi > Dongshan Qu)
+     *
+     * @param Address $address
+     * @param array $visibleFields
+     * @return array
+     */
+    private static function _getSubdivisionParents(Address $address, array $visibleFields): array
+    {
+        $baseSubdivisionRepository = new BaseSubdivisionRepository();
+
+        $localityParents = [$address->countryCode];
+        $administrativeAreas = $baseSubdivisionRepository->getList([$address->countryCode]);
+
+        if (array_key_exists('administrativeArea', $visibleFields) || empty($administrativeAreas)) {
+            $localityParents[] = $address->administrativeArea;
+        }
+
+        $dependentLocalityParents = $localityParents;
+        $localities = $baseSubdivisionRepository->getList($localityParents);
+        if (array_key_exists('locality', $visibleFields) || empty($localities)) {
+            $dependentLocalityParents[] = $address->locality;
+        }
+
+        return ['locality' => $localityParents, 'dependentLocality' => $dependentLocalityParents];
     }
 
     private static function _subdivisionField(

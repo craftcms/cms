@@ -590,8 +590,7 @@ class Matrix extends Field implements
             return false;
         }
 
-        // Make sure we aren't hitting the Min Entries limit
-        return !$this->minEntriesReached($owner);
+        return true;
     }
 
     /**
@@ -600,14 +599,6 @@ class Matrix extends Field implements
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): ?bool
     {
         return false;
-    }
-
-    private function minEntriesReached(ElementInterface $owner): bool
-    {
-        return (
-            $this->minEntries &&
-            $this->minEntries >= $this->totalEntries($owner)
-        );
     }
 
     private function maxEntriesReached(ElementInterface $owner): bool
@@ -996,7 +987,12 @@ JS;
 
         if ($value instanceof EntryQuery) {
             /** @var Entry[] $entries */
-            $entries = $value->getCachedResult() ?? (clone $value)->status(null)->limit(null)->all();
+            $entries = $value->getCachedResult() ?? (clone $value)
+                ->drafts(null)
+                ->savedDraftsOnly()
+                ->status(null)
+                ->limit(null)
+                ->all();
 
             $invalidEntryIds = [];
             $scenario = $element->getScenario();
@@ -1013,9 +1009,9 @@ JS;
                 }
 
                 if (!$entry->validate()) {
-                    $key = $entry->uid ?? sprintf('new%s', ++$new);
                     // we only want to show the nested entries errors when the matrix field is in blocks view mode;
                     if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+                        $key = $entry->uid ?? sprintf('new%s', ++$new);
                         $element->addModelErrors($entry, sprintf('%s[%s]', $this->handle, $key));
                     }
                     $invalidEntryIds[] = $entry->id;

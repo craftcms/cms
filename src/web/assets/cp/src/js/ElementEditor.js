@@ -949,20 +949,20 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {string} url
-     * @param {?string} [randoParam]
-     * @param {boolean} [asPromise=false]
+     * @param {?string} [previewParam]
+     * @param {boolean} [asPromise=true]
      * @returns {(Promise|string)}
      */
-    getTokenizedPreviewUrl: function (url, randoParam, asPromise) {
-      if (typeof asPromise === 'undefined') {
-        asPromise = true;
-      }
-
+    getTokenizedPreviewUrl: function (url, previewParam, asPromise = true) {
       const params = {};
 
-      if (randoParam || !this.settings.isLive) {
+      if (
+        this.settings.previewParamValue &&
+        (previewParam || !this.settings.isLive)
+      ) {
         // Randomize the URL so CDNs don't return cached pages
-        params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
+        params[previewParam || 'x-craft-preview'] =
+          this.settings.previewParamValue;
       }
 
       if (this.settings.siteToken) {
@@ -1354,6 +1354,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         })
           .then((response) => {
             this._afterSaveDraft();
+            this.settings.previewParamValue = response.data.previewParamValue;
             this._afterUpdateFieldLayout(data, selectedTabId, response);
             this._handleSaveDraftResponse(response);
 
@@ -1867,7 +1868,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.trigger('update');
 
-      if (this.settings.isProvisionalDraft && Craft.broadcaster) {
+      if (
+        (this.settings.isProvisionalDraft ||
+          this.settings.isUnpublishedDraft) &&
+        Craft.broadcaster
+      ) {
         // Broadcast a saveMessage event, in case any chips/cards should be
         // updated to show the provisional changes
         Craft.broadcaster.postMessage({
@@ -2050,6 +2055,17 @@ Craft.ElementEditor = Garnish.Base.extend(
           this.submittingForm = false;
           this.trigger('afterSubmit');
         }
+
+        if (this.settings.isUnpublishedDraft) {
+          // Remove the draft-id data from existing chips/cards
+          const $elements = $(
+            `div.element[data-id="${this.settings.elementId}"][data-settings]`
+          );
+          for (let i = 0; i < $elements.length; i++) {
+            $elements.eq(i).removeData('draft-id').removeAttr('data-draft-id');
+          }
+        }
+
         this.settings.handleSubmitResponse(response);
       }
     },
@@ -2276,6 +2292,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       isUnpublishedDraft: false,
       previewTargets: [],
       previewToken: null,
+      previewParamValue: null,
       revisionId: null,
       siteId: null,
       siteStatuses: [],

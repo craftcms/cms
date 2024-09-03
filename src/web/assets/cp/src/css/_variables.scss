@@ -1,16 +1,15 @@
-@charset "UTF-8";
-@import '@craftcms/sass/mixins';
+@use 'sass:color';
+@use '@craftcms/sass/mixins';
 
 :root {
   --bg-color: $grey100;
-  --bg-color-hsl: #{hue($grey100)}, #{saturation($grey100)},
-    #{lightness($grey100)};
+  --bg-color-hsl: #{color.hue(mixins.$grey100)},
+    #{color.saturation(mixins.$grey100)}, #{color.lightness(mixins.$grey100)};
 
   // submit button colors
   --primary-color: var(--red-600);
   --secondary-color: var(--gray-500);
-
-  --input-color: hsl(212, 25%, 50%);
+  --input-color: hsl(212deg 25% 50%);
 
   // text colors
   --text-color: var(--gray-700);
@@ -23,9 +22,9 @@
   --font-weight-bold: 700;
 
   // hairline colors
-  --hairline-color: #{transparentize(hsl(209, 20%, 25%), 0.9)};
+  --hairline-color: #{color.adjust(hsl(209deg 20% 25%), $alpha: -0.9)};
   --medium-hairline-color: #cfd8e3; // matches shadow below global header;
-  --dark-hairline-color: #{transparentize(hsl(210, 10%, 53%), 0.5)};
+  --dark-hairline-color: #{color.adjust(hsl(210deg 10% 53%), $alpha: -0.5)};
 
   // focus colors
   --light-focus-color: var(--blue-300);
@@ -34,19 +33,19 @@
 
   // focus rings
   --light-focus-ring: 0 0 0 1px #5ed0fa,
-    0 0 0 3px #{transparentize(#5ed0fa, 0.3)};
+    0 0 0 3px #{color.adjust(#5ed0fa, $alpha: -0.3)};
   --medium-focus-ring: 0 0 0 1px #2bb0ed,
-    0 0 0 3px #{transparentize(#2bb0ed, 0.3)};
+    0 0 0 3px #{color.adjust(#2bb0ed, $alpha: -0.3)};
   --dark-focus-ring: 0 0 0 1px #0f74b1,
-    0 0 0 3px #{transparentize(#0f74b1, 0.3)};
+    0 0 0 3px #{color.adjust(#0f74b1, $alpha: -0.3)};
 
   // selection colors
   --light-sel-color: var(--gray-200);
   --dark-sel-color: var(--gray-500);
 
   // alert/notice colors
-  --error-color-rgb: 216, 31, 35;
-  --error-color: rgba(var(--error-color-rgb), 1);
+  --error-color-rgb: 216 31 35;
+  --error-color: rgb(var(--error-color-rgb));
   --warning-color: var(--amber-700);
   --success-color: var(--teal-700);
   --notice-color: var(--sky-700);
@@ -64,7 +63,6 @@
   --small-border-radius: 3px;
   --medium-border-radius: 4px;
   --large-border-radius: 5px;
-
   --menu-border-radius: var(--medium-border-radius);
   --checkbox-size: 1rem;
   --radio-size: 1rem;

@@ -1187,6 +1187,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public function showStatusIndicator(): bool
+    {
+        return $this->getType()->showStatusField;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCardBodyHtml(): ?string
     {
         $html = parent::getCardBodyHtml();
@@ -1937,6 +1945,53 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    protected function inlineAttributeInputHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'postDate':
+                return Cp::dateTimeFieldHtml([
+                    'name' => 'postDate',
+                    'value' => $this->postDate,
+                ]);
+            case 'expiryDate':
+                return Cp::dateTimeFieldHtml([
+                    'name' => 'expiryDate',
+                    'value' => $this->expiryDate,
+                ]);
+            case 'slug':
+                return Cp::textHtml([
+                    'name' => 'slug',
+                    'value' => $this->slug,
+                ]);
+            case 'authors':
+                $authors = $this->getAuthors();
+                $section = $this->getSection();
+                return Cp::elementSelectHtml([
+                    'status' => $this->getAttributeStatus('authorIds'),
+                    'label' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
+                        'max' => $section->maxAuthors,
+                    ]),
+                    'id' => 'authorIds',
+                    'name' => 'authorIds',
+                    'elementType' => User::class,
+                    'selectionLabel' => Craft::t('app', 'Choose'),
+                    'criteria' => [
+                        'can' => "viewEntries:$section->uid",
+                    ],
+                    'single' => false,
+                    'elements' => $authors ?: null,
+                    'disabled' => false,
+                    'errors' => $this->getErrors('authorIds'),
+                    'limit' => $section->maxAuthors,
+                ]);
+            default:
+                return parent::inlineAttributeInputHtml($attribute);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function htmlAttributes(string $context): array
     {
         return [
@@ -2027,35 +2082,33 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         $this->_applyActionBtnEntryTypeCompatibility();
 
-        if ($section?->type !== Section::TYPE_SINGLE) {
-            // Type
-            $fields[] = (function() use ($static) {
-                $entryTypes = $this->getAvailableEntryTypes();
-                if (!ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
-                    $entryTypes[] = $this->getType();
-                }
-                if (count($entryTypes) <= 1 && $this->isEntryTypeAllowed($entryTypes)) {
-                    return null;
-                }
+        // Type
+        $fields[] = (function() use ($static) {
+            $entryTypes = $this->getAvailableEntryTypes();
+            if (!ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
+                $entryTypes[] = $this->getType();
+            }
+            if (count($entryTypes) <= 1 && $this->isEntryTypeAllowed($entryTypes)) {
+                return null;
+            }
 
-                return Cp::customSelectFieldHtml([
-                    'status' => $this->getAttributeStatus('typeId'),
-                    'label' => Craft::t('app', 'Entry Type'),
-                    'id' => 'entryType',
-                    'name' => 'typeId',
-                    'value' => $this->getType()->id,
-                    'options' => array_map(fn(EntryType $et) => [
-                        'icon' => $et->icon,
-                        'iconColor' => $et->color,
-                        'label' => Craft::t('site', $et->name),
-                        'value' => $et->id,
-                    ], $entryTypes),
-                    'disabled' => $static,
-                    'attribute' => 'typeId',
-                    'errors' => $this->getErrors('typeId'),
-                ]);
-            })();
-        }
+            return Cp::customSelectFieldHtml([
+                'status' => $this->getAttributeStatus('typeId'),
+                'label' => Craft::t('app', 'Entry Type'),
+                'id' => 'entryType',
+                'name' => 'typeId',
+                'value' => $this->getType()->id,
+                'options' => array_map(fn(EntryType $et) => [
+                    'icon' => $et->icon,
+                    'iconColor' => $et->color,
+                    'label' => Craft::t('site', $et->name),
+                    'value' => $et->id,
+                ], $entryTypes),
+                'disabled' => $static,
+                'attribute' => 'typeId',
+                'errors' => $this->getErrors('typeId'),
+            ]);
+        })();
 
         // Slug
         if ($this->getType()->showSlugField) {

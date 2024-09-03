@@ -60,6 +60,7 @@
 </head>
 <body {{ attr(bodyAttributes) }}>
     {{ beginBody() }}
+    {% include '_layouts/components/global-live-region' %}
     {% block body %}{% endblock %}
     {% include '_layouts/components/notifications' %}
     {% block foot %}{% endblock %}

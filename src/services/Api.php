@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\Api as ApiHelper;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
+use craft\helpers\Session;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -43,6 +44,7 @@ class Api extends Component
         if (!isset($this->client)) {
             $this->client = Craft::createGuzzleClient([
                 'base_uri' => Craft::$app->baseApiUrl,
+                'connect_timeout' => 15,
             ]);
         }
     }
@@ -117,6 +119,9 @@ class Api extends Component
      */
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
+        // Close the PHP session in case this takes a while
+        Session::close();
+
         $options = ArrayHelper::merge($options, [
             'headers' => ApiHelper::headers(),
         ]);

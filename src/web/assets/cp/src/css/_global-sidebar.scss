@@ -1,8 +1,11 @@
+@use '@craftcms/sass/mixins';
+@use 'cp';
+
 .global-sidebar {
   --is-always-visible: true;
   position: sticky;
-  top: 0;
-  z-index: $sidebarZIndex;
+  inset-block-start: 0;
+  z-index: cp.$sidebarZIndex;
   display: grid;
   grid-template-columns: var(--global-sidebar-width);
   grid-template-rows: var(--header-height) minmax(0, 1fr) auto;
@@ -26,15 +29,15 @@
     }
   }
 
-  @media only screen and (max-width: $minFullUiWidth - calc(1rem/16)) {
+  @media only screen and (max-width: cp.$minFullUiWidth - calc(1rem/16)) {
     --is-always-visible: false;
   }
 }
 
 .global-sidebar__nav {
-  padding: var(--s) 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  padding-block: var(--s);
+  padding-inline: 0;
+  overflow: hidden auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   overscroll-behavior: contain;
@@ -66,7 +69,7 @@
   --thumb-size: 1rem;
 
   > svg {
-    @include svg-mask(currentColor);
+    @include mixins.svg-mask(currentColor);
     width: 100%;
     height: 100%;
   }
@@ -121,11 +124,11 @@
       background-color: transparent;
     }
 
-    &[aria-expanded='true']:after {
-      @include angle(up);
+    &[aria-expanded='true']::after {
+      @include mixins.angle(up);
     }
 
-    &:after {
+    &::after {
       margin-inline-start: 0 !important;
     }
   }
@@ -152,14 +155,16 @@
   line-height: 1rem;
   min-width: 1.1rem;
   height: 1rem;
-  padding: 0 var(--xs);
+  padding-block: 0;
+  padding-inline: var(--xs);
   border-radius: 8px;
   background-color: var(--nav-item-badge-bgColor);
   color: var(--nav-item-badge-fgColor);
 }
 
 .sidebar-actions {
-  padding: 10px var(--nav-item-gutter-width); // match padding of #system-info
+  padding-block: 10px;
+  padding-inline: var(--nav-item-gutter-width); // match padding of #system-info
 }
 
 .sidebar-action {
@@ -169,15 +174,15 @@
   width: 100%;
   align-items: center;
   position: relative;
-  text-align: left;
+  text-align: start;
   border-radius: var(--medium-border-radius);
-  color: currentColor;
+  color: currentcolor;
   cursor: pointer;
   min-height: 30px;
   font-weight: 500;
 
   // Active indicator
-  &:before {
+  &::before {
     content: '';
     position: absolute;
     inset-inline-start: 0;
@@ -201,7 +206,7 @@
 
   &[aria-current='page'],
   &[aria-current='true'] {
-    &:before {
+    &::before {
       background-color: var(--nav-item-fgColor-active);
     }
   }
@@ -211,23 +216,22 @@
   font-size: 0.9em;
   min-height: 26px;
 
-  &:before {
+  &::before {
     display: none;
   }
 
   .sidebar-action__prefix {
     position: relative;
 
-    &:before {
+    &::before {
       content: '';
       position: absolute;
       inset-inline-start: 50%;
-      inset-block-start: 50%;
       width: var(--nav-item-indicator-size);
       height: var(--nav-item-indicator-size);
       border-radius: 100%;
-      top: 50%;
-      background-color: currentColor;
+      inset-block-start: 50%;
+      background-color: currentcolor;
       transform: translateY(-50%) translateX(-50%);
 
       // No logical properties for transforms
@@ -244,13 +248,12 @@
 }
 
 .sidebar-action--job {
-  grid-column: 2/4 !important;
-  align-items: flex-start;
+  align-items: start;
 
   .sidebar-action__label {
     flex-wrap: wrap;
-    padding-block: var(--xs);
-    gap: var(--xs);
+    padding-block: var(--2xs);
+    gap: var(--2xs);
   }
 
   .label {
@@ -307,7 +310,8 @@
   display: flex;
   gap: var(--s);
   align-items: center;
-  padding: 0 var(--xs);
+  padding-block: 0;
+  padding-inline: var(--xs);
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -323,14 +327,15 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 0 var(--s);
+  padding-block: 0;
+  padding-inline: var(--s);
   margin-inline-start: auto;
 }
 
 /**
 States
  */
-@media only screen and (min-width: $minFullUiWidth) {
+@media only screen and (min-width: cp.$minFullUiWidth) {
   [data-sidebar='collapsed'] {
     .global-sidebar {
       --global-sidebar-width: calc(50rem / 16);
@@ -345,7 +350,7 @@ States
     }
 
     .nav-item__indicator {
-      right: -1px;
+      inset-inline-end: -1px;
     }
 
     .sidebar-action {
@@ -378,8 +383,8 @@ States
     .sidebar-action__badge {
       z-index: 100;
       position: absolute;
-      right: calc(var(--xs) * -1);
-      bottom: var(--xs);
+      inset-inline-end: calc(var(--xs) * -1);
+      inset-block-end: var(--xs);
       transform: translateY(25%);
       padding: 0;
     }
@@ -391,7 +396,7 @@ States
     .global-nav > ul > li + li {
       --separator-width: calc(28rem / 16);
 
-      &:before {
+      &::before {
         position: absolute;
         inset-block-start: 0;
         inset-inline-start: calc(
@@ -400,7 +405,8 @@ States
         content: '';
         width: var(--separator-width);
         height: 1px;
-        margin: 0 auto;
+        margin-block: 0;
+        margin-inline: auto;
         background-color: var(--hairline-color);
       }
     }
@@ -416,7 +422,7 @@ States
 #sidebar-trigger {
   display: none;
 
-  @media only screen and (min-width: $minFullUiWidth) {
+  @media only screen and (min-width: cp.$minFullUiWidth) {
     display: flex;
   }
 }

@@ -23,6 +23,13 @@ interface Actionable
      *
      * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
      *
+     * By default, all non-destructive items will be included in chips and cards. Individual items can explicitly
+     * opt into/out of being shown within chips and cards by including a `showInChips` key.
+     *
+     * ```php
+     * 'showInChips' => false,
+     * ```
+     *
      * @return array
      * @see Cp::disclosureMenu()
      */

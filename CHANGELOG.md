@@ -1,10 +1,116 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.4.0.1 - 2024-09-03
 
+- Fixed a PHP error that could occur on element indexes. ([#15648](https://github.com/craftcms/cms/issues/15648))
+
+## 5.4.0 - 2024-09-03
+
+### Content Management
+- Element conditions can now have a “Not Related To” rule. ([#15496](https://github.com/craftcms/cms/pull/15496))
+- Element conditions can now have a “Site Group” rule, if there are two or more site groups. ([#15625](https://github.com/craftcms/cms/discussions/15625))
+- Asset chips and cards no longer include the “Replace file” action. ([#15498](https://github.com/craftcms/cms/issues/15498))
+- Category slugs are now inline-editable from the Categories index page. ([#15560](https://github.com/craftcms/cms/pull/15560))
+- Entry post dates, expiry dates, slugs, and authors are now inline-editable from the Entries index page. ([#15560](https://github.com/craftcms/cms/pull/15560))
+- Improved Addresses field validation to be more consistent with Matrix fields.
+- Entry chips and cards no longer include status indicators, if their entry type’s “Show thet Status field” setting is disabled. ([#15636](https://github.com/craftcms/cms/discussions/15636))
+- Matrix and Addresses fields now show newly-created elements on first edit, rather than after they’ve been fully saved. ([#15641](https://github.com/craftcms/cms/issues/15641)) 
+
+### Accessibility
+- Improved the accessibility of Tags fields.
+
+### Administration
+- Link fields now have “Allow root-relative URLs” and “Allow anchors” settings. ([#15579](https://github.com/craftcms/cms/issues/15579))
+- Custom field selectors within field layouts now display a pencil icon if their name, instructions, or handle have been overridden. ([#15597](https://github.com/craftcms/cms/discussions/15597))
+- Custom field settings within field layouts now display a chip for the associated global field. ([#15619](https://github.com/craftcms/cms/pull/15619), [#15597](https://github.com/craftcms/cms/discussions/15597))
+- Field layouts can now define tips and warnings that should be displayed for fields. ([#15632](https://github.com/craftcms/cms/discussions/15632))
+- The Fields index page now has a “Used by” column that shows how many field layouts each field is used by. ([#14984](https://github.com/craftcms/cms/discussions/14984))
+- The Entry Types index page now has a “Used by” column that lists the sections and custom fields that each entry type is used by. ([#14984](https://github.com/craftcms/cms/discussions/14984))
+- Single sections can now have multiple entry types. ([#15630](https://github.com/craftcms/cms/discussions/15630))
+- Increased the text size for handle buttons within admin tables.
+
+### Development
+- Added the `notRelatedTo` and `andNotRelatedTo` element query params. ([#15496](https://github.com/craftcms/cms/pull/15496))
+- Added the `notRelatedTo` GraphQL element query argument. ([#15496](https://github.com/craftcms/cms/pull/15496))
+- `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` GraphQL arguments now support passing `relatedViaField` and `relatedViaSite` keys to their criteria objects. ([#15508](https://github.com/craftcms/cms/pull/15508))
+- Country field values and `craft\elements\Address::getCountry()` now return the country in the current application locale.
+
+### Extensibility
+- Added `craft\base\ApplicationTrait::getEnvId()`. ([#15313](https://github.com/craftcms/cms/issues/15313))
+- Added `craft\base\ElementInterface::getRootOwner()`. ([#15534](https://github.com/craftcms/cms/discussions/15534))
+- Added `craft\base\ElementInterface::showStatusIndicator()`.
+- Added `craft\elements\conditions\NotRelatedToConditionRule`.
+- Added `craft\elements\conditions\SiteGroupConditionRule`.
+- Added `craft\gql\arguments\RelationCriteria`.
+- Added `craft\gql\types\input\criteria\AssetRelation`.
+- Added `craft\gql\types\input\criteria\CategoryRelation`.
+- Added `craft\gql\types\input\criteria\EntryRelation`.
+- Added `craft\gql\types\input\criteria\TagRelation`.
+- Added `craft\gql\types\input\criteria\UserRelation`.
+- Added `craft\helpers\Cp::componentPreviewHtml()`.
+- Added `craft\helpers\Inflector`.
+- Added `craft\helpers\Session::close()`.
+- Added `craft\services\Sites::getEditableSitesByGroupId()`.
+- `craft\helpers\Cp::chipHtml()` now supports a `hyperlink` option.
+- `craft\helpers\Session` methods are now safe to call on console requests.
+- `craft\services\Elements::saveElement()` now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
+- Deprecated `craft\db\mysql\Schema::quoteDatabaseName()`.
+- Deprecated `craft\db\pgqsl\Schema::quoteDatabaseName()`.
+- Deprecated `craft\helpers\ElementHelper::rootElement()`. `craft\base\ElementInterface::getRootOwner()` should be used instead.
+- Added `Craft.cp.announce()`, simplifying live region announcements for screen readers. ([#15569](https://github.com/craftcms/cms/pull/15569))
+- Element action menu items returned by `craft\base\Element::safeActionMenuItems()` and `destructiveActionMenuItems()` can now include a `showInChips` key to explicitly opt into/out of being shown within element chips and cards.
+- Element select inputs now support `allowAdd` and `allowRemove` settings. ([#15639](https://github.com/craftcms/cms/discussions/15639))
+- Control panel CSS selectors that take orientation into account now use logical properties. ([#15522](https://github.com/craftcms/cms/pull/15522))
+
+### System
+- MySQL mutex locks and PHP session names are now namespaced using the application ID combined with the environment name. ([#15313](https://github.com/craftcms/cms/issues/15313))
+- Added support for “City/Town” address locality labels. ([#15585](https://github.com/craftcms/cms/pull/15585))
+- Craft now sends `X-Robots-Tag: none` headers for preview requests. ([#15612](https://github.com/craftcms/cms/pull/15612), [#15586](https://github.com/craftcms/cms/issues/15586))
+- `x-craft-preview` and `x-craft-live-preview` params are now hashed, and `craft\web\Request::getIsPreview()` will only return `true` if the param validates. ([#15605](https://github.com/craftcms/cms/discussions/15605))
+- Generated URLs no longer include `x-craft-preview` or `x-craft-live-preview` query string params based on the requested URL, if either were set to an unverified string. ([#15605](https://github.com/craftcms/cms/discussions/15605))
+- The PHP session is now closed before making API requests. ([#15643](https://github.com/craftcms/cms/issues/15643))
+- Updated Twig to 3.12. ([#15568](https://github.com/craftcms/cms/discussions/15568))
+- Fixed a SQL error that occurred when running the `db/convert-charset` command if there were any custom database views or sequences. ([#15598](https://github.com/craftcms/cms/issues/15598))
+- Fixed a bug where `craft\helpers\Db::supportsTimeZones()` could return `false` on databases that supported time zone conversion. ([#15592](https://github.com/craftcms/cms/issues/15592))
+- Fixed a bug where `null` values within associative arrays were ignored when applying project config data. ([#10512](https://github.com/craftcms/cms/issues/10512))
+- Fixed a bug where tabs within field layout designers weren’t always getting positioned correctly when wrapped. ([#15590](https://github.com/craftcms/cms/issues/15590))
+- Fixed a bug where editable table rows’ action buttons were misaligned for newly-created rows. ([#15602](https://github.com/craftcms/cms/issues/15602))
+- Fixed a bug where relational fields’ element query results weren’t limited to the selected relations if the `id` param was overridden. ([#15570](https://github.com/craftcms/cms/issues/15570))
+- Fixed a bug where ordering element queries by textual custom fields would factor in character marks. ([#15609](https://github.com/craftcms/cms/issues/15609))
+- Fixed a bug where Money fields’ condition rules could display incorrect values based on a user’s formatting locale.
+- Fixed an error that occurred when eager-loading user addresses. ([#15629](https://github.com/craftcms/cms/pull/15629))
+- Fixed styling issues with classic Live Preview. ([#15640](https://github.com/craftcms/cms/issues/15640))
+- Fixed a bug where fields were bleeding out of the content pane on smaller viewports.
+- Fixed a bug where Link fields didn’t allow URLs with TLDs longer than six characters.
+- Fixed a bug where hard-deleting an element wasn’t hard-deleting any nested elements as well. ([#15645](https://github.com/craftcms/cms/pull/15645))
+- Fixed a bug where it wasn’t possible to hard-delete nested elements from embedded element index views. ([#15645](https://github.com/craftcms/cms/pull/15645))
+- Fixed an error that occurred when calling the `users/delete-user-photo` or `users/upload-user-photo` from the front end. ([#15487](https://github.com/craftcms/cms/pull/15487))
+- Fixed styling issues. ([#15537](https://github.com/craftcms/cms/pull/15537))
+
+## 5.3.6 - 2024-08-26
+
+- Fixed a bug where it wasn’t possible to override named transforms in GraphQL queries. ([#15572](https://github.com/craftcms/cms/issues/15572))
+- Fixed a bug where address subdivision fields could be incorrectly labelled and/or populated with the wrong options. ([#15551](https://github.com/craftcms/cms/issues/15551), [#15584](https://github.com/craftcms/cms/pull/15584))
+- Fixed an error that occurred if Country tables were included within element index tables or cards. ([#15583](https://github.com/craftcms/cms/issues/15583))
+- Fixed a bug where `{% cache %}` tags were caching content for Live Preview requests. ([#15586](https://github.com/craftcms/cms/issues/15586))
+- Fixed a bug where it wasn’t possible to remove nested entries in Matrix fields if the Min Entries setting had been reached. ([#15575](https://github.com/craftcms/cms/issues/15575))
+- Fixed a bug where Matrix and Addresses fields weren’t displaying or validating unpublished drafts. ([#15536](https://github.com/craftcms/cms/issues/15536))
+- Fixed a bug where element selector modals within Link fields didn’t have site selector menus. ([#15594](https://github.com/craftcms/cms/issues/15594))
+
+## 5.3.5 - 2024-08-21
+
+- Updated jQuery UI to 1.14.0. ([#15558](https://github.com/craftcms/cms/issues/15558))
 - Fixed a bug where `craft\helpers\App::env()` and `normalizeValue()` could return incorrect results for values that looked like floats. ([#15533](https://github.com/craftcms/cms/issues/15533))
 - Fixed a bug where the `users/set-password` action wasn’t respecting `redirect` params. ([#15538](https://github.com/craftcms/cms/issues/15538))
+- Fixed a bug where the “Default Values” Table field setting wasn’t escaping column headings. ([#15552](https://github.com/craftcms/cms/issues/15552))
+- Fixed a bug where Craft couldn’t be installed with existing project config files, if any plugins specified their schema version via `composer.json`. ([#15559](https://github.com/craftcms/cms/issues/15559))
+- Fixed a bug where Money fields’ min, max, and default values weren’t being set to the correct currency. ([#15565](https://github.com/craftcms/cms/issues/15565), [#15566](https://github.com/craftcms/cms/pull/15566))
+- Fixed a bug where Money fields weren’t handling negative values correctly. ([#15565](https://github.com/craftcms/cms/issues/15565), [#15567](https://github.com/craftcms/cms/pull/15567))
+- Fixed a bug where PHP-originated Craft Console API requests weren’t timing out if the API was down. ([#15571](https://github.com/craftcms/cms/pull/15571))
 - Fixed a bug where admin tables weren’t displaying disabled statuses. ([#15540](https://github.com/craftcms/cms/pull/15540))
+- Fixed a JavaScript error that occurred when adding a row to an editable table that didn’t allow reordering rows. ([#15543](https://github.com/craftcms/cms/issues/15543))
+- Fixed an error that occurred when editing an element with a Link field previously set to a URL value, if the field no longer allows URLs. ([#15542](https://github.com/craftcms/cms/issues/15542))
+- Fixed an error that could occur when upgrading to Craft 5. ([#15539](https://github.com/craftcms/cms/issues/15539), [#15555](https://github.com/craftcms/cms/issues/15555))
 
 ## 5.3.4 - 2024-08-13
 

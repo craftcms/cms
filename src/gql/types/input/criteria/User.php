@@ -28,9 +28,7 @@ class User extends InputObjectType
 
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => function() {
-                return UserArguments::getArguments();
-            },
+            'fields' => fn() => UserArguments::getArguments(),
         ]));
     }
 }

@@ -52,6 +52,7 @@ Craft.PasskeySetup = Garnish.Base.extend({
     }
 
     this.$addPasskeyBtn.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
     try {
       await (() =>

@@ -367,14 +367,14 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
-     * Returns a [[Country]] object representing the address’ coutry.
+     * Returns a [[Country]] object representing the address’ country.
      *
      * @return Country
      * @since 5.3.0
      */
     public function getCountry(): Country
     {
-        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode);
+        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode, Craft::$app->language);
     }
 
     /**

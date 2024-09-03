@@ -165,6 +165,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             DateCreatedConditionRule::class,
             DateUpdatedConditionRule::class,
             IdConditionRule::class,
+            NotRelatedToConditionRule::class,
             RelatedToConditionRule::class,
             SlugConditionRule::class,
         ];
@@ -175,6 +176,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
         if (Craft::$app->getIsMultiSite() && (!$elementType || $elementType::isLocalized())) {
             $types[] = SiteConditionRule::class;
+
+            if (count(Craft::$app->getSites()->getAllGroups()) > 1) {
+                $types[] = SiteGroupConditionRule::class;
+            }
         }
 
         if ($elementType !== null) {

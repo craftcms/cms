@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\errors\MissingComponentException;
 use yii\web\Session as YiiSession;
 
 /**
@@ -18,6 +19,16 @@ use yii\web\Session as YiiSession;
  */
 class Session
 {
+    /**
+     * @see session()
+     */
+    private static YiiSession|false|null $_session;
+
+    /**
+     * @see exists()
+     */
+    private static bool $_exists = false;
+
     /**
      * Returns the session variable value with the session variable name.
      *
@@ -42,7 +53,7 @@ class Session
      */
     public static function set(string $key, mixed $value): void
     {
-        self::session()->set($key, $value);
+        self::session()?->set($key, $value);
     }
 
     /**
@@ -61,7 +72,6 @@ class Session
 
     /**
      * Removes all session variables.
-     *
      */
     public static function removeAll(): void
     {
@@ -85,13 +95,27 @@ class Session
         return self::session()->has($key);
     }
 
-
     /**
-     * @return YiiSession
+     * Closes the session, if open.
+     *
+     * @since 4.12.0
      */
-    private static function session(): YiiSession
+    public static function close(): void
     {
-        return self::$_session ?? (self::$_session = Craft::$app->getSession());
+        self::session()?->close();
+    }
+
+    private static function session(): ?YiiSession
+    {
+        if (!isset(self::$_session)) {
+            try {
+                self::$_session = Craft::$app->getSession();
+            } catch (MissingComponentException) {
+                self::$_session = false;
+            }
+        }
+
+        return self::$_session ?: null;
     }
 
     /**
@@ -106,18 +130,8 @@ class Session
         }
 
         // Keep re-checking until it does
-        return self::$_exists = self::session()->getIsActive() || self::session()->getHasSessionId();
+        return self::$_exists = self::session()?->getIsActive() || self::session()?->getHasSessionId();
     }
-
-    /**
-     * @var YiiSession|null
-     */
-    private static ?YiiSession $_session = null;
-
-    /**
-     * @var bool
-     */
-    private static bool $_exists = false;
 
     /**
      * Resets the memoized database connection.

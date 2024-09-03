@@ -113,7 +113,7 @@ Craft.LinkInput = Garnish.Base.extend(
 
     switchToTextInput: function () {
       // only remove the first prefix, if set; otherwise the wrong prefix will get added back.
-      const value = this.removeFirstPrefix(this.$chip.find('a').attr('href'));
+      const value = this.removeFirstPrefix(this.$hiddenInput.val());
       this.createTextInput(value);
     },
 

@@ -8,8 +8,11 @@
   transition:
     opacity 100ms ease-in-out,
     transform 150ms ease-in-out;
+  /* stylelint-disable */
+  /* We need to keep these non-logical so floating-ui can override them */
   top: 0;
   left: 0;
+  /* stylelint-enable */
   z-index: 99;
 }
 
@@ -19,9 +22,10 @@
   background-color: var(--white);
   color: var(--gray-700);
   border: 1px solid var(--dark-hairline-color);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 10px rgb(0 0 0 / 20%);
   border-radius: var(--medium-border-radius);
-  padding: var(--xs) var(--s);
+  padding-block: var(--xs);
+  padding-inline: var(--s);
   pointer-events: none;
   user-select: none;
   font-weight: 400;
@@ -52,6 +56,7 @@
     border-color: transparent transparent var(--dark-hairline-color)
       var(--dark-hairline-color);
   }
+
   &[data-placement^='left'] {
     border-color: var(--dark-hairline-color) var(--dark-hairline-color)
       transparent transparent;

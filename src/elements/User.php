@@ -506,11 +506,11 @@ class User extends Element implements IdentityInterface
         if ($handle == 'addresses') {
             $map = (new Query())
                 ->select([
-                    'source' => 'ownerId',
+                    'source' => 'primaryOwnerId',
                     'target' => 'id',
                 ])
                 ->from([Table::ADDRESSES])
-                ->where(['ownerId' => $sourceElementIds])
+                ->where(['primaryOwnerId' => $sourceElementIds])
                 ->all();
 
             return [

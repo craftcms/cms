@@ -353,7 +353,7 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_ADDITIONAL_BUTTONS = 'defineAdditionalButtons';
 
     /**
-     * @event DefineMenuComponentEvent The event that is triggered when defining action menu items..
+     * @event DefineMenuItemsEvent The event that is triggered when defining action menu items..
      * @see getActionMenuItems()
      * @since 5.0.0
      */
@@ -3287,6 +3287,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function showStatusIndicator(): bool
+    {
+        return static::hasStatuses();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCardBodyHtml(): ?string
     {
         $previews = array_filter(array_map(
@@ -3985,6 +3993,20 @@ JS, [
         }
 
         return self::STATUS_ENABLED;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRootOwner(): ElementInterface
+    {
+        if ($this instanceof NestedElementInterface) {
+            $owner = $this->getOwner();
+            if ($owner) {
+                return $owner->getRootOwner();
+            }
+        }
+        return $this;
     }
 
     /**
