@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Pojedyncza',
     'Single-line text' => 'Tekst jednowierszowy',
     'Singles' => 'Pojedyncze',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Ikona witryny',
     'Site Settings' => 'Ustawienia witryny',
     'Site saved.' => 'Witryna zapisana.',
