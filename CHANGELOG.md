@@ -14,6 +14,7 @@
 - Fixed an error that occurred when eager-loading user addresses. ([#15629](https://github.com/craftcms/cms/pull/15629))
 - Fixed styling issues with classic Live Preview. ([#15640](https://github.com/craftcms/cms/issues/15640))
 - Fixed a bug where fields were bleeding out of the content pane on smaller viewports.
+- Fixed a bug where Link fields didn’t allow URLs with TLDs longer than six characters.
 
 ## 5.3.6 - 2024-08-26
 
