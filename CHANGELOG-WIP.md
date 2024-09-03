@@ -43,8 +43,10 @@
 - Added `craft\gql\types\input\criteria\UserRelation`.
 - Added `craft\helpers\Cp::componentPreviewHtml()`.
 - Added `craft\helpers\Inflector`.
+- Added `craft\helpers\Session::close()`.
 - Added `craft\services\Sites::getEditableSitesByGroupId()`.
 - `craft\helpers\Cp::chipHtml()` now supports a `hyperlink` option.
+- `craft\helpers\Session` methods are now safe to call on console requests.
 - `craft\services\Elements::saveContent()`’ now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
 - Deprecated `craft\db\mysql\Schema::quoteDatabaseName()`.
 - Deprecated `craft\db\pgqsl\Schema::quoteDatabaseName()`.
@@ -59,5 +61,6 @@
 - Added support for “City/Town” address locality labels. ([#15585](https://github.com/craftcms/cms/pull/15585))
 - `x-craft-preview` and `x-craft-live-preview` params are now hashed, and `craft\web\Request::getIsPreview()` will only return `true` if the param validates. ([#15605](https://github.com/craftcms/cms/discussions/15605))
 - Generated URLs no longer include `x-craft-preview` or `x-craft-live-preview` query string params based on the requested URL, if either were set to an unverified string. ([#15605](https://github.com/craftcms/cms/discussions/15605))
+- The PHP session is now closed before making API requests. ([#15643](https://github.com/craftcms/cms/issues/15643))
 - Updated Twig to 3.12. ([#15568](https://github.com/craftcms/cms/discussions/15568))
 - Fixed styling issues. ([#15537](https://github.com/craftcms/cms/pull/15537))

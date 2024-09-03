@@ -26,6 +26,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Search;
+use craft\helpers\Session;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
@@ -102,6 +103,9 @@ class AppController extends Controller
         if (!str_starts_with($url, Craft::$app->getAssetManager()->baseUrl)) {
             throw new BadRequestHttpException("$url does not appear to be a resource URL");
         }
+
+        // Close the PHP session in case this takes a while
+        Session::close();
 
         $response = Craft::createGuzzleClient()->get($url);
         $this->response->setCacheHeaders();
