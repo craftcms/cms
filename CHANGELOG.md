@@ -17,6 +17,7 @@
 - Fixed a bug where Link fields didn’t allow URLs with TLDs longer than six characters.
 - Fixed a bug where hard-deleting an element wasn’t hard-deleting any nested elements as well. ([#15645](https://github.com/craftcms/cms/pull/15645))
 - Fixed a bug where it wasn’t possible to hard-delete nested elements from embedded element index views. ([#15645](https://github.com/craftcms/cms/pull/15645))
+- Fixed an error that occurred when calling the `users/delete-user-photo` or `users/upload-user-photo` from the front end. ([#15487](https://github.com/craftcms/cms/pull/15487))
 
 ## 5.3.6 - 2024-08-26
 
