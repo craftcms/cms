@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Enkelte',
     'Single-line text' => 'Enkelt linje tekst',
     'Singles' => 'Enkelte',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Sidens ikon',
     'Site Settings' => 'Indstillinger for sitet',
     'Site saved.' => 'Site gemt.',
