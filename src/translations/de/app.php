@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Einzeleintrag',
     'Single-line text' => 'Einzeiliger Text',
     'Singles' => 'Einzeleinträge',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Website-Icon',
     'Site Settings' => 'Website-Einstellungen',
     'Site saved.' => 'Website wurde gespeichert.',
