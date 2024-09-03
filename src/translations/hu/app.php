@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Egyetlen',
     'Single-line text' => 'Egysoros szöveg',
     'Singles' => 'Egyedi bejegyzések',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Oldal ikon',
     'Site Settings' => 'Webhelybeállítások',
     'Site saved.' => 'A webhely mentve.',
