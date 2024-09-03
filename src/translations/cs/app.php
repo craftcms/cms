@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Stránka',
     'Single-line text' => 'Jednořádkový text',
     'Singles' => 'Stránky',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Ikona stránky',
     'Site Settings' => 'Nastavení webu',
     'Site saved.' => 'Web uložen.',
