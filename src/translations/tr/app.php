@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Tekli',
     'Single-line text' => 'Tek-satır metin',
     'Singles' => 'Tekiller',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Site Simgesi',
     'Site Settings' => 'Site Ayarları',
     'Site saved.' => 'Site kaydedildi.',
