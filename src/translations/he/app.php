@@ -1362,6 +1362,7 @@ return [
     'Single' => 'בודד',
     'Single-line text' => 'טקסט עם שורה אחת',
     'Singles' => 'דפים בודדים',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'אייקון אתר',
     'Site Settings' => 'הגדרות אתר',
     'Site saved.' => 'האתר נשמר.',
