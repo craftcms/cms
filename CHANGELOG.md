@@ -1,8 +1,31 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.12.0 - 2024-09-03
 
+### Content Management
+- Element conditions can now have a “Site Group” rule, if there are two or more site groups. ([#15625](https://github.com/craftcms/cms/discussions/15625))
+
+### Development
+- Country field values and `craft\elements\Address::getCountry()` now return the country in the current application locale.
+
+### Extensibility
+- Added `craft\base\ApplicationTrait::getEnvId()`. ([#15313](https://github.com/craftcms/cms/issues/15313))
+- Added `craft\base\ElementInterface::getRootOwner()`. ([#15534](https://github.com/craftcms/cms/discussions/15534))
+- Added `craft\elements\conditions\SiteGroupConditionRule`.
+- Added `craft\helpers\Session::close()`.
+- Added `craft\services\Sites::getEditableSitesByGroupId()`.
+- `craft\helpers\Session` methods are now safe to call on console requests.
+- Deprecated `craft\helpers\ElementHelper::rootElement()`. `craft\base\ElementInterface::getRootOwner()` should be used instead.
+- Deprecated `craft\db\mysql\Schema::quoteDatabaseName()`.
+- Deprecated `craft\db\pgqsl\Schema::quoteDatabaseName()`.
+
+### System
+- MySQL mutex locks and PHP session names are now namespaced using the application ID combined with the environment name. ([#15313](https://github.com/craftcms/cms/issues/15313))
 - Craft now sends `X-Robots-Tag: none` headers for preview requests. ([#15612](https://github.com/craftcms/cms/pull/15612), [#15586](https://github.com/craftcms/cms/issues/15586))
+- `x-craft-preview` and `x-craft-live-preview` params are now hashed, and `craft\web\Request::getIsPreview()` will only return `true` if the param validates. ([#15605](https://github.com/craftcms/cms/discussions/15605))
+- Generated URLs no longer include `x-craft-preview` or `x-craft-live-preview` query string params based on the requested URL, if either were set to an unverified string. ([#15605](https://github.com/craftcms/cms/discussions/15605))
+- The PHP session is now closed before making API requests. ([#15643](https://github.com/craftcms/cms/issues/15643))
+- Updated Twig to 3.12. ([#15568](https://github.com/craftcms/cms/discussions/15568))
 - Fixed a SQL error that occurred when running the `db/convert-charset` command if there were any custom database views or sequences. ([#15598](https://github.com/craftcms/cms/issues/15598))
 - Fixed a bug where `craft\helpers\Db::supportsTimeZones()` could return `false` on databases that supported time zone conversion. ([#15592](https://github.com/craftcms/cms/issues/15592))
 - Fixed a bug where Assets fields were validating settings that weren’t applicable depending on the “Restrict assets to a single location” setting. ([#15545](https://github.com/craftcms/cms/issues/15545))
