@@ -491,7 +491,7 @@ Craft.EditableTable = Garnish.Base.extend(
           var name = baseName + '[' + rowId + '][' + colId + ']';
 
           $cell = $('<td/>', {
-            class: `${col.class} ${col.type}-cell`,
+            class: `${col.class ?? ''} ${col.type}-cell`,
             width: col.width,
           });
 
@@ -619,8 +619,12 @@ Craft.EditableTable = Garnish.Base.extend(
           class: 'menu menu--disclosure',
         });
 
-        $('<td/>', {
+        const $td = $('<td/>', {
           class: 'thin action',
+        }).appendTo($tr);
+
+        $('<div/>', {
+          class: 'flex flex-nowrap',
         })
           .append(
             $('<a/>', {
@@ -630,10 +634,9 @@ Craft.EditableTable = Garnish.Base.extend(
               type: 'button',
             })
           )
-          .append('&nbsp;')
           .append($actionsBtn)
           .append($menuContainer)
-          .appendTo($tr);
+          .appendTo($td);
 
         const menu = $actionsBtn.disclosureMenu().data('disclosureMenu');
 
@@ -850,28 +853,28 @@ Craft.EditableTable.Row = Garnish.Base.extend(
       // Action menu modification
       const $actionMenuBtn = this.$tr.find('> .action .action-btn');
 
-      const actionDisclosure =
-        $actionMenuBtn.data('trigger') ||
-        new Garnish.DisclosureMenu($actionMenuBtn);
+      if ($actionMenuBtn.length) {
+        this.actionDisclosure =
+          $actionMenuBtn.data('trigger') ||
+          new Garnish.DisclosureMenu($actionMenuBtn);
+        this.$actionMenu = this.actionDisclosure.$container;
 
-      this.$actionMenu = actionDisclosure.$container;
-      this.actionDisclosure = actionDisclosure;
+        this.actionDisclosure.on('show', () => {
+          this.updateDisclosureMenu();
 
-      actionDisclosure.on('show', () => {
-        this.updateDisclosureMenu();
+          // Fixes issue focusing caused by hiding button
+          const $focusableBtn = Garnish.firstFocusableElement(this.$actionMenu);
+          $focusableBtn.focus();
+        });
 
-        // Fixes issue focusing caused by hiding button
-        const $focusableBtn = Garnish.firstFocusableElement(this.$actionMenu);
-        $focusableBtn.focus();
-      });
+        this.$actionMenuOptions = this.$actionMenu.find('button[data-action]');
 
-      this.$actionMenuOptions = this.$actionMenu.find('button[data-action]');
-
-      this.addListener(
-        this.$actionMenuOptions,
-        'activate',
-        this.handleActionClick
-      );
+        this.addListener(
+          this.$actionMenuOptions,
+          'activate',
+          this.handleActionClick
+        );
+      }
     },
 
     updateDisclosureMenu: function () {

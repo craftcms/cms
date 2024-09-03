@@ -31,6 +31,7 @@ use craft\models\Section;
 use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
+use ReflectionClass;
 
 /**
  * Installation Migration
@@ -81,8 +82,16 @@ class Install extends Migration
         $this->createIndexes();
         $this->addForeignKeys();
         $this->db->getSchema()->refresh();
-        $this->insertDefaultData();
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function afterUp(): void
+    {
+        $this->insertDefaultData();
+        parent::afterUp();
     }
 
     /**
@@ -1187,21 +1196,23 @@ class Install extends Migration
         // and that they have the same schema as project.yaml
         foreach ($pluginConfigs as $handle => $pluginConfig) {
             try {
-                $plugin = $pluginsService->createPlugin($handle);
+                $pluginInfo = $pluginsService->getPluginInfo($handle);
             } catch (InvalidPluginException) {
                 $error = "The “{$handle}” plugin is not Composer-installed, but project.yaml expects it to be.";
                 return false;
             }
 
-            if (!$plugin) {
-                $error = "“{$handle}” is not a valid plugin.";
-                return false;
+            if (isset($pluginInfo['schemaVersion'])) {
+                $schemaVersion = $pluginInfo['schemaVersion'];
+            } else {
+                $pluginRef = new ReflectionClass($pluginInfo['class']);
+                $schemaVersion = $pluginRef->getProperty('schemaVersion')->getDefaultValue();
             }
 
             $expectedSchemaVersion = $pluginConfig['schemaVersion'] ?? null;
 
-            if ($plugin->schemaVersion && $expectedSchemaVersion && $plugin->schemaVersion != $expectedSchemaVersion) {
-                $error = "$plugin->name is installed with schema version $plugin->schemaVersion, but project.yaml expects $expectedSchemaVersion.";
+            if ($schemaVersion && $expectedSchemaVersion && $schemaVersion != $expectedSchemaVersion) {
+                $error = "{$pluginInfo['name']} is installed with schema version $schemaVersion, but project.yaml expects $expectedSchemaVersion.";
                 return false;
             }
         }

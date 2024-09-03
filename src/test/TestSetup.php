@@ -491,7 +491,7 @@ class TestSetup
             'site' => $site,
         ]);
 
-        $migration->safeUp();
+        $migration->up();
     }
 
     /**

@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\helpers\App;
 use yii\base\Event as BaseEvent;
 
 /**
@@ -45,5 +46,18 @@ class Event extends BaseEvent
                 $handler($event);
             }
         }, $data, $append);
+    }
+
+    public function __construct($config = [])
+    {
+        // Call App::configure() rather than BaseYii::configure() (via BaseObject::__construct()),
+        // in case \Yii isn't loaded yet. (Mainly an issue for GeneralConfig/DbConfig, if config/general.php
+        // or config/db.php return an array.)
+        // Note that inlining the foreach loop is no good, because then private/protected properties will be
+        // set directly rather than going through __set().
+        App::configure($this, $config);
+
+        // Intentionally not passing $config along
+        parent::__construct();
     }
 }

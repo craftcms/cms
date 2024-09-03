@@ -17,6 +17,9 @@ use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\console\controllers\MigrateController;
+use craft\console\controllers\UpController;
+use craft\controllers\AppController;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -1158,7 +1161,9 @@ class Elements extends Component
             ]));
         }
 
-        Db::delete(Table::ELEMENTS_BULKOPS, ['key' => $key], db: $this->bulkOpDb);
+        if (!$this->isMigrationRequest()) {
+            Db::delete(Table::ELEMENTS_BULKOPS, ['key' => $key], db: $this->bulkOpDb);
+        }
     }
 
     /**
@@ -1175,13 +1180,27 @@ class Elements extends Component
 
         $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
 
-        foreach (array_keys($this->bulkKeys) as $key) {
-            Db::upsert(Table::ELEMENTS_BULKOPS, [
-                'elementId' => $element->id,
-                'key' => $key,
-                'timestamp' => $timestamp,
-            ], db: $this->bulkOpDb);
+        if (!$this->isMigrationRequest()) {
+            foreach (array_keys($this->bulkKeys) as $key) {
+                Db::upsert(Table::ELEMENTS_BULKOPS, [
+                    'elementId' => $element->id,
+                    'key' => $key,
+                    'timestamp' => $timestamp,
+                ], db: $this->bulkOpDb);
+            }
         }
+    }
+
+    private function isMigrationRequest(): bool
+    {
+        return (
+            Craft::$app->controller instanceof MigrateController ||
+            Craft::$app->controller instanceof UpController ||
+            (
+                Craft::$app->controller instanceof AppController &&
+                Craft::$app->controller->action?->id === 'update'
+            )
+        );
     }
 
     /**
@@ -1279,6 +1298,11 @@ class Elements extends Component
         $duplicateOf = $element->duplicateOf;
         $element->duplicateOf = null;
 
+        // Force isNewForSite = false here, in case the element is getting saved recursively
+        // (see https://github.com/craftcms/cms/issues/15517)
+        $isNewForSite = $element->isNewForSite;
+        $element->isNewForSite = false;
+
         $success = $this->_saveElementInternal(
             $element,
             $runValidation,
@@ -1290,6 +1314,7 @@ class Elements extends Component
         );
 
         $element->duplicateOf = $duplicateOf;
+        $element->isNewForSite = $isNewForSite;
 
         return $success;
     }

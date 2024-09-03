@@ -145,7 +145,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   &:after {
     display: none;
   }
+}
 
+div#system-info {
+  cursor: default;
+}
+
+a#system-info {
   &:focus,
   &:hover {
     text-decoration: none;
@@ -676,7 +682,7 @@ li.breadcrumb-toggle-wrapper {
       }
 
       .announcement-label {
-        margin-left: 5px;
+        margin-inline-start: 5px;
         font-size: 12px;
         color: var(--light-text-color);
       }
@@ -1798,7 +1804,7 @@ li.breadcrumb-toggle-wrapper {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 calc(var(--padding) * -1) calc(var(--row-gap) * -1);
+  margin: 0 calc(var(--padding) * -1) calc(var(--padding) * -1);
   width: calc(100% + var(--padding) * 2);
 
   & > :not(.error-summary) {

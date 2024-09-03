@@ -830,15 +830,15 @@ class UsersController extends Controller
 
         // Can they access the control panel?
         if ($user->can('accessCp')) {
-            // Send them to the control panel login page
+            // Send them to the control panel login page by default
             $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         } else {
-            // Send them to the 'setPasswordSuccessPath'.
+            // Send them to the 'setPasswordSuccessPath' by default
             $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
             $url = UrlHelper::siteUrl($setPasswordSuccessPath);
         }
 
-        return $this->redirect($url);
+        return $this->redirectToPostedUrl($user, $url);
     }
 
     /**
@@ -2822,7 +2822,7 @@ JS);
     {
         $view = $this->getView();
         $templateMode = $view->getTemplateMode();
-        if ($templateMode === View::TEMPLATE_MODE_SITE && !$view->doesTemplateExist('users/_photo')) {
+        if ($templateMode === View::TEMPLATE_MODE_SITE && !$view->doesTemplateExist('users/_photo.twig')) {
             $templateMode = View::TEMPLATE_MODE_CP;
         }
 

@@ -1017,7 +1017,7 @@ return [
     'New {group} category' => 'Nieuwe {group} categorie',
     'New {section} entry' => 'Nieuwe {section} vermelding',
     'New {total, plural, =1{position} other{positions}} saved.' => 'Nieuwe {total, plural, one {}=1{positie} other{posities}} opgeslagen.',
-    'New {type}' => 'Nieuwe klasse {type}',
+    'New {type}' => 'Nieuwe {type}',
     'New' => 'Nieuw',
     'Next Page' => 'Volgende pagina',
     'Next' => 'Volgende',

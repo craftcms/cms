@@ -653,11 +653,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the HTML that should be shown for this field’s inline inputs.
-     *
-     * @param mixed $value The field’s value
-     * @param ElementInterface|null $element The element the field is associated with
-     * @return string The HTML that should be shown for this field’s inline input
+     * @see InlineEditableFieldInterface::getInlineInputHtml()
      * @since 5.0.0
      */
     public function getInlineInputHtml(mixed $value, ?ElementInterface $element): string
@@ -763,11 +759,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the HTML that should be shown for this field in table and card views.
-     *
-     * @param mixed $value The field’s value
-     * @param ElementInterface $element The element the field is associated with
-     * @return string The HTML that should be shown for this field in table and card views
+     * @see PreviewableFieldInterface::getPreviewHtml()
      * @since 5.0.0
      */
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
@@ -776,24 +768,30 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the sort option array that should be included in the element’s
-     * [[\craft\base\ElementInterface::sortOptions()|sortOptions()]] response.
-     *
-     * @return array
-     * @see SortableFieldInterface::getSortOption
+     * @see SortableFieldInterface::getSortOption()
      * @since 3.2.0
      */
     public function getSortOption(): array
     {
-        if (static::dbType() === null || !isset($this->layoutElement)) {
+        $dbType = static::dbType();
+        if ($dbType === null || !isset($this->layoutElement)) {
             throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
+        }
+
+        $orderBy = $this->getValueSql();
+
+        // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
+        // see https://github.com/craftcms/cms/issues/15609
+        $db = Craft::$app->getDb();
+        if ($db->getIsMysql() && Db::parseColumnType($dbType) === Schema::TYPE_TEXT) {
+            $orderBy = "CAST($orderBy AS CHAR(255))";
         }
 
         // The attribute name should match the table attribute name,
         // per ElementSources::getTableAttributesForFieldLayouts()
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => $this->getValueSql(),
+            'orderBy' => $orderBy,
             'attribute' => isset($this->layoutElement->handle)
                 ? "fieldInstance:{$this->layoutElement->uid}"
                 : "field:$this->uid",
@@ -801,11 +799,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns whether the field can be merged into the given field.
-     *
-     * @param FieldInterface $persistingField
-     * @param string|null $reason
-     * @return bool
+     * @see MergeableFieldInterface::canMergeInto()
      * @since 5.3.0
      */
     public function canMergeInto(FieldInterface $persistingField, ?string &$reason): bool
@@ -815,11 +809,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns whether the given field can be merged into this one.
-     *
-     * @param FieldInterface $outgoingField
-     * @param string|null $reason
-     * @return bool
+     * @see MergeableFieldInterface::canMergeFrom()
      * @since 5.3.0
      */
     public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
@@ -829,9 +819,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Performs actions after the field has been merged into the given field.
-     *
-     * @param FieldInterface $persistingField
+     * @see MergeableFieldInterface::afterMergeInto()
      * @since 5.3.0
      */
     public function afterMergeInto(FieldInterface $persistingField)
@@ -843,9 +831,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Performs actions after the given field has been merged into this one.
-     *
-     * @param FieldInterface $outgoingField
+     * @see MergeableFieldInterface::afterMergeFrom()
      * @since 5.3.0
      */
     public function afterMergeFrom(FieldInterface $outgoingField)
@@ -1173,10 +1159,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns an array that lists the scopes this custom field allows when eager-loading or false if eager-loading
-     * should not be allowed in the GraphQL context.
-     *
-     * @return array|null
+     * @see EagerLoadingFieldInterface::getEagerLoadingGqlConditions()
      * @since 3.3.0
      */
     public function getEagerLoadingGqlConditions(): ?array

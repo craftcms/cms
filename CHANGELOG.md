@@ -1,5 +1,86 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Craft now sends `X-Robots-Tag: none` headers for preview requests. ([#15612](https://github.com/craftcms/cms/pull/15612), [#15586](https://github.com/craftcms/cms/issues/15586))
+- Fixed a SQL error that occurred when running the `db/convert-charset` command if there were any custom database views or sequences. ([#15598](https://github.com/craftcms/cms/issues/15598))
+- Fixed a bug where `craft\helpers\Db::supportsTimeZones()` could return `false` on databases that supported time zone conversion. ([#15592](https://github.com/craftcms/cms/issues/15592))
+- Fixed a bug where `null` values within associative arrays were ignored when applying project config data. ([#10512](https://github.com/craftcms/cms/issues/10512))
+- Fixed a bug where tabs within field layout designers weren’t always getting positioned correctly when wrapped. ([#15590](https://github.com/craftcms/cms/issues/15590))
+- Fixed a bug where editable table rows’ action buttons were misaligned for newly-created rows. ([#15602](https://github.com/craftcms/cms/issues/15602))
+- Fixed a bug where relational fields’ element query results weren’t limited to the selected relations if the `id` param was overridden. ([#15570](https://github.com/craftcms/cms/issues/15570))
+- Fixed a bug where ordering element queries by textual custom fields would factor in character marks. ([#15609](https://github.com/craftcms/cms/issues/15609))
+- Fixed a bug where Money fields’ condition rules could display incorrect values based on a user’s formatting locale.
+- Fixed an error that occurred when eager-loading user addresses. ([#15629](https://github.com/craftcms/cms/pull/15629))
+- Fixed styling issues with classic Live Preview. ([#15640](https://github.com/craftcms/cms/issues/15640))
+- Fixed a bug where fields were bleeding out of the content pane on smaller viewports.
+- Fixed a bug where Link fields didn’t allow URLs with TLDs longer than six characters.
+- Fixed a bug where hard-deleting an element wasn’t hard-deleting any nested elements as well. ([#15645](https://github.com/craftcms/cms/pull/15645))
+- Fixed a bug where it wasn’t possible to hard-delete nested elements from embedded element index views. ([#15645](https://github.com/craftcms/cms/pull/15645))
+
+## 5.3.6 - 2024-08-26
+
+- Fixed a bug where it wasn’t possible to override named transforms in GraphQL queries. ([#15572](https://github.com/craftcms/cms/issues/15572))
+- Fixed a bug where address subdivision fields could be incorrectly labelled and/or populated with the wrong options. ([#15551](https://github.com/craftcms/cms/issues/15551), [#15584](https://github.com/craftcms/cms/pull/15584))
+- Fixed an error that occurred if Country tables were included within element index tables or cards. ([#15583](https://github.com/craftcms/cms/issues/15583))
+- Fixed a bug where `{% cache %}` tags were caching content for Live Preview requests. ([#15586](https://github.com/craftcms/cms/issues/15586))
+- Fixed a bug where it wasn’t possible to remove nested entries in Matrix fields if the Min Entries setting had been reached. ([#15575](https://github.com/craftcms/cms/issues/15575))
+- Fixed a bug where Matrix and Addresses fields weren’t displaying or validating unpublished drafts. ([#15536](https://github.com/craftcms/cms/issues/15536))
+- Fixed a bug where element selector modals within Link fields didn’t have site selector menus. ([#15594](https://github.com/craftcms/cms/issues/15594))
+
+## 5.3.5 - 2024-08-21
+
+- Updated jQuery UI to 1.14.0. ([#15558](https://github.com/craftcms/cms/issues/15558))
+- Fixed a bug where `craft\helpers\App::env()` and `normalizeValue()` could return incorrect results for values that looked like floats. ([#15533](https://github.com/craftcms/cms/issues/15533))
+- Fixed a bug where the `users/set-password` action wasn’t respecting `redirect` params. ([#15538](https://github.com/craftcms/cms/issues/15538))
+- Fixed a bug where the “Default Values” Table field setting wasn’t escaping column headings. ([#15552](https://github.com/craftcms/cms/issues/15552))
+- Fixed a bug where Craft couldn’t be installed with existing project config files, if any plugins specified their schema version via `composer.json`. ([#15559](https://github.com/craftcms/cms/issues/15559))
+- Fixed a bug where Money fields’ min, max, and default values weren’t being set to the correct currency. ([#15565](https://github.com/craftcms/cms/issues/15565), [#15566](https://github.com/craftcms/cms/pull/15566))
+- Fixed a bug where Money fields weren’t handling negative values correctly. ([#15565](https://github.com/craftcms/cms/issues/15565), [#15567](https://github.com/craftcms/cms/pull/15567))
+- Fixed a bug where PHP-originated Craft Console API requests weren’t timing out if the API was down. ([#15571](https://github.com/craftcms/cms/pull/15571))
+- Fixed a bug where admin tables weren’t displaying disabled statuses. ([#15540](https://github.com/craftcms/cms/pull/15540))
+- Fixed a JavaScript error that occurred when adding a row to an editable table that didn’t allow reordering rows. ([#15543](https://github.com/craftcms/cms/issues/15543))
+- Fixed an error that occurred when editing an element with a Link field previously set to a URL value, if the field no longer allows URLs. ([#15542](https://github.com/craftcms/cms/issues/15542))
+- Fixed an error that could occur when upgrading to Craft 5. ([#15539](https://github.com/craftcms/cms/issues/15539), [#15555](https://github.com/craftcms/cms/issues/15555))
+
+## 5.3.4 - 2024-08-13
+
+- Fixed a bug where the system name in the control panel’s global sidebar was getting hyperlinked even if the primary site didn’t have a URL. ([#15525](https://github.com/craftcms/cms/issues/15525))
+- Fixed a bug where site crumbs on global set edit pages were including sites the user didn’t have permission to access. ([#15524](https://github.com/craftcms/cms/issues/15524))
+- Fixed a bug where multi-instance relation fields could get combined field values. ([#15526](https://github.com/craftcms/cms/issues/15526))
+- Fixed styling issues.
+
+## 5.3.3 - 2024-08-12
+
+- Fixed an error that could occur if a new element was saved recursively. ([#15517](https://github.com/craftcms/cms/issues/15517))
+- Fixed a bug where plugins were being instantiated at the beginning of Craft installation requests, rather than after Craft was installed. ([#15506](https://github.com/craftcms/cms/issues/15506))
+- Fixed a bug where an unhelpful error message was output when `config/general.php` returned an array with unsupported config settings. ([#15514](https://github.com/craftcms/cms/discussions/15514))
+
+## 5.3.2 - 2024-08-10
+
+- Added `craft\db\afterDown()`.
+- Added `craft\db\afterUp()`.
+- Improved the appearance of some system settings icons.
+- Fixed a bug where Link fields weren’t allowing category groups to be selected, if they didn’t have a URI format for the primary site.
+- Fixed an error that occurred when installing Craft in PostgreSQL. ([#15504](https://github.com/craftcms/cms/issues/15504))
+- Fixed a bug where Matrix fields weren’t retaining the sort order for disabled nested entries. ([#15505](https://github.com/craftcms/cms/issues/15505))
+- Fixed a bug where Link fields weren’t displaying their input if they only had one type selected, and it wasn’t URL. ([#15512](https://github.com/craftcms/cms/issues/15512))
+- Fixed a bug where elements’ `searchScore` values were `null` when ordering an element query by `score`. ([#15513](https://github.com/craftcms/cms/issues/15513))
+- Fixed a bug where Assets fields weren’t storing files that were uploaded to them directly on element save requests. ([#15511](https://github.com/craftcms/cms/issues/15511))
+
+## 5.3.1 - 2024-08-07
+
+- Fixed a bug where `craft\filters\Headers` and `craft\filters\Cors` were applied to control panel requests rather than site requests. ([#15495](https://github.com/craftcms/cms/issues/15495))
+- Fixed a bug where Link fields weren’t retaining their link type-specific settings. ([#15491](https://github.com/craftcms/cms/issues/15491))
+
+## 5.3.0.3 - 2024-08-06
+
+- Fixed a PHP error that could occur when editing Addresses fields set to the element index view mode. ([#15486](https://github.com/craftcms/cms/issues/15486))
+
+## 5.3.0.2 - 2024-08-06
+
+- Fixed an error that could occur on console requests.
+
 ## 5.3.0.1 - 2024-08-06
 
 - Fixed an error that occurred when accessing custom config settings defined in `config/custom.php`. ([#15481](https://github.com/craftcms/cms/issues/15481))
