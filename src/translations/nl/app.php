@@ -977,7 +977,7 @@ return [
     'New widget' => 'Nieuwe widget',
     'New {group} category' => 'Nieuwe {group} categorie',
     'New {section} entry' => 'Nieuwe {section} vermelding',
-    'New {type}' => 'Nieuwe klasse {type}',
+    'New {type}' => 'Nieuwe {type}',
     'New' => 'Nieuw',
     'Next Page' => 'Volgende pagina',
     'Next' => 'Volgende',

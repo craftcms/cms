@@ -6,6 +6,7 @@
 - Fixed a SQL error that occurred when running the `db/convert-charset` command if there were any custom database views or sequences. ([#15598](https://github.com/craftcms/cms/issues/15598))
 - Fixed a bug where `craft\helpers\Db::supportsTimeZones()` could return `false` on databases that supported time zone conversion. ([#15592](https://github.com/craftcms/cms/issues/15592))
 - Fixed a bug where Assets fields were validating settings that weren’t applicable depending on the “Restrict assets to a single location” setting. ([#15545](https://github.com/craftcms/cms/issues/15545))
+- Fixed a bug where `null` values within associative arrays were ignored when applying project config data. ([#10512](https://github.com/craftcms/cms/issues/10512))
 
 ## 4.11.5 - 2024-08-26
 
