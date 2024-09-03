@@ -1362,6 +1362,7 @@ return [
     'Single' => 'صفحه مجزا',
     'Single-line text' => 'متن تک خطی',
     'Singles' => 'صفحات مجزا',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'آیکن سایت',
     'Site Settings' => 'تنظیمات سایت',
     'Site saved.' => 'سایت ذخیره گردید.',
