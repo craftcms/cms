@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Eenmalig',
     'Single-line text' => 'Enkele-lijn tekst',
     'Singles' => 'Eenmalig',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Site icoon',
     'Site Settings' => 'Website-instellingen',
     'Site saved.' => 'Website opgeslagen.',
