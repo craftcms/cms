@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## 5.4.0.1 - 2024-09-03
+
+- Fixed a PHP error that could occur on element indexes. ([#15648](https://github.com/craftcms/cms/issues/15648))
+
 ## 5.4.0 - 2024-09-03
 
 ### Content Management
