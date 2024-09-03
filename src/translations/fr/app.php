@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Élément individuel',
     'Single-line text' => 'Texte d’une ligne',
     'Singles' => 'Éléments individuels',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Icône du site',
     'Site Settings' => 'Paramètres du site',
     'Site saved.' => 'Site enregistré.',
