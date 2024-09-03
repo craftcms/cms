@@ -128,7 +128,7 @@ class ImageTransforms extends Component
         if (!isset($this->_transforms)) {
             $this->_transforms = new MemoizableArray(
                 $this->_createTransformQuery()->all(),
-                fn(array $result) => new ImageTransform($result),
+                fn(array $result) => Craft::createObject(ImageTransform::class, [$result]),
             );
         }
 
@@ -420,13 +420,9 @@ class ImageTransforms extends Component
                     throw new InvalidArgumentException("Can’t eager-load transform “{$transform}” without a prior transform that specifies the base width");
                 }
 
-                $transform = new ImageTransform($refTransform->toArray([
-                    'format',
-                    'interlace',
-                    'mode',
-                    'position',
-                    'quality',
-                ]));
+                $transform = Craft::createObject([
+                    'class' => ImageTransform::class,
+                ] + $refTransform->toArray());
 
                 if ($sizeUnit === 'w') {
                     $transform->width = (int)$sizeValue;

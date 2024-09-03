@@ -111,17 +111,8 @@ class ImageTransforms
             // Don't change the same transform
             $transform = clone $transform;
 
-            $whiteList = [
-                'width',
-                'height',
-                'format',
-                'mode',
-                'format',
-                'position',
-                'quality',
-                'interlace',
-                'transformer',
-            ];
+            // Why aren't we just using setAttributes()?
+            $whiteList = $transform->getAttributes();
 
             $nullables = [
                 'id',
@@ -133,7 +124,6 @@ class ImageTransforms
 
             foreach ($parameters as $parameter => $value) {
                 if (in_array($parameter, $whiteList, true)) {
-                    /** @phpstan-ignore-next-line */
                     $transform->$parameter = $value;
                 }
             }
@@ -288,6 +278,7 @@ class ImageTransforms
             return $transform;
         }
 
+        // TODO: review if this is dead code. With $transform typed as mixed, it is unclear what kind of object this would be. stdObject?
         if (is_object($transform)) {
             $transform = ArrayHelper::toArray($transform, [
                 'id',
@@ -333,7 +324,7 @@ class ImageTransforms
                 return self::extendTransform($baseTransform, $transform);
             }
 
-            return new ImageTransform($transform);
+            return Craft::createObject(ImageTransform::class, [$transform]);
         }
 
         if (is_string($transform)) {
