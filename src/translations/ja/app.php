@@ -1362,6 +1362,7 @@ return [
     'Single' => 'シングル',
     'Single-line text' => '一行テキスト',
     'Singles' => 'シングル',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'サイトのアイコン。',
     'Site Settings' => 'サイト設定',
     'Site saved.' => 'サイトを保存しました。',
