@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Simple',
     'Single-line text' => 'Texte d’une ligne',
     'Singles' => 'Uniques',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Icône du site',
     'Site Settings' => 'Paramètres du site',
     'Site saved.' => 'Site enregistré.',
