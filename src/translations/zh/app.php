@@ -1362,6 +1362,7 @@ return [
     'Single' => '单一',
     'Single-line text' => '单行文本',
     'Singles' => '单独',
+    'Site Group' => 'Site Group',
     'Site Icon' => '网站图标',
     'Site Settings' => '网站设置',
     'Site saved.' => '站点已保存。',
