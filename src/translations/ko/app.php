@@ -1362,6 +1362,7 @@ return [
     'Single' => '싱글',
     'Single-line text' => '싱글라인 텍스트',
     'Singles' => '싱글',
+    'Site Group' => 'Site Group',
     'Site Icon' => '사이트 아이콘',
     'Site Settings' => '사이트 설정',
     'Site saved.' => '사이트가 저장되었습니다.',
