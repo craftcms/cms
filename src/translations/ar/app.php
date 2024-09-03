@@ -1362,6 +1362,7 @@ return [
     'Single' => 'فردي',
     'Single-line text' => 'نص ذو سطر واحد',
     'Singles' => 'الفرديات',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'أيقونة الموقع',
     'Site Settings' => 'إعدادات الموقع',
     'Site saved.' => 'تم حفظ الموقع.',
