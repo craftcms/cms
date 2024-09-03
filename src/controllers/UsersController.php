@@ -2833,7 +2833,7 @@ JS);
             'photoId' => $user->photoId,
         ];
 
-        if ($user->getIsCurrent() && Craft::$app->getRequest()->getIsCpRequest()) {
+        if ($user->getIsCurrent() && $this->request->getIsCpRequest()) {
             $data['headerPhotoHtml'] = $view->renderTemplate('_layouts/components/header-photo.twig');
         }
 
