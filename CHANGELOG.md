@@ -15,6 +15,8 @@
 - Fixed styling issues with classic Live Preview. ([#15640](https://github.com/craftcms/cms/issues/15640))
 - Fixed a bug where fields were bleeding out of the content pane on smaller viewports.
 - Fixed a bug where Link fields didn’t allow URLs with TLDs longer than six characters.
+- Fixed a bug where hard-deleting an element wasn’t hard-deleting any nested elements as well. ([#15645](https://github.com/craftcms/cms/pull/15645))
+- Fixed a bug where it wasn’t possible to hard-delete nested elements from embedded element index views. ([#15645](https://github.com/craftcms/cms/pull/15645))
 
 ## 5.3.6 - 2024-08-26
 
