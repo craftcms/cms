@@ -49,7 +49,7 @@
 - Added `craft\services\Sites::getEditableSitesByGroupId()`.
 - `craft\helpers\Cp::chipHtml()` now supports a `hyperlink` option.
 - `craft\helpers\Session` methods are now safe to call on console requests.
-- `craft\services\Elements::saveContent()`’ now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
+- `craft\services\Elements::saveElement()` now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
 - Deprecated `craft\db\mysql\Schema::quoteDatabaseName()`.
 - Deprecated `craft\db\pgqsl\Schema::quoteDatabaseName()`.
 - Deprecated `craft\helpers\ElementHelper::rootElement()`. `craft\base\ElementInterface::getRootOwner()` should be used instead.
