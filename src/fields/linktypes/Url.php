@@ -76,7 +76,7 @@ class Url extends BaseTextLinkType
     protected function pattern(): string
     {
         // Don't use the URL validator's pattern, as that doesn't require a TLD
-        $pattern = 'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)';
+        $pattern = 'https?:\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)(?::\d{1,5})?(?:$|[?\/#])';
 
         if ($this->allowRootRelativeUrls) {
             $pattern .= '|\/';
