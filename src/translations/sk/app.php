@@ -1362,6 +1362,7 @@ return [
     'Single' => 'Jednoduchá',
     'Single-line text' => 'Jednoriadkový text',
     'Singles' => 'Samostatné stránky',
+    'Site Group' => 'Site Group',
     'Site Icon' => 'Ikonka stránky',
     'Site Settings' => 'Nastavenia webu',
     'Site saved.' => 'Weby bol uložený.',
