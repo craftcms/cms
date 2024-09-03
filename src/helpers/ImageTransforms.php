@@ -112,7 +112,7 @@ class ImageTransforms
             $transform = clone $transform;
 
             // Why aren't we just using setAttributes()?
-            $whiteList = $transform->getAttributes();
+            $whiteList = $transform->attributes();
 
             $nullables = [
                 'id',
