@@ -1362,6 +1362,7 @@ return [
     'Save the “{section}” entry' => 'Save the “{section}” entry',
     'Save {type}' => 'Save {type}',
     'Save' => 'Save',
+    'Saved' => 'Saved',
     'Saved {timestamp} by {creator}' => 'Saved {timestamp} by {creator}',
     'Saved {timestamp}' => 'Saved {timestamp}',
     'Saving' => 'Saving',

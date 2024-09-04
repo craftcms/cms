@@ -982,7 +982,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} message
      */
     announce: function (message) {
-      if (!message || !this.$activeLiveRegion) {
+      if (!message || !document.contains(this.$activeLiveRegion[0])) {
         console.warn('There was an error announcing this message.');
         return;
       }
