@@ -6,6 +6,7 @@
 - Fixed a bug where Link fields didn’t fully support inline editing. ([#15653](https://github.com/craftcms/cms/issues/15653))
 - Fixed the loading spinner styling on element indexes. ([#15634](https://github.com/craftcms/cms/issues/15634))
 - Fixed an error that could occur when saving an element. ([#15656](https://github.com/craftcms/cms/issues/15656))
+- Fixed the styling of column sort indicators. ([#15655](https://github.com/craftcms/cms/issues/15655))
 
 ## 5.4.0.1 - 2024-09-03
 
