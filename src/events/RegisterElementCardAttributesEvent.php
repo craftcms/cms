@@ -13,7 +13,7 @@ use yii\base\Event;
  * RegisterElementCardAttributesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.3.0
+ * @since 5.5.0
  */
 class RegisterElementCardAttributesEvent extends Event
 {

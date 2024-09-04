@@ -394,7 +394,7 @@ class FieldLayout extends Model
      * Returns the layout’s card view makeup.
      *
      * @return array The layout’s card view makeup.
-     * @since 5.3.0
+     * @since 5.5.0
      */
     public function getCardView(): array
     {
@@ -409,7 +409,7 @@ class FieldLayout extends Model
      * Sets the layout’s card view makeup.
      *
      * @param array|null $items An array of the layout’s card view items
-     * @since 5.3.0
+     * @since 5.5.0
      */
     public function setCardView(?array $items): void
     {
@@ -770,7 +770,7 @@ class FieldLayout extends Model
      * Returns the attributes that should be used in element card bodies.
      *
      * @return array
-     * @since 5.3.0
+     * @since 5.5.0
      */
     public function getCardBodyAttributes(): array
     {
@@ -797,7 +797,7 @@ class FieldLayout extends Model
      *
      * @param ElementInterface|null $element
      * @return array
-     * @since 5.3.0
+     * @since 5.5.0
      */
     public function getCardBodyElements(?ElementInterface $element = null): array
     {
