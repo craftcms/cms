@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where element chips within thumbnail views weren’t getting light gray backgrounds. ([#15649](https://github.com/craftcms/cms/issues/15649))
+- Fixed a bug where Link fields didn’t fully support inline editing. ([#15653](https://github.com/craftcms/cms/issues/15653))
+
+## 5.4.0.1 - 2024-09-03
+
+- Fixed a PHP error that could occur on element indexes. ([#15648](https://github.com/craftcms/cms/issues/15648))
+
 ## 5.4.0 - 2024-09-03
 
 ### Content Management
@@ -49,7 +58,7 @@
 - Added `craft\services\Sites::getEditableSitesByGroupId()`.
 - `craft\helpers\Cp::chipHtml()` now supports a `hyperlink` option.
 - `craft\helpers\Session` methods are now safe to call on console requests.
-- `craft\services\Elements::saveContent()`’ now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
+- `craft\services\Elements::saveElement()` now saves dirty fields’ content even if `$saveContent` is `false`. ([#15393](https://github.com/craftcms/cms/pull/15393))
 - Deprecated `craft\db\mysql\Schema::quoteDatabaseName()`.
 - Deprecated `craft\db\pgqsl\Schema::quoteDatabaseName()`.
 - Deprecated `craft\helpers\ElementHelper::rootElement()`. `craft\base\ElementInterface::getRootOwner()` should be used instead.

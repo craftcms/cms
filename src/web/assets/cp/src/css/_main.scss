@@ -2168,17 +2168,21 @@ ul.icons {
   align-items: center;
   border: 1px solid var(--hairline-color);
   border-radius: var(--small-border-radius);
-  padding-block: 0;
-  padding-inline: 9px;
+  padding-block: var(--xs);
+  padding-inline: calc(var(--xs) + 1px);
   cursor: pointer;
   color: var(--medium-text-color);
+  gap: var(--xs);
+  line-height: 1;
 
   .copytextbtn__icon {
+    font-size: calc(12rem / 16);
+    display: inline-flex;
+    justify-content: center;
     padding: 0;
     width: 13px;
+    height: 13px;
     background: none;
-    margin-block-start: -3px;
-    margin-inline-start: 5px;
     color: var(--light-text-color);
   }
 
@@ -2193,8 +2197,8 @@ ul.icons {
   }
 
   &.small {
-    padding-block: 0;
-    padding-inline: 5px;
+    padding-block: 2px;
+    padding-inline: var(--xs);
 
     .copytextbtn__value {
       font-size: calc(11rem / 16);
@@ -3561,8 +3565,6 @@ table {
 
   .chip {
     margin: 0 !important;
-    padding: 0;
-    background-color: transparent;
   }
 }
 
@@ -3967,13 +3969,20 @@ table {
       textarea,
       input[type='email'],
       input[type='text'].fullwidth,
-      input[type='url'] {
+      input[type='url'],
+      .link-input {
         min-width: 10rem;
+      }
+
+      .link-input .flex-nowrap,
+      .icon-picker {
+        flex-wrap: wrap;
       }
 
       .money-container input[type='text'].fullwidth,
       input[type='text'][inputmode].fullwidth {
         min-width: 5rem;
+        width: 5rem;
       }
 
       .lightswitch-outer-container .lightswitch-inner-container span {
@@ -4190,6 +4199,15 @@ table {
 
     .chip-content {
       max-width: 100%;
+    }
+  }
+}
+
+.tableview {
+  .inline-chips {
+    .chip {
+      padding: 0;
+      background-color: transparent;
     }
   }
 }
