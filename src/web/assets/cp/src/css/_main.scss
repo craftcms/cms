@@ -2314,7 +2314,7 @@ ul.icons {
     width: var(--size, 20px);
     height: var(--size, 20px);
     inset-block-start: var(--elements-busy-top-position);
-    inset-inline-start: calc(50% - var(--size, 20px) / 2);
+    inset-inline-start: var(--elements-busy-top-position);
     z-index: 101;
   }
 }
