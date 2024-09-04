@@ -1236,6 +1236,7 @@ JS, [
             $elementsService = Craft::$app->getElements();
             $query = $this->nestedElementQuery($owner)
                 ->status(null)
+                ->trashed(null)
                 ->siteId($siteId);
             $query->{$this->ownerIdParam} = null;
             $query->{$this->primaryOwnerIdParam} = $owner->id;

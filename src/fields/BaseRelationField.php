@@ -18,6 +18,7 @@ use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\base\RelationalFieldInterface;
 use craft\behaviors\EventBehavior;
+use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table as DbTable;
 use craft\elements\conditions\ElementCondition;
@@ -674,9 +675,14 @@ JS, [
             ->siteId($this->targetSiteId($element));
 
         if (is_array($value)) {
-            $query
-                ->id(array_values(array_filter($value)))
-                ->fixedOrder();
+            $value = array_values(array_filter($value));
+            if (!empty($value)) {
+                $query
+                    ->andWhere(['elements.id' => $value])
+                    ->orderBy([new FixedOrderExpression('elements.id', $value, Craft::$app->getDb())]);
+            } else {
+                $query->andWhere('0 = 1');
+            }
         } elseif ($value === null && $element?->id && $this->isFirstInstance($element)) {
             // If $value is null, the element + field haven’t been saved since updating to Craft 5.3+,
             // or since the field was added to the field layout. So only actually look at the `relations` table

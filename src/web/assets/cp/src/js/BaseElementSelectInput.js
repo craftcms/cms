@@ -204,7 +204,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     canAddMoreElements: function () {
       return (
-        !this.settings.limit || this.$elements.length < this.settings.limit
+        this.settings.allowAdd &&
+        (!this.settings.limit || this.$elements.length < this.settings.limit)
       );
     },
 
@@ -217,7 +218,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     enableAddElementsBtn: function () {
-      if (this.$addElementBtn.length) {
+      if (this.settings.allowAdd && this.$addElementBtn.length) {
         this.$addElementBtn.removeClass('hidden');
       }
 
@@ -263,7 +264,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     focusNextLogicalElement: function () {
       if (this.canAddMoreElements()) {
         // If can add more elements, focus ADD button
-        if (this.$addElementBtn.length) {
+        if (
+          this.$addElementBtn.length &&
+          !this.$addElementBtn.hasClass('hidden')
+        ) {
           this.$addElementBtn.get(0).focus();
         }
       } else {
@@ -436,19 +440,21 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         });
       }
 
-      actions.push({
-        icon: 'remove',
-        label: Craft.t('app', 'Remove'),
-        callback: () => {
-          // If the element is selected, remove *all* the selected elements
-          if (this.elementSelect?.isSelected($element)) {
-            this.removeElement(this.elementSelect.getSelectedItems());
-          } else {
-            this.removeElement($element);
-          }
-        },
-        destructive: true,
-      });
+      if (this.settings.allowRemove) {
+        actions.push({
+          icon: 'remove',
+          label: Craft.t('app', 'Remove'),
+          callback: () => {
+            // If the element is selected, remove *all* the selected elements
+            if (this.elementSelect?.isSelected($element)) {
+              this.removeElement(this.elementSelect.getSelectedItems());
+            } else {
+              this.removeElement($element);
+            }
+          },
+          destructive: true,
+        });
+      }
 
       return actions;
     },
@@ -1033,6 +1039,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       referenceElementId: null,
       referenceElementSiteId: null,
       criteria: {},
+      allowAdd: true,
+      allowRemove: true,
       allowSelfRelations: false,
       sourceElementId: null,
       disabledElementIds: null,

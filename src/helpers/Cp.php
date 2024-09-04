@@ -12,6 +12,7 @@ use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
 use craft\base\Colorable;
+use craft\base\CpEditable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
@@ -327,6 +328,7 @@ class Cp
             'autoReload' => true,
             'id' => sprintf('chip-%s', mt_rand()),
             'class' => null,
+            'hyperlink' => false,
             'inputName' => null,
             'inputValue' => null,
             'labelHtml' => null,
@@ -345,7 +347,6 @@ class Cp
         $config['showStatus'] = $config['showStatus'] && $component instanceof Statusable;
         $config['showThumb'] = $config['showThumb'] && ($component instanceof Thumbable || $component instanceof Iconic);
 
-        $labelHtml = $component->getUiLabel();
         $color = $component instanceof Colorable ? $component->getColor() : null;
 
         $attributes = ArrayHelper::merge([
@@ -366,6 +367,7 @@ class Cp
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => Craft::$app->getView()->namespaceInputId($config['id']),
+                    'hyperlink' => $config['hyperlink'],
                     'showLabel' => $config['showLabel'],
                     'showHandle' => $config['showHandle'],
                     'showStatus' => $config['showStatus'],
@@ -407,7 +409,10 @@ class Cp
         if (isset($config['labelHtml'])) {
             $html .= $config['labelHtml'];
         } elseif ($config['showLabel']) {
-            $labelHtml = Html::encode($labelHtml);
+            $labelHtml = Html::encode($component->getUiLabel());
+            if ($config['hyperlink'] && $component instanceof CpEditable) {
+                $labelHtml = Html::a($labelHtml, $component->getCpEditUrl());
+            }
             if ($config['showHandle']) {
                 /** @var Chippable&Grippable $component */
                 $handle = $component->getHandle();
@@ -507,7 +512,7 @@ class Cp
             $config['attributes'],
         );
 
-        $config['showStatus'] = $config['showStatus'] && ($element->getIsDraft() || $element::hasStatuses());
+        $config['showStatus'] = $config['showStatus'] && ($element->getIsDraft() || $element->showStatusIndicator());
 
         if ($config['showLabel']) {
             $config['labelHtml'] = self::elementLabelHtml(
@@ -606,7 +611,7 @@ class Cp
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
         $labels = array_filter([
-            $element::hasStatuses() ? static::componentStatusLabelHtml($element) : null,
+            $element->showStatusIndicator() ? static::componentStatusLabelHtml($element) : null,
             $element->isProvisionalDraft ? self::changeStatusLabelHtml() : null,
         ]);
 
@@ -1072,6 +1077,44 @@ class Cp
                 'role' => 'button',
                 'onclick' => sprintf(
                     'const r=jQuery(%s);jQuery(this).replaceWith(r);Craft.cp.elementThumbLoader.load(r);',
+                    Json::encode($otherHtml),
+                ),
+            ]);
+        }
+
+        $html .= Html::endTag('div'); // .inline-chips
+        return $html;
+    }
+
+    /**
+     * Returns component preview HTML, for a list of elements.
+     *
+     * @param Chippable[] $components The components
+     * @param array $chipConfig
+     * @return string
+     * @since 5.4.0
+     */
+    public static function componentPreviewHtml(array $components, array $chipConfig = []): string
+    {
+        if (empty($components)) {
+            return '';
+        }
+
+        $first = array_shift($components);
+        $html = Html::beginTag('div', ['class' => 'inline-chips']) .
+            static::chipHtml($first, $chipConfig);
+
+        if (!empty($components)) {
+            $otherHtml = '';
+            foreach ($components as $other) {
+                $otherHtml .= static::chipHtml($other, $chipConfig);
+            }
+            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($components)), [
+                'title' => implode(', ', array_map(fn(Chippable $component) => $component->getId(), $components)),
+                'class' => 'btn small',
+                'role' => 'button',
+                'onclick' => sprintf(
+                    'const r=jQuery(%s);jQuery(this).replaceWith(r);',
                     Json::encode($otherHtml),
                 ),
             ]);

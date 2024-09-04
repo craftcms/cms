@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Inflector;
 use craft\helpers\StringHelper;
 
 /**
@@ -276,6 +277,29 @@ class CustomField extends BaseField
     protected function selectorIcon(): ?string
     {
         return $this->_field::icon();
+    }
+
+    protected function selectorIndicators(): array
+    {
+        $indicators = parent::selectorIndicators();
+
+        if (isset($this->label) || isset($this->instructions) || isset($this->handle)) {
+            $attributes = array_values(array_filter([
+                isset($this->label) ? Craft::t('app', 'Name') : null,
+                isset($this->instructions) ? Craft::t('app', 'Instructions') : null,
+                isset($this->handle) ? Craft::t('app', 'Handle') : null,
+            ]));
+            array_unshift($indicators, [
+                'label' => Craft::t('app', 'This field’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.', [
+                    'attributes' => mb_strtolower(Inflector::sentence($attributes)),
+                    'totalAttributes' => count($attributes),
+                ]),
+                'icon' => 'pencil',
+                'iconColor' => 'teal',
+            ]);
+        }
+
+        return $indicators;
     }
 
     /**

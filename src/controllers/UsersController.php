@@ -2822,7 +2822,7 @@ JS);
     {
         $view = $this->getView();
         $templateMode = $view->getTemplateMode();
-        if ($templateMode === View::TEMPLATE_MODE_SITE && !$view->doesTemplateExist('users/_photo')) {
+        if ($templateMode === View::TEMPLATE_MODE_SITE && !$view->doesTemplateExist('users/_photo.twig')) {
             $templateMode = View::TEMPLATE_MODE_CP;
         }
 
@@ -2833,7 +2833,7 @@ JS);
             'photoId' => $user->photoId,
         ];
 
-        if ($user->getIsCurrent()) {
+        if ($user->getIsCurrent() && $this->request->getIsCpRequest()) {
             $data['headerPhotoHtml'] = $view->renderTemplate('_layouts/components/header-photo.twig');
         }
 

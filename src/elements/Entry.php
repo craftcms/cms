@@ -1212,6 +1212,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public function showStatusIndicator(): bool
+    {
+        return $this->getType()->showStatusField;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCardBodyHtml(): ?string
     {
         $html = parent::getCardBodyHtml();
@@ -2099,35 +2107,33 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         $this->_applyActionBtnEntryTypeCompatibility();
 
-        if ($section?->type !== Section::TYPE_SINGLE) {
-            // Type
-            $fields[] = (function() use ($static) {
-                $entryTypes = $this->getAvailableEntryTypes();
-                if (!ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
-                    $entryTypes[] = $this->getType();
-                }
-                if (count($entryTypes) <= 1 && $this->isEntryTypeAllowed($entryTypes)) {
-                    return null;
-                }
+        // Type
+        $fields[] = (function() use ($static) {
+            $entryTypes = $this->getAvailableEntryTypes();
+            if (!ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
+                $entryTypes[] = $this->getType();
+            }
+            if (count($entryTypes) <= 1 && $this->isEntryTypeAllowed($entryTypes)) {
+                return null;
+            }
 
-                return Cp::customSelectFieldHtml([
-                    'status' => $this->getAttributeStatus('typeId'),
-                    'label' => Craft::t('app', 'Entry Type'),
-                    'id' => 'entryType',
-                    'name' => 'typeId',
-                    'value' => $this->getType()->id,
-                    'options' => array_map(fn(EntryType $et) => [
-                        'icon' => $et->icon,
-                        'iconColor' => $et->color,
-                        'label' => Craft::t('site', $et->name),
-                        'value' => $et->id,
-                    ], $entryTypes),
-                    'disabled' => $static,
-                    'attribute' => 'typeId',
-                    'errors' => $this->getErrors('typeId'),
-                ]);
-            })();
-        }
+            return Cp::customSelectFieldHtml([
+                'status' => $this->getAttributeStatus('typeId'),
+                'label' => Craft::t('app', 'Entry Type'),
+                'id' => 'entryType',
+                'name' => 'typeId',
+                'value' => $this->getType()->id,
+                'options' => array_map(fn(EntryType $et) => [
+                    'icon' => $et->icon,
+                    'iconColor' => $et->color,
+                    'label' => Craft::t('site', $et->name),
+                    'value' => $et->id,
+                ], $entryTypes),
+                'disabled' => $static,
+                'attribute' => 'typeId',
+                'errors' => $this->getErrors('typeId'),
+            ]);
+        })();
 
         // Slug
         if ($this->getType()->showSlugField) {

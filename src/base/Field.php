@@ -43,7 +43,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Field extends SavableComponent implements FieldInterface
+abstract class Field extends SavableComponent implements FieldInterface, Iconic, Actionable
 {
     use FieldTrait;
 
@@ -513,9 +513,52 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getIcon(): ?string
+    {
+        return static::icon();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCpEditUrl(): ?string
     {
         return $this->id ? UrlHelper::cpUrl("settings/fields/edit/$this->id") : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getActionMenuItems(): array
+    {
+        $items = [];
+
+        if (
+            $this->id &&
+            Craft::$app->getUser()->getIsAdmin() &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            $editId = sprintf('action-edit-%s', mt_rand());
+            $items[] = [
+                'id' => $editId,
+                'icon' => 'edit',
+                'label' => Craft::t('app', 'Edit'),
+            ];
+
+            $view = Craft::$app->getView();
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
+$('#' + $id).on('click', () => {
+  new Craft.CpScreenSlideout('fields/edit-field', {
+    params: $params,
+  });
+});
+JS, [
+                $view->namespaceInputId($editId),
+                ['fieldId' => $this->id],
+            ]);
+        }
+
+        return $items;
     }
 
     /**
@@ -773,15 +816,25 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getSortOption(): array
     {
-        if (static::dbType() === null || !isset($this->layoutElement)) {
+        $dbType = static::dbType();
+        if ($dbType === null || !isset($this->layoutElement)) {
             throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
+        }
+
+        $orderBy = $this->getValueSql();
+
+        // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
+        // see https://github.com/craftcms/cms/issues/15609
+        $db = Craft::$app->getDb();
+        if ($db->getIsMysql() && Db::parseColumnType($dbType) === Schema::TYPE_TEXT) {
+            $orderBy = "CAST($orderBy AS CHAR(255))";
         }
 
         // The attribute name should match the table attribute name,
         // per ElementSources::getTableAttributesForFieldLayouts()
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => $this->getValueSql(),
+            'orderBy' => $orderBy,
             'attribute' => isset($this->layoutElement->handle)
                 ? "fieldInstance:{$this->layoutElement->uid}"
                 : "field:$this->uid",

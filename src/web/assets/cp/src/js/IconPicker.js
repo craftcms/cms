@@ -18,6 +18,10 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
     $iconList: null,
     defaultListHtml: null,
 
+    get listLength() {
+      return this.$iconList.find('li').length;
+    },
+
     init(container, settings) {
       this.$container = $(container);
       this.setSettings(settings, Craft.IconPicker.defaults);
@@ -77,10 +81,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
       const $spinner = $('<div class="spinner spinner-absolute"/>').appendTo(
         this.$iconListContainer
       );
-      $('<span class="visually-hidden"/>')
-        .text(Craft.t('app', 'Loading'))
-        .appendTo($spinner);
-
+      Craft.cp.announce(Craft.t('app', 'Loading'));
       const formObserver = new Craft.FormObserver($searchContainer, () => {
         this.updateIcons();
       });
@@ -119,6 +120,15 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
     async updateIcons() {
       const listHtml = await this.loadIcons();
       this.$iconList.html(listHtml);
+      const message = `${Craft.t('app', 'Loading complete')} - ${Craft.t(
+        'app',
+        '{num, number} {num, plural, =1{result} other{results}}',
+        {
+          num: this.listLength,
+        }
+      )}`;
+
+      Craft.cp.announce(message);
     },
 
     async loadIcons() {
@@ -132,6 +142,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
       }
 
       this.$iconListContainer.addClass('loading');
+      Craft.cp.announce(Craft.t('app', 'Loading'));
       this.cancelToken = axios.CancelToken.source();
 
       try {

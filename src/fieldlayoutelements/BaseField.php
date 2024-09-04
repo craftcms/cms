@@ -285,6 +285,22 @@ abstract class BaseField extends FieldLayoutElement
             ];
         }
 
+        if (isset($this->tip)) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field has a tip'),
+                'icon' => 'lightbulb',
+                'iconColor' => 'sky',
+            ];
+        }
+
+        if (isset($this->warning)) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field has a warning'),
+                'icon' => 'alert',
+                'iconColor' => 'amber',
+            ];
+        }
+
         if ($this->hasConditions()) {
             $indicators[] = [
                 'label' => Craft::t('app', 'This field is conditional'),

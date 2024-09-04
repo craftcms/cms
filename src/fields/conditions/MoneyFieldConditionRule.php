@@ -69,6 +69,10 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         }
 
         if ($this->operator === self::OPERATOR_BETWEEN) {
+            /** @var Money $field */
+            $field = $this->field();
+            $maxValue = is_numeric($this->maxValue) ? MoneyHelper::toNumber(MoneyHelper::toMoney(['value' => $this->maxValue, 'currency' => $field->currency])) : $this->maxValue;
+
             return Html::tag('div',
                 Html::hiddenLabel(Craft::t('app', 'Min Value'), 'min') .
                 // Min value (value) input
@@ -78,7 +82,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
                 // Max value input
                 Cp::moneyInputHtml(array_merge(
                     $this->inputOptions(),
-                    ['id' => 'maxValue', 'name' => 'maxValue', 'value' => $this->maxValue]
+                    ['id' => 'maxValue', 'name' => 'maxValue', 'value' => $maxValue]
                 )) .
                 Html::tag('span', Craft::t('app', 'The values are matched inclusively.'), ['class' => 'info']),
                 ['class' => 'flex flex-center']
@@ -100,11 +104,13 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             $defaultValue = MoneyHelper::toNumber(new MoneyLibrary($field->defaultValue, new Currency($field->currency)));
         }
 
+        $value = is_numeric($this->value) ? MoneyHelper::toNumber(MoneyHelper::toMoney(['value' => $this->value, 'currency' => $field->currency])) : $this->value;
+
         return [
             'type' => 'text',
             'id' => 'value',
             'name' => 'value',
-            'value' => $this->value,
+            'value' => $value,
             'autocomplete' => false,
             'currency' => $field->currency,
             'currencyLabel' => $field->currencyLabel(),
