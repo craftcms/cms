@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.4.1 - 2024-09-04
 
 - Fixed a bug where element chips within thumbnail views weren’t getting light gray backgrounds. ([#15649](https://github.com/craftcms/cms/issues/15649))
 - Fixed a bug where Link fields didn’t fully support inline editing. ([#15653](https://github.com/craftcms/cms/issues/15653))
