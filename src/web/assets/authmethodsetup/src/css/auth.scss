@@ -86,14 +86,12 @@
 ul.auth-method-recovery-codes-list {
   --width: 12em;
   --gap: var(--s);
+  max-width: calc((var(--width) * 2) + 1em);
   display: grid;
-  width: calc(var(--width) * 2 + var(--gap));
   margin-block: 0;
   margin-inline: auto;
   gap: var(--gap) !important;
-  grid-template-columns: var(--width) var(--width);
-  grid-template-rows: auto auto auto auto auto;
-  grid-auto-flow: column;
+  grid-template-columns: repeat(auto-fit, minmax(var(--width), 1fr));
   @include fixed-width-font;
 
   li {
