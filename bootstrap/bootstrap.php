@@ -224,6 +224,7 @@ Craft::setAlias('@appicons/share-flip.svg', "$customIconsPath/share-flip.svg");
 
 // Other
 Craft::setAlias('@appicons/github.svg', "$brandIconsPath/github.svg");
+Craft::setAlias('@appicons/markdown.svg', "$brandIconsPath/markdown.svg");
 Craft::setAlias('@appicons/globe.svg', "$regularIconsPath/globe.svg");
 
 // Renamed icon aliases
