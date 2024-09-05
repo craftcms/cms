@@ -552,6 +552,7 @@ return [
     'Display Settings' => 'Параметри показу',
     'Display as cards' => 'Показати як картки',
     'Display as thumbnails' => 'Показати як ескізи',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => 'Показати ієрархічно',
     'Display in a structured table' => 'Показувати в структурованій таблиці',
     'Display in a table' => 'Показати як таблицю',
