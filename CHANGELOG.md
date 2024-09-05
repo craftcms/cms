@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where `craft\helpers\StringHelper::lines()` was returning an array of `Stringy\Stringy` objects, rather than strings.
+- Fixed styling issues with Template field layout UI elements’ selector labels.
 
 ## 4.12.0 - 2024-09-03
 
