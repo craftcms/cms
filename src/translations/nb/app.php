@@ -552,6 +552,7 @@ return [
     'Display Settings' => 'Visningsinnstillinger',
     'Display as cards' => 'Vis som kort',
     'Display as thumbnails' => 'Vis som miniatyrbilder',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => 'Vis hierarkisk',
     'Display in a structured table' => 'Vis som strukturert tabell',
     'Display in a table' => 'Vis som liste',
