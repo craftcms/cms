@@ -552,6 +552,7 @@ return [
     'Display Settings' => '表示設定',
     'Display as cards' => 'Display as cards',
     'Display as thumbnails' => 'サムネイル表示する',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => '階層的に表示',
     'Display in a structured table' => '構造化テーブルで表示',
     'Display in a table' => 'テーブルに表示',
