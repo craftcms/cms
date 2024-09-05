@@ -55,7 +55,7 @@ abstract class BaseUiElement extends FieldLayoutElement
             Html::endTag('div') . // .fld-element-icon
             Html::beginTag('div', ['class' => 'field-name']) .
             Html::beginTag('div', ArrayHelper::merge(
-                ['class' => 'fld-element-label'],
+                ['class' => ['fld-element-label']],
                 $this->selectorLabelAttributes(),
             )) .
             Html::tag('h4', Html::encode($label)) .

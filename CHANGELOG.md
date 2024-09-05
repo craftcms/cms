@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where `craft\helpers\StringHelper::lines()` was returning an array of `Stringy\Stringy` objects, rather than strings.
+- Fixed styling issues with Template field layout UI elements’ selector labels.
+
 ## 5.4.1 - 2024-09-04
 
 - Fixed a bug where element chips within thumbnail views weren’t getting light gray backgrounds. ([#15649](https://github.com/craftcms/cms/issues/15649))
