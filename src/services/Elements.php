@@ -57,6 +57,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -3739,7 +3740,11 @@ class Elements extends Component
 
                 // if we're supposed to save all the content
                 if ($saveContent || !empty($dirtyFields)) {
-                    $oldContent = $siteSettingsRecord->content; // we'll need that if we're not saving all the content
+                    $oldContent = $siteSettingsRecord->content ?? []; // we'll need that if we're not saving all the content
+                    if (is_string($oldContent)) {
+                        $oldContent = $oldContent !== '' ? Json::decode($oldContent) : [];
+                    }
+
                     $content = [];
                     if ($fieldLayout) {
                         foreach ($fieldLayout->getCustomFields() as $field) {

@@ -76,6 +76,7 @@
     inset 0 0 0 3px hsl(var(--dark-focus-hsl) / var(--focus-ring-alpha));
   --touch-target-size: calc(24rem / 16);
   --icon-size: 1rem;
+  --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
 }
 
 body,
@@ -2313,7 +2314,8 @@ ul.icons {
     width: var(--size, 20px);
     height: var(--size, 20px);
     inset-block-start: var(--elements-busy-top-position);
-    inset-inline-start: calc(50% - var(--size, 20px) / 2);
+    inset-inline-start: var(--elements-busy-top-position);
+    z-index: 101;
   }
 }
 
