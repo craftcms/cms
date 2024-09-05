@@ -2,11 +2,13 @@
 
 ## Unreleased
 
+- Added `craft\services\Security::isSystemDir()`.
 - Fixed a bug where `craft\helpers\StringHelper::lines()` was returning an array of `Stringy\Stringy` objects, rather than strings.
 - Fixed styling issues with Template field layout UI elements’ selector labels.
 - Fixed a validation error that could occur when saving a relational field, if the “Maintain hierarchy” setting had been enabled but was no longer applicable. ([#15666](https://github.com/craftcms/cms/issues/15666))
 - Fixed a PHP error that occurred when running PHP 8.2 or 8.3.
 - Fixed a bug where disabled entries became enabled when edited within Live Preview. ([#15670](https://github.com/craftcms/cms/issues/15670))
+- Fixed an information disclosure vulnerability.
 
 ## 5.4.1 - 2024-09-04
 

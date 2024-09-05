@@ -1444,11 +1444,16 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function dataUrlFunction(Asset|string $file, ?string $mimeType = null): string
     {
-        if ($file instanceof Asset) {
-            return $file->getDataUrl();
-        }
+        try {
+            if ($file instanceof Asset) {
+                return $file->getDataUrl();
+            }
 
-        return Html::dataUrl(Craft::getAlias($file), $mimeType);
+            return Html::dataUrl(Craft::getAlias($file), $mimeType);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return '';
+        }
     }
 
     /**
