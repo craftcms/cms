@@ -389,6 +389,9 @@ Craft.Preview = Garnish.Base.extend(
               this.$saveBtn.removeClass('loading');
             },
             autosaveDrafts: true,
+            saveParams: {
+              setEnabled: 0,
+            },
           },
           this.$editorContainer.data('elementEditorSettings')
         )
