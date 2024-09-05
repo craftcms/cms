@@ -552,6 +552,7 @@ return [
     'Display Settings' => 'Görüntü Ayarları',
     'Display as cards' => 'Display as cards',
     'Display as thumbnails' => 'Küçük resim olarak göster',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => 'Hiyerarşik düzende görüntüle',
     'Display in a structured table' => 'Yapılandırılmış bir tabloda göster',
     'Display in a table' => 'Tabloda göster',
