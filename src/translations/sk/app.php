@@ -552,6 +552,7 @@ return [
     'Display Settings' => 'Nastavenia displeja',
     'Display as cards' => 'Display as cards',
     'Display as thumbnails' => 'Zobraziť ako náhľady',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => 'Zobraziť hierarchiu',
     'Display in a structured table' => 'Zobraziť v štruktúrovanej tabuľke',
     'Display in a table' => 'Zobraziť v tabuľke',
