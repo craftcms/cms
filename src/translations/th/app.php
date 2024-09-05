@@ -552,6 +552,7 @@ return [
     'Display Settings' => 'การตั้งค่าการแสดงผล',
     'Display as cards' => 'Display as cards',
     'Display as thumbnails' => 'Display as thumbnails',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => 'Display hierarchically',
     'Display in a structured table' => 'แสดงในตารางที่มีโครงสร้าง',
     'Display in a table' => 'Display in a table',
