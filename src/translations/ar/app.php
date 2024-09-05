@@ -552,6 +552,7 @@ return [
     'Display Settings' => 'إعدادات العرض',
     'Display as cards' => 'Display as cards',
     'Display as thumbnails' => 'عرض كمصغرات',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => 'عرض بتدرج هرمي',
     'Display in a structured table' => 'العرض في جدول منظَّم',
     'Display in a table' => 'عرض في جدول',
