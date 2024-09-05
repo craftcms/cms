@@ -552,6 +552,7 @@ return [
     'Display Settings' => 'تنظیمات نمایشگر',
     'Display as cards' => 'نمایش به‌صورت کارت',
     'Display as thumbnails' => 'تصویر بند انگشتی',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => 'نمایش به شکل سلسله مراتبی',
     'Display in a structured table' => 'نمایش در جدول ساختار یافته',
     'Display in a table' => 'نمایش در یک جدول',
