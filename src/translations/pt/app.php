@@ -552,6 +552,7 @@ return [
     'Display Settings' => 'Definições de visualização',
     'Display as cards' => 'Display as cards',
     'Display as thumbnails' => 'Mostrar como miniaturas',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => 'Apresentar hierarquicamente',
     'Display in a structured table' => 'Mostrar numa tabela estruturada',
     'Display in a table' => 'Exibir em uma tabela',
