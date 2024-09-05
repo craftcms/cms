@@ -240,6 +240,7 @@ class ElementHelper
     private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
     {
         $query = (new Query())
+            ->select(['elements.id', 'elements.type'])
             ->from(['elements_sites' => Table::ELEMENTS_SITES])
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
@@ -268,7 +269,21 @@ class ElementHelper
             ]);
         }
 
-        return (int)$query->count() === 0;
+        $info = $query->all();
+
+        if (empty($info)) {
+            return true;
+        }
+
+        // Make sure the element(s) isn't owned by a draft/revision
+        foreach ($info as $row) {
+            $conflictingElement = Craft::$app->getElements()->getElementById($row['id'], $row['type'], $element->siteId);
+            if ($conflictingElement && !static::isDraftOrRevision($conflictingElement)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
