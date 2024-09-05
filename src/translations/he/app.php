@@ -552,6 +552,7 @@ return [
     'Display Settings' => 'הגדרות תצוגה',
     'Display as cards' => 'Display as cards',
     'Display as thumbnails' => 'הצג כתמונות',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => 'הצג באופן היררכי',
     'Display in a structured table' => 'הצג בטבלה מובנית',
     'Display in a table' => 'הצג בטבלה',
