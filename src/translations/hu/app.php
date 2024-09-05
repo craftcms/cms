@@ -552,6 +552,7 @@ return [
     'Display Settings' => 'Megjelenítés beállításai',
     'Display as cards' => 'Display as cards',
     'Display as thumbnails' => 'Bélyegkép nézet',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => 'Hierarchikus megjelenítés',
     'Display in a structured table' => 'Megjelenítés strukturált táblázatban',
     'Display in a table' => 'Jelenítse meg táblázatban',
