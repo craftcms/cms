@@ -130,8 +130,6 @@ class Template extends BaseUiElement
             'class' => $errorClass,
         ]);
 
-        return Html::tag('div', $content, [
-            'class' => 'pane',
-        ]);
+        return Html::tag('div', $content);
     }
 }
