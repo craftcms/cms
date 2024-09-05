@@ -552,6 +552,7 @@ return [
     'Display Settings' => '표시 설정',
     'Display as cards' => 'Display as cards',
     'Display as thumbnails' => '썸네일로 표시',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => '계층으로 표시',
     'Display in a structured table' => '구조화된 테이블에 표시',
     'Display in a table' => '표로 표시',
