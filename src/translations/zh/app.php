@@ -552,6 +552,7 @@ return [
     'Display Settings' => '显示设置',
     'Display as cards' => '显示为卡',
     'Display as thumbnails' => '显示为缩略图',
+    'Display content in a pane' => 'Display content in a pane',
     'Display hierarchically' => '分层显示',
     'Display in a structured table' => '在结构化表中显示',
     'Display in a table' => '在表中显示',
