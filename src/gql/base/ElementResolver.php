@@ -10,6 +10,7 @@ namespace craft\gql\base;
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\ElementCollection;
@@ -17,6 +18,7 @@ use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Support\Arr;
 
 /**
  * Class ElementResolver
@@ -92,15 +94,18 @@ abstract class ElementResolver extends Resolver
             return $query;
         }
 
+        $fields = $query->getCustomFields();
         $parentField = null;
 
         if ($source instanceof ElementInterface) {
-            $fieldContext = $source->getFieldContext();
-            $field = Craft::$app->getFields()->getFieldByHandle($fieldName, $fieldContext);
+            $field = Arr::first($fields, fn(FieldInterface $field) => $field->handle === $fieldName);
 
             // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
             // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition knows where it's at.
-            if (($fieldContext !== 'global' && $field instanceof GqlInlineFragmentFieldInterface) || $field instanceof EagerLoadingFieldInterface) {
+            if (
+                ($source->getFieldContext() !== 'global' && $field instanceof GqlInlineFragmentFieldInterface) ||
+                $field instanceof EagerLoadingFieldInterface
+            ) {
                 $parentField = $field;
             }
         }
@@ -109,6 +114,7 @@ abstract class ElementResolver extends Resolver
         $conditionBuilder = empty($context['conditionBuilder']) ? Craft::createObject(['class' => ElementQueryConditionBuilder::class]) : $context['conditionBuilder'];
         $conditionBuilder->setResolveInfo($resolveInfo);
         $conditionBuilder->setArgumentManager($argumentManager);
+        $conditionBuilder->setCustomFields($fields);
 
         $conditions = $conditionBuilder->extractQueryConditions($parentField);
 
