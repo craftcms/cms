@@ -112,6 +112,7 @@ class Gc extends Component
         $this->hardDelete([
             Table::CATEGORYGROUPS,
             Table::ENTRYTYPES,
+            Table::FIELDS,
             Table::SECTIONS,
             Table::TAGGROUPS,
         ]);
@@ -125,7 +126,8 @@ class Gc extends Component
         $this->deletePartialElements(User::class, Table::USERS, 'id');
 
         $this->_deleteUnsupportedSiteEntries();
-        $this->_deleteOrphanedNestedEntries();
+        $this->deleteOrphanedNestedElements(Address::class, Table::ADDRESSES);
+        $this->deleteOrphanedNestedElements(Entry::class, Table::ENTRIES);
 
         // Fire a 'run' event
         // Note this should get fired *before* orphaned drafts & revisions are deleted
@@ -143,7 +145,6 @@ class Gc extends Component
 
         $this->hardDelete([
             Table::FIELDLAYOUTS,
-            Table::FIELDS,
             Table::SITES,
         ]);
 
@@ -527,35 +528,56 @@ SQL;
     }
 
     /**
-     * Deletes any orphaned nested entries.
+     * Deletes elements which have a `fieldId` value, but it’s set to an invalid field ID,
+     * or they're missing a row in the `elements_owners` table.
+     *
+     * @param string $elementType The element type
+     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param string $table The extension table name
+     * @param string $fieldFk The column name that contains the foreign key to `fields.id`
+     * @since 5.4.2
      */
-    private function _deleteOrphanedNestedEntries(): void
+    public function deleteOrphanedNestedElements(string $elementType, string $table, string $fieldFk = 'fieldId'): void
     {
-        $this->_stdout('    > deleting orphaned nested entries ... ');
+        /** @var string|ElementInterface $elementType */
+        $this->_stdout(sprintf('    > deleting orphaned nested %s ... ', $elementType::pluralLowerDisplayName()));
 
-        $now = Db::prepareDateForDb(new DateTime());
         $elementsTable = Table::ELEMENTS;
-        $entriesTable = Table::ENTRIES;
         $elementsOwnersTable = Table::ELEMENTS_OWNERS;
+        $fieldsTable = Table::FIELDS;
 
         if ($this->db->getIsMysql()) {
-            $sql = <<<SQL
+            $sql1 = <<<SQL
 DELETE [[el]].* FROM $elementsTable [[el]]
-INNER JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+INNER JOIN $table [[t]] ON [[t.id]] = [[el.id]]
 LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = [[el.id]]
-WHERE [[en.fieldId]] IS NOT NULL AND [[eo.elementId]] IS NULL
+WHERE [[t.$fieldFk]] IS NOT NULL AND [[eo.elementId]] IS NULL
+SQL;
+            $sql2 = <<<SQL
+DELETE [[el]].* FROM $elementsTable [[el]]
+INNER JOIN $table [[t]] ON [[t.id]] = [[el.id]]
+LEFT JOIN $fieldsTable [[f]] ON [[f.id]] = [[t.$fieldFk]]
+WHERE [[t.$fieldFk]] IS NOT NULL AND [[f.id]] IS NULL
 SQL;
         } else {
-            $sql = <<<SQL
+            $sql1 = <<<SQL
 DELETE FROM $elementsTable
 USING $elementsTable [[el]]
-INNER JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
+INNER JOIN $table [[t]] ON [[t.id]] = [[el.id]]
 LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = [[el.id]]
-WHERE [[en.fieldId]] IS NOT NULL AND [[eo.elementId]] IS NULL
+WHERE [[t.$fieldFk]] IS NOT NULL AND [[eo.elementId]] IS NULL
+SQL;
+            $sql2 = <<<SQL
+DELETE FROM $elementsTable
+USING $elementsTable [[el]]
+INNER JOIN $table [[t]] ON [[t.id]] = [[el.id]]
+LEFT JOIN $fieldsTable [[f]] ON [[f.id]] = [[t.$fieldFk]]
+WHERE [[t.$fieldFk]] IS NOT NULL AND [[f.id]] IS NULL
 SQL;
         }
 
-        $this->db->createCommand($sql)->execute();
+        $this->db->createCommand($sql1)->execute();
+        $this->db->createCommand($sql2)->execute();
 
         $this->_stdout("done\n", Console::FG_GREEN);
     }
