@@ -1649,9 +1649,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       for (const [name, value] of Object.entries(this.settings.saveParams)) {
-        params.push(
-          `${this.namespaceInputName(name)}=${value}`
-        );
+        params.push(`${this.namespaceInputName(name)}=${value}`);
       }
 
       return asArray ? params : params.join('&');
