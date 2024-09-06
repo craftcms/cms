@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.4.2 - 2024-09-06
 
 - Added `craft\services\Security::isSystemDir()`.
 - Fixed a bug where `craft\helpers\StringHelper::lines()` was returning an array of `Stringy\Stringy` objects, rather than strings.
