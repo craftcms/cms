@@ -848,6 +848,10 @@ $radioSize: 16px;
         width: 24px;
       }
 
+      &:empty::before {
+        top: 5px;
+      }
+
       a[href] {
         color: currentColor;
         text-decoration: underline;
