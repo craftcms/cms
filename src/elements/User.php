@@ -1087,7 +1087,7 @@ class User extends Element implements IdentityInterface
                 return ElementCollection::make();
             }
 
-            $this->_addresses = $this->createAddressQuery()->collect();
+            $this->_addresses = $this->createAddressQuery()->where(['fieldId' => null])->collect();
         }
 
         return $this->_addresses;
