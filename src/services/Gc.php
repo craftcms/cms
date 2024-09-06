@@ -15,6 +15,7 @@ use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
@@ -144,6 +145,8 @@ class Gc extends Component
             Table::FIELDS,
             Table::SITES,
         ]);
+
+        $this->_deleteAddressesOrphanedByFields();
 
         $this->hardDeleteVolumes();
         $this->removeEmptyTempFolders();
@@ -710,6 +713,49 @@ SQL;
             }
             $this->db->createCommand($sql, $params)->execute();
         }
+    }
+
+    /**
+     * Delete addresses that belong to the fields that were hard deleted.
+     *
+     * @return void
+     * @throws \yii\db\Exception
+     */
+    private function _deleteAddressesOrphanedByFields()
+    {
+        $this->_stdout('    > deleting addresses orphaned by hard deleted fields ... ');
+
+        // delete addresses whose fieldId points to a field that was hard deleted
+        $elementsTable = Table::ELEMENTS;
+        $addressesTable = Table::ADDRESSES;
+        $fieldsTable = Table::FIELDS;
+
+        if ($this->db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[e]].* FROM $elementsTable [[e]]
+LEFT JOIN $addressesTable [[a]] ON [[a.id]] = [[e.id]]
+LEFT JOIN $fieldsTable [[f]] ON [[f.id]] = [[a.fieldId]]
+WHERE [[e.type]] = :type AND
+    [[a.fieldId]] IS NOT NULL AND 
+    [[f.id]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $elementsTable
+USING $elementsTable [[e]]
+LEFT JOIN $addressesTable [[a]] ON [[a.id]] = [[e.id]]
+LEFT JOIN $fieldsTable [[f]] ON [[f.id]] = [[a.fieldId]]
+WHERE
+    $elementsTable.[[id]] = [[e.id]] AND  
+    [[e.type]] = :type AND
+    [[a.fieldId]] IS NOT NULL AND 
+    [[f.id]] IS NULL
+SQL;
+        }
+
+        $this->db->createCommand($sql, ['type' => Address::class])->execute();
+
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     private function _gcCache(): void
