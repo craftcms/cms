@@ -3668,7 +3668,10 @@ class Elements extends Component
             $siteElement->siteSettingsId = null;
             $siteElement->contentId = null;
             $siteElement->setEnabledForSite($siteInfo['enabledByDefault']);
-            $siteElement->isNewForSite = true;
+            // set isNewForSite to true unless it's a duplicate of a revision
+            // in which case we're reverting to a revision
+            // see https://github.com/craftcms/cms/issues/15679 for details
+            $siteElement->isNewForSite = !(($siteElement->duplicateOf !== null && $siteElement->duplicateOf->getIsRevision()));
 
             // Keep track of this new site ID
             $element->newSiteIds[] = $siteInfo['siteId'];
