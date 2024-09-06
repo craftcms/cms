@@ -22,6 +22,7 @@ use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\Heading;
 use craft\fieldlayoutelements\HorizontalRule;
 use craft\fieldlayoutelements\LineBreak;
+use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\ArrayHelper;
@@ -457,6 +458,7 @@ class FieldLayout extends Model
             new Heading(),
             new Tip(['style' => Tip::STYLE_TIP]),
             new Tip(['style' => Tip::STYLE_WARNING]),
+            new Markdown(),
             new Template(),
         ];
 
