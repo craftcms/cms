@@ -46,16 +46,6 @@ class Request extends \yii\console\Request
     }
 
     /**
-     * Returns whether this is a web request.
-     *
-     * @return bool
-     */
-    public function getIsWebRequest(): bool
-    {
-        return false;
-    }
-
-    /**
      * Returns whether the control panel was requested. (Narrator: It wasn't.)
      *
      * @return bool

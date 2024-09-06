@@ -42,4 +42,15 @@ trait RequestTrait
         /** @var WebRequest|ConsoleRequest $this */
         return basename($this->getScriptFile());
     }
+
+    /**
+     * Returns whether this is a web request.
+     *
+     * @return bool
+     * @since 4.13.0
+     */
+    public function getIsWebRequest(): bool
+    {
+        return !$this->getIsConsoleRequest();
+    }
 }
