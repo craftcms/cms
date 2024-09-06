@@ -16,6 +16,7 @@ use yii\base\InvalidConfigException;
  * This provides request methods that are common between craft\web\Request and craft\console\Request.
  *
  * @property string $scriptFilename The requested script name being used to access Craft (e.g. “index.php”).
+ * @property-read bool $isWebRequest Whether this is a web request.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
