@@ -134,6 +134,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         this.$sidebar
       );
 
+      console.log('in build sidebar toggle view');
+
       this.$sidebarCloseBtn = Craft.ui
         .createButton({
           class: 'nav-close close-btn',
@@ -199,11 +201,13 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     closeSidebar: function () {
       if (!this.$sidebarToggleBtn) return;
 
+      // Remove the sidebar layer when applicable
       if (this.sidebarIsOpen()) {
         Garnish.uiLayerManager.removeLayer();
-        this.$sidebar.addClass('hidden');
-        this.$sidebarToggleBtn.attr('aria-expanded', 'false');
       }
+
+      this.$sidebar.addClass('hidden');
+      this.$sidebarToggleBtn.attr('aria-expanded', 'false');
 
       // If the focus is currently inside the sidebar, refocus the toggle
       const $focusedEl = Garnish.getFocusedElement();

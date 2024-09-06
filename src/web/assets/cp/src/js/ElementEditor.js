@@ -137,10 +137,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$statusIcon = $('<div/>', {
         class: `revision-status ${this.isFullPage ? 'invisible' : 'hidden'}`,
       }).appendTo($spinnerContainer);
-      this.$statusMessage = $('<div/>', {
-        class: 'revision-status-message visually-hidden',
-        'aria-live': 'polite',
-      }).appendTo($spinnerContainer);
 
       this.$expandSiteStatusesBtn = $('.expand-status-btn');
 
@@ -283,9 +279,11 @@ Craft.ElementEditor = Garnish.Base.extend(
       const queue = new Craft.Queue();
       queue.on('beforeRun', () => {
         this.showSpinner();
+        Craft.cp.announce('Saving');
       });
       queue.on('afterRun', () => {
         this.hideSpinner();
+        Craft.cp.announce('Saved');
       });
       return queue;
     },
@@ -822,10 +820,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.$statusIcon;
     },
 
-    statusMessage: function () {
-      return this.$statusMessage;
-    },
-
     createEditMetaAction: function () {
       if (!this.isFullPage) {
         return;
@@ -1295,9 +1289,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           .removeClass('hidden invisible checkmark-icon alert-icon fade-out')
           .addClass('hidden');
 
-        // Clear previous status message
-        this.statusMessage().empty();
-
         if (this.$saveMetaBtn) {
           this.$saveMetaBtn.addClass('active');
         }
@@ -1544,7 +1535,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         .removeClass('hidden checkmark-icon')
         .addClass('alert-icon');
 
-      this.setStatusMessage(this._saveFailMessage());
+      Craft.cp.announce(this._saveFailMessage());
     },
 
     /**
@@ -1849,7 +1840,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         .removeClass('hidden')
         .addClass('checkmark-icon');
 
-      this.setStatusMessage(this._saveSuccessMessage());
+      Craft.cp.announce(this._saveSuccessMessage());
 
       if (!this.settings.autosaveDrafts) {
         // Fade the icon out after a couple seconds, since it won't be accurate as content continues to change
@@ -1880,18 +1871,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           id: this.settings.canonicalId,
         });
       }
-    },
-
-    setStatusMessage: function (message) {
-      this.statusIcons().attr('title', message);
-      this.statusMessage()
-        .empty()
-        .append(
-          $('<span/>', {
-            class: 'visually-hidden',
-            text: message,
-          })
-        );
     },
 
     showMetaModal: function () {
