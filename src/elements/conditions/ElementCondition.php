@@ -81,7 +81,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             throw new InvalidConfigException("Invalid element type: $elementType");
         }
 
-        $this->elementType = $elementType;
+        if ($elementType !== null) {
+            $this->elementType = $elementType;
+        }
+
         parent::__construct($config);
     }
 
