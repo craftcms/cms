@@ -3609,7 +3609,6 @@ table {
     ) !important;
 
     & > .thumb {
-      background-color: var(--dark-sel-color) !important;
       filter: brightness(0.85);
     }
 
@@ -3633,35 +3632,12 @@ table {
   }
 
   & > .thumb {
-    position: relative;
     display: flex;
-    align-items: stretch;
-    margin: calc(var(--m) * -1);
-    margin-inline-end: 0;
+    flex: 0 0 128px;
     width: 128px;
-    min-width: 128px; // needed for flex
-    min-height: calc(var(--m) * 2 + var(--lh) * 3 + var(--xs));
-    background-color: var(--gray-100);
     overflow: hidden;
-
-    &::after {
-      display: block;
-      content: '';
-      font-size: 0;
-      position: absolute;
-      inset-block: 0;
-      @include mixins.shadow;
-      width: 10px;
-      inset-inline-end: -10px;
-    }
-
-    &,
-    &::after {
-      border-start-start-radius: var(--large-border-radius);
-      border-start-end-radius: 0;
-      border-end-end-radius: 0;
-      border-end-start-radius: var(--large-border-radius);
-    }
+    align-self: start;
+    border-radius: var(--small-border-radius);
 
     img,
     svg {
