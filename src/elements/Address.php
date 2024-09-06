@@ -478,7 +478,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getLocale(): string
     {
-        return 'und';
+        return Craft::$app->language;
     }
 
     /**
