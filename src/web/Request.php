@@ -588,6 +588,16 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns whether this is a web request.
+     *
+     * @return bool
+     */
+    public function getIsWebRequest(): bool
+    {
+        return true;
+    }
+
+    /**
      * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
