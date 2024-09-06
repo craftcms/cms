@@ -134,8 +134,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         this.$sidebar
       );
 
-      console.log('in build sidebar toggle view');
-
       this.$sidebarCloseBtn = Craft.ui
         .createButton({
           class: 'nav-close close-btn',
