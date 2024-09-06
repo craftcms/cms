@@ -512,7 +512,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function getLocale(): string
     {
-        return 'und';
+        return Craft::$app->language;
     }
 
     /**
