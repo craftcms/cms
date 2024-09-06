@@ -46,7 +46,7 @@ class Request extends \yii\console\Request
     }
 
     /**
-     * Returns whether this is a web request. (Narrator: It wasn't.)
+     * Returns whether this is a web request.
      *
      * @return bool
      */
