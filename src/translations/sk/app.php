@@ -1286,6 +1286,7 @@ return [
     'Replace files' => 'Nahradiť súbory',
     'Replace it' => 'Nahradiť',
     'Replace the folder (all existing files will be deleted)' => 'Nahradiť priečinok (všetky existujúce súbory budú odstránené)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => 'Výmena „{find}“ za „{replace}“',
     'Reply To' => 'Odpovedať',
     'Reply-To Address' => 'Adresa pre odpoveď',
