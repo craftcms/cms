@@ -1286,6 +1286,7 @@ return [
     'Replace files' => '파일 교체',
     'Replace it' => '바꾸기',
     'Replace the folder (all existing files will be deleted)' => '폴더 바꾸기(모든 기존 파일이 삭제됨)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => '“{find}”을(를) “{replace}”로 교체 중',
     'Reply To' => '회신 대상',
     'Reply-To Address' => '회신 대상 주소',
