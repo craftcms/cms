@@ -22,6 +22,7 @@ use craft\base\Statusable;
 use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
+use craft\elements\Entry;
 use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\MenuItemType;
@@ -2455,15 +2456,113 @@ new Craft.CardViewDesigner("#$namespacedId");
 JS;
         $view->registerJs($js);
 
+        $previewHtml = self::_cardPreviewHtml($fieldLayout);
+
         return
             Html::beginTag('div', [
                 'id' => $config['id'],
                 'class' => 'card-view-designer',
             ]) .
             Html::beginTag('div', ['class' => 'cvd-container']) .
+            Html::beginTag('div',  ['class' => 'cvd-preview']) .
+            $previewHtml .
+            Html::endTag('div') . //.cvd-preview
+            Html::beginTag('div', ['class' => 'cvd-options']) .
             $checkboxes .
+            Html::endTag('div') . // .cvd-options
             Html::endTag('div') . // .cvd-container
             Html::endTag('div'); // .card-view-designer
+    }
+
+    private static function _cardPreviewHtml(FieldLayout $fieldLayout): string
+    {
+        // get colour
+        $color = null;
+        if ($fieldLayout->provider instanceof Colorable) {
+            $color = $fieldLayout->provider->color ?? null;
+        }
+
+        // get heading
+        $heading = Html::tag('craft-element-label',
+            Html::tag('a', Html::tag('span', Craft::t('app', 'Title')), [
+                'class' => ['label-link'],
+                'href' => null,
+            ]),
+            [
+                'class' => 'label',
+            ]
+        );
+
+        // get status label placeholder
+        $elementType = new ($fieldLayout['type']);
+        $labels = [$elementType::hasStatuses() ? static::componentStatusLabelHtml($elementType) : null];
+
+        // get thumb placeholder
+        $thumbSvg = null;
+        if ($fieldLayout->getThumbField()) {
+            $thumbSvg = file_get_contents(Craft::getAlias('@app/elements/thumbs/file.svg'));
+            if ($thumbSvg) {
+                $thumbSvg = Html::svg($thumbSvg, false, true);
+                $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
+                $thumbSvg = Html::tag('div', $thumbSvg, [
+                    'class' => array_filter([
+                        'thumb',
+                        null,
+                    ]),
+                ]);
+            }
+        }
+
+        $previewHtml =
+            Html::beginTag('div', [
+                'class' => ['element', 'card'],
+                'style' => array_filter([
+                    '--custom-bg-color' => $color?->cssVar(50),
+                    '--custom-text-color' => $color?->cssVar(900),
+                    '--custom-sel-bg-color' => $color?->cssVar(900),
+                ]),
+            ]);
+
+        if ($thumbSvg) {
+            $previewHtml .= Html::tag('div', $thumbSvg, ['class' => ['thumb', 'checkered']]);
+        }
+
+        $previewHtml .=
+            Html::beginTag('div', [
+                'class' => ['card-content'],
+            ]) .
+            Html::tag('div', $heading, ['class' => 'card-heading']) .
+            Html::beginTag('div', [
+                'class' => 'card-body',
+            ]);
+
+        // get body elements (fields and attributes)
+        $cardElements = $fieldLayout->getCardBodyElements();
+        // todo: this breaks things?
+        $mockElement = new Entry();
+
+        foreach ($cardElements as $cardElement) {
+            if ($cardElement instanceof CustomField) {
+                $previewHtml .= Html::tag('div', $cardElement->getField()->previewPlaceholderHtml());
+            } else {
+                // todo: I'm a placeholder
+                $previewHtml .= Html::tag('div', $cardElement['label']);
+            }
+        }
+
+        if (!empty(array_filter($labels))) {
+            $previewHtml .= Html::ul($labels, [
+                'class' => ['flex', 'gap-xs'],
+                'encode' => false,
+            ]);
+        }
+
+        $previewHtml .=
+            Html::endTag('div') . // .card-body
+            Html::endTag('div') . // .card-content
+            Html::endTag('div'); // .element.card
+
+        return $previewHtml;
     }
 
     /**

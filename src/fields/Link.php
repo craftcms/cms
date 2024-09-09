@@ -15,6 +15,7 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\RelationalFieldInterface;
 use craft\base\RelationalFieldTrait;
+use craft\elements\Entry as EntryElement;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\fields\data\LinkData;
@@ -542,6 +543,18 @@ JS;
         }
         $value = Html::encode((string)$value);
         return "<a href=\"$value\" target=\"_blank\">$value</a>";
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value = null, ?ElementInterface $element = null): string
+    {
+        if (!$value) {
+            $value = Craft::$app->getSites()->getCurrentSite()->baseUrl;
+        }
+
+        return $this->getPreviewHtml($value, new EntryElement());
     }
 
     /**

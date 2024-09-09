@@ -486,6 +486,26 @@ class Assets extends BaseRelationField
         );
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value = null, ?ElementInterface $element = null): string
+    {
+        $asset = new Asset();
+        $asset->title = Craft::t('app', 'Related {type} Title', ['type' => $asset->displayName()]);
+
+        if ($this->restrictFiles) {
+            $extensions = $this->_getAllowedExtensions();
+            $filename = 'test.' . $extensions[0];
+        } else {
+            $filename = 'test.txt';
+        }
+
+        $asset->filename = $filename;
+        $collection = new ElementCollection([$asset]);
+        return $this->previewHtml($collection);
+    }
+
     // Events
     // -------------------------------------------------------------------------
 

@@ -13,6 +13,7 @@ use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\Entry;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
@@ -335,6 +336,18 @@ JS;
             self::FORMAT_CURRENCY => Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], !$this->decimals),
             default => $value,
         };
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value = null, ?ElementInterface $element = null): string
+    {
+        if (!$value) {
+            $value = 1234;
+        }
+
+        return $this->getPreviewHtml($value, $element ?? new Entry());
     }
 
     /**

@@ -1814,9 +1814,14 @@ Craft.FieldLayoutDesigner.ElementDrag =
 Craft.CardViewDesigner = Garnish.Base.extend(
   {
     $container: null,
+    $previewContainer: null,
 
     init: function (container, settings) {
       this.$container = $(container);
+      this.$previewContainer = this.$container.find('.cvd-preview');
+
+      console.log(this.$container);
+      console.log(this.$previewContainer);
 
       const sortItems = this.$container.find('.draggable');
       if (sortItems.length) {
@@ -1831,7 +1836,7 @@ Craft.CardViewDesigner = Garnish.Base.extend(
     addCheckbox: function (element) {
       const $cvdContainer = element.tab.designer.$container
         .parents('.fld-cvd')
-        .find('.cvd-container');
+        .find('.cvd-options');
 
       if ($cvdContainer.length == 0) {
         return null;
@@ -1872,7 +1877,7 @@ Craft.CardViewDesigner = Garnish.Base.extend(
     },
 
     findCheckboxByUid: function ($wrapper, uid) {
-      const $cvdContainer = $wrapper.find('.cvd-container');
+      const $cvdContainer = $wrapper.find('.cvd-options');
 
       if ($cvdContainer.length == 0) {
         return null;

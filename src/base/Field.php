@@ -811,6 +811,23 @@ JS, [
     }
 
     /**
+     * @see PreviewableFieldInterface::previewPlaceholder()
+     * @since 5.5.0
+     */
+    public function previewPlaceholderHtml(mixed $value = null, ?ElementInterface $element = null): string
+    {
+        if ($value !== null) {
+            return $value;
+        }
+
+        if ($element !== null) {
+            return $element->getFieldValue($this->handle);
+        }
+
+        return $this->getUiLabel() . ' ' . Craft::t('app', 'placeholder');
+    }
+
+    /**
      * @see SortableFieldInterface::getSortOption()
      * @since 3.2.0
      */

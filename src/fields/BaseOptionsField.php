@@ -469,6 +469,26 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     }
 
     /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value = null, ?ElementInterface $element = null): string
+    {
+        $options = array_values(array_filter($this->options, fn($option) => !empty($option['value'])));
+
+        if (empty($options)) {
+            return Craft::t('app', 'Option Label');
+        }
+
+        $labels[] = $options[0]['label'];
+
+        if (static::$multi) {
+            $labels[] = array_pop($options)['label'];
+        }
+
+        return implode(', ', $labels);
+    }
+
+    /**
      * Returns whether the field type supports storing multiple selected options.
      *
      * @return bool
