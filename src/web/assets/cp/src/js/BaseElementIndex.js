@@ -3206,8 +3206,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $btnToFocus = this.prevPage > this.page ? $prevBtn : $nextBtn;
 
                 if ($btnToFocus.attr('disabled') === 'disabled') {
-                  Garnish.setFocusWithin($paginationNav);
+                  $btnToFocus = Garnish.firstFocusableElement($paginationNav);
                 }
+
+                $btnToFocus.focus();
               }
 
               $('<div/>', {
