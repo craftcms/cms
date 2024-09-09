@@ -1286,6 +1286,7 @@ return [
     'Replace files' => 'استبدال الملفات',
     'Replace it' => 'استبداله',
     'Replace the folder (all existing files will be deleted)' => 'استبدال المجلد (سيتم حذف كل الملفات الموجودة)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => 'استبدال ”{find}“ بـ ”{replace}“',
     'Reply To' => 'رد على',
     'Reply-To Address' => 'عنوان الرد',
