@@ -1286,6 +1286,7 @@ return [
     'Replace files' => 'Bestanden vervangen',
     'Replace it' => 'Vervangen',
     'Replace the folder (all existing files will be deleted)' => 'De map vervangen (alle bestaande bestanden worden verwijderd)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => 'Vervangen van “{find}” met “{replace}”',
     'Reply To' => 'Antwoorden aan',
     'Reply-To Address' => 'Antwoordadres',
