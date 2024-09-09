@@ -826,7 +826,7 @@ JS, [
         // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
         // see https://github.com/craftcms/cms/issues/15609
         $db = Craft::$app->getDb();
-        if ($db->getIsMysql() && Db::parseColumnType($dbType) === Schema::TYPE_TEXT) {
+        if ($db->getIsMysql() && is_string($dbType) && Db::parseColumnType($dbType) === Schema::TYPE_TEXT) {
             $orderBy = "CAST($orderBy AS CHAR(255))";
         }
 

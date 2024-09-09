@@ -1498,9 +1498,9 @@ class Fields extends Component
                     'icon' => Cp::iconSvg($field::icon()),
                 ],
                 'usages' => isset($usages[$field->id])
-                    ? mb_ucfirst(Craft::t('app', '{count, number} {count, plural, =1{layout} other{layouts}}', [
+                    ? Craft::t('app', '{count, number} {count, plural, =1{layout} other{layouts}}', [
                         'count' => count($usages[$field->id]),
-                    ]))
+                    ])
                     : null,
             ];
         }

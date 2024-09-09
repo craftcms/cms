@@ -7,6 +7,7 @@ $app = require(dirname(__DIR__) . '/bootstrap/console.php');
 
 $icons = [
     'brands/github.svg',
+    'brands/markdown.svg',
     'custom-icons/asterisk-slash.svg',
     'custom-icons/diamond-slash.svg',
     'custom-icons/element-card-slash.svg',

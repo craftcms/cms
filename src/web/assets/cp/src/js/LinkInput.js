@@ -26,7 +26,10 @@ Craft.LinkInput = Garnish.Base.extend(
       this.$hiddenInput = this.$container.children('input[type=hidden]');
 
       if (this.$chip.length) {
-        this.menu = this.$chip.find('.action-btn').data('disclosureMenu');
+        this.menu = this.$chip
+          .find('.action-btn')
+          .disclosureMenu()
+          .data('disclosureMenu');
         this.initChip();
       } else {
         this.initTextInput();
