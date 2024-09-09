@@ -1286,6 +1286,7 @@ return [
     'Replace files' => 'Заменить файлы',
     'Replace it' => 'Заменить',
     'Replace the folder (all existing files will be deleted)' => 'Заменить папку (все имеющиеся файлы будут удалены)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => 'Замена «{find}» на «{replace}»',
     'Reply To' => 'Ответить',
     'Reply-To Address' => 'Адрес для ответа',
