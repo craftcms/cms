@@ -56,6 +56,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     activityTooltips: null,
 
+    queueStatusLoadingMsg: Craft.t('app', 'Queue job processing'),
+    queueStatusCompleteMsg: Craft.t('app', 'Queue job complete'),
+
     get tipDismissBtn() {
       return this.$container.find('.tip-dismiss-btn');
     },
@@ -279,11 +282,11 @@ Craft.ElementEditor = Garnish.Base.extend(
       const queue = new Craft.Queue();
       queue.on('beforeRun', () => {
         this.showSpinner();
-        Craft.cp.announce('Saving');
+        Craft.cp.announce(this.queueStatusLoadingMsg);
       });
       queue.on('afterRun', () => {
         this.hideSpinner();
-        Craft.cp.announce('Saved');
+        Craft.cp.announce(this.queueStatusCompleteMsg);
       });
       return queue;
     },
