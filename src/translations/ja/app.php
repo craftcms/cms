@@ -1286,6 +1286,7 @@ return [
     'Replace files' => 'ファイルの置き換え',
     'Replace it' => '置き換える',
     'Replace the folder (all existing files will be deleted)' => 'フォルダーを置き換える (すべての既存ファイルが削除されます)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => '“{find}”を “{replace}” に置き換えています。',
     'Reply To' => '返信先',
     'Reply-To Address' => '返信先アドレス',
