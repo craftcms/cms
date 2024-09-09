@@ -1286,6 +1286,7 @@ return [
     'Replace files' => 'Fájlok helyettesítése',
     'Replace it' => 'Csere',
     'Replace the folder (all existing files will be deleted)' => 'A mappa cseréje (minden meglévő fájl törlődik)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => 'Helyettesítés “{find}” ezzel “{replace}”',
     'Reply To' => 'Válaszolni',
     'Reply-To Address' => 'Cím válaszadáshoz',
