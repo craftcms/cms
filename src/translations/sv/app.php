@@ -1286,6 +1286,7 @@ return [
     'Replace files' => 'Byt ut filer',
     'Replace it' => 'Ersätt den',
     'Replace the folder (all existing files will be deleted)' => 'Ersätt mappen (alla befintliga filer kommer att raderas)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => 'Ersätter “{find}” med “{replace}”',
     'Reply To' => 'Svara till',
     'Reply-To Address' => 'Svarsadress',
