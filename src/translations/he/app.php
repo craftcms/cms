@@ -1286,6 +1286,7 @@ return [
     'Replace files' => 'החלף קבצים',
     'Replace it' => 'החלף אותה',
     'Replace the folder (all existing files will be deleted)' => 'החלף את התיקייה (כל הקבצים הקיימים יימחקו)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => 'מחליף את “{find}” ב“{replace}”',
     'Reply To' => 'השב ל',
     'Reply-To Address' => 'כתובת למענה',
