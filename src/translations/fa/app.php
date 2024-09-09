@@ -1286,6 +1286,7 @@ return [
     'Replace files' => 'جایگزینی فایل ها',
     'Replace it' => 'جایگزین کن',
     'Replace the folder (all existing files will be deleted)' => 'حذف پوشه (تمامی فایل ها حذف خواهند گردید)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => 'جایگزینی "{find}" با "{replace}"',
     'Reply To' => 'پاسخ به',
     'Reply-To Address' => 'پاسخ-به آدرس پست الکترونیکی',
