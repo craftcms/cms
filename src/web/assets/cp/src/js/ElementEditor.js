@@ -56,9 +56,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     activityTooltips: null,
 
-    queueStatusLoadingMsg: Craft.t('app', 'Queue job processing'),
-    queueStatusCompleteMsg: Craft.t('app', 'Queue job complete'),
-
     get tipDismissBtn() {
       return this.$container.find('.tip-dismiss-btn');
     },
@@ -282,11 +279,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       const queue = new Craft.Queue();
       queue.on('beforeRun', () => {
         this.showSpinner();
-        Craft.cp.announce(this.queueStatusLoadingMsg);
       });
       queue.on('afterRun', () => {
         this.hideSpinner();
-        Craft.cp.announce(this.queueStatusCompleteMsg);
       });
       return queue;
     },
@@ -1538,7 +1533,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         .removeClass('hidden checkmark-icon')
         .addClass('alert-icon');
 
-      Craft.cp.announce(this._saveFailMessage());
+      this.setStatusMessage(this._saveFailMessage());
     },
 
     /**
@@ -1847,7 +1842,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         .removeClass('hidden')
         .addClass('checkmark-icon');
 
-      Craft.cp.announce(this._saveSuccessMessage());
+      this.setStatusMessage(this._saveSuccessMessage());
 
       if (!this.settings.autosaveDrafts) {
         // Fade the icon out after a couple seconds, since it won't be accurate as content continues to change
@@ -1878,6 +1873,11 @@ Craft.ElementEditor = Garnish.Base.extend(
           id: this.settings.canonicalId,
         });
       }
+    },
+
+    setStatusMessage: function (message) {
+      this.statusIcons().attr('title', message);
+      Craft.cp.announce(message);
     },
 
     showMetaModal: function () {
