@@ -1286,6 +1286,7 @@ return [
     'Replace files' => '替换文件',
     'Replace it' => '将其更换',
     'Replace the folder (all existing files will be deleted)' => '替换文件夹（所有现有文件将被删除）',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => '正在用 “{replace}” 替换 “{find}”',
     'Reply To' => '回复',
     'Reply-To Address' => '回复地址',
