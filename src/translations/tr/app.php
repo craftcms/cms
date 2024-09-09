@@ -1286,6 +1286,7 @@ return [
     'Replace files' => 'Dosyaları değiştir',
     'Replace it' => 'Değiştir',
     'Replace the folder (all existing files will be deleted)' => 'Klasörü değiştir (mevcut dosyaların tümü silinir)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => '“{find}” şununla “{replace}” değiştiriliyor',
     'Reply To' => 'Yanıtla',
     'Reply-To Address' => 'Yanıtlama Adresi',
