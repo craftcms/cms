@@ -57,6 +57,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -3739,7 +3740,11 @@ class Elements extends Component
 
                 // if we're supposed to save all the content
                 if ($saveContent || !empty($dirtyFields)) {
-                    $oldContent = $siteSettingsRecord->content; // we'll need that if we're not saving all the content
+                    $oldContent = $siteSettingsRecord->content ?? []; // we'll need that if we're not saving all the content
+                    if (is_string($oldContent)) {
+                        $oldContent = $oldContent !== '' ? Json::decode($oldContent) : [];
+                    }
+
                     $content = [];
                     if ($fieldLayout) {
                         foreach ($fieldLayout->getCustomFields() as $field) {
@@ -4022,7 +4027,11 @@ class Elements extends Component
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->siteSettingsId = null;
             $siteElement->setEnabledForSite($siteInfo['enabledByDefault']);
-            $siteElement->isNewForSite = true;
+            // set isNewForSite to true unless we're reverting content from a revision
+            // in which case, it's possible that the canonical element exists for the site already,
+            // but didn't back when the revision was created.
+            // (see https://github.com/craftcms/cms/issues/15679)
+            $siteElement->isNewForSite = !$siteElement->duplicateOf?->getIsRevision();
 
             // Keep track of this new site ID
             $element->newSiteIds[] = $siteInfo['siteId'];

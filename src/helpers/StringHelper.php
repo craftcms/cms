@@ -915,13 +915,19 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function lines(string $str): array
     {
         $lines = BaseStringy::create($str)->lines();
+        return array_map(fn(BaseStringy $line) => (string)$line, $lines);
+    }
 
-        foreach ($lines as $i => $line) {
-            $lines[$i] = $line;
-        }
-
-        /** @var string[] $lines */
-        return $lines;
+    /**
+     * Returns the first line of a string.
+     *
+     * @param string $str
+     * @return string
+     * @since 5.5.0
+     */
+    public static function firstLine(string $str): string
+    {
+        return (string)BaseStringy::create($str)->lines()[0];
     }
 
     /**
