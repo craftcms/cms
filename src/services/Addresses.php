@@ -20,6 +20,7 @@ use Craft;
 use craft\addresses\SubdivisionRepository;
 use craft\elements\Address;
 use craft\events\ConfigEvent;
+use craft\events\DefineAddressCountriesEvent;
 use craft\events\DefineAddressFieldLabelEvent;
 use craft\events\DefineAddressFieldsEvent;
 use craft\events\DefineAddressSubdivisionsEvent;
@@ -68,6 +69,13 @@ class Addresses extends Component
      * @since 4.5.0
      */
     public const EVENT_DEFINE_ADDRESS_SUBDIVISIONS = 'defineAddressSubdivisions';
+
+    /**
+     * @event DefineAddressCountriesEvent The event that is triggered when defining country options for an address
+     * @see getCountryList()
+     * @since 4.13.0
+     */
+    public const EVENT_DEFINE_ADDRESS_COUNTRIES = 'defineAddressCountries';
 
     /**
      * @var FormatterInterface|null The default address formatter used by [[formatAddress()]]
@@ -153,6 +161,31 @@ class Addresses extends Component
         }
 
         return $options;
+    }
+
+    /**
+     * Returns a list of countries to be used as options for selection.
+     *
+     * @param string|null $locale
+     * @return array
+     * @since 4.13.0
+     */
+    public function getCountryList(?string $locale = null): array
+    {
+        $locale = $locale ?? Craft::$app->language;
+        $countries = $this->getCountryRepository()->getList($locale);
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDRESS_COUNTRIES)) {
+            $event = new DefineAddressCountriesEvent([
+                'locale' => $locale,
+                'countries' => $countries,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ADDRESS_COUNTRIES, $event);
+
+            return $event->countries;
+        }
+
+        return $countries;
     }
 
     /**
