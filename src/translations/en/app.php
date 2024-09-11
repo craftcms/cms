@@ -2041,6 +2041,7 @@ return [
     'item' => 'item',
     'items' => 'items',
     'less than a minute' => 'less than a minute',
+    'link/to/something' => 'link/to/something',
     'minute' => 'minute',
     'minutes ago' => 'minutes ago',
     'minutes from now' => 'minutes from now',

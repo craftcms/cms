@@ -2474,6 +2474,13 @@ JS;
             Html::endTag('div'); // .card-view-designer
     }
 
+    /**
+     * Returns HTML for the card preview based on selected fields and attributes.
+     *
+     * @param FieldLayout $fieldLayout
+     * @return string
+     * @throws \Throwable
+     */
     private static function _cardPreviewHtml(FieldLayout $fieldLayout): string
     {
         // get colour
@@ -2546,7 +2553,7 @@ JS;
                 $previewHtml .= Html::tag('div', $cardElement->getField()->previewPlaceholderHtml());
             } else {
                 // todo: I'm a placeholder
-                $previewHtml .= Html::tag('div', $cardElement['label']);
+                $previewHtml .= Html::tag('div', $elementType::attributePreviewHtml($cardElement));
             }
         }
 

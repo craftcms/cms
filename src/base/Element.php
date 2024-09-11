@@ -1494,7 +1494,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Defines all the available attributes that can be shown in card views.
+     * Defines all the available attributes that can be shown in card views along with their default placeholder values.
      *
      * @return array The card attributes.
      * @see cardAttributes()
@@ -1504,17 +1504,59 @@ abstract class Element extends Component implements ElementInterface
     {
         // we're intentionally not including statuses as those already show in cards
         $attributes = [
-            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
-            'id' => ['label' => Craft::t('app', 'ID')],
-            'uid' => ['label' => Craft::t('app', 'UID')],
+            'dateCreated' => [
+                'label' => Craft::t('app', 'Date Created'),
+                'placeholder' => (new \DateTime())->sub(new \DateInterval('P' . rand(15, 30) . 'D')),
+            ],
+            'dateUpdated' => [
+                'label' => Craft::t('app', 'Date Updated'),
+                'placeholder' => (new \DateTime())->sub(new \DateInterval('P' . rand(8, 14) . 'D')),
+            ],
+            'id' => [
+                'label' => Craft::t('app', 'ID'),
+                'placeholder' => rand(1, 9999),
+            ],
+            'uid' => [
+                'label' => Craft::t('app', 'UID'),
+                'placeholder' => 'abcd----------uid--------------abcd',
+            ],
         ];
 
         if (static::hasUris()) {
             $attributes = array_merge($attributes, [
-                'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
-                'slug' => ['label' => Craft::t('app', 'Slug')],
-                'uri' => ['label' => Craft::t('app', 'URI')],
+                'link' => [
+                    'label' => Craft::t('app', 'Link'),
+                    'icon' => 'world',
+                    'placeholder' => Html::beginTag('a', [
+                        'href' => null,
+                        'rel' => 'noopener',
+                        'target' => '_blank',
+                        'title' => Craft::t('app', 'Visit webpage'),
+                        'aria-label' => Craft::t('app', 'View'),
+                        ]) .
+                        Html::tag('span', Cp::iconSvg('world'), [
+                            'class' => ['cp-icon', 'small', 'inline-flex'],
+                        ]) .
+                        Html::endTag('a'),
+                ],
+                'slug' => [
+                    'label' => Craft::t('app', 'Slug'),
+                    'placeholder' => Craft::t('app', 'slug'),
+                ],
+                'uri' => [
+                    'label' => Craft::t('app', 'URI'),
+                    'placeholder' => Html::a(
+                        Html::tag('span', Craft::t('app', 'link/to/something'), ['dir' => 'ltr']),
+                        null,
+                        [
+                            'href' => '',
+                            'rel' => 'noopener',
+                            'target' => '_blank',
+                            'class' => 'go',
+                            'title' => Craft::t('app', 'Visit webpage'),
+                        ]
+                    ),
+                ],
             ]);
         }
 
@@ -2069,6 +2111,20 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return false;
+    }
+
+    /**
+     * Return HTML for the attribute in the card preview.
+     *
+     * @param array $attribute
+     * @return mixed
+     */
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'link', 'uri' => $attribute['placeholder'],
+            default => ElementHelper::attributeHtml($attribute['placeholder'] ?? $attribute['label']),
+        };
     }
 
     /**
