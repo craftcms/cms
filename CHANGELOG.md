@@ -6,6 +6,7 @@
 - Fixed a bug where address’ Label fields were being marked as translatable. ([#15702](https://github.com/craftcms/cms/pull/15702))
 - Fixed an error that could occur when saving an entry with a Matrix field, if the nested entries didn’t have slugs.
 - Fixed a bug where relation fields weren’t merging uploaded asset IDs with the existing field values. ([#15707](https://github.com/craftcms/cms/issues/15707))
+- Fixed a styling issue with inline-editable Matrix block tabs. ([#15703](https://github.com/craftcms/cms/issues/15703))
 - Fixed an RCE vulnerability.
 
 ## 5.4.2 - 2024-09-06
