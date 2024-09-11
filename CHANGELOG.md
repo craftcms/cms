@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Updated Twig to 3.14. ([#15704](https://github.com/craftcms/cms/issues/15704))
+- Fixed an RCE vulnerability.
 
 ## 4.12.1 - 2024-09-06
 
