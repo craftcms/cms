@@ -7,17 +7,23 @@ use craft\elements\User;
 use yii\filters\auth\HttpBasicAuth;
 use yii\web\IdentityInterface;
 
-class HttpBasicAuthLogin extends HttpBasicAuth
+class BasicHttpAuthLogin extends HttpBasicAuth
 {
-    use SiteFilterTrait;
+    /**
+     * @inheritdoc
+     */
+    public $realm;
+
+    use SiteFilterTrait, BasicHttpAuthTrait;
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function __construct($config = [])
     {
         parent::__construct($config + [
             'auth' => [$this, 'auth'],
+            'realm' => Craft::$app->getSystemName(),
         ]);
     }
 

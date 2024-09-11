@@ -4,17 +4,20 @@ namespace craft\filters;
 
 use Craft;
 use craft\helpers\App;
-use yii\base\ActionFilter;
 use yii\base\InvalidConfigException;
-use yii\web\UnauthorizedHttpException;
+use yii\filters\auth\HttpBasicAuth;
 
-class HttpBasicAuthStatic extends ActionFilter
+class BasicHttpAuthStatic extends HttpBasicAuth
 {
     public ?string $username = null;
     public ?string $password = null;
-    public string $realm;
 
-    use SiteFilterTrait;
+    /**
+     * @inheritdoc
+     */
+    public $realm;
+
+    use SiteFilterTrait, BasicHttpAuthTrait;
 
     /**
      * @inheritDoc
@@ -49,7 +52,10 @@ class HttpBasicAuthStatic extends ActionFilter
             return true;
         }
 
-        Craft::$app->getResponse()->getHeaders()->set('WWW-Authenticate', "Basic realm=\"{$this->realm}\"");
-        throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
+        $response = Craft::$app->getResponse();
+        $this->challenge($response);
+        $this->handleFailure($response);
+
+        return false;
     }
 }
