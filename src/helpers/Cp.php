@@ -2464,12 +2464,12 @@ JS;
                 'class' => 'card-view-designer',
             ]) .
             Html::beginTag('div', ['class' => 'cvd-container']) .
+            Html::beginTag('div', ['class' => 'cvd-library']) .
+            $checkboxes .
+            Html::endTag('div') . // .cvd-library
             Html::beginTag('div',  ['class' => 'cvd-preview']) .
             $previewHtml .
             Html::endTag('div') . //.cvd-preview
-            Html::beginTag('div', ['class' => 'cvd-options']) .
-            $checkboxes .
-            Html::endTag('div') . // .cvd-options
             Html::endTag('div') . // .cvd-container
             Html::endTag('div'); // .card-view-designer
     }
