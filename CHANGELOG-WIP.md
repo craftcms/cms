@@ -2,3 +2,6 @@
 
 ### Extensibility
 - Added `craft\base\RequestTrait::getIsWebRequest()`. ([#15690](https://github.com/craftcms/cms/pull/15690))
+
+### System
+- Updated Twig to 3.14.
