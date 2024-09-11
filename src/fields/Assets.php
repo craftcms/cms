@@ -503,6 +503,7 @@ class Assets extends BaseRelationField
 
         $asset->filename = $filename;
         $collection = new ElementCollection([$asset]);
+
         return $this->previewHtml($collection);
     }
 

@@ -1820,9 +1820,6 @@ Craft.CardViewDesigner = Garnish.Base.extend(
       this.$container = $(container);
       this.$previewContainer = this.$container.find('.cvd-preview');
 
-      console.log(this.$container);
-      console.log(this.$previewContainer);
-
       const sortItems = this.$container.find('.draggable');
       if (sortItems.length) {
         new Garnish.DragSort(sortItems, {

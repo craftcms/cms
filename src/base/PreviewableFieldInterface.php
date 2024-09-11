@@ -28,7 +28,8 @@ interface PreviewableFieldInterface extends FieldInterface
     public function getPreviewHtml(mixed $value, ElementInterface $element): string;
 
     /**
-     * Return a placeholder preview value can be used outside an element context, e.g. in a card view designer
+     * Return the HTML that should be shown for the field in the card preview.
+     * It can be used outside an element context, e.g. in a card view designer.
      *
      * @param mixed $value
      * @param ElementInterface|null $element
