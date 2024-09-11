@@ -86,7 +86,7 @@
 
 ul.auth-method-recovery-codes-list {
   @include fixed-width-font;
-  max-width: calc(13ch * 2 + var(--l)); // 13 characters per code + some
+  max-width: 20em;
   margin-inline: auto;
 
   @container (min-width: 20em) {
