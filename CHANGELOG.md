@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Updated Twig to 3.14. ([#15704](https://github.com/craftcms/cms/issues/15704))
+- Fixed a bug where address’ Label fields were being marked as translatable. ([#15702](https://github.com/craftcms/cms/pull/15702))
 - Fixed an RCE vulnerability.
 
 ## 5.4.2 - 2024-09-06
