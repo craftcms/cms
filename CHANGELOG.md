@@ -8,6 +8,7 @@
 - Fixed a bug where relation fields weren’t merging uploaded asset IDs with the existing field values. ([#15707](https://github.com/craftcms/cms/issues/15707))
 - Fixed a styling issue with inline-editable Matrix block tabs. ([#15703](https://github.com/craftcms/cms/issues/15703))
 - Fixed an RCE vulnerability.
+- Fixed an XSS vulnerability.
 
 ## 5.4.2 - 2024-09-06
 
