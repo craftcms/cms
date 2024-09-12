@@ -835,6 +835,45 @@ class ElementHelper
     }
 
     /**
+     * Returns the HTML for a link attribute based on provided URL.
+     *
+     * @param string|null $url
+     * @return string
+     */
+    public static function linkAttributeHtml(?string $url): string
+    {
+        return Html::beginTag('a', [
+            'href' => $url,
+            'rel' => 'noopener',
+            'target' => '_blank',
+            'title' => Craft::t('app', 'Visit webpage'),
+            'aria-label' => Craft::t('app', 'View'),
+        ]) .
+        Html::tag('span', Cp::iconSvg('world'), [
+            'class' => ['cp-icon', 'small', 'inline-flex'],
+        ]) .
+        Html::endTag('a');
+    }
+
+    /**
+     * Returns the HTML for URI attribute based on a value (text) and a URL it's supposed to link to.
+     *
+     * @param string|null $value
+     * @param string|null $url
+     * @return string
+     */
+    public static function uriAttributeHtml(?string $value, ?string $url): string
+    {
+        return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
+            'href' => $url,
+            'rel' => 'noopener',
+            'target' => '_blank',
+            'class' => 'go',
+            'title' => Craft::t('app', 'Visit webpage'),
+        ]);
+    }
+
+    /**
      * Returns the searchable attributes for a given element, ensuring that `slug` and `title` are included.
      *
      * @param ElementInterface $element

@@ -1527,17 +1527,7 @@ abstract class Element extends Component implements ElementInterface
                 'link' => [
                     'label' => Craft::t('app', 'Link'),
                     'icon' => 'world',
-                    'placeholder' => Html::beginTag('a', [
-                        'href' => null,
-                        'rel' => 'noopener',
-                        'target' => '_blank',
-                        'title' => Craft::t('app', 'Visit webpage'),
-                        'aria-label' => Craft::t('app', 'View'),
-                        ]) .
-                        Html::tag('span', Cp::iconSvg('world'), [
-                            'class' => ['cp-icon', 'small', 'inline-flex'],
-                        ]) .
-                        Html::endTag('a'),
+                    'placeholder' => ElementHelper::linkAttributeHtml(null),
                 ],
                 'slug' => [
                     'label' => Craft::t('app', 'Slug'),
@@ -1545,22 +1535,26 @@ abstract class Element extends Component implements ElementInterface
                 ],
                 'uri' => [
                     'label' => Craft::t('app', 'URI'),
-                    'placeholder' => Html::a(
-                        Html::tag('span', Craft::t('app', 'link/to/something'), ['dir' => 'ltr']),
-                        null,
-                        [
-                            'href' => '',
-                            'rel' => 'noopener',
-                            'target' => '_blank',
-                            'class' => 'go',
-                            'title' => Craft::t('app', 'Visit webpage'),
-                        ]
-                    ),
+                    'placeholder' => ElementHelper::uriAttributeHtml(Craft::t('app', 'link/to/something'), ''),
                 ],
             ]);
         }
 
         return $attributes;
+    }
+
+    /**
+     * Return HTML for the attribute in the card preview.
+     *
+     * @param array $attribute
+     * @return mixed
+     */
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'link', 'uri' => $attribute['placeholder'],
+            default => ElementHelper::attributeHtml($attribute['placeholder'] ?? $attribute['label']),
+        };
     }
 
     // Methods for customizing element queries
@@ -2111,20 +2105,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return false;
-    }
-
-    /**
-     * Return HTML for the attribute in the card preview.
-     *
-     * @param array $attribute
-     * @return mixed
-     */
-    public static function attributePreviewHtml(array $attribute): mixed
-    {
-        return match ($attribute['value']) {
-            'link', 'uri' => $attribute['placeholder'],
-            default => ElementHelper::attributeHtml($attribute['placeholder'] ?? $attribute['label']),
-        };
     }
 
     /**
@@ -5431,17 +5411,7 @@ JS, [
                 $url = $element->getUrl();
 
                 if ($url !== null) {
-                    return Html::beginTag('a', [
-                        'href' => $url,
-                        'rel' => 'noopener',
-                        'target' => '_blank',
-                        'title' => Craft::t('app', 'Visit webpage'),
-                        'aria-label' => Craft::t('app', 'View'),
-                    ]) .
-                        Html::tag('span', Cp::iconSvg('world'), [
-                            'class' => ['cp-icon', 'small', 'inline-flex'],
-                        ]) .
-                        Html::endTag('a');
+                    return ElementHelper::linkAttributeHtml($url);
                 }
 
                 return '';
@@ -5475,13 +5445,7 @@ JS, [
                         $value = str_replace($find, $replace, $element->uri);
                     }
 
-                    return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
-                        'href' => $url,
-                        'rel' => 'noopener',
-                        'target' => '_blank',
-                        'class' => 'go',
-                        'title' => Craft::t('app', 'Visit webpage'),
-                    ]);
+                    return ElementHelper::uriAttributeHtml($value, $url);
                 }
 
                 return '';
