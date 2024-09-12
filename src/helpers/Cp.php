@@ -2449,14 +2449,17 @@ JS, [
         $checkboxes = implode("\n", $checkboxes);
 
         $view = Craft::$app->getView();
+        $jsSettings = Json::encode([
+            'fieldLayoutId' => $fieldLayout->id,
+        ]);
         $namespacedId = $view->namespaceInputId($config['id']);
 
         $js = <<<JS
-new Craft.CardViewDesigner("#$namespacedId");
+new Craft.CardViewDesigner("#$namespacedId", $jsSettings);
 JS;
         $view->registerJs($js);
 
-        $previewHtml = self::_cardPreviewHtml($fieldLayout);
+        $previewHtml = self::cardPreviewHtml($fieldLayout);
 
         return
             Html::beginTag('div', [
@@ -2478,10 +2481,11 @@ JS;
      * Returns HTML for the card preview based on selected fields and attributes.
      *
      * @param FieldLayout $fieldLayout
+     * @param array $cardElements
      * @return string
      * @throws \Throwable
      */
-    private static function _cardPreviewHtml(FieldLayout $fieldLayout): string
+    public static function cardPreviewHtml(FieldLayout $fieldLayout, array $cardElements = []): string
     {
         // get colour
         $color = null;
@@ -2544,15 +2548,12 @@ JS;
             ]);
 
         // get body elements (fields and attributes)
-        $cardElements = $fieldLayout->getCardBodyElements();
-        // todo: this breaks things?
-        $mockElement = new Entry();
+        $cardElements = $fieldLayout->getCardBodyElements(null, $cardElements);
 
         foreach ($cardElements as $cardElement) {
             if ($cardElement instanceof CustomField) {
                 $previewHtml .= Html::tag('div', $cardElement->getField()->previewPlaceholderHtml());
             } else {
-                // todo: I'm a placeholder
                 $previewHtml .= Html::tag('div', $elementType::attributePreviewHtml($cardElement));
             }
         }

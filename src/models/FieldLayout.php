@@ -801,17 +801,35 @@ class FieldLayout extends Model
      * @return array
      * @since 5.5.0
      */
-    public function getCardBodyElements(?ElementInterface $element = null): array
+    public function getCardBodyElements(?ElementInterface $element = null, array $cardElements = []): array
     {
+        // get attributes that should show in a card
         $attributes = $this->getCardBodyAttributes();
-        $bodyFields = $this->getCardBodyFields($element);
 
-        $fields = [];
-        foreach ($bodyFields as $field) {
-            $fields['layoutElement:' . $field->uid] = $field;
+        $layoutElements = [];
+
+        if (empty($cardElements)) {
+            // get field layout elements that should show in a card
+            $layoutElements = $this->getCardBodyFields($element);
+
+            // index field layout elements by prefix + uid
+            foreach ($layoutElements as $key => $field) {
+                unset($layoutElements[$key]);
+                $layoutElements['layoutElement:' . $field->uid] = $field;
+            }
+        } else {
+            // we only need to worry about body fields as the attributes are taken care of via getCardBodyAttributes()
+            foreach ($cardElements as $cardElement) {
+                if (str_starts_with($cardElement, 'layoutElement:')) {
+                    $uid = str_replace('layoutElement:', '', $cardElement);
+                    $layoutElements[$cardElement] = $this->getElementByUid($uid);
+                }
+            }
         }
 
-        $elements = array_merge($fields, $attributes);
+        $elements = array_merge($layoutElements, $attributes);
+
+        // get card view IDs stored in the field layout config
         $cardViewValues = $this->getCardView();
 
         // make sure we don't have any cardViewValues that are no longer allowed to show in cards
@@ -819,6 +837,7 @@ class FieldLayout extends Model
             return isset($elements[$value]);
         });
 
+        // return elements in the order specified in the config
         return array_replace(
             array_flip($cardViewValues),
             $elements

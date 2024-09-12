@@ -536,6 +536,34 @@ JS, [
     }
 
     /**
+     * Returns card preview HTML data.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws \Throwable
+     */
+    public function actionRenderCardPreview()
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+
+        $fieldLayoutId = $this->request->getRequiredBodyParam('fieldLayoutId');
+        $cardElements = $this->request->getRequiredBodyParam('cardElements');
+
+        $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutId);
+
+        if (!$fieldLayout) {
+            throw new BadRequestHttpException("Invalid field layout ID: $fieldLayoutId");
+        }
+
+        $fieldLayout->setCardView($cardElements); // this fully takes care of attributes, but not fields
+
+        return $this->asJson([
+            'previewHtml' => Cp::cardPreviewHtml($fieldLayout, $cardElements),
+        ]);
+    }
+
+    /**
      * Returns the field layout component being edited, populated with the posted config/settings.
      *
      * @return FieldLayoutComponent

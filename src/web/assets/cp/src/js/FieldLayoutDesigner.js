@@ -1814,28 +1814,78 @@ Craft.FieldLayoutDesigner.ElementDrag =
 Craft.CardViewDesigner = Garnish.Base.extend(
   {
     $container: null,
-    $previewContainer: null,
 
     init: function (container, settings) {
       this.$container = $(container);
-      this.$previewContainer = this.$container.find('.cvd-preview');
+      let $previewContainer = this.$container.find('.cvd-preview');
+      let $libraryContainer = this.$container.find('.cvd-library');
+      this.setSettings(settings, Craft.CardViewDesigner.defaults);
+      const fieldLayoutId = this.settings.fieldLayoutId;
+
+      // trigger preview update when items are checked/unchecked
+      $libraryContainer.on('change', function() {
+        Craft.CardViewDesigner.updatePreview($previewContainer, fieldLayoutId);
+      });
 
       const sortItems = this.$container.find('.draggable');
       if (sortItems.length) {
-        new Garnish.DragSort(sortItems, {
+        let dragSort = new Garnish.DragSort(sortItems, {
           axis: Garnish.Y_AXIS,
           handle: '.draggable-handle',
+        });
+
+        // trigger preview update when items are dragged into new position
+        dragSort.on('dragStop', function() {
+          Craft.CardViewDesigner.updatePreview($previewContainer, fieldLayoutId);
         });
       }
     },
   },
   {
+    defaults: {
+      fieldLayoutId: null,
+    },
+
+    updatePreview: function($previewContainer, fieldLayoutId) {
+      let cardElements = this.getCardElements($previewContainer.prev('.cvd-library'));
+
+      Craft.sendActionRequest(
+          'POST',
+          'fields/render-card-preview',
+          {
+            data: {
+              fieldLayoutId: fieldLayoutId,
+              cardElements: cardElements,
+            },
+          }
+        )
+        .then(({data}) => {
+          $previewContainer.html(data.previewHtml);
+        })
+        .catch((e) => {
+          Craft.cp.displayError(e?.response?.data?.message);
+          throw e;
+        });
+    },
+
+    getCardElements: function($libraryContainer) {
+      let checkedItems = $libraryContainer.find('input[name$="cardView[]"]:checked');
+      let cardElements = [];
+
+      for (let i = 0; i < checkedItems.length; i++) {
+        cardElements.push($(checkedItems[i]).val());
+      }
+
+      return cardElements;
+    },
+
     addCheckbox: function (element) {
-      const $cvdContainer = element.tab.designer.$container
+      const $cvdLibraryContainer = element.tab.designer.$container
         .parents('.fld-cvd')
         .find('.cvd-library');
+      const $cvd = element.tab.designer.$container.parents('.fld-cvd').find('.card-view-designer');
 
-      if ($cvdContainer.length == 0) {
+      if ($cvdLibraryContainer.length == 0) {
         return null;
       }
 
@@ -1853,10 +1903,12 @@ Craft.CardViewDesigner = Garnish.Base.extend(
         })
         .appendTo($draggable);
 
-      $draggable.appendTo($cvdContainer);
+      $draggable.appendTo($cvdLibraryContainer);
 
-      const $cvd = $cvdContainer.parent('.card-view-designer');
       new Craft.CardViewDesigner('#' + $cvd.attr('id') + '');
+
+      // and now make a call to update the card preview
+      this.updatePreview($cvd.find('.cvd-preview'), element.tab.designer._config.id);
     },
 
     removeCheckbox: function (element) {
@@ -1867,6 +1919,10 @@ Craft.CardViewDesigner = Garnish.Base.extend(
       if ($draggable !== null) {
         $draggable.remove();
       }
+
+      // and now make a call to update the card preview
+      const $cvd = element.tab.designer.$container.parents('.fld-cvd').find('.card-view-designer');
+      this.updatePreview($cvd.find('.cvd-preview'), element.tab.designer._config.id);
     },
 
     getCheckboxLabel: function ($container) {
