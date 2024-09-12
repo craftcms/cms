@@ -1122,6 +1122,7 @@ return [
     'Page not found.' => 'Page not found.',
     'Pagination' => 'Pagination',
     'Parent' => 'Parent',
+    'Parent {type} Title' => 'Parent {type} Title',
     'Parish' => 'Parish',
     'Partition' => 'Partition',
     'Passed with warning' => 'Passed with warning',

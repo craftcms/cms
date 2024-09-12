@@ -500,15 +500,41 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineCardAttributes(): array
     {
+        $i18n = Craft::$app->getI18n();
+
         return array_merge(parent::defineCardAttributes(), [
-            'email' => ['label' => Craft::t('app', 'Email')],
-            'username' => ['label' => Craft::t('app', 'Username')],
-            'firstName' => ['label' => Craft::t('app', 'First Name')],
-            'lastName' => ['label' => Craft::t('app', 'Last Name')],
-            'groups' => ['label' => Craft::t('app', 'Groups')],
-            'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
-            'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
-            'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
+            'email' => [
+                'label' => Craft::t('app', 'Email'),
+                'placeholder' => 'test@example.com',
+            ],
+            'username' => [
+                'label' => Craft::t('app', 'Username'),
+                'placeholder' => Craft::t('app', 'Username'),
+            ],
+            'firstName' => [
+                'label' => Craft::t('app', 'First Name'),
+                'placeholder' => Craft::t('app', 'First Name'),
+            ],
+            'lastName' => [
+                'label' => Craft::t('app', 'Last Name'),
+                'placeholder' => Craft::t('app', 'Last Name'),
+            ],
+            'groups' => [
+                'label' => Craft::t('app', 'Groups'),
+                'placeholder' => Craft::t('app', 'Group name'),
+            ],
+            'preferredLanguage' => [
+                'label' => Craft::t('app', 'Preferred Language'),
+                'placeholder' => $i18n->getLocaleById('en')->getDisplayName(Craft::$app->language),
+            ],
+            'preferredLocale' => [
+                'label' => Craft::t('app', 'Preferred Locale'),
+                'placeholder' => $i18n->getLocaleById('en-US')->getDisplayName(Craft::$app->language),
+            ],
+            'lastLoginDate' => [
+                'label' => Craft::t('app', 'Last Login'),
+                'placeholder' => (new \DateTime())->sub(new \DateInterval('P' . rand(1, 30) . 'D')),
+            ],
         ]);
     }
 

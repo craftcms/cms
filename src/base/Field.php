@@ -824,7 +824,7 @@ JS, [
             return $element->getFieldValue($this->handle);
         }
 
-        return $this->getUiLabel() . ' ' . Craft::t('app', 'placeholder');
+        return $this->getUiLabel();
     }
 
     /**

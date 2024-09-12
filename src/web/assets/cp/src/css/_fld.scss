@@ -427,6 +427,13 @@ $gridColor: var(--gray-100);
   .draggable {
     display: flex;
   }
+
+  .card-placeholder {
+    display: inline-block;
+    border: 1px dashed mixins.$grey300;
+    padding-block: 0.1em;
+    padding-inline: 0.5em;
+  }
 }
 
 .field.cvd-field {
