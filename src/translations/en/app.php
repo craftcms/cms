@@ -1288,6 +1288,7 @@ return [
     'Replace files' => 'Replace files',
     'Replace it' => 'Replace it',
     'Replace the folder (all existing files will be deleted)' => 'Replace the folder (all existing files will be deleted)',
+    'Replace' => 'Replace',
     'Replacing “{find}” with “{replace}”' => 'Replacing “{find}” with “{replace}”',
     'Reply To' => 'Reply To',
     'Reply-To Address' => 'Reply-To Address',

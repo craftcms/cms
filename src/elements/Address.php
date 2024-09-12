@@ -108,6 +108,62 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
     /**
      * @inheritdoc
+     */
+    protected static function defineTableAttributes(): array
+    {
+        return array_merge(parent::defineTableAttributes(), [
+            'country' => ['label' => Craft::t('app', 'Country')],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function attributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'country':
+                return $this->getCountry()->getName();
+            default:
+                return parent::attributeHtml($attribute);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSortOptions(): array
+    {
+        return [
+            [
+                'label' => Craft::t('app', 'Label'),
+                'orderBy' => 'title',
+                'attribute' => 'title',
+            ],
+            [
+                'label' => Craft::t('app', 'Country'),
+                'orderBy' => 'countryCode',
+                'attribute' => 'country',
+            ],
+            [
+                'label' => Craft::t('app', 'Date Created'),
+                'orderBy' => 'dateCreated',
+                'defaultDir' => 'desc',
+            ],
+            [
+                'label' => Craft::t('app', 'Date Updated'),
+                'orderBy' => 'dateUpdated',
+                'defaultDir' => 'desc',
+            ],
+            [
+                'label' => Craft::t('app', 'ID'),
+                'orderBy' => 'id',
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
      * @return AddressQuery The newly created [[AddressQuery]] instance.
      */
     public static function find(): AddressQuery
