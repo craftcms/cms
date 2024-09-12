@@ -77,6 +77,7 @@
   --touch-target-size: calc(24rem / 16);
   --icon-size: 1rem;
   --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
+  --lh: 1.42em;
 }
 
 body,
@@ -957,7 +958,7 @@ button {
 
   .so-notice > & {
     margin-inline: calc(var(--xl) * -1) 0;
-    margin-block: -5px -5px;
+    margin-block: -5px;
     padding-inline: var(--xl) 0;
     padding-block: 5px;
     border-end-start-radius: var(--large-border-radius);
@@ -1646,7 +1647,7 @@ ul.path {
 
     &:not(:last-child)::after {
       margin-inline: 2px 5px;
-      margin-block: 0 0;
+      margin-block: 0;
       @include mixins.angle(right, var(--light-text-color), calc(1rem / 16));
     }
   }
@@ -2263,7 +2264,7 @@ ul.icons {
 
   &:empty,
   &.btn-empty {
-    padding-inline: 8px 8px;
+    padding-inline: 8px;
   }
 }
 
@@ -3364,7 +3365,7 @@ table {
 
     & > .thumb {
       margin-inline: -2px 2px;
-      margin-block: 0 0;
+      margin-block: 0;
 
       &.cp-icon {
         --thumb-size: 1rem; // 16px
@@ -3776,7 +3777,7 @@ table {
 
   .menubtn:not(.action-btn) {
     margin-inline: 0 -1px;
-    margin-block: 0 0;
+    margin-block: 0;
     padding-inline-end: 2px !important;
     border-inline-start: 1px solid var(--medium-hairline-color);
     border-start-start-radius: 0;
@@ -3840,7 +3841,7 @@ table {
       position: relative;
       inset-block-start: -2px;
       margin-inline: 2px 5px;
-      margin-block: 0 0;
+      margin-block: 0;
       @include mixins.angle(right, var(--light-text-color), calc(1rem / 16));
 
       .sel & {
@@ -4257,7 +4258,7 @@ table {
     &.draginsertion {
       position: relative;
       margin-inline: 8px 0;
-      margin-block: -1px -1px;
+      margin-block: -1px;
       padding-inline-start: 0;
       height: 2px;
       background-color: var(--link-color) !important;
@@ -4924,7 +4925,7 @@ $statusLabelBgShade: '500';
   .status,
   .cp-icon {
     margin-inline: -3px 0;
-    margin-block: 0 0;
+    margin-block: 0;
   }
 
   .status-label-text {
@@ -5672,7 +5673,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
 
     .ui-datepicker {
       margin-inline: -8px 0;
-      margin-block: 0 0;
+      margin-block: 0;
     }
   }
 

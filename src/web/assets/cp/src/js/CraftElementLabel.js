@@ -93,7 +93,7 @@ class CraftElementLabel extends HTMLElement {
       whiteSpace: 'nowrap',
       fontFamily: 'inherit',
     });
-    tag.innerHTML = text;
+    tag.innerText = text;
 
     this.appendChild(tag);
     const result = tag.clientWidth;
