@@ -2472,7 +2472,7 @@ JS;
             Html::endTag('div') . // .cvd-library
             Html::beginTag('div',  ['class' => 'cvd-preview']) .
             $previewHtml .
-            Html::endTag('div') . //.cvd-preview
+            Html::endTag('div') . // .cvd-preview
             Html::endTag('div') . // .cvd-container
             Html::endTag('div'); // .card-view-designer
     }
@@ -2568,6 +2568,7 @@ JS;
         $previewHtml .=
             Html::endTag('div') . // .card-body
             Html::endTag('div') . // .card-content
+            Html::tag('div', '', ['class' => 'spinner spinner-absolute']) .
             Html::endTag('div'); // .element.card
 
         return $previewHtml;

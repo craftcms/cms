@@ -421,6 +421,10 @@ $gridColor: var(--gray-100);
       flex-grow: 2;
       padding-inline: $base 0;
       padding-block: 0 $base;
+
+      &:not(.loading) .spinner {
+        display: none;
+      }
     }
   }
 
@@ -431,6 +435,7 @@ $gridColor: var(--gray-100);
   .card-placeholder {
     display: inline-block;
     border: 1px dashed mixins.$grey300;
+    border-radius: var(--small-border-radius);
     padding-block: 0.1em;
     padding-inline: 0.5em;
   }

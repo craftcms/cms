@@ -1823,7 +1823,7 @@ Craft.CardViewDesigner = Garnish.Base.extend(
       const fieldLayoutId = this.settings.fieldLayoutId;
 
       // trigger preview update when items are checked/unchecked
-      $libraryContainer.on('change', function() {
+      $libraryContainer.on('change', function () {
         Craft.CardViewDesigner.updatePreview($previewContainer, fieldLayoutId);
       });
 
@@ -1835,8 +1835,11 @@ Craft.CardViewDesigner = Garnish.Base.extend(
         });
 
         // trigger preview update when items are dragged into new position
-        dragSort.on('dragStop', function() {
-          Craft.CardViewDesigner.updatePreview($previewContainer, fieldLayoutId);
+        dragSort.on('dragStop', function () {
+          Craft.CardViewDesigner.updatePreview(
+            $previewContainer,
+            fieldLayoutId
+          );
         });
       }
     },
@@ -1846,30 +1849,37 @@ Craft.CardViewDesigner = Garnish.Base.extend(
       fieldLayoutId: null,
     },
 
-    updatePreview: function($previewContainer, fieldLayoutId) {
-      let cardElements = this.getCardElements($previewContainer.prev('.cvd-library'));
+    updatePreview: function ($previewContainer, fieldLayoutId) {
+      $previewContainer.addClass('loading');
+      Craft.cp.announce(Craft.t('app', 'Loading'));
 
-      Craft.sendActionRequest(
-          'POST',
-          'fields/render-card-preview',
-          {
-            data: {
-              fieldLayoutId: fieldLayoutId,
-              cardElements: cardElements,
-            },
-          }
-        )
+      let cardElements = this.getCardElements(
+        $previewContainer.prev('.cvd-library')
+      );
+
+      Craft.sendActionRequest('POST', 'fields/render-card-preview', {
+        data: {
+          fieldLayoutId: fieldLayoutId,
+          cardElements: cardElements,
+        },
+      })
         .then(({data}) => {
           $previewContainer.html(data.previewHtml);
         })
         .catch((e) => {
           Craft.cp.displayError(e?.response?.data?.message);
           throw e;
+        })
+        .finally(() => {
+          $previewContainer.removeClass('loading');
+          Craft.cp.announce(Craft.t('app', 'Loading complete'));
         });
     },
 
-    getCardElements: function($libraryContainer) {
-      let checkedItems = $libraryContainer.find('input[name$="cardView[]"]:checked');
+    getCardElements: function ($libraryContainer) {
+      let checkedItems = $libraryContainer.find(
+        'input[name$="cardView[]"]:checked'
+      );
       let cardElements = [];
 
       for (let i = 0; i < checkedItems.length; i++) {
@@ -1883,7 +1893,9 @@ Craft.CardViewDesigner = Garnish.Base.extend(
       const $cvdLibraryContainer = element.tab.designer.$container
         .parents('.fld-cvd')
         .find('.cvd-library');
-      const $cvd = element.tab.designer.$container.parents('.fld-cvd').find('.card-view-designer');
+      const $cvd = element.tab.designer.$container
+        .parents('.fld-cvd')
+        .find('.card-view-designer');
 
       if ($cvdLibraryContainer.length == 0) {
         return null;
@@ -1908,7 +1920,10 @@ Craft.CardViewDesigner = Garnish.Base.extend(
       new Craft.CardViewDesigner('#' + $cvd.attr('id') + '');
 
       // and now make a call to update the card preview
-      this.updatePreview($cvd.find('.cvd-preview'), element.tab.designer._config.id);
+      this.updatePreview(
+        $cvd.find('.cvd-preview'),
+        element.tab.designer._config.id
+      );
     },
 
     removeCheckbox: function (element) {
@@ -1921,8 +1936,13 @@ Craft.CardViewDesigner = Garnish.Base.extend(
       }
 
       // and now make a call to update the card preview
-      const $cvd = element.tab.designer.$container.parents('.fld-cvd').find('.card-view-designer');
-      this.updatePreview($cvd.find('.cvd-preview'), element.tab.designer._config.id);
+      const $cvd = element.tab.designer.$container
+        .parents('.fld-cvd')
+        .find('.card-view-designer');
+      this.updatePreview(
+        $cvd.find('.cvd-preview'),
+        element.tab.designer._config.id
+      );
     },
 
     getCheckboxLabel: function ($container) {
