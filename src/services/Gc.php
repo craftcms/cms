@@ -704,6 +704,7 @@ SQL;
             ->leftJoin(['r' => $revisionsTable], '[[r.canonicalId]] = coalesce([[e.canonicalId]],[[e.id]])')
             ->where([
                 'and',
+                ['not', ['se.elementId' => null]],
                 $this->_hardDeleteCondition('s'),
                 [
                     'r.canonicalId' => null,
@@ -719,7 +720,7 @@ SQL;
             if ($this->db->getIsMysql()) {
                 $sql = <<<SQL
 DELETE [[s]].* FROM $structuresTable [[s]]
-WHERE [[s.id]] NOT IN ($ids)
+WHERE [[s.id]] IN ($ids)
 AND $conditionSql
 SQL;
             } else {
@@ -728,7 +729,7 @@ DELETE FROM $structuresTable
 USING $structuresTable [[s]]
 WHERE 
     $structuresTable.[[id]] = [[s.id]] AND 
-    [[s.id]] NOT IN ($ids) AND
+    [[s.id]] IN ($ids) AND
     $conditionSql
 SQL;
             }
