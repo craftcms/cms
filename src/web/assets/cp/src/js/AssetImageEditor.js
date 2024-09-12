@@ -241,6 +241,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.$croppingCanvas.width(this.editorWidth);
       this.$croppingCanvas.height(this.editorHeight);
 
+      // Make canvas keyboard-accessible
+      this.$croppingCanvas.attr('tabindex', '0');
+
       this.canvas.enableRetinaScaling = true;
       this.renderImage = () => {
         Garnish.requestAnimationFrame(this.canvas.renderAll.bind(this.canvas));
@@ -330,6 +333,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           'mouseout,touchcancel',
           this._handleMouseOut
         );
+        this.addListener(this.$croppingCanvas, 'keydown', this._handleKeyDown);
 
         this._hideSpinner();
 
@@ -2469,6 +2473,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._handleMouseUp(ev);
       this.mouseMoveEvent = ev;
       this._handleMouseMoveInternal();
+    },
+
+    _handleKeyDown: function (ev) {
+      // Only handle if focal point or cropping are enabled
+      if (!this.focalPoint && !this.croppingCanvas) return;
+
+      console.log(event);
     },
 
     /**
