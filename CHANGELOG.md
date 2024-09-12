@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.12.2 - 2024-09-11
 
 - Updated Twig to 3.14. ([#15704](https://github.com/craftcms/cms/issues/15704))
 - Fixed a bug where soft-deleted structures weren’t getting hard-deleted via garbage collection. ([#15705](https://github.com/craftcms/cms/pull/15705))
