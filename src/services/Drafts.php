@@ -258,7 +258,8 @@ SQL,
         ]));
 
         // Try to save and return the result
-        return Craft::$app->getElements()->saveElement($element);
+        // set saveContent to true so that the default values get saved
+        return Craft::$app->getElements()->saveElement($element, saveContent: true);
     }
 
     /**
