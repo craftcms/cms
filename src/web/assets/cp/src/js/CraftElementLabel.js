@@ -12,7 +12,18 @@
  * @example <craft-element-label><a href="#" class="label-link">Label</a></craft-element-label>
  */
 class CraftElementLabel extends HTMLElement {
+  constructor() {
+    super();
+
+    this.connected = false;
+  }
+
   connectedCallback() {
+    // If we've already connected this element, don't do it again
+    if (this.connected) {
+      return;
+    }
+
     this.labelLink = this.querySelector('.label-link');
     this.tooltip = null;
 
@@ -41,6 +52,8 @@ class CraftElementLabel extends HTMLElement {
     $(() => {
       this.update();
     });
+
+    this.connected = true;
   }
 
   update() {
