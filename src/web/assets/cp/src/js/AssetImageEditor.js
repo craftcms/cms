@@ -53,6 +53,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     draggingCropper: false,
     scalingCropper: false,
     draggingFocal: false,
+    clickToMoveFocal: false,
+    clickToMoveCropper: false,
     previousMouseX: 0,
     previousMouseY: 0,
     shiftKeyHeld: false,
@@ -2410,6 +2412,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         } else if (move) {
           this.draggingCropper = true;
         }
+      } else {
+        if (this.focalPoint) {
+          this.clickToMoveFocal = true;
+        }
       }
     },
 
@@ -2458,7 +2464,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     /**
      * Handle mouse being released.
      */
-    _handleMouseUp: function () {
+    _handleMouseUp: function (ev) {
+      if (!this.draggingFocal && this.clickToMoveFocal) {
+        this._handleFocalClickToMove(ev);
+      } else if (!this.draggingCropper && this.clickToMoveCropper) {
+        this._handleCropperClickToMove();
+      }
+
       this.draggingCropper = false;
       this.scalingCropper = false;
       this.draggingFocal = false;
@@ -2479,7 +2491,65 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       // Only handle if focal point or cropping are enabled
       if (!this.focalPoint && !this.croppingCanvas) return;
 
-      console.log(event);
+      if (
+        ev.keyCode !== Garnish.UP_KEY &&
+        ev.keyCode !== Garnish.DOWN_KEY &&
+        ev.keyCode !== Garnish.LEFT_KEY &&
+        ev.keyCode !== Garnish.RIGHT_KEY
+      )
+        return;
+
+      if (this.focalPoint) {
+        console.log('move focal point');
+      } else if (this.croppingCanvas) {
+        this._handleCropperKeyboardMove(ev);
+        this._redrawCropperElements();
+        this.storeCropperState();
+        this.renderCropper();
+      }
+    },
+
+    _handleCropperKeyboardMove: function (ev) {
+      const clipperRect = {
+        left: this.clipper.left - this.clipper.width / 2,
+        top: this.clipper.top - this.clipper.height / 2,
+        width: this.clipper.width,
+        height: this.clipper.height,
+      };
+
+      console.log(clipperRect);
+
+      switch (ev.keyCode) {
+        case Garnish.UP_KEY:
+          this.clipper.set({
+            top: parseInt(clipperRect.top, 10) - 1,
+          });
+          break;
+        case Garnish.DOWN_KEY:
+          this.clipper.set({
+            top: parseInt(clipperRect.top, 10) + 1,
+          });
+          break;
+        case Garnish.LEFT_KEY:
+          //cropperInfo.left -= 1;
+          break;
+        case Garnish.RIGHT_KEY:
+          //cropperInfo.left += 1;
+          break;
+        default:
+          console.log('in default');
+      }
+    },
+
+    /**
+     * Handle focal point being moved via click.
+     *
+     * @param {Object} ev
+     */
+    _handleCropperClickToMove: function (ev) {
+      if (typeof this._handleFocalClickToMove._ === 'undefined') {
+        this._handleFocalClickToMove._ = {};
+      }
     },
 
     /**
@@ -2601,6 +2671,82 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         left: this.clipper.left + this._handleCropperDrag._.deltaX,
         top: this.clipper.top + this._handleCropperDrag._.deltaY,
       });
+    },
+
+    /**
+     * Handle focal point being moved via click.
+     *
+     * @param {Object} ev
+     */
+    _handleFocalClickToMove: function (ev) {
+      if (typeof this._handleFocalClickToMove._ === 'undefined') {
+        this._handleFocalClickToMove._ = {};
+      }
+
+      if (!this.focalPoint) return;
+
+      const left = this.focalPoint.get('left');
+      const top = this.focalPoint.get('top');
+
+      const canvasOffset = this.$croppingCanvas.offset();
+      const canvasOffsetX = canvasOffset.left;
+      const canvasOffsetY = canvasOffset.top;
+
+      const clickPosX = ev.pageX - canvasOffsetX;
+      const clickPosY = ev.pageY - canvasOffsetY;
+      console.log(clickPosY);
+
+      console.log(this.focalPoint.getBoundingRect(false, true));
+
+      // Just make sure that the focal point stays inside the image
+      if (this.currentView === 'crop') {
+        // if (
+        //   !this.arePointsInsideRectangle(
+        //     [
+        //       {
+        //         x: this._handleFocalDrag._.newX,
+        //         y: this._handleFocalDrag._.newY,
+        //       },
+        //     ],
+        //     this.imageVerticeCoords
+        //   )
+        // ) {
+        //   return;
+        // }
+        console.log('in crop mode');
+      } else {
+        // if (
+        //   !(
+        //     this.viewport.left -
+        //     this.viewport.width / 2 -
+        //     this._handleFocalDrag._.newX <
+        //     0 &&
+        //     this.viewport.left +
+        //     this.viewport.width / 2 -
+        //     this._handleFocalDrag._.newX >
+        //     0 &&
+        //     this.viewport.top -
+        //     this.viewport.height / 2 -
+        //     this._handleFocalDrag._.newY <
+        //     0 &&
+        //     this.viewport.top +
+        //     this.viewport.height / 2 -
+        //     this._handleFocalDrag._.newY >
+        //     0
+        //   )
+        // ) {
+        //   return;
+        // }
+        console.log('in other mode');
+      }
+
+      this.focalPoint.set({
+        left: clickPosX,
+        top: clickPosY,
+      });
+
+      this.storeFocalPointState();
+      this.renderImage();
     },
 
     /**
