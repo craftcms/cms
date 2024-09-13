@@ -19,6 +19,7 @@ class CraftElementLabel extends HTMLElement {
   }
 
   connectedCallback() {
+    console.log('connectedCallback');
     this.labelLink = this.querySelector('.label-link');
     this.tooltip = null;
 
@@ -89,7 +90,6 @@ class CraftElementLabel extends HTMLElement {
   disconnectedCallback() {
     this.tooltip?.remove();
     this.$tabs.data('tabs')?.off('selectTab');
-    this.desiredWidth = null;
   }
 
   calculateWidth(text) {
