@@ -7655,6 +7655,7 @@ textarea.text.fullwidth {
         .chip-content {
           a {
             max-width: 92%;
+            word-break: break-word;
           }
         }
       }
