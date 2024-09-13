@@ -15,15 +15,10 @@ class CraftElementLabel extends HTMLElement {
   constructor() {
     super();
 
-    this.connected = false;
+    this.desiredWidth = null;
   }
 
   connectedCallback() {
-    // If we've already connected this element, don't do it again
-    if (this.connected) {
-      return;
-    }
-
     this.labelLink = this.querySelector('.label-link');
     this.tooltip = null;
 
@@ -52,8 +47,6 @@ class CraftElementLabel extends HTMLElement {
     $(() => {
       this.update();
     });
-
-    this.connected = true;
   }
 
   update() {
@@ -99,6 +92,10 @@ class CraftElementLabel extends HTMLElement {
   }
 
   calculateWidth(text) {
+    if (this.desiredWidth !== null) {
+      return this.desiredWidth;
+    }
+
     const tag = document.createElement('span');
     Object.assign(tag.style, {
       position: 'absolute',
@@ -111,6 +108,7 @@ class CraftElementLabel extends HTMLElement {
     this.appendChild(tag);
     const result = tag.clientWidth;
     this.removeChild(tag);
+
     return result;
   }
 }
