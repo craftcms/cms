@@ -39,6 +39,10 @@ class NotRelatedToConditionRule extends RelatedToConditionRule
      */
     public function matchElement(ElementInterface $element): bool
     {
+        if ($this->condition instanceof ElementCondition && !isset($this->condition->referenceElement)) {
+            $this->condition->referenceElement = $element;
+        }
+        
         $elementId = $this->getElementId();
         if (!$elementId) {
             return true;
