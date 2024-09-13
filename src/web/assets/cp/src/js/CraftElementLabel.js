@@ -89,6 +89,7 @@ class CraftElementLabel extends HTMLElement {
   disconnectedCallback() {
     this.tooltip?.remove();
     this.$tabs.data('tabs')?.off('selectTab');
+    this.desiredWidth = null;
   }
 
   calculateWidth(text) {
