@@ -19,7 +19,6 @@ class CraftElementLabel extends HTMLElement {
   }
 
   connectedCallback() {
-    console.log('connectedCallback');
     this.labelLink = this.querySelector('.label-link');
     this.tooltip = null;
 
