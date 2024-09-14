@@ -3202,7 +3202,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
               // Choose pagination button to focus based on user behavior
               if (this.prevPage) {
-                let $btnToFocus = this.prevPage > this.page ? $prevBtn : $nextBtn;
+                let $btnToFocus =
+                  this.prevPage > this.page ? $prevBtn : $nextBtn;
 
                 if ($btnToFocus.attr('disabled') === 'disabled') {
                   $btnToFocus = Garnish.firstFocusableElement($paginationNav);
