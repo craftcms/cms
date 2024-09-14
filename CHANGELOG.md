@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where image constraint labels weren’t translated within the Image Editor.
+- Fixed a bug where image orientation labels weren’t getting translated for screen readers within the Image Editor.
+
 ## 4.12.2 - 2024-09-11
 
 - Updated Twig to 3.14. ([#15704](https://github.com/craftcms/cms/issues/15704))
