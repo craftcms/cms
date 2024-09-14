@@ -4,6 +4,7 @@
 
 - Fixed a bug where image constraint labels weren’t translated within the Image Editor.
 - Fixed a bug where image orientation labels weren’t getting translated for screen readers within the Image Editor.
+- Fixed a bug where elements’ default field values weren’t getting populated on creation. ([#15706](https://github.com/craftcms/cms/issues/15706))
 
 ## 5.4.3 - 2024-09-11
 
