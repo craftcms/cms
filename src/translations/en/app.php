@@ -1497,6 +1497,7 @@ return [
     'Sources' => 'Sources',
     'Square' => 'Square',
     'Square SVG file recommended. The logo will be displayed at {size} by {size}.' => 'Square SVG file recommended. The logo will be displayed at {size} by {size}.',
+    'Square' => 'Square',
     'Stack Trace' => 'Stack Trace',
     'State' => 'State',
     'Static Rows' => 'Static Rows',

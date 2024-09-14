@@ -1,4 +1,9 @@
 {% import "_includes/forms" as forms %}
+{% do view.registerTranslations('app', [
+  'Original',
+  'Square',
+  'Unconstrained',
+]) %}
 {{ tag('h1', {
     class: 'visually-hidden',
     text: 'Edit Image'|t('app'),
