@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.12.3 - 2024-09-14
 
 - Fixed a data deletion bug that occurred during garbage collection on PostgreSQL. ([#14891](https://github.com/craftcms/cms/issues/14891))
 - Fixed a bug where image constraint labels weren’t translated within the Image Editor.
