@@ -1,6 +1,9 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.4.4 - 2024-09-14
+
+> [!IMPORTANT]  
+> This update fixes a critical data deletion bug for PostgreSQL installs.
 
 - Fixed a data deletion bug that occurred during garbage collection on PostgreSQL. ([#14891](https://github.com/craftcms/cms/issues/14891))
 - Fixed a bug where image constraint labels weren’t translated within the Image Editor.
