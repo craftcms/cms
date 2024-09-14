@@ -650,11 +650,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     animateElementAway: function ($element, callback) {
       const offset = $element.offset();
+      const width = $element.width();
+
       $element.appendTo(Garnish.$bod).css({
         'z-index': 0,
         position: 'absolute',
         top: offset.top,
         left: offset.left,
+        maxWidth: width + 'px',
       });
 
       const animateCss = {
