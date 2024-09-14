@@ -137,10 +137,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$statusIcon = $('<div/>', {
         class: `revision-status ${this.isFullPage ? 'invisible' : 'hidden'}`,
       }).appendTo($spinnerContainer);
-      this.$statusMessage = $('<div/>', {
-        class: 'revision-status-message visually-hidden',
-        'aria-live': 'polite',
-      }).appendTo($spinnerContainer);
 
       this.$expandSiteStatusesBtn = $('.expand-status-btn');
 
@@ -822,10 +818,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.$statusIcon;
     },
 
-    statusMessage: function () {
-      return this.$statusMessage;
-    },
-
     createEditMetaAction: function () {
       if (!this.isFullPage) {
         return;
@@ -1294,9 +1286,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           .css('opacity', '')
           .removeClass('hidden invisible checkmark-icon alert-icon fade-out')
           .addClass('hidden');
-
-        // Clear previous status message
-        this.statusMessage().empty();
 
         if (this.$saveMetaBtn) {
           this.$saveMetaBtn.addClass('active');
@@ -1888,14 +1877,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     setStatusMessage: function (message) {
       this.statusIcons().attr('title', message);
-      this.statusMessage()
-        .empty()
-        .append(
-          $('<span/>', {
-            class: 'visually-hidden',
-            text: message,
-          })
-        );
+      Craft.cp.announce(message);
     },
 
     showMetaModal: function () {
