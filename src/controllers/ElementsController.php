@@ -114,7 +114,7 @@ class ElementsController extends Controller
         $this->_draftId = $this->_param('draftId');
         $this->_revisionId = $this->_param('revisionId');
         $this->_siteId = $this->_param('siteId');
-        $this->_enabled = $this->_param('enabled', true);
+        $this->_enabled = $this->_param('enabled', $this->_param('setEnabled', true) ? true : null);
         $this->_enabledForSite = $this->_param('enabledForSite');
         $this->_slug = $this->_param('slug');
         $this->_fresh = (bool)$this->_param('fresh');
@@ -1871,7 +1871,12 @@ JS, [
             $element->validate();
         }
 
-        /** @var Element|DraftBehavior|null $element */
+        /** @var Element|DraftBehavior|Response|null $element */
+        // see https://github.com/craftcms/cms/issues/14635#issuecomment-2349006694 for details
+        if ($element instanceof Response) {
+            return $element;
+        }
+
         if (!$element || $element->getIsRevision()) {
             throw new BadRequestHttpException('No element was identified by the request.');
         }

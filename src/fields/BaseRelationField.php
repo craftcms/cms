@@ -406,7 +406,7 @@ abstract class BaseRelationField extends Field implements
         $inputSources = $this->getInputSources();
 
         if ($inputSources === null) {
-            $this->addError($attribute, Craft::t('app', 'A source is required when relating ancestors.'));
+            $this->maintainHierarchy = false;
             return;
         }
 
@@ -421,19 +421,14 @@ abstract class BaseRelationField extends Field implements
         );
 
         if (count($elementSources) > 1) {
-            $this->addError($attribute, Craft::t('app', 'Only one source is allowed when relating ancestors.'));
+            $this->maintainHierarchy = false;
+            return;
         }
 
         foreach ($elementSources as $elementSource) {
             if (!isset($elementSource['structureId'])) {
-                $this->addError(
-                    $attribute,
-                    Craft::t(
-                        'app',
-                        '{source} is not a structured source. Only structured sources may be used when relating ancestors.',
-                        ['source' => $elementSource['label']]
-                    )
-                );
+                $this->maintainHierarchy = false;
+                return;
             }
         }
     }
@@ -1066,6 +1061,11 @@ JS, [
             ArrayHelper::isNumeric($value->id)
         ) {
             $targetIds = $value->id ?: [];
+        } elseif (
+            isset($value->where['elements.id']) &&
+            ArrayHelper::isNumeric($value->where['elements.id'])
+        ) {
+            $targetIds = $value->where['elements.id'] ?: [];
         } else {
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details

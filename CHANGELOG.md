@@ -1,5 +1,57 @@
 # Release Notes for Craft CMS 5
 
+## 5.4.4 - 2024-09-14
+
+> [!IMPORTANT]  
+> This update fixes a critical data deletion bug for PostgreSQL installs.
+
+- Fixed a data deletion bug that occurred during garbage collection on PostgreSQL. ([#14891](https://github.com/craftcms/cms/issues/14891))
+- Fixed a bug where image constraint labels weren’t translated within the Image Editor.
+- Fixed a bug where image orientation labels weren’t getting translated for screen readers within the Image Editor.
+- Fixed a PHP error. ([#14635](https://github.com/craftcms/cms/issues/14635))
+- Fixed a bug where elements’ default field values weren’t getting populated on creation. ([#15706](https://github.com/craftcms/cms/issues/15706))
+- Fixed a bug where URL field previews could bleed out of their container. ([#15722](https://github.com/craftcms/cms/issues/15722))
+
+## 5.4.3 - 2024-09-11
+
+- Updated Twig to 3.14. ([#15704](https://github.com/craftcms/cms/issues/15704))
+- Fixed a bug where soft-deleted structures weren’t getting hard-deleted via garbage collection. ([#15705](https://github.com/craftcms/cms/pull/15705))
+- Fixed a bug where address’ Label fields were being marked as translatable. ([#15702](https://github.com/craftcms/cms/pull/15702))
+- Fixed an error that could occur when saving an entry with a Matrix field, if the nested entries didn’t have slugs.
+- Fixed a bug where relation fields weren’t merging uploaded asset IDs with the existing field values. ([#15707](https://github.com/craftcms/cms/issues/15707))
+- Fixed a styling issue with inline-editable Matrix block tabs. ([#15703](https://github.com/craftcms/cms/issues/15703))
+- Fixed a bug where the control panel layout could shift briefly when removing an element from an element select input. ([#15712](https://github.com/craftcms/cms/issues/15712))
+- Fixed an RCE vulnerability.
+- Fixed an XSS vulnerability.
+
+## 5.4.2 - 2024-09-06
+
+- Added `craft\services\Security::isSystemDir()`.
+- Fixed a bug where `craft\helpers\StringHelper::lines()` was returning an array of `Stringy\Stringy` objects, rather than strings.
+- Fixed styling issues with Template field layout UI elements’ selector labels.
+- Fixed a validation error that could occur when saving a relational field, if the “Maintain hierarchy” setting had been enabled but was no longer applicable. ([#15666](https://github.com/craftcms/cms/issues/15666))
+- Fixed a bug where formatted addresses weren’t using the application locale consistently. ([#15668](https://github.com/craftcms/cms/issues/15668))
+- Fixed a bug where Tip and Warning field layout UI elements would display in field layouts even if they had no content. ([#15681](https://github.com/craftcms/cms/issues/15681))
+- Fixed an error that could occur when reverting an element’s content from a revision, if the element had been added to additional sites since the time the revision was created. ([#15679](https://github.com/craftcms/cms/issues/15679))
+- Fixed a PHP error that occurred when running PHP 8.2 or 8.3.
+- Fixed a bug where disabled entries became enabled when edited within Live Preview. ([#15670](https://github.com/craftcms/cms/issues/15670))
+- Fixed a bug where new nested entries could get incremented slugs even if there were no elements with conflicting URIs. ([#15672](https://github.com/craftcms/cms/issues/15672))
+- Fixed a bug where users’ Addresses screens were displaying addresses that belonged to the user via a custom Addresses field. ([#15678](https://github.com/craftcms/cms/issues/15678))
+- Fixed a bug where Addresses fields weren’t always returning data in GraphQL.
+- Fixed a bug where partial addresses weren’t getting garbage collected.
+- Fixed a bug where orphaned nested addresses weren’t getting garbage collected. ([#15678](https://github.com/craftcms/cms/issues/15678))
+- Fixed a bug where orphaned nested entries weren’t getting garbage collected after their field had been hard-deleted. ([#15678](https://github.com/craftcms/cms/issues/15678))
+- Fixed a JavaScript error that could occur when bulk-editing elements. ([#15694](https://github.com/craftcms/cms/issues/15694))
+- Fixed an information disclosure vulnerability.
+
+## 5.4.1 - 2024-09-04
+
+- Fixed a bug where element chips within thumbnail views weren’t getting light gray backgrounds. ([#15649](https://github.com/craftcms/cms/issues/15649))
+- Fixed a bug where Link fields didn’t fully support inline editing. ([#15653](https://github.com/craftcms/cms/issues/15653))
+- Fixed the loading spinner styling on element indexes. ([#15634](https://github.com/craftcms/cms/issues/15634))
+- Fixed an error that could occur when saving an element. ([#15656](https://github.com/craftcms/cms/issues/15656))
+- Fixed the styling of column sort indicators. ([#15655](https://github.com/craftcms/cms/issues/15655))
+
 ## 5.4.0.1 - 2024-09-03
 
 - Fixed a PHP error that could occur on element indexes. ([#15648](https://github.com/craftcms/cms/issues/15648))

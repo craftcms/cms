@@ -130,21 +130,8 @@ class Local extends Fs implements LocalFsInterface
      */
     public function validatePath(string $attribute, ?array $params, InlineValidator $validator): void
     {
-        // Make sure it’s not within any of the system directories
-        $path = FileHelper::absolutePath($this->getRootPath(), '/');
-
-        $systemDirs = Craft::$app->getPath()->getSystemPaths();
-
-        foreach ($systemDirs as $dir) {
-            $dir = FileHelper::absolutePath($dir, '/');
-            if (str_starts_with("$path/", "$dir/")) {
-                $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located within system directories.'));
-                break;
-            }
-            if (str_starts_with("$dir/", "$path/")) {
-                $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located above system directories.'));
-                break;
-            }
+        if (Craft::$app->getSecurity()->isSystemDir($this->getRootPath())) {
+            $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located within or above system directories.'));
         }
     }
 

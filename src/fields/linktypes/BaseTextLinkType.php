@@ -99,7 +99,9 @@ JS, [
                 Html::a($linkText, $value, [
                     'target' => '_blank',
                 ]) .
-                Html::endTag('div') . // .chip-content
+                Html::beginTag('div', [
+                    'class' => 'chip-actions',
+                ]) .
                 Cp::disclosureMenu([], [
                     'omitIfEmpty' => false,
                     'hiddenLabel' => Craft::t('app', 'Actions'),
@@ -109,6 +111,8 @@ JS, [
                         'data' => ['icon' => 'ellipsis'],
                     ],
                 ]) .
+                Html::endTag('div') . // .chip-actions
+                Html::endTag('div') . // .chip-content
                 Html::endTag('div'); // .chip;
         } else {
             $html = Cp::textHtml(array_merge($textInputAttributes, [
