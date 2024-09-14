@@ -2,9 +2,9 @@
 
 ## Unreleased
 
+- Fixed a data deletion bug that occurred during garbage collection on PostgreSQL. ([#14891](https://github.com/craftcms/cms/issues/14891))
 - Fixed a bug where image constraint labels weren’t translated within the Image Editor.
 - Fixed a bug where image orientation labels weren’t getting translated for screen readers within the Image Editor.
-- Fixed a data deletion bug that occurred during garbage collection on PostgreSQL. ([#14891](https://github.com/craftcms/cms/issues/14891))
 
 ## 4.12.2 - 2024-09-11
 
