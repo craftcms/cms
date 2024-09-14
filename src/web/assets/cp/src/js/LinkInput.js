@@ -88,11 +88,13 @@ Craft.LinkInput = Garnish.Base.extend(
     <a href="${Craft.escapeHtml(value)}" rel="noopener" target="_blank">
       ${Craft.escapeHtml(label)}
     </a>
+    <div class="chip-actions">
+      <button class="btn action-btn" type="button" aria-controls="${menuId}"
+          aria-label="${Craft.t('app', 'Actions')}"
+          data-disclosure-trigger data-icon="ellipsis"></button>
+      <div id="${menuId}" class="menu menu--disclosure"></div>
+    </div>
   </div>
-  <button class="btn action-btn" type="button" aria-controls="${menuId}"
-      aria-label="${Craft.t('app', 'Actions')}"
-      data-disclosure-trigger data-icon="ellipsis"></button>
-  <div id="${menuId}" class="menu menu--disclosure"></div>
 </div>
 `).prependTo(this.$container);
 
