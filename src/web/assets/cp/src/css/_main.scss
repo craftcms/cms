@@ -7627,6 +7627,13 @@ textarea.text.fullwidth {
             box-shadow: none !important;
           }
         }
+
+        .chip-content {
+          a {
+            max-width: calc(100% - var(--touch-target-size) - var(--s));
+            word-break: break-word;
+          }
+        }
       }
     }
   }
