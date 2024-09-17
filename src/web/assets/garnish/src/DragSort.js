@@ -259,7 +259,7 @@ export default Drag.extend(
         testForClosestItem(this.$insertion[0]);
       }
 
-      const checkItems = ($items, direction) => {
+      const checkItems = ($items) => {
         $items.each((_, item) => {
           const midpoint = this._getItemMidpoint(item);
           const mouseDistX = Math.abs(
@@ -286,8 +286,8 @@ export default Drag.extend(
         });
       };
 
-      checkItems(this.$draggee.first().prevAll(), 'prev');
-      checkItems(this.$draggee.last().nextAll(), 'next');
+      checkItems(this.$draggee.first().prevAll());
+      checkItems(this.$draggee.last().nextAll());
 
       return closestItem !== this.$draggee[0] &&
         (!this.insertionVisible || closestItem !== this.$insertion[0])
