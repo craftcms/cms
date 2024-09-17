@@ -36,8 +36,8 @@ class BasicHttpAuthStatic extends HttpBasicAuth
     public function __construct($config = [])
     {
         parent::__construct($config + [
-            'username' => App::env('CRAFT_BASIC_AUTH_USERNAME'),
-            'password' => App::env('CRAFT_BASIC_AUTH_PASSWORD'),
+            'username' => App::env('CRAFT_HTTP_BASIC_AUTH_USERNAME'),
+            'password' => App::env('CRAFT_HTTP_BASIC_AUTH_PASSWORD'),
             'realm' => Craft::$app->getSystemName(),
         ]);
     }
