@@ -241,20 +241,6 @@ class EntriesController extends BaseEntriesController
         // Permission enforcement
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
-        $currentUser = static::currentUser();
-        $section = $entry->getSection();
-
-        // Is this another user’s entry (and it’s not a Single)?
-        if (
-            $entry->id &&
-            !$duplicate &&
-            !in_array($currentUser->id, $entry->getAuthorIds(), true) &&
-            $section->type !== Section::TYPE_SINGLE &&
-            $entry->enabled
-        ) {
-            // Make sure they have permission to make live changes to those
-            $this->requirePermission("savePeerEntries:$section->uid");
-        }
 
         // Keep track of whether the entry was disabled as a result of duplication
         $forceDisabled = false;
@@ -297,17 +283,6 @@ class EntriesController extends BaseEntriesController
 
         if ($forceDisabled) {
             $entry->enabled = false;
-        }
-
-        $section = $entry->getSection();
-
-        // Even more permission enforcement
-        if ($entry->enabled) {
-            if ($entry->id) {
-                $this->requirePermission("saveEntries:$section->uid");
-            } elseif (!$currentUser->can("saveEntries:$section->uid")) {
-                $entry->enabled = false;
-            }
         }
 
         // Save the entry (finally!)

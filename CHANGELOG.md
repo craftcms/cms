@@ -1,5 +1,34 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where it wasn’t possible to save nested entries via the `entries/save-entry` controller action. ([#15737](https://github.com/craftcms/cms/issues/15737))
+- Fixed a bug where hyperlinks in Link field inputs could wrap unnecessarily. ([#15738](https://github.com/craftcms/cms/issues/15738))
+
+## 5.4.4 - 2024-09-14
+
+> [!IMPORTANT]  
+> This update fixes a critical data deletion bug for PostgreSQL installs.
+
+- Fixed a data deletion bug that occurred during garbage collection on PostgreSQL. ([#14891](https://github.com/craftcms/cms/issues/14891))
+- Fixed a bug where image constraint labels weren’t translated within the Image Editor.
+- Fixed a bug where image orientation labels weren’t getting translated for screen readers within the Image Editor.
+- Fixed a PHP error. ([#14635](https://github.com/craftcms/cms/issues/14635))
+- Fixed a bug where elements’ default field values weren’t getting populated on creation. ([#15706](https://github.com/craftcms/cms/issues/15706))
+- Fixed a bug where URL field previews could bleed out of their container. ([#15722](https://github.com/craftcms/cms/issues/15722))
+
+## 5.4.3 - 2024-09-11
+
+- Updated Twig to 3.14. ([#15704](https://github.com/craftcms/cms/issues/15704))
+- Fixed a bug where soft-deleted structures weren’t getting hard-deleted via garbage collection. ([#15705](https://github.com/craftcms/cms/pull/15705))
+- Fixed a bug where address’ Label fields were being marked as translatable. ([#15702](https://github.com/craftcms/cms/pull/15702))
+- Fixed an error that could occur when saving an entry with a Matrix field, if the nested entries didn’t have slugs.
+- Fixed a bug where relation fields weren’t merging uploaded asset IDs with the existing field values. ([#15707](https://github.com/craftcms/cms/issues/15707))
+- Fixed a styling issue with inline-editable Matrix block tabs. ([#15703](https://github.com/craftcms/cms/issues/15703))
+- Fixed a bug where the control panel layout could shift briefly when removing an element from an element select input. ([#15712](https://github.com/craftcms/cms/issues/15712))
+- Fixed an RCE vulnerability.
+- Fixed an XSS vulnerability.
+
 ## 5.4.2 - 2024-09-06
 
 - Added `craft\services\Security::isSystemDir()`.

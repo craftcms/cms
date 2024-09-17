@@ -3738,7 +3738,8 @@ class Elements extends Component
                     }
                 }
 
-                // if we're supposed to save all the content
+                $saveContent = $saveContent || $element->isNewForSite;
+
                 if ($saveContent || !empty($dirtyFields)) {
                     $oldContent = $siteSettingsRecord->content ?? []; // we'll need that if we're not saving all the content
                     if (is_string($oldContent)) {
