@@ -36,14 +36,14 @@ class BasicHttpAuthStatic extends HttpBasicAuth
      */
     public function beforeAction($action): bool
     {
+        if (!$this->username || !$this->password) {
+            throw new InvalidConfigException('Basic authentication is not configured.');
+        }
+
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($currentUser) {
             return true;
-        }
-
-        if (!$this->username || !$this->password) {
-            throw new InvalidConfigException('Basic authentication is not configured.');
         }
 
         list($username, $password) = Craft::$app->getRequest()->getAuthCredentials();
