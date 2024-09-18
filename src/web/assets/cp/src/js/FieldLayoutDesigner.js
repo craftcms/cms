@@ -1917,7 +1917,9 @@ Craft.CardViewDesigner = Garnish.Base.extend(
 
       $draggable.appendTo($cvdLibraryContainer);
 
-      new Craft.CardViewDesigner('#' + $cvd.attr('id') + '', {'fieldLayoutId': element.tab.designer._config.id});
+      new Craft.CardViewDesigner('#' + $cvd.attr('id') + '', {
+        fieldLayoutId: element.tab.designer._config.id,
+      });
 
       // and now make a call to update the card preview
       this.updatePreview(
