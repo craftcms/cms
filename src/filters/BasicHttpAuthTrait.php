@@ -10,6 +10,12 @@ namespace craft\filters;
 use Craft;
 use yii\web\UnauthorizedHttpException;
 
+/**
+ * Trait BasicHttpAuthTrait
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.13.0
+ */
 trait BasicHttpAuthTrait
 {
     /**

@@ -14,6 +14,7 @@ use yii\web\IdentityInterface;
 
 /**
  * Filter for adding basic HTTP authentication user credentials to site requests.
+ *
  * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-auth-httpbasicauth
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.13.0
