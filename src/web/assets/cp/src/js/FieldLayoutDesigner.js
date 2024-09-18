@@ -1878,7 +1878,7 @@ Craft.CardViewDesigner = Garnish.Base.extend(
 
     getCardElements: function ($libraryContainer) {
       let checkedItems = $libraryContainer.find(
-        'input[name$="cardView[]"]:checked'
+        'input[name*="cardView"]:checked'
       );
       let cardElements = [];
 
@@ -1917,7 +1917,7 @@ Craft.CardViewDesigner = Garnish.Base.extend(
 
       $draggable.appendTo($cvdLibraryContainer);
 
-      new Craft.CardViewDesigner('#' + $cvd.attr('id') + '');
+      new Craft.CardViewDesigner('#' + $cvd.attr('id') + '', {'fieldLayoutId': element.tab.designer._config.id});
 
       // and now make a call to update the card preview
       this.updatePreview(
