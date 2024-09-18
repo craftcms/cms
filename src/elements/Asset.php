@@ -705,7 +705,7 @@ class Asset extends Element
             ],
             'dateModified' => [
                 'label' => Craft::t('app', 'File Modified Date'),
-                'placeholder' => (new \DateTime())->sub(new \DateInterval('P' . rand(8, 14) . 'D')),
+                'placeholder' => (new \DateTime())->sub(new \DateInterval('P14D')),
             ],
             'uploader' => [
                 'label' => Craft::t('app', 'Uploaded By'),

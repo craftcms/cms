@@ -658,11 +658,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             ],
             'postDate' => [
                 'label' => Craft::t('app', 'Post Date'),
-                'placeholder' => (new \DateTime())->sub(new \DateInterval('P' . rand(15, 30) . 'D')),
+                'placeholder' => (new \DateTime())->sub(new \DateInterval('P15D')),
             ],
             'expiryDate' => [
                 'label' => Craft::t('app', 'Expiry Date'),
-                'placeholder' => (new \DateTime())->add(new \DateInterval('P' . rand(15, 30) . 'D')),
+                'placeholder' => (new \DateTime())->add(new \DateInterval('P15D')),
             ],
             'revisionNotes' => [
                 'label' => Craft::t('app', 'Revision Notes'),

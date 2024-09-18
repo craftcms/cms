@@ -533,7 +533,7 @@ class User extends Element implements IdentityInterface
             ],
             'lastLoginDate' => [
                 'label' => Craft::t('app', 'Last Login'),
-                'placeholder' => (new \DateTime())->sub(new \DateInterval('P' . rand(1, 30) . 'D')),
+                'placeholder' => (new \DateTime())->sub(new \DateInterval('P14D')),
             ],
         ]);
     }

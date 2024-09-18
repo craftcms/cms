@@ -1506,15 +1506,15 @@ abstract class Element extends Component implements ElementInterface
         $attributes = [
             'dateCreated' => [
                 'label' => Craft::t('app', 'Date Created'),
-                'placeholder' => (new \DateTime())->sub(new \DateInterval('P' . rand(15, 30) . 'D')),
+                'placeholder' => (new \DateTime())->sub(new \DateInterval('P16D')),
             ],
             'dateUpdated' => [
                 'label' => Craft::t('app', 'Date Updated'),
-                'placeholder' => (new \DateTime())->sub(new \DateInterval('P' . rand(8, 14) . 'D')),
+                'placeholder' => (new \DateTime())->sub(new \DateInterval('P15D')),
             ],
             'id' => [
                 'label' => Craft::t('app', 'ID'),
-                'placeholder' => rand(1, 9999),
+                'placeholder' => 4321,
             ],
             'uid' => [
                 'label' => Craft::t('app', 'UID'),
