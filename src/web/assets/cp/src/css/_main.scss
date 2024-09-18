@@ -77,6 +77,7 @@
   --touch-target-size: calc(24rem / 16);
   --icon-size: 1rem;
   --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
+  --lh: 1.42em;
 }
 
 body,
@@ -1207,7 +1208,7 @@ input.checkbox + label.smalltext {
   margin-inline: 5px 0;
   margin-block: -2px 0;
   font-size: 12px;
-  color: var(--rose-500);
+  color: var(--rose-600);
 }
 
 .scrollpane {
