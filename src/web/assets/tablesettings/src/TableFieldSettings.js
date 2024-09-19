@@ -253,9 +253,9 @@
       this.$settingsBtn = $typeCell.find('.settings');
 
       if (!this.$settingsBtn.length) {
-        this.$settingsBtn = $('<a/>', {
+        this.$settingsBtn = $('<button/>', {
           class: 'settings light invisible',
-          role: 'button',
+          type: 'button',
           'data-icon': 'settings',
         });
         $('<div/>', {class: 'flex flex-nowrap'})
