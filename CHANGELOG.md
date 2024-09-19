@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where it wasn’t possible to save nested entries via the `entries/save-entry` controller action. ([#15737](https://github.com/craftcms/cms/issues/15737))
+- Fixed a bug where hyperlinks in Link field inputs could wrap unnecessarily. ([#15738](https://github.com/craftcms/cms/issues/15738))
+
 ## 5.4.4 - 2024-09-14
 
 > [!IMPORTANT]  
