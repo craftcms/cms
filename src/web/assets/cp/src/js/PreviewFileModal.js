@@ -10,6 +10,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
     $triggerElement: null,
     $bumperButtonStart: null,
     $bumperButtonEnd: null,
+    $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
     elementSelect: null,
     type: null,
     loaded: null,
@@ -167,6 +168,10 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
       this.$container.attr('aria-labelledby', headingId);
     },
 
+    _addLiveRegion: function () {
+      this.$container.append(this.$liveRegion);
+    },
+
     /**
      * @deprecated
      */
@@ -274,6 +279,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
           this.$container.attr('data-asset-id', this.assetId);
           this.$container.append(response.data.previewHtml);
           this._addBumperButtons();
+          this._addLiveRegion();
           this._addModalName();
           await Craft.appendHeadHtml(response.data.headHtml);
           await Craft.appendBodyHtml(response.data.bodyHtml);

@@ -193,22 +193,24 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       Garnish.uiLayerManager.addLayer(this.$sidebar);
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
         this.closeSidebar();
-
-        // If the focus is currently inside the sidebar, refocus the toggle
-        const $focusedEl = Garnish.getFocusedElement();
-        if ($.contains(this.$sidebar.get(0), $focusedEl.get(0)))
-          this.$sidebarToggleBtn.focus();
       });
     },
 
     closeSidebar: function () {
       if (!this.$sidebarToggleBtn) return;
 
+      // Remove the sidebar layer when applicable
       if (this.sidebarIsOpen()) {
         Garnish.uiLayerManager.removeLayer();
-        this.$sidebar.addClass('hidden');
-        this.$sidebarToggleBtn.attr('aria-expanded', 'false');
       }
+
+      this.$sidebar.addClass('hidden');
+      this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+
+      // If the focus is currently inside the sidebar, refocus the toggle
+      const $focusedEl = Garnish.getFocusedElement();
+      if ($.contains(this.$sidebar.get(0), $focusedEl.get(0)))
+        this.$sidebarToggleBtn.focus();
 
       this.$body.removeClass('has-sidebar');
       this.$content.removeClass('has-sidebar');
