@@ -35,8 +35,16 @@ class CustomField extends BaseField
      */
     public function __construct(?FieldInterface $field = null, $config = [])
     {
-        $this->_field = $field;
+        // ensure we set the field last, so it has access to other properties that need to be set first
+        // see https://github.com/craftcms/cms/issues/15752
+        if (isset($config['fieldUid'])) {
+            $fieldUid = $config['fieldUid'];
+            unset($config['fieldUid']);
+            $config['fieldUid'] = $fieldUid;
+        }
+
         parent::__construct($config);
+        $this->_field = $field;
     }
 
     /**
