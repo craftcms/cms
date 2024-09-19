@@ -183,9 +183,6 @@ class UsersController extends Controller
      */
     public function beforeAction($action): bool
     {
-        if ($action->id === 'login-modal') {
-//            sleep(1);
-        }
         // Don't enable CSRF validation for login requests if the user is already logged-in.
         // (Guards against double-clicking a Login button.)
         if ($action->id === 'login' && !Craft::$app->getUser()->getIsGuest()) {
