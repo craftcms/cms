@@ -21,6 +21,12 @@ use yii\base\InvalidArgumentException;
  */
 trait SiteFilterTrait
 {
+    /**
+     * @var bool Whether the filter should be enabled.
+     * @since 4.13.0
+     */
+    public bool $enabled = true;
+
     private null|array $siteIds = null;
 
     protected function isActive(mixed $action): bool
@@ -29,7 +35,7 @@ trait SiteFilterTrait
             return false;
         }
 
-        return $this->isCurrentSiteActive();
+        return $this->enabled && $this->isCurrentSiteActive();
     }
 
     protected function setSite(null|array|int|string|Site $value): void
