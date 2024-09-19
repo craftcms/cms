@@ -822,15 +822,17 @@ class FieldLayout extends Model
             foreach ($cardElements as $cardElement) {
                 if (str_starts_with($cardElement['value'], 'layoutElement:')) {
                     $uid = str_replace('layoutElement:', '', $cardElement['value']);
-                    $fieldId = $cardElement['fieldId'];
-                    $element = $this->getElementByUid($uid);
-                    if ($element === null) {
-                        $field = Craft::$app->getFields()->getFieldById($fieldId);
-                        $element = new CustomField();
-                        $element->setField($field);
+                    $layoutElement = $this->getElementByUid($uid);
+                    if ($layoutElement === null) {
+                        $fieldId = $cardElement['fieldId'];
+                        if ($fieldId) {
+                            $field = Craft::$app->getFields()->getFieldById($fieldId);
+                            $layoutElement = new CustomField();
+                            $layoutElement->setField($field);
+                        }
                     }
 
-                    $layoutElements[$cardElement['value']] = $element;
+                    $layoutElements[$cardElement['value']] = $layoutElement;
                 }
             }
         }
