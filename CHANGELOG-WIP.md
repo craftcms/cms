@@ -4,6 +4,7 @@
 - Improved the styling of element cards with thumbnails. ([#15692](https://github.com/craftcms/cms/pull/15692), [#15673](https://github.com/craftcms/cms/issues/15673))
 - Elements within element selection inputs now have “Replace” actions.
 - Address index tables can now include “Country” columns.
+- Dropdown cells within editable tables are no longer center-aligned. ([#15742](https://github.com/craftcms/cms/issues/15742))
 
 ### Accessibility
 - Improved the control panel for screen readers. ([#15665](https://github.com/craftcms/cms/pull/15665))
