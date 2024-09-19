@@ -21,6 +21,8 @@ use yii\filters\auth\HttpBasicAuth;
  */
 class BasicHttpAuthStatic extends HttpBasicAuth
 {
+    use SiteFilterTrait, BasicHttpAuthTrait;
+
     public ?string $username = null;
     public ?string $password = null;
 
@@ -28,8 +30,6 @@ class BasicHttpAuthStatic extends HttpBasicAuth
      * @inheritdoc
      */
     public $realm;
-
-    use SiteFilterTrait, BasicHttpAuthTrait;
 
     /**
      * @inheritDoc

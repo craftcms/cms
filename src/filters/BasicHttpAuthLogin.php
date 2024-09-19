@@ -21,12 +21,12 @@ use yii\web\IdentityInterface;
  */
 class BasicHttpAuthLogin extends HttpBasicAuth
 {
+    use SiteFilterTrait, BasicHttpAuthTrait;
+
     /**
      * @inheritdoc
      */
     public $realm;
-
-    use SiteFilterTrait, BasicHttpAuthTrait;
 
     /**
      * @inheritdoc
