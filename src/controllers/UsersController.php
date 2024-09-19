@@ -98,6 +98,7 @@ class UsersController extends Controller
      *             ->one();
      *     }
      * );
+     * ```
      *
      * @since 4.2.0
      */
