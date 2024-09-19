@@ -547,16 +547,23 @@ JS, [
         $this->requireCpRequest();
         $this->requireAcceptsJson();
 
-        $fieldLayoutId = $this->request->getRequiredBodyParam('fieldLayoutId');
+        $fieldLayoutConfig = $this->request->getRequiredBodyParam('fieldLayoutConfig');
         $cardElements = $this->request->getRequiredBodyParam('cardElements');
 
-        $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutId);
-
-        if (!$fieldLayout) {
-            throw new BadRequestHttpException("Invalid field layout ID: $fieldLayoutId");
+        if (!isset($fieldLayoutConfig['id'])) {
+            $fieldLayout = Craft::createObject(FieldLayout::class, $fieldLayoutConfig);
+            $fieldLayout->type = $fieldLayoutConfig['type'];
+        } else {
+            $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutConfig['id']);
         }
 
-        $fieldLayout->setCardView($cardElements); // this fully takes care of attributes, but not fields
+        if (!$fieldLayout) {
+            throw new BadRequestHttpException("Invalid field layout");
+        }
+
+        $fieldLayout->setCardView(
+            array_column($cardElements, 'value')
+        ); // this fully takes care of attributes, but not fields
 
         return $this->asJson([
             'previewHtml' => Cp::cardPreviewHtml($fieldLayout, $cardElements),

@@ -813,16 +813,24 @@ class FieldLayout extends Model
             $layoutElements = $this->getCardBodyFields($element);
 
             // index field layout elements by prefix + uid
-            foreach ($layoutElements as $key => $field) {
+            foreach ($layoutElements as $key => $layoutElement) {
                 unset($layoutElements[$key]);
-                $layoutElements['layoutElement:' . $field->uid] = $field;
+                $layoutElements['layoutElement:' . $layoutElement->uid] = $layoutElement;
             }
         } else {
             // we only need to worry about body fields as the attributes are taken care of via getCardBodyAttributes()
             foreach ($cardElements as $cardElement) {
-                if (str_starts_with($cardElement, 'layoutElement:')) {
-                    $uid = str_replace('layoutElement:', '', $cardElement);
-                    $layoutElements[$cardElement] = $this->getElementByUid($uid);
+                if (str_starts_with($cardElement['value'], 'layoutElement:')) {
+                    $uid = str_replace('layoutElement:', '', $cardElement['value']);
+                    $fieldId = $cardElement['fieldId'];
+                    $element = $this->getElementByUid($uid);
+                    if ($element === null) {
+                        $field = Craft::$app->getFields()->getFieldById($fieldId);
+                        $element = new CustomField();
+                        $element->setField($field);
+                    }
+
+                    $layoutElements[$cardElement['value']] = $element;
                 }
             }
         }

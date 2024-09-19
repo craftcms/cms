@@ -1817,14 +1817,15 @@ Craft.CardViewDesigner = Garnish.Base.extend(
 
     init: function (container, settings) {
       this.$container = $(container);
+      this.setSettings(settings, Craft.CardViewDesigner.defaults);
+
       let $previewContainer = this.$container.find('.cvd-preview');
       let $libraryContainer = this.$container.find('.cvd-library');
-      this.setSettings(settings, Craft.CardViewDesigner.defaults);
-      const fieldLayoutId = this.settings.fieldLayoutId;
+      const fieldLayoutConfig = this.settings.fieldLayoutConfig;
 
       // trigger preview update when items are checked/unchecked
       $libraryContainer.on('change', function () {
-        Craft.CardViewDesigner.updatePreview($previewContainer, fieldLayoutId);
+        Craft.CardViewDesigner.updatePreview($previewContainer, fieldLayoutConfig);
       });
 
       const sortItems = this.$container.find('.draggable');
@@ -1838,7 +1839,7 @@ Craft.CardViewDesigner = Garnish.Base.extend(
         dragSort.on('dragStop', function () {
           Craft.CardViewDesigner.updatePreview(
             $previewContainer,
-            fieldLayoutId
+            fieldLayoutConfig,
           );
         });
       }
@@ -1846,10 +1847,10 @@ Craft.CardViewDesigner = Garnish.Base.extend(
   },
   {
     defaults: {
-      fieldLayoutId: null,
+      fieldLayoutConfig: null,
     },
 
-    updatePreview: function ($previewContainer, fieldLayoutId) {
+    updatePreview: function ($previewContainer, fieldLayoutConfig) {
       $previewContainer.addClass('loading');
       Craft.cp.announce(Craft.t('app', 'Loading'));
 
@@ -1859,7 +1860,7 @@ Craft.CardViewDesigner = Garnish.Base.extend(
 
       Craft.sendActionRequest('POST', 'fields/render-card-preview', {
         data: {
-          fieldLayoutId: fieldLayoutId,
+          fieldLayoutConfig: fieldLayoutConfig,
           cardElements: cardElements,
         },
       })
@@ -1883,7 +1884,12 @@ Craft.CardViewDesigner = Garnish.Base.extend(
       let cardElements = [];
 
       for (let i = 0; i < checkedItems.length; i++) {
-        cardElements.push($(checkedItems[i]).val());
+        let element = {
+          'value': $(checkedItems[i]).val(),
+          'fieldId': $(checkedItems[i]).data('fieldId') ?? null,
+        }
+
+        cardElements.push(element);
       }
 
       return cardElements;
@@ -1912,19 +1918,22 @@ Craft.CardViewDesigner = Garnish.Base.extend(
           label: this.getCheckboxLabel(element.$container),
           checked: true,
           fieldClass: ['disabled', 'cvd-field'],
+          data: {
+            'field-id': element.fieldId,
+          }
         })
         .appendTo($draggable);
 
       $draggable.appendTo($cvdLibraryContainer);
 
       new Craft.CardViewDesigner('#' + $cvd.attr('id') + '', {
-        fieldLayoutId: element.tab.designer._config.id,
+        fieldLayoutConfig: element.tab.designer._config,
       });
 
       // and now make a call to update the card preview
       this.updatePreview(
         $cvd.find('.cvd-preview'),
-        element.tab.designer._config.id
+        element.tab.designer._config
       );
     },
 
@@ -1943,7 +1952,7 @@ Craft.CardViewDesigner = Garnish.Base.extend(
         .find('.card-view-designer');
       this.updatePreview(
         $cvd.find('.cvd-preview'),
-        element.tab.designer._config.id
+        element.tab.designer._config
       );
     },
 

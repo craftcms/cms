@@ -2450,7 +2450,7 @@ JS, [
 
         $view = Craft::$app->getView();
         $jsSettings = Json::encode([
-            'fieldLayoutId' => $fieldLayout->id,
+            'fieldLayoutConfig' => $fieldLayout->toArray(),
         ]);
         $namespacedId = $view->namespaceInputId($config['id']);
 

@@ -435,6 +435,12 @@ Craft.ui = {
       $input.addClass(config.class);
     }
 
+    if (config.data) {
+      Object.entries(config.data).forEach((item) => {
+        $input.attr('data-' + item[0], item[1]);
+      });
+    }
+
     if (config.toggle || config.reverseToggle) {
       $input.addClass('fieldtoggle');
       new Craft.FieldToggle($input);
