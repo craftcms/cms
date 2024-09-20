@@ -1805,7 +1805,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $handle = static::stripHtml($str);
 
         // Remove inner-word punctuation
-        $handle = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/', '', $handle);
+        $handle = preg_replace('/[!,\'"‘’“”\[\]\(\)\{\}\/\\:]/', '', $handle);
 
         // Make it lowercase
         $handle = static::toLowerCase($handle);
