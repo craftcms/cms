@@ -75,4 +75,3 @@ Pull requests should clearly describe the problem and solution. Include the rele
 Thanks for being awesome.
 
 :cocktail:
-
