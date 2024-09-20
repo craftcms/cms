@@ -37,9 +37,8 @@ class CustomField extends BaseField
     {
         // ensure we set the field last, so it has access to other properties that need to be set first
         // see https://github.com/craftcms/cms/issues/15752
-        if (isset($config['fieldUid'])) {
-            $fieldUid = $config['fieldUid'];
-            unset($config['fieldUid']);
+        $fieldUid = ArrayHelper::remove($config, 'fieldUid');
+        if ($fieldUid) {
             $config['fieldUid'] = $fieldUid;
         }
 
