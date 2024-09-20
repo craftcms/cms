@@ -86,7 +86,7 @@ class Fields extends Component
      *
      * Field types must implement [[FieldInterface]]. [[Field]] provides a base implementation.
      *
-     * See [Field Types](https://craftcms.com/docs/4.x/extend/field-types.html) for documentation on creating field types.
+     * See [Field Types](https://craftcms.com/docs/5.x/extend/field-types.html) for documentation on creating field types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
