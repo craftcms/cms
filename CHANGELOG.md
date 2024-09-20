@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Auto-generated handles, slugs, etc. now update immediately when the source input is changed. ([#15754](https://github.com/craftcms/cms/issues/15754))
 - Fixed a bug where Table fields’ Default Values table could lose existing rows if they only consisted of Dropdown columns without configured options.
 
 ## 4.12.3 - 2024-09-14
