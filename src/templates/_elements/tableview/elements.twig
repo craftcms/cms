@@ -4,25 +4,37 @@
 {% set structureEditable = structureEditable is defined and not inlineEditing ? structureEditable : false -%}
 {% set padding = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% set elementsService = craft.app.elements %}
+{% set hasStatusCol = attributes|contains(0, 'status') %}
+{% set showHeaderColumn = showHeaderColumn ?? false %}
 
 {% for element in elements %}
     {% set totalDescendants = structure
-        ? element.getDescendants()
+        ? (element.getDescendants()
             .status(null)
             .drafts(null)
             .draftOf(false)
             .savedDraftsOnly()
-            .count()
+            .withCustomFields(false)
+            .count() ?? 0)
         : 0 %}
     {% set elementTitle = element.title ?: element.id %}
     {% set showInputs = (inlineEditing ?? false) and elementsService.canSave(element, currentUser) %}
-    <tr data-id="{{ element.id }}"{% if structure %} data-title="{{ elementTitle }}" data-level="{{ element.level }}" data-descendants="{{ totalDescendants ?? 0 }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
+    {% tag 'tr' with {
+      data: {
+        id: element.isProvisionalDraft ? element.getCanonicalId() : element.id,
+        title: elementTitle,
+        level: structure ? element.level : false,
+        descendants: structure ? totalDescendants : false,
+      },
+      class: {
+        disabled: (element.isProvisionalDraft ? element.getCanonicalId() : element.id) in disabledElementIds,
+      }|filter|keys,
+    } %}
         {% if selectable %}
             <td class="checkbox-cell">
                 {{ tag('div', {
                     class: 'checkbox',
                     title: 'Select'|t('app'),
-                    role: 'checkbox',
                     tabindex: '0',
                     aria: {
                         checked: 'false',
@@ -55,10 +67,14 @@
                             aria-expanded="{{  element.id not in collapsedElementIds ? 'true' : 'false' }}"></button>
                         {% endif %}
                         {% set chip = elementChip(element, {
-                          context: context ?? 'index',
+                            context: context ?? 'index',
+                            showThumb: showHeaderColumn,
+                            showLabel: showHeaderColumn,
+                            showProvisionalDraftLabel: true,
+                            showStatus: showHeaderColumn and not hasStatusCol,
                         }) %}
-                        {% if not (showHeaderColumn ?? false) %}
-                            {% set chip = chip|attr({class: 'hidden'}) %}
+                        {% if not showHeaderColumn %}
+                            {% set chip = chip|attr({class: 'hide-label'}) %}
                         {% endif %}
                         {{ chip|raw }}
 
@@ -92,7 +108,7 @@
                 </td>
             {% endif %}
         {% endfor %}
-    </tr>
+    {% endtag %}
 {% endfor %}
 
 {% endapply -%}

@@ -27,6 +27,7 @@
                 value: allValue,
                 checked: allChecked,
                 autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+                targetPrefix: targetPrefix ?? null,
             } only %}
         </div>
     {%- elseif name is defined and (name|length < 3 or name|slice(-2) != '[]') %}
@@ -41,7 +42,8 @@
                 {% include "_includes/forms/checkbox" with {
                     name: (name ?? false) ? "#{name}[]" : null,
                     checked: ((showAllOption and allChecked) or (option.value is defined and option.value in values)),
-                    disabled: (showAllOption and allChecked)
+                    disabled: (showAllOption and allChecked),
+                    targetPrefix: targetPrefix ?? null,
                 }|merge(option) only %}
             </div>
         {% endif %}

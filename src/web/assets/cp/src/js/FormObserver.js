@@ -213,6 +213,7 @@ Craft.FormObserver = Garnish.Base.extend({
   },
 
   destroy() {
+    clearTimeout(this._timeout);
     this._mutationObserver.disconnect();
     delete this._mutationObserver;
     this.base();

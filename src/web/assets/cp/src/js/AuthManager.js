@@ -5,13 +5,12 @@
  */
 Craft.AuthManager = Garnish.Base.extend(
   {
-    remainingSessionTime: null,
     checkRemainingSessionTimer: null,
-    showLoginModalTimer: null,
     decrementLogoutWarningInterval: null,
 
     showingLogoutWarningModal: false,
     showingLoginModal: false,
+    renewingSession: false,
 
     logoutWarningModal: null,
     loginModal: null,
@@ -20,6 +19,13 @@ Craft.AuthManager = Garnish.Base.extend(
     $passwordInput: null,
     $loginBtn: null,
     loginBtn: null,
+
+    /**
+     * @deprecated
+     */
+    get remainingSessionTime() {
+      return Craft.remainingSessionTime;
+    },
 
     /**
      * Init
@@ -38,10 +44,9 @@ Craft.AuthManager = Garnish.Base.extend(
         clearTimeout(this.checkRemainingSessionTimer);
       }
 
-      this.checkRemainingSessionTimer = setTimeout(
-        this.checkRemainingSessionTime.bind(this),
-        seconds * 1000
-      );
+      this.checkRemainingSessionTimer = setTimeout(() => {
+        this.checkRemainingSessionTime();
+      }, seconds * 1000);
     },
 
     /**
@@ -67,15 +72,22 @@ Craft.AuthManager = Garnish.Base.extend(
      * Updates our record of the auth timeout, and handles it.
      */
     updateRemainingSessionTime: function (remainingSessionTime, isGuest) {
-      this.remainingSessionTime = parseInt(remainingSessionTime);
+      if (this.checkRemainingSessionTimer) {
+        clearTimeout(this.checkRemainingSessionTimer);
+      }
+
+      // Keep track of whether we just logged in
+      const loggedIn = !Craft.remainingSessionTime && remainingSessionTime;
+
+      Craft.remainingSessionTime = parseInt(remainingSessionTime);
 
       // Are we within the warning window?
       if (
-        this.remainingSessionTime !== -1 &&
-        this.remainingSessionTime < Craft.AuthManager.minSafeSessionTime
+        Craft.remainingSessionTime !== -1 &&
+        Craft.remainingSessionTime < Craft.AuthManager.minSafeSessionTime
       ) {
         // Is there still time to renew the session?
-        if (!isGuest || this.remainingSessionTime) {
+        if (!isGuest || Craft.remainingSessionTime) {
           if (!this.showingLogoutWarningModal) {
             // Show the warning modal
             this.showLogoutWarningModal();
@@ -83,12 +95,12 @@ Craft.AuthManager = Garnish.Base.extend(
 
           const seconds = Math.min(
             Craft.AuthManager.checkInterval,
-            this.remainingSessionTime
+            Craft.remainingSessionTime
           );
           this.setCheckRemainingSessionTimer(Math.max(1, seconds));
         } else {
           // Show the login modal
-          if (!this.showingLoginModal) {
+          if (!this.showingLoginModal && !this.renewingSession) {
             this.hideLogoutWarningModal();
             this.showLoginModal();
           }
@@ -99,19 +111,26 @@ Craft.AuthManager = Garnish.Base.extend(
         this.hideLogoutWarningModal();
         this.hideLoginModal();
 
-        // Will be be within the minSafeSessionTime before the next update?
+        // Will we be within the minSafeSessionTime before the next update?
         if (
-          this.remainingSessionTime !== -1 &&
-          this.remainingSessionTime <
+          Craft.remainingSessionTime !== -1 &&
+          Craft.remainingSessionTime <
             Craft.AuthManager.minSafeSessionTime +
               Craft.AuthManager.checkInterval
         ) {
           this.setCheckRemainingSessionTimer(
-            this.remainingSessionTime - Craft.AuthManager.minSafeSessionTime + 1
+            Craft.remainingSessionTime -
+              Craft.AuthManager.minSafeSessionTime +
+              1
           );
         } else {
           this.setCheckRemainingSessionTimer(Craft.AuthManager.checkInterval);
         }
+      }
+
+      if (loggedIn) {
+        window.am = this;
+        this.trigger('login');
       }
     },
 
@@ -159,14 +178,17 @@ Craft.AuthManager = Garnish.Base.extend(
             if (!Garnish.isMobileBrowser(true)) {
               // Auto-focus the renew button
               setTimeout(function () {
-                $renewSessionBtn.trigger('focus');
+                $renewSessionBtn.focus();
               }, 100);
             }
           },
         });
 
         this.addListener($logoutBtn, 'activate', 'logout');
-        this.addListener($form, 'submit', 'renewSession');
+        this.addListener($form, 'submit', (ev) => {
+          ev.preventDefault();
+          this.renewSession();
+        });
       }
 
       if (quickShow) {
@@ -189,7 +211,7 @@ Craft.AuthManager = Garnish.Base.extend(
     updateLogoutWarningMessage: function () {
       this.$logoutWarningPara.text(
         Craft.t('app', 'Your session will expire in {time}.', {
-          time: Craft.secondsToHumanTimeDuration(this.remainingSessionTime),
+          time: Craft.secondsToHumanTimeDuration(Craft.remainingSessionTime),
         })
       );
 
@@ -197,12 +219,12 @@ Craft.AuthManager = Garnish.Base.extend(
     },
 
     decrementLogoutWarning: function () {
-      if (this.remainingSessionTime > 0) {
-        this.remainingSessionTime--;
+      if (Craft.remainingSessionTime > 0) {
+        Craft.remainingSessionTime--;
         this.updateLogoutWarningMessage();
       }
 
-      if (this.remainingSessionTime === 0) {
+      if (Craft.remainingSessionTime === 0) {
         clearInterval(this.decrementLogoutWarningInterval);
       }
     },
@@ -251,6 +273,14 @@ Craft.AuthManager = Garnish.Base.extend(
       );
       const $container = $(data.html);
 
+      // Remove lang attr if it matches the one on html
+      const htmlLang = document.documentElement.lang;
+      const modalLang = $container.attr('lang');
+
+      if (modalLang === htmlLang && modalLang) {
+        $container.removeAttr('lang');
+      }
+
       this.loginModal = new Garnish.Modal($container, {
         closeOtherModals: false,
         hideOnEsc: false,
@@ -262,6 +292,7 @@ Craft.AuthManager = Garnish.Base.extend(
             showPasskeyBtn: Craft.userHasPasskeys,
             onLogin: () => {
               this.loginModal.hide();
+              this.checkRemainingSessionTime();
             },
           });
           await Craft.appendHeadHtml(data.headHtml);
@@ -303,13 +334,12 @@ Craft.AuthManager = Garnish.Base.extend(
       });
     },
 
-    renewSession: function (ev) {
-      if (ev) {
-        ev.preventDefault();
-      }
-
+    renewSession: async function () {
       this.hideLogoutWarningModal();
-      this.checkRemainingSessionTime(true);
+      this.renewingSession = true;
+      this.checkRemainingSessionTime(true, () => {
+        this.renewingSession = false;
+      });
     },
 
     closeModal: function () {

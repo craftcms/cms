@@ -159,351 +159,343 @@ Craft.Grid = Garnish.Base.extend(
         (this.settings.gutter * (this.totalCols - 1)) / this.totalCols;
 
       // Temporarily stop listening to container resizes
-      this.removeListener(this.$container, 'resize');
+      Garnish.muteResizeEvents(() => {
+        if (this.settings.fillMode === 'grid') {
+          this.refreshCols._.itemIndex = 0;
 
-      if (this.settings.fillMode === 'grid') {
-        this.refreshCols._.itemIndex = 0;
-
-        while (this.refreshCols._.itemIndex < this.items.length) {
-          // Append the next X items and figure out which one is the tallest
-          this.refreshCols._.tallestItemHeight = -1;
-          this.refreshCols._.colIndex = 0;
-
-          for (
-            this.refreshCols._.i = this.refreshCols._.itemIndex;
-            this.refreshCols._.i <
-              this.refreshCols._.itemIndex + this.totalCols &&
-            this.refreshCols._.i < this.items.length;
-            this.refreshCols._.i++
-          ) {
-            this.refreshCols._.itemHeight = this.items[this.refreshCols._.i]
-              .height('auto')
-              .height();
-
-            if (
-              this.refreshCols._.itemHeight >
-              this.refreshCols._.tallestItemHeight
-            ) {
-              this.refreshCols._.tallestItemHeight =
-                this.refreshCols._.itemHeight;
-            }
-
-            this.refreshCols._.colIndex++;
-          }
-
-          if (this.settings.snapToGrid) {
-            this.refreshCols._.remainder =
-              this.refreshCols._.tallestItemHeight % this.settings.snapToGrid;
-
-            if (this.refreshCols._.remainder) {
-              this.refreshCols._.tallestItemHeight +=
-                this.settings.snapToGrid - this.refreshCols._.remainder;
-            }
-          }
-
-          // Now set their heights to the tallest one
-          for (
-            this.refreshCols._.i = this.refreshCols._.itemIndex;
-            this.refreshCols._.i <
-              this.refreshCols._.itemIndex + this.totalCols &&
-            this.refreshCols._.i < this.items.length;
-            this.refreshCols._.i++
-          ) {
-            this.items[this.refreshCols._.i].height(
-              this.refreshCols._.tallestItemHeight
-            );
-          }
-
-          // set the this.refreshCols._.itemIndex pointer to the next one up
-          this.refreshCols._.itemIndex += this.totalCols;
-        }
-      } else {
-        this.removeListener(this.$items, 'resize');
-
-        // If there's only one column, sneak out early
-        if (this.totalCols === 1) {
-          this.$container.height('auto');
-          this.$items
-            .show()
-            .css({
-              position: 'relative',
-              width: 'auto',
-              top: 0,
-            })
-            .css(Craft.left, 0);
-        } else {
-          this.$items.css('position', 'absolute');
-          this.colPctWidth = 100 / this.totalCols;
-
-          // The setup
-
-          this.layouts = [];
-
-          this.itemPositions = [];
-          this.itemColspansByPosition = [];
-
-          // Figure out all of the possible colspans for each item,
-          // as well as all the possible positions for each item at each of its colspans
-
-          this.possibleItemColspans = [];
-          this.possibleItemPositionsByColspan = [];
-          this.itemHeightsByColspan = [];
-
-          for (
-            this.refreshCols._.item = 0;
-            this.refreshCols._.item < this.items.length;
-            this.refreshCols._.item++
-          ) {
-            this.possibleItemColspans[this.refreshCols._.item] = [];
-            this.possibleItemPositionsByColspan[this.refreshCols._.item] = {};
-            this.itemHeightsByColspan[this.refreshCols._.item] = {};
-
-            this.refreshCols._.$item =
-              this.items[this.refreshCols._.item].show();
-            this.refreshCols._.positionRight =
-              this.refreshCols._.$item.data('position') === 'right';
-            this.refreshCols._.positionLeft =
-              this.refreshCols._.$item.data('position') === 'left';
-            this.refreshCols._.minColspan = this.refreshCols._.$item.data(
-              'colspan'
-            )
-              ? this.refreshCols._.$item.data('colspan')
-              : this.refreshCols._.$item.data('min-colspan')
-                ? this.refreshCols._.$item.data('min-colspan')
-                : 1;
-            this.refreshCols._.maxColspan = this.refreshCols._.$item.data(
-              'colspan'
-            )
-              ? this.refreshCols._.$item.data('colspan')
-              : this.refreshCols._.$item.data('max-colspan')
-                ? this.refreshCols._.$item.data('max-colspan')
-                : this.totalCols;
-
-            if (this.refreshCols._.minColspan > this.totalCols) {
-              this.refreshCols._.minColspan = this.totalCols;
-            }
-            if (this.refreshCols._.maxColspan > this.totalCols) {
-              this.refreshCols._.maxColspan = this.totalCols;
-            }
+          while (this.refreshCols._.itemIndex < this.items.length) {
+            // Append the next X items and figure out which one is the tallest
+            this.refreshCols._.tallestItemHeight = -1;
+            this.refreshCols._.colIndex = 0;
 
             for (
-              this.refreshCols._.colspan = this.refreshCols._.minColspan;
-              this.refreshCols._.colspan <= this.refreshCols._.maxColspan;
-              this.refreshCols._.colspan++
+              this.refreshCols._.i = this.refreshCols._.itemIndex;
+              this.refreshCols._.i <
+                this.refreshCols._.itemIndex + this.totalCols &&
+              this.refreshCols._.i < this.items.length;
+              this.refreshCols._.i++
             ) {
-              // Get the height for this colspan
-              this.refreshCols._.$item.css(
-                'width',
-                this.getItemWidthCss(this.refreshCols._.colspan)
-              );
-              this.itemHeightsByColspan[this.refreshCols._.item][
-                this.refreshCols._.colspan
-              ] = this.refreshCols._.$item.outerHeight();
+              this.refreshCols._.itemHeight = this.items[this.refreshCols._.i]
+                .height('auto')
+                .height();
 
-              this.possibleItemColspans[this.refreshCols._.item].push(
-                this.refreshCols._.colspan
-              );
-              this.possibleItemPositionsByColspan[this.refreshCols._.item][
-                this.refreshCols._.colspan
-              ] = [];
+              if (
+                this.refreshCols._.itemHeight >
+                this.refreshCols._.tallestItemHeight
+              ) {
+                this.refreshCols._.tallestItemHeight =
+                  this.refreshCols._.itemHeight;
+              }
 
-              if (this.refreshCols._.positionLeft) {
-                this.refreshCols._.minPosition = 0;
-                this.refreshCols._.maxPosition = 0;
-              } else if (this.refreshCols._.positionRight) {
-                this.refreshCols._.minPosition =
-                  this.totalCols - this.refreshCols._.colspan;
-                this.refreshCols._.maxPosition = this.refreshCols._.minPosition;
-              } else {
-                this.refreshCols._.minPosition = 0;
-                this.refreshCols._.maxPosition =
-                  this.totalCols - this.refreshCols._.colspan;
+              this.refreshCols._.colIndex++;
+            }
+
+            if (this.settings.snapToGrid) {
+              this.refreshCols._.remainder =
+                this.refreshCols._.tallestItemHeight % this.settings.snapToGrid;
+
+              if (this.refreshCols._.remainder) {
+                this.refreshCols._.tallestItemHeight +=
+                  this.settings.snapToGrid - this.refreshCols._.remainder;
+              }
+            }
+
+            // Now set their heights to the tallest one
+            for (
+              this.refreshCols._.i = this.refreshCols._.itemIndex;
+              this.refreshCols._.i <
+                this.refreshCols._.itemIndex + this.totalCols &&
+              this.refreshCols._.i < this.items.length;
+              this.refreshCols._.i++
+            ) {
+              this.items[this.refreshCols._.i].height(
+                this.refreshCols._.tallestItemHeight
+              );
+            }
+
+            // set the this.refreshCols._.itemIndex pointer to the next one up
+            this.refreshCols._.itemIndex += this.totalCols;
+          }
+        } else {
+          // If there's only one column, sneak out early
+          if (this.totalCols === 1) {
+            this.$container.height('auto');
+            this.$items
+              .show()
+              .css({
+                position: 'relative',
+                width: 'auto',
+                top: 0,
+              })
+              .css(Craft.left, 0);
+          } else {
+            this.$items.css('position', 'absolute');
+            this.colPctWidth = 100 / this.totalCols;
+
+            // The setup
+
+            this.layouts = [];
+
+            this.itemPositions = [];
+            this.itemColspansByPosition = [];
+
+            // Figure out all of the possible colspans for each item,
+            // as well as all the possible positions for each item at each of its colspans
+
+            this.possibleItemColspans = [];
+            this.possibleItemPositionsByColspan = [];
+            this.itemHeightsByColspan = [];
+
+            for (
+              this.refreshCols._.item = 0;
+              this.refreshCols._.item < this.items.length;
+              this.refreshCols._.item++
+            ) {
+              this.possibleItemColspans[this.refreshCols._.item] = [];
+              this.possibleItemPositionsByColspan[this.refreshCols._.item] = {};
+              this.itemHeightsByColspan[this.refreshCols._.item] = {};
+
+              this.refreshCols._.$item =
+                this.items[this.refreshCols._.item].show();
+              this.refreshCols._.positionRight =
+                this.refreshCols._.$item.data('position') === 'right';
+              this.refreshCols._.positionLeft =
+                this.refreshCols._.$item.data('position') === 'left';
+              this.refreshCols._.minColspan = this.refreshCols._.$item.data(
+                'colspan'
+              )
+                ? this.refreshCols._.$item.data('colspan')
+                : this.refreshCols._.$item.data('min-colspan')
+                  ? this.refreshCols._.$item.data('min-colspan')
+                  : 1;
+              this.refreshCols._.maxColspan = this.refreshCols._.$item.data(
+                'colspan'
+              )
+                ? this.refreshCols._.$item.data('colspan')
+                : this.refreshCols._.$item.data('max-colspan')
+                  ? this.refreshCols._.$item.data('max-colspan')
+                  : this.totalCols;
+
+              if (this.refreshCols._.minColspan > this.totalCols) {
+                this.refreshCols._.minColspan = this.totalCols;
+              }
+              if (this.refreshCols._.maxColspan > this.totalCols) {
+                this.refreshCols._.maxColspan = this.totalCols;
               }
 
               for (
-                this.refreshCols._.position = this.refreshCols._.minPosition;
-                this.refreshCols._.position <= this.refreshCols._.maxPosition;
-                this.refreshCols._.position++
+                this.refreshCols._.colspan = this.refreshCols._.minColspan;
+                this.refreshCols._.colspan <= this.refreshCols._.maxColspan;
+                this.refreshCols._.colspan++
               ) {
+                // Get the height for this colspan
+                this.refreshCols._.$item.css(
+                  'width',
+                  this.getItemWidthCss(this.refreshCols._.colspan)
+                );
+                this.itemHeightsByColspan[this.refreshCols._.item][
+                  this.refreshCols._.colspan
+                ] = this.refreshCols._.$item.outerHeight();
+
+                this.possibleItemColspans[this.refreshCols._.item].push(
+                  this.refreshCols._.colspan
+                );
                 this.possibleItemPositionsByColspan[this.refreshCols._.item][
                   this.refreshCols._.colspan
-                ].push(this.refreshCols._.position);
+                ] = [];
+
+                if (this.refreshCols._.positionLeft) {
+                  this.refreshCols._.minPosition = 0;
+                  this.refreshCols._.maxPosition = 0;
+                } else if (this.refreshCols._.positionRight) {
+                  this.refreshCols._.minPosition =
+                    this.totalCols - this.refreshCols._.colspan;
+                  this.refreshCols._.maxPosition =
+                    this.refreshCols._.minPosition;
+                } else {
+                  this.refreshCols._.minPosition = 0;
+                  this.refreshCols._.maxPosition =
+                    this.totalCols - this.refreshCols._.colspan;
+                }
+
+                for (
+                  this.refreshCols._.position = this.refreshCols._.minPosition;
+                  this.refreshCols._.position <= this.refreshCols._.maxPosition;
+                  this.refreshCols._.position++
+                ) {
+                  this.possibleItemPositionsByColspan[this.refreshCols._.item][
+                    this.refreshCols._.colspan
+                  ].push(this.refreshCols._.position);
+                }
               }
             }
-          }
 
-          // Find all the possible layouts
+            // Find all the possible layouts
 
-          this.refreshCols._.colHeights = [];
-
-          for (
-            this.refreshCols._.i = 0;
-            this.refreshCols._.i < this.totalCols;
-            this.refreshCols._.i++
-          ) {
-            this.refreshCols._.colHeights.push(0);
-          }
-
-          this.createLayouts(0, [], [], this.refreshCols._.colHeights, 0);
-
-          // Now find the layout that looks the best.
-
-          // First find the layouts with the highest number of used columns
-          this.refreshCols._.layoutTotalCols = [];
-
-          for (
-            this.refreshCols._.i = 0;
-            this.refreshCols._.i < this.layouts.length;
-            this.refreshCols._.i++
-          ) {
-            this.refreshCols._.layoutTotalCols[this.refreshCols._.i] = 0;
+            this.refreshCols._.colHeights = [];
 
             for (
-              this.refreshCols._.j = 0;
-              this.refreshCols._.j < this.totalCols;
-              this.refreshCols._.j++
+              this.refreshCols._.i = 0;
+              this.refreshCols._.i < this.totalCols;
+              this.refreshCols._.i++
             ) {
-              if (
-                this.layouts[this.refreshCols._.i].colHeights[
-                  this.refreshCols._.j
-                ]
-              ) {
-                this.refreshCols._.layoutTotalCols[this.refreshCols._.i]++;
-              }
+              this.refreshCols._.colHeights.push(0);
             }
-          }
 
-          this.refreshCols._.highestTotalCols = Math.max.apply(
-            null,
-            this.refreshCols._.layoutTotalCols
-          );
+            this.createLayouts(0, [], [], this.refreshCols._.colHeights, 0);
 
-          // Filter out the ones that aren't using as many columns as they could be
-          for (
-            this.refreshCols._.i = this.layouts.length - 1;
-            this.refreshCols._.i >= 0;
-            this.refreshCols._.i--
-          ) {
-            if (
-              this.refreshCols._.layoutTotalCols[this.refreshCols._.i] !==
-              this.refreshCols._.highestTotalCols
+            // Now find the layout that looks the best.
+
+            // First find the layouts with the highest number of used columns
+            this.refreshCols._.layoutTotalCols = [];
+
+            for (
+              this.refreshCols._.i = 0;
+              this.refreshCols._.i < this.layouts.length;
+              this.refreshCols._.i++
             ) {
-              this.layouts.splice(this.refreshCols._.i, 1);
-            }
-          }
-
-          // Find the layout(s) with the least overall height
-          this.refreshCols._.layoutHeights = [];
-
-          for (
-            this.refreshCols._.i = 0;
-            this.refreshCols._.i < this.layouts.length;
-            this.refreshCols._.i++
-          ) {
-            this.refreshCols._.layoutHeights.push(
-              Math.max.apply(
-                null,
-                this.layouts[this.refreshCols._.i].colHeights
-              )
-            );
-          }
-
-          this.refreshCols._.shortestHeight = Math.min.apply(
-            null,
-            this.refreshCols._.layoutHeights
-          );
-          this.refreshCols._.shortestLayouts = [];
-          this.refreshCols._.emptySpaces = [];
-
-          for (
-            this.refreshCols._.i = 0;
-            this.refreshCols._.i < this.refreshCols._.layoutHeights.length;
-            this.refreshCols._.i++
-          ) {
-            if (
-              this.refreshCols._.layoutHeights[this.refreshCols._.i] ===
-              this.refreshCols._.shortestHeight
-            ) {
-              this.refreshCols._.shortestLayouts.push(
-                this.layouts[this.refreshCols._.i]
-              );
-
-              // Now get its total empty space, including any trailing empty space
-              this.refreshCols._.emptySpace =
-                this.layouts[this.refreshCols._.i].emptySpace;
+              this.refreshCols._.layoutTotalCols[this.refreshCols._.i] = 0;
 
               for (
                 this.refreshCols._.j = 0;
                 this.refreshCols._.j < this.totalCols;
                 this.refreshCols._.j++
               ) {
-                this.refreshCols._.emptySpace +=
-                  this.refreshCols._.shortestHeight -
+                if (
                   this.layouts[this.refreshCols._.i].colHeights[
                     this.refreshCols._.j
-                  ];
+                  ]
+                ) {
+                  this.refreshCols._.layoutTotalCols[this.refreshCols._.i]++;
+                }
               }
+            }
 
-              this.refreshCols._.emptySpaces.push(
-                this.refreshCols._.emptySpace
+            this.refreshCols._.highestTotalCols = Math.max.apply(
+              null,
+              this.refreshCols._.layoutTotalCols
+            );
+
+            // Filter out the ones that aren't using as many columns as they could be
+            for (
+              this.refreshCols._.i = this.layouts.length - 1;
+              this.refreshCols._.i >= 0;
+              this.refreshCols._.i--
+            ) {
+              if (
+                this.refreshCols._.layoutTotalCols[this.refreshCols._.i] !==
+                this.refreshCols._.highestTotalCols
+              ) {
+                this.layouts.splice(this.refreshCols._.i, 1);
+              }
+            }
+
+            // Find the layout(s) with the least overall height
+            this.refreshCols._.layoutHeights = [];
+
+            for (
+              this.refreshCols._.i = 0;
+              this.refreshCols._.i < this.layouts.length;
+              this.refreshCols._.i++
+            ) {
+              this.refreshCols._.layoutHeights.push(
+                Math.max.apply(
+                  null,
+                  this.layouts[this.refreshCols._.i].colHeights
+                )
               );
             }
-          }
 
-          // And the layout with the least empty space is...
-          this.layout =
-            this.refreshCols._.shortestLayouts[
-              $.inArray(
-                Math.min.apply(null, this.refreshCols._.emptySpaces),
-                this.refreshCols._.emptySpaces
-              )
-            ];
-
-          // Set the item widths and left positions
-          for (
-            this.refreshCols._.i = 0;
-            this.refreshCols._.i < this.items.length;
-            this.refreshCols._.i++
-          ) {
-            this.refreshCols._.css = {
-              width: this.getItemWidthCss(
-                this.layout.colspans[this.refreshCols._.i]
-              ),
-            };
-            this.refreshCols._.css[Craft.left] = this.getItemLeftPosCss(
-              this.layout.positions[this.refreshCols._.i]
+            this.refreshCols._.shortestHeight = Math.min.apply(
+              null,
+              this.refreshCols._.layoutHeights
             );
-            this.items[this.refreshCols._.i].css(this.refreshCols._.css);
-          }
+            this.refreshCols._.shortestLayouts = [];
+            this.refreshCols._.emptySpaces = [];
 
-          // If every item is at position 0, then let them lay out au naturel
-          if (this.isSimpleLayout()) {
-            this.$container.height('auto');
-            this.$items.css({
-              position: 'relative',
-              top: 0,
-              'margin-bottom': this.settings.gutter + 'px',
-            });
-          } else {
-            this.$items.css('position', 'absolute');
+            for (
+              this.refreshCols._.i = 0;
+              this.refreshCols._.i < this.refreshCols._.layoutHeights.length;
+              this.refreshCols._.i++
+            ) {
+              if (
+                this.refreshCols._.layoutHeights[this.refreshCols._.i] ===
+                this.refreshCols._.shortestHeight
+              ) {
+                this.refreshCols._.shortestLayouts.push(
+                  this.layouts[this.refreshCols._.i]
+                );
 
-            // Now position the items
-            this.positionItems();
+                // Now get its total empty space, including any trailing empty space
+                this.refreshCols._.emptySpace =
+                  this.layouts[this.refreshCols._.i].emptySpace;
 
-            // Update the positions as the items' heights change
-            this.addListener(this.$items, 'resize', 'onItemResize');
+                for (
+                  this.refreshCols._.j = 0;
+                  this.refreshCols._.j < this.totalCols;
+                  this.refreshCols._.j++
+                ) {
+                  this.refreshCols._.emptySpace +=
+                    this.refreshCols._.shortestHeight -
+                    this.layouts[this.refreshCols._.i].colHeights[
+                      this.refreshCols._.j
+                    ];
+                }
+
+                this.refreshCols._.emptySpaces.push(
+                  this.refreshCols._.emptySpace
+                );
+              }
+            }
+
+            // And the layout with the least empty space is...
+            this.layout =
+              this.refreshCols._.shortestLayouts[
+                $.inArray(
+                  Math.min.apply(null, this.refreshCols._.emptySpaces),
+                  this.refreshCols._.emptySpaces
+                )
+              ];
+
+            // Set the item widths and left positions
+            for (
+              this.refreshCols._.i = 0;
+              this.refreshCols._.i < this.items.length;
+              this.refreshCols._.i++
+            ) {
+              this.refreshCols._.css = {
+                width: this.getItemWidthCss(
+                  this.layout.colspans[this.refreshCols._.i]
+                ),
+              };
+              this.refreshCols._.css[Craft.left] = this.getItemLeftPosCss(
+                this.layout.positions[this.refreshCols._.i]
+              );
+              this.items[this.refreshCols._.i].css(this.refreshCols._.css);
+            }
+
+            // If every item is at position 0, then let them lay out au naturel
+            if (this.isSimpleLayout()) {
+              this.$container.height('auto');
+              this.$items.css({
+                position: 'relative',
+                top: 0,
+                'margin-bottom': this.settings.gutter + 'px',
+              });
+            } else {
+              this.$items.css('position', 'absolute');
+
+              // Now position the items
+              this.positionItems();
+
+              // Update the positions as the items' heights change
+              this.addListener(this.$items, 'resize', 'onItemResize');
+            }
           }
         }
-      }
 
-      this.completeRefreshCols();
-
-      // Resume container resize listening
-      this.addListener(
-        this.$container,
-        'resize',
-        this.handleContainerHeightProxy
-      );
+        this.completeRefreshCols();
+      });
 
       this.onRefreshCols();
     },

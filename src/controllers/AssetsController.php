@@ -456,6 +456,7 @@ class AssetsController extends Controller
             'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
             'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
             'dimensions' => $resultingAsset->getDimensions(),
+            'updatedTimestamp' => $resultingAsset->dateUpdated->getTimestamp(),
         ]);
     }
 

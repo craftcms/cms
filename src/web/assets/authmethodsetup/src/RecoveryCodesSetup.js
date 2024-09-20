@@ -7,6 +7,7 @@ Craft.RecoveryCodesSetup = Garnish.Base.extend({
 
     button.on('activate', () => {
       button.addClass('loading');
+      Craft.cp.announce(Craft.t('app', 'Loading'));
 
       Craft.sendActionRequest('post', 'auth/generate-recovery-codes')
         .then(({data}) => {
@@ -39,6 +40,7 @@ Craft.RecoveryCodesSetup = Garnish.Base.extend({
 
           this.addListener($downloadBtn, 'activate', () => {
             $downloadBtn.addClass('loading');
+            Craft.cp.announce(Craft.t('app', 'Loading'));
 
             const data = Craft.filterObject({
               [Craft.csrfTokenName]: Craft.csrfTokenValue,
@@ -59,11 +61,13 @@ Craft.RecoveryCodesSetup = Garnish.Base.extend({
               })
               .finally(() => {
                 $downloadBtn.removeClass('loading');
+                Craft.cp.announce(Craft.t('app', 'Loading complete'));
               });
           });
         })
         .finally(() => {
           button.removeClass('loading');
+          Craft.cp.announce(Craft.t('app', 'Loading complete'));
         });
     });
   },

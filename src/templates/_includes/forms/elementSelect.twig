@@ -1,4 +1,5 @@
-{% if name ?? false %}
+{% set name = name ?? false %}
+{% if name %}
     {{ hiddenInput(name, '') }}
 {% endif -%}
 
@@ -20,6 +21,9 @@
 {% set disabled = (disabled ?? false) ? true : false %}
 {% set maintainHierarchy = maintainHierarchy ?? false %}
 {% set registerJs = registerJs ?? true %}
+
+{% set allowAdd = allowAdd ?? true %}
+{% set allowRemove = allowRemove ?? true %}
 
 {% set containerAttributes = {
     id: id,
@@ -61,24 +65,26 @@
         }) }}
     {% endif %}
 
-    <div class="flex flex-nowrap">
-        {{ tag('button', {
-            type: 'button',
-            class: [
-                'btn',
-                'add',
-                'icon',
-                'dashed',
-                disabled ? 'disabled',
-                limit and elements|length >= limit ? 'hidden',
-            ]|filter,
-            text: selectionLabel ?? 'Choose'|t('app'),
-            disabled: disabled,
-            aria: {
-                label: selectionLabel ?? 'Choose'|t('app'),
-                describedby: describedBy ?? false,
-            }
-        }) }}
+    <div class="flex">
+        {% if allowAdd %}
+            {{ tag('button', {
+                type: 'button',
+                class: [
+                    'btn',
+                    'add',
+                    'icon',
+                    'dashed',
+                    disabled ? 'disabled',
+                    limit and elements|length >= limit ? 'hidden',
+                ]|filter,
+                text: selectionLabel ?? 'Choose'|t('app'),
+                disabled: disabled,
+                aria: {
+                    label: selectionLabel ?? 'Choose'|t('app'),
+                    describedby: describedBy ?? false,
+                }
+            }) }}
+        {% endif %}
         <div class="spinner hidden"></div>
     </div>
 {% endtag %}
@@ -86,13 +92,15 @@
 {% if not disabled and registerJs %}
     {% set jsSettings = {
         id: id|namespaceInputId,
-        name: name|namespaceInputName,
+        name: name ? name|namespaceInputName : null,
         elementType: elementType,
         sources: sources,
         condition: condition ? condition.getConfig() : null,
         referenceElementId: referenceElement.id ?? null,
         referenceElementSiteId: referenceElement.siteId ?? null,
         criteria: criteria,
+        allowAdd: allowAdd,
+        allowRemove: allowRemove,
         allowSelfRelations: allowSelfRelations ?? false,
         maintainHierarchy: maintainHierarchy,
         branchLimit: branchLimit ?? null,

@@ -11,6 +11,7 @@ export default Base.extend(
     $container: null,
     $shade: null,
     $triggerElement: null,
+    $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
 
     visible: false,
 
@@ -60,6 +61,12 @@ export default Base.extend(
       Garnish.Modal.instances.push(this);
     },
 
+    addLiveRegion: function () {
+      if (!this.$container) return;
+
+      this.$liveRegion.appendTo(this.$container);
+    },
+
     setContainer: function (container) {
       this.$container = $(container);
 
@@ -89,6 +96,8 @@ export default Base.extend(
           onDrag: this._handleResize.bind(this),
         });
       }
+
+      this.addLiveRegion();
 
       this.addListener(this.$container, 'click', function (ev) {
         ev.stopPropagation();
@@ -228,6 +237,8 @@ export default Base.extend(
 
         this.$shade.velocity('stop');
         this.$shade.css('opacity', 0).hide();
+
+        this.onFadeOut();
       }
     },
 

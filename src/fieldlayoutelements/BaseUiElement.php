@@ -37,15 +37,11 @@ abstract class BaseUiElement extends FieldLayoutElement
         $icon = $this->selectorIcon();
         $label = $this->selectorLabel();
 
-        $indicatorHtml = ($this->hasConditions()
-            ? Html::tag('div', '', [
-                'class' => ['fld-indicator'],
-                'title' => Craft::t('app', 'This element is conditional'),
-                'aria' => ['label' => Craft::t('app', 'This element is conditional')],
-                'data' => ['icon' => 'condition'],
-                'role' => 'img',
-            ])
-            : '');
+        $indicatorHtml = $this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
+            'class' => ['cp-icon', 'puny', 'orange'],
+            'title' => Craft::t('app', 'This element is conditional'),
+            'aria' => ['label' => Craft::t('app', 'This element is conditional')],
+        ]) : '';
 
         return
             Html::beginTag('div', [
@@ -59,7 +55,7 @@ abstract class BaseUiElement extends FieldLayoutElement
             Html::endTag('div') . // .fld-element-icon
             Html::beginTag('div', ['class' => 'field-name']) .
             Html::beginTag('div', ArrayHelper::merge(
-                ['class' => 'fld-element-label'],
+                ['class' => ['fld-element-label']],
                 $this->selectorLabelAttributes(),
             )) .
             Html::tag('h4', Html::encode($label)) .

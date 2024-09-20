@@ -435,12 +435,26 @@ class App
      */
     public static function normalizeValue(mixed $value): mixed
     {
-        return match (is_string($value) ? strtolower($value) : $value) {
-            'true' => true,
-            'false' => false,
-            'null' => null,
-            default => Number::isIntOrFloat($value) ? Number::toIntOrFloat($value) : $value,
-        };
+        if (is_string($value)) {
+            switch (strtolower($value)) {
+                case 'true':
+                    return true;
+                case 'false':
+                    return false;
+                case 'null':
+                    return null;
+            }
+
+            if (Number::isIntOrFloat($value)) {
+                $intOrFloat = Number::toIntOrFloat($value);
+                // make sure we didn't lose any precision
+                if ((string)$intOrFloat === $value) {
+                    return $intOrFloat;
+                }
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -624,6 +638,7 @@ class App
 
         if (
             getenv('PHP_BINARY') === false &&
+            /** @phpstan-ignore-next-line */
             PHP_BINARY &&
             PHP_SAPI === 'cgi-fcgi' &&
             str_ends_with(PHP_BINARY, 'php-cgi')
@@ -718,7 +733,7 @@ class App
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
-     * <config4:phpMaxMemoryLimit> config setting, and gives the script an
+     * <config5:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
      */
     public static function maxPowerCaptain(): void
@@ -1005,21 +1020,17 @@ class App
      */
     public static function dbMutexConfig(): array
     {
-        // Use a dedicated connection, to avoid erratic behavior when locks are used during transactions
-        // https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions
-        $dbConfig = static::dbConfig();
-
         if (Craft::$app->getDb()->getIsMysql()) {
             return [
                 'class' => MysqlMutex::class,
-                'db' => $dbConfig,
-                'keyPrefix' => Craft::$app->id,
+                'db' => 'db2',
+                'keyPrefix' => Craft::$app->getEnvId(),
             ];
         }
 
         return [
             'class' => PgsqlMutex::class,
-            'db' => $dbConfig,
+            'db' => 'db2',
         ];
     }
 
@@ -1067,7 +1078,7 @@ class App
      */
     public static function sessionConfig(): array
     {
-        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->id);
+        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->getEnvId());
 
         return [
             'class' => Session::class,
@@ -1097,7 +1108,7 @@ class App
             $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         }
 
-        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->id);
+        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->getEnvId());
 
         return [
             'class' => WebUser::class,
@@ -1450,5 +1461,22 @@ class App
         $resolveItems = array_map(fn($issue) => Json::encode($issue[2]), $issues);
         sort($resolveItems);
         return md5(implode('', $resolveItems));
+    }
+
+    /**
+     * Configures an object with property values.
+     *
+     * This is identical to [[\BaseYii::configure()]], except this class is safe to be called during application
+     * bootstrap, whereas `\BaseYii` is not.
+     *
+     * @param object $object the object to be configured
+     * @param array $properties the property initial values given in terms of name-value pairs.
+     * @since 5.3.0
+     */
+    public static function configure(object $object, array $properties): void
+    {
+        foreach ($properties as $name => $value) {
+            $object->$name = $value;
+        }
     }
 }

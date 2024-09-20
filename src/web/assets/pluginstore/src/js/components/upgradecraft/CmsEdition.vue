@@ -1,5 +1,5 @@
 <template>
-  <div class="cms-editions-edition">
+  <div class="cms-editions-edition" v-if="editionExists">
     <div class="description">
       <edition-badge :name="edition.name" :block="true" :big="true" />
       <p class="edition-description">{{ editionDescription }}</p>
@@ -101,6 +101,10 @@
 
       editionIndex() {
         return this.getCmsEditionIndex(this.edition.handle);
+      },
+
+      editionExists() {
+        return this.editionIndex !== null;
       },
 
       features() {

@@ -7,9 +7,9 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\elements\Asset;
 use craft\models\ImageTransform;
-use yii\base\Event;
 
 /**
  * Asset generate transform event class.

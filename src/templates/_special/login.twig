@@ -110,10 +110,10 @@
       </form>
     {% endif %}
 
-    <div class="login-errors hidden" role="status"></div>
+    <div class="login-errors hidden"></div>
   </div>
 
-  <div class="alternative-login-methods hidden">
+  <div class="flex alternative-login-methods hidden">
     {{ forms.button({
       id: 'webauthn-login',
       class: ['login-passkey-btn', 'hidden'],
@@ -124,5 +124,11 @@
       failureMessage: 'Sign in unsuccessful'|t('app'),
       retryMessage: 'Sign in with a passkey'|t('app'),
     }) }}
+
+    {% if CraftEdition == CraftEnterprise %}
+      {% for provider in craft.app.sso.providers %}
+        {{ provider.getCpLoginHtml()|raw }}
+      {% endfor %}
+    {% endif %}
   </div>
 </div>

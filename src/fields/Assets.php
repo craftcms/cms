@@ -494,7 +494,8 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     {
         /** @var AssetQuery|ElementCollection $value */
         if ($value instanceof AssetQuery) {
-            $value = (clone $value)->eagerly(__METHOD__);
+            $handle = sprintf('%s-%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id, $size);
+            $value = (clone $value)->eagerly($handle);
         }
 
         return $value->one()?->getThumbHtml($size);
@@ -506,22 +507,22 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew): void
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
-        // No special treatment for revisions
-        $rootElement = ElementHelper::rootElement($element);
-        if (!$rootElement->getIsRevision()) {
-            // Figure out what we're working with and set up some initial variables.
-            $isCanonical = $rootElement->getIsCanonical();
-            $query = $element->getFieldValue($this->handle);
-            $assetsService = Craft::$app->getAssets();
+        // Only handle file uploads for the initial site
+        if (!$element->propagating) {
+            // No special treatment for revisions
+            $rootElement = $element->getRootOwner();
+            if (!$rootElement->getIsRevision()) {
+                // Figure out what we're working with and set up some initial variables.
+                $isCanonical = $rootElement->getIsCanonical();
+                $query = $element->getFieldValue($this->handle);
+                $assetsService = Craft::$app->getAssets();
 
-            $getUploadFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
-                return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
-            };
+                $getUploadFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
+                    return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
+                };
 
-            // Only handle file uploads for the initial site
-            if (!$element->propagating) {
                 // Were there any uploaded files?
                 $uploadedFiles = $this->_getUploadedFiles($element);
 
@@ -577,6 +578,27 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                     }
                 }
             }
+        }
+
+        return parent::beforeElementSave($element, $isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
+    {
+        // No special treatment for revisions
+        $rootElement = ElementHelper::rootElement($element);
+        if (!$rootElement->getIsRevision()) {
+            // Figure out what we're working with and set up some initial variables.
+            $isCanonical = $rootElement->getIsCanonical();
+            $query = $element->getFieldValue($this->handle);
+            $assetsService = Craft::$app->getAssets();
+
+            $getUploadFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
+                return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
+            };
 
             // Are there any related assets?
             /** @var AssetQuery $query */
@@ -847,12 +869,17 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
             }
         }
 
-        $event = new LocateUploadedFilesEvent([
-            'element' => $element,
-            'files' => $files,
-        ]);
-        $this->trigger(self::EVENT_LOCATE_UPLOADED_FILES, $event);
-        return $event->files;
+        // Fire a 'locateUploadedFiles' event
+        if ($this->hasEventHandlers(self::EVENT_LOCATE_UPLOADED_FILES)) {
+            $event = new LocateUploadedFilesEvent([
+                'element' => $element,
+                'files' => $files,
+            ]);
+            $this->trigger(self::EVENT_LOCATE_UPLOADED_FILES, $event);
+            return $event->files;
+        }
+
+        return $files;
     }
 
     /**

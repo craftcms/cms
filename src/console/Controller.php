@@ -301,9 +301,14 @@ class Controller extends YiiController
      */
     protected function defineActions(): array
     {
-        $event = new DefineConsoleActionsEvent();
-        $this->trigger(self::EVENT_DEFINE_ACTIONS, $event);
-        return $event->actions;
+        // Fire a 'defineActions' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTIONS)) {
+            $event = new DefineConsoleActionsEvent();
+            $this->trigger(self::EVENT_DEFINE_ACTIONS, $event);
+            return $event->actions;
+        }
+
+        return [];
     }
 
     /**

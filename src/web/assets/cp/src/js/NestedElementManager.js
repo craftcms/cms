@@ -119,6 +119,8 @@ Craft.NestedElementManager = Garnish.Base.extend(
             }
           });
         }
+
+        this.trigger('afterInit');
       }, 100);
     },
 
@@ -173,6 +175,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
           {
             context: 'embedded-index',
             sortable: this.settings.sortable,
+            prevalidate: this.settings.prevalidate,
           },
           this.settings.indexSettings,
           {
@@ -282,9 +285,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
         return true;
       }
 
-      const total = this.getTotalElements();
-
-      return total !== null && total - (num || 1) >= this.settings.minElements;
+      return this.getTotalElements() !== null;
     },
 
     getElementIds() {
@@ -360,15 +361,38 @@ Craft.NestedElementManager = Garnish.Base.extend(
           },
         });
 
-        slideout.on('submit', async () => {
-          if (this.settings.mode === 'cards') {
-            this.addElementCard(data.element);
-          } else {
-            this.elementIndex.clearSearch();
-            this.elementIndex.updateElements();
-          }
+        let shownElement = false;
+        let $card;
 
-          await this.markAsDirty();
+        const showElement = async (data) => {
+          if (!shownElement) {
+            shownElement = true;
+
+            if (this.settings.mode === 'cards') {
+              $card = await this.addElementCard(data);
+            } else {
+              this.elementIndex.clearSearch();
+              this.elementIndex.updateElements();
+            }
+
+            await this.markAsDirty();
+          }
+        };
+
+        slideout.on('load', () => {
+          slideout.elementEditor.once('afterSaveDraft', (ev) => {
+            showElement(data.element);
+          });
+        });
+
+        slideout.on('submit', async () => {
+          await showElement(data.element);
+        });
+
+        slideout.on('close', () => {
+          if (this.$createBtn) {
+            this.$createBtn.focus();
+          }
         });
       } catch (e) {
         Craft.cp.displayError(e?.response?.data?.message);
@@ -394,29 +418,26 @@ Craft.NestedElementManager = Garnish.Base.extend(
         this.elementSort.addItems($element.parent());
       }
 
+      const $actionMenuBtn = $element.find('.action-btn');
+      const disclosureMenu = $actionMenuBtn
+        .disclosureMenu()
+        .data('disclosureMenu');
+
       if (Garnish.hasAttr($element, 'data-deletable')) {
-        const $actionMenuBtn = $element.find('.action-btn');
-        const disclosureMenu = $actionMenuBtn
-          .disclosureMenu()
-          .data('disclosureMenu');
-        const $actionMenu = disclosureMenu.$container;
-        $('<hr/>', {class: 'padded'}).appendTo($actionMenu);
-        const $ul = $('<ul/>').appendTo($actionMenu);
-        const $li = $('<li/>').appendTo($ul);
-        const $a = $('<a/>', {
-          class: 'error',
-          type: 'button',
-          role: 'button',
-          'data-icon': 'trash',
-          'aria-label': this.settings.deleteLabel || Craft.t('app', 'Delete'),
-          text: this.settings.deleteLabel || Craft.t('app', 'Delete'),
-        }).appendTo($li);
-        this.addListener($a, 'activate', (ev) => {
-          disclosureMenu.hide();
-          if (confirm(this.settings.deleteConfirmationMessage)) {
-            this.deleteElement($element);
-          }
-        });
+        const ul = disclosureMenu.addGroup();
+        disclosureMenu.addItem(
+          {
+            icon: 'trash',
+            label: this.settings.deleteLabel || Craft.t('app', 'Delete'),
+            destructive: true,
+            onActivate: () => {
+              if (confirm(this.settings.deleteConfirmationMessage)) {
+                this.deleteElement($element);
+              }
+            },
+          },
+          ul
+        );
       }
     },
 
@@ -458,52 +479,58 @@ Craft.NestedElementManager = Garnish.Base.extend(
       await this.markAsDirty();
     },
 
-    addElementCard(element) {
+    async addElementCard(element) {
       if (this.$createBtn) {
         this.$createBtn.addClass('loading');
       }
 
-      Craft.sendActionRequest('POST', 'app/render-elements', {
-        data: {
-          elements: [
-            {
-              type: this.elementType,
-              id: element.id,
-              siteId: element.siteId,
-              instances: [
+      let response;
+      try {
+        response = await Craft.sendActionRequest(
+          'POST',
+          'app/render-elements',
+          {
+            data: {
+              elements: [
                 {
-                  context: 'field',
-                  ui: 'card',
-                  sortable: this.settings.sortable,
-                  showActionMenu: true,
+                  type: this.elementType,
+                  id: element.id,
+                  siteId: element.siteId,
+                  instances: [
+                    {
+                      context: 'field',
+                      ui: 'card',
+                      sortable: this.settings.sortable,
+                      showActionMenu: true,
+                    },
+                  ],
                 },
               ],
             },
-          ],
-        },
-      })
-        .then(async ({data}) => {
-          if (!this.$elements) {
-            this.initCards();
           }
+        );
+      } catch (e) {
+        Craft.cp.displayError(e?.response?.data?.message);
+        throw e?.response?.data?.message ?? e;
+      } finally {
+        if (this.$createBtn) {
+          this.$createBtn.removeClass('loading');
+        }
+      }
 
-          const $li = $('<li/>').appendTo(this.$elements);
-          const $element = $(data.elements[element.id][0]).appendTo($li);
-          this.initElement($element);
-          await Craft.appendHeadHtml(data.headHtml);
-          await Craft.appendBodyHtml(data.bodyHtml);
-          Craft.cp.elementThumbLoader.load($element);
-          this.updateCreateBtn();
-        })
-        .catch((e) => {
-          Craft.cp.displayError(e?.response?.data?.message);
-          throw e?.response?.data?.message ?? e;
-        })
-        .finally(() => {
-          if (this.$createBtn) {
-            this.$createBtn.removeClass('loading').focus();
-          }
-        });
+      if (!this.$elements) {
+        this.initCards();
+      }
+
+      const $li = $('<li/>').appendTo(this.$elements);
+      const $card = $(response.data.elements[element.id][0]).appendTo($li);
+      this.initElement($card);
+      await Craft.appendHeadHtml(response.data.headHtml);
+      await Craft.appendBodyHtml(response.data.bodyHtml);
+      Craft.cp.elementThumbLoader.load($card);
+      this.updateCreateBtn();
+
+      return $card;
     },
 
     destroy: function () {
@@ -532,6 +559,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       baseInputName: null,
       deleteLabel: null,
       deleteConfirmationMessage: null,
+      prevalidate: false,
     },
   }
 );

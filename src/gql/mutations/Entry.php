@@ -282,7 +282,7 @@ class Entry extends Mutation
         // This gets created only if allowed to save entries
         if ($createSaveDraftMutation) {
             $mutations[] = [
-                'name' => "save_{$field->handle}_{$entryType->handle}_Draft",
+                'name' => "save_{$field->handle}Field_{$entryType->handle}_Draft",
                 'description' => $draftDescription,
                 'args' => $draftMutationArguments,
                 'resolve' => [$resolver, 'saveEntry'],

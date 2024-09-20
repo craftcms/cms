@@ -173,7 +173,7 @@
           theadHtml +=
             '<th scope="col">' +
             (this.columnsData[colId].heading
-              ? this.columnsData[colId].heading
+              ? Craft.escapeHtml(this.columnsData[colId].heading)
               : '&nbsp;') +
             '</th>';
         }
@@ -253,9 +253,9 @@
       this.$settingsBtn = $typeCell.find('.settings');
 
       if (!this.$settingsBtn.length) {
-        this.$settingsBtn = $('<a/>', {
+        this.$settingsBtn = $('<button/>', {
           class: 'settings light invisible',
-          role: 'button',
+          type: 'button',
           'data-icon': 'settings',
         });
         $('<div/>', {class: 'flex flex-nowrap'})
@@ -338,7 +338,7 @@
       }
 
       setTimeout(() => {
-        this.optionsTable.$tbody.find('textarea').first().trigger('focus');
+        this.optionsTable.$tbody.find('textarea').first().focus();
       }, 100);
     },
 

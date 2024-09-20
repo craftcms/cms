@@ -450,8 +450,9 @@ class ElementFieldResolverTest extends TestCase
             [['width' => 200, 'height' => 200], ['width' => 200, 'height' => 200]],
             [['width' => 400, 'height' => 200], ['width' => 400, 'height' => 200]],
             [['width' => 200, 'height' => 500], ['width' => 200, 'height' => 500]],
+            // Overriding named transforms
             [['width' => 200, 'height' => 200, 'handle' => 'testHandle'], ['handle' => 'testHandle']],
-            [['width' => 200, 'height' => 200, 'transform' => 'testHandle2'], ['handle' => 'testHandle2']],
+            [['width' => 200, 'height' => 200, 'transform' => 'testHandle2'], ['handle' => null, 'width' => 200, 'height' => 200]],
         ];
     }
 }

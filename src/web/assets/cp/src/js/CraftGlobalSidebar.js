@@ -1,4 +1,8 @@
 class CraftGlobalSidebar extends HTMLElement {
+  get items() {
+    return this.querySelectorAll('.sidebar-action');
+  }
+
   connectedCallback() {
     this.trigger = this.querySelector('#sidebar-trigger');
 
@@ -6,8 +10,6 @@ class CraftGlobalSidebar extends HTMLElement {
       this.trigger.addEventListener('open', this.expand.bind(this));
       this.trigger.addEventListener('close', this.collapse.bind(this));
     }
-
-    this.items = this.querySelectorAll('.sidebar-action');
   }
 
   disconnectedCallback() {
@@ -24,7 +26,11 @@ class CraftGlobalSidebar extends HTMLElement {
       this.items.forEach((item) => {
         const tooltip = document.createElement('craft-tooltip');
         tooltip.setAttribute('placement', 'right');
-        tooltip.innerText = item.querySelector('.label')?.innerText;
+        tooltip.setAttribute('self-managed', 'true');
+        tooltip.setAttribute(
+          'aria-label',
+          item.querySelector('.label')?.innerText
+        );
         item.append(tooltip);
       });
     }

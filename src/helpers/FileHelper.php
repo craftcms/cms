@@ -133,7 +133,7 @@ class FileHelper extends \yii\helpers\FileHelper
             $from = static::absolutePath($from, ds: $ds);
         }
 
-        return $from . $ds . $to;
+        return static::normalizePath($from . $ds . $to, $ds);
     }
 
     /**

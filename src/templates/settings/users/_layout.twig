@@ -8,7 +8,8 @@
 ] %}
 
 {% set navItems = {
-    groups: CraftEdition == CraftPro ? { label: "User Groups"|t('app'), url: url('settings/users') },
+    teamGroup: CraftEdition == CraftTeam ? { label: "User Permissions"|t('app'), url: url('settings/users') },
+    groups: CraftEdition >= CraftPro ? { label: "User Groups"|t('app'), url: url('settings/users') },
     fields: { label: "User Profile Fields"|t('app'), url: url('settings/users/fields') },
     settings: { label: "Settings"|t('app'), url: url('settings/users/settings') }
 }|filter %}

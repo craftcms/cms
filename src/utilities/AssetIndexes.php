@@ -63,12 +63,16 @@ class AssetIndexes extends Utility
      */
     public static function volumes(): array
     {
+        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+
         // Fire a 'listVolumes' event
-        $event = new ListVolumesEvent([
-            'volumes' => Craft::$app->getVolumes()->getAllVolumes(),
-        ]);
-        Event::trigger(self::class, self::EVENT_LIST_VOLUMES, $event);
-        return $event->volumes;
+        if (Event::hasHandlers(self::class, self::EVENT_LIST_VOLUMES)) {
+            $event = new ListVolumesEvent(['volumes' => $volumes]);
+            Event::trigger(self::class, self::EVENT_LIST_VOLUMES, $event);
+            return $event->volumes;
+        }
+
+        return $volumes;
     }
 
     /**

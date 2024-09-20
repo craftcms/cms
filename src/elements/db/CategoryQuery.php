@@ -12,21 +12,19 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Category;
-use craft\elements\ElementCollection;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
-use yii\db\Connection;
 
 /**
  * CategoryQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of Category
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @property-write string|string[]|CategoryGroup|null $group The category group(s) that resulting categories must belong to
- * @method Category[]|array all($db = null)
- * @method Category|array|null one($db = null)
- * @method Category|array|null nth(int $n, ?Connection $db = null)
- * @method ElementCollection<Category> collect($db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path categories.md
@@ -210,7 +208,7 @@ class CategoryQuery extends ElementQuery
 
         $this->joinElementTable(Table::CATEGORIES);
 
-        $this->query->select([
+        $this->query->addSelect([
             'categories.groupId',
         ]);
 

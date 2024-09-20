@@ -87,7 +87,7 @@ class Mailer extends \yii\symfonymailer\Mailer
      */
     public function send($message): bool
     {
-        // fire a beforePrep event
+        // Fire a 'beforePrep' event
         $this->trigger(self::EVENT_BEFORE_PREP, new MailEvent([
             'message' => $message,
         ]));
@@ -134,7 +134,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             $message->setTextBody($textBody);
 
             // Is there a custom HTML template set?
-            if (Craft::$app->edition === CmsEdition::Pro && $this->template) {
+            if (Craft::$app->edition->value >= CmsEdition::Pro->value && $this->template) {
                 $template = $this->template;
                 $templateMode = View::TEMPLATE_MODE_SITE;
             } else {

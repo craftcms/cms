@@ -8,14 +8,14 @@ body {
 
 body {
   overflow: hidden;
-  background: var(--gray-100) url(images/installer-bg.png) no-repeat 50% 50%;
+  background: var(--gray-100) url('images/installer-bg.png') no-repeat 50% 50%;
   background-size: cover;
 }
 
 .beginbtncontainer {
   position: absolute;
-  top: 50%;
-  margin-top: -25px;
+  inset-block-start: 50%;
+  margin-block-start: -25px;
   width: 100%;
   text-align: center;
 }
@@ -25,17 +25,18 @@ body {
   border-radius: var(--large-border-radius);
   font-size: 19px;
   height: 50px;
-  padding: 0 24px;
+  padding-block: 0;
+  padding-inline: 24px;
   box-shadow:
-    inset 0 1px #ffffff33,
-    inset 0 -1px #00000022,
+    inset 0 1px #fff3,
+    inset 0 -1px #0002,
     0 0 0 1px #21377066,
     0 0 1px 2px #21377055,
     0 10px 10px -10px #213770,
     0 10px 20px -10px #213770;
 
-  &:after {
-    margin-top: -4px;
+  &::after {
+    margin-block-start: -4px;
   }
 }
 
@@ -58,26 +59,26 @@ body {
       background-size: 368px 477px;
 
       &#db {
-        background-image: url(./images/db.png);
+        background-image: url('./images/db.png');
       }
 
       &#site {
-        background-image: url(./images/site.png);
+        background-image: url('./images/site.png');
       }
 
       &#account {
-        background-image: url(./images/account.png);
+        background-image: url('./images/account.png');
       }
 
       h1 {
-        margin-bottom: 35px;
+        margin-block-end: 35px;
         text-align: center;
         position: relative;
       }
 
       form {
         width: 50%;
-        float: right;
+        float: inline-end;
 
         .select {
           &,
@@ -91,8 +92,8 @@ body {
 
   #dots {
     position: absolute;
-    bottom: 10px;
-    left: 0;
+    inset-block-end: 10px;
+    inset-inline-start: 0;
     width: 100%;
     text-align: center;
 
@@ -104,7 +105,7 @@ body {
       height: 6px;
 
       & + div {
-        @include margin-left(5px);
+        margin-inline-start: 5px;
       }
 
       &.sel {
@@ -116,28 +117,30 @@ body {
 }
 
 .grid {
-  margin-top: 35px;
-  margin-bottom: 35px;
+  margin-block: 35px;
 }
 
 .buttons {
   position: absolute;
-  bottom: 35px;
+  inset-block-end: 35px;
   @include right(35px);
 
   .btn {
-    @include padding-right(10px);
+    padding-inline-end: 10px;
 
-    &:after {
+    &::after {
       @include icon;
-      @include margin(-2px, 0, 0, 4px);
+      margin-inline: 4px 0;
+      margin-block: -2px 0;
       font-size: 20px;
       width: 20px;
       height: 20px;
       line-height: 18px;
+
       body.ltr & {
         content: 'rarr';
       }
+
       body.rtl & {
         content: 'larr';
       }
@@ -147,7 +150,7 @@ body {
 
 input.hidden {
   position: absolute;
-  top: 100px;
+  inset-block-start: 100px;
 }
 
 #license {
@@ -155,7 +158,8 @@ input.hidden {
   overflow-y: scroll;
 
   #license-content {
-    padding: 70px 105px;
+    padding-block: 70px;
+    padding-inline: 105px;
 
     .license {
       &,
@@ -171,7 +175,7 @@ input.hidden {
     }
 
     #license-accept {
-      margin-top: 35px;
+      margin-block-start: 35px;
       display: flex;
       justify-content: center;
     }
@@ -179,15 +183,26 @@ input.hidden {
 }
 
 #installing {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
-  h1 {
-    margin-top: 200px !important;
+  .pane {
+    max-width: 40em;
+    @include fixed-width-font;
+    color: var(--white);
+    background-color: var(--gray-800);
+
+    code {
+      color: var(--yellow-300);
+    }
   }
 
   #spinner {
     display: block;
-    margin: 0 auto;
+    margin-block: 0;
+    margin-inline: auto;
   }
 
   .buttons {

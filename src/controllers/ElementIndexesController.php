@@ -23,8 +23,8 @@ use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\services\ElementSources;
 use Throwable;
@@ -558,7 +558,9 @@ class ElementIndexesController extends BaseElementsController
 
             $element->setFieldValuesFromRequest("$namespace.element-$element->id.fields");
 
-            if ($element->enabled && $element->getEnabledForSite()) {
+            if ($element->getIsUnpublishedDraft()) {
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+            } elseif ($element->enabled && $element->getEnabledForSite()) {
                 $element->setScenario(Element::SCENARIO_LIVE);
             }
 
@@ -864,7 +866,9 @@ class ElementIndexesController extends BaseElementsController
             $responseData['headHtml'] = $view->getHeadHtml();
             $responseData['bodyHtml'] = $view->getBodyHtml();
         } else {
-            $responseData['html'] = '';
+            $responseData['html'] = Html::tag('div', Craft::t('app', 'Nothing yet.'), [
+                'class' => ['zilch', 'small'],
+            ]);
         }
 
         return $responseData;
@@ -1021,39 +1025,37 @@ class ElementIndexesController extends BaseElementsController
             throw new BadRequestHttpException("Request missing required body param");
         }
 
-        /** @var string|ElementInterface $elementType */
-        $elementType = $this->elementType;
         $id = $this->request->getRequiredBodyParam('id');
-        $siteId = $this->request->getRequiredBodyParam('siteId');
-        $site = $siteId ? Craft::$app->getSites()->getSiteById($siteId) : null;
-
         if (!$id || !is_numeric($id)) {
             throw new BadRequestHttpException("Invalid element ID: $id");
         }
 
-        if (!$site) {
-            throw new BadRequestHttpException("Invalid site ID: $siteId");
-        }
-
-        if (Craft::$app->getIsMultiSite() && !Craft::$app->getUser()->checkPermission("editSite:$site->uid")) {
-            throw new ForbiddenHttpException('User not authorized to edit content for this site.');
-        }
-
+        // check for a provisional draft first
         /** @var ElementInterface|null $element */
-        $element = $elementType::find()
-            ->id($id)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->revisions(null)
-            ->siteId($siteId)
+        $element = (clone $this->elementQuery)
+            ->draftOf($id)
+            ->draftCreator(static::currentUser())
+            ->provisionalDrafts()
             ->status(null)
             ->one();
+
+        if (!$element) {
+            /** @var ElementInterface|null $element */
+            $element = (clone $this->elementQuery)
+                ->id($id)
+                ->status(null)
+                ->one();
+        }
 
         if (!$element) {
             throw new BadRequestHttpException("Invalid element ID: $id");
         }
 
-        $attributes = Craft::$app->getElementSources()->getTableAttributes($this->elementType, $this->sourceKey);
+        $attributes = Craft::$app->getElementSources()->getTableAttributes(
+            $this->elementType,
+            $this->sourceKey,
+            $this->viewState['tableColumns'] ?? null,
+        );
         $attributeHtml = [];
 
         foreach ($attributes as [$attribute]) {
@@ -1061,9 +1063,6 @@ class ElementIndexesController extends BaseElementsController
         }
 
         return $this->asJson([
-            'elementHtml' => Cp::elementChipHtml($element, [
-                'context' => $this->context,
-            ]),
             'attributeHtml' => $attributeHtml,
         ]);
     }

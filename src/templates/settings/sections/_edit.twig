@@ -80,41 +80,15 @@
 
     <hr>
 
-    {% tag 'div' with {
-        class: [
-            'type-single',
-            section.type != 'single' ? 'hidden',
-        ]|filter,
-    } %}
-        {{ forms.entryTypeSelectField({
-            label: 'Entry Type',
-            instructions: 'Choose the type of entry this section will have.'|t('app'),
-            id: 'single-entry-type',
-            name: 'singleEntryType',
-            value: section.getEntryTypes()|first,
-            limit: 1,
-            errors: section.getErrors('entryTypes'),
-            create: true,
-        }, 'template:_includes/forms/entryType.twig') }}
-    {% endtag %}
-
-    {% tag 'div' with {
-        class: [
-            'type-channel',
-            'type-structure',
-            section.type not in ['channel', 'structure'] ? 'hidden',
-        ]|filter,
-    } %}
-        {{ forms.entryTypeSelectField({
-            label: 'Entry Types'|t('app'),
-            instructions: 'Choose the types of entries that can be included in this section.'|t('app'),
-            id: 'entry-types',
-            name: 'entryTypes[]',
-            values: section.getEntryTypes(),
-            errors: section.getErrors('entryTypes'),
-            create: true,
-        }) }}
-    {% endtag %}
+    {{ forms.entryTypeSelectField({
+        label: 'Entry Types'|t('app'),
+        instructions: 'Choose the types of entries that can be included in this section.'|t('app'),
+        id: 'entry-types',
+        name: 'entryTypes[]',
+        values: section.getEntryTypes(),
+        errors: section.getErrors('entryTypes'),
+        create: true,
+    }) }}
 
     {% set siteRows = [] %}
     {% set siteErrors = section.getErrors('siteSettings') %}
@@ -329,7 +303,7 @@
             new Craft.UriFormatGenerator(
                 '#name',
                 '#sites tr[data-id="{{ site.handle }}"] input[name$="[template]"]',
-                { suffix: '/_entry', updateWhenHidden: true }
+                { suffix: '/_entry.twig', updateWhenHidden: true }
             );
         {% endfor %}
     {% endjs %}

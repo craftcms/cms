@@ -121,8 +121,12 @@
 {% endblock %}
 
 
-{% if not site.handle %}
+{% if brandNewSite %}
     {% js on ready %}
         new Craft.HandleGenerator('#name', '#handle');
+        new Craft.EnvVarGenerator('#name', '#base-url', {
+          prefix: '$',
+          suffix: '_URL',
+        });
     {% endjs %}
 {% endif %}

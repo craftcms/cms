@@ -269,6 +269,14 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
 
     /**
      * @inheritdoc
+     */
+    public function getPostEditUrl(): ?string
+    {
+        return $this->getCpEditUrl();
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public function getGqlTypeName(): string

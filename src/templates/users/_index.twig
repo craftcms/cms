@@ -2,10 +2,7 @@
     {% exit 404 %}
 {% endif %}
 
-{% requirePermission 'editUsers' %}
-
 {% extends "_layouts/elementindex" %}
-{% set title = "Users"|t('app') %}
 {% set elementType = 'craft\\elements\\User' %}
 
 {% set canHaveDrafts = craft.users().drafts().draftOf(false).savedDraftsOnly().exists() %}
@@ -13,14 +10,12 @@
 {% block actionButton %}
     {% if currentUser.canRegisterUsers() %}
         <a class="btn submit add icon" href="{{ url('users/new') }}">
-            {{ 'New {type}'|t('app', {
-                type: 'user'|t('app'),
-            }) }}
+            {{ buttonLabel }}
         </a>
     {% endif %}
 {% endblock %}
 
-{% if source is defined %}
+{% if source ?? false %}
     {% js %}
     window.defaultSourceSlug = "{{ source|e('js') }}";
     {% endjs %}

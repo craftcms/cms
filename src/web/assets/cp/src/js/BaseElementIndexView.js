@@ -64,6 +64,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                 .length;
             },
             checkboxMode: this.settings.checkboxMode,
+            waitForDoubleClicks: this.settings.waitForDoubleClicks,
             onSelectionChange: this.onSelectionChange.bind(this),
           }
         );
@@ -85,19 +86,18 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       // Enable inline element editing if this is an index page
       if (this.elementIndex.isAdministrative) {
         this._handleElementEditing = (ev) => {
-          if ($(ev.target).closest('a[href],button,[role=button]').length) {
+          if (
+            this.elementIndex.inlineEditing ||
+            $(ev.target).closest('a[href],button,[role=button]').length
+          ) {
             // Let the link/button do its thing
             return;
           }
 
           const $target = $(ev.target);
-          var $element;
-
-          if ($target.hasClass('element')) {
-            $element = $target;
-          } else {
-            $element = $target.closest('.element');
-
+          let $element = $target.closest('.element');
+          if (!$element.length) {
+            $element = $target.closest('tr').find('.element:first');
             if (!$element.length) {
               return;
             }
@@ -256,7 +256,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     getElementCheckbox: function (element) {
-      return $(element).find('[role="checkbox"]');
+      return $(element).find('.checkbox');
     },
 
     isVerticalList: function () {
@@ -347,6 +347,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
           let $newElements = $(response.data.html);
 
+          if (this.elementIndex.selectable) {
+            const role = this.elementIndex.multiSelect ? 'checkbox' : 'radio';
+            $newElements.find('.checkbox').attr('role', role);
+          }
+
           this.appendElements($newElements);
           await Craft.appendHeadHtml(response.data.headHtml);
           await Craft.appendBodyHtml(response.data.bodyHtml);
@@ -435,6 +440,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       multiSelect: false,
       canSelectElement: null,
       checkboxMode: false,
+      waitForDoubleClicks: false,
       sortable: false,
       loadMoreElementsAction: 'element-indexes/get-more-elements',
       onAppendElements: $.noop,

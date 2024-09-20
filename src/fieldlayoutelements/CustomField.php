@@ -14,12 +14,13 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Inflector;
 use craft\helpers\StringHelper;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.
  *
- * @property-write FieldInterface $field The custom field this layout field is based on
+ * @property FieldInterface $field The custom field this layout field is based on
  * @property string $fieldUid The UID of the field this layout field is based on
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -278,6 +279,29 @@ class CustomField extends BaseField
         return $this->_field::icon();
     }
 
+    protected function selectorIndicators(): array
+    {
+        $indicators = parent::selectorIndicators();
+
+        if (isset($this->label) || isset($this->instructions) || isset($this->handle)) {
+            $attributes = array_values(array_filter([
+                isset($this->label) ? Craft::t('app', 'Name') : null,
+                isset($this->instructions) ? Craft::t('app', 'Instructions') : null,
+                isset($this->handle) ? Craft::t('app', 'Handle') : null,
+            ]));
+            array_unshift($indicators, [
+                'label' => Craft::t('app', 'This field’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.', [
+                    'attributes' => mb_strtolower(Inflector::sentence($attributes)),
+                    'totalAttributes' => count($attributes),
+                ]),
+                'icon' => 'pencil',
+                'iconColor' => 'teal',
+            ]);
+        }
+
+        return $indicators;
+    }
+
     /**
      * @inheritdoc
      */
@@ -364,7 +388,8 @@ class CustomField extends BaseField
         }
 
         $view = Craft::$app->getView();
-        $view->registerDeltaName($this->_field->handle);
+        $isDirty = $element?->isFieldDirty($this->_field->handle);
+        $view->registerDeltaName($this->_field->handle, $isDirty);
 
         $describedBy = $this->_field->describedBy;
         $this->_field->describedBy = $this->describedBy($element, $static);

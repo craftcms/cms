@@ -122,16 +122,18 @@ class Revisions extends Component
         }
 
         // Fire a 'beforeCreateRevision' event
-        $event = new RevisionEvent([
-            'canonical' => $canonical,
-            'creatorId' => $creatorId,
-            'revisionNum' => $num,
-            'revisionNotes' => $notes,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
-        $notes = $event->revisionNotes;
-        $creatorId = $event->creatorId;
-        $canonical = $event->canonical;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_REVISION)) {
+            $event = new RevisionEvent([
+                'canonical' => $canonical,
+                'creatorId' => $creatorId,
+                'revisionNum' => $num,
+                'revisionNotes' => $notes,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
+            $notes = $event->revisionNotes;
+            $creatorId = $event->creatorId;
+            $canonical = $event->canonical;
+        }
 
         $elementsService = Craft::$app->getElements();
 

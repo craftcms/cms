@@ -179,7 +179,7 @@ abstract class BaseField extends FieldLayoutElement
         $icon = $this->selectorIcon();
 
         $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', Cp::iconSvg($indicator['icon']), [
-            'class' => array_filter(array_merge(['cp-icon', 'puny'], [$indicator['iconColor'] ?? null])),
+            'class' => array_filter(['cp-icon', 'puny', $indicator['iconColor'] ?? null]),
             'title' => $indicator['label'],
             'aria' => ['label' => $indicator['label']],
         ]), $this->selectorIndicators()));
@@ -202,7 +202,6 @@ abstract class BaseField extends FieldLayoutElement
                 'class' => ['smalltext', 'light', 'code', 'fld-attribute-label'],
                 'title' => $this->attribute(),
             ]) .
-            ($label === null ? $indicatorHtml : '') .
             Html::endTag('div'); // .fld-attribute
 
         if ($indicatorHtml) {
@@ -283,6 +282,22 @@ abstract class BaseField extends FieldLayoutElement
                 'label' => Craft::t('app', 'This field is required'),
                 'icon' => 'asterisk',
                 'iconColor' => 'rose',
+            ];
+        }
+
+        if (isset($this->tip)) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field has a tip'),
+                'icon' => 'lightbulb',
+                'iconColor' => 'sky',
+            ];
+        }
+
+        if (isset($this->warning)) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field has a warning'),
+                'icon' => 'alert',
+                'iconColor' => 'amber',
             ];
         }
 
@@ -389,7 +404,7 @@ abstract class BaseField extends FieldLayoutElement
      * Returns the HTML for an element’s thumbnail.
      *
      * @param ElementInterface $element The element the field is associated with
-     * @param int $size The width and height the thumbnail should have.
+     * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
      */
     public function thumbHtml(ElementInterface $element, int $size): ?string

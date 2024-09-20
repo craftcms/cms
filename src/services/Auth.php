@@ -223,15 +223,17 @@ class Auth extends Component
                 RecoveryCodes::class,
             ];
 
-            $event = new RegisterComponentTypesEvent([
-                'types' => $methods,
-            ]);
-            $this->trigger(self::EVENT_REGISTER_METHODS, $event);
+            // Fire a 'registerMethods' event
+            if ($this->hasEventHandlers(self::EVENT_REGISTER_METHODS)) {
+                $event = new RegisterComponentTypesEvent(['types' => $methods]);
+                $this->trigger(self::EVENT_REGISTER_METHODS, $event);
+                $methods = $event->types;
+            }
 
             $this->_methods[$user->id] = array_map(fn(string $class) => ComponentHelper::createComponent([
                 'type' => $class,
                 'user' => $user,
-            ], AuthMethodInterface::class), $event->types);
+            ], AuthMethodInterface::class), $methods);
 
             usort($this->_methods[$user->id], function(AuthMethodInterface $a, AuthMethodInterface $b) {
                 // place Recovery Codes at the end

@@ -55,7 +55,8 @@ class PruneOrphanedEntriesController extends Controller
             $entries = Entry::find()
                 ->status(null)
                 ->siteId($site->id)
-                ->where(['not exists', $esSubQuery])
+                ->where(['not', ['entries.primaryOwnerId' => null]])
+                ->andWhere(['not exists', $esSubQuery])
                 ->all();
 
             if (empty($entries)) {

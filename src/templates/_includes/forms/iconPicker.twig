@@ -8,6 +8,8 @@
   {% tag 'div' with {
     class: 'icon-picker--icon',
     title: value ?: false,
+    role: value ? 'img' : false,
+    lang: craft.app.getTargetLanguage() starts with 'en' ? false : 'en',
     aria: {
       label: value ?: false,
     },
@@ -38,5 +40,7 @@
 </div>
 
 {% js %}
-  new Craft.IconPicker('#{{ id|namespaceInputId }}');
+  new Craft.IconPicker('#{{ id|namespaceInputId }}', {
+    freeOnly: {{ (freeOnly ?? false)|json_encode }},
+  });
 {% endjs %}

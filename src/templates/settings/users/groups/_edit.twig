@@ -1,55 +1,22 @@
-{% requireEdition CraftPro %}
-{% requireAdmin %}
-
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 {% set fullPageForm = true %}
-
-{% set crumbs = [
-    { label: "Settings"|t('app'), url: url('settings') },
-    { label: "Users"|t('app'), url: url('settings/users') },
-    { label: "User Groups"|t('app'), url: url('settings/users') }
-] %}
-
-{% set formActions = [
-    {
-        label: 'Save and continue editing'|t('app'),
-        redirect: 'settings/users/groups/{id}'|hash,
-        shortcut: true,
-        retainScroll: true,
-    },
-] %}
-
-
-{% if group is not defined and groupId is defined %}
-    {% set group = craft.app.userGroups.getGroupById(groupId) %}
-    {% if not group %}{% exit 404 %}{% endif %}
-{% endif %}
-
-
-{% set isNewGroup = (group is not defined or groupId is not defined) %}
-
-
-{% if isNewGroup %}
-    {% set title = "Create a new user group"|t('app') %}
-{% else %}
-    {% set title = group.name|trim ?: 'Edit User Group'|t('app') %}
-{% endif %}
-
 
 {% block content %}
     {{ actionInput('user-settings/save-group') }}
     {{ redirectInput('settings/users/groups/{id}') }}
 
-    {% if not isNewGroup %}{{ hiddenInput('groupId', group.id) }}{% endif %}
+    {% if group.id %}
+        {{ hiddenInput('groupId', group.id) }}
+    {% endif %}
 
     {{ forms.textField({
         first: true,
         label: "Name"|t('app'),
         id: 'name',
         name: 'name',
-        value: (group is defined ? group.name : null),
-        errors: (group is defined ? group.getErrors('name') : null),
+        value: group.name,
+        errors: group.getErrors('name'),
         autofocus: true,
         required: true,
     }) }}
@@ -61,8 +28,8 @@
         class: 'code',
         autocorrect: false,
         autocapitalize: false,
-        value: (group is defined ? group.handle : null),
-        errors: (group is defined ? group.getErrors('handle') : null),
+        value: group.handle,
+        errors: group.getErrors('handle'),
         required: true
     }) }}
 
@@ -72,7 +39,7 @@
         class: 'nicetext',
         name: 'description',
         value: group.description ?? null,
-        errors: (group is defined ? group.getErrors('description') : null),
+        errors: group.getErrors('description'),
     }) }}
 
     <hr>
@@ -83,17 +50,17 @@
         {% include "_includes/permissions" with {
             subject: group ?? null,
             permissions: craft.app.userPermissions.getAllPermissions(),
-            includeGroupPlaceholder: isNewGroup
+            includeGroupPlaceholder: not group.id,
         } only %}
     </div>
 {% endblock %}
 
 {% js %}
-    {% if group is not defined or not group.handle %}
+    {% if not group.handle %}
         new Craft.HandleGenerator('#name', '#handle');
     {% endif %}
 
-    {% if not isNewGroup %}
+    {% if group.id %}
         new Craft.ElevatedSessionForm('#main-form', [
             '#permissions input[type="checkbox"]:not(:checked)'
         ]);

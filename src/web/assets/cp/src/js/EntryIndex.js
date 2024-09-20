@@ -51,6 +51,10 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
   updateButton: function () {
     if (!this.$source) {
+      // Remove the old button, if there is one
+      if (this.$newEntryBtnGroup) {
+        this.$newEntryBtnGroup.remove();
+      }
       return;
     }
 
@@ -82,13 +86,18 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       let $menuBtn;
       const menuId = 'new-entry-menu-' + Craft.randomString(10);
 
+      // check if any publishable sections are available for this site
+      const publishableSectionsForSite = this.publishableSections.filter(
+        (section) => section.sites.includes(this.siteId)
+      );
+
       // If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
       // Otherwise only show a menu button
       if (selectedSection) {
         const visibleLabel =
           this.settings.context === 'index'
             ? Craft.t('app', 'New {type}', {
-                type: Craft.t('app', 'entry'),
+                type: Craft.elementTypeNames['craft\\elements\\Entry'][2],
               })
             : Craft.t('app', 'New {section} entry', {
                 section: selectedSection.name,
@@ -134,7 +143,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           }
         });
 
-        if (this.publishableSections.length > 1) {
+        if (publishableSectionsForSite.length > 1) {
           $menuBtn = $('<button/>', {
             type: 'button',
             class: 'btn submit menubtn btngroup-btn-last',
@@ -143,11 +152,12 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             'aria-label': Craft.t('app', 'New entry, choose a section'),
           }).appendTo(this.$newEntryBtnGroup);
         }
-      } else {
+      } else if (publishableSectionsForSite.length > 0) {
+        // only add the New Entry button if there are any sections for this site
         this.$newEntryBtn = $menuBtn = Craft.ui
           .createButton({
             label: Craft.t('app', 'New {type}', {
-              type: Craft.t('app', 'entry'),
+              type: Craft.elementTypeNames['craft\\elements\\Entry'][2],
             }),
             ariaLabel: Craft.t('app', 'New entry, choose a section'),
             spinner: true,
@@ -172,8 +182,10 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             this.settings.context === 'index' ? 'link' : 'button';
           if (
             (this.settings.context === 'index' &&
-              $.inArray(this.siteId, section.sites) !== -1) ||
-            (this.settings.context !== 'index' && section !== selectedSection)
+              section.sites.includes(this.siteId)) ||
+            (this.settings.context !== 'index' &&
+              section !== selectedSection &&
+              section.sites.includes(this.siteId))
           ) {
             const $li = $('<li/>').appendTo($ul);
             const $a = $('<a/>', {

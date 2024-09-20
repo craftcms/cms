@@ -29,7 +29,39 @@ use yii\db\Expression;
 class SystemMessages extends Component
 {
     /**
-     * @event RegisterEmailMessagesEvent The event that is triggered when registering email messages.
+     * @event RegisterEmailMessagesEvent The event that is triggered when registering system messages.
+     *
+     * ```php
+     * use craft\base\Event;
+     * use craft\events\RegisterEmailMessagesEvent;
+     * use craft\services\SystemMessages;
+     *
+     * Event::on(
+     *     SystemMessages::class,
+     *     SystemMessages::EVENT_REGISTER_MESSAGES,
+     *     function(RegisterEmailMessagesEvent $event) {
+     *         $event->messages[] = [
+     *             'key' => 'account_approved',
+     *             'heading' => 'When a member’s account is approved',
+     *             'subject' => 'Your account is approved!',
+     *             'body' => "Hey {{user.friendlyName|e}},\n\nYour account with {{systemName}} has been approved by {{approver}}!",
+     *         ];
+     *     },
+     * );
+     * ```
+     *
+     * Once a system message is registered, it will be editable from the System Messages utility.
+     *
+     * System messages can be sent via [[\craft\mail\Mailer::composeFromKey()]]:
+     *
+     * ```php
+     * Craft::$app->getMailer()
+     *    ->composeFromKey('account_approved', [
+     *        'approver' => $approver->friendlyName,
+     *    ])
+     *    ->setTo($user)
+     *    ->send();
+     * ```
      */
     public const EVENT_REGISTER_MESSAGES = 'registerMessages';
 
@@ -83,14 +115,15 @@ class SystemMessages extends Component
             ],
         ];
 
-        // Give plugins a chance to add additional messages
-        $event = new RegisterEmailMessagesEvent([
-            'messages' => $messages,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_MESSAGES, $event);
+        // Fire a 'registerMessages' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_MESSAGES)) {
+            $event = new RegisterEmailMessagesEvent(['messages' => $messages]);
+            $this->trigger(self::EVENT_REGISTER_MESSAGES, $event);
+            $messages = $event->messages;
+        }
 
         // Sort them all by key
-        $messages = ArrayHelper::index($event->messages, 'key');
+        $messages = ArrayHelper::index($messages, 'key');
 
         // Make sure they're SystemMessage objects
         foreach ($messages as $key => $message) {
@@ -180,7 +213,7 @@ class SystemMessages extends Component
             $languageId = $language;
         }
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             // Fetch the customization (if there is one)
             $override = $this->_createMessagesQuery()
                 ->select(['subject', 'body'])

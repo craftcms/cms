@@ -1,0 +1,42 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\migrations;
+
+/**
+ * This view is used by app/console/controllers/MigrateController.php.
+ *
+ * The following variables are available in this view:
+ */
+/** @var string $namespace */
+/** @var string $className */
+/** @var string $migrationNameDesc */
+/** @var string $persistingEntryTypeUid */
+/** @var string $outgoingEntryTypeUid */
+/** @var array<string,string> $layoutElementUidMap */
+
+echo "<?php\n";
+?>
+
+namespace <?= $namespace ?>;
+
+use Craft;
+use craft\migrations\BaseEntryTypeMergeMigration;
+
+/**
+ * <?= $className ?> migration.
+ */
+class <?= $className ?> extends BaseEntryTypeMergeMigration
+{
+    public string $persistingEntryTypeUid = '<?= $persistingEntryTypeUid ?>';
+    public string $outgoingEntryTypeUid = '<?= $outgoingEntryTypeUid ?>';
+    public array $layoutElementUidMap = [
+<?php foreach ($layoutElementUidMap as $old => $new): ?>
+        '<?= $old ?>' => '<?= $new ?>',
+<?php endforeach; ?>
+    ];
+}

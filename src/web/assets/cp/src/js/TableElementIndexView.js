@@ -21,6 +21,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
   initialSerializedValue: null,
 
+  stickyScrollbar: null,
+  stickyScrollbarObserver: null,
+
   getElementContainer: function () {
     // Save a reference to the table
     this.$table = this.$container.find('table:first');
@@ -33,6 +36,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     // Set the sort header
     this.initTableHeaders();
+
+    this.createScrollbar();
 
     // Create the table sorter
     if (
@@ -87,12 +92,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             `> tbody > tr[data-id="${ev.data.id}"]`
           );
           if ($rows.length) {
-            const data = {
-              elementType: this.elementIndex.elementType,
-              source: this.elementIndex.sourceKey,
+            const data = Object.assign(this.elementIndex.getViewParams(), {
               id: ev.data.id,
-              siteId: this.elementIndex.siteId,
-            };
+            });
             Craft.sendActionRequest(
               'POST',
               'element-indexes/element-table-html',
@@ -100,9 +102,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             ).then(({data}) => {
               for (let i = 0; i < $rows.length; i++) {
                 const $row = $rows.eq(i);
-                $row
-                  .find('> th[data-titlecell] .element')
-                  .replaceWith(data.elementHtml);
                 for (let attribute in data.attributeHtml) {
                   if (data.attributeHtml.hasOwnProperty(attribute)) {
                     $row
@@ -144,6 +143,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
       this.addListener(this.$saveBtn, 'activate', () => {
         this.$saveBtn.addClass('loading');
+        this.closeDateTimeFields();
+
         this.saveChanges()
           .then((data) => {
             if (data.errors) {
@@ -170,7 +171,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
             Craft.cp.displaySuccess(Craft.t('app', 'Changes saved.'));
             this.elementIndex.inlineEditing = false;
-            this.elementIndex.updateElements(true, false);
+            this.elementIndex.updateElements(true, false).then(() => {
+              this.elementIndex.$elements.removeClass('inline-editing');
+            });
           })
           .catch(() => {
             this.elementIndex.setIndexAvailable();
@@ -182,9 +185,20 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       });
 
       this.addListener(this.$cancelBtn, 'activate', () => {
-        this.$cancelBtn.addClass('loading');
-        this.elementIndex.inlineEditing = false;
-        this.elementIndex.updateElements(true, false);
+        if (
+          !this.getDeltaInputChanges() ||
+          confirm(
+            Craft.t('app', 'Are you sure you want to discard your changes?')
+          )
+        ) {
+          this.$cancelBtn.addClass('loading');
+          this.elementIndex.inlineEditing = false;
+          this.closeDateTimeFields();
+
+          this.elementIndex.updateElements(true, false).then(() => {
+            this.elementIndex.$elements.removeClass('inline-editing');
+          });
+        }
       });
 
       this.addListener(this.$elementContainer, 'keydown', (event) => {
@@ -212,8 +226,23 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.addListener(this.$editBtn, 'activate', () => {
         this.$editBtn.addClass('loading');
         this.elementIndex.inlineEditing = true;
-        this.elementIndex.updateElements(true, false);
+        this.elementIndex.updateElements(true, false).then(() => {
+          this.elementIndex.$elements.addClass('inline-editing');
+        });
       });
+    }
+  },
+
+  closeDateTimeFields: function () {
+    // ensure opened date/time pickers don't linger after activating the Cancel btn
+    this.elementIndex.$elements
+      .find('.datewrapper input')
+      .datepicker('destroy');
+
+    if ($().timepicker) {
+      this.elementIndex.$elements
+        .find('.timewrapper input')
+        .timepicker('remove');
     }
   },
 
@@ -640,6 +669,13 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.$cancelBtn.remove();
     }
 
+    if (this.stickyScrollbar) {
+      this.stickyScrollbar.remove();
+    }
+    if (this.stickyScrollbarObserver) {
+      this.stickyScrollbarObserver.disconnect();
+    }
+
     if (this._broadcastListener) {
       Craft.messageReceiver.removeEventListener(
         'message',
@@ -649,5 +685,40 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     this.base();
+  },
+
+  createScrollbar() {
+    if (this.elementIndex.settings.context !== 'index') {
+      return;
+    }
+
+    const footer = document.querySelector('#content > #footer');
+    if (!footer) {
+      return;
+    }
+
+    this.stickyScrollbar = document.createElement('craft-proxy-scrollbar');
+    this.stickyScrollbar.setAttribute('scroller', '.tablepane');
+    this.stickyScrollbar.setAttribute('content', '.tablepane > table');
+
+    this.stickyScrollbar.style.bottom = `${
+      footer.getBoundingClientRect().height + 2
+    }px`;
+
+    let $scrollbar = $(this.stickyScrollbar);
+    this.stickyScrollbarObserver = new IntersectionObserver(
+      ([ev]) => {
+        if (ev.intersectionRatio < 1) {
+          $scrollbar.insertAfter(this.$container);
+        } else {
+          $scrollbar.remove();
+        }
+      },
+      {
+        rootMargin: '0px 0px -1px 0px',
+        threshold: [1],
+      }
+    );
+    this.stickyScrollbarObserver.observe(footer);
   },
 });

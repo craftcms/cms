@@ -16,9 +16,11 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use DateTime;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -43,6 +45,23 @@ class FieldLayoutTab extends FieldLayoutComponent
     {
         static::updateConfig($config);
         return new self($config);
+    }
+
+    /**
+     * Returns the label HTML that should be displayed within field layout designers.
+     *
+     * @return string
+     * @since 5.1.0
+     */
+    public function labelHtml(): string
+    {
+        return
+            Html::tag('span', Html::encode($this->name)) .
+            ($this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
+                'class' => array_filter(array_merge(['cp-icon', 'puny', 'orange'])),
+                'title' => Craft::t('app', 'This tab is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
+            ]) : '');
     }
 
     /**
@@ -196,7 +215,14 @@ class FieldLayoutTab extends FieldLayoutComponent
             if (!isset($layoutElement->uid)) {
                 $layoutElement->uid = StringHelper::UUID();
             }
-            $elementConfigs[] = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
+            $elementConfig = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
+            if (!isset($elementConfig['dateAdded'])) {
+                // Default `dateAdded` to a minute ago, so there’s no chance that an element that predated 5.3 would get
+                // the same timestamp as a newly-added element, if the layout was saved within a minute of being edited,
+                // after updating to Craft 5.3+.
+                $elementConfig['dateAdded'] = DateTimeHelper::toIso8601((new DateTime())->modify('-1 minute'));
+            }
+            $elementConfigs[] = $elementConfig;
         }
         return $elementConfigs;
     }
@@ -278,6 +304,11 @@ class FieldLayoutTab extends FieldLayoutComponent
                 $layoutElement->setLayout($this->getLayout());
                 $this->_elements[] = $layoutElement;
             }
+        }
+
+        // Clear caches
+        if (isset($this->_layout)) {
+            $this->_layout->reset();
         }
     }
 

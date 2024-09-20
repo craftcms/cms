@@ -7,11 +7,11 @@
 
 namespace craft\gql\base;
 
-use craft\gql\types\input\criteria\Asset;
-use craft\gql\types\input\criteria\Category;
-use craft\gql\types\input\criteria\Entry;
-use craft\gql\types\input\criteria\Tag;
-use craft\gql\types\input\criteria\User;
+use craft\gql\types\input\criteria\AssetRelation;
+use craft\gql\types\input\criteria\CategoryRelation;
+use craft\gql\types\input\criteria\EntryRelation;
+use craft\gql\types\input\criteria\TagRelation;
+use craft\gql\types\input\criteria\UserRelation;
 use craft\gql\types\QueryArgument;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\Type;
@@ -75,29 +75,34 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results to elements that relate to the provided element IDs. This argument is ignored, if `relatedToAll` is also used.',
             ],
+            'notRelatedTo' => [
+                'name' => 'notRelatedTo',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results to elements that do not relate to the provided element IDs.',
+            ],
             'relatedToAssets' => [
                 'name' => 'relatedToAssets',
-                'type' => Type::listOf(Asset::getType()),
+                'type' => fn() => Type::listOf(AssetRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to an asset list defined with this argument.',
             ],
             'relatedToEntries' => [
                 'name' => 'relatedToEntries',
-                'type' => Type::listOf(Entry::getType()),
+                'type' => fn() => Type::listOf(EntryRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to an entry list defined with this argument.',
             ],
             'relatedToUsers' => [
                 'name' => 'relatedToUsers',
-                'type' => Type::listOf(User::getType()),
+                'type' => fn() => Type::listOf(UserRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to a use list defined with this argument.',
             ],
             'relatedToCategories' => [
                 'name' => 'relatedToCategories',
-                'type' => Type::listOf(Category::getType()),
+                'type' => fn() => Type::listOf(CategoryRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to a category list defined with this argument.',
             ],
             'relatedToTags' => [
                 'name' => 'relatedToTags',
-                'type' => Type::listOf(Tag::getType()),
+                'type' => fn() => Type::listOf(TagRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to a tag list defined with this argument.',
             ],
             'relatedToAll' => [

@@ -9,6 +9,8 @@ namespace craft\db\mysql;
 
 use Craft;
 use craft\db\Connection;
+use craft\db\ExpressionBuilder;
+use craft\db\ExpressionInterface;
 use craft\db\TableSchema;
 use craft\helpers\App;
 use craft\helpers\Db;
@@ -90,6 +92,19 @@ class Schema extends \yii\db\mysql\Schema
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function findTableNames($schema = ''): array
+    {
+        $sql = 'SHOW FULL TABLES';
+        if ($schema !== '') {
+            $sql .= ' FROM ' . $this->quoteSimpleTableName($schema);
+        }
+        $sql .= " WHERE `Table_Type` = 'BASE TABLE'";
+        return $this->db->createCommand($sql)->queryColumn();
+    }
+
+    /**
      * Creates a query builder for the database.
      *
      * This method may be overridden by child classes to create a DBMS-specific query builder.
@@ -99,6 +114,9 @@ class Schema extends \yii\db\mysql\Schema
     public function createQueryBuilder(): QueryBuilder
     {
         return new QueryBuilder($this->db, [
+            'expressionBuilders' => [
+                ExpressionInterface::class => ExpressionBuilder::class,
+            ],
             'separator' => "\n",
         ]);
     }
@@ -108,6 +126,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @param string $name
      * @return string
+     * @deprecated in 5.4.0
      */
     public function quoteDatabaseName(string $name): string
     {
@@ -177,76 +196,60 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
-        $useSingleTransaction = true;
-        $serverVersion = App::normalizeVersion($this->getServerVersion());
+        $baseCommand = (new ShellCommand('mysqldump'))
+            ->addArg('--defaults-file=', $this->_createDumpConfigFile())
+            ->addArg('--add-drop-table')
+            ->addArg('--comments')
+            ->addArg('--create-options')
+            ->addArg('--dump-date')
+            ->addArg('--no-autocommit')
+            ->addArg('--routines')
+            ->addArg('--default-character-set=', Craft::$app->getConfig()->getDb()->charset)
+            ->addArg('--set-charset')
+            ->addArg('--triggers')
+            ->addArg('--no-tablespaces');
+
+        $serverVersion = App::normalizeVersion(Craft::$app->getDb()->getServerVersion());
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
+        $ignoreTables = $ignoreTables ?? Craft::$app->getDb()->getIgnoredBackupTables();
+        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
         // https://bugs.mysql.com/bug.php?id=109685
-        if ($isMySQL8 && version_compare($serverVersion, '8.0.32', '>=')) {
-            $useSingleTransaction = false;
-        }
-
-        $defaultArgs =
-            ' --defaults-file="' . $this->_createDumpConfigFile() . '"' .
-            ' --add-drop-table' .
-            ' --comments' .
-            ' --create-options' .
-            ' --dump-date' .
-            ' --no-autocommit' .
-            ' --routines' .
-            ' --default-character-set=' . Craft::$app->getConfig()->getDb()->getCharset() .
-            ' --set-charset' .
-            ' --triggers' .
-            ' --no-tablespaces';
+        $useSingleTransaction = $isMySQL8 && version_compare($serverVersion, '8.0.32', '<');
 
         if ($useSingleTransaction) {
-            $defaultArgs .= ' --single-transaction';
+            $baseCommand->addArg('--single-transaction');
         }
 
-        // Find out if the db/dump client supports column-statistics
-        $shellCommand = new ShellCommand();
-
-        if (App::isWindows()) {
-            $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
-        } else {
-            $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
+        if ($this->supportsColumnStatistics()) {
+            $baseCommand->addArg('--column-statistics=', '0');
         }
 
-        // If we don't have proc_open, maybe we've got exec
-        if (!function_exists('proc_open') && function_exists('exec')) {
-            $shellCommand->useExec = true;
-        }
+        $schemaDump = (clone $baseCommand)
+            ->addArg('--no-data')
+            ->addArg('--result-file=', '{file}')
+            ->addArg('{database}');
 
-        $success = $shellCommand->execute();
+        $dataDump = (clone $baseCommand)
+            ->addArg('--no-create-info');
 
-        // if there was output, then column-statistics is supported and we should disable it
-        if ($success && $shellCommand->getOutput()) {
-            $defaultArgs .= ' --column-statistics=0';
-        }
-
-        if ($ignoreTables === null) {
-            $ignoreTables = $this->db->getIgnoredBackupTables();
-        }
-        $ignoreTableArgs = [];
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
-            $ignoreTableArgs[] = "--ignore-table={database}.$table";
+            $dataDump->addArg('--ignore-table=', "{database}.$table");
         }
 
-        $schemaDump = 'mysqldump' .
-            $defaultArgs .
-            ' --no-data' .
-            ' --result-file="{file}"' .
-            ' {database}';
+        $dataDump->addArg('{database}');
 
-        $dataDump = 'mysqldump' .
-            $defaultArgs .
-            ' --no-create-info' .
-            ' ' . implode(' ', $ignoreTableArgs) .
-            ' {database}' .
-            ' >> "{file}"';
+        if ($commandFromConfig instanceof \Closure) {
+            $schemaDump = $commandFromConfig($schemaDump);
+            $dataDump = $commandFromConfig($dataDump);
+        }
 
-        return $schemaDump . ' && ' . $dataDump;
+        return sprintf(
+            '%s && %s >> "{file}"',
+            $schemaDump->getExecCommand(),
+            $dataDump->getExecCommand(),
+        );
     }
 
     /**
@@ -257,10 +260,16 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return 'mysql' .
-            ' --defaults-file="' . $this->_createDumpConfigFile() . '"' .
-            ' {database}' .
-            ' < "{file}"';
+        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->restoreCommand;
+        $command = (new ShellCommand('mysql'))
+            ->addArg('--defaults-file=', $this->_createDumpConfigFile())
+            ->addArg('{database}');
+
+        if ($commandFromConfig instanceof \Closure) {
+            $command = $commandFromConfig($command);
+        }
+
+        return $command->getExecCommand() . ' < "{file}"';
     }
 
     /**
@@ -415,6 +424,28 @@ SQL;
                 $table->foreignKeys = array_values($table->foreignKeys);
             }
         }
+    }
+
+    protected function supportsColumnStatistics(): bool
+    {
+        // Find out if the db/dump client supports column-statistics
+        $shellCommand = new ShellCommand();
+
+        if (App::isWindows()) {
+            $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
+        } else {
+            $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
+        }
+
+        // If we don't have proc_open, maybe we've got exec
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $shellCommand->useExec = true;
+        }
+
+        $success = $shellCommand->execute();
+
+        // if there was output, then column-statistics is supported
+        return $success && $shellCommand->getOutput();
     }
 
     /**

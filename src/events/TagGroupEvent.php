@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\models\TagGroup;
-use yii\base\Event;
 
 /**
  * Tag group event class.

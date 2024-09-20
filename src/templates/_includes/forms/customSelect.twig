@@ -94,23 +94,25 @@
       const menubtn = $button
         .menubtn()
         .data('menubtn');
-      menubtn
-        .on('optionSelect', (ev) => {
-          const $option = $(ev.option);
-          const $icon = $option.find('.icon');
-          const $label = $option.find('.label');
-          let labelHtml = '';
-          if ($icon.length) {
-            labelHtml += $icon.clone().removeClass('icon').addClass('cp-icon').prop('outerHTML');
-          }
-          labelHtml += `<div class="label">${$label.html()}</div>`;
-          $buttonFlex.html(labelHtml);
-          $input.val($option.data('value'));
-          menubtn.menu.$options.removeClass('sel');
-          $option.addClass('sel');
-          $container.data('value', $option.data('value'));
-          $container.trigger('change');
-        });
+        if (menubtn) {
+          menubtn
+            .on('optionSelect', (ev) => {
+              const $option = $(ev.option);
+              const $icon = $option.find('.icon');
+              const $label = $option.find('.label');
+              let labelHtml = '';
+              if ($icon.length) {
+                labelHtml += $icon.clone().removeClass('icon').addClass('cp-icon').prop('outerHTML');
+              }
+              labelHtml += `<div class="label">${$label.html()}</div>`;
+              $buttonFlex.html(labelHtml);
+              $input.val($option.data('value'));
+              menubtn.menu.$options.removeClass('sel');
+              $option.addClass('sel');
+              $container.data('value', $option.data('value'));
+              $container.trigger('change');
+            });
+        }
     })();
   {% endjs %}
 {% endif %}

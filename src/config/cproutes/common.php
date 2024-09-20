@@ -51,6 +51,7 @@ return [
     'settings/filesystems/new' => 'fs/edit',
     'settings/filesystems/<handle:{handle}>' => 'fs/edit',
     'settings/general' => 'system-settings/general-settings',
+    'settings/globals' => 'system-settings/global-set-index',
     'settings/globals/new' => 'system-settings/edit-global-set',
     'settings/globals/<globalSetId:\d+>' => 'system-settings/edit-global-set',
     'settings/plugins/<handle>' => 'plugins/edit-plugin-settings',

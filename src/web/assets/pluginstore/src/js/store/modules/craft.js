@@ -17,6 +17,7 @@ const state = {
   CraftSolo: null,
   CraftTeam: null,
   CraftPro: null,
+  CraftEnterprise: null,
 };
 
 /**
@@ -28,7 +29,7 @@ const getters = {
       const features = {
         solo: [
           {
-            name: 'One admin account',
+            name: 'One user account',
             description:
               'The Solo edition is limited to a single admin account.',
           },
@@ -55,13 +56,14 @@ const getters = {
         ],
         team: [
           {
-            name: 'Five user accounts',
-            description: 'Create up to five user accounts.',
+            name: 'Up to five user accounts',
+            description:
+              'Create up to five user accounts (including admin accounts).',
           },
           {
-            name: 'One user role',
+            name: 'One user group',
             description:
-              'All user accounts have access to all content management features.',
+              'All accounts belong to a “Team” user group with customizable permissions for non-admins.',
           },
           {
             name: 'Developer support',
@@ -73,11 +75,11 @@ const getters = {
           {
             name: 'Unlimited user accounts',
             description:
-              'Create unlimited user accounts with per-user permissions.',
+              'Create unlimited user accounts with per-user permissions and user group assignments.',
           },
           {
-            name: 'Unlimited user roles',
-            description: 'Create user groups with custom permissions.',
+            name: 'Unlimited user groups',
+            description: 'Create multiple user groups with custom permissions.',
           },
           {
             name: 'Branded control panel',
@@ -140,6 +142,8 @@ const getters = {
           return state.CraftTeam;
         case 'pro':
           return state.CraftPro;
+        case 'enterprise':
+          return state.CraftEnterprise;
         default:
           return null;
       }
@@ -252,6 +256,7 @@ const mutations = {
     state.CraftSolo = response.data.CraftSolo;
     state.CraftTeam = response.data.CraftTeam;
     state.CraftPro = response.data.CraftPro;
+    state.CraftEnterprise = response.data.CraftEnterprise;
   },
 
   updateCraftIdData(state, {responseData}) {

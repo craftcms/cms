@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
@@ -28,7 +29,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface
+class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -72,7 +73,8 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
      */
     public static function dbType(): string
     {
-        return Schema::TYPE_DECIMAL;
+        $db = Craft::$app->getDb();
+        return $db->getIsMysql() ? sprintf('%s(65,16)', Schema::TYPE_DECIMAL) : Schema::TYPE_DECIMAL;
     }
 
     /**
@@ -309,6 +311,13 @@ JS;
      */
     public function getElementConditionRuleType(): array|string|null
     {
+        if ($this->decimals) {
+            return [
+                'class' => NumberFieldConditionRule::class,
+                'step' => null,
+            ];
+        }
+
         return NumberFieldConditionRule::class;
     }
 

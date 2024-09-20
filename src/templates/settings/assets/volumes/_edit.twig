@@ -42,12 +42,13 @@
     data: {'error-key': 'fsHandle'},
 }) }}
 
-{{ forms.textField({
+{{ forms.autosuggestField({
     label: 'Subpath'|t('app'),
     instructions: 'Where assets should be stored on the filesystem.'|t('app'),
     id: 'subpath',
     name: 'subpath',
-    value: volume.getSubpath(false),
+    suggestEnvVars: true,
+    value: volume.getSubpath(false, false),
     errors: volume.getErrors('subpath'),
     data: {'error-key': 'subpath'},
 }) }}
@@ -64,12 +65,13 @@
     data: {'error-key': 'transformFsHandle'},
 }) }}
 
-{{ forms.textField({
+{{ forms.autosuggestField({
     label: 'Transform Subpath'|t('app'),
     instructions: 'Where transforms should be stored on the filesystem.'|t('app'),
     id: 'transformSubpath',
     name: 'transformSubpath',
-    value: volume.transformSubpath,
+    suggestEnvVars: true,
+    value: volume.getTransformSubpath(false, false),
     errors: volume.getErrors('transformSubpath'),
     data: {'error-key': 'transformSubpath'},
 }) }}

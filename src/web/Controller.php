@@ -92,13 +92,14 @@ abstract class Controller extends \yii\web\Controller
     {
         $behaviors = $this->defineBehaviors();
 
-        // Give plugins a chance to modify them
-        $event = new DefineBehaviorsEvent([
-            'behaviors' => $behaviors,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+        // Fire a 'defineBehaviors' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
+            $event = new DefineBehaviorsEvent(['behaviors' => $behaviors]);
+            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+            return $event->behaviors;
+        }
 
-        return $event->behaviors;
+        return $behaviors;
     }
 
     /**
@@ -356,7 +357,11 @@ abstract class Controller extends \yii\web\Controller
                     'notificationSettings' => $notificationSettings,
                 ];
             }
-            return $this->asJson($data);
+            $response = $this->asJson($data);
+            if ($this->request->isCpRequest && Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+                $response->getHeaders()->setDefault('X-CSRF-Token', $this->request->getCsrfToken());
+            }
+            return $response;
         }
 
         $this->setSuccessFlash($message, $notificationSettings);
@@ -473,7 +478,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
-     * @param bool $requireAdminChanges Whether the <config4:allowAdminChanges>
+     * @param bool $requireAdminChanges Whether the <config5:allowAdminChanges>
      * config setting must also be enabled.
      * @throws ForbiddenHttpException if the current user is not an admin
      */

@@ -1,4 +1,5 @@
 {% include '_includes/forms/componentSelect.twig' with {
   options: options ?? craft.app.entries.getAllEntryTypes(),
+  showHandles: true,
   createAction: (create ?? false) ? 'entry-types/edit' : null,
 } %}

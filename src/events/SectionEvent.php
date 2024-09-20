@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\models\Section;
-use yii\base\Event;
 
 /**
  * Section event class.

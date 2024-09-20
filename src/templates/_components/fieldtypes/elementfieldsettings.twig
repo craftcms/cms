@@ -150,15 +150,6 @@
                 {% block targetSiteField %}
                     {{ field.getTargetSiteFieldHtml()|raw }}
                 {% endblock %}
-
-                {% block localizeRelationsField %}
-                    {{ forms.lightswitchField({
-                        label: 'Manage relations on a per-site basis'|t('app'),
-                        id: 'localize-relations',
-                        name: 'localizeRelations',
-                        on: field.localizeRelations
-                    }) }}
-                {% endblock %}
             {% endif %}
 
         </div>

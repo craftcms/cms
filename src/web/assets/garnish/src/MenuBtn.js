@@ -358,7 +358,7 @@ export default Base.extend(
 
       this.menu.show();
       this.$btn.addClass('active');
-      this.$btn.trigger('focus');
+      this.$btn.focus();
       this.$btn.attr('aria-expanded', 'true');
 
       this.showingMenu = true;

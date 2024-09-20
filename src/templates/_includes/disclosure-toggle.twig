@@ -1,6 +1,7 @@
 {% set attributes = attributes ?? {} %}
 {% set controls = controls ?? null %}
 {% set expanded = expanded ?? 'true' %}
+{% set content = (content ?? block('content') ?? '')|trim %}
 
 {% if controls %}
     <craft-disclosure id="{{ id ?? null }}">

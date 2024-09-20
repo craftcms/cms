@@ -443,6 +443,7 @@ SQL;
         $site = $element->getSite();
         $keywords = SearchHelper::normalizeKeywords($keywords, [], true, $site->language);
 
+        // Fire a 'beforeIndexKeywords' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_INDEX_KEYWORDS)) {
             $event = new IndexKeywordsEvent([
                 'element' => $element,

@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use craft\errors\OperationAbortedException;
 use craft\helpers\Db;
 use Throwable;
 use yii\db\ColumnSchemaBuilder;
@@ -52,7 +53,9 @@ abstract class Migration extends \yii\db\Migration
             }
             $transaction->commit();
         } catch (Throwable $e) {
-            $this->_printException($e);
+            if (!$e instanceof OperationAbortedException) {
+                $this->_printException($e);
+            }
             $transaction->rollBack();
             if ($throwExceptions) {
                 throw $e;
@@ -60,12 +63,21 @@ abstract class Migration extends \yii\db\Migration
             return false;
         }
 
+        $this->afterUp();
+        return true;
+    }
+
+    /**
+     * This method contains the logic to be executed after applying this migration.
+     *
+     * @since 5.3.2
+     */
+    protected function afterUp(): void
+    {
         // Fire an 'afterUp' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UP)) {
             $this->trigger(self::EVENT_AFTER_UP);
         }
-
-        return true;
     }
 
     /**
@@ -93,12 +105,21 @@ abstract class Migration extends \yii\db\Migration
             return false;
         }
 
+        $this->afterDown();
+        return true;
+    }
+
+    /**
+     * This method contains the logic to be executed after removing this migration.
+     *
+     * @since 5.3.2
+     */
+    protected function afterDown(): void
+    {
         // Fire an 'afterDown' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DOWN)) {
             $this->trigger(self::EVENT_AFTER_DOWN);
         }
-
-        return true;
     }
 
     // Schema Builder Methods

@@ -10,18 +10,16 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\elements\ElementCollection;
 use craft\elements\GlobalSet;
 use craft\helpers\Db;
-use yii\db\Connection;
 
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
  *
- * @method GlobalSet[]|array all($db = null)
- * @method GlobalSet|array|null one($db = null)
- * @method GlobalSet|array|null nth(int $n, ?Connection $db = null)
- * @method ElementCollection<GlobalSet> collect($db = null)
+ * @template TKey of array-key
+ * @template TElement of GlobalSet
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path globals.md
@@ -116,7 +114,7 @@ class GlobalSetQuery extends ElementQuery
 
         $this->joinElementTable(Table::GLOBALSETS);
 
-        $this->query->select([
+        $this->query->addSelect([
             'globalsets.name',
             'globalsets.handle',
             'globalsets.sortOrder',

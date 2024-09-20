@@ -57,6 +57,12 @@ trait NameTrait
     protected function prepareNamesForSave(): void
     {
         if ($this->fullName !== null) {
+            // if firstName/lastName are also set, just leave them alone
+            // (https://github.com/craftcms/cms/issues/14665)
+            if ($this->firstName !== null || $this->lastName !== null) {
+                return;
+            }
+
             $generalConfig = Craft::$app->getConfig()->getGeneral();
             $languages = [
                 // Load our custom language file first so config settings can override the defaults

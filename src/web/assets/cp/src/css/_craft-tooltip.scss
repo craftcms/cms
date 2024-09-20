@@ -1,4 +1,4 @@
-craft-tooltip {
+.craft-tooltip {
   position: fixed;
   white-space: normal;
   opacity: 0;
@@ -8,26 +8,30 @@ craft-tooltip {
   transition:
     opacity 100ms ease-in-out,
     transform 150ms ease-in-out;
+  /* stylelint-disable */
+  /* We need to keep these non-logical so floating-ui can override them */
   top: 0;
   left: 0;
+  /* stylelint-enable */
   z-index: 99;
 }
 
-craft-tooltip > .inner {
+.craft-tooltip > .inner {
   position: relative;
   display: inline-block;
   background-color: var(--white);
   color: var(--gray-700);
   border: 1px solid var(--dark-hairline-color);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 10px rgb(0 0 0 / 20%);
   border-radius: var(--medium-border-radius);
-  padding: var(--xs) var(--s);
+  padding-block: var(--xs);
+  padding-inline: var(--s);
   pointer-events: none;
   user-select: none;
   font-weight: 400;
 }
 
-craft-tooltip .arrow {
+.craft-tooltip .arrow {
   position: absolute;
   background: var(--white);
   width: 8px;
@@ -37,22 +41,24 @@ craft-tooltip .arrow {
   border-width: 1px;
   border-color: transparent;
 
+  // Not using logical properties here because `data-placement` will change based on direction via JS
   &[data-placement^='bottom'] {
-    border-inline-color: var(--dark-hairline-color) transparent;
-    border-block-color: var(--dark-hairline-color) transparent;
+    border-color: var(--dark-hairline-color) transparent transparent
+      var(--dark-hairline-color);
   }
 
   &[data-placement^='top'] {
-    border-inline-color: transparent var(--dark-hairline-color);
-    border-block-color: transparent var(--dark-hairline-color);
+    border-color: transparent var(--dark-hairline-color)
+      var(--dark-hairline-color) transparent;
   }
 
   &[data-placement^='right'] {
-    border-inline-color: var(--dark-hairline-color) transparent;
-    border-block-color: transparent var(--dark-hairline-color);
+    border-color: transparent transparent var(--dark-hairline-color)
+      var(--dark-hairline-color);
   }
+
   &[data-placement^='left'] {
-    border-inline-color: transparent var(--dark-hairline-color);
-    border-block-color: var(--dark-hairline-color) transparent;
+    border-color: var(--dark-hairline-color) var(--dark-hairline-color)
+      transparent transparent;
   }
 }

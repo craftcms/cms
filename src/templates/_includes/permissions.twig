@@ -1,4 +1,4 @@
-{% requireEdition CraftPro %}
+{% requireEdition CraftTeam %}
 
 {% do view.registerTranslations('app', [
     "Select All",
@@ -6,6 +6,8 @@
 ]) %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\userpermissions\\UserPermissionsAsset") %}
+
+{% set disabled = disabled ?? false %}
 
 {% macro permissionList(subject, groupPermissions, permissions, id, disabled) %}
     {% from "_includes/forms" import checkbox %}
@@ -48,7 +50,7 @@
                 {% endif %}
 
                 {% if props.nested ?? false %}
-                    {{ permissionList(subject, groupPermissions, props.nested, permissionName~'-nested', not checked) }}
+                    {{ permissionList(subject, groupPermissions, props.nested, permissionName~'-nested', disabled or not checked) }}
                 {% endif %}
             </li>
         {% endfor %}
@@ -74,8 +76,20 @@
     {% endif %}
 
     <div class="user-permissions">
-        <h3>{{ group.heading }}</h3>
-        <div class="select-all"></div>
-        {{ permissionList(subject, groupPermissions ?? [], group.permissions) }}
+        {{ tag('h3', {
+            class: {
+                'mt-0': loop.first,
+            }|filter|keys,
+            text: group.heading,
+        }) }}
+        {% if not disabled %}
+            {{ tag('div', {
+                class: {
+                    'select-all': true,
+                    'mt-0': loop.first,
+                }|filter|keys,
+            }) }}
+        {% endif %}
+        {{ permissionList(subject, groupPermissions ?? [], group.permissions, null, disabled) }}
     </div>
 {% endfor %}

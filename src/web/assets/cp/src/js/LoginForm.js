@@ -10,6 +10,7 @@ Craft.LoginForm = Garnish.Base.extend(
   {
     $container: null,
     $form: null,
+    $spinner: null,
     $usernameInput: null,
     $passwordInput: null,
     $rememberMeCheckbox: null,
@@ -19,6 +20,7 @@ Craft.LoginForm = Garnish.Base.extend(
     $errors: null,
     $altMethodContainer: null,
     $passkeyBtn: null,
+    passkeyBtn: null,
 
     modal: null,
     resetPasswordForm: null,
@@ -26,6 +28,7 @@ Craft.LoginForm = Garnish.Base.extend(
 
     async init(container, settings) {
       this.$container = $(container);
+      this.$pane = this.$container.find('.login-form-container');
       this.$form = this.$container.find('.login-form');
       this.$usernameInput = this.$form.find('.login-username');
       this.$passwordInput = this.$form.find('.login-password');
@@ -45,6 +48,13 @@ Craft.LoginForm = Garnish.Base.extend(
       this.submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn, {
         changeButtonText: true,
       });
+      this.passkeyBtn = new Garnish.MultiFunctionBtn(this.$passkeyBtn);
+
+      this.$spinner = document.createElement('craft-spinner');
+      this.$spinner.setAttribute('visible', false);
+      this.$spinner.classList.add('center-absolute');
+
+      $(this.$spinner).insertAfter(this.$form);
 
       new Craft.PasswordInput(this.$passwordInput, {
         onToggleInput: ($newPasswordInput) => {
@@ -66,9 +76,9 @@ Craft.LoginForm = Garnish.Base.extend(
       // Focus first empty field in form
       if (!Garnish.isMobileBrowser()) {
         if (this.$usernameInput.val()) {
-          this.$passwordInput.trigger('focus');
+          this.$passwordInput.focus();
         } else {
-          this.$usernameInput.trigger('focus');
+          this.$usernameInput.focus();
         }
       }
 
@@ -189,7 +199,7 @@ Craft.LoginForm = Garnish.Base.extend(
       this.resetPasswordForm.$usernameInput.val(this.$usernameInput.val());
 
       if (!Garnish.isMobileBrowser()) {
-        this.resetPasswordForm.$usernameInput.trigger('focus');
+        this.resetPasswordForm.$usernameInput.focus();
       }
 
       this.onResize();
@@ -217,7 +227,7 @@ Craft.LoginForm = Garnish.Base.extend(
 
       if (!Garnish.isMobileBrowser()) {
         setTimeout(() => {
-          $authForm.find(':focusable:first').trigger('focus');
+          $authForm.find(':focusable:first').focus();
         }, 100);
       }
 
@@ -226,47 +236,55 @@ Craft.LoginForm = Garnish.Base.extend(
         const $altContainer = $(
           '<div class="login-alt-container"/>'
         ).insertAfter($hr);
-        const $button = Craft.ui
-          .createButton({
-            label: Craft.t('app', 'Try another way'),
-            spinner: true,
-          })
-          .addClass('menubtn')
-          .appendTo($altContainer);
-        const $menu = $('<div class="menu login-alt-menu"/>').appendTo(
-          $altContainer
-        );
+
+        const $menu = $(
+          '<div id="login-alt-menu" class="login-alt-menu menu menu--disclosure"/>'
+        ).appendTo($altContainer);
         const $ul = $('<ul/>').appendTo($menu);
         for (let method of data.otherMethods) {
           $('<li/>')
             .append(
-              $('<a/>', {
+              $('<button/>', {
                 text: method.name,
                 'data-method': method.class,
+                class: 'menu-item',
               })
             )
             .appendTo($ul);
         }
-        new Garnish.MenuBtn($button, {
-          onOptionSelect: (option) => {
-            $button.addClass('loading');
 
-            Craft.sendActionRequest('post', 'users/auth-form', {
-              data: {
-                method: $(option).data('method'),
-              },
+        const $button = $('<button/>', {
+          type: 'button',
+          'aria-controls': 'login-alt-menu',
+          class: 'menu-toggle',
+          html: Craft.t('app', 'Try another way'),
+        }).appendTo($altContainer);
+
+        const $methodDisclosure = new Garnish.DisclosureMenu($button);
+
+        $ul.find('button').on('activate', (event) => {
+          const tempHeight = this.$pane.outerHeight();
+          this.$pane.outerHeight(tempHeight);
+
+          this.$spinner.visible = true;
+          this.$spinner.focus();
+          $methodDisclosure.hide();
+          $authForm.remove();
+          $hr.remove();
+          $altContainer.remove();
+
+          Craft.sendActionRequest('post', 'users/auth-form', {
+            data: {
+              method: $(event.target).data('method'),
+            },
+          })
+            .then(({data}) => {
+              this.$pane.removeAttr('style');
+              this.show2faForm(data);
             })
-              .then(({data}) => {
-                $authForm.remove();
-                $hr.remove();
-                $altContainer.remove();
-                console.log(data);
-                this.show2faForm(data);
-              })
-              .finally(() => {
-                $button.removeClass('loading');
-              });
-          },
+            .finally(() => {
+              this.$spinner.visible = false;
+            });
         });
       }
 
@@ -281,6 +299,7 @@ Craft.LoginForm = Garnish.Base.extend(
         .velocity('fadeIn');
 
       this.$errors.removeClass('hidden');
+      Craft.cp.announce(error);
       this.onResize();
     },
 
@@ -302,7 +321,7 @@ Craft.LoginForm = Garnish.Base.extend(
         return;
       }
 
-      this.$passkeyBtn.addClass('loading');
+      this.passkeyBtn.busyEvent();
 
       try {
         const optionsResponse = await Craft.sendActionRequest(
@@ -323,14 +342,18 @@ Craft.LoginForm = Garnish.Base.extend(
           }
         );
 
+        this.passkeyBtn.successEvent();
         this.settings.onLogin(loginResponse.data.returnUrl);
       } catch (e) {
         const message = e?.response?.data?.message;
+
+        this.passkeyBtn.failureEvent();
+
         if (message) {
           this.showError(message);
         }
       } finally {
-        this.$passkeyBtn.removeClass('loading');
+        this.passkeyBtn.endBusyState();
       }
     },
   },
@@ -406,6 +429,7 @@ Craft.LoginForm.ResetPasswordForm = Garnish.Base.extend({
 
     this.loginForm.clearErrors();
     this.$submitBtn.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
     const data = {
       loginName: this.$usernameInput.val(),
@@ -436,7 +460,7 @@ Craft.LoginForm.ResetPasswordForm = Garnish.Base.extend({
     this.loginForm.$usernameInput.val(this.$usernameInput.val());
 
     if (!Garnish.isMobileBrowser()) {
-      this.loginForm.$usernameInput.trigger('focus');
+      this.loginForm.$usernameInput.focus();
     }
 
     this.loginForm.onResize();

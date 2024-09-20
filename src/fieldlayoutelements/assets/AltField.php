@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\Asset;
 use craft\fieldlayoutelements\TextareaField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
@@ -83,6 +84,16 @@ class AltField extends TextareaField
             'aria' => [
                 'hidden' => true,
             ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
+    {
+        return ArrayHelper::merge(parent::inputTemplateVariables($element, $static), [
+            'class' => ['nicetext'],
         ]);
     }
 
