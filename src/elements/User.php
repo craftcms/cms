@@ -2289,6 +2289,10 @@ JS, [
             return false;
         }
 
+        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            $this->username = $this->email;
+        }
+
         return parent::beforeSave($isNew);
     }
 
