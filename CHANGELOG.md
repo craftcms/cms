@@ -7,6 +7,7 @@
 - Fixed a bug where custom fields’ `required` properties were always `false`. ([#15752](https://github.com/craftcms/cms/issues/15752))
 - Fixed a bug where it wasn’t possible to save nested entries via the `entries/save-entry` controller action. ([#15737](https://github.com/craftcms/cms/issues/15737))
 - Fixed a bug where hyperlinks in Link field inputs could wrap unnecessarily. ([#15738](https://github.com/craftcms/cms/issues/15738))
+- Fixed an error that occurred when running the `entrify/global-set` command. ([#15746](https://github.com/craftcms/cms/issues/15746))
 
 ## 5.4.4 - 2024-09-14
 
