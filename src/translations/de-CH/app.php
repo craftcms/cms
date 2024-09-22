@@ -1623,7 +1623,7 @@ return [
     'The uploaded file is not an image.' => 'Die hochgeladene Datei ist kein Bild.',
     'The user photo provided is not an image.' => 'Das ausgewählte Benutzerfoto ist kein Bild.',
     'The values are matched inclusively.' => 'Die Werte werden inklusiv abgeglichen.',
-    'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'Die {setting}-Einstellung des {field}-Feldes verfügt über einen ungültigen Unterpfad («{subpath}»).',
+    'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'Die Einstellung "{setting}" des {field}-Feldes verfügt über einen ungültigen Unterpfad («{subpath}»).',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'Die {setting}-Einstellung des {field}-Feldes ist auf ein ungültiges Volumen eingestellt.',
     'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.' => 'Die {name}-Lizenz ist an eine andere Craft CMS-Lizenz gebunden. Du kannst <a class="go" href="{detachUrl}">sie in der Craft Console</a> trennen oder <a class="go" href="{buyUrl}">eine neue Lizenz kaufen</a>.',
     'The {name} license is invalid.' => 'Die {name}-Lizenz ist ungültig.',
