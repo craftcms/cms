@@ -144,18 +144,18 @@ class SectionsController extends Controller
             'previewTargets' => [],
         ]);
 
-        $validateAttribute = function($attributes, ?string &$error = null): bool {
-            $section = new Section($attributes);
+        $validateAttribute = function($attributes, ?string &$error = null, string $class = Section::class): bool {
+            $model = new $class($attributes);
             $attributeNames = array_keys($attributes);
-            if (!$section->validate($attributeNames)) {
-                $error = $section->getFirstError($attributeNames[0]);
+            if (!$model->validate($attributeNames)) {
+                $error = $model->getFirstError($attributeNames[0]);
                 return false;
             }
             return true;
         };
 
-        $getDefaultAttribute = function(string $attribute, string $value) use ($validateAttribute): ?string {
-            if ($validateAttribute([$attribute => $value])) {
+        $getDefaultAttribute = function(string $attribute, string $value, string $class = Section::class) use ($validateAttribute): ?string {
+            if ($validateAttribute([$attribute => $value], class: $class)) {
                 return $value;
             }
             return null;
@@ -292,7 +292,8 @@ class SectionsController extends Controller
                     'default' => Inflector::singularize($section->name),
                 ]);
                 $entryType->handle = $this->prompt('Entry type handle:', [
-                    'default' => StringHelper::toHandle($entryType->name),
+                    'validator' => fn(string $handle, ?string & $error = null) => $validateAttribute(compact('handle'), $error, EntryType::class),
+                    'default' => $getDefaultAttribute('handle', StringHelper::toHandle($entryType->name), EntryType::class),
                 ]);
                 $saveEntryType = true;
             }
