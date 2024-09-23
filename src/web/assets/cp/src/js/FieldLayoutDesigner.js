@@ -1945,6 +1945,7 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
         value: 'layoutElement:' + element.uid,
         label: this.getCheckboxLabel(element.$container),
         checked: true,
+        disabled: true,
         fieldClass: ['disabled', 'cvd-field'],
         data: {
           'field-id': element.fieldId,
