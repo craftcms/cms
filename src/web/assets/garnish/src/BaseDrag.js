@@ -497,7 +497,7 @@ export default Base.extend(
       axis: null,
       ignoreHandleSelector: 'input, textarea, button, select, .btn',
 
-      onBeforeDragStart: $.noop(),
+      onBeforeDragStart: $.noop,
       onDragStart: $.noop,
       onDrag: $.noop,
       onDragStop: $.noop,
