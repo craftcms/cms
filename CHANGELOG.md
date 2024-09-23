@@ -15,6 +15,7 @@
 - Fixed a bug where users’ `username` values weren’t getting updated based on email address changes when `useEmailAsUsername` was enabled. ([#15758](https://github.com/craftcms/cms/issues/15758))
 - Fixed a bug where the `hasAlt` asset query param wasn’t working properly. ([#15762](https://github.com/craftcms/cms/issues/15762))
 - Fixed a bug where relational fields could show related elements for other field instances within element indexes. ([#15777](https://github.com/craftcms/cms/issues/15777))
+- Fixed a bug where it wasn’t possible to upload files to Assets fields with dynamic subpaths. ([#15775](https://github.com/craftcms/cms/issues/15775))
 
 ## 5.4.4 - 2024-09-14
 
