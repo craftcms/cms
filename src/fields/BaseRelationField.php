@@ -929,6 +929,13 @@ JS, [
         /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             $value = $this->_all($value, $element)->collect();
+        } else {
+            // todo: come up with a way to get the normalized field value ignoring the eager-loaded value
+            $rawValue = $element->getBehavior('customFields')->{$this->handle} ?? null;
+            if (is_array($rawValue)) {
+                $ids = array_flip($rawValue);
+                $value = $value->filter(fn(ElementInterface $element) => isset($ids[$element->id]));
+            }
         }
 
         return $this->previewHtml($value);
