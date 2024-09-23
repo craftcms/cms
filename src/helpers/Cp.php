@@ -2458,9 +2458,15 @@ JS, [
             ]) .
             Html::beginTag('div', ['class' => 'cvd-container']) .
             Html::beginTag('div', ['class' => 'cvd-library']) .
+            Html::tag('h3', Craft::t('app','Card Layout Editor'), [
+                'class' => 'visually-hidden',
+            ]) .
             $checkboxes .
             Html::endTag('div') . // .cvd-library
             Html::beginTag('div',  ['class' => 'cvd-preview']) .
+            Html::tag('h3', Craft::t('app','Card Layout Preview'), [
+                'class' => 'visually-hidden',
+            ]) .
             $previewHtml .
             Html::endTag('div') . // .cvd-preview
             Html::endTag('div') . // .cvd-container

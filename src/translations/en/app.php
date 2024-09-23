@@ -227,6 +227,8 @@ return [
     'Canton' => 'Canton',
     'Can’t run Craft CMS' => 'Can’t run Craft CMS',
     'Captions/Subtitles' => 'Captions/Subtitles',
+    'Card Layout Editor' => 'Card Layout Editor',
+    'Card Layout Preview' => 'Card Layout Preview',
     'Card View' => 'Card View',
     'Cards' => 'Cards',
     'Cart' => 'Cart',
