@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Element conditions now show rules for fields with the same name but unique handles, if the “Show field handles in edit forms” user preference is enabled. ([#15764](https://github.com/craftcms/cms/issues/15764))
 - Auto-generated handles, slugs, etc. now update immediately when the source input is changed. ([#15754](https://github.com/craftcms/cms/issues/15754))
 - Fixed a bug where Table fields’ Default Values table could lose existing rows if they only consisted of Dropdown columns without configured options.
 - Fixed a bug where custom fields’ `required` properties were always `false`. ([#15752](https://github.com/craftcms/cms/issues/15752))
