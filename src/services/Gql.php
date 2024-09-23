@@ -110,7 +110,7 @@ class Gql extends Component
      * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
      *
      * Plugins get a chance to add their own GraphQL types.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -130,7 +130,7 @@ class Gql extends Component
      * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
      *
      * Plugins get a chance to add their own GraphQL queries.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -156,7 +156,7 @@ class Gql extends Component
      * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
      *
      * Plugins get a chance to add their own GraphQL mutations.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -181,7 +181,7 @@ class Gql extends Component
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
      *
      * Plugins get a chance to add their own GraphQL directives.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php

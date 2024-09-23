@@ -17,7 +17,7 @@ use craft\test\TestCase;
  * Unit tests for SearchTest
  *
  * Searching and some of the commands run in this test are documented here:
- * https://craftcms.com/docs/4.x/searching.html
+ * https://craftcms.com/docs/5.x/system/searching.html
  *
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
