@@ -393,7 +393,7 @@ class Asset extends Element
                 'data' => [
                     'volume-handle' => false,
                     'folder-id' => $temporaryUploadFolder->id,
-                    'can-upload' => false,
+                    'can-upload' => true,
                     'can-move-to' => false,
                     'can-move-peer-files-to' => false,
                     'fs-type' => $temporaryUploadFs::class,
