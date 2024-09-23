@@ -7,6 +7,7 @@
 - Fixed a bug where custom fields’ `required` properties were always `false`. ([#15752](https://github.com/craftcms/cms/issues/15752))
 - Fixed a bug where `craft\helpers\StringHelper::toHandle()` was allowing non-alphanumeric/underscore characters through. ([#15772](https://github.com/craftcms/cms/pull/15772))
 - Fixed a bug where entries were getting auto-saved while dragging elements within element select inputs.
+- Fixed a bug where the `maxBackups` config setting wasn’t working. ([#15780](https://github.com/craftcms/cms/issues/15780))
 
 ## 4.12.3 - 2024-09-14
 
