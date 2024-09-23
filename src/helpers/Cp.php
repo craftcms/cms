@@ -2448,7 +2448,7 @@ JS, [
         }
         $checkboxes = implode("\n", $checkboxes);
         // js is initiated via Craft.FieldLayoutDesigner
-        $previewHtml = self::cardPreviewHtml($fieldLayout);
+        $previewHtml = self::cardPreviewHtml($fieldLayout, showThumb: $fieldLayout->getThumbField() !== null);
 
         return
             Html::beginTag('div', [
@@ -2474,7 +2474,7 @@ JS, [
      * @return string
      * @throws \Throwable
      */
-    public static function cardPreviewHtml(FieldLayout $fieldLayout, array $cardElements = []): string
+    public static function cardPreviewHtml(FieldLayout $fieldLayout, array $cardElements = [], $showThumb = false): string
     {
         // get colour
         $color = null;
@@ -2499,7 +2499,7 @@ JS, [
 
         // get thumb placeholder
         $thumbSvg = null;
-        if ($fieldLayout->getThumbField()) {
+        if ($showThumb) {
             $thumbSvg = file_get_contents(Craft::getAlias('@app/elements/thumbs/file.svg'));
             if ($thumbSvg) {
                 $thumbSvg = Html::svg($thumbSvg, false, true);

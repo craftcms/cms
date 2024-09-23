@@ -1148,7 +1148,11 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       config.providesThumbs = true;
       return config;
     }).then(() => {
-      // TODO
+      if (this.tab.designer.settings.withCardViewDesigner) {
+        let cvd = this.tab.designer.$cvd.data('cvd');
+        cvd.showThumb = true;
+        cvd.updatePreview();
+      }
     });
   },
 
@@ -1157,7 +1161,11 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       config.providesThumbs = false;
       return config;
     }).then(() => {
-      // TODO
+      if (this.tab.designer.settings.withCardViewDesigner) {
+        let cvd = this.tab.designer.$cvd.data('cvd');
+        cvd.showThumb = false;
+        cvd.updatePreview();
+      }
     });
   },
 
@@ -1844,6 +1852,7 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
   $container: null,
   $previewContainer: null,
   $libraryContainer: null,
+  showThumb: null,
 
   init: function (designer, container) {
     this.designer = designer;
@@ -1887,6 +1896,7 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
       data: {
         fieldLayoutConfig: this.designer.config,
         cardElements: cardElements,
+        showThumb: this.showThumb,
       },
     })
       .then(({data}) => {
