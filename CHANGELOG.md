@@ -2,8 +2,20 @@
 
 ## Unreleased
 
+- Fixed a bug where it wasn’t possible to save nested entries via the `entries/save-entry` controller action. ([#15737](https://github.com/craftcms/cms/issues/15737))
+- Fixed a bug where hyperlinks in Link field inputs could wrap unnecessarily. ([#15738](https://github.com/craftcms/cms/issues/15738))
+
+## 5.4.4 - 2024-09-14
+
+> [!IMPORTANT]  
+> This update fixes a critical data deletion bug for PostgreSQL installs.
+
+- Fixed a data deletion bug that occurred during garbage collection on PostgreSQL. ([#14891](https://github.com/craftcms/cms/issues/14891))
 - Fixed a bug where image constraint labels weren’t translated within the Image Editor.
 - Fixed a bug where image orientation labels weren’t getting translated for screen readers within the Image Editor.
+- Fixed a PHP error. ([#14635](https://github.com/craftcms/cms/issues/14635))
+- Fixed a bug where elements’ default field values weren’t getting populated on creation. ([#15706](https://github.com/craftcms/cms/issues/15706))
+- Fixed a bug where URL field previews could bleed out of their container. ([#15722](https://github.com/craftcms/cms/issues/15722))
 
 ## 5.4.3 - 2024-09-11
 
