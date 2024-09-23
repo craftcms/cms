@@ -22,6 +22,8 @@
 - Added `craft\filters\BasicHttpAuthStatic`. ([#15720](https://github.com/craftcms/cms/pull/15720))
 - Added `craft\filters\SiteFilterTrait::$enabled`. ([#15720](https://github.com/craftcms/cms/pull/15720))
 - Added `craft\helpers\StringHelper::firstLine()`.
+- Added `craft\web\View::registerCpTwigExtension()`.
+- Added `craft\web\View::registerSiteTwigExtension()`.
 - Deprecated the `enableBasicHttpAuth` config setting. `craft\filters\BasicHttpAuthLogin` should be used instead. ([#15720](https://github.com/craftcms/cms/pull/15720))
 
 ### System
