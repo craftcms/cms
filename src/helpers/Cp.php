@@ -2447,18 +2447,7 @@ JS, [
             $checkboxes[] = $checkbox;
         }
         $checkboxes = implode("\n", $checkboxes);
-
-        $view = Craft::$app->getView();
-        $jsSettings = Json::encode([
-            'fieldLayoutConfig' => $fieldLayout->toArray(),
-        ]);
-        $namespacedId = $view->namespaceInputId($config['id']);
-
-        $js = <<<JS
-new Craft.CardViewDesigner("#$namespacedId", $jsSettings);
-JS;
-        $view->registerJs($js);
-
+        // js is initiated via Craft.FieldLayoutDesigner
         $previewHtml = self::cardPreviewHtml($fieldLayout);
 
         return
@@ -2631,6 +2620,7 @@ JS;
             'elementType' => $fieldLayout->type,
             'customizableTabs' => $config['customizableTabs'],
             'customizableUi' => $config['customizableUi'],
+            'withCardViewDesigner' => $config['withCardViewDesigner'],
         ]);
         $namespacedId = $view->namespaceInputId($config['id']);
 

@@ -24,6 +24,8 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
     tabGrid: null,
     elementDrag: null,
 
+    $cvd: null,
+
     _config: null,
     _$selectedFields: null,
 
@@ -133,6 +135,14 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       this.addListener(this.$createFieldBtn, 'activate', async () => {
         this.createField();
       });
+
+      // initiate Card View Designer
+      if (this.settings.withCardViewDesigner) {
+        this.$cvd = this.$container
+          .parents('.fld-cvd')
+          .find('.card-view-designer');
+        this.initCvd();
+      }
     },
 
     updateFieldSearchResults() {
@@ -163,6 +173,10 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
           $group.addClass('filtered');
         }
       }
+    },
+
+    initCvd: function () {
+      new Craft.FieldLayoutDesigner.CardViewDesigner(this, this.$cvd);
     },
 
     initTab: function ($tab) {
@@ -339,6 +353,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       elementType: null,
       customizableTabs: true,
       customizableUi: true,
+      withCardViewDesigner: false,
     },
 
     async createSlideout(data, js) {
@@ -1132,6 +1147,8 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     await this.applyConfig((config) => {
       config.providesThumbs = true;
       return config;
+    }).then(() => {
+      // TODO
     });
   },
 
@@ -1139,22 +1156,30 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     await this.applyConfig((config) => {
       config.providesThumbs = false;
       return config;
+    }).then(() => {
+      // TODO
     });
   },
 
   async showInCards() {
     await this.applyConfig((config) => {
       config.includeInCards = true;
-      Craft.CardViewDesigner.addCheckbox(this);
       return config;
+    }).then(() => {
+      if (this.tab.designer.settings.withCardViewDesigner) {
+        this.tab.designer.$cvd.data('cvd').addCheckbox(this);
+      }
     });
   },
 
   async omitFromCards() {
     await this.applyConfig((config) => {
       config.includeInCards = false;
-      Craft.CardViewDesigner.removeCheckbox(this);
       return config;
+    }).then(() => {
+      if (this.tab.designer.settings.withCardViewDesigner) {
+        this.tab.designer.$cvd.data('cvd').removeCheckbox(this);
+      }
     });
   },
 
@@ -1229,7 +1254,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     this.$container.replaceWith($newContainer);
     this.$container = $newContainer;
     this.initUi();
-    Craft.CardViewDesigner.updateLabel(this.$container);
+
+    if (this.tab.designer.settings.withCardViewDesigner) {
+      this.tab.designer.$cvd.data('cvd').updateLabel(this.$container);
+    }
 
     const designer = this.tab.designer;
     designer.refreshSelectedFields();
@@ -1346,7 +1374,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       }
     }
 
-    Craft.CardViewDesigner.removeCheckbox(this);
+    this.tab.designer.$cvd.data('cvd').removeCheckbox(this);
 
     this.base();
   },
@@ -1811,183 +1839,150 @@ Craft.FieldLayoutDesigner.ElementDrag =
     },
   });
 
-Craft.CardViewDesigner = Garnish.Base.extend(
-  {
-    $container: null,
+Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
+  designer: null,
+  $container: null,
+  $previewContainer: null,
+  $libraryContainer: null,
 
-    init: function (container, settings) {
-      this.$container = $(container);
-      this.setSettings(settings, Craft.CardViewDesigner.defaults);
+  init: function (designer, container) {
+    this.designer = designer;
+    this.$container = $(container);
+    this.$container.data('cvd', this);
 
-      let $previewContainer = this.$container.find('.cvd-preview');
-      let $libraryContainer = this.$container.find('.cvd-library');
-      const fieldLayoutConfig = this.settings.fieldLayoutConfig;
+    this.$previewContainer = this.$container.find('.cvd-preview');
+    this.$libraryContainer = this.$container.find('.cvd-library');
 
-      // trigger preview update when items are checked/unchecked
-      $libraryContainer.on('change', function () {
-        Craft.CardViewDesigner.updatePreview(
-          $previewContainer,
-          fieldLayoutConfig
-        );
+    // trigger preview update when items are checked/unchecked
+    this.$libraryContainer.on('change', function () {
+      let cvd = $(this).parents('.card-view-designer').data('cvd');
+      cvd.updatePreview();
+    });
+
+    this.initDrag(this.$container);
+  },
+
+  initDrag: function ($container) {
+    const sortItems = $container.find('.draggable');
+    if (sortItems.length) {
+      let dragSort = new Garnish.DragSort(sortItems, {
+        axis: Garnish.Y_AXIS,
+        handle: '.draggable-handle',
       });
 
-      const sortItems = this.$container.find('.draggable');
-      if (sortItems.length) {
-        let dragSort = new Garnish.DragSort(sortItems, {
-          axis: Garnish.Y_AXIS,
-          handle: '.draggable-handle',
-        });
-
-        // trigger preview update when items are dragged into new position
-        dragSort.on('dragStop', function () {
-          Craft.CardViewDesigner.updatePreview(
-            $previewContainer,
-            fieldLayoutConfig
-          );
-        });
-      }
-    },
+      // trigger preview update when items are dragged into new position
+      dragSort.on('dragStop', function () {
+        $container.data('cvd').updatePreview();
+      });
+    }
   },
-  {
-    defaults: {
-      fieldLayoutConfig: null,
-    },
 
-    updatePreview: function ($previewContainer, fieldLayoutConfig) {
-      $previewContainer.addClass('loading');
-      Craft.cp.announce(Craft.t('app', 'Loading'));
+  updatePreview: function () {
+    this.$previewContainer.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
-      let cardElements = this.getCardElements(
-        $previewContainer.prev('.cvd-library')
-      );
+    let cardElements = this.getCardElements();
 
-      Craft.sendActionRequest('POST', 'fields/render-card-preview', {
+    Craft.sendActionRequest('POST', 'fields/render-card-preview', {
+      data: {
+        fieldLayoutConfig: this.designer.config,
+        cardElements: cardElements,
+      },
+    })
+      .then(({data}) => {
+        this.$previewContainer.html(data.previewHtml);
+      })
+      .catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
+        throw e;
+      })
+      .finally(() => {
+        this.$previewContainer.removeClass('loading');
+        Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      });
+  },
+
+  getCardElements: function () {
+    let checkedItems = this.$libraryContainer.find(
+      'input[name*="cardView"]:checked'
+    );
+    let cardElements = [];
+
+    for (let i = 0; i < checkedItems.length; i++) {
+      let element = {
+        value: $(checkedItems[i]).val(),
+        fieldId: $(checkedItems[i]).data('fieldId') ?? null,
+      };
+
+      cardElements.push(element);
+    }
+
+    return cardElements;
+  },
+
+  addCheckbox: function (element) {
+    if (this.$libraryContainer.length == 0) {
+      return null;
+    }
+
+    let $draggable = $('<div class="draggable"/>');
+    let $moveIcon = $('<a class="move icon draggable-handle"/>').appendTo(
+      $draggable
+    );
+    let $checkboxContainer = Craft.ui
+      .createCheckboxField({
+        name: 'cardView[]',
+        value: 'layoutElement:' + element.uid,
+        label: this.getCheckboxLabel(element.$container),
+        checked: true,
+        fieldClass: ['disabled', 'cvd-field'],
         data: {
-          fieldLayoutConfig: fieldLayoutConfig,
-          cardElements: cardElements,
+          'field-id': element.fieldId,
         },
       })
-        .then(({data}) => {
-          $previewContainer.html(data.previewHtml);
-        })
-        .catch((e) => {
-          Craft.cp.displayError(e?.response?.data?.message);
-          throw e;
-        })
-        .finally(() => {
-          $previewContainer.removeClass('loading');
-          Craft.cp.announce(Craft.t('app', 'Loading complete'));
-        });
-    },
+      .appendTo($draggable);
 
-    getCardElements: function ($libraryContainer) {
-      let checkedItems = $libraryContainer.find(
-        'input[name*="cardView"]:checked'
-      );
-      let cardElements = [];
+    $draggable.appendTo(this.$libraryContainer);
 
-      for (let i = 0; i < checkedItems.length; i++) {
-        let element = {
-          value: $(checkedItems[i]).val(),
-          fieldId: $(checkedItems[i]).data('fieldId') ?? null,
-        };
+    // re-init dragging
+    this.initDrag(this.$container);
 
-        cardElements.push(element);
-      }
+    // and now make a call to update the card preview
+    this.updatePreview();
+  },
 
-      return cardElements;
-    },
+  removeCheckbox: function (element) {
+    let $draggable = this.findCheckboxByUid(element.uid);
+    if ($draggable !== null) {
+      $draggable.remove();
+    }
 
-    addCheckbox: function (element) {
-      const $cvdLibraryContainer = element.tab.designer.$container
-        .parents('.fld-cvd')
-        .find('.cvd-library');
-      const $cvd = element.tab.designer.$container
-        .parents('.fld-cvd')
-        .find('.card-view-designer');
+    // and now make a call to update the card preview
+    this.updatePreview();
+  },
 
-      if ($cvdLibraryContainer.length == 0) {
-        return null;
-      }
+  getCheckboxLabel: function ($container) {
+    return $container.find('.fld-element-label').text() ?? this.attribute;
+  },
 
-      let $draggable = $('<div class="draggable"/>');
-      let $moveIcon = $('<a class="move icon draggable-handle"/>').appendTo(
-        $draggable
-      );
-      let $checkboxContainer = Craft.ui
-        .createCheckboxField({
-          name: 'cardView[]',
-          value: 'layoutElement:' + element.uid,
-          label: this.getCheckboxLabel(element.$container),
-          checked: true,
-          fieldClass: ['disabled', 'cvd-field'],
-          data: {
-            'field-id': element.fieldId,
-          },
-        })
-        .appendTo($draggable);
+  findCheckboxByUid: function (uid) {
+    if (this.$libraryContainer.length == 0) {
+      return null;
+    }
 
-      $draggable.appendTo($cvdLibraryContainer);
+    return this.$libraryContainer
+      .find('input[value="layoutElement:' + uid + '"]')
+      .parents('.draggable');
+  },
 
-      new Craft.CardViewDesigner('#' + $cvd.attr('id') + '', {
-        fieldLayoutConfig: element.tab.designer._config,
-      });
+  updateLabel: function ($container) {
+    let $draggable = this.findCheckboxByUid($container.data('uid'));
 
-      // and now make a call to update the card preview
-      this.updatePreview(
-        $cvd.find('.cvd-preview'),
-        element.tab.designer._config
-      );
-    },
+    if ($draggable === null) {
+      return null;
+    }
 
-    removeCheckbox: function (element) {
-      let $draggable = this.findCheckboxByUid(
-        element.tab.designer.$container.parents('.fld-cvd'),
-        element.uid
-      );
-      if ($draggable !== null) {
-        $draggable.remove();
-      }
-
-      // and now make a call to update the card preview
-      const $cvd = element.tab.designer.$container
-        .parents('.fld-cvd')
-        .find('.card-view-designer');
-      this.updatePreview(
-        $cvd.find('.cvd-preview'),
-        element.tab.designer._config
-      );
-    },
-
-    getCheckboxLabel: function ($container) {
-      return $container.find('.fld-element-label').text() ?? this.attribute;
-    },
-
-    findCheckboxByUid: function ($wrapper, uid) {
-      const $cvdContainer = $wrapper.find('.cvd-library');
-
-      if ($cvdContainer.length == 0) {
-        return null;
-      }
-
-      return $cvdContainer
-        .find('input[value="layoutElement:' + uid + '"]')
-        .parents('.draggable');
-    },
-
-    updateLabel: function ($container) {
-      let $fldCvdWrapper = $container.parents('.fld-cvd');
-      let $draggable = this.findCheckboxByUid(
-        $fldCvdWrapper,
-        $container.data('uid')
-      );
-
-      if ($draggable === null) {
-        return null;
-      }
-
-      let label = this.getCheckboxLabel($container);
-      $draggable.find('label').text(label);
-    },
-  }
-);
+    let label = this.getCheckboxLabel($container);
+    $draggable.find('label').text(label);
+  },
+});

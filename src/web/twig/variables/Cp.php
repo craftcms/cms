@@ -1100,7 +1100,7 @@ class Cp extends Component
      * @param FieldLayout $fieldLayout
      * @param array $config
      * @return string
-     * @since 5.3.0
+     * @since 5.5.0
      */
     public function cardViewDesigner(FieldLayout $fieldLayout, array $config = []): string
     {
