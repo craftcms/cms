@@ -103,6 +103,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           }
         });
       }
+
+      setTimeout(() => {
+        this.elementEditor = this.$container
+          .closest('form')
+          .data('elementEditor');
+      }, 100);
     },
 
     get totalSelected() {
@@ -157,6 +163,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           collapseDraggees: true,
           magnetStrength: 4,
           helperLagBase: 1.5,
+          onBeforeDragStart: () => {
+            this.elementEditor?.pause();
+          },
+          onDragStop: () => {
+            this.elementEditor?.resume();
+          },
           onSortChange: this.settings.selectable
             ? () => {
                 this.elementSelect.resetItemOrder();
@@ -284,7 +296,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             !$element.hasClass('disabled') &&
             !$element.hasClass('loading')
           ) {
-            this.elementEditor = this.createElementEditor($element);
+            this.createElementEditor($element);
           }
         };
 
