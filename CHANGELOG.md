@@ -2,12 +2,34 @@
 
 ## Unreleased
 
+- Auto-generated handles, slugs, etc. now update immediately when the source input is changed. ([#15754](https://github.com/craftcms/cms/issues/15754))
+- Fixed a bug where Table fields’ Default Values table could lose existing rows if they only consisted of Dropdown columns without configured options.
+- Fixed a bug where custom fields’ `required` properties were always `false`. ([#15752](https://github.com/craftcms/cms/issues/15752))
+- Fixed a bug where `craft\helpers\StringHelper::toHandle()` was allowing non-alphanumeric/underscore characters through. ([#15772](https://github.com/craftcms/cms/pull/15772))
+- Fixed a bug where entries were getting auto-saved while dragging elements within element select inputs.
+
+## 4.12.3 - 2024-09-14
+
+- Fixed a data deletion bug that occurred during garbage collection on PostgreSQL. ([#14891](https://github.com/craftcms/cms/issues/14891))
+- Fixed a bug where image constraint labels weren’t translated within the Image Editor.
+- Fixed a bug where image orientation labels weren’t getting translated for screen readers within the Image Editor.
+- Fixed a PHP error. ([#14635](https://github.com/craftcms/cms/issues/14635))
+
+## 4.12.2 - 2024-09-11
+
+- Updated Twig to 3.14. ([#15704](https://github.com/craftcms/cms/issues/15704))
+- Fixed a bug where soft-deleted structures weren’t getting hard-deleted via garbage collection. ([#15705](https://github.com/craftcms/cms/pull/15705))
+- Fixed an RCE vulnerability.
+
+## 4.12.1 - 2024-09-06
+
 - Added `craft\services\Security::isSystemDir()`.
 - Fixed a bug where `craft\helpers\StringHelper::lines()` was returning an array of `Stringy\Stringy` objects, rather than strings.
 - Fixed styling issues with Template field layout UI elements’ selector labels.
 - Fixed a validation error that could occur when saving a relational field, if the “Maintain hierarchy” setting had been enabled but was no longer applicable. ([#15666](https://github.com/craftcms/cms/issues/15666))
 - Fixed a bug where formatted addresses weren’t using the application locale consistently. ([#15668](https://github.com/craftcms/cms/issues/15668))
 - Fixed a bug where Tip and Warning field layout UI elements would display in field layouts even if they had no content. ([#15681](https://github.com/craftcms/cms/issues/15681))
+- Fixed an error that could occur when reverting an element’s content from a revision, if the element had been added to additional sites since the time the revision was created. ([#15679](https://github.com/craftcms/cms/issues/15679))
 - Fixed an information disclosure vulnerability.
 
 ## 4.12.0 - 2024-09-03
