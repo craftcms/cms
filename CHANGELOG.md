@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.4.5.1 - 2024-09-24
 
 - Fixed a JavaScript error. ([#15784](https://github.com/craftcms/cms/issues/15784))
 
