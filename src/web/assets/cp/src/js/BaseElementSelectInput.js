@@ -193,9 +193,35 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           helperLagBase: 1.5,
           onBeforeDragStart: () => {
             this.elementEditor?.pause();
+
+            // Disable all craft-element-labels so connectedCallback()
+            // doesn't get fired constantly during drag
+            this.$elementsContainer
+              .find('craft-element-label')
+              .attr('disabled', true);
+
+            // Something about hiding these helps performance a bit
+            // https://github.com/craftcms/cms/issues/15728
+            this.$elementsContainer.find('.action-btn').each(function () {
+              const $this = $(this);
+              $this
+                .data('data-display', $this.css('display'))
+                .css({display: 'none'});
+            });
           },
           onDragStop: () => {
             this.elementEditor?.resume();
+
+            // Put things back where we found them.
+            this.$elementsContainer
+              .find('craft-element-label')
+              .removeAttr('disabled');
+            this.$elementsContainer.find('.action-btn').each(function () {
+              const $this = $(this);
+              $this
+                .css({display: $this.data('data-display')})
+                .data('display', null);
+            });
           },
           onSortChange: () => {
             this.onSortChange();
@@ -853,7 +879,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }, 200);
     },
 
-    selectElements: async function (elements) {
+    selectElements: function (elements) {
       for (let i = 0; i < elements.length; i++) {
         let elementInfo = elements[i],
           $element = this.createNewElement(elementInfo);
