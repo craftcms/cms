@@ -2467,6 +2467,9 @@ JS, [
             Html::tag('h3', Craft::t('app','Card Layout Preview'), [
                 'class' => 'visually-hidden',
             ]) .
+            Html::tag('p', Craft::t('app','The following content is for preview only.'), [
+                'class' => 'visually-hidden',
+            ]) .
             $previewHtml .
             Html::endTag('div') . // .cvd-preview
             Html::endTag('div') . // .cvd-container
