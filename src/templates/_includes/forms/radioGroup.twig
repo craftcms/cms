@@ -10,7 +10,7 @@
 {%- set containerAttributes = {
     class: class,
     data: {
-        'target-prefix': targetPrefix ?? false,
+        'target-prefix': (toggle ?? false) ? (targetPrefix ?? '#') : false,
     },
 }|merge(containerAttributes ?? [], recursive=true) %}
 

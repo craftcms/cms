@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\BaseRelationField;
 use craft\helpers\Db;
 use Throwable;
@@ -24,6 +25,7 @@ use yii\base\Component;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 5.3.0
  */
 class Relations extends Component
 {
@@ -123,6 +125,53 @@ class Relations extends Component
                 $transaction->rollBack();
                 throw $e;
             }
+        }
+    }
+
+    /**
+     * Deletes relations that don’t belong to a relational field on the given element’s field layout.
+     *
+     * @param ElementInterface $element
+     * @since 4.8.0
+     */
+    public function deleteLeftoverRelations(ElementInterface $element): void
+    {
+        if (!$element->id) {
+            return;
+        }
+
+        $fieldLayout = $element->getFieldLayout();
+        if (!$fieldLayout) {
+            return;
+        }
+
+        $relationFieldIds = [];
+        foreach ($fieldLayout->getTabs() as $tab) {
+            foreach ($tab->getElements() as $layoutElement) {
+                if ($layoutElement instanceof CustomField) {
+                    $field = $layoutElement->getField();
+                    if ($field instanceof BaseRelationField) {
+                        $relationFieldIds[] = $field->id;
+                    }
+                }
+            }
+        }
+
+        // get those relations for the element that don't belong to any relational fields that are in the layout
+        $query = (new Query())
+            ->select(['id'])
+            ->from(Table::RELATIONS)
+            ->where(['sourceId' => $element->id]);
+
+        if (!empty($relationFieldIds)) {
+            $query->andWhere(['not', ['fieldId' => $relationFieldIds]]);
+        }
+
+        $leftoverRelationIds = $query->column();
+
+        // if relations were returned - delete them
+        if (!empty($leftoverRelationIds)) {
+            Db::delete(Table::RELATIONS, ['id' => $leftoverRelationIds]);
         }
     }
 }

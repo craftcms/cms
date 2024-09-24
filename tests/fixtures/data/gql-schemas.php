@@ -23,6 +23,8 @@ return [
             'sections.section-1003---------------------uid:read',
             'sections.section-1004---------------------uid:read',
             'sections.section-1005---------------------uid:read',
+            'sections.section-1011---------------------uid:read',
+            'entrytypes.entry-type-1011------------------uid:read',
         ],
         'dateCreated' => '2018-08-08 20:00:00',
         'dateUpdated' => '2018-08-08 20:00:00',

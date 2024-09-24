@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use Illuminate\Support\Collection;
+use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
 use yii\base\InvalidArgumentException;
 use yii\helpers\VarDumper;
@@ -27,12 +28,10 @@ class ContextProcessor implements ProcessorInterface
 {
     /**
      * @param array $vars The global variables to include {@see \yii\log\Target::$logVars}
-     * @param string $key The key in the record to push context data
      * @param bool $dumpVars Whether to dump vars as a readable, multi-line string in the message
      */
     public function __construct(
         protected array $vars = [],
-        protected string $key = 'context',
         protected bool $dumpVars = false,
     ) {
     }
@@ -40,28 +39,28 @@ class ContextProcessor implements ProcessorInterface
     /**
      * @inheritdoc
      */
-    public function __invoke(array $record): array
+    public function __invoke(LogRecord $record): LogRecord
     {
-        $record[$this->key]['environment'] = Craft::$app->env;
+        $data['environment'] = Craft::$app->env;
 
         if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
             $request = Craft::$app->getRequest();
 
             if ($request instanceof Request) {
-                $record[$this->key]['ip'] = $request->getUserIP();
+                $data['ip'] = $request->getUserIP();
             }
         }
 
         $user = Craft::$app->has('user', true) ? Craft::$app->getUser() : null;
         if ($user && ($identity = $user->getIdentity(false))) {
-            $record[$this->key]['userId'] = $identity->getId();
+            $data['userId'] = $identity->getId();
         }
 
         /** @var Session|null $session */
         $session = Craft::$app->has('session', true) ? Craft::$app->get('session') : null;
 
         if ($session && $session->getIsActive()) {
-            $record[$this->key]['sessionId'] = $session->getId();
+            $data['sessionId'] = $session->getId();
         }
 
         if (
@@ -84,18 +83,27 @@ class ContextProcessor implements ProcessorInterface
                 // NBD
             }
 
-            $record[$this->key]['body'] = $body;
+            $data['body'] = $body;
         }
 
+        $message = null;
         if ($vars = $this->filterVars($this->vars)) {
             if ($this->dumpVars) {
-                $record['message'] .= "\n" . $this->dumpVars($vars);
+                $message = "\n" . $this->dumpVars($vars);
             } else {
-                $record[$this->key]['vars'] = $vars;
+                $data['vars'] = $vars;
             }
         }
 
-        return $record;
+        return new LogRecord(
+            datetime: $record->datetime,
+            channel: $record->channel,
+            level: $record->level,
+            message: $record->message . $message,
+            context: $record->context + $data,
+            extra: $record->extra,
+            formatted: $record->formatted,
+        );
     }
 
     protected function dumpVars(array $vars): string

@@ -100,9 +100,7 @@ class Sendmail extends BaseTransportAdapter
                 'label' => $command,
                 'value' => $command,
                 'data' => [
-                    'data' => [
-                        'hint' => null,
-                    ],
+                    'hint' => null,
                 ],
             ];
         }, $this->_allowedCommands());
@@ -119,7 +117,7 @@ class Sendmail extends BaseTransportAdapter
     public function defineTransport(): array|AbstractTransport
     {
         // Replace any spaces with `%20` according to https://symfony.com/doc/current/mailer.html#other-options
-        $command = Html::encodeSpaces(App::parseEnv($this->command) ?: self::DEFAULT_COMMAND);
+        $command = Html::encodeSpaces(App::parseEnv($this->command) ?: ini_get('sendmail_path') ?: self::DEFAULT_COMMAND);
 
         return [
             'dsn' => 'sendmail://default?command=' . $command,
@@ -139,8 +137,8 @@ class Sendmail extends BaseTransportAdapter
 
         return array_unique(array_filter([
             !str_starts_with($command, '$') ? $command : null,
-            self::DEFAULT_COMMAND,
             ini_get('sendmail_path'),
+            self::DEFAULT_COMMAND,
         ]));
     }
 }

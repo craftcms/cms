@@ -1,16 +1,23 @@
 {% requireAdmin %}
 
+{% extends "_layouts/cp" %}
+{% set title = plugin.name %}
+{% set docTitle = title ~ ' - ' ~ "Plugins"|t('app') %}
+{% set fullPageForm = true %}
+
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') },
     { label: "Plugins"|t('app'), url: url('settings/plugins') }
 ] %}
 
-{% set fullPageForm = true %}
-
-
-{% extends "_layouts/cp" %}
-{% set title = plugin.name %}
-{% set docTitle = title ~ ' - ' ~ "Plugins"|t('app') %}
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: "settings/plugins/#{plugin.handle}"|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
 
 
 {% block content %}

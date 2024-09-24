@@ -1,5 +1,8 @@
 <template>
-  <div class="cms-edition-status-badge">
+  <div
+    class="cms-edition-status-badge"
+    v-if="CraftEdition == edition || licensedEdition == edition"
+  >
     <template v-if="CraftEdition == edition">
       <template v-if="licensedEdition >= edition">
         <license-status
@@ -15,7 +18,7 @@
       </template>
     </template>
 
-    <template v-else-if="licensedEdition == edition">
+    <template v-else>
       <license-status
         status="licensed"
         :description="'Licensed' | t('app')"

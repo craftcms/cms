@@ -12,19 +12,22 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\QueryParam;
 use craft\db\Table;
+use craft\elements\Address;
+use craft\elements\Entry;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\helpers\Db;
 use craft\models\UserGroup;
-use yii\db\Connection;
 use yii\db\Expression;
 
 /**
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of User
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @property-write string|string[]|UserGroup|null $group The user group(s) that resulting users must belong to
- * @method User[]|array all($db = null)
- * @method User|array|null one($db = null)
- * @method User|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path users.md
@@ -129,15 +132,15 @@ class UserQuery extends ElementQuery
      * @var mixed The permission that the resulting users must have.
      * ---
      * ```php
-     * // fetch users with control panel access
+     * // fetch users who can access the front end when the system is offline
      * $admins = \craft\elements\User::find()
-     *     ->can('accessCp')
+     *     ->can('accessSiteWhenSystemIsOff')
      *     ->all();
      * ```
      * ```twig
-     * {# fetch users with control panel access #}
+     * {# fetch users who can access the front end when the system is offline #}
      * {% set admins = craft.users()
-     *   .can('accessCp')
+     *   .can('accessSiteWhenSystemIsOff')
      *   .all() %}
      * ```
      * @used-by can()
@@ -200,6 +203,13 @@ class UserQuery extends ElementQuery
      * @used-by lastLoginDate()
      */
     public mixed $lastLoginDate = null;
+
+    /**
+     * @var Entry|null The entry that the resulting users must be the author of.
+     * @used-by authorOf()
+     * @since 5.0.0
+     */
+    public ?Entry $authorOf = null;
 
     /**
      * @var bool Whether the users’ groups should be eager-loaded.
@@ -354,21 +364,21 @@ class UserQuery extends ElementQuery
     /**
      * Narrows the query results to only users that have a certain user permission, either directly on the user account or through one of their user groups.
      *
-     * See [User Management](https://craftcms.com/docs/4.x/user-management.html) for a full list of available user permissions defined by Craft.
+     * See [User Management](https://craftcms.com/docs/5.x/system/user-management.html) for a full list of available user permissions defined by Craft.
      *
      * ---
      *
      * ```twig
-     * {# Fetch users that can access the control panel #}
+     * {# Fetch users who can access the front end when the system is offline #}
      * {% set {elements-var} = {twig-method}
-     *   .can('accessCp')
+     *   .can('accessSiteWhenSystemIsOff')
      *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch users that can access the control panel
+     * // Fetch users who can access the front end when the system is offline
      * ${elements-var} = {element-class}::find()
-     *     ->can('accessCp')
+     *     ->can('accessSiteWhenSystemIsOff')
      *     ->all();
      * ```
      *
@@ -712,6 +722,20 @@ class UserQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results to users who are the author of the given entry.
+     *
+     * @param Entry|null $value
+     * @return static self reference
+     * @uses $authorOf
+     * @since 5.0.0
+     */
+    public function authorOf(?Entry $value): static
+    {
+        $this->authorOf = $value;
+        return $this;
+    }
+
+    /**
      * Narrows the query results based on the users’ statuses.
      *
      * Possible values include:
@@ -803,7 +827,7 @@ class UserQuery extends ElementQuery
 
         $this->joinElementTable(Table::USERS);
 
-        $this->query->select([
+        $this->query->addSelect([
             'users.photoId',
             'users.pending',
             'users.locked',
@@ -840,7 +864,7 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere([
                 $this->authors ? 'exists' : 'not exists',
                 (new Query())
-                    ->from(Table::ENTRIES)
+                    ->from(Table::ENTRIES_AUTHORS)
                     ->where(['authorId' => new Expression('[[elements.id]]')]),
             ]);
         }
@@ -934,6 +958,17 @@ class UserQuery extends ElementQuery
 
         if ($this->lastLoginDate) {
             $this->subQuery->andWhere(Db::parseDateParam('users.lastLoginDate', $this->lastLoginDate));
+        }
+
+        if ($this->authorOf) {
+            if (!$this->authorOf->id) {
+                throw new QueryAbortedException();
+            }
+            $this->subQuery->andWhere(['exists', (new Query())
+                ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
+                ->where(['entryId' => $this->authorOf->id])
+                ->andWhere('[[entries_authors.authorId]] = [[users.id]]'),
+            ]);
         }
 
         return true;
@@ -1033,7 +1068,7 @@ class UserQuery extends ElementQuery
         $elements = parent::afterPopulate($elements);
 
         // Eager-load user groups?
-        if ($this->withGroups && !$this->asArray && Craft::$app->getEdition() === Craft::Pro) {
+        if ($this->withGroups && !$this->asArray && Craft::$app->edition->value >= CmsEdition::Pro->value) {
             Craft::$app->getUserGroups()->eagerLoadGroups($elements);
         }
 

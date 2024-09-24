@@ -143,6 +143,10 @@ class Connection extends \yii\db\Connection
     public function getSupportsMb4(): bool
     {
         if (!isset($this->_supportsMb4)) {
+            if (!Craft::$app->getIsInstalled()) {
+                return false;
+            }
+
             // if elements_sites supports mb4, pretty good chance everything else does too
             $this->_supportsMb4 = $this->getSchema()->supportsMb4(Table::ELEMENTS_SITES);
         }
@@ -224,10 +228,11 @@ class Connection extends \yii\db\Connection
         $version = Craft::$app->getInfo()->version ?? Craft::$app->getVersion();
         $filename = ($systemName ? "$systemName--" : '') . gmdate('Y-m-d-His') . "--v$version";
         $backupPath = Craft::$app->getPath()->getDbBackupPath();
-        $path = $backupPath . DIRECTORY_SEPARATOR . $filename . '.sql';
+        $path = $backupPath . DIRECTORY_SEPARATOR . $filename . $this->_getDumpExtension();
+
         $i = 0;
         while (file_exists($path)) {
-            $path = $backupPath . DIRECTORY_SEPARATOR . $filename . '--' . ++$i . '.sql';
+            $path = $backupPath . DIRECTORY_SEPARATOR . $filename . '--' . ++$i . $this->_getDumpExtension();
         }
         return $path;
     }
@@ -241,10 +246,11 @@ class Connection extends \yii\db\Connection
     {
         return [
             Table::ASSETINDEXDATA,
+            Table::CACHE,
             Table::IMAGETRANSFORMINDEX,
             Table::RESOURCEPATHS,
+            Table::PHPSESSIONS,
             Table::SESSIONS,
-            '{{%cache}}',
         ];
     }
 
@@ -275,22 +281,25 @@ class Connection extends \yii\db\Connection
      */
     public function backupTo(string $filePath): void
     {
+        $ignoreTables = $this->getIgnoredBackupTables();
+
         // Fire a 'beforeCreateBackup' event
-        $event = new BackupEvent([
-            'file' => $filePath,
-            'ignoreTables' => $this->getIgnoredBackupTables(),
-        ]);
-        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, $event);
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
+            $event = new BackupEvent([
+                'file' => $filePath,
+                'ignoreTables' => $ignoreTables,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, $event);
+            $ignoreTables = $event->ignoreTables;
+        }
 
         // Determine the command that should be executed
         $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
-        if ($backupCommand === null) {
-            $backupCommand = $this->getSchema()->getDefaultBackupCommand($event->ignoreTables);
-        }
-
         if ($backupCommand === false) {
             throw new Exception('Database not backed up because the backup command is false.');
+        } elseif ($backupCommand === null || $backupCommand instanceof \Closure) {
+            $backupCommand = $this->getSchema()->getDefaultBackupCommand($ignoreTables);
         }
 
         // Create the shell command
@@ -311,10 +320,10 @@ class Connection extends \yii\db\Connection
         if ($generalConfig->maxBackups) {
             $backupPath = Craft::$app->getPath()->getDbBackupPath();
 
-            // Grab all .sql files in the backup folder.
+            // Grab all .sql/.dump files in the backup folder.
             $files = array_merge(
-                glob($backupPath . DIRECTORY_SEPARATOR . '*.sql'),
-                glob($backupPath . DIRECTORY_SEPARATOR . '*.sql.zip'),
+                glob($backupPath . DIRECTORY_SEPARATOR . "*.{$this->_getDumpExtension()}"),
+                glob($backupPath . DIRECTORY_SEPARATOR . "*.{$this->_getDumpExtension()}.zip"),
             );
 
             // Sort them by file modified time descending (newest first).
@@ -351,12 +360,10 @@ class Connection extends \yii\db\Connection
         // Determine the command that should be executed
         $restoreCommand = Craft::$app->getConfig()->getGeneral()->restoreCommand;
 
-        if ($restoreCommand === null) {
-            $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
-        }
-
         if ($restoreCommand === false) {
             throw new Exception('Database not restored because the restore command is false.');
+        } elseif ($restoreCommand === null || $restoreCommand instanceof \Closure) {
+            $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
         }
 
         // Create the shell command
@@ -465,6 +472,19 @@ class Connection extends \yii\db\Connection
         } else {
             $this->afterTransactionCallbacks[] = $callback;
         }
+    }
+
+    private function _getDumpExtension(): string
+    {
+        $backupFormat = $this->getIsPgsql()
+            ? $this->getSchema()->getBackupFormat()
+            : null;
+
+        return match ($backupFormat) {
+            'custom', 'directory' => '.dump',
+            'tar' => '.tar',
+            default => '.sql',
+        };
     }
 
     /**

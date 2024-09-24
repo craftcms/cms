@@ -2,7 +2,7 @@
 {% set title = "Sign In"|t('app') %}
 {% set bodyClass = 'login' %}
 
-{% set hasLogo = CraftEdition == CraftPro and craft.rebrand.isLogoUploaded %}
+{% set hasLogo = CraftEdition >= CraftPro and craft.rebrand.isLogoUploaded %}
 
 {% if hasLogo %}
   {% set logo = craft.rebrand.logo %}

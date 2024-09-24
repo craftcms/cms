@@ -133,7 +133,7 @@ class FileHelper extends \yii\helpers\FileHelper
             $from = static::absolutePath($from, ds: $ds);
         }
 
-        return $from . $ds . $to;
+        return static::normalizePath($from . $ds . $to, $ds);
     }
 
     /**
@@ -257,9 +257,10 @@ class FileHelper extends \yii\helpers\FileHelper
         // https://github.com/craftcms/cms/issues/12741
         // Remove soft hyphens (00ad), no break (0083),
         // zero width space (200b), zero width non-joiner (200c), zero width joiner (200d),
+        // LTR character (200e), RTL character (200f),
         // invisible times (2062), invisible comma (2063), invisible plus (2064),
-        // zero width non-brak space (feff) in the name
-        $filename = preg_replace('/\\x{00ad}|\\x{0083}|\\x{200b}|\\x{200c}|\\x{200d}|\\x{2062}|\\x{2063}|\\x{2064}|\\x{feff}/iu', '', $filename);
+        // zero width non-break space (feff) in the filename
+        $filename = preg_replace('/\\x{00ad}|\\x{0083}|\\x{200b}|\\x{200c}|\\x{200d}|\\x{200e}|\\x{200f}|\\x{2062}|\\x{2063}|\\x{2064}|\\x{feff}/iu', '', $filename);
 
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
@@ -900,13 +901,11 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function deleteFileAfterRequest(string $filename): void
     {
-        self::$_filesToBeDeleted[] = $filename;
-
-        if (count(self::$_filesToBeDeleted) === 1) {
-            Craft::$app->onAfterRequest(function() {
-                static::deleteQueuedFiles();
-            });
+        if (empty(self::$_filesToBeDeleted)) {
+            register_shutdown_function([static::class, 'deleteQueuedFiles']);
         }
+
+        self::$_filesToBeDeleted[] = $filename;
     }
 
     /**

@@ -37,4 +37,16 @@ return [
         'uid' => 'volume-1002----------------------uid',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d'),
     ],
+
+    'subpath' => [
+        'id' => '1003',
+        'name' => 'Test volume 4',
+        'handle' => 'testVolume4',
+        'subpath' => 'test-subpath',
+        'fs' => 'localFs',
+        'sortOrder' => 8,
+        'fieldLayoutUid' => 'field-layout-1003----------------uid',
+        'uid' => 'volume-1003----------------------uid',
+    ],
+
 ];

@@ -17,14 +17,14 @@
 .cp-chart .axis line {
   fill: none;
   stroke: var(--hairline-color);
-  shape-rendering: crispEdges;
+  shape-rendering: crispedges;
 }
 
 .cp-chart .ticks-axis path,
 .cp-chart .ticks-axis line {
   fill: none;
   stroke: none;
-  shape-rendering: crispEdges;
+  shape-rendering: crispedges;
 }
 
 .cp-chart .ticks-axis g.tick text {
@@ -33,19 +33,19 @@
 }
 
 .cp-chart .axis text {
-  fill: RGBA(0, 0, 0, 0.6);
+  fill: rgb(0 0 0 / 60%);
 }
 
 .cp-chart .grid-line .tick {
-  stroke: RGBA(0, 0, 0, 0.08);
+  stroke: rgb(0 0 0 / 8%);
   stroke-opacity: 0.7;
-  shape-rendering: crispEdges;
+  shape-rendering: crispedges;
 }
 
 .cp-chart .grid-line .tick line {
-  stroke: RGBA(0, 0, 0, 0.08);
+  stroke: rgb(0 0 0 / 8%);
   stroke-opacity: 0.7;
-  shape-rendering: crispEdges;
+  shape-rendering: crispedges;
 }
 
 .cp-chart .grid-line path {
@@ -54,7 +54,8 @@
 
 .tooltip {
   border-radius: 3px;
-  padding: 7px 10px;
+  padding-block: 7px;
+  padding-inline: 10px;
   background: transparentize($white, 0.1);
   position: absolute;
   z-index: 1000000;

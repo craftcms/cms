@@ -8,7 +8,8 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use yii\base\Event;
+use craft\base\Event;
+use craft\elements\db\EagerLoadPlan;
 
 /**
  * SetEagerLoadedElementsEvent class.
@@ -27,4 +28,10 @@ class SetEagerLoadedElementsEvent extends Event
      * @param ElementInterface[] $elements The eager-loaded elements
      */
     public array $elements;
+
+    /**
+     * @param EagerLoadPlan $plan The eager-loading plan
+     * @since 5.0.0
+     */
+    public EagerLoadPlan $plan;
 }

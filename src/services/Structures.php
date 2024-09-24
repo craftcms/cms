@@ -535,8 +535,8 @@ class Structures extends Component
 
         $targetElementId = $targetElementRecord->isRoot() ? null : $targetElementRecord->elementId;
 
+        // Fire a 'beforeInsertElement' or 'beforeMoveElement' event
         if ($this->hasEventHandlers($beforeEvent)) {
-            // Fire a 'beforeInsertElement' or 'beforeMoveElement' event
             $event = new MoveElementEvent([
                 'element' => $element,
                 'structureId' => $structureId,
@@ -598,6 +598,10 @@ class Structures extends Component
             $mutex->release($lockName);
             throw $e;
         }
+
+        // Invalidate all caches for the element type
+        // (see https://github.com/craftcms/cms/issues/14846)
+        Craft::$app->getElements()->invalidateCachesForElementType($element::class);
 
         if ($this->hasEventHandlers($afterEvent)) {
             // Fire an 'afterMoveElement' event

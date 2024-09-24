@@ -106,4 +106,12 @@ return [
         'fieldLayoutUid' => 'field-layout-1008----------------uid',
         'uid' => 'entry-type-1010------------------uid',
     ],
+    [
+        'id' => '1011',
+        'fieldLayoutId' => null,
+        'name' => 'Test 1',
+        'handle' => 'test1',
+        'titleFormat' => null,
+        'uid' => 'entry-type-1011------------------uid',
+    ],
 ];

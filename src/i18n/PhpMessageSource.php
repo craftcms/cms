@@ -50,7 +50,6 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
                 'de-CH' => 'de',
                 'fr-CA' => 'fr',
                 'nb', 'nn' => 'nb-NO',
-                'zh' => 'zh-CN',
                 default => $language,
             };
         }

@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
@@ -27,10 +28,17 @@ use yii\web\Response;
  * @mixin ElementTrait
  * @mixin CustomFieldBehavior
  * @mixin Component
+ * @phpstan-require-extends Element
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface ElementInterface extends ComponentInterface
+interface ElementInterface extends
+    ComponentInterface,
+    Chippable,
+    CpEditable,
+    Thumbable,
+    Statusable,
+    Actionable
 {
     /**
      * Returns the lowercase version of [[displayName()]].
@@ -250,25 +258,6 @@ interface ElementInterface extends ComponentInterface
     public static function createCondition(): ElementConditionInterface;
 
     /**
-     * Returns all of the possible statuses that elements of this type may have.
-     *
-     * This method will be called when populating the Status menu on element indexes, for element types whose
-     * [[hasStatuses()]] method returns `true`. It will also be called when [[\craft\elements\db\ElementQuery]] is querying for
-     * elements, to ensure that its “status” parameter is set to a valid status.
-     * It should return an array whose keys are the status values, and values are the human-facing status labels, or an array
-     * with the following keys:
-     * - **`label`** – The human-facing status label.
-     * - **`color`** – The status color. Possible values include `green`, `orange`, `red`, `yellow`, `pink`, `purple`, `blue`,
-     *   `turquoise`, `light`, `grey`, `black`, and `white`.
-     * You can customize the database query condition that should be applied for your custom statuses from
-     * [[\craft\elements\db\ElementQuery::statusCondition()]].
-     *
-     * @return array
-     * @see hasStatuses()
-     */
-    public static function statuses(): array;
-
-    /**
      * Returns the source definitions that elements of this type may belong to.
      *
      * This defines what will show up in the source list on element indexes and element selector modals.
@@ -280,6 +269,7 @@ interface ElementInterface extends ComponentInterface
      * - **`status`** – The status color that should be shown beside the source label. Possible values include `green`,
      *   `orange`, `red`, `yellow`, `pink`, `purple`, `blue`, `turquoise`, `light`, `grey`, `black`, and `white`. (Optional)
      * - **`badgeCount`** – The badge count that should be displayed alongside the label. (Optional)
+     * - **`badgeLabel`** – The badge count label that should be provided for screen readers. (Optional)
      * - **`sites`** – An array of site IDs or UUIDs that the source should be shown for, on multi-site element indexes.
      *   (Optional; by default the source will be shown for all sites.)
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
@@ -353,8 +343,8 @@ interface ElementInterface extends ComponentInterface
     public static function modifyCustomSource(array $config): array;
 
     /**
-     * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-actions.html) for a
-     * given source.
+     * Returns the available [bulk element actions](https://craftcms.com/docs/5.x/extend/element-actions.html)
+     * for a given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name
      * set to a `type` key, or by an instantiated element action object.
@@ -365,7 +355,7 @@ interface ElementInterface extends ComponentInterface
      * :::
      *
      * @param string $source The selected source’s key.
-     * @return array The available element actions.
+     * @return array The available bulk element actions.
      * @phpstan-return array<ElementActionInterface|class-string<ElementActionInterface>|array{type:class-string<ElementActionInterface>}>
      */
     public static function actions(string $source): array;
@@ -525,14 +515,14 @@ interface ElementInterface extends ComponentInterface
      *   query result data, and the first source element that the result was eager-loaded for
      *
      * ```php
+     * use craft\base\ElementInterface;
      * use craft\db\Query;
-     * use craft\helpers\ArrayHelper;
      *
      * public static function eagerLoadingMap(array $sourceElements, string $handle)
      * {
      *     switch ($handle) {
      *         case 'author':
-     *             $bookIds = ArrayHelper::getColumn($sourceElements, 'id');
+     *             $bookIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
      *             $map = (new Query)
      *                 ->select(['source' => 'id', 'target' => 'authorId'])
      *                 ->from('{{%books}}')
@@ -543,7 +533,7 @@ interface ElementInterface extends ComponentInterface
      *                 'map' => $map,
      *             ];
      *         case 'bookClubs':
-     *             $bookIds = ArrayHelper::getColumn($sourceElements, 'id');
+     *             $bookIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
      *             $map = (new Query)
      *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
      *                 ->from('{{%bookclub_books}}')
@@ -574,15 +564,6 @@ interface ElementInterface extends ComponentInterface
      * @since 3.3.0
      */
     public static function gqlScopesByContext(mixed $context): array;
-
-    /**
-     * Returns the element’s ID.
-     *
-     * @return int|null
-     * @internal This method is required by [[\yii\web\IdentityInterface]], but might as well
-     * go here rather than only in [[\craft\elements\User]].
-     */
-    public function getId(): ?int;
 
     /**
      * Returns whether this is a draft.
@@ -778,14 +759,6 @@ interface ElementInterface extends ComponentInterface
     public function getCrumbs(): array;
 
     /**
-     * Returns what the element should be called within the control panel.
-     *
-     * @return string
-     * @since 3.2.0
-     */
-    public function getUiLabel(): string;
-
-    /**
      * Defines what the element should be called within the control panel.
      *
      * @param string|null $label
@@ -816,6 +789,14 @@ interface ElementInterface extends ComponentInterface
      * @since 5.0.0
      */
     public function getChipLabelHtml(): string;
+
+    /**
+     * Returns whether chips and cards for this element should include a status indicator.
+     *
+     * @return bool
+     * @since 5.4.0
+     */
+    public function showStatusIndicator(): bool;
 
     /**
      * Returns the body HTML for element cards.
@@ -878,6 +859,15 @@ interface ElementInterface extends ComponentInterface
     public function canDuplicate(User $user): bool;
 
     /**
+     * Returns whether the given user is authorized to duplicate this element as an unpublished draft.
+     *
+     * @param User $user
+     * @return bool
+     * @since 5.0.0
+     */
+    public function canDuplicateAsDraft(User $user): bool;
+
+    /**
      * Returns whether the given user is authorized to delete this element.
      *
      * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
@@ -933,13 +923,6 @@ interface ElementInterface extends ComponentInterface
     public function prepareEditScreen(Response $response, string $containerId): void;
 
     /**
-     * Returns the element’s edit URL in the control panel.
-     *
-     * @return string|null
-     */
-    public function getCpEditUrl(): ?string;
-
-    /**
      * Returns the URL that users should be redirected to after editing the element.
      *
      * @return string|null
@@ -964,16 +947,6 @@ interface ElementInterface extends ComponentInterface
     public function getAdditionalButtons(): string;
 
     /**
-     * Returns action menu items for the element’s edit screens.
-     *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
-     *
-     * @return array
-     * @since 5.0.0
-     */
-    public function getActionMenuItems(): array;
-
-    /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
      *
      * Each target should be represented by a sub-array with the following keys:
@@ -991,15 +964,6 @@ interface ElementInterface extends ComponentInterface
      * @since 3.2.0
      */
     public function getPreviewTargets(): array;
-
-    /**
-     * Returns the HTML for the element’s thumbnail, if it has one.
-     *
-     * @param int $size The width and height the thumbnail should have.
-     * @return string|null
-     * @since 4.5.0
-     */
-    public function getThumbHtml(int $size): ?string;
 
     /**
      * Returns whether the element is enabled for the current site.
@@ -1024,11 +988,12 @@ interface ElementInterface extends ComponentInterface
     public function setEnabledForSite(array|bool $enabledForSite): void;
 
     /**
-     * Returns the element’s status.
+     * Returns the root owner element.
      *
-     * @return string|null
+     * @return self
+     * @since 5.4.0
      */
-    public function getStatus(): ?string;
+    public function getRootOwner(): self;
 
     /**
      * Returns the same element in other locales.
@@ -1211,6 +1176,13 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      */
     public function offsetExists($offset): bool;
+
+    /**
+     * Sets the element’s attributes from an element editor submission.
+     *
+     * @param array $values The attribute values
+     */
+    public function setAttributesFromRequest(array $values): void;
 
     /**
      * Returns the status of a given attribute.
@@ -1524,6 +1496,22 @@ interface ElementInterface extends ComponentInterface
     public function getFieldContext(): string;
 
     /**
+     * Returns the element’s invalid nested element IDs.
+     *
+     * @return int[]
+     * @since 5.3.0
+     */
+    public function getInvalidNestedElementIds(): array;
+
+    /**
+     * Registers invalid nested element IDs with the element, so an `error` class can be added on their cards.
+     *
+     * @param int[] $ids
+     * @since 5.3.0
+     */
+    public function addInvalidNestedElementIds(array $ids): void;
+
+    /**
      * Returns whether elements have been eager-loaded with a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
@@ -1544,8 +1532,9 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $handle The handle that was used to eager-load the elements
      * @param self[] $elements The eager-loaded elements
+     * @param EagerLoadPlan $plan The eager-loading plan
      */
-    public function setEagerLoadedElements(string $handle, array $elements): void;
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void;
 
     /**
      * Sets whether the given eager-loaded element handles were eager-loaded lazily.
@@ -1617,7 +1606,7 @@ interface ElementInterface extends ComponentInterface
     // -------------------------------------------------------------------------
 
     /**
-     * Returns any attributes that should be included in the element’s DOM representation in the control panel.
+     * Returns any attributes that should be included in the element’s chips and cards.
      *
      * The attribute HTML will be rendered with [[\yii\helpers\BaseHtml::renderTagAttributes()]].
      *
@@ -1722,6 +1711,21 @@ interface ElementInterface extends ComponentInterface
      *
      */
     public function afterDelete(): void;
+
+    /**
+     * Performs actions before an element is deleted for a site.
+     *
+     * @return bool Whether the element should be deleted
+     * @since 4.7.0
+     */
+    public function beforeDeleteForSite(): bool;
+
+    /**
+     * Performs actions after an element is deleted for a site.
+     *
+     * @since 4.7.0
+     */
+    public function afterDeleteForSite(): void;
 
     /**
      * Performs actions before an element is restored.

@@ -236,7 +236,7 @@ class ImageHelperTest extends TestCase
         Craft::setLogger(
             Stub::make(Logger::class, [
                 'log' => function($message) use ($errorLogMessage) {
-                    self::assertSame($errorLogMessage, $message);
+                    self::assertContains($message, [$errorLogMessage, 'Roll back transaction']);
                 },
             ])
         );

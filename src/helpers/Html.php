@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\Asset;
 use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;
+use craft\web\View;
 use enshrined\svgSanitize\Sanitizer;
 use Throwable;
 use yii\base\Exception;
@@ -96,7 +97,25 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
-        return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+        $async = ArrayHelper::remove($options, 'async')
+            ?? ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
+
+        if (!$async) {
+            Craft::$app->getResponse()->setNoCacheHeaders();
+            return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+        }
+
+        Craft::$app->getView()->registerHtml(
+            Craft::$app->getView()->renderTemplate(
+                '_special/async-csrf-input',
+                [
+                    'url' => UrlHelper::actionUrl('users/session-info'),
+                ],
+                View::TEMPLATE_MODE_CP,
+            )
+        );
+
+        return static::tag('craft-csrf-input');
     }
 
     /**
@@ -417,7 +436,7 @@ class Html extends \yii\helpers\Html
             // Wrapped in quotes?
             if (isset($html[$offset]) && in_array($html[$offset], ['\'', '"'])) {
                 $q = preg_quote($html[$offset], '/');
-                if (!preg_match("/$q(.*?)$q/A", $html, $m, 0, $offset)) {
+                if (!preg_match("/$q(.*?)$q/sA", $html, $m, 0, $offset)) {
                     // No matching end quote
                     throw new InvalidArgumentException("Malformed HTML tag attribute in string: $html");
                 }
@@ -521,11 +540,22 @@ class Html extends \yii\helpers\Html
             return $value;
         }
         if (is_string($value)) {
+            // first match any css properties that contain 'url()'
+            $markers = [];
+            $value = preg_replace_callback('/\burl\(.*\)/i', function($match) use (&$markers) {
+                $marker = sprintf('{marker:%s}', mt_rand());
+                $markers[$marker] = $match[0];
+                return $marker;
+            }, $value);
+
+            // now split the styles string on semicolons
             $styles = ArrayHelper::filterEmptyStringsFromArray(preg_split('/\s*;\s*/', $value));
+
+            // and proceed with the array of styles
             $normalized = [];
             foreach ($styles as $style) {
                 [$n, $v] = array_pad(preg_split('/\s*:\s*/', $style, 2), 2, '');
-                $normalized[$n] = $v;
+                $normalized[$n] = strtr($v, $markers);
             }
             return $normalized;
         }
@@ -655,9 +685,13 @@ class Html extends \yii\helpers\Html
      */
     public static function id(string $id = ''): string
     {
-        // IDs must begin with a letter
-        $id = preg_replace('/^[^A-Za-z]+/', '', $id);
-        $id = rtrim(preg_replace('/[^A-Za-z0-9_:.]+/', '-', $id), '-');
+        // Ignore if it looks like a placeholder
+        // or starts with a placeholder (e.g. widgets > __NAMESPACE__-fieldId)
+        if (preg_match('/^__[A-Z_]+__/', $id)) {
+            return $id;
+        }
+
+        $id = trim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
         return $id ?: StringHelper::randomString(10);
     }
 
@@ -811,19 +845,34 @@ class Html extends \yii\helpers\Html
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\"))([^'\"]+)\\3/i",
             function(array $match) use ($namespace, $ids): string {
-                $namespacedIds = array_map(function(string $id) use ($match, $ids, $namespace): string {
+                $matchIds = preg_split('/([,\s+]+)/', $match[4], flags: PREG_SPLIT_DELIM_CAPTURE);
+                $namespacedIds = '';
+                foreach ($matchIds as $i => $id) {
                     if (
-                        isset($ids[$id]) ||
-                        $match[2] === 'data-target-prefix' ||
-                        ($match[2] === 'href' && str_ends_with($match[1], '#'))
+                        $i % 2 === 0 && // not a delimiter
+                        $id[0] !== '.' // not a class name
                     ) {
-                        return sprintf('%s-%s', $namespace, $id);
+                        $isHash = $id[0] === '#';
+                        if ($isHash) {
+                            $id = substr($id, 1);
+                        }
+                        if (
+                            isset($ids[$id]) ||
+                            $match[2] === 'data-target-prefix' ||
+                            ($isHash && $match[2] === 'href')
+                        ) {
+                            $id = sprintf('%s-%s', $namespace, $id);
+                        }
+                        if ($isHash) {
+                            $id = "#$id";
+                        }
                     }
-                    return $id;
-                }, explode(' ', $match[4]));
-                return $match[1] . implode(' ', $namespacedIds) . $match[3];
+
+                    $namespacedIds .= $id;
+                }
+                return sprintf('%s%s%s', $match[1], $namespacedIds, $match[3]);
             }, $html);
 
         // ID references in url() calls
@@ -876,16 +925,34 @@ class Html extends \yii\helpers\Html
     {
         $markers = [];
         $offset = 0;
+        $r = '';
 
-        while (preg_match('/<textarea\b[^>]*>/i', $html, $openMatch, PREG_OFFSET_CAPTURE, $offset)) {
-            $innerOffset = $openMatch[0][1] + strlen($openMatch[0][0]);
-            if (!preg_match('/<\/textarea>/', $html, $closeMatch, PREG_OFFSET_CAPTURE, $innerOffset)) {
+        while (($pos = stripos($html, '<textarea', $offset)) !== false) {
+            $gtPos = strpos($html, '>', $pos + 9);
+            if ($gtPos === false) {
                 break;
             }
-            $marker = sprintf('{marker:%s}', StringHelper::randomString());
-            $markers[$marker] = substr($html, $innerOffset, $closeMatch[0][1] - $innerOffset);
-            $html = substr($html, 0, $innerOffset) . $marker . substr($html, $closeMatch[0][1]);
-            $offset = $innerOffset + strlen($marker) + strlen($closeMatch[0][0]);
+            $innerHtmlPos = $gtPos + 1;
+            $closePos = stripos($html, '</textarea>', $innerHtmlPos);
+            if ($closePos === false) {
+                break;
+            }
+            $outerPos = $closePos + 11;
+            $innerHtml = $closePos !== $innerHtmlPos ? substr($html, $innerHtmlPos, $closePos - $innerHtmlPos) : null;
+
+            if ($innerHtml !== null && str_contains($innerHtml, '<')) {
+                $marker = sprintf('{marker:%s}', mt_rand());
+                $r .= substr($html, $offset, $innerHtmlPos - $offset) . $marker . substr($html, $closePos, 11);
+                $markers[$marker] = $innerHtml;
+            } else {
+                $r .= substr($html, $offset, $outerPos - $offset);
+            }
+
+            $offset = $outerPos;
+        }
+
+        if ($offset !== 0) {
+            $html = $r . substr($html, $offset);
         }
 
         return $markers;
@@ -900,7 +967,22 @@ class Html extends \yii\helpers\Html
      */
     private static function _restoreTextareas(string $html, array $markers): string
     {
-        return str_replace(array_keys($markers), array_values($markers), $html);
+        if (empty($markers)) {
+            return $html;
+        }
+
+        $r = '';
+        $offset = 0;
+
+        foreach ($markers as $marker => $textarea) {
+            $pos = strpos($html, $marker, $offset);
+            if ($pos !== false) {
+                $r .= substr($html, $offset, $pos - $offset) . $textarea;
+                $offset = $pos + strlen($marker);
+            }
+        }
+
+        return $r . substr($html, $offset);
     }
 
     /**
@@ -936,11 +1018,22 @@ class Html extends \yii\helpers\Html
             throw new InvalidArgumentException("Invalid file path: $file");
         }
 
+        $file = FileHelper::absolutePath(Craft::getAlias($file), '/');
+
+        if (Craft::$app->getSecurity()->isSystemDir(dirname($file))) {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path within or above system directories.', __METHOD__));
+        }
+
+        $ext = pathinfo($file, PATHINFO_EXTENSION);
+        if (strtolower($ext) === 'php') {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path to a PHP file.', __METHOD__));
+        }
+
         if ($mimeType === null) {
             try {
                 $mimeType = FileHelper::getMimeType($file);
             } catch (Throwable $e) {
-                Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage());
+                Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage(), __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
             }
         }
@@ -1033,7 +1126,7 @@ class Html extends \yii\helpers\Html
             $offset = $tag['end'];
         }
     }
-    
+
     /**
      * Returns the contents of a given SVG file.
      *
@@ -1044,15 +1137,23 @@ class Html extends \yii\helpers\Html
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default, the SVG will only be namespaced if an asset or markup is passed in.
+     * @param bool $throwException Whether to throw an exception on error
      * @return string
      * @since 4.3.0
      */
-    public static function svg(Asset|string $svg, ?bool $sanitize = null, ?bool $namespace = null): string
-    {
+    public static function svg(
+        Asset|string $svg,
+        ?bool $sanitize = null,
+        ?bool $namespace = null,
+        bool $throwException = false,
+    ): string {
         if ($svg instanceof Asset) {
             try {
                 $svg = $svg->getContents();
             } catch (Throwable $e) {
+                if ($throwException) {
+                    throw $e;
+                }
                 Craft::error("Could not get the contents of {$svg->getPath()}: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
@@ -1062,11 +1163,17 @@ class Html extends \yii\helpers\Html
             try {
                 $svg = Craft::getAlias($svg);
             } catch (InvalidArgumentException $e) {
+                if ($throwException) {
+                    throw $e;
+                }
                 Craft::error("Could not get the contents of $svg: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
             }
             if (!is_file($svg) || !FileHelper::isSvg($svg)) {
+                if ($throwException) {
+                    throw new InvalidArgumentException("Invalid SVG path: $svg");
+                }
                 Craft::warning("Could not get the contents of $svg: The file doesn't exist", __METHOD__);
                 return '';
             }

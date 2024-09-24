@@ -56,7 +56,6 @@ class SitesController extends Controller
     public function actionSettingsIndex(?int $groupId = null): Response
     {
         $sitesService = Craft::$app->getSites();
-        $allGroups = $sitesService->getAllGroups();
 
         if ($groupId) {
             if (($group = $sitesService->getGroupById($groupId)) === null) {
@@ -88,9 +87,8 @@ class SitesController extends Controller
 
         return $this->renderTemplate('settings/sites/index.twig', compact(
             'crumbs',
-            'allGroups',
             'group',
-            'sites'
+            'sites',
         ));
     }
 
@@ -266,22 +264,6 @@ class SitesController extends Controller
             ],
         ];
 
-        $languageOptions = [];
-        $languageId = Craft::$app->getLocale()->getLanguageID();
-
-        foreach (Craft::$app->getI18n()->getAllLocales() as $locale) {
-            $languageOptions[] = [
-                'label' => $locale->getDisplayName(Craft::$app->language),
-                'value' => $locale->id,
-                'data' => [
-                    'data' => [
-                        'hint' => $locale->id,
-                        'keywords' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
-                    ],
-                ],
-            ];
-        }
-
         return $this->renderTemplate('settings/sites/_edit.twig', [
             'brandNewSite' => $brandNewSite,
             'title' => $title,
@@ -289,7 +271,6 @@ class SitesController extends Controller
             'site' => $siteModel,
             'groupId' => $groupId,
             'groupOptions' => $groupOptions,
-            'languageOptions' => $languageOptions,
         ]);
     }
 

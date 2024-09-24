@@ -40,6 +40,14 @@ class Users extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'user-group';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function elementType(): string
     {
         return User::class;

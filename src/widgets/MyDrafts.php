@@ -47,7 +47,7 @@ class MyDrafts extends Widget
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/draft.svg');
+        return 'scribble';
     }
 
     /**
@@ -85,6 +85,7 @@ class MyDrafts extends Widget
             ->drafts()
             ->status(null)
             ->draftCreator(Craft::$app->getUser()->getId())
+            ->section('*')
             ->site('*')
             ->unique()
             ->orderBy(['dateUpdated' => SORT_DESC])
@@ -98,7 +99,7 @@ class MyDrafts extends Widget
         }
 
         $html = Html::beginTag('ul', [
-            'class' => 'widget__list',
+            'class' => 'widget__list chips',
             'role' => 'list',
         ]);
 

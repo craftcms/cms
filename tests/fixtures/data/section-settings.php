@@ -69,4 +69,14 @@ return [
         'template' => null,
         'enabledByDefault' => true,
     ],
+    [
+        'id' => '1011',
+        'sectionId' => '1011',
+        'siteId' => '1',
+        'hasUrls' => false,
+        'uriFormat' => null,
+        'template' => null,
+        'enabledByDefault' => true,
+        'maxAuthors' => 3,
+    ],
 ];

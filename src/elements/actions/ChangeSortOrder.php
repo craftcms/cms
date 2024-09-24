@@ -75,7 +75,7 @@ class ChangeSortOrder extends ElementAction
         label: Craft.t('app', 'Choose a page'),
       }).appendTo(container);
       const hud = new Garnish.HUD(elementIndex.\$actionMenuBtn, container);
-      
+
       button.one('activate', () => {
         const page = parseInt(select.find('select').val());
 

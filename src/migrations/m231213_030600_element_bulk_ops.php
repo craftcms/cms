@@ -15,6 +15,7 @@ class m231213_030600_element_bulk_ops extends Migration
      */
     public function safeUp(): bool
     {
+        $this->dropTableIfExists(Table::ELEMENTS_BULKOPS);
         $this->createTable(Table::ELEMENTS_BULKOPS, [
             'elementId' => $this->integer(),
             'key' => $this->char(10)->notNull(),

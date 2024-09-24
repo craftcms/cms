@@ -11,6 +11,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\TitleField;
+use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
@@ -34,8 +35,8 @@ class EntryTitleField extends TitleField
     protected function selectorInnerHtml(): string
     {
         return
-            Html::tag('span', '', [
-                'class' => ['fld-title-field-icon', 'fld-field-hidden', 'hidden'],
+            Html::tag('div', Cp::iconSvg('shuteye'), [
+                'class' => ['cp-icon', 'medium', 'gray', 'fld-title-field-icon', 'fld-field-hidden', 'hidden'],
             ]) .
             parent::selectorInnerHtml();
     }
@@ -76,6 +77,8 @@ class EntryTitleField extends TitleField
         if (!$element->getType()->hasTitleField) {
             return null;
         }
+
+        $this->required = true;
 
         return parent::inputHtml($element, $static);
     }

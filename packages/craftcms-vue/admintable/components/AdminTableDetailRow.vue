@@ -1,10 +1,7 @@
 <template>
   <div>
     <div
-      v-if="
-        rowData.detail.content &&
-        (!rowData.detail.showAsList || rowData.detail.showAsList === undefined)
-      "
+      v-if="rowData.detail.content && !rowData.detail.showAsList"
       v-html="rowData.detail.content"
     ></div>
     <div v-if="rowData.detail.content && rowData.detail.showAsList">

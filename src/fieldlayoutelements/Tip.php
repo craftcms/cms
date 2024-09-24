@@ -46,10 +46,10 @@ class Tip extends BaseUiElement
      */
     protected function selectorLabel(): string
     {
-        if ($this->tip) {
+        $tip = trim($this->tip);
+        if ($tip !== '') {
             return $this->tip;
         }
-
         return $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning');
     }
 
@@ -58,7 +58,15 @@ class Tip extends BaseUiElement
      */
     protected function selectorIcon(): ?string
     {
-        return '@appicons/' . ($this->_isTip() ? 'tip' : 'alert') . '.svg';
+        return $this->_isTip() ? 'lightbulb' : 'triangle-exclamation';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasSettings()
+    {
+        return true;
     }
 
     /**
@@ -89,6 +97,12 @@ class Tip extends BaseUiElement
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
+        $tip = trim($this->tip);
+
+        if ($tip === '') {
+            return null;
+        }
+
         if (!$this->uid) {
             $this->dismissible = false;
         }

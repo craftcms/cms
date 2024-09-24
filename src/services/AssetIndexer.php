@@ -379,12 +379,13 @@ class AssetIndexer extends Component
      * Get missing entries after an indexing session.
      *
      * @param AssetIndexingSession $session
+     * @param string $path
      * @return array with `files` and `folders` keys, containing missing entries.
      * @phpstan-return array{folders:array<int,string>,files:array<int,string>}
      * @throws AssetException
      * @since 4.0.0
      */
-    public function getMissingEntriesForSession(AssetIndexingSession $session): array
+    public function getMissingEntriesForSession(AssetIndexingSession $session, string $path = ''): array
     {
         if (!$session->actionRequired) {
             throw new AssetException('A session must be finished before missing entries can be fetched');
@@ -412,6 +413,10 @@ class AssetIndexer extends Component
             ->andWhere(['folders.volumeId' => $volumeList])
             ->andWhere(['not', ['folders.parentId' => null]]);
 
+        if ($path !== '') {
+            $missingFoldersQuery->andWhere(['like', 'folders.path', "$path%", false]);
+        }
+
         if (!$session->listEmptyFolders) {
             $missingFoldersQuery
                 ->leftJoin(['indexData' => Table::ASSETINDEXDATA], ['and', '[[folders.id]] = [[indexData.recordId]]', ['indexData.isDir' => true]])
@@ -420,7 +425,7 @@ class AssetIndexer extends Component
 
         $missingFolders = $missingFoldersQuery->all();
 
-        $missingFiles = (new Query())
+        $missingFilesQuery = (new Query())
             ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'filename' => 'assets.filename', 'assetId' => 'assets.id'])
             ->from(['assets' => Table::ASSETS])
             ->leftJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[assets.id]]')
@@ -430,8 +435,13 @@ class AssetIndexer extends Component
             ->where(['<', 'assets.dateCreated', $cutoff])
             ->andWhere(['assets.volumeId' => $volumeList])
             ->andWhere(['elements.dateDeleted' => null])
-            ->andWhere(['indexData.id' => null])
-            ->all();
+            ->andWhere(['indexData.id' => null]);
+
+        if ($path !== '') {
+            $missingFilesQuery->andWhere(['like', 'folders.path', "$path%", false]);
+        }
+
+        $missingFiles = $missingFilesQuery->all();
 
         foreach ($missingFolders as ['folderId' => $folderId, 'path' => $path, 'volumeName' => $volumeName, 'volumeId' => $volumeId]) {
             /**

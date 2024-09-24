@@ -9,8 +9,11 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementContainerFieldInterface;
+use craft\base\FieldInterface;
 use craft\elements\Entry;
-use craft\helpers\UrlHelper;
+use craft\enums\Color;
+use craft\helpers\Cp;
+use craft\helpers\Html;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
@@ -37,56 +40,6 @@ class EntryTypesController extends Controller
         $this->requireAdmin();
 
         return parent::beforeAction($action);
-    }
-
-    /**
-     * Entry types index
-     *
-     * @return Response
-     */
-    public function actionIndex(): Response
-    {
-        $sectionsService = Craft::$app->getEntries();
-        $entryTypes = $sectionsService->getAllEntryTypes();
-        usort($entryTypes, fn(EntryType $a, EntryType $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name));
-
-        $entryTypeUsages = [];
-
-        // Sections
-        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
-            foreach ($section->getEntryTypes() as $entryType) {
-                $entryTypeUsages[$entryType->id][] = [
-                    'section',
-                    Craft::t('site', $section->name),
-                    $section->getCpEditUrl(),
-                ];
-            }
-        }
-
-        // Fields
-        foreach (Craft::$app->getFields()->getAllFields() as $field) {
-            if ($field instanceof ElementContainerFieldInterface) {
-                foreach ($field->getFieldLayoutProviders() as $provider) {
-                    if ($provider instanceof EntryType) {
-                        $entryTypeUsages[$provider->id][] = [
-                            'field',
-                            Craft::t('site', $field->name),
-                            UrlHelper::cpUrl("settings/fields/edit/$field->id"),
-                        ];
-                    }
-                }
-            }
-        }
-
-        // sort by name
-        foreach ($entryTypeUsages as &$usages) {
-            usort($usages, fn($a, $b) => $a[1] <=> $b[1]);
-        }
-
-        return $this->renderTemplate('settings/entry-types/_index.twig', [
-            'entryTypes' => $entryTypes,
-            'entryTypeUsages' => $entryTypeUsages,
-        ]);
     }
 
     /**
@@ -117,7 +70,8 @@ class EntryTypesController extends Controller
             $title = Craft::t('app', 'Create a new entry type');
         }
 
-        return $this->asCpScreen()
+        $response = $this->asCpScreen()
+            ->editUrl($entryType->getCpEditUrl())
             ->title($title)
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('app', 'Entry Types'), 'settings/entry-types')
@@ -134,6 +88,47 @@ class EntryTypesController extends Controller
                 'typeName' => Entry::displayName(),
                 'lowerTypeName' => Entry::lowerDisplayName(),
             ]);
+
+        if ($entryType->id) {
+            $response
+                ->addAltAction(Craft::t('app', 'Delete'), [
+                    'action' => 'entry-types/delete',
+                    'destructive' => true,
+                ])
+                ->metaSidebarHtml(Cp::metadataHtml([
+                    Craft::t('app', 'ID') => $entryType->id,
+                    Craft::t('app', 'Used by') => function() use ($entryType) {
+                        $usages = $entryType->findUsages();
+                        if (empty($usages)) {
+                            return Html::tag('i', Craft::t('app', 'No usages'));
+                        }
+
+                        $labels = [];
+                        $items = array_map(function(Section|ElementContainerFieldInterface $usage) use (&$labels) {
+                            $icon = $usage instanceof FieldInterface ? $usage::icon() : $usage->getIcon();
+                            $label = $labels[] = $usage->getUiLabel();
+                            $labelHtml = Html::beginTag('span', [
+                                    'class' => ['flex', 'flex-nowrap', 'gap-s'],
+                                ]) .
+                                Html::tag('div', Cp::iconSvg($icon), [
+                                    'class' => ['cp-icon', 'small'],
+                                ]) .
+                                Html::tag('span', Html::encode($label)) .
+                                Html::endTag('span');
+                            return Html::a($labelHtml, $usage->getCpEditUrl());
+                        }, $entryType->findUsages());
+
+                        // sort by label
+                        array_multisort($labels, SORT_ASC, $items);
+
+                        return Html::ul($items, [
+                            'encode' => false,
+                        ]);
+                    },
+                ]));
+        }
+
+        return $response;
     }
 
     /**
@@ -161,10 +156,14 @@ class EntryTypesController extends Controller
         // Set the simple stuff
         $entryType->name = $this->request->getBodyParam('name', $entryType->name);
         $entryType->handle = $this->request->getBodyParam('handle', $entryType->handle);
+        $entryType->icon = $this->request->getBodyParam('icon', $entryType->icon);
+        $color = $this->request->getBodyParam('color', $entryType->color?->value);
+        $entryType->color = $color && $color !== '__blank__' ? Color::from($color) : null;
         $entryType->hasTitleField = (bool)$this->request->getBodyParam('hasTitleField', $entryType->hasTitleField);
         $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
         $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
         $entryType->titleFormat = $this->request->getBodyParam('titleFormat', $entryType->titleFormat);
+        $entryType->showSlugField = $this->request->getBodyParam('showSlugField', $entryType->showSlugField);
         $entryType->slugTranslationMethod = $this->request->getBodyParam('slugTranslationMethod', $entryType->slugTranslationMethod);
         $entryType->slugTranslationKeyFormat = $this->request->getBodyParam('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
         $entryType->showStatusField = $this->request->getBodyParam('showStatusField', $entryType->showStatusField);
@@ -190,11 +189,56 @@ class EntryTypesController extends Controller
     public function actionDelete(): Response
     {
         $this->requirePostRequest();
+
+        $entryTypeId = $this->request->getBodyParam('entryTypeId') ?? $this->request->getRequiredBodyParam('id');
+
+        $entriesService = Craft::$app->getEntries();
+        $entryType = $entriesService->getEntryTypeById($entryTypeId);
+
+        if (!$entryType) {
+            throw new BadRequestHttpException("Invalid entry type ID: $entryType");
+        }
+
+        if (!$entriesService->deleteEntryType($entryType)) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t delete “{name}”.', [
+                'name' => $entryType->getUiLabel(),
+            ]));
+        }
+
+        return $this->asSuccess(Craft::t('app', '“{name}” deleted.', [
+            'name' => $entryType->getUiLabel(),
+        ]));
+    }
+
+    /**
+     * Returns data formatted for AdminTable vue component
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionTableData(): Response
+    {
         $this->requireAcceptsJson();
 
-        $entryTypeId = $this->request->getRequiredBodyParam('id');
+        $entriesService = Craft::$app->getEntries();
 
-        $success = Craft::$app->getEntries()->deleteEntryTypeById($entryTypeId);
-        return $success ? $this->asSuccess() : $this->asFailure();
+        $page = (int)$this->request->getParam('page', 1);
+        $limit = (int)$this->request->getParam('per_page', 100);
+        $searchTerm = $this->request->getParam('search');
+        $orderBy = match ($this->request->getParam('sort.0.field')) {
+            '__slot:handle' => 'handle',
+            default => 'name',
+        };
+        $sortDir = match ($this->request->getParam('sort.0.direction')) {
+            'desc' => SORT_DESC,
+            default => SORT_ASC,
+        };
+
+        [$pagination, $tableData] = $entriesService->getTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
+
+        return $this->asSuccess(data: [
+            'pagination' => $pagination,
+            'data' => $tableData,
+        ]);
     }
 }

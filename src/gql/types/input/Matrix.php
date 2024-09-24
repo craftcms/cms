@@ -37,41 +37,46 @@ class Matrix extends InputObjectType
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
             'fields' => function() use ($context) {
-                $entryTypes = $context->getEntryTypes();
-                $entryInputTypes = [];
-
-                foreach ($entryTypes as $entryType) {
-                    $entryTypeGqlName = $context->handle . '_' . $entryType->handle . '_MatrixEntryInput';
-                    $entryInputTypes[$entryType->handle] = [
-                        'name' => $entryType->handle,
-                        'type' => GqlEntityRegistry::createEntity($entryTypeGqlName, new InputObjectType([
-                            'name' => $entryTypeGqlName,
-                            'fields' => function() use ($entryType) {
-                                $entryTypeFields = [
-                                    'id' => [
-                                        'name' => 'id',
-                                        'type' => Type::id(),
-                                    ],
-                                ];
-
-                                // Get the field input types
-                                foreach ($entryType->getCustomFields() as $field) {
-                                    /** @var Field $field */
-                                    $entryTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
-                                }
-
-                                return $entryTypeFields;
-                            },
-                        ])),
-                    ];
-                }
-
                 // All the different field entry types now get wrapped in a container input.
                 // If two different entry types are passed, the selected entry type to parse is undefined.
                 $entryTypeContainerName = $context->handle . '_MatrixEntryContainerInput';
                 $entryContainerInputType = GqlEntityRegistry::createEntity($entryTypeContainerName, new InputObjectType([
                     'name' => $entryTypeContainerName,
-                    'fields' => function() use ($entryInputTypes) {
+                    'fields' => function() use ($context) {
+                        $entryInputTypes = [];
+                        foreach ($context->getEntryTypes() as $entryType) {
+                            $entryTypeGqlName = $context->handle . '_' . $entryType->handle . '_MatrixEntryInput';
+                            $entryInputTypes[$entryType->handle] = [
+                                'name' => $entryType->handle,
+                                'type' => GqlEntityRegistry::createEntity($entryTypeGqlName, new InputObjectType([
+                                    'name' => $entryTypeGqlName,
+                                    'fields' => function() use ($entryType) {
+                                        $entryTypeFields = [
+                                            'id' => [
+                                                'name' => 'id',
+                                                'type' => Type::id(),
+                                            ],
+                                        ];
+
+                                        if ($entryType->hasTitleField) {
+                                            $entryTypeFields['title'] = [
+                                                'name' => 'title',
+                                                'type' => Type::string(),
+                                                'description' => 'The entry title',
+                                            ];
+                                        }
+
+                                        // Get the field input types
+                                        foreach ($entryType->getCustomFields() as $field) {
+                                            /** @var Field $field */
+                                            $entryTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
+                                        }
+
+                                        return $entryTypeFields;
+                                    },
+                                ])),
+                            ];
+                        }
                         return $entryInputTypes;
                     },
                 ]));
@@ -111,12 +116,12 @@ class Matrix extends InputObjectType
                 if (!empty($entry)) {
                     $type = array_key_first($entry);
                     $entry = reset($entry);
-                    $entryId = !empty($entry['id']) ? $entry['id'] : 'new:' . ($entryCounter++);
-
-                    unset($entry['id']);
+                    $entryId = ArrayHelper::remove($entry, 'id') ?? sprintf('new:%s', $entryCounter++);
+                    $title = ArrayHelper::remove($entry, 'title');
 
                     $preparedEntries[$entryId] = [
                         'type' => $type,
+                        'title' => $title,
                         'fields' => $entry,
                     ];
                 }

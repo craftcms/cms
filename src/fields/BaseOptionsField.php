@@ -11,6 +11,7 @@ use Craft;
 use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\MergeableFieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\QueryParam;
 use craft\events\DefineInputOptionsEvent;
@@ -34,7 +35,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class BaseOptionsField extends Field implements PreviewableFieldInterface, CopyableFieldInterface
+abstract class BaseOptionsField extends Field implements PreviewableFieldInterface, MergeableFieldInterface, CopyableFieldInterface
 {
     /**
      * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.
@@ -55,13 +56,17 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
+    public static function phpType(): string
+    {
+        return sprintf('\\%s', static::$multi ? MultiOptionsFieldData::class : SingleOptionFieldData::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function dbType(): string
     {
-        if (!static::$multi) {
-            return Schema::TYPE_STRING;
-        }
-
-        return parent::dbType();
+        return static::$multi ? Schema::TYPE_JSON : Schema::TYPE_STRING;
     }
 
     /**
@@ -261,6 +266,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'cols' => $cols,
             'rows' => $rows,
             'errors' => $this->getErrors('options'),
+            'data' => ['error-key' => 'options'],
         ]);
     }
 
@@ -280,7 +286,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = Json::decodeIfJson($value);
         } elseif ($value === '' && static::$multi) {
             $value = [];
-        } elseif ($value === '__BLANK__') {
+        } elseif (is_string($value) && strtolower($value) === '__blank__') {
             $value = '';
         } elseif ($value === null && $this->isFresh($element)) {
             $value = $this->defaultValue();
@@ -413,13 +419,18 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             }
         }
 
+        $request = Craft::$app->getRequest();
+
         return [
             [
                 'in',
                 'range' => $range,
                 'allowArray' => static::$multi,
                 // Don't allow saving invalid blank values via Selectize
-                'skipOnEmpty' => !($this instanceof Dropdown && Craft::$app->getRequest()->getIsCpRequest()),
+                'skipOnEmpty' => !(
+                    $this instanceof Dropdown &&
+                    ($request->getIsCpRequest() || $request->getIsConsoleRequest())
+                ),
             ],
         ];
     }
@@ -429,12 +440,11 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var MultiOptionsFieldData|SingleOptionFieldData $value */
-        if ($value instanceof SingleOptionFieldData) {
-            return $value->value === null || $value->value === '';
+        if ($value instanceof MultiOptionsFieldData) {
+            return count($value) === 0;
         }
 
-        return count($value) === 0;
+        return $value->value === null || $value->value === '';
     }
 
     /**
@@ -448,7 +458,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
             foreach ($value as $option) {
                 /** @var OptionData $option */
-                if ($option->value) {
+                if (!$this->isValueEmpty($option, $element)) {
                     $labels[] = Craft::t('site', $option->label);
                 }
             }
@@ -457,7 +467,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         /** @var SingleOptionFieldData $value */
-        return $value->value ? Craft::t('site', (string)$value->label) : '';
+        return !$this->isValueEmpty($value, $element) ? Craft::t('site', (string)$value->label) : '';
     }
 
     /**
@@ -563,6 +573,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $options = $this->options();
         $translatedOptions = [];
 
+        // Fire a 'defineOptions' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_OPTIONS)) {
             $event = new DefineInputOptionsEvent([
                 'options' => $options,

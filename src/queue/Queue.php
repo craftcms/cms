@@ -221,6 +221,17 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
+     * Returns the ID of the current job being handled.
+     *
+     * @return string
+     * @since 5.2.0
+     */
+    public function getJobId(): string
+    {
+        return $this->_executingJobId;
+    }
+
+    /**
      * @param string $id The job ID.
      * @return bool
      */
@@ -389,7 +400,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getHasWaitingJobs(): bool
     {
         // Move expired messages into waiting list
-        $this->_moveExpired(0, false);
+        $this->_moveExpired();
 
         return $this->db->usePrimary(function() {
             return $this->_createWaitingJobQuery()->exists($this->db);
@@ -402,7 +413,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getHasReservedJobs(): bool
     {
         // Move expired messages into waiting list
-        $this->_moveExpired(0, false);
+        $this->_moveExpired();
 
         return $this->db->usePrimary(function() {
             return $this->_createReservedJobQuery()->exists($this->db);
@@ -417,7 +428,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalWaiting(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired(0, false);
+        $this->_moveExpired();
 
         return $this->db->usePrimary(function() {
             return $this->_createWaitingJobQuery()->count('*', $this->db);
@@ -432,7 +443,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalDelayed(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired(0, false);
+        $this->_moveExpired();
 
         return $this->db->usePrimary(function() {
             return $this->_createDelayedJobQuery()->count('*', $this->db);
@@ -447,7 +458,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalReserved(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired(0, false);
+        $this->_moveExpired();
 
         return $this->db->usePrimary(function() {
             return $this->_createReservedJobQuery()->count('*', $this->db);
@@ -462,7 +473,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalFailed(): int
     {
         // Move expired messages into waiting list
-        $this->_moveExpired(0, false);
+        $this->_moveExpired();
 
         return $this->db->usePrimary(function() {
             return $this->_createFailedJobQuery()->count('*', $this->db);
@@ -521,20 +532,22 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getJobInfo(?int $limit = null): array
     {
         // Move expired messages into waiting list
-        $this->_moveExpired(0, false);
+        $this->_moveExpired();
 
         $query = $this->_createJobQuery();
 
-        // Set up the reserved jobs condition
-        $reservedCondition = $this->db->getQueryBuilder()->buildCondition([
-            'and',
-            ['fail' => false],
-            ['not', ['timeUpdated' => null]],
-        ], $query->params);
+        $notFailedSql = $this->db->getQueryBuilder()->buildCondition(['fail' => false], $query->params);
+        $runningSql = $this->db->getQueryBuilder()->buildCondition(['not', ['timeUpdated' => null]], $query->params);
 
         $query
             ->select(['id', 'description', 'timePushed', 'delay', 'progress', 'progressLabel', 'timeUpdated', 'fail', 'error'])
-            ->orderBy(new Expression("CASE WHEN $reservedCondition THEN 1 ELSE 0 END DESC"))
+            // Sort by not failed first
+            ->orderBy(new Expression("CASE WHEN $notFailedSql THEN 1 ELSE 0 END DESC"))
+            // then running first
+            ->addOrderBy(new Expression("CASE WHEN $runningSql THEN 1 ELSE 0 END DESC"))
+            // then earliest start time (now or timePushed + delay)
+            ->addOrderBy(new Expression('GREATEST(:time, [[timePushed]] + [[delay]]) ASC', [':time' => time()]))
+            // then priority and ID
             ->addOrderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit);
 
@@ -629,8 +642,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 </script>
 EOD;
 
-        if ($response->content === null) {
-            $response->content = $js;
+        $response->content ??= '';
+        $pos = strripos($response->content, '</body>');
+        if ($pos !== false) {
+            $response->content = substr($response->content, 0, $pos) . $js . substr($response->content, $pos);
         } else {
             $response->content .= $js;
         }
@@ -775,42 +790,37 @@ EOD;
 
     /**
      * Moves expired messages into waiting list.
-     *
-     * @param int|null $mutexTimeout
-     * @param bool $throwMutexException
      */
-    private function _moveExpired(?int $mutexTimeout = null, bool $throwMutexException = true): void
+    private function _moveExpired(): void
     {
         if ($this->_reserveTime !== time()) {
-            $this->_lock(function() {
-                $this->_reserveTime = time();
+            $this->_reserveTime = time();
 
-                $expiredIds = $this->db->usePrimary(function() {
-                    return (new Query())
-                        ->select(['id'])
-                        ->from([$this->tableName])
-                        ->where([
-                            'and',
-                            [
-                                'channel' => $this->channel(),
-                                'fail' => false,
-                            ],
-                            '[[timeUpdated]] < :time - [[ttr]]',
-                        ], [
-                            ':time' => $this->_reserveTime,
-                        ])
-                        ->column($this->db);
-                });
+            $expiredIds = $this->db->usePrimary(function() {
+                return (new Query())
+                    ->select(['id'])
+                    ->from([$this->tableName])
+                    ->where([
+                        'and',
+                        [
+                            'channel' => $this->channel(),
+                            'fail' => false,
+                        ],
+                        '[[timeUpdated]] < :time - [[ttr]]',
+                    ], [
+                        ':time' => $this->_reserveTime,
+                    ])
+                    ->column($this->db);
+            });
 
-                if (!empty($expiredIds)) {
-                    Db::update($this->tableName, [
-                        'dateReserved' => null,
-                        'timeUpdated' => null,
-                        'progress' => 0,
-                        'progressLabel' => null,
-                    ], ['id' => $expiredIds], [], false, $this->db);
-                }
-            }, $mutexTimeout, $throwMutexException);
+            if (!empty($expiredIds)) {
+                Db::update($this->tableName, [
+                    'dateReserved' => null,
+                    'timeUpdated' => null,
+                    'progress' => 0,
+                    'progressLabel' => null,
+                ], ['id' => $expiredIds], [], false, $this->db);
+            }
         }
     }
 

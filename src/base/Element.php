@@ -12,6 +12,8 @@ use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\db\CoalesceColumnsExpression;
+use craft\db\Command;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
@@ -23,6 +25,7 @@ use craft\elements\actions\SetStatus;
 use craft\elements\actions\View as ViewAction;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
@@ -30,6 +33,7 @@ use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
+use craft\enums\Color;
 use craft\enums\MenuItemType;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
@@ -57,6 +61,7 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -157,6 +162,8 @@ abstract class Element extends Component implements ElementInterface
     public const STATUS_ENABLED = 'enabled';
     public const STATUS_DISABLED = 'disabled';
     public const STATUS_ARCHIVED = 'archived';
+    /** @since 5.0.0 */
+    public const STATUS_DRAFT = 'draft';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
@@ -181,7 +188,7 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
 
     /**
-     * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
+     * @event RegisterElementActionsEvent The event that is triggered when registering the available bulk actions for the element type.
      */
     public const EVENT_REGISTER_ACTIONS = 'registerActions';
 
@@ -275,26 +282,26 @@ abstract class Element extends Component implements ElementInterface
      *
      * ```php
      * use craft\base\Element;
+     * use craft\base\ElementInterface;
      * use craft\db\Query;
      * use craft\elements\Entry;
      * use craft\events\DefineEagerLoadingMapEvent;
-     * use craft\helpers\ArrayHelper;
      * use yii\base\Event;
      *
      * // Add support for `with(['bookClub'])` to entries
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_DEFINE_EAGER_LOADING_MAP,
-     *     function(DefineEagerLoadingMapEvent $e) {
-     *         if ($e->handle === 'bookClub') {
-     *             $bookEntryIds = ArrayHelper::getColumn($e->elements, 'id');
-     *             $e->elementType = \my\plugin\BookClub::class,
-     *             $e->map = (new Query)
+     *     function(DefineEagerLoadingMapEvent $event) {
+     *         if ($event->handle === 'bookClub') {
+     *             $bookEntryIds = array_map(fn(ElementInterface $element) => $element->id, $event->elements);
+     *             $event->elementType = \my\plugin\BookClub::class,
+     *             $event->map = (new Query)
      *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
      *                 ->from('{{%bookclub_books}}')
      *                 ->where(['bookId' => $bookEntryIds])
      *                 ->all();
-     *             $e->handled = true;
+     *             $event->handled = true;
      *         }
      *     }
      * );
@@ -347,7 +354,7 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_ADDITIONAL_BUTTONS = 'defineAdditionalButtons';
 
     /**
-     * @event DefineMenuComponentEvent The event that is triggered when defining action menu items..
+     * @event DefineMenuItemsEvent The event that is triggered when defining action menu items..
      * @see getActionMenuItems()
      * @since 5.0.0
      */
@@ -891,6 +898,21 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @interitdoc
+     */
+    public static function get(int|string $id): ?static
+    {
+        return static::find()
+            ->id($id)
+            ->fixedOrder()
+            ->drafts(null)
+            ->provisionalDrafts(null)
+            ->revisions(null)
+            ->status(null)
+            ->one();
+    }
+
+    /**
      * @inheritdoc
      */
     public static function createCondition(): ElementConditionInterface
@@ -905,14 +927,17 @@ abstract class Element extends Component implements ElementInterface
     {
         $sources = static::defineSources($context);
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementSourcesEvent([
-            'context' => $context,
-            'sources' => $sources,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
+        // Fire a 'registerSources' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SOURCES)) {
+            $event = new RegisterElementSourcesEvent([
+                'context' => $context,
+                'sources' => $sources,
+            ]);
+            Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
+            return $event->sources;
+        }
 
-        return $event->sources;
+        return $sources;
     }
 
     /**
@@ -958,14 +983,17 @@ abstract class Element extends Component implements ElementInterface
     {
         $fieldLayouts = static::defineFieldLayouts($source);
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementFieldLayoutsEvent([
-            'source' => $source,
-            'fieldLayouts' => $fieldLayouts,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_FIELD_LAYOUTS, $event);
+        // Fire a 'registerFieldLayouts' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_FIELD_LAYOUTS)) {
+            $event = new RegisterElementFieldLayoutsEvent([
+                'source' => $source,
+                'fieldLayouts' => $fieldLayouts,
+            ]);
+            Event::trigger(static::class, self::EVENT_REGISTER_FIELD_LAYOUTS, $event);
+            return $event->fieldLayouts;
+        }
 
-        return $event->fieldLayouts;
+        return $fieldLayouts;
     }
 
     /**
@@ -1037,14 +1065,19 @@ abstract class Element extends Component implements ElementInterface
             $actions->push(Delete::class);
         }
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementActionsEvent([
-            'source' => $source,
-            'actions' => $actions->all(),
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
+        $actions = $actions->all();
 
-        return $event->actions;
+        // Fire a 'registerActions' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_ACTIONS)) {
+            $event = new RegisterElementActionsEvent([
+                'source' => $source,
+                'actions' => $actions,
+            ]);
+            Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
+            return $event->actions;
+        }
+
+        return $actions;
     }
 
     /**
@@ -1059,10 +1092,10 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Defines the available element actions for a given source.
+     * Defines the available bulk element actions for a given source.
      *
      * @param string $source The selected source’s key, if any.
-     * @return array The available element actions.
+     * @return array The available bulk element actions.
      * @see actions()
      */
     protected static function defineActions(string $source): array
@@ -1077,14 +1110,17 @@ abstract class Element extends Component implements ElementInterface
     {
         $exporters = static::defineExporters($source);
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementExportersEvent([
-            'source' => $source,
-            'exporters' => $exporters,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_EXPORTERS, $event);
+        // Fire a 'registerExporters' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_EXPORTERS)) {
+            $event = new RegisterElementExportersEvent([
+                'source' => $source,
+                'exporters' => $exporters,
+            ]);
+            Event::trigger(static::class, self::EVENT_REGISTER_EXPORTERS, $event);
+            return $event->exporters;
+        }
 
-        return $event->exporters;
+        return $exporters;
     }
 
     /**
@@ -1110,13 +1146,14 @@ abstract class Element extends Component implements ElementInterface
     {
         $attributes = static::defineSearchableAttributes();
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementSearchableAttributesEvent([
-            'attributes' => $attributes,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
+        // Fire a 'registerSearchableAttributes' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES)) {
+            $event = new RegisterElementSearchableAttributesEvent(['attributes' => $attributes]);
+            Event::trigger(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
+            return $event->attributes;
+        }
 
-        return $event->attributes;
+        return $attributes;
     }
 
     /**
@@ -1146,11 +1183,12 @@ abstract class Element extends Component implements ElementInterface
         bool $selectable,
         bool $sortable,
     ): string {
+        $request = Craft::$app->getRequest();
         $variables = [
             'viewMode' => $viewState['mode'],
             'context' => $context,
             'disabledElementIds' => $disabledElementIds,
-            'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
+            'collapsedElementIds' => $request->getParam('collapsedElementIds'),
             'selectable' => $selectable,
             'sortable' => $sortable,
             'showHeaderColumn' => $viewState['showHeaderColumn'] ?? false,
@@ -1203,18 +1241,22 @@ abstract class Element extends Component implements ElementInterface
                 $viewState['tableColumns'] ?? null
             );
 
-            // Give each attribute a chance to modify the criteria
+            // Prepare the element query for each of the table attributes
+            $hasHandlers = Event::hasHandlers(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE);
             foreach ($variables['attributes'] as $attribute) {
-                $event = new ElementIndexTableAttributeEvent([
-                    'query' => $elementQuery,
-                    'attribute' => $attribute[0],
-                ]);
-
-                Event::trigger(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $event);
-
-                if (!$event->handled) {
-                    static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
+                if ($hasHandlers) {
+                    // Fire a 'prepQueryForTableAttribute' event
+                    $event = new ElementIndexTableAttributeEvent([
+                        'query' => $elementQuery,
+                        'attribute' => $attribute[0],
+                    ]);
+                    Event::trigger(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $event);
+                    if ($event->handled) {
+                        continue;
+                    }
                 }
+
+                static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
             }
 
             if (!$variables['showHeaderColumn'] && count($variables['attributes']) <= 1) {
@@ -1229,13 +1271,21 @@ abstract class Element extends Component implements ElementInterface
 
         $elements = static::indexElements($elementQuery, $sourceKey);
 
-        if (empty($elements)) {
-            $message = Craft::t('app', 'No {type} yet.', [
-                'type' => static::pluralLowerDisplayName(),
-            ]);
-            return Html::tag('div', $message, [
-                'class' => ['zilch', 'small'],
-            ]);
+        if (empty($elements) && !$includeContainer) {
+            // load-more request
+            return '';
+        }
+
+        // See if there are any provisional drafts we should swap these out with
+        ElementHelper::swapInProvisionalDrafts($elements);
+
+        if ($request->getParam('prevalidate')) {
+            foreach ($elements as $element) {
+                if ($element->enabled && $element->getEnabledForSite()) {
+                    $element->setScenario(Element::SCENARIO_LIVE);
+                }
+                $element->validate();
+            }
         }
 
         $variables['elements'] = $elements;
@@ -1307,13 +1357,14 @@ abstract class Element extends Component implements ElementInterface
     {
         $sortOptions = static::defineSortOptions();
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementSortOptionsEvent([
-            'sortOptions' => $sortOptions,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_SORT_OPTIONS, $event);
+        // Fire a 'registerSortOptions' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SORT_OPTIONS)) {
+            $event = new RegisterElementSortOptionsEvent(['sortOptions' => $sortOptions]);
+            Event::trigger(static::class, self::EVENT_REGISTER_SORT_OPTIONS, $event);
+            return $event->sortOptions;
+        }
 
-        return $event->sortOptions;
+        return $sortOptions;
     }
 
     /**
@@ -1342,13 +1393,14 @@ abstract class Element extends Component implements ElementInterface
     {
         $tableAttributes = static::defineTableAttributes();
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementTableAttributesEvent([
-            'tableAttributes' => $tableAttributes,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $event);
+        // Fire a 'registerTableAttributes' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES)) {
+            $event = new RegisterElementTableAttributesEvent(['tableAttributes' => $tableAttributes]);
+            Event::trigger(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $event);
+            return $event->tableAttributes;
+        }
 
-        return $event->tableAttributes;
+        return $tableAttributes;
     }
 
     /**
@@ -1359,7 +1411,26 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function defineTableAttributes(): array
     {
-        return [];
+        $attributes = [
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
+        ];
+
+        if (static::hasStatuses()) {
+            $attributes['status'] = ['label' => Craft::t('app', 'Status')];
+        }
+
+        if (static::hasUris()) {
+            $attributes = array_merge($attributes, [
+                'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
+                'slug' => ['label' => Craft::t('app', 'Slug')],
+                'uri' => ['label' => Craft::t('app', 'URI')],
+            ]);
+        }
+
+        return $attributes;
     }
 
     /**
@@ -1369,14 +1440,17 @@ abstract class Element extends Component implements ElementInterface
     {
         $tableAttributes = static::defineDefaultTableAttributes($source);
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementDefaultTableAttributesEvent([
-            'source' => $source,
-            'tableAttributes' => $tableAttributes,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $event);
+        // Fire a 'registerDefaultTableAttributes' event
+        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES)) {
+            $event = new RegisterElementDefaultTableAttributesEvent([
+                'source' => $source,
+                'tableAttributes' => $tableAttributes,
+            ]);
+            Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $event);
+            return $event->tableAttributes;
+        }
 
-        return $event->tableAttributes;
+        return $tableAttributes;
     }
 
     /**
@@ -1461,18 +1535,20 @@ abstract class Element extends Component implements ElementInterface
             return $field->getEagerLoadingMap($sourceElements);
         }
 
-        // Give plugins a chance to provide custom mappings
-        $event = new DefineEagerLoadingMapEvent([
-            'sourceElements' => $sourceElements,
-            'handle' => $handle,
-        ]);
-        Event::trigger(static::class, self::EVENT_DEFINE_EAGER_LOADING_MAP, $event);
-        if ($event->elementType !== null) {
-            return [
-                'elementType' => $event->elementType,
-                'map' => $event->map,
-                'criteria' => $event->criteria,
-            ];
+        // Fire a 'defineEagerLoadingMap' event
+        if (Event::hasHandlers(static::class, self::EVENT_DEFINE_EAGER_LOADING_MAP)) {
+            $event = new DefineEagerLoadingMapEvent([
+                'sourceElements' => $sourceElements,
+                'handle' => $handle,
+            ]);
+            Event::trigger(static::class, self::EVENT_DEFINE_EAGER_LOADING_MAP, $event);
+            if ($event->elementType !== null) {
+                return [
+                    'elementType' => $event->elementType,
+                    'map' => $event->map,
+                    'criteria' => $event->criteria,
+                ];
+            }
         }
 
         return false;
@@ -1488,7 +1564,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapDescendants(array $sourceElements, bool $children): ?array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         // Get the structure data for these elements
         $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
@@ -1574,7 +1650,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapAncestors(array $sourceElements, bool $parents): ?array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         // Get the structure data for these elements
         $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
@@ -1703,7 +1779,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapCurrentRevisions(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1733,7 +1809,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapDrafts(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1761,7 +1837,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapRevisions(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1789,7 +1865,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapDraftCreators(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1817,7 +1893,7 @@ abstract class Element extends Component implements ElementInterface
     private static function _mapRevisionCreators(array $sourceElements): array
     {
         // Get the source element IDs
-        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = (new Query())
             ->select([
@@ -1927,7 +2003,16 @@ abstract class Element extends Component implements ElementInterface
         // See if it's a source-specific sort option
         foreach (Craft::$app->getElementSources()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
             if ($sortOption['attribute'] === $attribute) {
-                return $sortOption['orderBy'];
+                if ($sortOption['orderBy'] instanceof CoalesceColumnsExpression) {
+                    $params = [];
+                    $sql = $sortOption['orderBy']->getSql($params);
+                } elseif (is_string($sortOption['orderBy'])) {
+                    $sql = $sortOption['orderBy'];
+                } else {
+                    return $sortOption['orderBy'];
+                }
+
+                return new Expression(sprintf('%s %s', $sql, $dir === SORT_ASC ? 'ASC' : 'DESC'), $params ?? []);
             }
         }
 
@@ -2092,6 +2177,13 @@ abstract class Element extends Component implements ElementInterface
      * @see getNextSibling()
      */
     private ElementInterface|false|null $_nextSibling = null;
+
+    /**
+     * @var int[]
+     * @see getInvalidNestedElementIds()
+     * @see addInvalidNestedElementIds()
+     */
+    private array $_invalidNestedElementIds = [];
 
     /**
      * @var array<string,ElementCollection>
@@ -2348,11 +2440,14 @@ abstract class Element extends Component implements ElementInterface
             $names['propagating'],
             $names['propagatingFrom'],
             $names['resaving'],
+            $names['saveOwnership'],
             $names['searchScore'],
+            $names['updateSearchIndexForOwner'],
             $names['updatingFromDerivative'],
         );
 
         $names['canonicalId'] = true;
+        $names['cpEditUrl'] = true;
         $names['isDraft'] = true;
         $names['isRevision'] = true;
         $names['isUnpublishedDraft'] = true;
@@ -2374,8 +2469,10 @@ abstract class Element extends Component implements ElementInterface
         foreach ($this->fieldLayoutFields() as $field) {
             if (!isset($fields[$field->handle])) {
                 if ($this->_serializeFields) {
-                    $value = $this->getFieldValue($field->handle);
-                    $fields[$field->handle] = fn() => $field->serializeValue($value, $this);
+                    $fields[$field->handle] = function() use ($field) {
+                        $value = $this->getFieldValue($field->handle);
+                        return $field->serializeValue($value, $this);
+                    };
                 } else {
                     $fields[$field->handle] = fn() => $this->clonedFieldValue($field->handle);
                 }
@@ -2521,7 +2618,6 @@ abstract class Element extends Component implements ElementInterface
             'max' => 255,
             'disallowMb4' => true,
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-            'when' => fn() => $this->shouldValidateTitle(),
         ];
         $rules[] = [
             ['title'],
@@ -2543,7 +2639,7 @@ abstract class Element extends Component implements ElementInterface
                 ['slug'],
                 'required',
                 'when' => fn() => (bool)preg_match('/\bslug\b/', $this->getUriFormat() ?? ''),
-                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
+                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
             ];
             $rules[] = [['uri'], ElementUriValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
         }
@@ -2567,6 +2663,7 @@ abstract class Element extends Component implements ElementInterface
     public function validate($attributeNames = null, $clearErrors = true)
     {
         $this->_attributeNames = $attributeNames ? array_flip((array)$attributeNames) : null;
+        $this->_invalidNestedElementIds = [];
         $result = parent::validate($attributeNames, $clearErrors);
         $this->_attributeNames = null;
         return $result;
@@ -2955,10 +3052,9 @@ abstract class Element extends Component implements ElementInterface
     {
         $cacheTags = static::cacheTags();
 
+        // Fire a 'defineCacheTags' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
-            $event = new DefineValueEvent([
-                'value' => $cacheTags,
-            ]);
+            $event = new DefineValueEvent(['value' => $cacheTags]);
             $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
             return $event->value;
         }
@@ -2990,16 +3086,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSearchKeywords(string $attribute): string
     {
-        // Give plugins/modules a chance to define custom keywords
+        // Fire a 'defineKeywords' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_KEYWORDS)) {
-            $event = new DefineAttributeKeywordsEvent([
-                'attribute' => $attribute,
-            ]);
+            $event = new DefineAttributeKeywordsEvent(['attribute' => $attribute]);
             $this->trigger(self::EVENT_DEFINE_KEYWORDS, $event);
             if ($event->handled) {
                 return $event->keywords ?? '';
             }
         }
+
         return $this->searchKeywords($attribute);
     }
 
@@ -3020,11 +3115,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getRoute(): mixed
     {
-        // Give plugins a chance to set this
+        // Fire a 'setRoute' event
         if ($this->hasEventHandlers(self::EVENT_SET_ROUTE)) {
             $event = new SetElementRouteEvent();
             $this->trigger(self::EVENT_SET_ROUTE, $event);
-
             if ($event->handled || $event->route !== null) {
                 return $event->route ?: null;
             }
@@ -3064,22 +3158,24 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl(): ?string
     {
-        // Give plugins/modules a chance to provide a custom URL
-        $event = new DefineUrlEvent();
-        $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
-        $url = $event->url;
+        // Fire a 'beforeDefineUrl' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DEFINE_URL)) {
+            $event = new DefineUrlEvent();
+            $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
+            $url = $event->url;
+        } else {
+            $url = null;
+        }
 
         // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
-        if ($url === null && !$event->handled && isset($this->uri)) {
+        if ($url === null && !($event->handled ?? false) && isset($this->uri)) {
             $path = $this->getIsHomepage() ? '' : $this->uri;
             $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
         }
 
-        // Give plugins/modules a chance to customize it
+        // Fire a 'defineUrl' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
-            $event = new DefineUrlEvent([
-                'url' => $url,
-            ]);
+            $event = new DefineUrlEvent(['url' => $url]);
             $this->trigger(self::EVENT_DEFINE_URL, $event);
             // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
             if ($event->url !== null || $event->handled) {
@@ -3114,7 +3210,11 @@ abstract class Element extends Component implements ElementInterface
             if ($owner) {
                 return [
                     ...$owner->getCrumbs(),
-                    ['html' => Cp::elementChipHtml($owner)],
+                    [
+                        'html' => Cp::elementChipHtml($owner, [
+                            'showDraftName' => false,
+                        ]),
+                    ],
                 ];
             }
         }
@@ -3182,7 +3282,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getChipLabelHtml(): string
     {
-        return $this->getUiLabel();
+        return Html::encode($this->getUiLabel());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function showStatusIndicator(): bool
+    {
+        return static::hasStatuses();
     }
 
     /**
@@ -3226,13 +3334,14 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_VIEW)) {
-            return false;
+        // Fire an 'authorizeView' event
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_VIEW)) {
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_VIEW, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_VIEW, $event);
-        return $event->authorized;
+        return false;
     }
 
     /**
@@ -3247,13 +3356,14 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_SAVE)) {
-            return false;
+        // Fire an 'authorizeSave' event
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_SAVE)) {
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_SAVE, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_SAVE, $event);
-        return $event->authorized;
+        return false;
     }
 
     /**
@@ -3268,13 +3378,23 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DUPLICATE)) {
-            return false;
+        // Fire an 'authorizeDuplicate' event
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_DUPLICATE)) {
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_DUPLICATE, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_DUPLICATE, $event);
-        return $event->authorized;
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDuplicateAsDraft(User $user): bool
+    {
+        // if anything, this will be more lenient than canDuplicate()
+        return Craft::$app->getElements()->canDuplicate($this, $user);
     }
 
     /**
@@ -3289,13 +3409,14 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE)) {
-            return false;
+        // Fire an 'authorizeDelete' event
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE)) {
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_DELETE, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_DELETE, $event);
-        return $event->authorized;
+        return false;
     }
 
     /**
@@ -3310,13 +3431,14 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
+        // Fire an 'authorizeDeleteForSite' event
         if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE_FOR_SITE)) {
-            return false;
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_DELETE_FOR_SITE, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_DELETE_FOR_SITE, $event);
-        return $event->authorized;
+        return false;
     }
 
     /**
@@ -3324,13 +3446,14 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canCreateDrafts(User $user): bool
     {
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_CREATE_DRAFTS)) {
-            return false;
+        // Fire an 'authorizeCreateDrafts' event
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_CREATE_DRAFTS)) {
+            $event = new AuthorizationCheckEvent($user);
+            $this->trigger(self::EVENT_AUTHORIZE_CREATE_DRAFTS, $event);
+            return $event->authorized;
         }
 
-        $event = new AuthorizationCheckEvent($user);
-        $this->trigger(self::EVENT_AUTHORIZE_CREATE_DRAFTS, $event);
-        return $event->authorized;
+        return false;
     }
 
     /**
@@ -3421,10 +3544,14 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getAdditionalButtons(): string
     {
-        // Fire a defineAdditionalButtons event
-        $event = new DefineHtmlEvent();
-        $this->trigger(self::EVENT_DEFINE_ADDITIONAL_BUTTONS, $event);
-        return $event->html;
+        // Fire a 'defineAdditionalButtons' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDITIONAL_BUTTONS)) {
+            $event = new DefineHtmlEvent();
+            $this->trigger(self::EVENT_DEFINE_ADDITIONAL_BUTTONS, $event);
+            return $event->html;
+        }
+
+        return '';
     }
 
     /**
@@ -3437,11 +3564,9 @@ abstract class Element extends Component implements ElementInterface
             ...array_map(fn(array $item) => $item + ['destructive' => true], $this->destructiveActionMenuItems()),
         ];
 
-        // Fire a defineActionMenuItems event
+        // Fire a 'defineActionMenuItems' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-            $event = new DefineMenuItemsEvent([
-                'items' => $items,
-            ]);
+            $event = new DefineMenuItemsEvent(['items' => $items]);
             $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
             return $event->items;
         }
@@ -3456,6 +3581,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return array
      * @see getActionMenuItems()
+     * @see Cp::disclosureMenu()
      * @since 5.0.0
      */
     protected function safeActionMenuItems(): array
@@ -3500,7 +3626,6 @@ abstract class Element extends Component implements ElementInterface
         if (Craft::$app->getElements()->canView($this)) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
-                'type' => MenuItemType::Button,
                 'id' => $editId,
                 'icon' => 'edit',
                 'label' => Craft::t('app', 'Edit {type}', [
@@ -3508,18 +3633,17 @@ abstract class Element extends Component implements ElementInterface
                 ]),
             ];
 
-
             $view = Craft::$app->getView();
             $view->registerJsWithVars(fn($id, $elementType, $settings) => <<<JS
-$('#' + $id).on('click', () => {
+$('#' + $id).on('activate', () => {
   Craft.createElementEditor($elementType, $settings);
 });
 JS, [
                 $view->namespaceInputId($editId),
                 static::class,
                 [
-                    'elementId' => $this->id,
-                    'draftId' => $this->draftId,
+                    'elementId' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
+                    'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
                     'revisionId' => $this->revisionId,
                     'siteId' => $this->siteId,
                 ],
@@ -3538,6 +3662,7 @@ JS, [
      *
      * @return array
      * @see getActionMenuItems()
+     * @see Cp::disclosureMenu()
      * @since 5.0.0
      */
     protected function destructiveActionMenuItems(): array
@@ -3553,7 +3678,7 @@ JS, [
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
         $isCurrent = $isCanonical || $this->isProvisionalDraft;
         $canonical = $this->getCanonical(true);
-        $redirectUrl = $this->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+        $redirectUrl = ElementHelper::postEditUrl($this);
 
         // Site info
         $supportedSites = ElementHelper::supportedSitesForElement($this, true);
@@ -3676,15 +3801,11 @@ JS, [
     {
         $previewTargets = $this->previewTargets();
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            // Give plugins a chance to modify them
-            if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
-                $event = new RegisterPreviewTargetsEvent([
-                    'previewTargets' => $previewTargets,
-                ]);
-                $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
-                $previewTargets = $event->previewTargets;
-            }
+        // Fire a 'registerPreviewTargets' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
+            $event = new RegisterPreviewTargetsEvent(['previewTargets' => $previewTargets]);
+            $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
+            $previewTargets = $event->previewTargets;
         }
 
         // Normalize the targets
@@ -3762,7 +3883,7 @@ JS, [
                     $this->hasRoundedThumb() ? 'rounded' : null,
                 ]),
                 'data' => [
-                    'sizes' => sprintf('%spx', $size),
+                    'sizes' => sprintf('calc(%srem/16)', $size),
                     'srcset' => sprintf('%s %sw, %s %sw', $thumbUrl, $size, $this->thumbUrl($size * 2), $size * 2),
                     'alt' => $this->thumbAlt(),
                 ],
@@ -3879,6 +4000,10 @@ JS, [
      */
     public function getStatus(): ?string
     {
+        if ($this->getIsDraft() && !$this->isProvisionalDraft) {
+            return self::STATUS_DRAFT;
+        }
+
         if ($this->archived) {
             return self::STATUS_ARCHIVED;
         }
@@ -3888,6 +4013,20 @@ JS, [
         }
 
         return self::STATUS_ENABLED;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRootOwner(): ElementInterface
+    {
+        if ($this instanceof NestedElementInterface) {
+            $owner = $this->getOwner();
+            if ($owner) {
+                return $owner->getRootOwner();
+            }
+        }
+        return $this;
     }
 
     /**
@@ -4130,7 +4269,7 @@ JS, [
             if ($dist === null) {
                 return $ancestors;
             }
-            return $ancestors->filter(fn(self $element) => $element->level >= $this->level - $dist);
+            return $ancestors->filter(fn(ElementInterface $element) => $element->level >= $this->level - $dist);
         }
 
         return static::find()
@@ -4150,7 +4289,7 @@ JS, [
             if ($dist === null) {
                 return $descendants;
             }
-            return $descendants->filter(fn(self $element) => $element->level <= $this->level + $dist);
+            return $descendants->filter(fn(ElementInterface $element) => $element->level <= $this->level + $dist);
         }
 
         return static::find()
@@ -4337,6 +4476,14 @@ JS, [
             /** @phpstan-ignore-next-line */
             $this->fieldByHandle($offset)
         );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAttributesFromRequest(array $values): void
+    {
+        $this->setAttributes($values);
     }
 
     /**
@@ -4739,7 +4886,7 @@ JS, [
     public function getDirtyFields(): array
     {
         if ($this->_allDirty()) {
-            return ArrayHelper::getColumn($this->fieldLayoutFields(), 'handle');
+            return array_map(fn(FieldInterface $field) => $field->handle, $this->fieldLayoutFields());
         }
 
         return array_keys($this->_dirtyFields);
@@ -4885,6 +5032,22 @@ JS, [
     /**
      * @inheritdoc
      */
+    public function getInvalidNestedElementIds(): array
+    {
+        return $this->_invalidNestedElementIds;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addInvalidNestedElementIds(array $ids): void
+    {
+        array_push($this->_invalidNestedElementIds, ...$ids);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function hasEagerLoadedElements(string $handle): bool
     {
         return isset($this->_eagerLoadedElements[$handle]);
@@ -4907,9 +5070,9 @@ JS, [
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements): void
+    public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        switch ($handle) {
+        switch ($plan->handle) {
             case 'parent':
                 $this->_parent = $elements[0] ?? false;
                 break;
@@ -4931,17 +5094,22 @@ JS, [
                 }
                 break;
             default:
-                // Give plugins a chance to store this
-                $event = new SetEagerLoadedElementsEvent([
-                    'handle' => $handle,
-                    'elements' => $elements,
-                ]);
-                $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
-                if (!$event->handled) {
-                    // No takers. Just store it in the internal array then.
-                    /** @phpstan-ignore-next-line */
-                    $this->_eagerLoadedElements[$handle] = ElementCollection::make($elements);
+                // Fire a 'setEagerLoadedElements' event
+                if ($this->hasEventHandlers(self::EVENT_SET_EAGER_LOADED_ELEMENTS)) {
+                    $event = new SetEagerLoadedElementsEvent([
+                        'handle' => $handle,
+                        'elements' => $elements,
+                        'plan' => $plan,
+                    ]);
+                    $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
+                    if ($event->handled) {
+                        break;
+                    }
                 }
+
+                // No takers. Just store it in the internal array then.
+                /** @phpstan-ignore-next-line */
+                $this->_eagerLoadedElements[$handle] = ElementCollection::make($elements);
         }
     }
 
@@ -5050,17 +5218,18 @@ JS, [
             ],
         ]);
 
-        // Give plugins a chance to modify them
-        $event = new RegisterElementHtmlAttributesEvent([
-            'htmlAttributes' => $htmlAttributes,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_HTML_ATTRIBUTES, $event);
+        // Fire a 'registerHtmlAttributes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_HTML_ATTRIBUTES)) {
+            $event = new RegisterElementHtmlAttributesEvent(['htmlAttributes' => $htmlAttributes]);
+            $this->trigger(self::EVENT_REGISTER_HTML_ATTRIBUTES, $event);
+            return $event->htmlAttributes;
+        }
 
-        return $event->htmlAttributes;
+        return $htmlAttributes;
     }
 
     /**
-     * Returns any attributes that should be included in the element’s DOM representation in the control panel.
+     * Returns any attributes that should be included in the element’s chips and cards.
      *
      * @param string $context The context that the element is being rendered in ('index', 'modal', 'field', or 'settings'.)
      * @return array
@@ -5076,14 +5245,13 @@ JS, [
      */
     public function getAttributeHtml(string $attribute): string
     {
-        // Give plugins a chance to set this
-        $event = new DefineAttributeHtmlEvent([
-            'attribute' => $attribute,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_ATTRIBUTE_HTML, $event);
-
-        if ($event->html !== null) {
-            return $event->html;
+        // Fire a 'defineAttributeHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ATTRIBUTE_HTML)) {
+            $event = new DefineAttributeHtmlEvent(['attribute' => $attribute]);
+            $this->trigger(self::EVENT_DEFINE_ATTRIBUTE_HTML, $event);
+            if (isset($event->html)) {
+                return $event->html;
+            }
         }
 
         return $this->attributeHtml($attribute);
@@ -5094,14 +5262,13 @@ JS, [
      */
     public function getInlineAttributeInputHtml(string $attribute): string
     {
-        // Give plugins a chance to set this
-        $event = new DefineAttributeHtmlEvent([
-            'attribute' => $attribute,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $event);
-
-        if ($event->html !== null) {
-            return $event->html;
+        // Fire a 'defineInlineAttributeInputHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML)) {
+            $event = new DefineAttributeHtmlEvent(['attribute' => $attribute]);
+            $this->trigger(self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $event);
+            if (isset($event->html)) {
+                return $event->html;
+            }
         }
 
         return $this->inlineAttributeInputHtml($attribute);
@@ -5141,7 +5308,8 @@ JS, [
     {
         switch ($attribute) {
             case 'ancestors':
-                $ancestors = $this->getAncestors();
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                $ancestors = $element->getAncestors();
                 if (!$ancestors instanceof ElementCollection || $ancestors->isEmpty()) {
                     return '';
                 }
@@ -5152,37 +5320,47 @@ JS, [
                 return $html . Html::endTag('ul');
 
             case 'parent':
-                $parent = $this->getParent();
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                $parent = $element->getParent();
                 return $parent ? Cp::elementChipHtml($parent) : '';
 
+            case 'status':
+                return Cp::componentStatusLabelHtml($this);
+
             case 'link':
-                if (ElementHelper::isDraftOrRevision($this)) {
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                if (ElementHelper::isDraftOrRevision($element)) {
                     return '';
                 }
 
-                $url = $this->getUrl();
+                $url = $element->getUrl();
 
                 if ($url !== null) {
-                    return Html::a('', $url, [
+                    return Html::beginTag('a', [
+                        'href' => $url,
                         'rel' => 'noopener',
                         'target' => '_blank',
-                        'data-icon' => 'world',
                         'title' => Craft::t('app', 'Visit webpage'),
                         'aria-label' => Craft::t('app', 'View'),
-                    ]);
+                    ]) .
+                        Html::tag('span', Cp::iconSvg('world'), [
+                            'class' => ['cp-icon', 'small', 'inline-flex'],
+                        ]) .
+                        Html::endTag('a');
                 }
 
                 return '';
 
             case 'uri':
-                if ($this->getIsDraft() && ElementHelper::isTempSlug($this->slug)) {
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                if ($element->getIsDraft() && ElementHelper::isTempSlug($element->slug)) {
                     return '';
                 }
 
-                $url = $this->getUrl();
+                $url = $element->getUrl();
 
                 if ($url !== null) {
-                    if ($this->getIsHomepage()) {
+                    if ($element->getIsHomepage()) {
                         $value = Html::tag('span', '', [
                             'data-icon' => 'home',
                             'title' => Craft::t('app', 'Homepage'),
@@ -5199,7 +5377,7 @@ JS, [
                             $replace[] = $wordSeparator . '<wbr>';
                         }
 
-                        $value = str_replace($find, $replace, $this->uri);
+                        $value = str_replace($find, $replace, $element->uri);
                     }
 
                     return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
@@ -5221,7 +5399,8 @@ JS, [
                 return Html::encode($this->slug);
 
             case 'revisionNotes':
-                $revision = $this->getCurrentRevision();
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                $revision = $element->getCurrentRevision();
                 if (!$revision) {
                     return '';
                 }
@@ -5233,7 +5412,8 @@ JS, [
                 return Html::encode($behavior->revisionNotes);
 
             case 'revisionCreator':
-                $revision = $this->getCurrentRevision();
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                $revision = $element->getCurrentRevision();
                 if (!$revision) {
                     return '';
                 }
@@ -5246,11 +5426,12 @@ JS, [
                 return $creator ? Cp::elementChipHtml($creator) : '';
 
             case 'drafts':
-                if (!$this->hasEagerLoadedElements('drafts')) {
+                $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                if (!$element->hasEagerLoadedElements('drafts')) {
                     return '';
                 }
 
-                $drafts = $this->getEagerLoadedElements('drafts')->all();
+                $drafts = $element->getEagerLoadedElements('drafts')->all();
 
                 foreach ($drafts as $draft) {
                     /** @var ElementInterface|DraftBehavior $draft */
@@ -5265,26 +5446,29 @@ JS, [
 
             default:
                 // Is this a custom field?
-                if (preg_match('/^field:(.+)/', $attribute, $matches)) {
-                    $fieldUid = $matches[1];
-                    $field = Craft::$app->getFields()->getFieldByUid($fieldUid);
+                if (preg_match('/^(field|fieldInstance):(.+)/', $attribute, $matches)) {
+                    $uid = $matches[2];
+                    if ($matches[1] === 'field') {
+                        $field = Craft::$app->getFields()->getFieldByUid($uid);
+                    } else {
+                        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
+                        $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
+                    }
 
-                    if ($field) {
-                        if ($field instanceof PreviewableFieldInterface) {
-                            // Was this field value eager-loaded?
-                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
-                                $value = $this->getEagerLoadedElements($field->handle);
-                            } else {
-                                // The field might not actually belong to this element
-                                try {
-                                    $value = $this->getFieldValue($field->handle);
-                                } catch (InvalidFieldException) {
-                                    return '';
-                                }
+                    if ($field instanceof PreviewableFieldInterface) {
+                        // Was this field value eager-loaded?
+                        if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                            $value = $this->getEagerLoadedElements($field->handle);
+                        } else {
+                            // The field might not actually belong to this element
+                            try {
+                                $value = $this->getFieldValue($field->handle);
+                            } catch (InvalidFieldException) {
+                                return '';
                             }
-
-                            return $field->getPreviewHtml($value, $this);
                         }
+
+                        return $field->getPreviewHtml($value, $this);
                     }
 
                     return '';
@@ -5305,10 +5489,19 @@ JS, [
     protected function inlineAttributeInputHtml(string $attribute): string
     {
         // Is this a custom field?
+        $field = null;
         if (preg_match('/^field:(.+)/', $attribute, $matches)) {
             $fieldUid = $matches[1];
             $field = Craft::$app->getFields()->getFieldByUid($fieldUid);
+        } elseif (preg_match('/^fieldInstance:(.+)/', $attribute, $matches)) {
+            $instanceUid = $matches[1];
+            $layoutElement = $this->getFieldLayout()?->getElementByUid($instanceUid);
+            if ($layoutElement instanceof CustomField) {
+                $field = $layoutElement->getField();
+            }
+        }
 
+        if ($field !== null) {
             if ($field instanceof InlineEditableFieldInterface) {
                 // Was this field value eager-loaded?
                 if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
@@ -5339,7 +5532,7 @@ JS, [
     {
         $components = [];
 
-        $metaFieldsHtml = $this->metaFieldsHtml($static);
+        $metaFieldsHtml = trim($this->metaFieldsHtml($static));
         if ($metaFieldsHtml !== '') {
             $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']) .
                 Html::tag('h2', Craft::t('app', 'Metadata'), ['class' => 'visually-hidden']);
@@ -5354,12 +5547,16 @@ JS, [
             $components[] = $this->notesFieldHtml();
         }
 
-        // Fire a defineSidebarHtml event
-        $event = new DefineHtmlEvent([
-            'html' => implode("\n", $components),
-        ]);
-        $this->trigger(self::EVENT_DEFINE_SIDEBAR_HTML, $event);
-        return $event->html;
+        $html = implode("\n", $components);
+
+        // Fire a 'defineSidebarHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SIDEBAR_HTML)) {
+            $event = new DefineHtmlEvent(['html' => $html]);
+            $this->trigger(self::EVENT_DEFINE_SIDEBAR_HTML, $event);
+            return $event->html;
+        }
+
+        return $html;
     }
 
     /**
@@ -5371,12 +5568,14 @@ JS, [
      */
     protected function metaFieldsHtml(bool $static): string
     {
-        // Fire a defineMetaFieldsHtml event
-        $event = new DefineHtmlEvent([
-            'static' => $static,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_META_FIELDS_HTML, $event);
-        return $event->html;
+        // Fire a 'defineMetaFieldsHtml' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_META_FIELDS_HTML)) {
+            $event = new DefineHtmlEvent(['static' => $static]);
+            $this->trigger(self::EVENT_DEFINE_META_FIELDS_HTML, $event);
+            return $event->html;
+        }
+
+        return '';
     }
 
     /**
@@ -5412,6 +5611,7 @@ JS,
         }
 
         return Cp::textFieldHtml([
+            'status' => $this->getAttributeStatus('slug'),
             'label' => Craft::t('app', 'Slug'),
             'siteId' => $this->siteId,
             'translatable' => $this->getIsSlugTranslatable(),
@@ -5537,11 +5737,12 @@ JS,
     {
         $metadata = $this->metadata();
 
-        // Fire a defineMetadata event
-        $event = new DefineMetadataEvent([
-            'metadata' => $metadata,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_METADATA, $event);
+        // Fire a 'defineMetadata' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_METADATA)) {
+            $event = new DefineMetadataEvent(['metadata' => $metadata]);
+            $this->trigger(self::EVENT_DEFINE_METADATA, $event);
+            $metadata = $event->metadata;
+        }
 
         $formatter = Craft::$app->getFormatter();
 
@@ -5553,7 +5754,7 @@ JS,
                 if (!static::hasStatuses()) {
                     return false;
                 }
-                if ($this->getIsUnpublishedDraft()) {
+                if ($this->getIsDraft() && !$this->isProvisionalDraft) {
                     $icon = Html::tag('span', '', [
                         'data' => ['icon' => 'draft'],
                         'aria' => ['hidden' => 'true'],
@@ -5562,16 +5763,20 @@ JS,
                 } else {
                     $status = $this->getStatus();
                     $statusDef = static::statuses()[$status] ?? null;
-                    $icon = Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
+                    $color = $statusDef['color'] ?? $status;
+                    if ($color instanceof Color) {
+                        $color = $color->value;
+                    }
+                    $icon = Html::tag('span', '', ['class' => ['status', $color]]);
                     $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
                 }
                 return $icon . Html::tag('span', $label);
             },
-        ], $event->metadata, [
-            Craft::t('app', 'Created at') => $this->dateCreated
+        ], $metadata, [
+            Craft::t('app', 'Created at') => $this->dateCreated && !$this->getIsUnpublishedDraft()
                 ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
                 : false,
-            Craft::t('app', 'Updated at') => $this->dateUpdated
+            Craft::t('app', 'Updated at') => $this->dateUpdated && !$this->getIsUnpublishedDraft()
                 ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT)
                 : false,
             Craft::t('app', 'Notes') => function() {
@@ -5631,13 +5836,14 @@ JS,
             }
         }
 
-        // Trigger a 'beforeSave' event
-        $event = new ModelEvent([
-            'isNew' => $isNew,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_SAVE, $event);
+        // Fire a 'beforeSave' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE)) {
+            $event = new ModelEvent(['isNew' => $isNew]);
+            $this->trigger(self::EVENT_BEFORE_SAVE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -5645,17 +5851,163 @@ JS,
      */
     public function afterSave(bool $isNew): void
     {
+        // Update the element’s relation data
+        $this->updateRelations();
+
         // Tell the fields about it
         foreach ($this->fieldLayoutFields() as $field) {
             $field->afterElementSave($this, $isNew);
         }
 
-        // Trigger an 'afterSave' event
+        // Fire an 'afterSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
             $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
                 'isNew' => $isNew,
             ]));
         }
+    }
+
+    private function updateRelations(): void
+    {
+        if (!$this->hasFieldLayout()) {
+            return;
+        }
+
+        $fields = $this->relationalFields();
+
+        /** @var int[] $skipFieldIds */
+        $skipFieldIds = [];
+        /** @var array<int,int|null> $sourceSiteIds */
+        $sourceSiteIds = [];
+        /** @var array<int,array<int,int>> $relationData */
+        $relationData = [];
+
+        foreach ($fields as $fieldId => $instances) {
+            $localizeRelations = $instances[0]->localizeRelations();
+            $include = false;
+
+            foreach ($instances as $field) {
+                // Skip if nothing changed, or the element is just propagating and we're not localizing relations
+                if (
+                    ($this->duplicateOf || $this->isFieldDirty($field->handle) || $field->forceUpdateRelations($this)) &&
+                    (!$this->propagating || $localizeRelations)
+                ) {
+                    $include = true;
+                    break;
+                }
+            }
+
+            if ($include) {
+                // Create target ID => sort order mappings for the field
+                foreach ($instances as $field) {
+                    $sourceSiteIds[$field->id] = $localizeRelations ? $this->siteId : null;
+                    $relationData[$field->id] ??= [];
+                    foreach ($field->getRelationTargetIds($this) as $targetId) {
+                        if (!isset($relationData[$field->id][$targetId])) {
+                            $relationData[$field->id][$targetId] = count($relationData[$field->id]) + 1;
+                        }
+                    }
+                }
+            } else {
+                $skipFieldIds[] = $fieldId;
+            }
+        }
+
+        // Get the old relations
+        $db = Craft::$app->getDb();
+        $query = (new Query())
+            ->select(['id', 'fieldId', 'sourceSiteId', 'targetId', 'sortOrder'])
+            ->from([Table::RELATIONS])
+            ->where(['sourceId' => $this->id])
+            ->andWhere(['or', ['sourceSiteId' => null], ['sourceSiteId' => $this->siteId]]);
+        if (!empty(($skipFieldIds))) {
+            // Exclude the skipped fields rather than listing included fields,
+            // so we also get any relations for fields that aren't part of the layout
+            // (https://github.com/craftcms/cms/issues/13956)
+            $query->andWhere(['not', ['fieldId' => $skipFieldIds]]);
+        }
+        $oldRelations = $query->all($db);
+
+        /** @var Command[] $updateCommands */
+        $updateCommands = [];
+        $deleteIds = [];
+
+        foreach ($oldRelations as $relation) {
+            [$relationId, $fieldId, $oldSourceSiteId, $targetId, $oldSortOrder] = [
+                $relation['id'],
+                $relation['fieldId'],
+                $relation['sourceSiteId'],
+                $relation['targetId'],
+                $relation['sortOrder'],
+            ];
+
+            // Does this relation still exist?
+            if (isset($relationData[$fieldId][$targetId])) {
+                // Anything to update?
+                if ($oldSourceSiteId != $sourceSiteIds[$fieldId] || $oldSortOrder != $relationData[$fieldId][$targetId]) {
+                    $updateCommands[] = $db->createCommand()->update(Table::RELATIONS, [
+                        'sourceSiteId' => $sourceSiteIds[$fieldId],
+                        'sortOrder' => $relationData[$fieldId][$targetId],
+                    ], ['id' => $relationId]);
+                }
+
+                // Avoid re-inserting it
+                unset($relationData[$fieldId][$targetId]);
+                if (empty($relationData[$fieldId])) {
+                    unset($relationData[$fieldId]);
+                }
+            } else {
+                $deleteIds[] = $relationId;
+            }
+        }
+
+        if (empty($updateCommands) && empty($deleteIds) && empty($relationData)) {
+            // Nothing to do here
+            return;
+        }
+
+        $db->transaction(function() use ($updateCommands, $deleteIds, $relationData, $sourceSiteIds, $db) {
+            foreach ($updateCommands as $command) {
+                $command->execute();
+            }
+
+            // Add the new ones
+            if (!empty($relationData)) {
+                $values = [];
+                foreach ($relationData as $fieldId => $targetIds) {
+                    foreach ($targetIds as $targetId => $sortOrder) {
+                        $values[] = [
+                            $fieldId,
+                            $this->id,
+                            $sourceSiteIds[$fieldId],
+                            $targetId,
+                            $sortOrder,
+                        ];
+                    }
+                }
+                Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $values, $db);
+            }
+
+            if (!empty($deleteIds)) {
+                Db::delete(Table::RELATIONS, [
+                    'id' => $deleteIds,
+                ], [], $db);
+            }
+        });
+    }
+
+    /**
+     * @return array<int,RelationalFieldInterface[]>
+     */
+    private function relationalFields(): array
+    {
+        $fields = [];
+        foreach ($this->fieldLayoutFields() as $field) {
+            if ($field instanceof RelationalFieldInterface) {
+                $fields[$field->id][] = $field;
+            }
+        }
+        return $fields;
     }
 
     /**
@@ -5668,7 +6020,7 @@ JS,
             $field->afterElementPropagate($this, $isNew);
         }
 
-        // Trigger an 'afterPropagate' event
+        // Fire an 'afterPropagate' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE)) {
             $this->trigger(self::EVENT_AFTER_PROPAGATE, new ModelEvent([
                 'isNew' => $isNew,
@@ -5688,11 +6040,14 @@ JS,
             }
         }
 
-        // Trigger a 'beforeDelete' event
-        $event = new ModelEvent();
-        $this->trigger(self::EVENT_BEFORE_DELETE, $event);
+        // Fire a 'beforeDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE)) {
+            $event = new ModelEvent();
+            $this->trigger(self::EVENT_BEFORE_DELETE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -5705,9 +6060,48 @@ JS,
             $field->afterElementDelete($this);
         }
 
-        // Trigger an 'afterDelete' event
+        // Fire an 'afterDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
             $this->trigger(self::EVENT_AFTER_DELETE);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDeleteForSite(): bool
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            if (!$field->beforeElementDeleteForSite($this)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDeleteForSite(): void
+    {
+        // Delete any site-specific relation data
+        $this->deleteSiteRelations();
+
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementDeleteForSite($this);
+        }
+    }
+
+    private function deleteSiteRelations(): void
+    {
+        if ($this->hasFieldLayout()) {
+            Db::delete(Table::RELATIONS, [
+                'sourceSiteId' => $this->siteId,
+                'sourceId' => $this->id,
+            ]);
         }
     }
 
@@ -5723,11 +6117,14 @@ JS,
             }
         }
 
-        // Trigger a 'beforeRestore' event
-        $event = new ModelEvent();
-        $this->trigger(self::EVENT_BEFORE_RESTORE, $event);
+        // Fire a 'beforeRestore' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE)) {
+            $event = new ModelEvent();
+            $this->trigger(self::EVENT_BEFORE_RESTORE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -5740,7 +6137,7 @@ JS,
             $field->afterElementRestore($this);
         }
 
-        // Trigger an 'afterRestore' event
+        // Fire an 'afterRestore' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE)) {
             $this->trigger(self::EVENT_AFTER_RESTORE);
         }
@@ -5751,13 +6148,14 @@ JS,
      */
     public function beforeMoveInStructure(int $structureId): bool
     {
-        // Trigger a 'beforeMoveInStructure' event
-        $event = new ElementStructureEvent([
-            'structureId' => $structureId,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_MOVE_IN_STRUCTURE, $event);
+        // Fire a 'beforeMoveInStructure' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_MOVE_IN_STRUCTURE)) {
+            $event = new ElementStructureEvent(['structureId' => $structureId]);
+            $this->trigger(self::EVENT_BEFORE_MOVE_IN_STRUCTURE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -5765,7 +6163,7 @@ JS,
      */
     public function afterMoveInStructure(int $structureId): void
     {
-        // Trigger an 'afterMoveInStructure' event
+        // Fire an 'afterMoveInStructure' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
             $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
                 'structureId' => $structureId,
@@ -5949,5 +6347,22 @@ JS,
         return $query
             ->id($elementIds[$key + $dir])
             ->one();
+    }
+
+    /**
+     * Renders the element using its partial template.
+     *
+     * If no partial template exists for the element, its string representation will be output instead.
+     *
+     * @param array $variables
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @see ElementHelper::renderElements()
+     * @since 5.0.0
+     */
+    public function render(array $variables = []): Markup
+    {
+        return ElementHelper::renderElements([$this], $variables);
     }
 }

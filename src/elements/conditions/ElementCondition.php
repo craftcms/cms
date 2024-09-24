@@ -9,6 +9,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
+use craft\models\FieldLayout;
 use yii\base\InvalidConfigException;
 
 /**
@@ -55,6 +56,13 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     public ?ElementInterface $referenceElement = null;
 
     /**
+     * @var FieldLayout[]
+     * @see getFieldLayouts()
+     * @see setFieldLayouts()
+     */
+    private array $_fieldLayouts;
+
+    /**
      * Constructor.
      *
      * @param string|null $elementType
@@ -73,12 +81,22 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             throw new InvalidConfigException("Invalid element type: $elementType");
         }
 
-        $this->elementType = $elementType;
+        if ($elementType !== null) {
+            $this->elementType = $elementType;
+        }
+
         parent::__construct($config);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayouts(): array
     {
+        if (isset($this->_fieldLayouts)) {
+            return $this->_fieldLayouts;
+        }
+
         if ($this->elementType === null) {
             return [];
         }
@@ -89,6 +107,21 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         }
 
         return Craft::$app->getFields()->getLayoutsByType($this->elementType);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFieldLayouts(array $fieldLayouts): void
+    {
+        $fieldsService = Craft::$app->getFields();
+        $this->_fieldLayouts = array_map(function(FieldLayout|array $fieldLayout) use ($fieldsService) {
+            if (is_array($fieldLayout)) {
+                $fieldLayout['type'] = $this->elementType;
+                return $fieldsService->createLayout($fieldLayout);
+            }
+            return $fieldLayout;
+        }, $fieldLayouts);
     }
 
     /**
@@ -107,8 +140,12 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         // Make sure the rule doesn't conflict with the existing params
         $queryParams = array_merge($this->queryParams);
         foreach ($this->getConditionRules() as $existingRule) {
-            /** @var ElementConditionRuleInterface $existingRule */
-            array_push($queryParams, ...$existingRule->getExclusiveQueryParams());
+            try {
+                /** @var ElementConditionRuleInterface $existingRule */
+                array_push($queryParams, ...$existingRule->getExclusiveQueryParams());
+            } catch (InvalidConfigException) {
+                return false;
+            }
         }
 
         $queryParams = array_flip($queryParams);
@@ -131,6 +168,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             DateCreatedConditionRule::class,
             DateUpdatedConditionRule::class,
             IdConditionRule::class,
+            NotRelatedToConditionRule::class,
             RelatedToConditionRule::class,
             SlugConditionRule::class,
         ];
@@ -141,6 +179,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
         if (Craft::$app->getIsMultiSite() && (!$elementType || $elementType::isLocalized())) {
             $types[] = SiteConditionRule::class;
+
+            if (count(Craft::$app->getSites()->getAllGroups()) > 1) {
+                $types[] = SiteGroupConditionRule::class;
+            }
         }
 
         if ($elementType !== null) {
@@ -198,8 +240,20 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['elementType', 'fieldContext'], 'safe'];
+        $rules[] = [['elementType', 'fieldLayouts', 'fieldContext'], 'safe'];
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBuilderConfig(): array
+    {
+        $config = parent::getBuilderConfig();
+        if (isset($this->_fieldLayouts)) {
+            $config['fieldLayouts'] = array_map(fn(FieldLayout $layout) => $layout->getConfig(), $this->_fieldLayouts);
+        }
+        return $config;
     }
 
     /**

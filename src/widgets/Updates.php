@@ -49,7 +49,7 @@ class Updates extends Widget
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/excite.svg');
+        return 'certificate';
     }
 
     /**

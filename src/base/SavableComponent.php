@@ -66,13 +66,14 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
      */
     public function beforeSave(bool $isNew): bool
     {
-        // Trigger a 'beforeSave' event
-        $event = new ModelEvent([
-            'isNew' => $isNew,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_SAVE, $event);
+        // Fire a 'beforeSave' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE)) {
+            $event = new ModelEvent(['isNew' => $isNew]);
+            $this->trigger(self::EVENT_BEFORE_SAVE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -80,7 +81,7 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
      */
     public function afterSave(bool $isNew): void
     {
-        // Trigger an 'afterSave' event
+        // Fire an 'afterSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
             $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
                 'isNew' => $isNew,
@@ -93,11 +94,14 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
      */
     public function beforeDelete(): bool
     {
-        // Trigger a 'beforeDelete' event
-        $event = new ModelEvent();
-        $this->trigger(self::EVENT_BEFORE_DELETE, $event);
+        // Fire a 'beforeDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE)) {
+            $event = new ModelEvent();
+            $this->trigger(self::EVENT_BEFORE_DELETE, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -105,7 +109,7 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
      */
     public function beforeApplyDelete(): void
     {
-        // Trigger an 'beforeApplyDelete' event
+        // Fire an 'beforeApplyDelete' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DELETE)) {
             $this->trigger(self::EVENT_BEFORE_APPLY_DELETE);
         }
@@ -116,7 +120,7 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
      */
     public function afterDelete(): void
     {
-        // Trigger an 'afterDelete' event
+        // Fire an 'afterDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
             $this->trigger(self::EVENT_AFTER_DELETE);
         }

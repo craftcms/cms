@@ -45,9 +45,9 @@ class SystemReport extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath(): ?string
+    public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/check.svg');
+        return 'list-check';
     }
 
     /**
@@ -104,7 +104,7 @@ class SystemReport extends Utility
             'OS version' => PHP_OS . ' ' . php_uname('r'),
             'Database driver & version' => self::_dbDriver(),
             'Image driver & version' => self::_imageDriver(),
-            'Craft edition & version' => 'Craft ' . App::editionName(Craft::$app->getEdition()) . ' ' . Craft::$app->getVersion(),
+            'Craft edition & version' => sprintf('Craft %s %s', Craft::$app->edition->name, Craft::$app->getVersion()),
         ];
 
         if (!class_exists(InstalledVersions::class, false)) {

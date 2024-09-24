@@ -37,9 +37,9 @@ class Migrations extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath(): ?string
+    public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/arrow-up.svg');
+        return 'up';
     }
 
     /**

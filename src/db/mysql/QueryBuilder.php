@@ -49,7 +49,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         // Use the default charset and collation
         $dbConfig = Craft::$app->getConfig()->getDb();
         if (!preg_match('/\bCHARACTER +SET\b/i', $options)) {
-            $options .= " DEFAULT CHARACTER SET = $dbConfig->charset";
+            $options .= " DEFAULT CHARACTER SET = {$dbConfig->getCharset()}";
         }
         if (!preg_match('/\bCOLLATE\b/i', $options)) {
             $options .= sprintf(' DEFAULT COLLATE = %s', $dbConfig->collation ?? Db::defaultCollation($this->db));

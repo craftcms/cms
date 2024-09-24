@@ -60,7 +60,7 @@ class FindAndReplace extends BaseBatchedJob
 
         Db::update(Table::ELEMENTS_SITES, [
             'title' => $item['title'],
-            'content' => Db::prepareForJsonColumn($item['content']),
+            'content' => $item['content'],
         ], [
             'id' => $item['id'],
         ], updateTimestamp: false);

@@ -1,5 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
+import postcssValueParser from 'tailwindcss/src/value-parser';
+
 /**
  * FieldToggle
  */
@@ -26,7 +28,11 @@ Craft.FieldToggle = Garnish.Base.extend({
 
     this.type = this.getType();
 
-    if (this.type === 'select' || this.type === 'fieldset') {
+    if (
+      this.type === 'select' ||
+      this.type === 'fieldset' ||
+      Garnish.hasAttr(this.$toggle, 'data-target-prefix')
+    ) {
       this.targetPrefix = this.$toggle.attr('data-target-prefix') || '';
     } else {
       this.targetSelector = this.normalizeTargetSelector(
@@ -88,7 +94,7 @@ Craft.FieldToggle = Garnish.Base.extend({
   },
 
   findTargets: function () {
-    if (this.type === 'select' || this.type === 'fieldset') {
+    if (this.targetPrefix !== null) {
       this._$target = $(
         this.normalizeTargetSelector(this.targetPrefix + this.getToggleVal())
       );
@@ -104,6 +110,10 @@ Craft.FieldToggle = Garnish.Base.extend({
   },
 
   getToggleVal: function () {
+    if (this.targetPrefix !== null) {
+      return this.normalizeToggleVal(this.$toggle.val());
+    }
+
     switch (this.type) {
       case 'checkbox':
         if (typeof this.$toggle.prop('checked') !== 'undefined') {
@@ -128,10 +138,15 @@ Craft.FieldToggle = Garnish.Base.extend({
         }
 
         // Normalize the value
-        return typeof postVal === 'undefined' || postVal === null
-          ? null
-          : postVal.replace(/[^\w]+/g, '-');
+        return this.normalizeToggleVal(postVal);
     }
+  },
+
+  normalizeToggleVal: function (val) {
+    if (!val) {
+      return null;
+    }
+    return val.replace(/[^\w]+/g, '-');
   },
 
   onToggleChange: function () {
@@ -146,6 +161,8 @@ Craft.FieldToggle = Garnish.Base.extend({
         this.onToggleChange._show =
           this.$toggle.hasClass('collapsed') ||
           !this.$toggle.hasClass('expanded');
+      } else if (this.type === 'checkbox' && this.targetPrefix !== null) {
+        this.onToggleChange._show = this.$toggle.prop('checked');
       } else {
         this.onToggleChange._show = !!this.getToggleVal();
       }

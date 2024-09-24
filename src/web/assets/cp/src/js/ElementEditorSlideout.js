@@ -6,6 +6,7 @@
 Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
   {
     $element: null,
+    elementEditor: null,
 
     init: function (element, settings) {
       this.$element = $(element);
@@ -16,23 +17,48 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
         settings,
         {
           showHeader: true,
+          prevalidate: this.$element.parents('.prevalidate').length > 0,
         }
       );
       this.base('elements/edit', settings);
 
       this.on('load', () => {
-        const editor = this.$container.data('elementEditor');
-        if (editor) {
-          editor.on('beforeSubmit', () => {
-            Object.keys(this.settings.saveParams).forEach((name) => {
-              $('<input/>', {
-                class: 'hidden',
-                name: editor.namespaceInputName(name),
-                value: this.settings.saveParams[name],
-              }).appendTo(this.$container);
-            });
+        this.elementEditor = new Craft.ElementEditor(
+          this.$container,
+          Object.assign(
+            {
+              namespace: this.namespace,
+              $contentContainer: this.$content,
+              $sidebar: this.$sidebar,
+              $actionBtn: this.$actionBtn,
+              $spinnerContainer: this.$toolbar,
+              updateTabs: (tabs) => {
+                this.updateTabs(tabs);
+              },
+              getTabManager: () => this.tabManager,
+              handleSubmitResponse: (response) => {
+                this.handleSubmitResponse(response);
+              },
+              handleSubmitError: (error) => {
+                this.handleSubmitError(error);
+              },
+            },
+            this.$container.data('elementEditorSettings')
+          )
+        );
+        this.elementEditor.on('beforeSubmit', () => {
+          Object.keys(this.settings.saveParams).forEach((name) => {
+            $('<input/>', {
+              class: 'hidden',
+              name: this.elementEditor.namespaceInputName(name),
+              value: this.settings.saveParams[name],
+            }).appendTo(this.$container);
           });
-        }
+          this.showSubmitSpinner();
+        });
+        this.elementEditor.on('afterSubmit', () => {
+          this.hideSubmitSpinner();
+        });
       });
 
       this.on('submit', (ev) => {
@@ -70,23 +96,23 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
 
       if (this.settings.elementId) {
         params.elementId = this.settings.elementId;
-      } else if (this.$element && this.$element.data('id')) {
+      } else if (this.$element?.data('id')) {
         params.elementId = this.$element.data('id');
       }
 
       if (this.settings.draftId) {
         params.draftId = this.settings.draftId;
-      } else if (this.$element && this.$element.data('draft-id')) {
+      } else if (this.$element?.data('draft-id')) {
         params.draftId = this.$element.data('draft-id');
       } else if (this.settings.revisionId) {
         params.revisionId = this.settings.revisionId;
-      } else if (this.$element && this.$element.data('revision-id')) {
+      } else if (this.$element?.data('revision-id')) {
         params.revisionId = this.$element.data('revision-id');
       }
 
       if (this.settings.siteId) {
         params.siteId = this.settings.siteId;
-      } else if (this.$element && this.$element.data('site-id')) {
+      } else if (this.$element?.data('site-id')) {
         params.siteId = this.$element.data('site-id');
       }
 
@@ -97,8 +123,49 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       return params;
     },
 
-    handleSubmit: function (ev) {
-      this.$container.data('elementEditor').handleSubmit(ev);
+    handleSubmit: async function (ev) {
+      if (ev.type !== 'submit' && this.elementEditor.settings.canCreateDrafts) {
+        // first, we have to save the draft and then fully save;
+        // otherwise we'll have tab error indicator issues;
+        await this.elementEditor.saveDraft();
+      }
+
+      this.elementEditor.handleSubmit(ev);
+    },
+
+    handleSubmitError: function (e) {
+      this.base(e);
+
+      // update the `error` class in nested cards
+      if (e?.response?.data?.invalidNestedElementIds) {
+        const $cards = this.$content.find('.element.card').removeClass('error');
+        $cards
+          .find('craft-element-label > span[data-icon="triangle-exclamation"]')
+          .remove();
+        if (e.response.data.invalidNestedElementIds.length) {
+          const $errorCards = $cards
+            .filter(
+              e.response.data.invalidNestedElementIds
+                .map((id) => `[data-id=${id}]`)
+                .join(',')
+            )
+            .addClass('error');
+          for (let i = 0; i < $errorCards.length; i++) {
+            const $label = $errorCards.eq(i).find('craft-element-label');
+            $('<span/>', {
+              'data-icon': 'triangle-exclamation',
+              'aria-label': Craft.t('app', 'Error'),
+              role: 'img',
+            }).appendTo($label);
+          }
+        }
+      }
+    },
+
+    destroy: function () {
+      this.elementEditor.destroy();
+      delete this.elementEditor;
+      this.base();
     },
   },
   {
@@ -112,6 +179,7 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       saveParams: {},
       onSaveElement: null,
       validators: [],
+      expandData: [],
     },
   }
 );

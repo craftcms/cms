@@ -23,7 +23,6 @@ abstract class Table
     /** @since 4.0.0 */
     public const ASSETINDEXINGSESSIONS = '{{%assetindexingsessions}}';
     public const ASSETS = '{{%assets}}';
-    /** @since 5.0.0 */
     public const ASSETS_SITES = '{{%assets_sites}}';
     /** @since 5.0 */
     public const AUTHENTICATOR = '{{%authenticator}}';
@@ -58,6 +57,8 @@ abstract class Table
     public const SEQUENCES = '{{%sequences}}';
     public const SYSTEMMESSAGES = '{{%systemmessages}}';
     public const ENTRIES = '{{%entries}}';
+    /** @since 5.0.0 */
+    public const ENTRIES_AUTHORS = '{{%entries_authors}}';
     public const ENTRYTYPES = '{{%entrytypes}}';
     public const FIELDLAYOUTS = '{{%fieldlayouts}}';
     public const FIELDS = '{{%fields}}';
@@ -85,6 +86,8 @@ abstract class Table
     public const SHUNNEDMESSAGES = '{{%shunnedmessages}}';
     public const SITES = '{{%sites}}';
     public const SITEGROUPS = '{{%sitegroups}}';
+    /** @since 5.3.0 */
+    public const SSO_IDENTITIES = '{{%sso_identities}}';
     public const STRUCTUREELEMENTS = '{{%structureelements}}';
     public const STRUCTURES = '{{%structures}}';
     public const TAGGROUPS = '{{%taggroups}}';

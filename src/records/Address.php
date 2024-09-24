@@ -24,6 +24,7 @@ use craft\db\Table;
  * @property string|null $sortingCode Sorting code
  * @property string|null $addressLine1 First line of the address block
  * @property string|null $addressLine2 Second line of the address block
+ * @property string|null $addressLine3 Third line of the address block
  * @property string|null $organization Organization name
  * @property string|null $organizationTaxId Organization tax ID
  * @property string|null $fullName Full name

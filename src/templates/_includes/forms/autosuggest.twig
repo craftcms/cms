@@ -60,7 +60,7 @@ new Vue({
                 name: (name ?? '')|namespaceInputName,
                 size: size ?? '',
                 maxlength: maxlength ?? '',
-                autofocus: autofocus ?? false,
+                autofocus: (autofocus ?? false) and currentUser and currentUser.getAutofocusPreferred() and not craft.app.request.isMobileBrowser(true),
                 disabled: disabled ?? false,
                 title: title ?? '',
                 placeholder: placeholder ?? '',

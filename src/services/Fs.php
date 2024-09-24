@@ -99,13 +99,14 @@ class Fs extends Component
             Local::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $fsTypes,
-        ]);
+        // Fire a 'registerFilesystemTypes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_FILESYSTEM_TYPES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $fsTypes]);
+            $this->trigger(self::EVENT_REGISTER_FILESYSTEM_TYPES, $event);
+            return $event->types;
+        }
 
-        $this->trigger(self::EVENT_REGISTER_FILESYSTEM_TYPES, $event);
-
-        return $event->types;
+        return $fsTypes;
     }
 
     /**
@@ -117,12 +118,12 @@ class Fs extends Component
     {
         if (!isset($this->_filesystems)) {
             $configs = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_FS) ?? [];
-            $filesystems = array_map(function(string $handle, array $config) {
+            $configs = array_map(function(string $handle, array $config) {
                 $config['handle'] = $handle;
                 $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings'] ?? []);
-                return $this->createFilesystem($config);
+                return $config;
             }, array_keys($configs), $configs);
-            $this->_filesystems = new MemoizableArray($filesystems);
+            $this->_filesystems = new MemoizableArray($configs, fn(array $config) => $this->createFilesystem($config));
         }
 
         return $this->_filesystems;
@@ -199,12 +200,14 @@ class Fs extends Component
                     }
                 }
 
-                // Trigger a 'renameFs' event
+                // Fire a 'renameFs' event
                 if ($this->hasEventHandlers(self::EVENT_RENAME_FILESYSTEM)) {
                     $this->trigger(self::EVENT_RENAME_FILESYSTEM, new FsEvent($fs));
                 }
             }
         }
+
+        $fs->afterSave($isNewFs);
 
         // Clear caches
         $this->_filesystems = null;
@@ -251,6 +254,8 @@ class Fs extends Component
 
         // Clear caches
         $this->_filesystems = null;
+
+        $fs->afterDelete();
 
         return true;
     }

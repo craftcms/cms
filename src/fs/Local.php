@@ -130,21 +130,8 @@ class Local extends Fs implements LocalFsInterface
      */
     public function validatePath(string $attribute, ?array $params, InlineValidator $validator): void
     {
-        // Make sure it’s not within any of the system directories
-        $path = FileHelper::absolutePath($this->getRootPath(), '/');
-
-        $systemDirs = Craft::$app->getPath()->getSystemPaths();
-
-        foreach ($systemDirs as $dir) {
-            $dir = FileHelper::absolutePath($dir, '/');
-            if (str_starts_with("$path/", "$dir/")) {
-                $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located within system directories.'));
-                break;
-            }
-            if (str_starts_with("$dir/", "$path/")) {
-                $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located above system directories.'));
-                break;
-            }
+        if (Craft::$app->getSecurity()->isSystemDir($this->getRootPath())) {
+            $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located within or above system directories.'));
         }
     }
 
@@ -180,7 +167,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public function getRootPath(): string
     {
-        $path = FileHelper::normalizePath(App::parseEnv($this->path));
+        $path = FileHelper::normalizePath(App::parseEnv($this->path) ?? '');
         // Pass it through realpath() in case the path is symlinked
         return realpath($path) ?: $path;
     }
@@ -260,7 +247,7 @@ class Local extends Fs implements LocalFsInterface
 
         $targetStream = @fopen($fullPath, 'w+b');
 
-        if (!@stream_copy_to_stream($stream, $targetStream)) {
+        if (!$targetStream || !@stream_copy_to_stream($stream, $targetStream)) {
             throw new FsException("Unable to copy stream to `$fullPath`");
         }
 
@@ -328,7 +315,7 @@ class Local extends Fs implements LocalFsInterface
     /**
      * @inheritdoc
      */
-    public function renameFile(string $path, string $newPath): void
+    public function renameFile(string $path, string $newPath, array $config = []): void
     {
         $this->createDirectory(pathinfo($newPath, PATHINFO_DIRNAME));
         @rename($this->prefixPath($path), $this->prefixPath($newPath));
@@ -337,7 +324,7 @@ class Local extends Fs implements LocalFsInterface
     /**
      * @inheritdoc
      */
-    public function copyFile(string $path, string $newPath): void
+    public function copyFile(string $path, string $newPath, array $config = []): void
     {
         $this->createDirectory(pathinfo($newPath, PATHINFO_DIRNAME));
         @copy($this->prefixPath($path), $this->prefixPath($newPath));

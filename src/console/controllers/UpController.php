@@ -30,11 +30,6 @@ class UpController extends Controller
     public bool $noBackup = false;
 
     /**
-     * @var bool Whether to perform the action even if a mutex lock could not be acquired.
-     */
-    public bool $force = false;
-
-    /**
      * @inheritdoc
      */
     public bool $isolated = true;
@@ -46,7 +41,6 @@ class UpController extends Controller
     {
         return array_merge(parent::options($actionID), [
             'noBackup',
-            'force',
         ]);
     }
 

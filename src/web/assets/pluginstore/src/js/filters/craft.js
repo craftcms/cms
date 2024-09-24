@@ -8,6 +8,10 @@ export function t(message, category, params) {
   return Craft.t(category, message, params);
 }
 
+export function uppercaseFirst(str) {
+  return Craft.uppercaseFirst(str);
+}
+
 export function formatDate(date) {
   return Craft.formatDate(date);
 }

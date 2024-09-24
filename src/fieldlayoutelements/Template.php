@@ -40,7 +40,7 @@ class Template extends BaseUiElement
      */
     protected function selectorIcon(): ?string
     {
-        return '@appicons/template.svg';
+        return 'file-code';
     }
 
     /**
@@ -59,6 +59,14 @@ class Template extends BaseUiElement
      * @inheritdoc
      */
     public function hasCustomWidth(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasSettings()
     {
         return true;
     }
@@ -122,8 +130,6 @@ class Template extends BaseUiElement
             'class' => $errorClass,
         ]);
 
-        return Html::tag('div', $content, [
-            'class' => 'pane',
-        ]);
+        return Html::tag('div', $content);
     }
 }

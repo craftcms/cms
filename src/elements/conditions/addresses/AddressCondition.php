@@ -20,6 +20,7 @@ class AddressCondition extends ElementCondition
         return array_merge(parent::selectableConditionRules(), [
             AddressLine1ConditionRule::class,
             AddressLine2ConditionRule::class,
+            AddressLine3ConditionRule::class,
             AdministrativeAreaConditionRule::class,
             CountryConditionRule::class,
             DependentLocalityConditionRule::class,

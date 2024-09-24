@@ -11,7 +11,7 @@
 {% set sources = craft.app.elementSources.getSources(elementType, 'index', true) %}
 
 {% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
-{% if showSiteMenu == 'auto' %}
+{% if showSiteMenu is same as ('auto') %}
     {% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
 
@@ -30,7 +30,7 @@
         {% elseif requestedSite and requestedSite in selectableSites %}
             {% set selectedSite = requestedSite %}
         {% else %}
-            {% set selectedSite = selectableSites|first %}
+            {% set selectedSite = selectableSites|length ? selectableSites|first : craft.app.sites.getPrimarySite() %}
         {% endif %}
     {% endif %}
 
@@ -40,7 +40,7 @@
         label: selectedSite.name|t('site'),
         menu: {
             items: siteMenuItems(selectableSites, selectedSite),
-            label: 'Select site'|t('site')
+            label: 'Select site'|t('app')
         }
     }) %}
 {% endif %}
@@ -74,6 +74,7 @@
 
 {% block content %}
     <div class="main element-index">
+        <span class="visually-hidden" role="status" data-status-message></span>
         <a class="skip-link btn" href="#footer">{{ 'Skip to {title}'|t('app', { title: 'Footer'|t }) }}</a>
         <div id="elements" class="elements busy">
             <div class="update-spinner spinner spinner-absolute"></div>

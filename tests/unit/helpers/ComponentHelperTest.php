@@ -15,6 +15,7 @@ use craft\errors\MissingComponentException;
 use craft\fieldlayoutelements\HorizontalRule;
 use craft\fields\PlainText;
 use craft\helpers\Component;
+use craft\helpers\Cp;
 use craft\test\mockclasses\components\ComponentExample;
 use craft\test\mockclasses\components\DependencyHeavyComponentExample;
 use craft\test\mockclasses\components\ExtendedComponentExample;
@@ -112,7 +113,11 @@ class ComponentHelperTest extends TestCase
      */
     public function testIconSvg(string $needle, ?string $icon, string $label): void
     {
-        self::assertStringContainsString($needle, Component::iconSvg($icon, $label));
+        if ($icon === null) {
+            self::assertStringContainsString($needle, Cp::fallbackIconSvg($label));
+        } else {
+            self::assertStringContainsString($needle, Cp::iconSvg($icon, $label));
+        }
     }
 
     /**
@@ -307,7 +312,7 @@ class ComponentHelperTest extends TestCase
     {
         return [
             'default' => ['<title>Default</title>', null, 'Default'],
-            'svg-contents' => ['<svg aria-hidden="true"/>', '<svg/>', 'Testing'],
+            'svg-contents' => ['<svg aria-hidden="true">', '<svg/>', 'Testing'],
             'svg-file' => ['<svg ', dirname(__DIR__, 2) . '/_data/assets/files/craft-logo.svg', 'Default'],
             'file-does-not-exist' => ['<title>Default</title>', '/file/does/not/exist.svg', 'Default'],
             'not-an-svg' => ['<title>Default</title>', dirname(__DIR__, 2) . '/_data/assets/files/background.jpeg', 'Default'],

@@ -13,7 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
+use craft\gql\types\generators\TableRowType;
 use craft\gql\types\TableRow;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -28,6 +28,7 @@ use craft\web\assets\timepicker\TimepickerAsset;
 use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use yii\db\Schema;
 use yii\validators\EmailValidator;
 
 /**
@@ -49,9 +50,25 @@ class Table extends Field implements CopyableFieldInterface
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'table';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function phpType(): string
     {
         return 'array|null';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): array|string|null
+    {
+        return Schema::TYPE_JSON;
     }
 
     /**
@@ -558,7 +575,7 @@ class Table extends Field implements CopyableFieldInterface
      */
     public function getContentGqlType(): Type|array
     {
-        $type = TableRowTypeGenerator::generateType($this);
+        $type = TableRowType::generateType($this);
         return Type::listOf($type);
     }
 

@@ -19,7 +19,8 @@
         name: 'minRows',
         value: field.minRows,
         size: 3,
-        errors: field.getErrors('minRows')
+        errors: field.getErrors('minRows'),
+        data: {'error-key': 'minRows'},
     }) }}
 
     {{ forms.textField({
@@ -29,7 +30,8 @@
         name: 'maxRows',
         value: field.maxRows,
         size: 3,
-        errors: field.getErrors('maxRows')
+        errors: field.getErrors('maxRows'),
+        data: {'error-key': 'maxRows'},
     }) }}
 
     {{ forms.textField({

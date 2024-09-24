@@ -12,6 +12,7 @@ namespace craft\base;
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[FsTrait]].
  *
  * @mixin Fs
+ * @phpstan-require-extends Fs
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */

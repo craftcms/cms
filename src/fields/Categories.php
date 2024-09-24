@@ -15,7 +15,6 @@ use craft\elements\ElementCollection;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
@@ -38,6 +37,14 @@ class Categories extends BaseRelationField
     public static function displayName(): string
     {
         return Craft::t('app', 'Categories');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'sitemap';
     }
 
     /**
@@ -107,7 +114,7 @@ class Categories extends BaseRelationField
                 $structuresService->applyBranchLimitToElements($categories, $this->branchLimit);
             }
 
-            $value = ArrayHelper::getColumn($categories, 'id');
+            $value = array_map(fn(Category $category) => $category->id, $categories);
         }
 
         return parent::normalizeValue($value, $element);

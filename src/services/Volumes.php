@@ -15,7 +15,6 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\events\ConfigEvent;
 use craft\events\VolumeEvent;
-use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -103,7 +102,7 @@ class Volumes extends Component
      */
     public function getAllVolumeIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllVolumes(), 'id', false);
+        return array_values(array_map(fn(Volume $volume) => $volume->id, $this->getAllVolumes()));
     }
 
     /**
@@ -113,7 +112,7 @@ class Volumes extends Component
      */
     public function getViewableVolumeIds(): array
     {
-        return ArrayHelper::getColumn($this->getViewableVolumes(), 'id', false);
+        return array_values(array_map(fn(Volume $volume) => $volume->id, $this->getViewableVolumes()));
     }
 
     /**
@@ -161,11 +160,10 @@ class Volumes extends Component
     private function _volumes(): MemoizableArray
     {
         if (!isset($this->_volumes)) {
-            $volumes = [];
-            foreach ($this->_createVolumeQuery()->all() as $result) {
-                $volumes[] = Craft::createObject(Volume::class, [$result]);
-            }
-            $this->_volumes = new MemoizableArray($volumes);
+            $this->_volumes = new MemoizableArray(
+                $this->_createVolumeQuery()->all(),
+                fn(array $result) => Craft::createObject(Volume::class, [$result]),
+            );
         }
 
         return $this->_volumes;
@@ -200,10 +198,12 @@ class Volumes extends Component
     public function getTemporaryVolume(): Volume
     {
         $volume = new Volume([
-            'name' => Craft::t('app', 'Temporary volume'),
+            'name' => Craft::t('app', 'Temporary Uploads'),
         ]);
 
-        $volume->setFs(Craft::createObject(Temp::class));
+        $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
+
+        $volume->setFs($fs);
 
         return $volume;
     }
@@ -341,6 +341,8 @@ class Volumes extends Component
             $volumeRecord->sortOrder = $data['sortOrder'];
             $volumeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
+            $volumeRecord->altTranslationMethod = $data['altTranslationMethod'] ?? Field::TRANSLATION_METHOD_NONE;
+            $volumeRecord->altTranslationKeyFormat = $data['altTranslationKeyFormat'] ?? null;
             $volumeRecord->uid = $volumeUid;
 
             if (!empty($data['fieldLayouts'])) {

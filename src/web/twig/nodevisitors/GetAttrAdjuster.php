@@ -48,6 +48,10 @@ class GetAttrAdjuster implements NodeVisitorInterface
             'optimizable' => $node->getAttribute('optimizable'),
         ];
 
+        if ($node->hasAttribute('spread')) {
+            $attributes['spread'] = $node->getAttribute('spread');
+        }
+
         return new GetAttrNode($nodes, $attributes, $node->getTemplateLine(), $node->getNodeTag());
     }
 

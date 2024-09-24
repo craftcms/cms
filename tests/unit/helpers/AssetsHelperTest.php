@@ -56,9 +56,8 @@ class AssetsHelperTest extends TestCase
 
         /** @var Asset|null $asset */
         $asset = $assetQuery->one();
-        $fs = $asset->getVolume()->getFs();
 
-        self::assertSame($expected, Assets::generateUrl($fs, $asset));
+        self::assertSame($expected, Assets::generateUrl($asset));
     }
 
     /**
@@ -193,7 +192,8 @@ class AssetsHelperTest extends TestCase
     public static function generateUrlDataProvider(): array
     {
         return [
-            ['https://cdn.test.craftcms.test/test%20volume%201/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']],
+            ['https://cdn.test.craftcms.test/test%20volume%201/shinybrad.png', ['volumeId' => '1000', 'filename' => 'shinybrad.png']],
+            ['https://cdn.test.craftcms.test/test-subpath/test%20volume%204/shinybrad2.png', ['volumeId' => '1003', 'filename' => 'shinybrad2.png']],
         ];
     }
 
@@ -209,6 +209,7 @@ class AssetsHelperTest extends TestCase
             ['name', 'name.', true, false],
 
             ['te-@st.notaf ile', 'te !@#$%^&*()st.notaf ile', true, false],
+            ['te-@st.notaf ile', 'te !@#$%^&*()st.notaf ile', true, true],
             ['', '', false, false],
             ['-', '', true, false],
 

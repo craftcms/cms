@@ -82,10 +82,11 @@ class PluginStoreAsset extends AssetBundle
                 'Discover',
                 'Documentation',
                 'Editions' => 'Editions',
-                'For when you’re building a website for yourself or a friend.',
-                'For when you’re building something professionally for a client or team.',
+                'Everything in {edition}, plus…',
+                'For everything else.',
+                'For marketing sites managed by small teams.',
+                'For personal sites built for yourself or a friend.',
                 'Free',
-                'Includes one year of updates.',
                 'Install with Composer',
                 'Install',
                 'Installation Instructions',
@@ -108,6 +109,7 @@ class PluginStoreAsset extends AssetBundle
                 'Page not found.',
                 'Plugin Store',
                 'Plugin edition changed.',
+                'Plus {renewalPrice}/year for updates after one year.',
                 'Popularity',
                 'Pricing',
                 'Reactivate',
@@ -122,6 +124,7 @@ class PluginStoreAsset extends AssetBundle
                 'This license is tied to another Craft install. Visit {accountLink} to detach it, or buy a new license.',
                 'This plugin is no longer maintained.',
                 'This plugin isn’t compatible with your version of Craft.',
+                'This plugin requires Craft CMS {name} edition.',
                 'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
                 'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
                 'To install this plugin with composer, copy the command above to your terminal.',
@@ -137,7 +140,6 @@ class PluginStoreAsset extends AssetBundle
                 'Website',
                 'Your cart is empty.',
                 '{num, number} {num, plural, =1{year} other{years}} of updates',
-                '{renewalPrice}/year per site for updates after that.',
             ]);
         }
     }

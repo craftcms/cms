@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use Throwable;
 use yii\base\Application as BaseApplication;
@@ -226,6 +227,7 @@ class Response extends \yii\web\Response
 
         if (Craft::$app->state === BaseApplication::STATE_SENDING_RESPONSE) {
             $this->send();
+            Craft::$app->end();
         }
 
         return $this;
@@ -304,7 +306,7 @@ class Response extends \yii\web\Response
         $this->send();
 
         // Close the session.
-        Craft::$app->getSession()->close();
+        Session::close();
 
         // In case we're running on php-fpm (https://secure.php.net/manual/en/book.fpm.php)
         if (function_exists('fastcgi_finish_request')) {

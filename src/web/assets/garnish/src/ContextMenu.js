@@ -78,7 +78,7 @@ export default Base.extend(
                 }.bind(this),
                 1
               );
-            }.call(this, $a, option.onClick));
+            }).call(this, $a, option.onClick);
           }
         }
       }

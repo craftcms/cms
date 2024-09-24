@@ -42,7 +42,8 @@ class SinglePreloader implements NodeVisitorInterface
             get_class($node) === NameExpression::class &&
             $node->hasAttribute('name') &&
             !$node->isSpecial() &&
-            !$node->getAttribute('always_defined')
+            !$node->getAttribute('always_defined') &&
+            (!$node->hasAttribute('spread') || !$node->getAttribute('spread'))
         ) {
             $variables = &$this->_foundVariables[0];
             $variables[$node->getAttribute('name')] = true;

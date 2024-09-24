@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
+use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -128,7 +129,7 @@ class Webpack extends Component
         $envFile = $this->_getEnvFilePath($class);
 
         // TODO: Use DotEnv::parse() when we version is bumped.
-        $fileContents = file_exists($envFile) ? @file_get_contents($envFile) : null;
+        $fileContents = $envFile && file_exists($envFile) ? @file_get_contents($envFile) : null;
 
         if (!$fileContents) {
             return $this->_envFileVariables[$class] = [];
@@ -213,6 +214,9 @@ class Webpack extends Component
         if (isset($this->_serverResponse[$loopback])) {
             return $this->_isDevServerRunning[$class] = $this->_matchAsset($this->_serverResponse[$loopback], $class);
         }
+
+        // Close the PHP session in case this takes a while
+        Session::close();
 
         // Make sure the request isn't too strict for people running the dev server using https and outside the container
         $client = Craft::createGuzzleClient(['verify' => false]);

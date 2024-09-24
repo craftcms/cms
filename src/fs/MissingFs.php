@@ -63,7 +63,7 @@ class MissingFs extends Fs implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function renameFile(string $path, string $newPath): void
+    public function renameFile(string $path, string $newPath, array $config = []): void
     {
         throw new NotSupportedException('renameFile() is not implemented.');
     }
@@ -71,7 +71,7 @@ class MissingFs extends Fs implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function copyFile(string $path, string $newPath): void
+    public function copyFile(string $path, string $newPath, array $config = []): void
     {
         throw new NotSupportedException('copyFile() is not implemented.');
     }

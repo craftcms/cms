@@ -17,9 +17,10 @@ use craft\models\FieldLayout;
  *
  * A base implementation is provided by [[ElementCondition]].
  *
+ * @mixin ElementCondition
+ * @phpstan-require-extends ElementCondition
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @mixin ElementCondition
  */
 interface ElementConditionInterface extends ConditionInterface
 {
@@ -30,6 +31,14 @@ interface ElementConditionInterface extends ConditionInterface
      * @since 5.0.0
      */
     public function getFieldLayouts(): array;
+
+    /**
+     * Sets the possible field layouts that the condition could be working with.
+     *
+     * @param array<FieldLayout|array> $fieldLayouts
+     * @since 5.1.0
+     */
+    public function setFieldLayouts(array $fieldLayouts): void;
 
     /**
      * Modifies a given query based on the configured condition rules.

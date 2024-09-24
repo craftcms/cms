@@ -16,7 +16,7 @@ class m230710_162700_element_activity extends Migration
     public function safeUp(): bool
     {
         $this->dropTableIfExists(Table::ELEMENTACTIVITY);
-        
+
         $this->createTable(Table::ELEMENTACTIVITY, [
             'elementId' => $this->integer()->notNull(),
             'userId' => $this->integer()->notNull(),

@@ -12,6 +12,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\UserQuery;
 use craft\elements\ElementCollection;
 use craft\elements\User as UserElement;
+use craft\enums\CmsEdition;
 use craft\gql\base\ElementResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Gql as GqlHelper;
@@ -58,6 +59,12 @@ class User extends ElementResolver
             $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
             $userGroupsService = Craft::$app->getUserGroups();
+            if (Craft::$app->edition < CmsEdition::Pro) {
+                $availableGroupUids = array_map(fn($group) => $group->uid, $userGroupsService->getAllGroups());
+                $pairs['usergroups'] = array_filter($pairs['usergroups'], function($uid) use ($availableGroupUids) {
+                    return in_array($uid, $availableGroupUids);
+                });
+            }
             $allowedGroupIds = array_filter(array_map(function(string $uid) use ($userGroupsService) {
                 $userGroupsService = $userGroupsService->getGroupByUid($uid);
                 return $userGroupsService->id ?? null;

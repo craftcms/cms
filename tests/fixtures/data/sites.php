@@ -46,6 +46,6 @@ return [
         'sortOrder' => 4,
         'dateCreated' => '2018-08-08 20:00:00',
         'dateUpdated' => '2018-08-08 20:00:00',
-        'uid' => '09a48e85-2f12-2124-b82c-45b14b13d8ce',
+        'uid' => 'e9c6ae73-c175-4a3c-afa4-1ee095aa4b55',
     ],
 ];

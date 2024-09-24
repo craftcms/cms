@@ -42,9 +42,9 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public static function phpType(): string
+    public static function icon(): string
     {
-        return sprintf('\\%s', MultiOptionsFieldData::class);
+        return 'list-check';
     }
 
     /**

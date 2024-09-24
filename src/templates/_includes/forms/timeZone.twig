@@ -2,4 +2,9 @@
 
 {% include '_includes/forms/selectize' with {
     options: craft.cp.getTimeZoneOptions(),
+    inputAttributes: {
+        aria: {
+            label: 'Time Zone'|t('app'),
+        }
+    }
 }%}

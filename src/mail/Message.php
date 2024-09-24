@@ -46,9 +46,8 @@ class Message extends \yii\symfonymailer\Message
      * user model(s). You may pass an array of addresses if this message is from
      * multiple people. You may also specify sender name in addition to email
      * address using format: `[email => name]`.
-     * @return self self reference
      */
-    public function setFrom($from): self
+    public function setFrom($from): static
     {
         parent::setFrom(MailerHelper::normalizeEmails($from));
         return $this;

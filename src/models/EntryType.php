@@ -8,11 +8,19 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Actionable;
+use craft\base\Chippable;
+use craft\base\Colorable;
+use craft\base\CpEditable;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
+use craft\base\GqlInlineFragmentInterface;
+use craft\base\Iconic;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
+use craft\enums\Color;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
@@ -25,8 +33,24 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class EntryType extends Model implements FieldLayoutProviderInterface
+class EntryType extends Model implements
+    FieldLayoutProviderInterface,
+    GqlInlineFragmentInterface,
+    Chippable,
+    CpEditable,
+    Iconic,
+    Colorable,
+    Actionable
 {
+    /**
+     * @inheritdoc
+     */
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getEntries()->getEntryTypeById($id);
+    }
+
     /**
      * @var int|null ID
      */
@@ -46,6 +70,18 @@ class EntryType extends Model implements FieldLayoutProviderInterface
      * @var string|null Handle
      */
     public ?string $handle = null;
+
+    /**
+     * @var string|null Icon
+     * @since 5.0.0
+     */
+    public ?string $icon = null;
+
+    /**
+     * @var Color|null Color
+     * @since 5.0.0
+     */
+    public ?Color $color = null;
 
     /**
      * @var bool Has title field
@@ -69,6 +105,12 @@ class EntryType extends Model implements FieldLayoutProviderInterface
      * @var string|null Title format
      */
     public ?string $titleFormat = null;
+
+    /**
+     * @var bool Whether to show the Slug field
+     * @since 5.0.0
+     */
+    public bool $showSlugField = true;
 
     /**
      * @var string Slug translation method
@@ -130,6 +172,73 @@ class EntryType extends Model implements FieldLayoutProviderInterface
     /**
      * @inheritdoc
      */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIcon(): ?string
+    {
+        return $this->icon;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getColor(): ?Color
+    {
+        return $this->color;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getActionMenuItems(): array
+    {
+        $items = [];
+
+        if (
+            $this->id &&
+            Craft::$app->getUser()->getIsAdmin() &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            $editId = sprintf('action-edit-%s', mt_rand());
+            $items[] = [
+                'id' => $editId,
+                'icon' => 'edit',
+                'label' => Craft::t('app', 'Edit'),
+            ];
+
+            $view = Craft::$app->getView();
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
+$('#' + $id).on('click', () => {
+  new Craft.CpScreenSlideout('entry-types/edit', {
+    params: $params,
+  });
+});
+JS, [
+                $view->namespaceInputId($editId),
+                ['entryTypeId' => $this->id],
+            ]);
+        }
+
+        return $items;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels(): array
     {
         return [
@@ -137,6 +246,7 @@ class EntryType extends Model implements FieldLayoutProviderInterface
             'name' => Craft::t('app', 'Name'),
             'titleFormat' => Craft::t('app', 'Title Format'),
             'showStatusField' => Craft::t('app', 'Show the Status field'),
+            'showSlugField' => Craft::t('app', 'Show the Slug field'),
         ];
     }
 
@@ -153,13 +263,6 @@ class EntryType extends Model implements FieldLayoutProviderInterface
             ['handle'],
             HandleValidator::class,
             'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
-        ];
-        $rules[] = [
-            ['name'],
-            UniqueValidator::class,
-            'targetClass' => EntryTypeRecord::class,
-            'targetAttribute' => 'name',
-            'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
         $rules[] = [
             ['handle'],
@@ -221,13 +324,29 @@ class EntryType extends Model implements FieldLayoutProviderInterface
     }
 
     /**
-     * Returns the entry’s edit URL in the control panel.
-     *
-     * @return string
+     * @inheritdoc
+     * @since 3.3.0
      */
-    public function getCpEditUrl(): string
+    public function getFieldContext(): string
     {
-        return UrlHelper::cpUrl("settings/entry-types/$this->id");
+        return 'global';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getEagerLoadingPrefix(): string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl(): ?string
+    {
+        return $this->id ? UrlHelper::cpUrl("settings/entry-types/$this->id") : null;
     }
 
     /**
@@ -241,10 +360,13 @@ class EntryType extends Model implements FieldLayoutProviderInterface
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
+            'icon' => $this->icon,
+            'color' => $this->color?->value,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat,
             'titleFormat' => $this->titleFormat,
+            'showSlugField' => $this->showSlugField,
             'slugTranslationMethod' => $this->slugTranslationMethod,
             'slugTranslationKeyFormat' => $this->slugTranslationKeyFormat,
             'showStatusField' => $this->showStatusField,
@@ -259,5 +381,46 @@ class EntryType extends Model implements FieldLayoutProviderInterface
         }
 
         return $config;
+    }
+
+    /**
+     * Returns an array of sections and custom fields that make use of this entry type.
+     *
+     * @return array<Section|ElementContainerFieldInterface>
+     * @since 5.0.0
+     */
+    public function findUsages(): array
+    {
+        if (!isset($this->id)) {
+            return [];
+        }
+
+        $usages = [];
+
+        // Sections
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                if ($entryType->id === $this->id) {
+                    $usages[] = $section;
+                    break;
+                }
+            }
+        }
+
+        // Fields
+        $fieldsService = Craft::$app->getFields();
+        foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
+            /** @var ElementContainerFieldInterface[] $fields */
+            $fields = $fieldsService->getFieldsByType($type);
+            foreach ($fields as $field) {
+                foreach ($field->getFieldLayoutProviders() as $provider) {
+                    if ($provider instanceof EntryType && $provider->id === $this->id) {
+                        $usages[] = $field;
+                    }
+                }
+            }
+        }
+
+        return $usages;
     }
 }

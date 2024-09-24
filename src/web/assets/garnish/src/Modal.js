@@ -11,6 +11,7 @@ export default Base.extend(
     $container: null,
     $shade: null,
     $triggerElement: null,
+    $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
 
     visible: false,
 
@@ -60,6 +61,12 @@ export default Base.extend(
       Garnish.Modal.instances.push(this);
     },
 
+    addLiveRegion: function () {
+      if (!this.$container) return;
+
+      this.$liveRegion.appendTo(this.$container);
+    },
+
     setContainer: function (container) {
       this.$container = $(container);
 
@@ -90,6 +97,8 @@ export default Base.extend(
         });
       }
 
+      this.addLiveRegion();
+
       this.addListener(this.$container, 'click', function (ev) {
         ev.stopPropagation();
       });
@@ -112,8 +121,8 @@ export default Base.extend(
 
       if (this.$container) {
         // Move it to the end of <body> so it gets the highest sub-z-index
-        this.$shade.appendTo(Garnish.$bod);
-        this.$container.appendTo(Garnish.$bod);
+        this.$shade.appendTo(Garnish.$bod).velocity('stop');
+        this.$container.appendTo(Garnish.$bod).velocity('stop');
 
         this.$container.show();
         this.updateSizeAndPosition();
@@ -190,8 +199,10 @@ export default Base.extend(
       }
 
       if (this.$container) {
-        this.$container.velocity('fadeOut', {duration: Garnish.FX_DURATION});
-        this.$shade.velocity('fadeOut', {
+        this.$container
+          .velocity('stop')
+          .velocity('fadeOut', {duration: Garnish.FX_DURATION});
+        this.$shade.velocity('stop').velocity('fadeOut', {
           duration: Garnish.FX_DURATION,
           complete: this.onFadeOut.bind(this),
         });
@@ -226,6 +237,8 @@ export default Base.extend(
 
         this.$shade.velocity('stop');
         this.$shade.css('opacity', 0).hide();
+
+        this.onFadeOut();
       }
     },
 
@@ -372,6 +385,10 @@ export default Base.extend(
         this.resizeDragger.destroy();
       }
 
+      Garnish.Modal.instances = Craft.Preview.instances.filter(
+        (o) => o !== this
+      );
+
       this.base();
     },
   },
@@ -393,7 +410,15 @@ export default Base.extend(
       triggerElement: null,
       shadeClass: 'modal-shade',
     },
+
+    /**
+     * @type {Garnish.Modal[]}
+     */
     instances: [],
+
+    /**
+     * @type {?Garnish.Modal}
+     */
     visibleModal: null,
   }
 );

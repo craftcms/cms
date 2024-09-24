@@ -12,6 +12,7 @@ use craft\base\conditions\ConditionInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
+use craft\events\DefineShowFieldLayoutComponentInFormEvent;
 use craft\helpers\Cp;
 use craft\models\FieldLayout;
 
@@ -26,6 +27,13 @@ use craft\models\FieldLayout;
  */
 abstract class FieldLayoutComponent extends Model
 {
+    /**
+     * @event DefineShowFieldLayoutComponentInFormEvent The event that is triggered when determining whether the component should be shown in a field layout.
+     * @see showInForm()
+     * @since 5.3.0
+     */
+    public const EVENT_DEFINE_SHOW_IN_FORM = 'defineShowInForm';
+
     /**
      * @var UserCondition
      */
@@ -65,6 +73,12 @@ abstract class FieldLayoutComponent extends Model
      * @var string|null The UUID of the layout element.
      */
     public ?string $uid = null;
+
+    /**
+     * @var string|null The element type the field layout is for
+     * @since 5.0.0
+     */
+    public ?string $elementType = null;
 
     /**
      * @var FieldLayout The field layout tab this element belongs to
@@ -162,6 +176,13 @@ abstract class FieldLayoutComponent extends Model
     public function getElementCondition(): ?ElementConditionInterface
     {
         if (isset($this->_elementCondition) && !$this->_elementCondition instanceof ElementConditionInterface) {
+            if (is_string($this->_elementCondition)) {
+                $this->_elementCondition = ['class' => $this->_elementCondition];
+            }
+            $this->_elementCondition = array_merge(
+                ['fieldLayouts' => [$this->getLayout()]],
+                $this->_elementCondition,
+            );
             $this->_elementCondition = $this->_normalizeCondition($this->_elementCondition);
         }
 
@@ -208,9 +229,21 @@ abstract class FieldLayoutComponent extends Model
     public function fields(): array
     {
         $fields = parent::fields();
+        unset($fields['elementType']);
         $fields['userCondition'] = fn() => $this->getUserCondition()?->getConfig();
         $fields['elementCondition'] = fn() => $this->getElementCondition()?->getConfig();
         return $fields;
+    }
+
+    /**
+     * Returns whether the layout element has settings.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    public function hasSettings()
+    {
+        return $this->conditional();
     }
 
     /**
@@ -245,10 +278,14 @@ abstract class FieldLayoutComponent extends Model
 
             // Do we know the element type?
             /** @var ElementInterface|string|null $elementType */
-            $elementType = $this->getLayout()->type;
+            $elementType = $this->elementType ?? $this->getLayout()->type;
 
             if ($elementType && is_subclass_of($elementType, ElementInterface::class)) {
-                $elementCondition = $this->getElementCondition() ?? self::defaultElementCondition($elementType);
+                $elementCondition = $this->getElementCondition();
+                if (!$elementCondition) {
+                    $elementCondition = clone self::defaultElementCondition($elementType);
+                    $elementCondition->setFieldLayouts([$this->getLayout()]);
+                }
                 $elementCondition->mainTag = 'div';
                 $elementCondition->id = 'element-condition';
                 $elementCondition->name = 'elementCondition';
@@ -261,12 +298,6 @@ abstract class FieldLayoutComponent extends Model
                     'instructions' => Craft::t('app', 'Only show when editing {type} that match the following rules:', [
                         'type' => $elementType::pluralLowerDisplayName(),
                     ]),
-                    'warning' => !Craft::$app->getConfig()->getGeneral()->autosaveDrafts
-                        ? sprintf(
-                            '`autosaveDrafts` must be enabled for this condition to take effect automatically when editing %s.',
-                            $elementType::pluralLowerDisplayName(),
-                        )
-                        : null,
                 ]);
             }
         }
@@ -295,6 +326,18 @@ abstract class FieldLayoutComponent extends Model
      */
     public function showInForm(?ElementInterface $element = null): bool
     {
+        // Fire a 'defineShowInForm' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SHOW_IN_FORM)) {
+            $event = new DefineShowFieldLayoutComponentInFormEvent([
+                'fieldLayout' => $this->getLayout(),
+                'element' => $element,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_SHOW_IN_FORM, $event);
+            if (!$event->showInForm || $event->handled) {
+                return $event->showInForm;
+            }
+        }
+
         if ($this->conditional()) {
             $userCondition = $this->getUserCondition();
             $elementCondition = $this->getElementCondition();

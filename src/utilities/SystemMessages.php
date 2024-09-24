@@ -9,6 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use craft\enums\CmsEdition;
 use craft\web\assets\systemmessages\SystemMessagesAsset;
 
 /**
@@ -38,9 +39,9 @@ class SystemMessages extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath(): ?string
+    public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/envelope.svg');
+        return 'envelope';
     }
 
     /**
@@ -48,7 +49,7 @@ class SystemMessages extends Utility
      */
     public static function contentHtml(): string
     {
-        Craft::$app->requireEdition(Craft::Pro);
+        Craft::$app->requireEdition(CmsEdition::Pro);
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(SystemMessagesAsset::class);

@@ -78,4 +78,15 @@ return [
         'uid' => 'section-1006---------------------uid',
         'entryTypes' => ['1006'],
     ],
+    [
+        'id' => '1011',
+        'name' => 'Test Multi Author',
+        'handle' => 'testMultiAuthor',
+        'type' => 'channel',
+        'enableVersioning' => false,
+        'propagationMethod' => 'all',
+        'maxAuthors' => 3,
+        'uid' => 'section-1006---------------------uid',
+        'entryTypes' => ['1011'],
+    ],
 ];

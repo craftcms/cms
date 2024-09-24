@@ -186,7 +186,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       'data-type': 'custom',
     }).on('click', () => {
       const sortOptions = this.baseSortOptions.slice(0);
-      sortOptions.push(this.defaultSortOptions);
+      sortOptions.push(...this.defaultSortOptions);
 
       addSource({
         type: 'custom',
@@ -218,7 +218,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   focusLabelInput: function () {
-    this.selectedSource.$labelInput.trigger('focus');
+    this.selectedSource.$labelInput.focus();
   },
 
   getSourceName: function () {
@@ -298,7 +298,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     this.addListener(this.$sidebarCloseBtn, 'click', () => {
       this.toggleSidebar();
-      this.$sidebarToggleBtn.trigger('focus');
+      this.$sidebarToggleBtn.focus();
     });
   },
 
@@ -450,8 +450,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
         window.location.reload();
       })
-      .catch(() => {
-        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+      .catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
       })
       .finally(() => {
         this.$saveBtn.removeClass('loading');
@@ -560,7 +560,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     this.modal.$sourceSettingsContainer.scrollTop(0);
   },
 
-  createSettings: function () {},
+  createSettings: async function () {},
 
   getIndexSourceItem: function () {},
 
@@ -617,7 +617,7 @@ Craft.CustomizeSourcesModal.Source =
       return true;
     },
 
-    createSettings: function ($container) {
+    createSettings: async function ($container) {
       Craft.ui
         .createLightswitchField({
           label: Craft.t('app', 'Enabled'),
@@ -632,14 +632,47 @@ Craft.CustomizeSourcesModal.Source =
     createSortField: function ($container) {
       const $inputContainer = $('<div class="flex"/>');
 
+      const options = this.sourceData.sortOptions.sort((a, b) => {
+        return a.label === b.label ? 0 : a.label < b.label ? -1 : 1;
+      });
+      const groups = options.reduce(
+        (groups, o) => {
+          let key;
+          if (o.attr === 'structure') {
+            groups.structure.push(o);
+          } else if (o.attr.startsWith('field:')) {
+            groups.field.push(o);
+          } else {
+            groups.attribute.push(o);
+          }
+          return groups;
+        },
+        {
+          structure: [],
+          attribute: [],
+          field: [],
+        }
+      );
+      if (groups.field.length) {
+        groups.field.unshift({
+          optgroup: Craft.t('app', 'Fields'),
+        });
+      }
+
       const $sortAttributeSelectContainer = Craft.ui
         .createSelect({
           name: `sources[${this.sourceData.key}][defaultSort][0]`,
-          options: this.sourceData.sortOptions.map((o) => {
-            return {
-              label: Craft.escapeHtml(o.label),
-              value: o.attr,
-            };
+          options: [
+            ...groups.structure,
+            ...groups.attribute,
+            ...groups.field,
+          ].map((o) => {
+            return o.optgroup
+              ? o
+              : {
+                  label: Craft.escapeHtml(o.label),
+                  value: o.attr,
+                };
           }),
           value: this.sourceData.defaultSort[0],
         })
@@ -723,7 +756,11 @@ Craft.CustomizeSourcesModal.Source =
     },
 
     createTableAttributesField: function ($container) {
-      const availableTableAttributes = this.availableTableAttributes();
+      const availableTableAttributes = this.availableTableAttributes().sort(
+        (a, b) => {
+          return a[1] === b[1] ? 0 : a[1] < b[1] ? -1 : 1;
+        }
+      );
 
       if (
         !this.sourceData.tableAttributes.length &&
@@ -779,7 +816,7 @@ Craft.CustomizeSourcesModal.CustomSource =
   Craft.CustomizeSourcesModal.Source.extend({
     $labelInput: null,
 
-    createSettings: function ($container) {
+    createSettings: async function ($container) {
       const $labelField = Craft.ui
         .createTextField({
           label: Craft.t('app', 'Label'),
@@ -814,7 +851,10 @@ Craft.CustomizeSourcesModal.CustomSource =
           }),
         })
         .appendTo($container);
-      Craft.appendBodyHtml(conditionBuilderJs);
+
+      if (conditionBuilderJs) {
+        await Craft.appendBodyHtml(conditionBuilderJs);
+      }
 
       this.createSortField($container);
       this.createTableAttributesField($container);
@@ -856,7 +896,7 @@ Craft.CustomizeSourcesModal.CustomSource =
 
       $container.append('<hr/>');
 
-      this.$deleteBtn = $('<a class="error delete"/>')
+      this.$deleteBtn = $('<a class="error delete pointer"/>')
         .attr({
           role: 'button',
           tabindex: '0',
@@ -916,7 +956,7 @@ Craft.CustomizeSourcesModal.Heading =
       return true;
     },
 
-    createSettings: function ($container) {
+    createSettings: async function ($container) {
       const $labelField = Craft.ui
         .createTextField({
           label: Craft.t('app', 'Heading'),
@@ -931,7 +971,7 @@ Craft.CustomizeSourcesModal.Heading =
 
       $container.append('<hr/>');
 
-      this.$deleteBtn = $('<a class="error delete"/>')
+      this.$deleteBtn = $('<a class="error delete pointer"/>')
         .text(Craft.t('app', 'Delete heading'))
         .attr({
           role: 'button',

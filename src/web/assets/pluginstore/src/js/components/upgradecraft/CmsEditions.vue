@@ -1,16 +1,10 @@
 <template>
-  <div
-    class="cms-editions"
-    :class="{
-      'tw-py-6': true,
-      'md:tw-flex md:tw--mx-4 md:tw-justify-center': true,
-    }"
-  >
+  <div class="cms-editions tw-py-6">
     <cms-edition
-      class="md:tw-flex-1 md:tw-mx-4 md:tw-max-w-xs"
       v-for="(edition, key) in cmsEditions"
       :edition="edition"
       :key="key"
+      :previousEdition="cmsEditions[key - 1]"
     ></cms-edition>
   </div>
 </template>
@@ -41,3 +35,18 @@
     },
   };
 </script>
+
+<style lang="scss">
+  .cms-editions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr));
+    @apply tw-gap-4 tw-justify-center;
+
+    .cms-editions-edition {
+      display: grid;
+      grid-template-rows: subgrid;
+      grid-row: span 4;
+      @apply tw-gap-8;
+    }
+  }
+</style>

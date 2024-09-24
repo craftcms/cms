@@ -7,6 +7,7 @@
 
 namespace craft\mutex;
 
+use Craft;
 use craft\helpers\App;
 use yii\di\Instance;
 use yii\mutex\Mutex as YiiMutex;
@@ -48,12 +49,10 @@ class Mutex extends YiiMutex
         $this->_init();
 
         if (!isset($this->mutex)) {
-            if (App::devMode()) {
-                // Use NullMutex for Dev Mode, since they’re not really needed for development,
-                // and partially to avoid Windows/Linux filesystem conflicts
-                $this->mutex = NullMutex::class;
+            if (Craft::$app->id !== 'craft-test' && Craft::$app->getIsInstalled()) {
+                $this->mutex = App::dbMutexConfig();
             } else {
-                $this->mutex = App::mutexConfig();
+                $this->mutex = NullMutex::class;
             }
         }
 

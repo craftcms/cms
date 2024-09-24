@@ -11,6 +11,7 @@ use Closure;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
+use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
@@ -75,7 +76,15 @@ abstract class Model extends \yii\base\Model implements ModelInterface
             }
         }
 
-        parent::__construct($config);
+        // Call App::configure() rather than BaseYii::configure() (via BaseObject::__construct()),
+        // in case \Yii isn't loaded yet. (Mainly an issue for GeneralConfig/DbConfig, if config/general.php
+        // or config/db.php return an array.)
+        // Note that inlining the foreach loop is no good, because then private/protected properties will be
+        // set directly rather than going through __set().
+        App::configure($this, $config);
+
+        // Intentionally not passing $config along
+        parent::__construct();
     }
 
     /**
@@ -96,14 +105,15 @@ abstract class Model extends \yii\base\Model implements ModelInterface
     public function behaviors(): array
     {
         $behaviors = $this->defineBehaviors();
-        
-        // Give plugins a chance to modify them
-        $event = new DefineBehaviorsEvent([
-            'behaviors' => $behaviors,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
 
-        return $event->behaviors;
+        // Fire a 'defineBehaviors' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
+            $event = new DefineBehaviorsEvent(['behaviors' => $behaviors]);
+            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+            return $event->behaviors;
+        }
+
+        return $behaviors;
     }
 
     /**
@@ -113,17 +123,18 @@ abstract class Model extends \yii\base\Model implements ModelInterface
     {
         $rules = $this->defineRules();
 
-        // Give plugins a chance to modify them
-        $event = new DefineRulesEvent([
-            'rules' => $rules,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_RULES, $event);
+        // Fire a 'defineRules' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_RULES)) {
+            $event = new DefineRulesEvent(['rules' => $rules]);
+            $this->trigger(self::EVENT_DEFINE_RULES, $event);
+            $rules = $event->rules;
+        }
 
-        foreach ($event->rules as &$rule) {
+        foreach ($rules as &$rule) {
             $this->_normalizeRule($rule);
         }
 
-        return $event->rules;
+        return $rules;
     }
 
     /**
@@ -190,6 +201,10 @@ abstract class Model extends \yii\base\Model implements ModelInterface
             $attributes[] = 'dateCreated';
         }
 
+        if (property_exists($this, 'dateAdded')) {
+            $attributes[] = 'dateAdded';
+        }
+
         if (property_exists($this, 'dateUpdated')) {
             $attributes[] = 'dateUpdated';
         }
@@ -243,19 +258,23 @@ abstract class Model extends \yii\base\Model implements ModelInterface
         // Have all DateTime attributes converted to ISO-8601 strings
         foreach ($datetimeAttributes as $attribute) {
             $fields[$attribute] = function($model, $attribute) {
-                if (!empty($model->$attribute)) {
-                    return DateTimeHelper::toIso8601($model->$attribute);
+                $date = $model->$attribute;
+                if ($date) {
+                    return DateTimeHelper::toIso8601($date, true);
                 }
 
                 return $model->$attribute;
             };
         }
 
-        $event = new DefineFieldsEvent([
-            'fields' => $fields,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_FIELDS, $event);
-        return $event->fields;
+        // Fire a 'defineFields' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_FIELDS)) {
+            $event = new DefineFieldsEvent(['fields' => $fields]);
+            $this->trigger(self::EVENT_DEFINE_FIELDS, $event);
+            return $event->fields;
+        }
+
+        return $fields;
     }
 
     /**
@@ -264,11 +283,15 @@ abstract class Model extends \yii\base\Model implements ModelInterface
     public function extraFields(): array
     {
         $fields = parent::extraFields();
-        $event = new DefineFieldsEvent([
-            'fields' => $fields,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_EXTRA_FIELDS, $event);
-        return $event->fields;
+
+        // Fire a 'defineExtraFields' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_EXTRA_FIELDS)) {
+            $event = new DefineFieldsEvent(['fields' => $fields]);
+            $this->trigger(self::EVENT_DEFINE_EXTRA_FIELDS, $event);
+            return $event->fields;
+        }
+
+        return $fields;
     }
 
     /**

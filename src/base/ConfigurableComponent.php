@@ -43,10 +43,9 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
             }
         }
 
+        // Fire a 'defineSettingsAttributes' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES)) {
-            $event = new DefineValueEvent([
-                'value' => $names,
-            ]);
+            $event = new DefineValueEvent(['value' => $names]);
             $this->trigger(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $event);
             $names = $event->value;
         }

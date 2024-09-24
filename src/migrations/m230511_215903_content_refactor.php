@@ -105,7 +105,9 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
                 throw new Exception("Matrix block type $blockTypeUid is out of sync.");
             }
             $blockTypeDatum = $blockTypeData[$blockTypeUid];
-            $fieldLayout = $fieldsService->getLayoutById($blockTypeDatum['fieldLayoutId']);
+            $fieldLayout = $blockTypeDatum['fieldLayoutId']
+                ? $fieldsService->getLayoutById($blockTypeDatum['fieldLayoutId'])
+                : null;
             $this->updateElements(
                 (new Query())->from('{{%matrixblocks}}')->where(['typeId' => $blockTypeDatum['id']]),
                 $fieldLayout,

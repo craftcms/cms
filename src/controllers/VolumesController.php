@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FsInterface;
 use craft\elements\Asset;
+use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\Volume;
@@ -105,7 +106,7 @@ class VolumesController extends Controller
             ->map(fn(FsInterface $fs) => [
                 'label' => $fs->name,
                 'value' => $fs->handle,
-                'disabled' => $takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle,
+                'disabled' => Assets::isTempUploadFs($fs) || ($takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle),
             ])
             ->all();
         array_unshift($fsOptions, ['label' => Craft::t('app', 'Select a filesystem'), 'value' => '']);
@@ -118,7 +119,12 @@ class VolumesController extends Controller
             ->action('volumes/save-volume')
             ->redirectUrl('settings/assets')
             ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
-            ->editUrl($volume->id ? "settings/assets/volumes/$volume->id" : null)
+            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => 'settings/assets/volumes/{id}',
+                'shortcut' => true,
+                'retainScroll' => true,
+            ])
+            ->editUrl($volume->getCpEditUrl())
             ->contentTemplate('settings/assets/volumes/_edit.twig', [
                 'volumeId' => $volumeId,
                 'volume' => $volume,
@@ -166,6 +172,8 @@ class VolumesController extends Controller
             'transformSubpath' => $this->request->getBodyParam('transformSubpath', ""),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
+            'altTranslationMethod' => $this->request->getBodyParam('altTranslationMethod', Field::TRANSLATION_METHOD_NONE),
+            'altTranslationKeyFormat' => $this->request->getBodyParam('altTranslationKeyFormat'),
         ]);
 
         // Set the field layout

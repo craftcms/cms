@@ -26,7 +26,7 @@ class RequireEditionNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write('if (\Craft::$app->getEdition() < ')
+            ->write('if (\Craft::$app->edition->value < ')
             ->subcompile($this->getNode('editionName'))
             ->raw(")\n")
             ->write("{\n")

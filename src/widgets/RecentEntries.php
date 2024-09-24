@@ -35,7 +35,7 @@ class RecentEntries extends Widget
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/clock.svg');
+        return 'clock';
     }
 
     /**

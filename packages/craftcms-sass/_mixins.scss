@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'sass:list';
+@use 'sass:string';
 $white: #fff;
 $black: #000;
 
@@ -116,7 +119,7 @@ $pink800: #9d174d;
 $pink900: #831843;
 
 // submit button colors
-$primaryColor: $red500;
+$primaryColor: $red600;
 $secondaryColor: $grey500;
 
 $inputColor: hsl(212, 25%, 50%);
@@ -130,13 +133,13 @@ $linkColor: #1f5fea;
 
 // menu colors
 $menuOptionColor: $textColor;
-$menuOptionActiveColor: $white;
-$menuOptionActiveBackgroundColor: $grey500;
+$menuOptionActiveColor: $textColor;
+$menuOptionActiveBackgroundColor: $grey050;
 
 // hairline colors
-$hairlineColor: transparentize($grey800, 0.9);
-$mediumHairlineColor: transparentize($grey600, 0.75);
-$darkHairlineColor: transparentize($grey400, 0.5);
+$hairlineColor: color.adjust($grey800, $alpha: -0.9);
+$mediumHairlineColor: color.adjust($grey600, $alpha: -0.75);
+$darkHairlineColor: color.adjust($grey400, $alpha: -0.5);
 
 // focus colors
 $lightFocusColor: $blue300;
@@ -144,12 +147,15 @@ $mediumFocusColor: $blue500;
 $darkFocusColor: #0f74b1;
 
 // focus rings
-$lightFocusRing: 0 0 0 1px $lightFocusColor,
-  0 0 0 3px transparentize($lightFocusColor, 0.3);
-$mediumFocusRing: 0 0 0 1px $mediumFocusColor,
-  0 0 0 3px transparentize($mediumFocusColor, 0.3);
-$darkFocusRing: 0 0 0 1px $darkFocusColor,
-  0 0 0 3px transparentize($darkFocusColor, 0.3);
+$lightFocusRing:
+  0 0 0 1px $lightFocusColor,
+  0 0 0 3px color.adjust($lightFocusColor, $alpha: -0.3);
+$mediumFocusRing:
+  0 0 0 1px $mediumFocusColor,
+  0 0 0 3px color.adjust($mediumFocusColor, $alpha: -0.3);
+$darkFocusRing:
+  0 0 0 1px $darkFocusColor,
+  0 0 0 3px color.adjust($darkFocusColor, $alpha: -0.3);
 
 // selection colors
 $lightSelColor: $grey200;
@@ -167,13 +173,21 @@ $mediumBorderRadius: 4px;
 $largeBorderRadius: 5px;
 
 $menuBorderRadius: $mediumBorderRadius;
-$checkboxSize: 16px;
-$radioSize: 16px;
 
 @mixin sans-serif-font {
-  font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI',
-    'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
-    'Helvetica Neue', sans-serif;
+  font-family:
+    system-ui,
+    BlinkMacSystemFont,
+    -apple-system,
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
 }
 
 @mixin fixed-width-font($size: 0.9em) {
@@ -183,11 +197,12 @@ $radioSize: 16px;
 }
 
 @function toRem($values...) {
-  $max: length($values);
+  @warn "torem mixin is deprecated. Use calc($value / 16 * 1rem) instead.";
+  $max: list.length($values);
   $remValues: '';
 
   @for $i from 1 through $max {
-    $remValues: #{$remValues + calc(nth($values, $i) / 16)}rem;
+    $remValues: #{$remValues + calc(list.nth($values, $i) / 16)}rem;
 
     @if $i < $max {
       $remValues: #{$remValues + ' '};
@@ -198,6 +213,7 @@ $radioSize: 16px;
 }
 
 @mixin fontSize($size) {
+  @warn "fontsize mixin is deprecated. Use CSS values instead.";
   font-size: toRem($size);
 }
 
@@ -248,22 +264,22 @@ $radioSize: 16px;
   vertical-align: middle;
   word-wrap: normal !important;
   user-select: none;
-
-  opacity: var(--icon-opacity);
 }
 
-@mixin angle($dir: down, $color: currentColor, $width: 2px) {
+@mixin angle($dir: down, $color: currentColor, $width: calc(2rem / 16)) {
   display: block;
   content: '';
   font-size: 0;
-  width: 7px;
-  height: 7px;
+  width: calc(7rem / 16);
+  height: calc(7rem / 16);
   border: solid $color;
   border-width: 0 $width $width 0;
   opacity: 0.8;
+  position: relative;
 
   @if $dir == up {
     transform: rotate(225deg);
+    inset-block-start: 2px;
   } @else if $dir == down {
     transform: rotate(45deg);
   } @else if $dir == left {
@@ -292,12 +308,14 @@ $radioSize: 16px;
 }
 
 @mixin shadow {
-  box-shadow: 0 1px 5px -1px transparentize($grey900, 0.8);
+  box-shadow: 0 1px 5px -1px color.adjust($grey900, $alpha: -0.8);
 }
 
 @mixin pane {
   background: $white;
-  box-shadow: 0 0 0 1px $grey200, 0 2px 12px transparentize($grey200, 0.5);
+  box-shadow:
+    0 0 0 1px $grey200,
+    0 2px 12px color.adjust($grey200, $alpha: -0.5);
 
   &:focus {
     box-shadow: var(--focus-ring);
@@ -307,7 +325,7 @@ $radioSize: 16px;
 @mixin modal {
   border-radius: $largeBorderRadius;
   background-color: $white;
-  box-shadow: 0 25px 100px transparentize($grey900, 0.5) !important;
+  box-shadow: 0 25px 100px color.adjust($grey900, $alpha: -0.5) !important;
 }
 
 @mixin light-on-dark-text() {
@@ -315,12 +333,26 @@ $radioSize: 16px;
   // (sub-pixel antialiasing looks too bold/blurry with light text on dark background)
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
-  font-weight: 500;
 }
 
 @mixin light-focus-ring() {
-  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
-    0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
+  --focus-ring: 0 0 0 1px
+      hsl(
+        #{color.hue($blue200)},
+        #{color.saturation($blue200)},
+        #{color.lightness($blue200)}
+      ),
+    0 0 0 3px hsla(var(--light-focus-hsl), 1);
+}
+
+@mixin dark-btn-light-bg-focus-ring() {
+  --focus-ring: 0 0 0 1px
+      hsl(
+        #{color.hue($blue200)},
+        #{color.saturation($blue200)},
+        #{color.lightness($blue200)}
+      ),
+    0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
 }
 
 @mixin custom-color-focus-ring($primary, $secondary: null) {
@@ -348,192 +380,113 @@ $radioSize: 16px;
 // RTL stuff
 
 @mixin left($left) {
-  body.ltr & {
-    left: $left;
-  }
-  body.rtl & {
-    right: $left;
-  }
+  @warn "left mixin is deprecated. Use inset-inline-start instead.";
+  inset-inline-start: $left;
 }
 
 @mixin right($right) {
-  body.ltr & {
-    right: $right;
-  }
-  body.rtl & {
-    left: $right;
-  }
+  @warn "right mixin is deprecated. Use inset-inline-end instead.";
+  inset-inline-end: $right;
 }
 
 @mixin alignleft {
-  body.ltr & {
-    text-align: left;
-  }
-  body.rtl & {
-    text-align: right;
-  }
+  @warn "alignleft mixin is deprecated. Use text-align: start instead.";
+  text-align: start;
 }
 
 @mixin alignright {
-  body.ltr & {
-    text-align: right;
-  }
-  body.rtl & {
-    text-align: left;
-  }
+  @warn "alignright mixin is deprecated. Use text-align: end instead.";
+  text-align: end;
 }
 
 @mixin border-left($params...) {
-  body.ltr & {
-    border-left: $params;
-  }
-  body.rtl & {
-    border-right: $params;
-  }
+  @warn "border-left mixin is deprecated. Use border-inline-start instead.";
+  border-inline-start: $params;
 }
 
 @mixin border-right($params...) {
-  body.ltr & {
-    border-right: $params;
-  }
-  body.rtl & {
-    border-left: $params;
-  }
+  @warn "border-right mixin is deprecated. Use border-inline-end instead.";
+  border-inline-end: $params;
 }
 
 @mixin border-left-width($param) {
-  body.ltr & {
-    border-left-width: $param;
-  }
-  body.rtl & {
-    border-right-width: $param;
-  }
+  @warn "border-left-width mixin is deprecated. Use border-inline-start-width instead.";
+  border-inline-start-width: $param;
 }
 
 @mixin border-right-width($param) {
-  body.ltr & {
-    border-right-width: $param;
-  }
-  body.rtl & {
-    border-left-width: $param;
-  }
+  @warn "border-right-width mixin is deprecated. Use border-inline-end-width instead.";
+  border-inline-end-width: $param;
 }
 
 @mixin border-radius($tl, $tr, $br, $bl) {
-  body.ltr & {
-    border-radius: $tl $tr $br $bl;
-  }
-  body.rtl & {
-    border-radius: $tr $tl $bl $br;
-  }
+  @warn "border-radius mixin is deprecated. Use logical border properties instead.";
+  border-start-start-radius: $tl;
+  border-start-end-radius: $tr;
+  border-end-end-radius: $br;
+  border-end-start-radius: $bl;
 }
 
 @mixin border-top-left-radius($params...) {
-  body.ltr & {
-    border-top-left-radius: $params;
-  }
-  body.rtl & {
-    border-top-right-radius: $params;
-  }
+  @warn "border-top-left-radius mixin is deprecated. Use border-start-start-radius instead.";
+  border-start-start-radius: $params;
 }
 
 @mixin border-top-right-radius($params...) {
-  body.ltr & {
-    border-top-right-radius: $params;
-  }
-  body.rtl & {
-    border-top-left-radius: $params;
-  }
+  @warn "border-top-right-radius mixin is deprecated. Use border-end-start-radius instead.";
+  border-start-end-radius: $params;
 }
 
 @mixin border-bottom-left-radius($params...) {
-  body.ltr & {
-    border-bottom-left-radius: $params;
-  }
-  body.rtl & {
-    border-bottom-right-radius: $params;
-  }
+  @warn "border-bottom-left-radius mixin is deprecated. Use border-start-end-radius instead.";
+  border-start-end-radius: $params;
 }
 
 @mixin border-bottom-right-radius($params...) {
-  body.ltr & {
-    border-bottom-right-radius: $params;
-  }
-  body.rtl & {
-    border-bottom-left-radius: $params;
-  }
+  @warn "border-bottom-right-radius mixin is deprecated. Use border-end-end-radius instead.";
+  border-end-end-radius: $params;
 }
 
 @mixin floatleft {
-  body.ltr & {
-    float: left;
-  }
-  body.rtl & {
-    float: right;
-  }
+  @warn "floatleft mixin is deprecated. Use float: inline-start instead.";
+  float: inline-start;
 }
 
 @mixin floatright {
-  body.ltr & {
-    float: right;
-  }
-  body.rtl & {
-    float: left;
-  }
+  @warn "floatright mixin is deprecated. Use float: inline-end instead.";
+  float: inline-end;
 }
 
 @mixin margin($t, $r, $b, $l, $important: '') {
-  body.ltr & {
-    margin: $t $r $b $l unquote($important);
-  }
-  body.rtl & {
-    margin: $t $l $b $r unquote($important);
-  }
+  @warn "margin mixin is deprecated. Use logical margin properties instead.";
+  margin-block: $t $b string.unquote($important);
+  margin-inline: $l $r string.unquote($important);
 }
 
 @mixin margin-left($margin...) {
-  body.ltr & {
-    margin-left: $margin;
-  }
-  body.rtl & {
-    margin-right: $margin;
-  }
+  @warn "margin-left mixin is deprecated. Use margin-inline-start instead.";
+  margin-inline-start: $margin;
 }
 
 @mixin margin-right($margin...) {
-  body.ltr & {
-    margin-right: $margin;
-  }
-  body.rtl & {
-    margin-left: $margin;
-  }
+  @warn "margin-left mixin is deprecated. Use margin-inline-end instead.";
+  margin-inline-end: $margin;
 }
 
 @mixin padding($t, $r, $b, $l, $important: '') {
-  body.ltr & {
-    padding: $t $r $b $l unquote($important);
-  }
-  body.rtl & {
-    padding: $t $l $b $r unquote($important);
-  }
+  @warn "padding mixin is deprecated. Use padding logical properties instead.";
+  padding-block: $t $b string.unquote($important);
+  padding-inline: $l $r string.unquote($important);
 }
 
 @mixin padding-left($padding...) {
-  body.ltr & {
-    padding-left: $padding;
-  }
-  body.rtl & {
-    padding-right: $padding;
-  }
+  @warn "padding-left mixin is deprecated. Use padding-inline-start properties instead.";
+  padding-inline-start: $padding;
 }
 
 @mixin padding-right($padding...) {
-  body.ltr & {
-    padding-right: $padding;
-  }
-  body.rtl & {
-    padding-left: $padding;
-  }
+  @warn "padding-right mixin is deprecated. Use padding-inline-end properties instead.";
+  padding-inline-end: $padding;
 }
 
 // Misc
@@ -547,12 +500,13 @@ $radioSize: 16px;
 
     &:focus,
     &:hover {
-      background-color: darken($grey200, 5%);
+      background-color: color.adjust($grey200, $lightness: -5%);
     }
 
     &:active,
-    &.active {
-      background-color: darken($grey200, 10%);
+    &.active,
+    &[aria-expanded='true'] {
+      background-color: color.adjust($grey200, $lightness: -10%);
     }
   }
 
@@ -560,22 +514,22 @@ $radioSize: 16px;
     background-color: $grey200;
 
     &:focus {
-      background-color: darken($grey200, 5%);
+      background-color: color.adjust($grey200, $lightness: -5%);
     }
   }
 }
 
 @mixin header-btn {
-  width: 30px;
-  height: 30px;
+  width: calc(30rem / 16);
+  height: calc(30rem / 16);
   padding-left: 0;
   padding-right: 0;
 
-  &:not(:hover):not(:active):not(.active) {
+  &:not(:hover):not(:active):not(.active):not([aria-expanded='true']) {
     background-color: transparent;
   }
-  &:not(:active):not(.active):hover {
-    background-color: transparentize($grey300, 0.85);
+  &:not(:active):not(.active):not([aria-expanded='true']):hover {
+    background-color: color.adjust($grey300, $alpha: -0.85);
   }
 }
 
@@ -608,8 +562,9 @@ $radioSize: 16px;
   overflow: auto;
   background: $white;
   user-select: none;
-  box-shadow: 0 0 0 1px transparentize($grey900, 0.9),
-    0 5px 20px transparentize($grey900, 0.75);
+  box-shadow:
+    0 0 0 1px color.adjust($grey900, $alpha: -0.9),
+    0 5px 20px color.adjust($grey900, $alpha: -0.75);
 }
 
 @mixin menu-item-styles {
@@ -621,8 +576,14 @@ $radioSize: 16px;
 }
 
 @mixin menu-item-active-styles {
-  color: $menuOptionActiveColor;
-  background-color: $menuOptionActiveBackgroundColor;
+  color: var(--white) !important;
+  --medium-text-color: rgba(255, 255, 255, 0.8);
+  --light-text-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--dark-sel-color);
+
+  svg {
+    @include svg-mask(var(--white));
+  }
 }
 
 @mixin disclosure-link-hover-styles {
@@ -632,7 +593,7 @@ $radioSize: 16px;
 
 @mixin input-styles {
   border-radius: $smallBorderRadius;
-  border: 1px solid transparentize($inputColor, 0.75);
+  border: 1px solid color.adjust($inputColor, $alpha: -0.75);
   background-color: hsl(212, 50%, 99%);
   background-clip: padding-box;
 }
@@ -691,10 +652,11 @@ $radioSize: 16px;
   @include angle;
   position: absolute;
   z-index: 1;
-  top: calc(50% - 5px);
-  @include right(9px);
+  inset-block-start: calc(50% - 5px);
+  inset-inline-end: 9px;
   user-select: none;
   pointer-events: none;
+  color: var(--ui-control-color);
 }
 
 @mixin select-input-styles {
@@ -702,7 +664,8 @@ $radioSize: 16px;
   position: relative;
   max-width: 100%;
   border: none;
-  @include padding(7px, 22px, 7px, 10px);
+  padding-block: 7px;
+  padding-inline: 10px 22px;
   font-size: 14px;
   line-height: 20px;
   color: $textColor;
@@ -729,15 +692,28 @@ $radioSize: 16px;
   width: var(--touch-target-size);
 }
 
+// https://tailwindcss.com/docs/screen-readers#undoing-screen-reader-only-elements
 @mixin visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
   padding: 0;
-  margin: 0;
+  margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
-  border: 0;
+  white-space: nowrap;
+  border-width: 0;
+}
+
+@mixin not-visually-hidden {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
 }
 
 @mixin readable {
@@ -801,7 +777,7 @@ $radioSize: 16px;
   ul,
   ol {
     margin: 1em 0;
-    @include padding-left(2em);
+    padding-inline-start: 2em;
   }
 
   ul li {
@@ -815,7 +791,7 @@ $radioSize: 16px;
   .tip-dismiss-btn {
     position: absolute;
     top: 12px;
-    @include right(12px);
+    inset-inline-end: 12px;
 
     & + p {
       margin-top: 0;
@@ -828,18 +804,18 @@ $radioSize: 16px;
     &:not(.note) {
       padding: 0 16px;
       color: $mediumTextColor;
-      @include border-left(4px solid $hairlineColor);
+      border-inline-start: 4px solid $hairlineColor;
     }
 
     &.note {
       position: relative;
       border-radius: 4px;
       padding: 1em;
-      @include padding-left(50px);
+      padding-inline-start: 50px;
       border: 1px solid;
 
       &.dismissible {
-        @include padding-right(36px);
+        padding-inline-end: 36px;
       }
 
       &:not(.tip):not(.warning) {
@@ -877,7 +853,7 @@ $radioSize: 16px;
         opacity: 1;
         position: absolute;
         top: 15px;
-        @include left(16px);
+        inset-inline-start: 16px;
         font-size: 24px;
         width: 24px;
       }
@@ -899,24 +875,28 @@ $radioSize: 16px;
   $halfSize: $size * 0.5;
   background-image: linear-gradient(
       45deg,
-      #{transparentize($grey300, 0.75)} 25%,
+      #{color.adjust($grey300, $alpha: -0.75)} 25%,
       transparent 25%
     ),
     linear-gradient(
       135deg,
-      #{transparentize($grey300, 0.75)} 25%,
+      #{color.adjust($grey300, $alpha: -0.75)} 25%,
       transparent 25%
     ),
     linear-gradient(
       45deg,
       transparent 75%,
-      #{transparentize($grey300, 0.75)} 75%
+      #{color.adjust($grey300, $alpha: -0.75)} 75%
     ),
     linear-gradient(
       135deg,
       transparent 75%,
-      #{transparentize($grey300, 0.75)} 75%
+      #{color.adjust($grey300, $alpha: -0.75)} 75%
     );
   background-size: $size $size;
-  background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
+  background-position:
+    0 0,
+    $halfSize 0,
+    $halfSize -#{$halfSize},
+    0 $halfSize;
 }

@@ -1,6 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
-import $ from 'jquery';
+/** global: $ */
+/** global: jQuery */
 
 /**
  * CP class
@@ -9,9 +10,13 @@ Craft.CP = Garnish.Base.extend(
   {
     elementThumbLoader: null,
     authManager: null,
+    announcerTimeout: null,
+    modalLayers: [],
 
     $nav: null,
     $navToggle: null,
+    $globalLiveRegion: null,
+    $activeLiveRegion: null,
     $globalSidebar: null,
     $globalContainer: null,
     $mainContainer: null,
@@ -25,6 +30,7 @@ Craft.CP = Garnish.Base.extend(
     $crumbMenuList: null,
     $crumbMenuItems: null,
     $notificationContainer: null,
+    $notificationHeading: null,
     $main: null,
     $primaryForm: null,
     $headerContainer: null,
@@ -60,6 +66,7 @@ Craft.CP = Garnish.Base.extend(
     forcingRefreshOnUpdatesCheck: false,
     includingDetailsOnUpdatesCheck: false,
     checkForUpdatesCallbacks: null,
+    checkForUpdatesFailureCallbacks: null,
 
     resizeTimeout: null,
 
@@ -74,6 +81,8 @@ Craft.CP = Garnish.Base.extend(
       // Find all the key elements
       this.$nav = $('#nav');
       this.$navToggle = $('#primary-nav-toggle');
+      this.$globalLiveRegion = $('#global-live-region');
+      this.$activeLiveRegion = this.$globalLiveRegion;
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
       this.$mainContainer = $('#main-container');
@@ -83,12 +92,14 @@ Craft.CP = Garnish.Base.extend(
       this.$crumbList = $('#crumb-list');
       this.$crumbItems = this.$crumbList.children('li');
       this.$notificationContainer = $('#notifications');
+      this.$notificationHeading = $('#cp-notification-heading');
       this.$main = $('#main');
       this.$primaryForm = $('#main-form');
       this.$headerContainer = $('#header-container');
       this.$header = $('#header');
       this.$mainContent = $('#main-content');
       this.$details = $('#details');
+      this.$detailsContainer = $('#details-container');
       this.$sidebarContainer = $('#sidebar-container');
       this.$sidebarToggle = $('#sidebar-toggle');
       this.$sidebar = $('#sidebar');
@@ -97,7 +108,7 @@ Craft.CP = Garnish.Base.extend(
 
       this.isMobile = Garnish.isMobileBrowser();
 
-      this.updateContentHeading();
+      //this.updateContentHeading();
 
       // Swap any instruction text with info icons
       let $allInstructions = this.$details.find(
@@ -149,6 +160,15 @@ Craft.CP = Garnish.Base.extend(
       // Toggles
       this.addListener(this.$navToggle, 'click', 'toggleNav');
       this.addListener(this.$sidebarToggle, 'click', 'toggleSidebar');
+
+      // Layers
+      Garnish.uiLayerManager.on('addLayer', () => {
+        this.handleLayerUpdates();
+      });
+
+      Garnish.uiLayerManager.on('removeLayer', () => {
+        this.handleLayerUpdates();
+      });
 
       // Does this page have a primary form?
       if (!this.$primaryForm.length) {
@@ -220,9 +240,25 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Should we match the previous scroll position?
-      let scrollY = Craft.getLocalStorage('scrollY');
-      if (typeof scrollY !== 'undefined') {
-        Craft.removeLocalStorage('scrollY');
+      let scrollY;
+      const location = document.location;
+      const params = new URLSearchParams(location.search);
+      if (params.has('scrollY')) {
+        scrollY = params.get('scrollY');
+        params.delete('scrollY');
+        Craft.setUrl(
+          Craft.getUrl(
+            `${location.origin}${location.pathname}${location.hash}`,
+            params.toString()
+          )
+        );
+      } else {
+        scrollY = Craft.getLocalStorage('scrollY');
+        if (scrollY !== undefined) {
+          Craft.removeLocalStorage('scrollY');
+        }
+      }
+      if (scrollY !== undefined) {
         Garnish.$doc.ready(() => {
           Garnish.requestAnimationFrame(() => {
             window.scrollTo(0, scrollY);
@@ -338,6 +374,11 @@ Craft.CP = Garnish.Base.extend(
 
       // Load any element thumbs
       this.elementThumbLoader.load(this.$pageContainer);
+
+      // Add notification close listeners
+      this.on('notificationClose', () => {
+        this.updateNotificationHeadingDisplay();
+      });
     },
 
     get $contentHeader() {
@@ -359,6 +400,10 @@ Craft.CP = Garnish.Base.extend(
       return $('<div id="content-notice"/>')
         .attr('role', 'status')
         .prependTo(this.$contentHeader);
+    },
+
+    get notificationCount() {
+      return this.$notificationContainer.find('.notification').length;
     },
 
     initSpecialForms: function () {
@@ -478,49 +523,38 @@ Craft.CP = Garnish.Base.extend(
       Craft.submitForm(this.$primaryForm, options);
     },
 
-    updateSidebarMenuLabel: function () {
-      this.updateContentHeading();
-    },
-
-    updateContentHeading: function () {
-      const $item = this.$sidebar.find('a.sel:first');
-      const $label = $item.children('.label');
-      $('#content-heading').text($label.length ? $label.text() : $item.text());
-      Garnish.$bod.removeClass('showing-sidebar');
-    },
-
     toggleNav: function () {
       const isExpanded = this.navIsExpanded();
 
       if (isExpanded === null) return;
 
       if (isExpanded) {
-        this.disableGlobalSidebarLinks();
+        this.disableGlobalSidebar();
         this.$navToggle.focus();
         this.$navToggle.attr('aria-expanded', 'false');
         Garnish.$bod.removeClass('showing-nav');
       } else {
-        this.enableGlobalSidebarLinks();
+        this.enableGlobalSidebar();
         this.$globalSidebar.find(':focusable')[0].focus();
         this.$navToggle.attr('aria-expanded', 'true');
         Garnish.$bod.addClass('showing-nav');
       }
     },
 
-    enableGlobalSidebarLinks: function () {
-      const focusableItems = this.$globalSidebar.find(':focusable');
-
-      $(focusableItems).each(function () {
-        $(this).attr('tabindex', '0');
-      });
+    /**
+     * Makes the global sidebar navigable by screen reader and keyboard users
+     **/
+    enableGlobalSidebar: function () {
+      this.$globalSidebar.attr('aria-hidden', 'false');
+      this.$globalSidebar.find(':focusable').attr('tabindex', '0');
     },
 
-    disableGlobalSidebarLinks: function () {
-      const focusableItems = this.$globalSidebar.find(':focusable');
-
-      $(focusableItems).each(function () {
-        $(this).attr('tabindex', '-1');
-      });
+    /**
+     * Hides the global sidebar from screen reader and keyboard users
+     **/
+    disableGlobalSidebar: function () {
+      this.$globalSidebar.attr('aria-hidden', 'true');
+      this.$globalSidebar.find(':focusable').attr('tabindex', '-1');
     },
 
     setSidebarNavAttributes: function () {
@@ -529,9 +563,9 @@ Craft.CP = Garnish.Base.extend(
       if (isExpanded === null) return;
 
       if (!isExpanded) {
-        this.disableGlobalSidebarLinks();
+        this.disableGlobalSidebar();
       } else {
-        this.enableGlobalSidebarLinks();
+        this.enableGlobalSidebar();
       }
     },
 
@@ -763,6 +797,46 @@ Craft.CP = Garnish.Base.extend(
       this.handleBreadcrumbVisibility();
     },
 
+    handleLayerUpdates: function () {
+      // Exit if the number of modal layers remains the same
+      if (Garnish.uiLayerManager.modalLayers.length === this.modalLayers.length)
+        return;
+
+      // Store modal layers
+      this.modalLayers = Garnish.uiLayerManager.modalLayers;
+
+      if (this.announcerTimeout) {
+        clearTimeout(this.announcerTimeout);
+      }
+
+      if (Garnish.uiLayerManager.modalLayers.length === 0) {
+        this.$activeLiveRegion = this.$globalLiveRegion;
+      } else {
+        const $modal = Garnish.uiLayerManager.highestModalLayer.$container;
+        let modalObj;
+
+        if ($modal.hasClass('modal')) {
+          modalObj = $modal.data('modal');
+        } else if ($modal.hasClass('slideout-container')) {
+          modalObj = $modal.find('.slideout').data('slideout');
+        }
+
+        if (!modalObj) {
+          console.warn('There is no modal object');
+        }
+
+        if (!modalObj?.$liveRegion) {
+          console.warn('There is no live region in the active modal layer.');
+          this.$activeLiveRegion = null;
+        } else {
+          this.$activeLiveRegion = modalObj.$liveRegion;
+        }
+      }
+
+      // Empty in case it was already populated and not cleared
+      this.$activeLiveRegion?.empty();
+    },
+
     updateResponsiveTables: function () {
       for (
         this.updateResponsiveTables._i = 0;
@@ -822,7 +896,13 @@ Craft.CP = Garnish.Base.extend(
     },
 
     updateFixedHeader: function () {
-      if (this.isMobile) {
+      // Checking if the sidebar toggle is visible
+      // https://stackoverflow.com/a/21696585
+      if (
+        this.isMobile ||
+        (this.$sidebarToggle?.length &&
+          this.$sidebarToggle[0].offsetParent !== null)
+      ) {
         return;
       }
 
@@ -832,6 +912,7 @@ Craft.CP = Garnish.Base.extend(
         this.$headerContainer[0].getBoundingClientRect().top < 0
       ) {
         const headerHeight = this.$headerContainer.height();
+        const headerWidth = this.$header.width();
         if (!this.fixedHeader) {
           // Hard-set the minimum content container height
           this.$contentContainer.css(
@@ -841,20 +922,33 @@ Craft.CP = Garnish.Base.extend(
 
           // Hard-set the header container height
           this.$headerContainer.height(headerHeight);
+          this.$header.width(headerWidth);
           Garnish.$bod.addClass('fixed-header');
 
           this.fixedHeader = true;
         }
 
         this._setFixedTopPos(this.$sidebar, headerHeight);
-        this._setFixedTopPos(this.$details, headerHeight);
+        this.$detailsContainer.css('top', headerHeight + 14);
       } else if (this.fixedHeader) {
         this.$headerContainer.height('auto');
+        this.$header.width('auto');
         Garnish.$bod.removeClass('fixed-header');
         this.$contentContainer.css('min-height', '');
         this.$sidebar.removeClass('fixed').css('top', '');
-        this.$details.removeClass('fixed').css('top', '');
+        this.$detailsContainer.css('top', '');
         this.fixedHeader = false;
+      }
+    },
+
+    /**
+     * Updates display property of "Notifications" heading based on whether there are active notifications
+     **/
+    updateNotificationHeadingDisplay() {
+      if (this.notificationCount > 0) {
+        this.$notificationHeading.removeClass('hidden');
+      } else {
+        this.$notificationHeading.addClass('hidden');
       }
     },
 
@@ -883,7 +977,34 @@ Craft.CP = Garnish.Base.extend(
     },
 
     /**
-     * Dispays a notification.
+     * Updates the active live region with a screen reader announcement
+     *
+     * @param {string} message
+     */
+    announce: function (message) {
+      if (
+        !message ||
+        !this.$activeLiveRegion ||
+        !document.contains(this.$activeLiveRegion[0])
+      ) {
+        console.warn('There was an error announcing this message.');
+        return;
+      }
+
+      if (this.announcerTimeout) {
+        clearTimeout(this.announcerTimeout);
+      }
+
+      this.$activeLiveRegion?.empty().text(message);
+
+      // Clear message after interval
+      this.announcerTimeout = setTimeout(() => {
+        this.$activeLiveRegion?.empty();
+      }, 5000);
+    },
+
+    /**
+     * Displays a notification.
      *
      * @param {string} type `notice`, `success`, or `error`
      * @param {string} message
@@ -901,6 +1022,8 @@ Craft.CP = Garnish.Base.extend(
         message,
         notification,
       });
+
+      this.updateNotificationHeadingDisplay();
 
       return notification;
     },
@@ -998,7 +1121,7 @@ Craft.CP = Garnish.Base.extend(
       );
     },
 
-    displayAlerts: function (alerts) {
+    displayAlerts: function (alerts, animate = true) {
       this.$alerts.remove();
 
       if (Array.isArray(alerts) && alerts.length) {
@@ -1021,10 +1144,12 @@ Craft.CP = Garnish.Base.extend(
           $(`<li>${content}</li>`).appendTo(this.$alerts);
         }
 
-        var height = this.$alerts.outerHeight();
-        this.$alerts
-          .css('margin-top', -height)
-          .velocity({'margin-top': 0}, 'fast');
+        if (animate) {
+          const height = this.$alerts.outerHeight();
+          this.$alerts
+            .css('margin-top', -height)
+            .velocity({'margin-top': 0}, 'fast');
+        }
 
         this.initAlerts();
       }
@@ -1058,12 +1183,36 @@ Craft.CP = Garnish.Base.extend(
           );
         });
       }
+
+      const $resolvableButtonsContainer = this.$alerts.find(
+        '.resolvable-alert-buttons'
+      );
+      if ($resolvableButtonsContainer.length) {
+        const $refreshBtn = Craft.ui
+          .createButton({
+            label: Craft.t('app', 'Refresh'),
+            spinner: true,
+          })
+          .appendTo($resolvableButtonsContainer);
+        $refreshBtn.on('click', async () => {
+          $refreshBtn.addClass('loading');
+          try {
+            await Craft.sendApiRequest('GET', 'ping');
+            const alerts = await this.fetchAlerts();
+            this.displayAlerts(alerts, false);
+          } finally {
+            $refreshBtn.removeClass('loading');
+          }
+        });
+      }
     },
 
     updateContext: function (label, description) {
-      const contextBtn = document.getElementById('context-btn');
-      if (contextBtn) {
-        contextBtn.textContent = label;
+      const contextBtnLabel = document.querySelector(
+        '#context-menu-container > span'
+      );
+      if (contextBtnLabel) {
+        contextBtnLabel.textContent = label;
       }
 
       const menuItem = document.querySelector('#context-menu a.sel');
@@ -1118,10 +1267,16 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
-    checkForUpdates: function (forceRefresh, includeDetails, callback) {
+    checkForUpdates: function (
+      forceRefresh,
+      includeDetails,
+      onSuccess,
+      onFailure
+    ) {
       // Make 'includeDetails' optional
       if (typeof includeDetails === 'function') {
-        callback = includeDetails;
+        onFailure = onSuccess;
+        onSuccess = includeDetails;
         includeDetails = false;
       }
 
@@ -1132,19 +1287,30 @@ Craft.CP = Garnish.Base.extend(
         ((forceRefresh === true && !this.forcingRefreshOnUpdatesCheck) ||
           (includeDetails === true && !this.includingDetailsOnUpdatesCheck))
       ) {
-        var realCallback = callback;
-        callback = () => {
-          this.checkForUpdates(forceRefresh, includeDetails, realCallback);
+        const realOnSuccess = onSuccess;
+        const realOnFailure = onFailure;
+        onSuccess = () => {
+          this.checkForUpdates(
+            forceRefresh,
+            includeDetails,
+            realOnSuccess,
+            realOnFailure
+          );
         };
       }
 
-      // Callback function?
-      if (typeof callback === 'function') {
+      // Callback functions?
+      if (typeof onSuccess === 'function') {
         if (!Array.isArray(this.checkForUpdatesCallbacks)) {
           this.checkForUpdatesCallbacks = [];
         }
-
-        this.checkForUpdatesCallbacks.push(callback);
+        this.checkForUpdatesCallbacks.push(onSuccess);
+      }
+      if (typeof onFailure === 'function') {
+        if (!Array.isArray(this.checkForUpdatesFailureCallbacks)) {
+          this.checkForUpdatesFailureCallbacks = [];
+        }
+        this.checkForUpdatesFailureCallbacks.push(onFailure);
       }
 
       if (!this.checkingForUpdates) {
@@ -1152,23 +1318,36 @@ Craft.CP = Garnish.Base.extend(
         this.forcingRefreshOnUpdatesCheck = forceRefresh === true;
         this.includingDetailsOnUpdatesCheck = includeDetails === true;
 
-        this._checkForUpdates(forceRefresh, includeDetails).then((info) => {
-          this.updateUtilitiesBadge();
-          this.checkingForUpdates = false;
+        this._checkForUpdates(forceRefresh, includeDetails)
+          .then((info) => {
+            this.updateUtilitiesBadge();
+            this.checkingForUpdates = false;
 
-          if (Array.isArray(this.checkForUpdatesCallbacks)) {
-            var callbacks = this.checkForUpdatesCallbacks;
-            this.checkForUpdatesCallbacks = null;
+            if (Array.isArray(this.checkForUpdatesCallbacks)) {
+              const callbacks = this.checkForUpdatesCallbacks;
+              this.checkForUpdatesCallbacks = null;
 
-            for (var i = 0; i < callbacks.length; i++) {
-              callbacks[i](info);
+              for (let callback of callbacks) {
+                callback(info);
+              }
             }
-          }
 
-          this.trigger('checkForUpdates', {
-            updateInfo: info,
+            this.trigger('checkForUpdates', {
+              updateInfo: info,
+            });
+          })
+          .catch(() => {
+            this.checkingForUpdates = false;
+
+            if (Array.isArray(this.checkForUpdatesFailureCallbacks)) {
+              const callbacks = this.checkForUpdatesFailureCallbacks;
+              this.checkForUpdatesFailureCallbacks = null;
+
+              for (let callback of callbacks) {
+                callback();
+              }
+            }
           });
-        });
       }
     },
 
@@ -1182,9 +1361,11 @@ Craft.CP = Garnish.Base.extend(
                 return;
               }
 
-              this._getUpdates(includeDetails).then((info) => {
-                resolve(info);
-              });
+              this._getUpdates(includeDetails)
+                .then((info) => {
+                  resolve(info);
+                })
+                .catch(reject);
             })
             .catch(reject);
         } else {
@@ -1214,9 +1395,11 @@ Craft.CP = Garnish.Base.extend(
       return new Promise((resolve, reject) => {
         Craft.sendApiRequest('GET', 'updates')
           .then((updates) => {
-            this._cacheUpdates(updates, includeDetails).then((data) => {
-              resolve(data);
-            });
+            this._cacheUpdates(updates, includeDetails)
+              .then((data) => {
+                resolve(data);
+              })
+              .catch(reject);
           })
           .catch(reject);
       });
@@ -1251,25 +1434,24 @@ Craft.CP = Garnish.Base.extend(
             Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
               .then(({data}) => {
                 // Get the existing utility nav badge and screen reader text, if any
-                let $badge = $utilitiesLink.children('.badge');
-                let $screenReaderText = $utilitiesLink.children(
+                let $badge = $utilitiesLink.children('.sidebar-action__badge');
+
+                if (data.badgeCount && !$badge.length) {
+                  $badge = $(
+                    '<span class="sidebar-action__badge">' +
+                      '<span class="badge" aria-hidden="true"></span>' +
+                      '<span class="visually-hidden" data-notification></span>' +
+                      '</span>'
+                  ).appendTo($utilitiesLink);
+                }
+
+                const $badgeLabel = $badge.children('.badge');
+                const $screenReaderText = $badge.children(
                   '[data-notification]'
                 );
 
                 if (data.badgeCount) {
-                  if (!$badge.length) {
-                    $badge = $(
-                      '<span class="badge" aria-hidden="true"/>'
-                    ).appendTo($utilitiesLink);
-                  }
-
-                  if (!$screenReaderText.length) {
-                    $screenReaderText = $(
-                      '<span class="visually-hidden" data-notification/>'
-                    ).appendTo($utilitiesLink);
-                  }
-
-                  $badge.text(data.badgeCount);
+                  $badgeLabel.text(data.badgeCount);
                   $screenReaderText.text(
                     Craft.t(
                       'app',
@@ -1279,10 +1461,10 @@ Craft.CP = Garnish.Base.extend(
                       }
                     )
                   );
-                } else if ($badge.length && $screenReaderText.length) {
+                } else if ($badge.length) {
                   $badge.remove();
-                  $screenReaderText.remove();
                 }
+
                 resolve();
               })
               .catch(reject);
@@ -1339,6 +1521,14 @@ Craft.CP = Garnish.Base.extend(
     },
 
     _trackJobProgressInternal: function () {
+      if (!Craft.remainingSessionTime) {
+        // Try again after login
+        Garnish.once(Craft.AuthManager, 'login', () => {
+          this._trackJobProgressInternal();
+        });
+        return;
+      }
+
       this.trackingJobProgress = true;
 
       Craft.queue.push(async () => {
@@ -1367,10 +1557,16 @@ Craft.CP = Garnish.Base.extend(
           );
           data = response.data;
         } catch (e) {
-          // only throw if we weren't expecting this
-          if (this.trackingJobProgress) {
+          if (e?.response?.status === 400) {
+            // Try again after login
+            Garnish.once(Craft.AuthManager, 'login', () => {
+              this._trackJobProgressInternal();
+            });
+          } else if (this.trackingJobProgress) {
+            // only throw if we weren't expecting this
             throw e;
           }
+          return;
         } finally {
           this.trackingJobProgress = false;
           this.trackJobProgressTimeout = null;
@@ -1727,6 +1923,7 @@ Craft.CP.Notification = Garnish.Base.extend({
         duration: 'fast',
         complete: () => {
           this.destroy();
+          Craft.cp.trigger('notificationClose');
         },
       }
     );
@@ -1779,6 +1976,7 @@ var JobProgressIcon = Garnish.Base.extend({
   $a: null,
   $label: null,
   $progressLabel: null,
+  $tooltip: $(),
 
   progress: null,
   failMode: false,
@@ -1806,19 +2004,38 @@ var JobProgressIcon = Garnish.Base.extend({
   _progressBar: null,
 
   init: function () {
-    this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
+    this.$li = $('<li/>', {
+      class: 'nav-item nav-item--job',
+    }).appendTo(Craft.cp.$nav.children('ul'));
     this.$a = $('<a/>', {
       id: 'job-icon',
+      class: 'sidebar-action sidebar-action--job',
       href: Craft.canAccessQueueManager
         ? Craft.getUrl('utilities/queue-manager')
         : null,
     }).appendTo(this.$li);
-    this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
-    var $labelContainer = $('<span class="label"/>').appendTo(this.$a);
-    this.$label = $('<span/>').appendTo($labelContainer);
+    const $prefixContainer = $('<span class="sidebar-action__prefix"/>');
+    this.$canvasContainer = $('<span class="nav-icon"/>').appendTo(
+      $prefixContainer
+    );
+    $prefixContainer.appendTo(this.$a);
+
+    const $labelContainer = $('<span class="sidebar-action__label">');
+    $labelContainer.appendTo(this.$a);
+    this.$label = $('<span class="label"/>').appendTo($labelContainer);
     this.$progressLabel = $('<span class="progress-label"/>')
       .appendTo($labelContainer)
       .hide();
+
+    // If the sidebar is collapsed, make sure to add a tooltip.
+    // CraftGlobalSidebar.js will handle removing it and adding it back on expand/contract
+    if (Garnish.$bod.data('sidebar') === 'collapsed') {
+      this.$tooltip = $('<craft-tooltip/>', {
+        placement: 'right',
+        'self-managed': true,
+        'aria-label': this.$label.text(),
+      }).appendTo(this.$a);
+    }
 
     let m = window.devicePixelRatio > 1 ? 2 : 1;
     this._canvasSize = 18 * m;
@@ -1826,9 +2043,9 @@ var JobProgressIcon = Garnish.Base.extend({
     this._arcRadius = 7 * m;
     this._lineWidth = 3 * m;
 
-    this._$bgCanvas = this._createCanvas('bg', '#61666b');
-    this._$staticCanvas = this._createCanvas('static', '#d7d9db');
-    this._$hoverCanvas = this._createCanvas('hover', '#fff');
+    this._$bgCanvas = this._createCanvas('bg', '#a3afbb');
+    this._$staticCanvas = this._createCanvas('static', this.$li.css('color'));
+    this._$hoverCanvas = this._createCanvas('hover', this.$li.css('color'));
     this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
 
     this._staticCtx = this._$staticCanvas[0].getContext('2d');
@@ -1839,12 +2056,15 @@ var JobProgressIcon = Garnish.Base.extend({
   },
 
   setDescription: function (description, progressLabel) {
-    this.$a.attr('title', description);
     this.$label.text(description);
     if (progressLabel) {
       this.$progressLabel.text(progressLabel).show();
     } else {
       this.$progressLabel.hide();
+    }
+
+    if (this.$tooltip.length) {
+      this.$tooltip.attr('aria-label', description);
     }
   },
 
@@ -1870,7 +2090,7 @@ var JobProgressIcon = Garnish.Base.extend({
       this._$bgCanvas.velocity('fadeOut');
 
       this._animateArc(1, 1, () => {
-        this.$a.remove();
+        this.$li.remove();
         this.destroy();
       });
     });

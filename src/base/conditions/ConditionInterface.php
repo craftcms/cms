@@ -9,9 +9,10 @@ use yii\base\InvalidArgumentException;
  *
  * A base implementation is provided by [[BaseCondition]].
  *
+ * @mixin BaseCondition
+ * @phpstan-require-extends BaseCondition
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @mixin BaseCondition
  */
 interface ConditionInterface
 {
@@ -29,6 +30,14 @@ interface ConditionInterface
      * @return string
      */
     public function getBuilderInnerHtml(bool $autofocusAddButton = false): string;
+
+    /**
+     * Returns configuration that should be maintained for the builder.
+     *
+     * @return array
+     * @since 5.1.0
+     */
+    public function getBuilderConfig(): array;
 
     /**
      * Returns the condition’s portable config.

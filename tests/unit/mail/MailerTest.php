@@ -9,6 +9,7 @@ namespace crafttests\unit\mail;
 
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\SiteNotFoundException;
 use craft\mail\Message;
 use craft\models\SystemMessage;
@@ -135,8 +136,7 @@ class MailerTest extends TestCase
      */
     public function testSendMessageCustomTemplate(): void
     {
-        // Only works for rich peeps.
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
         $this->mailer->template = 'withvar';
 
         $this->_sendMail('test@craft.test');

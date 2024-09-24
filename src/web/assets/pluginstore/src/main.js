@@ -5,7 +5,13 @@
 import Vue from 'vue';
 import axios from 'axios';
 import {currency} from './js/filters/currency';
-import {escapeHtml, formatDate, formatNumber, t} from './js/filters/craft';
+import {
+  escapeHtml,
+  uppercaseFirst,
+  formatDate,
+  formatNumber,
+  t,
+} from './js/filters/craft';
 import router from './js/router';
 import store from './js/store';
 import {mapState} from 'vuex';
@@ -23,6 +29,7 @@ import CLightswitch from './js/components/ui/CLightswitch';
 
 Vue.filter('currency', currency);
 Vue.filter('escapeHtml', escapeHtml);
+Vue.filter('uppercaseFirst', uppercaseFirst);
 Vue.filter('formatDate', formatDate);
 Vue.filter('formatNumber', formatNumber);
 Vue.filter('t', t);

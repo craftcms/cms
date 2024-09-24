@@ -10,7 +10,7 @@
                 <div class="select">
                     <select id="site-id" name="siteId">
                         {% for site in editableSites %}
-                            <option value="{{ site.id }}"{% if site.id == widget.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
+                            <option value="{{ site.id }}"{% if site.id == siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -33,15 +33,13 @@
         id: 'section',
         name: 'section',
         options: sectionOptions,
-        value: widget.section,
+        value: sectionId,
         toggle: true,
         targetPrefix: 'section'
     }) }}
 
-    {% set selectedSectionId = widget.section %}
-
     {% for section in sections %}
-        {% set showSection = ((not selectedSectionId and loop.first) or selectedSectionId == section.id) %}
+        {% set showSection = ((not sectionId and loop.first) or sectionId == section.id) %}
         <div id="section{{ section.id }}"{% if not showSection %} class="hidden"{% endif %}>
 
             {% set entryTypeOptions = [] %}
@@ -50,7 +48,7 @@
             {% endfor %}
 
             {% if entryTypeOptions|length == 1 %}
-                {{ hiddenInput("sections[#{section.id}][entryType]", widget.entryType) }}
+                {{ hiddenInput("sections[#{section.id}][entryType]", entryTypeId) }}
             {% else %}
                 {{ forms.selectField({
                     label: "Entry Type"|t('app'),
@@ -58,31 +56,11 @@
                     id: 'entryType',
                     name: 'sections['~section.id~'][entryType]',
                     options: entryTypeOptions,
-                    value: widget.entryType,
+                    value: entryTypeId,
                     toggle: true,
                     targetPrefix: 'section'~section.id~'-type'
                 }) }}
             {% endif %}
-
-            {% set entryTypes = section.getEntryTypes() %}
-            {% for entryType in entryTypes %}
-                {% set showEntryType = (((not showSection or not widget.entryType) and loop.first) or widget.entryType == entryType.id or entryTypes|length == 1) %}
-                {% set fieldOptions = (fieldsByEntryTypeId[entryType.id] ?? [])|map(layoutElement => {
-                    label: raw(layoutElement.getField().name|e ~ (layoutElement.required ? '<span class="required"></span>')),
-                    name: 'sections['~section.id~'][fields][]',
-                    value: layoutElement.getField().id,
-                    checked: (layoutElement.required or layoutElement.getField().id in widget.fields),
-                    disabled: layoutElement.required
-                }) %}
-
-                <div id="section{{ section.id }}-type{{ entryType.id }}"{% if not showEntryType %} class="hidden"{% endif %}>
-                    {{ forms.checkboxGroupField({
-                        label: "Fields"|t('app'),
-                        instructions: "Which fields should be visible in the widget?"|t('app'),
-                        options: fieldOptions,
-                    }) }}
-                </div>
-            {% endfor %}
         </div>
     {% endfor %}
 

@@ -9,6 +9,7 @@ namespace crafttests\unit\services;
 
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\WrongEditionException;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
@@ -222,7 +223,7 @@ class UserPermissionsTest extends TestCase
      */
     protected function _before(): void
     {
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
         Craft::$app->getProjectConfig()->rebuild();
         parent::_before();
 

@@ -12,6 +12,7 @@ use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\App;
 use craft\helpers\Cp;
@@ -26,7 +27,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Email extends Field implements InlineEditableFieldInterface, CopyableFieldInterface
+class Email extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, CopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -34,6 +35,14 @@ class Email extends Field implements InlineEditableFieldInterface, CopyableField
     public static function displayName(): string
     {
         return Craft::t('app', 'Email');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'at';
     }
 
     /**

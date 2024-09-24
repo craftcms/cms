@@ -17,6 +17,9 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
+use craft\enums\CmsEdition;
+use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidPluginException;
 use craft\errors\MissingComponentException;
 use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
@@ -44,6 +47,8 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
+use yii\mutex\MysqlMutex;
+use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
 
 /**
@@ -175,6 +180,9 @@ class App
      * If the string references an environment variable with a value of `true`
      * or `false`, a boolean value will be returned.
      *
+     * If the string references an environment variable that’s not defined,
+     * `null` will be returned.
+     *
      * ---
      *
      * ```php
@@ -197,8 +205,8 @@ class App
             $env = static::env($matches[1]);
 
             if ($env === null) {
-                // starts with $ but not an environment variable/constant, so just give up, it's hopeless!
-                return $value;
+                // No env var or constant is defined here by that name
+                return null;
             }
 
             $value = $env;
@@ -239,7 +247,11 @@ class App
             return null;
         }
 
-        return filter_var(static::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        $value = static::parseEnv($value);
+        if ($value === null) {
+            return null;
+        }
+        return filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
     }
 
     /**
@@ -314,27 +326,30 @@ class App
     /**
      * Returns an array of all known Craft editions’ IDs.
      *
-     * @return array All the known Craft editions’ IDs.
+     * @return int[] All the known Craft editions’ IDs.
+     * @deprecated in 5.0.0. [[CmsEdition::cases()]] should be used instead.
      */
     public static function editions(): array
     {
-        return [Craft::Solo, Craft::Pro];
+        return array_map(fn(CmsEdition $edition) => $edition->value, CmsEdition::cases());
     }
 
     /**
      * Returns the handle of the given Craft edition.
      *
      * @param int $edition An edition’s ID.
-     * @return string The edition’s name.
+     * @return string The edition’s handle.
+     * @throws InvalidArgumentException if $edition is invalid
      * @since 3.1.0
+     * @deprecated in 5.0.0. [[CmsEdition::handle()]] should be used instead.
      */
     public static function editionHandle(int $edition): string
     {
-        return match ($edition) {
-            Craft::Solo => 'solo',
-            Craft::Pro => 'pro',
-            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
-        };
+        $handle = CmsEdition::tryFrom($edition)?->handle();
+        if ($handle === null) {
+            throw new InvalidArgumentException("Invalid edition ID: $edition");
+        }
+        return $handle;
     }
 
     /**
@@ -342,14 +357,16 @@ class App
      *
      * @param int $edition An edition’s ID.
      * @return string The edition’s name.
+     * @throws InvalidArgumentException if $edition is invalid
+     * @deprecated in 5.0.0. [[CmsEdition::name]] should be used instead.
      */
     public static function editionName(int $edition): string
     {
-        return match ($edition) {
-            Craft::Solo => 'Solo',
-            Craft::Pro => 'Pro',
-            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
-        };
+        $name = CmsEdition::tryFrom($edition)?->name;
+        if ($name === null) {
+            throw new InvalidArgumentException("Invalid edition ID: $edition");
+        }
+        return $name;
     }
 
     /**
@@ -359,14 +376,11 @@ class App
      * @return int The edition’s ID
      * @throws InvalidArgumentException if $handle is invalid
      * @since 3.1.0
+     * @deprecated in 5.0.0. [[CmsEdition::fromHandle()]] should be used instead.
      */
     public static function editionIdByHandle(string $handle): int
     {
-        return match ($handle) {
-            'solo' => Craft::Solo,
-            'pro' => Craft::Pro,
-            default => throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle),
-        };
+        return CmsEdition::fromHandle($handle)->value;
     }
 
     /**
@@ -374,14 +388,14 @@ class App
      *
      * @param mixed $edition An edition’s ID (or is it?)
      * @return bool Whether $edition is a valid edition ID.
+     * @deprecated in 5.0.0. [[CmsEdition::tryFrom()]] should be used instead.
      */
     public static function isValidEdition(mixed $edition): bool
     {
-        if ($edition === false || $edition === null) {
-            return false;
-        }
-
-        return (is_numeric((int)$edition) && in_array((int)$edition, static::editions(), true));
+        return (
+            is_numeric($edition) &&
+            CmsEdition::tryFrom((int)$edition) !== null
+        );
     }
 
     /**
@@ -421,12 +435,26 @@ class App
      */
     public static function normalizeValue(mixed $value): mixed
     {
-        return match (is_string($value) ? strtolower($value) : $value) {
-            'true' => true,
-            'false' => false,
-            'null' => null,
-            default => Number::isIntOrFloat($value) ? Number::toIntOrFloat($value) : $value,
-        };
+        if (is_string($value)) {
+            switch (strtolower($value)) {
+                case 'true':
+                    return true;
+                case 'false':
+                    return false;
+                case 'null':
+                    return null;
+            }
+
+            if (Number::isIntOrFloat($value)) {
+                $intOrFloat = Number::toIntOrFloat($value);
+                // make sure we didn't lose any precision
+                if ((string)$intOrFloat === $value) {
+                    return $intOrFloat;
+                }
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -610,6 +638,7 @@ class App
 
         if (
             getenv('PHP_BINARY') === false &&
+            /** @phpstan-ignore-next-line */
             PHP_BINARY &&
             PHP_SAPI === 'cgi-fcgi' &&
             str_ends_with(PHP_BINARY, 'php-cgi')
@@ -704,7 +733,7 @@ class App
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
-     * <config4:phpMaxMemoryLimit> config setting, and gives the script an
+     * <config5:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
      */
     public static function maxPowerCaptain(): void
@@ -913,7 +942,7 @@ class App
             'dsn' => $dbConfig->dsn,
             'username' => $dbConfig->user,
             'password' => $dbConfig->password,
-            'charset' => $dbConfig->charset,
+            'charset' => $dbConfig->getCharset(),
             'tablePrefix' => $dbConfig->tablePrefix ?? '',
             'enableLogging' => static::devMode(),
             'enableProfiling' => static::devMode(),
@@ -984,6 +1013,28 @@ class App
     }
 
     /**
+     * Returns a database-based mutex driver config.
+     *
+     * @return array
+     * @since 4.6.0
+     */
+    public static function dbMutexConfig(): array
+    {
+        if (Craft::$app->getDb()->getIsMysql()) {
+            return [
+                'class' => MysqlMutex::class,
+                'db' => 'db2',
+                'keyPrefix' => Craft::$app->getEnvId(),
+            ];
+        }
+
+        return [
+            'class' => PgsqlMutex::class,
+            'db' => 'db2',
+        ];
+    }
+
+    /**
      * Returns a file-based mutex driver config.
      *
      * ::: tip
@@ -994,6 +1045,7 @@ class App
      *
      * @return array
      * @since 3.0.18
+     * @deprecated in 4.6.0
      */
     public static function mutexConfig(): array
     {
@@ -1026,7 +1078,7 @@ class App
      */
     public static function sessionConfig(): array
     {
-        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->id);
+        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->getEnvId());
 
         return [
             'class' => Session::class,
@@ -1056,7 +1108,7 @@ class App
             $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         }
 
-        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->id);
+        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->getEnvId());
 
         return [
             'class' => WebUser::class,
@@ -1204,5 +1256,227 @@ class App
 
         // Default to the application locale
         return Craft::$app->getLocale();
+    }
+
+    /**
+     * Returns all known licensing issues.
+     *
+     * @param bool $withUnresolvables
+     * @param bool $fetch
+     * @return array{0:string,1:string,2:array|null}[]
+     * @internal
+     */
+    public static function licensingIssues(bool $withUnresolvables = true, bool $fetch = false): array
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        if (!$user) {
+            return [];
+        }
+
+        $updatesService = Craft::$app->getUpdates();
+        $cache = Craft::$app->getCache();
+        $isInfoCached = $cache->exists('licenseInfo') && $updatesService->getIsUpdateInfoCached();
+
+        if (!$isInfoCached) {
+            if (!$fetch) {
+                return [];
+            }
+
+            $updatesService->getUpdates(true);
+        }
+
+        $issues = [];
+
+        $allLicenseInfo = $cache->get('licenseInfo') ?: [];
+        $pluginsService = Craft::$app->getPlugins();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+
+        foreach ($allLicenseInfo as $handle => $licenseInfo) {
+            $isCraft = $handle === 'craft';
+            if ($isCraft) {
+                $name = 'Craft';
+                $editions = array_map(fn(CmsEdition $edition) => $edition->handle(), CmsEdition::cases());
+                $currentEdition = Craft::$app->edition->handle();
+                $currentEditionName = Craft::$app->edition->name;
+                $licensedEdition = isset($licenseInfo['edition']) ? CmsEdition::fromHandle($licenseInfo['edition']) : CmsEdition::Solo;
+                $licenseEditionName = $licensedEdition->name;
+                $version = Craft::$app->getVersion();
+            } else {
+                if (!str_starts_with($handle, 'plugin-')) {
+                    continue;
+                }
+                $handle = StringHelper::removeLeft($handle, 'plugin-');
+
+                try {
+                    $pluginInfo = $pluginsService->getPluginInfo($handle);
+                } catch (InvalidPluginException) {
+                    continue;
+                }
+
+                $plugin = $pluginsService->getPlugin($handle);
+                if (!$plugin) {
+                    continue;
+                }
+
+                $name = $plugin->name;
+                $editions = $plugin::editions();
+                $currentEdition = $pluginInfo['edition'];
+                $currentEditionName = ucfirst($currentEdition);
+                $licenseEditionName = ucfirst($licenseInfo['edition'] ?? 'standard');
+                $version = $pluginInfo['version'];
+            }
+
+            $isMultiEdition = count($editions) > 1;
+
+            if ($licenseInfo['status'] === LicenseKeyStatus::Invalid->value) {
+                // invalid license
+                if ($withUnresolvables) {
+                    $issues[] = [
+                        $name,
+                        Craft::t('app', 'The {name} license is invalid.', ['name' => $name]),
+                        null,
+                    ];
+                }
+            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Trial->value) {
+                // trial license
+                $issues[] = [
+                    $isMultiEdition ? sprintf('%s %s', $name, $currentEditionName) : $name,
+                    Craft::t('app', '{name} requires purchase.', ['name' => $name]),
+                    array_filter([
+                        'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                        'plugin' => !$isCraft ? $handle : null,
+                        'licenseId' => $licenseInfo['id'],
+                        'edition' => $currentEdition,
+                    ]),
+                ];
+            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched->value) {
+                if ($withUnresolvables) {
+                    if ($isCraft) {
+                        // wrong domain
+                        $licensedDomain = $cache->get('licensedDomain');
+                        $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
+                            'rel' => 'noopener',
+                            'target' => '_blank',
+                        ]);
+
+                        if (defined('CRAFT_LICENSE_KEY')) {
+                            $message = Craft::t('app', 'The Craft CMS license key in use belongs to {domain}', [
+                                'domain' => $domainLink,
+                            ]);
+                        } else {
+                            $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
+
+                            // If the license key path starts with the root project path, trim the project path off
+                            $rootPath = Craft::getAlias('@root');
+                            if (strpos($keyPath, $rootPath . '/') === 0) {
+                                $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                            }
+
+                            $message = Craft::t('app', 'The Craft CMS license located at {file} belongs to {domain}.', [
+                                'file' => $keyPath,
+                                'domain' => $domainLink,
+                            ]);
+                        }
+
+                        $learnMoreLink = Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/support/resolving-mismatched-licenses', [
+                            'class' => 'go',
+                        ]);
+                        $issues[] = [$name, "$message $learnMoreLink", null];
+                    } else {
+                        // wrong Craft install
+                        $issues[] = [
+                            $name,
+                            Craft::t('app', 'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.', [
+                                'name' => $name,
+                                'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseInfo['id']}",
+                                'buyUrl' => $user->admin && $generalConfig->allowAdminChanges
+                                    ? UrlHelper::cpUrl("plugin-store/buy/$handle/$currentEdition")
+                                    : "https://plugins.craftcms.com/$handle",
+                            ]),
+                            null,
+                        ];
+                    }
+                }
+            } elseif ($licenseInfo['edition'] !== $currentEdition) {
+                // wrong edition
+                $message = Craft::t('app', '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.', [
+                    'name' => $name,
+                    'licenseEdition' => $licenseEditionName,
+                    'currentEdition' => $currentEditionName,
+                ]);
+                $currentEditionIdx = array_search($currentEdition, $editions);
+                $licenseEditionIdx = array_search($licenseInfo['edition'], $editions);
+                if ($currentEditionIdx !== false && $licenseEditionIdx !== false && $currentEditionIdx > $licenseEditionIdx) {
+                    $issues[] = [
+                        $isMultiEdition ? sprintf('%s %s', $name, $currentEditionName) : $name,
+                        $message,
+                        [
+                            'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
+                            'edition' => $currentEdition,
+                            'licenseId' => $licenseInfo['id'],
+                        ],
+                    ];
+                }
+            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Astray->value) {
+                // updated too far
+                $issues[] = [
+                    sprintf('%s %s', $name, $version),
+                    Craft::t('app', '{name} isn’t licensed to run version {version}.', [
+                        'name' => $name,
+                        'version' => $version,
+                    ]),
+                    array_filter([
+                        'type' => $isCraft ? 'cms-renewal' : 'plugin-renewal',
+                        'plugin' => !$isCraft ? $handle : null,
+                        'licenseId' => $licenseInfo['id'],
+                    ]),
+                ];
+            }
+        }
+
+        return $issues;
+    }
+
+    /**
+     * Returns the license_shun cookie name.
+     *
+     * @return string
+     * @internal
+     */
+    public static function licenseShunCookieName(): string
+    {
+        return sprintf('%s_license_shun', md5('Craft.' . WebUser::class . '.' . Craft::$app->id));
+    }
+
+    /**
+     * Returns a hash of the given licensing issues.
+     *
+     * @param array $issues
+     * @return string
+     * @internal
+     */
+    public static function licensingIssuesHash(array $issues): string
+    {
+        $resolveItems = array_map(fn($issue) => Json::encode($issue[2]), $issues);
+        sort($resolveItems);
+        return md5(implode('', $resolveItems));
+    }
+
+    /**
+     * Configures an object with property values.
+     *
+     * This is identical to [[\BaseYii::configure()]], except this class is safe to be called during application
+     * bootstrap, whereas `\BaseYii` is not.
+     *
+     * @param object $object the object to be configured
+     * @param array $properties the property initial values given in terms of name-value pairs.
+     * @since 5.3.0
+     */
+    public static function configure(object $object, array $properties): void
+    {
+        foreach ($properties as $name => $value) {
+            $object->$name = $value;
+        }
     }
 }

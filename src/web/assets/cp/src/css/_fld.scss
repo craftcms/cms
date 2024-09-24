@@ -1,26 +1,31 @@
 @charset "UTF-8";
-@import '@craftcms/sass/mixins';
+@use 'sass:color';
+@use '@craftcms/sass/mixins';
 
 $base: 24px;
 $tabPadding: 14px;
-$tabWidth: $base * 10;
-$gridColor: hsl(212, 50%, 95%);
+$tabWidth: $base * 11;
+$gridColor: var(--gray-100);
 
-@mixin workspaceBg {
+@mixin workspace-bg {
   background-color: var(--gray-050);
-  background-image: linear-gradient(to right, $gridColor 1px, transparent 0px),
+  background-image: linear-gradient(to right, $gridColor 1px, transparent 0),
     linear-gradient(to bottom, $gridColor 1px, transparent 1px);
   background-size: $base $base;
 }
 
 .layoutdesigner {
+  container-type: inline-size;
+}
+
+.fld-container {
   display: flex;
   align-items: stretch;
   position: relative;
-  @include input-styles;
+  @include mixins.input-styles;
   overflow: hidden;
   box-shadow: none;
-  @include padding-right($tabWidth + 1);
+  padding-inline-end: $tabWidth + 1;
   min-height: 500px;
 
   .errors > & {
@@ -29,16 +34,15 @@ $gridColor: hsl(212, 50%, 95%);
 
   .fld-workspace {
     flex: 1;
-    @include border-radius(
-      var(--small-border-radius),
-      0,
-      0,
-      var(--small-border-radius)
-    );
-    @include padding($base, 0, $base, $base);
-    @include workspaceBg;
+    border-start-start-radius: calc(var(--small-border-radius) - 1px);
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    border-end-start-radius: calc(var(--small-border-radius) - 1px);
+    padding-inline: $base 0;
+    padding-block: $base;
+    @include workspace-bg;
     background-position: -1px -1px;
-    box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
+    box-shadow: inset 0 1px 3px -1px color.adjust(mixins.$grey200, $lightness: -10%);
 
     .fld-tabs {
       display: flex;
@@ -47,86 +51,114 @@ $gridColor: hsl(212, 50%, 95%);
     }
   }
 
-  .fld-sidebar {
+  &:not(:has(.fld-library)) {
+    padding-inline-end: 0;
+
+    .fld-workspace {
+      padding-inline-end: $base;
+    }
+  }
+
+  .fld-library {
     position: absolute;
-    top: 0;
-    @include right(0);
+    inset-block-start: 0;
+    inset-inline-end: 0;
     height: 100%;
     width: $tabWidth + 1;
     padding: $tabPadding;
-    overflow: auto;
-    box-sizing: border-box;
-
-    .btngroup {
-      margin-bottom: $tabPadding;
-    }
-
-    .fld-field-library {
-      .fld-field-group {
-        margin-top: $tabPadding;
-
-        h6 {
-          margin-bottom: 7px;
-        }
-      }
-    }
-
-    .filtered {
-      display: none;
-    }
-  }
-
-  .fld-new-tab-btn:active {
-    background-color: var(--gray-050);
   }
 }
 
-.fld-sidebar,
+.fld-new-tab-btn:active {
+  background-color: var(--gray-050);
+}
+
+.fld-library-menu {
+  width: $tabWidth;
+  margin-inline-start: $tabPadding * -1;
+  padding: $tabPadding;
+}
+
+.fld-library {
+  display: flex;
+  flex-direction: column;
+
+  .btngroup {
+    margin-block-end: $tabPadding;
+  }
+
+  .fld-field-library {
+    margin: -3px;
+    padding: 3px;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+
+    .fld-field-group {
+      margin-block-start: $tabPadding;
+
+      & > *:not(:first-child) {
+        margin-block-start: var(--s);
+      }
+    }
+  }
+
+  .fld-ui-library > *:not(:first-child) {
+    margin-block-start: var(--s);
+  }
+
+  .filtered {
+    display: none;
+  }
+}
+
+.layoutdesigner .fld-library,
 .fld-tab .tabs .tab,
 .fld-tab .fld-tabcontent,
 .fld-new-tab-btn,
 .fld-new-tab-btn:hover {
   background-color: var(--white);
-  box-shadow: 0 0 0 1px transparentize($grey900, 0.9),
-    0 2px 5px -2px transparentize($grey900, 0.8);
+  box-shadow:
+    0 0 0 1px color.adjust(mixins.$grey900, $alpha: -0.9),
+    0 2px 5px -2px color.adjust(mixins.$grey900, $alpha: -0.8);
 }
 
-.fld-tab .settings,
-.fld-element .settings,
-.fld-element .slide-picker {
-  @include margin-left(7px);
-}
-
-.fld-tab .settings:before,
-.fld-element .settings:before {
-  margin-top: -2px;
+.fld-tab .settings::before,
+.fld-element .settings::before {
+  margin-block-start: -2px;
   font-size: 16px;
   opacity: 0.5;
 }
 
-.fld-tab .settings:hover:before,
-.fld-tab .settings.active:before,
-.fld-element .settings:hover:before,
-.fld-element .settings.active:before {
+.fld-tab .settings:hover::before,
+.fld-tab .settings.active::before,
+.fld-element .settings:hover::before,
+.fld-element .settings.active::before {
   opacity: 1;
 }
 
 .fld-tab {
   width: $tabWidth + $base;
-  @include padding(0, $base + 1, $base, 0);
+  padding-inline: 0 $base + 1;
+  padding-block: 0 $base;
   box-sizing: border-box;
 
   .tabs {
-    margin: -10px -12px 0;
-    padding: 10px 12px 0;
+    margin-block: -10px 0;
+    margin-inline: -12px;
+    padding-block: 10px 0;
+    padding-inline: 12px;
     overflow: hidden;
     display: flex;
 
     .tab {
       display: flex;
+      align-items: center;
+      gap: var(--xs);
       max-width: calc(100% - 10px);
       box-sizing: border-box;
-      padding: 8px $tabPadding;
+      padding-block: 8px;
+      padding-inline: $tabPadding;
       border-radius: var(--medium-border-radius) var(--medium-border-radius) 0 0;
 
       body:not(.dragging) &.draggable {
@@ -144,12 +176,21 @@ $gridColor: hsl(212, 50%, 95%);
 
   .fld-tabcontent {
     padding: $tabPadding;
-    @include border-radius(
-      0,
-      var(--medium-border-radius),
-      var(--medium-border-radius),
-      var(--medium-border-radius)
-    );
+    border-start-start-radius: 0;
+    border-start-end-radius: var(--medium-border-radius);
+    border-end-end-radius: var(--medium-border-radius);
+    border-end-start-radius: var(--medium-border-radius);
+
+    & > .fld-element,
+    & > .fld-add-btn {
+      &:not(:first-child) {
+        margin-block-start: var(--s);
+      }
+    }
+
+    .fld-add-btn:not([aria-expanded='true']) {
+      display: none;
+    }
   }
 
   &.fld-insertion {
@@ -158,11 +199,13 @@ $gridColor: hsl(212, 50%, 95%);
       margin: -2px;
       border: 2px dashed var(--hairline-color);
       box-shadow: none;
-      @include workspaceBg;
+      @include workspace-bg;
     }
+
     .tabs .tab {
       background-position: -1px -1px;
     }
+
     .fld-tabcontent {
       background-position: -1px -13px;
     }
@@ -173,22 +216,12 @@ $gridColor: hsl(212, 50%, 95%);
   min-height: 24px;
 }
 
-.fld-indicator {
-  display: inline-flex;
-  font-size: 11px;
-  color: var(--uicontrol-color);
-  @include margin-left(4px);
-
-  & + .fld-indicator {
-    @include margin-left(2px);
-  }
-}
-
 .fld-element {
   position: relative;
   display: flex;
   align-items: center;
-  padding: 7px 10px;
+  padding: var(--s);
+  gap: var(--s);
   box-shadow: inset 0 0 0 1px var(--hairline-color);
   border-radius: var(--medium-border-radius);
   background-color: var(--white);
@@ -196,10 +229,6 @@ $gridColor: hsl(212, 50%, 95%);
   body:not(.dragging) & {
     cursor: move;
     cursor: grab;
-  }
-
-  & + .fld-element {
-    margin-top: 7px;
   }
 
   &.fld-insertion {
@@ -211,7 +240,7 @@ $gridColor: hsl(212, 50%, 95%);
   }
 
   &.draghelper {
-    @include shadow;
+    @include mixins.shadow;
   }
 
   &.fld-field {
@@ -222,25 +251,14 @@ $gridColor: hsl(212, 50%, 95%);
       box-shadow: none;
     }
 
-    .fld-field-hidden:not(.hidden) {
-      margin-top: -3px;
-      @include margin-right(5px);
-
-      &:before {
-        @include icon;
-        content: 'shuteye';
-      }
-    }
-
     .field-name {
-      .fld-element-label {
-        margin-bottom: 2px;
-      }
+      display: flex;
+      flex-direction: column;
+      gap: var(--xs);
     }
   }
 
   .fld-element-icon {
-    @include margin-right(5px);
     text-align: center;
 
     &,
@@ -250,7 +268,7 @@ $gridColor: hsl(212, 50%, 95%);
     }
 
     svg {
-      @include svg-mask(var(--ui-control-color));
+      @include mixins.svg-mask(var(--ui-control-color));
     }
   }
 
@@ -263,6 +281,7 @@ $gridColor: hsl(212, 50%, 95%);
       flex: 1;
       display: flex;
       align-items: center;
+      gap: var(--xs);
     }
 
     .fld-element-label h4,
@@ -282,16 +301,17 @@ $gridColor: hsl(212, 50%, 95%);
 
 .fld-hr,
 .fld-br {
+  position: relative;
+  flex: 1;
   display: flex;
   justify-content: center;
-  padding: 9px 10px;
 
-  &:before {
+  &::before {
     position: absolute;
     display: block;
-    top: calc(50% - 2px);
-    left: 10px;
-    width: calc(100% - 20px);
+    inset-block-start: calc(50% - 2px);
+    inset-inline-start: 0;
+    width: 100%;
     height: 4px;
     content: '';
     font-size: 0;
@@ -300,17 +320,22 @@ $gridColor: hsl(212, 50%, 95%);
 
   .smalltext {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background-color: var(--gray-100);
-    border-radius: 8px;
-    padding: 1px 7px;
+    border-radius: var(--large-border-radius);
+    padding-block: 0;
+    padding-inline: var(--s);
+    height: var(--touch-target-size);
   }
 }
 
-.fld-hr:before {
+.fld-hr::before {
   background-color: var(--gray-100);
 }
 
-.fld-br:before {
+.fld-br::before {
   background-image: repeating-linear-gradient(
     to right,
     var(--gray-100),
@@ -323,8 +348,10 @@ $gridColor: hsl(212, 50%, 95%);
 
 .fld-element-settings-body {
   flex: 1;
-  margin: -24px var(--neg-padding) 0;
-  padding: 24px var(--padding);
+  margin-block: -24px 0;
+  margin-inline: var(--neg-padding);
+  padding-block: 24px;
+  padding-inline: var(--padding);
   overflow: hidden auto;
   position: relative;
 }
@@ -333,9 +360,11 @@ $gridColor: hsl(212, 50%, 95%);
   position: relative;
   display: flex;
   flex-direction: row;
-  margin: 0 var(--neg-padding) -24px;
-  padding: var(--padding);
-  @include pane;
+  margin-block: 0 -24px;
+  margin-inline: var(--neg-padding);
+  padding-block: 5px;
+  padding-inline: var(--padding);
+  @include mixins.pane;
   background-color: var(--gray-050);
   z-index: 3;
 
@@ -344,10 +373,33 @@ $gridColor: hsl(212, 50%, 95%);
   }
 
   & > .btn {
-    @include margin-left(5px);
+    margin-inline-start: 5px;
   }
 
   & > .spinner {
-    @include margin(0, var(--neg-padding), 0, 0);
+    margin-inline: 0 var(--neg-padding);
+    margin-block: 0 0;
+  }
+}
+
+@container (width < #{$base + $tabWidth + $base + $tabWidth + 1}) {
+  .fld-container {
+    padding-inline-end: 0;
+
+    .fld-workspace {
+      padding-inline-end: $base;
+    }
+
+    & > .fld-library {
+      display: none;
+    }
+  }
+
+  .fld-tab {
+    .fld-tabcontent {
+      .fld-add-btn {
+        display: inline-flex !important;
+      }
+    }
   }
 }

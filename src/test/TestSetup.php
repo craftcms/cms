@@ -229,7 +229,6 @@ class TestSetup
         Craft::setAlias('@crafttestsfolder', $basePath . '/tests/_craft');
 
         // Normalize some Craft defined path aliases.
-        Craft::setAlias('@craft', CraftTest::normalizePathSeparators(Craft::getAlias('@craft')));
         Craft::setAlias('@lib', CraftTest::normalizePathSeparators(Craft::getAlias('@lib')));
         Craft::setAlias('@config', CraftTest::normalizePathSeparators(Craft::getAlias('@config')));
         Craft::setAlias('@contentMigrations', CraftTest::normalizePathSeparators(Craft::getAlias('@contentMigrations')));
@@ -348,7 +347,6 @@ class TestSetup
         Craft::setAlias('@vendor', $vendorPath);
         Craft::setAlias('@craftcms', $repoRoot);
         Craft::setAlias('@lib', $libPath);
-        Craft::setAlias('@craft', $srcPath);
         Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
         Craft::setAlias('@config', $configPath);
         Craft::setAlias('@contentMigrations', $contentMigrationsPath);
@@ -493,7 +491,7 @@ class TestSetup
             'site' => $site,
         ]);
 
-        $migration->safeUp();
+        $migration->up();
     }
 
     /**

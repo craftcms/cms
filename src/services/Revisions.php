@@ -100,7 +100,7 @@ class Revisions extends Component
                 $lastRevisionInfo &&
                 DateTimeHelper::toDateTime($lastRevisionInfo['dateCreated'])->getTimestamp() === $canonical->dateUpdated->getTimestamp() &&
                 // Make sure all its data is in-tact
-                $canonical::find()->revisionId($lastRevisionInfo['id'])->status(null)->exists()
+                $canonical::find()->id($lastRevisionInfo['id'])->revisions()->status(null)->siteId($canonical->siteId)->exists()
             ) {
                 // The canonical element hasn't been updated since the last revision's creation date,
                 // so there's no need to create a new one
@@ -122,16 +122,18 @@ class Revisions extends Component
         }
 
         // Fire a 'beforeCreateRevision' event
-        $event = new RevisionEvent([
-            'canonical' => $canonical,
-            'creatorId' => $creatorId,
-            'revisionNum' => $num,
-            'revisionNotes' => $notes,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
-        $notes = $event->revisionNotes;
-        $creatorId = $event->creatorId;
-        $canonical = $event->canonical;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_REVISION)) {
+            $event = new RevisionEvent([
+                'canonical' => $canonical,
+                'creatorId' => $creatorId,
+                'revisionNum' => $num,
+                'revisionNotes' => $notes,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
+            $notes = $event->revisionNotes;
+            $creatorId = $event->creatorId;
+            $canonical = $event->canonical;
+        }
 
         $elementsService = Craft::$app->getElements();
 

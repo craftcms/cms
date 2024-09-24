@@ -149,7 +149,12 @@ class Plugins extends Component
     public function init(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $this->_forceDisabledPlugins = is_array($generalConfig->disabledPlugins) ? array_flip($generalConfig->disabledPlugins) : $generalConfig->disabledPlugins;
+
+        if ($generalConfig->safeMode) {
+            $this->_forceDisabledPlugins = '*';
+        } else {
+            $this->_forceDisabledPlugins = is_array($generalConfig->disabledPlugins) ? array_flip($generalConfig->disabledPlugins) : $generalConfig->disabledPlugins;
+        }
 
         $this->_composerPluginInfo = [];
 

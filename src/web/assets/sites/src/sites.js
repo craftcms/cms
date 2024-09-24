@@ -53,12 +53,12 @@
                 groupId: response.data.group.id,
               });
             })
-            .catch(({response}) => {
-              if (response.data && response.data.errors) {
+            .catch((e) => {
+              if (e?.response?.data?.errors) {
                 Craft.cp.displayError(
                   Craft.t('app', 'Could not create the group:') +
                     '\n\n' +
-                    response.data.errors.join('\n')
+                    e.response.data.errors.join('\n')
                 );
               } else {
                 Craft.cp.displayError();
@@ -82,12 +82,12 @@
               this.$selectedGroup.data('raw-name', newName);
               Craft.cp.displaySuccess(Craft.t('app', 'Group renamed.'));
             })
-            .catch(({response}) => {
-              if (response.data && response.data.errors) {
+            .catch((e) => {
+              if (e?.response?.data?.errors) {
                 Craft.cp.displayError(
                   Craft.t('app', 'Could not rename the group:') +
                     '\n\n' +
-                    response.data.errors.join('\n')
+                    e.response.data.errors.join('\n')
                 );
               } else {
                 Craft.cp.displayError();
@@ -101,7 +101,7 @@
       return new Promise((resolve, reject) => {
         Craft.sendActionRequest('POST', 'sites/rename-group-field', {
           data: {name: oldName},
-        }).then((response) => {
+        }).then(async (response) => {
           let $form = $('<form/>', {class: 'modal prompt'}).appendTo(
             Garnish.$bod
           );
@@ -120,7 +120,7 @@
             text: Craft.t('app', 'Save'),
           }).appendTo($buttons);
 
-          Craft.appendBodyHtml(response.data.js);
+          await Craft.appendBodyHtml(response.data.js);
 
           let success = false;
           let modal = new Garnish.Modal($form, {
@@ -206,7 +206,7 @@
       // Auto-focus the first radio
       if (!Garnish.isMobileBrowser(true)) {
         setTimeout(() => {
-          this.$deleteActionRadios.first().trigger('focus');
+          this.$deleteActionRadios.first().focus();
         }, 100);
       }
 

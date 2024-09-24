@@ -39,15 +39,9 @@
         }) }}
       {% endif %}
 
-      {% if showResetPassword %}
-        {% set forgotPasswordLink %}
-          <a class="login-forgot-password" tabindex="0" role="button">{{ 'Forgot password?'|t('app') }}</a>
-        {% endset %}
-      {% endif %}
       {{ forms.passwordField({
         label: 'Password'|t('app'),
-        labelExtra: forgotPasswordLink ?? null,
-        fieldClass: staticEmail ? 'first' : null,
+        fieldClass: staticEmail ? 'first mb-0' : 'mb-0',
         class: 'login-password',
         name: 'password',
         autocomplete: 'current-password',
@@ -57,6 +51,9 @@
           },
         },
       }) }}
+      {% if showResetPassword %}
+          <a class="login-forgot-password" tabindex="0" role="button">{{ 'Forgot password?'|t('app') }}</a>
+      {% endif %}
 
       {% if showRememberMeCheckbox and generalConfig.rememberedUserSessionDuration %}
         {{ forms.checkboxField({
@@ -113,10 +110,10 @@
       </form>
     {% endif %}
 
-    <div class="login-errors hidden" role="status"></div>
+    <div class="login-errors hidden"></div>
   </div>
 
-  <div class="alternative-login-methods hidden">
+  <div class="flex alternative-login-methods hidden">
     {{ forms.button({
       id: 'webauthn-login',
       class: ['login-passkey-btn', 'hidden'],
@@ -127,5 +124,11 @@
       failureMessage: 'Sign in unsuccessful'|t('app'),
       retryMessage: 'Sign in with a passkey'|t('app'),
     }) }}
+
+    {% if CraftEdition == CraftEnterprise %}
+      {% for provider in craft.app.sso.providers %}
+        {{ provider.getCpLoginHtml()|raw }}
+      {% endfor %}
+    {% endif %}
   </div>
 </div>

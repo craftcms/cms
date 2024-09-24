@@ -12,6 +12,7 @@ use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -25,7 +26,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Color extends Field implements InlineEditableFieldInterface, CopyableFieldInterface
+class Color extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, CopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -38,9 +39,43 @@ class Color extends Field implements InlineEditableFieldInterface, CopyableField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'palette';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function phpType(): string
     {
         return sprintf('\\%s|null', ColorData::class);
+    }
+
+    /**
+     * @var string[] Preset colors
+     * @since 4.8.0
+     */
+    public array $presets = [];
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (isset($config['presets'])) {
+            $config['presets'] = array_values(array_filter(array_map(
+                fn($color) => is_array($color) ? $color['color'] : $color,
+                $config['presets']
+            )));
+            // Normalize afterward so empty strings have been filtered out
+            $config['presets'] = array_map(
+                fn(string $color) => ColorValidator::normalizeColor($color),
+                $config['presets']
+            );
+        }
+
+        parent::__construct($config);
     }
 
     /**
@@ -65,7 +100,31 @@ class Color extends Field implements InlineEditableFieldInterface, CopyableField
             'name' => 'defaultColor',
             'value' => $this->defaultColor,
             'errors' => $this->getErrors('defaultColor'),
-        ]);
+            'data' => ['error-key' => 'defaultColor'],
+        ]) .
+            Cp::editableTableFieldHtml([
+                'label' => Craft::t('app', 'Presets'),
+                'name' => 'presets',
+                'instructions' => Craft::t('app', 'Choose colors which should be recommended by the color picker.'),
+                'cols' => [
+                    'color' => [
+                        'type' => 'color',
+                        'heading' => Craft::t('app', 'Color'),
+                    ],
+                ],
+                'rows' => array_map(fn(string $color) => compact('color'), $this->presets),
+                'allowAdd' => true,
+                'allowReorder' => true,
+                'allowDelete' => true,
+                'addRowLabel' => Craft::t('app', 'Add a color'),
+                'inputContainerAttributes' => [
+                    'style' => [
+                        'max-width' => '15em',
+                    ],
+                ],
+                'errors' => $this->getErrors('presets'),
+                'data' => ['error-key' => 'presets'],
+            ]);
     }
 
     /**
@@ -75,6 +134,18 @@ class Color extends Field implements InlineEditableFieldInterface, CopyableField
     {
         $rules = parent::defineRules();
         $rules[] = [['defaultColor'], ColorValidator::class];
+
+        $rules[] = [['presets'], function() {
+            $validator = new ColorValidator();
+            foreach ($this->presets as $color) {
+                if (!$validator->validate($color, $error)) {
+                    $this->addError('presets', Craft::t('yii', '{attribute} is invalid.', [
+                        'attribute' => "#$color",
+                    ]));
+                }
+            }
+        }];
+
         return $rules;
     }
 
@@ -131,6 +202,7 @@ class Color extends Field implements InlineEditableFieldInterface, CopyableField
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value?->getHex(),
+            'presets' => $this->presets,
         ]);
     }
 

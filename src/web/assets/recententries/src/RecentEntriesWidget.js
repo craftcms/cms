@@ -7,16 +7,16 @@
       $widget: null,
       $body: null,
       $container: null,
-      $tbody: null,
+      $list: null,
       hasEntries: null,
 
       init: function (widgetId, params) {
         this.params = params;
         this.$widget = $('#widget' + widgetId);
         this.$body = this.$widget.find('.body:first');
-        this.$container = this.$widget.find('.recententries-container:first');
-        this.$tbody = this.$container.find('tbody:first');
-        this.hasEntries = !!this.$tbody.length;
+        this.$container = this.$body.find('.recententries-container:first');
+        this.$list = this.$container.find('ol:first');
+        this.hasEntries = !!this.$list.length;
 
         this.$widget.data('widget').on('destroy', this.destroy.bind(this));
 
@@ -24,23 +24,14 @@
       },
 
       addEntry: function (entry) {
-        this.$container.css('margin-top', 0);
-        var oldHeight = this.$container.height();
-
         if (!this.hasEntries) {
-          // Create the table first
-          var $table = $('<table class="data fullwidth"/>').prependTo(
-            this.$container
-          );
-          this.$tbody = $('<tbody/>').appendTo($table);
+          // Create the list first
+          this.$list = $('<ol/>').appendTo(this.$container);
         }
 
-        this.$tbody.prepend(
-          '<tr>' +
-            '<td>' +
-            '<a href="' +
-            entry.url +
-            '">' +
+        this.$list.prepend(
+          '<li class="widget__list-item">' +
+            `<a href="${entry.url}">` +
             Craft.escapeHtml(entry.title) +
             '</a> ' +
             '<span class="light">' +
@@ -48,32 +39,22 @@
               (entry.dateCreated ? Craft.formatDate(entry.dateCreated) : '') +
                 (entry.dateCreated &&
                 entry.username &&
-                Craft.edition == Craft.Pro
+                Craft.edition !== Craft.Solo
                   ? ', '
                   : '') +
-                (entry.username && Craft.edition == Craft.Pro
+                (entry.username && Craft.edition !== Craft.Solo
                   ? entry.username
                   : '')
             ) +
             '</span>' +
-            '</td>' +
-            '</tr>'
+            '</li>'
         );
-
-        var newHeight = this.$container.height(),
-          heightDiff = newHeight - oldHeight;
-
-        this.$container.css('margin-top', -heightDiff);
-
-        var props = {'margin-top': 0};
 
         // Also animate the "No entries exist" text out of view
         if (!this.hasEntries) {
-          props['margin-bottom'] = -oldHeight;
+          this.$container.find('.zilch').remove();
           this.hasEntries = true;
         }
-
-        this.$container.velocity(props);
       },
 
       destroy: function () {

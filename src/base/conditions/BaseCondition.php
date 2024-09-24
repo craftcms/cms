@@ -118,12 +118,18 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function getSelectableConditionRules(): array
     {
         if (!isset($this->_selectableConditionRules)) {
-            $event = new RegisterConditionRulesEvent([
-                'conditionRules' => $this->selectableConditionRules(),
-            ]);
-            $this->trigger(self::EVENT_REGISTER_CONDITION_RULES, $event);
+            $rules = $this->selectableConditionRules();
 
-            $this->_selectableConditionRules = Collection::make($event->conditionRules)
+            // Fire a 'registerConditionRules' event
+            if ($this->hasEventHandlers(self::EVENT_REGISTER_CONDITION_RULES)) {
+                $event = new RegisterConditionRulesEvent([
+                    'conditionRules' => $rules,
+                ]);
+                $this->trigger(self::EVENT_REGISTER_CONDITION_RULES, $event);
+                $rules = $event->conditionRules;
+            }
+
+            $this->_selectableConditionRules = Collection::make($rules)
                 ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
                 ->map(fn($type) => $this->createConditionRule($type))
                 ->filter(fn(ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
@@ -178,6 +184,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function setConditionRules(array $rules): void
     {
         $this->_conditionRules = Collection::make();
+        $projectConfig = Craft::$app->getProjectConfig();
 
         foreach ($rules as $rule) {
             if (!$rule instanceof ConditionRuleInterface) {
@@ -189,11 +196,17 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 }
             }
 
-            if ($this->validateConditionRule($rule)) {
+            // Don't validate the rule when we're applying project config changes.
+            // The rule type might depend on something that hasn't been added yet.
+            if ($projectConfig->isApplyingExternalChanges || $this->validateConditionRule($rule)) {
                 $this->_conditionRules->add($rule);
                 $rule->setCondition($this);
             }
         }
+
+        // Clear out our cache of selectable condition rules, in case any additional rules will depend on which
+        // rules are already configured.
+        $this->_selectableConditionRules = null;
     }
 
     /**
@@ -286,7 +299,7 @@ JS, [$view->namespaceInputId($this->id)]);
             ]);
 
             $html .= Html::hiddenInput('class', get_class($this));
-            $html .= Html::hiddenInput('config', Json::encode($this->config()));
+            $html .= Html::hiddenInput('config', Json::encode($this->getBuilderConfig()));
 
             foreach ($this->getConditionRules() as $rule) {
                 try {
@@ -455,12 +468,19 @@ JS,
         $labelsByGroup = [];
 
         if ($rule) {
-            $ruleLabel = $rule->getLabel();
+            $label = $rule->getLabel();
+            $hint = $rule->getLabelHint();
+            $key = $label . ($hint !== null ? " - $hint" : '');
             $groupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
+
             $groupedRuleTypeOptions[$groupLabel] = [
-                ['value' => $ruleValue, 'label' => $ruleLabel],
+                [
+                    'label' => $label,
+                    'hint' => $hint,
+                    'value' => $ruleValue,
+                ],
             ];
-            $labelsByGroup[$groupLabel][$ruleLabel] = true;
+            $labelsByGroup[$groupLabel][$key] = true;
         }
 
         foreach ($selectableRules as $value => $selectableRule) {
@@ -469,10 +489,17 @@ JS,
             } catch (Throwable) {
                 continue;
             }
+            $hint = $selectableRule->getLabelHint();
+            $key = $label . ($hint !== null ? " - $hint" : '');
             $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
-            if (!isset($labelsByGroup[$groupLabel][$label])) {
-                $groupedRuleTypeOptions[$groupLabel][] = compact('value', 'label');
-                $labelsByGroup[$groupLabel][$label] = true;
+
+            if (!isset($labelsByGroup[$groupLabel][$key])) {
+                $groupedRuleTypeOptions[$groupLabel][] = [
+                    'label' => $label,
+                    'hint' => $hint,
+                    'value' => $value,
+                ];
+                $labelsByGroup[$groupLabel][$key] = true;
             }
         }
 
@@ -490,17 +517,30 @@ JS,
                 $optionsHtml .= Html::tag('hr', options: ['class' => 'padded']) .
                     Html::tag('h6', Html::encode($groupLabel), ['class' => 'padded']);
             }
-            ArrayHelper::multisort($groupRuleTypeOptions, 'label');
+            ArrayHelper::multisort($groupRuleTypeOptions, ['label', 'hint']);
             $optionsHtml .=
                 Html::beginTag('ul', ['class' => 'padded']) .
-                implode("\n", array_map(fn(array $option) => Html::beginTag('li') .
-                    Html::a(Html::encode($option['label']), options: [
+                implode("\n", array_map(function(array $option) use ($ruleValue) {
+                    $html = Html::beginTag('li');
+
+                    $label = Html::encode($option['label']);
+                    if ($option['hint'] !== null) {
+                        $label .= ' ' .
+                            Html::tag('span', sprintf('– %s', Html::encode($option['hint'])), [
+                                'class' => 'light',
+                            ]);
+                    }
+
+                    $html .= Html::a($label, options: [
                         'class' => $option['value'] === $ruleValue ? 'sel' : false,
                         'data' => [
                             'value' => $option['value'],
                         ],
-                    ]) .
-                    Html::endTag('li'),
+                    ]);
+                    $html .= Html::endTag('li');
+
+                    return $html;
+                },
                     $groupRuleTypeOptions)) .
                 Html::endTag('ul');
         }
@@ -560,6 +600,14 @@ JS,
     /**
      * @inheritdoc
      */
+    public function getBuilderConfig(): array
+    {
+        return $this->config();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getConfig(): array
     {
         return array_merge($this->config(), [
@@ -580,7 +628,7 @@ JS,
     }
 
     /**
-     * Returns the condition’s portable config.
+     * Returns the base config that should be maintained by the builder and included in the condition’s portable config.
      *
      * @return array
      */

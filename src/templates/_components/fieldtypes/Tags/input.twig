@@ -9,20 +9,28 @@
 {% from "_includes/forms" import text %}
 
 <div id="{{ id }}" class="elementselect tagselect">
-    <div class="elements">
+    <span class="visually-hidden" role="status"></span>
+
+    <ul class="elements">
+        {%- apply spaceless  %}
         {% for element in elements %}
-            {{ elementChip(element, {
-                context: 'field',
-                inputName: (name ?? false) ? "#{name}[]" : null,
-            }) }}
+            <li>
+                {{ elementChip(element, {
+                    context: 'field',
+                    inputName: (name ?? false) ? "#{name}[]" : null,
+                }) }}
+            </li>
         {% endfor %}
-    </div>
+        {% endapply -%}
+    </ul>
 
     <div class="texticon add icon">
         {{ text({
             width: 'auto',
             placeholder: selectionLabel,
             describedBy: describedBy ?? false,
+            role: 'combobox',
+            labelledBy: labelId ?? false,
         }) }}
         <div class="spinner hidden"></div>
     </div>

@@ -1,0 +1,36 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\migrations;
+
+/**
+ * This view is used by app/console/controllers/MigrateController.php.
+ *
+ * The following variables are available in this view:
+ */
+/** @var string $namespace */
+/** @var string $className */
+/** @var string $migrationNameDesc */
+/** @var string $persistingFieldUid */
+/** @var string $outgoingFieldUid */
+
+echo "<?php\n";
+?>
+
+namespace <?= $namespace ?>;
+
+use Craft;
+use craft\migrations\BaseFieldMergeMigration;
+
+/**
+ * <?= $className ?> migration.
+ */
+class <?= $className ?> extends BaseFieldMergeMigration
+{
+    public string $persistingFieldUid = '<?= $persistingFieldUid ?>';
+    public string $outgoingFieldUid = '<?= $outgoingFieldUid ?>';
+}

@@ -31,8 +31,8 @@
         type: Object,
         default: () => {
           return {
-            singular: Craft.t('app', 'Item'),
-            plural: Craft.t('app', 'Items'),
+            singular: Craft.t('app', 'item'),
+            plural: Craft.t('app', 'items'),
           };
         },
       },
@@ -54,11 +54,3 @@
     },
   };
 </script>
-
-<style land="scss">
-  .vue-admin-table-pagination {
-    border-top: 1px solid #f3f7fc;
-    margin-top: 14px;
-    padding-top: 14px;
-  }
-</style>

@@ -8,6 +8,9 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Chippable;
+use craft\base\CpEditable;
+use craft\base\Iconic;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
@@ -31,7 +34,7 @@ use craft\validators\UniqueValidator;
  * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
-class Section extends Model
+class Section extends Model implements Chippable, CpEditable, Iconic
 {
     public const TYPE_SINGLE = 'single';
     public const TYPE_CHANNEL = 'channel';
@@ -48,6 +51,15 @@ class Section extends Model
     public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
     /** @since 3.7.0 */
     public const DEFAULT_PLACEMENT_END = 'end';
+
+    /**
+     * @inheritdoc
+     */
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getEntries()->getSectionById($id);
+    }
 
     /**
      * @var int|null ID
@@ -73,6 +85,12 @@ class Section extends Model
      * @var string|null Type
      */
     public ?string $type = null;
+
+    /**
+     * @var int Max authors
+     * @since 5.0.0
+     */
+    public int $maxAuthors = 1;
 
     /**
      * @var int|null Max levels
@@ -135,7 +153,7 @@ class Section extends Model
             $this->previewTargets = [
                 [
                     'label' => Craft::t('app', 'Primary {type} page', [
-                        'type' => StringHelper::toLowerCase(Entry::displayName()),
+                        'type' => Entry::lowerDisplayName(),
                     ]),
                     'urlFormat' => '{url}',
                 ],
@@ -143,6 +161,22 @@ class Section extends Model
         }
 
         parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     /**
@@ -167,6 +201,7 @@ class Section extends Model
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
+        $rules[] = [['maxAuthors'], 'number', 'integerOnly' => true, 'min' => 1];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [
             ['type'], 'in', 'range' => [
@@ -351,14 +386,19 @@ class Section extends Model
     }
 
     /**
-     * Returns the section’s edit URL in the control panel.
-     *
-     * @return string
-     * @since 5.0.0
+     * @inheritdoc
      */
-    public function getCpEditUrl(): string
+    public function getCpEditUrl(): ?string
     {
-        return UrlHelper::cpUrl("settings/sections/$this->id");
+        return $this->id ? UrlHelper::cpUrl("settings/sections/$this->id") : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIcon(): ?string
+    {
+        return 'newspaper';
     }
 
     /**
@@ -375,6 +415,7 @@ class Section extends Model
             'type' => $this->type,
             'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
+            'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],
             'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,

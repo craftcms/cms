@@ -42,6 +42,16 @@ class UpdateController extends Controller
     public $defaultAction = 'update';
 
     /**
+     * @var bool Whether to update expired licenses.
+     *
+     * NOTE: This will result in “License purchase required” messages in the control panel on public domains,
+     * until the licenses have been renewed.
+     *
+     * @since 4.8.0
+     */
+    public bool $withExpired = false;
+
+    /**
      * @var bool Force the update if allowUpdates is disabled
      */
     public bool $force = false;
@@ -64,6 +74,7 @@ class UpdateController extends Controller
         $options = parent::options($actionID);
 
         if ($actionID === 'update') {
+            $options[] = 'withExpired';
             $options[] = 'force';
             $options[] = 'backup';
             $options[] = 'migrate';
@@ -339,8 +350,8 @@ class UpdateController extends Controller
      */
     private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, ?string $to, string $oldPackageName, Update $update): void
     {
-        if ($update->status === Update::STATUS_EXPIRED) {
-            $this->stdout("Skipping $handle because its license has expired." . PHP_EOL, Console::FG_GREY);
+        if ($update->status === Update::STATUS_EXPIRED && !$this->withExpired) {
+            $this->stdout($this->markdownToAnsi("Skipping `$handle` because its license has expired. Run with `--with-expired` to update anyway.") . PHP_EOL);
             return;
         }
 

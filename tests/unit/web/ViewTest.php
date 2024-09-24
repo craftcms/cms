@@ -478,9 +478,9 @@ TWIG;
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
 
             // Cp Paths
-            ['@craft/templates/index.twig', '', View::TEMPLATE_MODE_CP],
-            ['@craft/templates/index.twig', 'index', View::TEMPLATE_MODE_CP],
-            ['@craft/templates/entries/index.twig', 'entries', View::TEMPLATE_MODE_CP],
+            ['@app/templates/index.twig', '', View::TEMPLATE_MODE_CP],
+            ['@app/templates/index.twig', 'index', View::TEMPLATE_MODE_CP],
+            ['@app/templates/entries/index.twig', 'entries', View::TEMPLATE_MODE_CP],
         ];
     }
 

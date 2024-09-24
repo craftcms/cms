@@ -30,14 +30,28 @@ use function GuzzleHttp\default_user_agent;
  */
 class Craft extends Yii
 {
-    // Edition constants
+    /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Solo]] should be used instead. */
     public const Solo = 0;
-    public const Pro = 1;
+    /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Pro]] should be used instead. */
+    public const Pro = 2;
 
     /**
      * @var array The default cookie configuration.
      */
     private static array $_baseCookieConfig;
+
+    /**
+     * @inheritdoc
+     */
+    public static function getAlias($alias, $throwException = true)
+    {
+        // @app/icons/file.svg => @appicons/file.svg
+        if (preg_match('/^@app\/icons\/([\w\-]+\.svg)$/', $alias, $match)) {
+            $alias = "@appicons/$match[1]";
+        }
+
+        return parent::getAlias($alias, $throwException);
+    }
 
     /**
      * @inheritdoc
@@ -279,7 +293,7 @@ class Craft extends Yii
 
         foreach ($fieldHandles as $handle => $types) {
             $methods[] = <<<EOD
- * @method static $handle(mixed \$value) Sets the [[$handle]] property
+ * @method \$this $handle(mixed \$value) Sets the [[$handle]] property
 EOD;
 
             $handles[] = <<<EOD

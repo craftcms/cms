@@ -24,15 +24,6 @@ Craft.Uploader = Craft.BaseUploader.extend(
 
       this._onFileAdd = this.onFileAdd.bind(this);
       this.$element.on('fileuploadadd', this._onFileAdd);
-
-      // Update our reference to this.$fileInput if it is being replaced on change
-      if (this.uploader.fileupload('option', 'replaceFileInput')) {
-        this.$element.bind('fileuploadchange', this.updateFileInput.bind(this));
-      }
-    },
-
-    updateFileInput: function (event, data) {
-      this.$fileInput = data.fileInputClone || data.fileInput;
     },
 
     /**
@@ -40,7 +31,12 @@ Craft.Uploader = Craft.BaseUploader.extend(
      */
     setParams: function (paramObject) {
       this.base(paramObject);
-      this.uploader.fileupload('option', {formData: this.formData});
+
+      // Only set params if the uploader has been initialized
+      // It won't be if the input is disabled
+      if (this.uploader.data('blueimpFileupload')) {
+        this.uploader.fileupload('option', {formData: this.formData});
+      }
     },
 
     /**
@@ -128,6 +124,7 @@ Craft.Uploader = Craft.BaseUploader.extend(
       autoUpload: false,
       sequentialUploads: true,
       maxFileSize: Craft.maxUploadSize,
+      replaceFileInput: false,
       createAction: 'assets/upload',
       replaceAction: 'assets/replace-file',
       deleteAction: 'assets/delete-asset',

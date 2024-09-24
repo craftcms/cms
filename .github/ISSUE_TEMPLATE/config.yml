@@ -1,20 +1,41 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Feature Request
-    url: https://github.com/craftcms/cms/discussions/new?category=ideas
-    about: Start a new discussion about your idea
   - name: Documentation
-    url: https://docs.craftcms.com/
+    url: https://craftcms.com/docs
     about: Read the official documentation
   - name: Knowledge Base
     url: https://craftcms.com/knowledge-base
-    about: Find answers to common problems
+    about: Find official answers to common problems
   - name: Developer Support Services
     url: https://craftcms.com/support-services
     about: Priority developer support from the team that makes Craft
   - name: Craft Discord
     url: https://craftcms.com/discord
     about: Meet the community
-  - name: Stack Exchange
+  - name: Craft Stack Exchange
     url: https://craftcms.stackexchange.com/
     about: Get help and help others
+  - name: 'Feature Request: Craft CMS'
+    url: https://github.com/craftcms/cms/discussions/new?category=ideas
+    about: Make a feature request or enhancement for Craft CMS
+  - name: 'Feature Request: Craft Console / Plugin Store'
+    url: https://github.com/craftcms/console/discussions/new?category=ideas
+    about: Make a feature request or enhancement for Craft Console or the Plugin Store
+  - name: 'Feature Request: Craft Cloud'
+    url: https://github.com/craftcms/cloud/discussions/new?category=ideas
+    about: Make a feature request or enhancement for Craft Cloud
+  - name: 'Feature Request: Craft Commerce'
+    url: https://github.com/craftcms/commerce/discussions/new?category=ideas
+    about: Make a feature request or enhancement for Craft Commerce
+  - name: 'Bug Report: Craft CMS'
+    url: https://github.com/craftcms/cms/issues/new/choose
+    about: Create a bug report for Craft CMS
+  - name: 'Bug Report: Craft Console / Plugin Store'
+    url: https://github.com/craftcms/console/issues/new/choose
+    about: Create a bug report for Craft Console or the Plugin Store
+  - name: 'Bug Report: Craft Cloud extension'
+    url: https://github.com/craftcms/cloud-extension-yii2/issues/new/choose
+    about: Create a bug report for the Craft Cloud extension
+  - name: 'Bug Report: Craft Commerce'
+    url: https://github.com/craftcms/commerce/issues/new/choose
+    about: Create a bug report for Craft Commerce

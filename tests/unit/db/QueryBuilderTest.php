@@ -36,7 +36,7 @@ class QueryBuilderTest extends TestCase
         }
 
         $dbConfig = Craft::$app->getConfig()->getDb();
-        $charset = $dbConfig->charset;
+        $charset = $dbConfig->getCharset();
         $collation = $dbConfig->collation;
         $dbConfig->charset = 'utf8';
         $dbConfig->collation = null;

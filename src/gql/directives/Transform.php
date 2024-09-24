@@ -51,7 +51,7 @@ class Transform extends Directive
                 DirectiveLocation::FIELD,
             ],
             'args' => TransformArguments::getArguments(),
-            'description' => 'Returns a URL for an [asset transform](https://craftcms.com/docs/4.x/image-transforms.html). Accepts the same arguments you would use for a transform in Craft.',
+            'description' => 'Returns a URL for an [asset transform](https://craftcms.com/docs/5.x/development/image-transforms.html). Accepts the same arguments you would use for a transform in Craft.',
         ]));
     }
 

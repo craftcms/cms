@@ -42,6 +42,14 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'tag';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function elementType(): string
     {
         return Tag::class;
@@ -104,6 +112,7 @@ class Tags extends BaseRelationField
                     'elementType' => static::elementType(),
                     'id' => $this->getInputId(),
                     'describedBy' => $this->describedBy,
+                    'labelId' => $this->getLabelId(),
                     'name' => $this->handle,
                     'elements' => $value,
                     'tagGroupId' => $tagGroup->id,
@@ -115,6 +124,16 @@ class Tags extends BaseRelationField
         }
 
         return '<p class="error">' . Craft::t('app', 'This field is not set to a valid source.') . '</p>';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function supportedViewModes(): array
+    {
+        return [
+            'list' => Craft::t('app', 'List'),
+        ];
     }
 
     /**

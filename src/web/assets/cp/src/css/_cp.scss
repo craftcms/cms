@@ -1,7 +1,21 @@
 @charset "UTF-8";
-@import '@craftcms/sass/mixins';
+@use 'sass:color';
+@use '@craftcms/sass/mixins';
+
+$sidebarWidth: calc(226rem / 16);
+$sidebarZIndex: 100;
+$detailsWidth: 350px;
+$minFullUiWidth: calc(1200rem / 16);
+$minXlUiWidth: calc(1536rem / 16);
+$minDesktopWidth: calc(600rem / 16);
+$minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
+
+// Colors
+$badgeBackgroundColor: var(--gray-200);
+$badgeColor: var(--gray-800);
 
 :root {
+  --2xs: 2px;
   --xs: 4px;
   --s: 8px;
   --m: 14px;
@@ -9,22 +23,30 @@
   --xl: 24px;
   --padding: var(--xl);
   --neg-padding: calc(var(--padding) * -1);
+  --sidebar-width: #{$sidebarWidth};
+  --global-sidebar-width: #{$sidebarWidth};
+  --header-height: calc(44rem / 16);
+  --details-width: #{$detailsWidth};
+
+  // Sidebar
+  --sidebar-bgColor: var(--gray-150);
+
+  // Nav items
+  --nav-item-indicator-size: var(--xs);
+  --nav-item-badge-bgColor: var(--medium-text-color);
+  --nav-item-badge-fgColor: var(--white);
+  --nav-item-fgColor-active: var(--text-color);
+  --nav-item-bgColor-active: var(--gray-200);
+  --nav-item-fgColor-hover: var(--text-color);
+  --nav-item-bgColor-hover: var(--gray-200);
+  --nav-item-prefix-width: calc(30rem / 16);
+  --nav-item-prefix-ratio: 1;
+  --nav-item-trigger-size: var(--touch-target-size);
+  --nav-item-gutter-width: calc(10rem / 16); // Left and right padding
 }
 
-$sidebarWidth: 226px;
-$sidebarZIndex: 100;
-$detailsWidth: 350px;
-$minFullUiWidth: 1200px;
-$minXlUiWidth: 1536px;
-$minDesktopWidth: 600px;
-$minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
-
-// Colors
-$badgeBackgroundColor: var(--gray-200);
-$badgeColor: var(--gray-800);
-
 html {
-  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   min-height: 100vh;
 }
 
@@ -56,16 +78,16 @@ body {
 .skip-link {
   position: absolute;
   margin: 5px;
-  left: -10000px;
-  top: 0;
+  inset-inline-start: -10000px;
+  inset-block-start: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;
   z-index: $sidebarZIndex + 1;
 
   &:focus {
-    left: unset;
-    @include left(0);
+    inset-inline-start: unset;
+    inset-inline-start: 0;
     width: auto;
     height: auto;
     background-color: var(--gray-100) !important;
@@ -74,113 +96,78 @@ body {
 
 #global-skip-link {
   @media only screen and (min-width: $minFullUiWidth) {
-    @include two-color-focus-ring;
+    @include mixins.two-color-focus-ring;
   }
 }
 
 #global-container {
   position: relative;
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
-  @include left(0);
 
   @media screen and (prefers-reduced-motion: no-preference) {
-    body.ltr & {
-      transition: left 250ms ease-out;
-    }
-
-    body.rtl & {
-      transition: right 250ms ease-out;
-    }
+    transition: inset-inline-start 100ms cubic-bezier(0.33, 1, 0.68, 1);
   }
+}
+
+#global-header {
+  display: grid;
+  grid-template-columns: 1fr min-content min-content;
+  align-items: center;
 }
 
 /* global sidebar */
 $sidebarLinkStaticColor: var(--gray-100);
 $sidebarLinkSecondaryColor: var(--gray-200);
-
-#global-sidebar {
-  --is-always-visible: true;
-  position: fixed;
-  z-index: $sidebarZIndex;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  @include light-on-dark-text;
-  @include light-focus-ring;
-  background-color: var(--gray-800);
-
-  a {
-    color: $sidebarLinkStaticColor;
-    text-decoration: none;
-  }
-
-  & > a,
-  *:not(.has-subnav) > a {
-    &[href] {
-      &:not(.sel):hover {
-        background-color: darken($grey800, 5%);
-      }
-    }
-
-    &:not([href]) {
-      cursor: default;
-      background-color: transparent;
-    }
-  }
-
-  .light {
-    color: var(--gray-400);
-  }
-
-  @media only screen and (max-width: $minFullUiWidth - 1px) {
-    --is-always-visible: false;
-  }
-}
-
-$systemInfoBgColor: darken($grey800, 5%);
-$systemInfoHoverBgColor: darken($grey800, 10%);
+$systemInfoBgColor: color.adjust(mixins.$grey800, $lightness: -5%);
+$systemInfoHoverBgColor: color.adjust(mixins.$grey800, $lightness: -10%);
 
 #system-info {
   display: grid;
-  grid-template-columns: 30px auto;
-  grid-gap: 10px;
-  height: calc(44rem / 16);
-  padding: 0 10px;
+  grid-template-columns: var(--nav-item-prefix-width) auto;
+  gap: 10px;
+  height: calc(45rem / 16);
+  padding-block: 0;
+  padding-inline: var(--nav-item-gutter-width);
   position: relative;
-  flex: 0 0 calc(44rem / 16);
+  flex: 0 0 calc(45rem / 16);
   flex-direction: row;
   align-items: center;
-  background-color: $systemInfoBgColor;
+  color: currentcolor;
+  border-block-end: 1px solid var(--hairline-color);
+  background-clip: padding-box;
 
-  &:after {
+  &::after {
     display: none;
   }
+}
 
+div#system-info {
+  cursor: default;
+}
+
+a#system-info {
   &:focus,
   &:hover {
-    background-color: $systemInfoHoverBgColor !important;
+    text-decoration: none;
+    background-color: var(--gray-200);
   }
 }
 
 #site-icon {
-  height: 30px;
+  --size: var(--nav-item-prefix-width); // Matches .sidebar-action__prefix
+  height: var(--size);
 
   img,
   svg {
     display: block;
-    width: 30px;
-    height: 30px;
+    width: var(--size);
+    height: var(--size);
     border-radius: 4px;
   }
 
   svg {
-    @include svg-mask(var(--medium-text-color));
+    @include mixins.svg-mask(var(--medium-text-color));
   }
 }
 
@@ -198,149 +185,50 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-
-    &:after {
-      display: block;
-      content: '';
-      font-size: 0;
-      position: absolute;
-      top: 0;
-      @include right(0);
-      width: var(--m);
-      background-image: linear-gradient(
-        to right,
-        transparentize($systemInfoBgColor, 1),
-        $systemInfoBgColor
-      );
-
-      #system-info:hover & {
-        background-image: linear-gradient(
-          to right,
-          transparentize($systemInfoHoverBgColor, 1),
-          $systemInfoHoverBgColor
-        );
-      }
-    }
   }
 }
 
-#job-icon {
-  align-items: flex-start;
+@media only screen and (min-width: $minFullUiWidth) {
+  [data-sidebar='collapsed'] {
+    #system-info:hover #system-name {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
 
-  & > span.icon {
-    display: block;
-    position: relative;
-    width: 16px;
-    height: 16px;
-    margin-top: 2px !important;
-
-    & > canvas {
-      display: block;
+    #system-name {
       position: absolute;
-      width: 16px;
-      height: 16px;
+      inset-inline-start: calc(100% + (var(--s) * 2));
+      inset-block-start: 50%;
+      transform: translateY(-50%) translateX(-5px);
+      opacity: 0;
+      @include mixins.pane;
+      color: var(--text-color);
+      border-radius: var(--medium-border-radius);
+      padding-block: var(--xs);
+      padding-inline: var(--s);
+      white-space: nowrap;
+      pointer-events: none;
 
-      &#job-icon-hover {
-        opacity: 0;
-      }
-    }
-  }
-
-  &[href]:hover {
-    .icon > span.icon > canvas#job-icon-hover {
-      opacity: 1;
-    }
-  }
-
-  .progress-label {
-    display: block;
-    color: var(--gray-300);
-    font-size: 11px;
-    line-height: 1.5;
-  }
-}
-
-#nav {
-  flex: 1;
-  margin: 22px 0 0;
-  padding-bottom: var(--xl);
-  overflow: visible;
-
-  body.has-debug-toolbar & {
-    padding-bottom: calc(42px + var(--xl));
-  }
-
-  li {
-    &:not(.has-subnav) > a.sel {
-      color: var(--gray-800);
-      background-color: var(--gray-100) !important;
-      opacity: 1;
-
-      .icon {
-        opacity: 1;
-      }
-    }
-
-    a {
-      position: relative;
-      padding-left: var(--m);
-      padding-right: var(--m);
-
-      &:focus {
-        z-index: 1;
-      }
-
-      &.menubtn {
-        line-height: 26px;
-      }
-
-      &.external:after {
-        @include margin-left(5px);
-        @include icon;
-        content: 'external';
-      }
-
-      .label {
-        &,
-        & span {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      }
-
-      .badge {
-        @include margin-right(0);
-        background-color: $badgeBackgroundColor;
-        color: $badgeColor;
-      }
-    }
-
-    ul {
-      display: block;
-      margin-bottom: 10px;
-
-      li a {
-        @include padding(3px, var(--m), 3px, 42px, !important);
-        font-size: 12px;
-
-        &:not(.active) {
-          color: $sidebarLinkSecondaryColor;
-        }
+      @media screen and (prefers-reduced-motion: no-preference) {
+        transition:
+          opacity 50ms cubic-bezier(0.33, 1, 0.68, 1),
+          transform 150ms cubic-bezier(0.33, 1, 0.68, 1);
       }
     }
   }
 }
 
 #global-footer {
+  --link-color: #1453db;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--m) var(--m) var(--xl);
+  padding-block: var(--m) var(--xl);
+  padding-inline: var(--m);
   gap: var(--m);
 
   body.has-debug-toolbar & {
-    padding-bottom: calc(var(--xl) + 42px);
+    padding-block-end: calc(var(--xl) + 42px);
   }
 
   a {
@@ -356,11 +244,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #trial-info {
-  padding: 16px var(--xl);
+  padding-block: 16px;
+  padding-inline: var(--xl);
   border-radius: var(--large-border-radius);
-  background-color: hsl(212, 40%, 90%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 0 0 1px hsl(212, 30%, 80%), 0 2px 12px transparentize($grey200, 0.5);
+  background-color: var(--gray-150);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 50%),
+    0 0 0 1px hsl(212deg 30% 80%),
+    0 2px 12px color.adjust(mixins.$grey200, $alpha: -0.5);
   text-align: center;
 }
 
@@ -377,7 +268,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     color: var(--gray-600);
     text-decoration: underline;
 
-    &.go:hover:after {
+    &.go:hover::after {
       color: var(--gray-600);
     }
   }
@@ -385,31 +276,34 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #edition-logo {
   position: relative;
-  top: -1px;
+  inset-block-start: -1px;
   user-select: none;
   border: 1px solid var(--gray-600);
   border-radius: 3px;
   display: inline-flex;
   box-sizing: content-box;
   font-size: 11px;
-  padding: 6px 7px;
+  padding-block: 6px;
+  padding-inline: 7px;
   line-height: 8px;
   font-weight: 600;
   letter-spacing: 1.7px;
-  padding-right: 5px;
+  padding-inline-end: 5px;
   text-transform: uppercase;
 }
 
 #devmode {
+  margin-block-start: auto;
   flex: 0 0 4px;
   width: 100%;
   min-height: 4px; // fixes Windows scaling bug (https://github.com/craftcms/cms/issues/3259)
-  background: url(../images/dev-mode.svg) repeat-x 21px 0;
+  background:
+    url('../images/dev-mode.svg') repeat-x 21px 0,
+    var(--gray-900);
   cursor: help;
 }
 
 #page-container {
-  @include padding-left($sidebarWidth);
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -418,17 +312,38 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #alerts {
   position: relative; // to keep it above #global-header's shadow
   background-color: var(--red-050);
-  border-left: 6px solid var(--error-color);
+  border-inline-start: 6px solid var(--error-color);
   color: var(--error-color);
 
   & > li {
-    padding: 10px 24px;
+    padding-block: 10px;
+    padding-inline: 24px;
     box-shadow: inset 0 -1px 0 0 var(--red-100);
 
-    a.btn,
+    .resolvable-alert-buttons {
+      margin-block-start: var(--m);
+    }
+
+    .btn,
     a.go {
       display: inline-flex;
       align-items: center;
+      border: 1px solid color.adjust(mixins.$errorColor, $alpha: -0.5);
+      border-radius: var(--medium-border-radius);
+      padding-block: 4px;
+      padding-inline: 5px;
+      margin-block: 0;
+      margin-inline: 2px;
+      color: var(--error-color);
+      height: calc(30rem / 16);
+
+      .flex & {
+        margin: 0;
+      }
+
+      &:hover {
+        border-color: var(--error-color);
+      }
     }
 
     a:not(.btn) {
@@ -438,46 +353,40 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       &.go {
         text-decoration: none;
         white-space: nowrap;
-        border: 1px solid transparentize($errorColor, 0.5);
-        border-radius: var(--medium-border-radius);
-        padding: 4px 5px;
-        margin: 0 2px;
 
-        &:after {
+        &::after {
           color: var(--error-color);
           font-size: 15px;
-          margin-top: 1px;
-        }
-
-        &:hover {
-          border-color: var(--error-color);
+          margin-block-start: 1px;
         }
       }
     }
-  }
-}
 
-#global-header,
-li.crumb {
-  .menubtn,
-  .action-btn {
-    padding: 0 var(--s);
-    height: var(--touch-target-size);
-
-    &:not(:hover):not(:active) {
+    .btn {
       background-color: transparent;
     }
   }
 }
 
+#global-header .btn.menubtn,
+li.crumb .btn.menubtn,
+.btn.action-btn {
+  padding: 0;
+  width: var(--touch-target-size);
+  height: var(--touch-target-size);
+
+  &:not(:hover, :active, [aria-expanded='true']) {
+    background-color: transparent;
+  }
+}
+
 #global-header {
   width: 100%;
-  margin-bottom: var(--m);
-  @include pane;
-  background: var(--gray-050);
+  margin-block-end: var(--m);
+  border-block-end: 1px solid var(--hairline-color);
 
   .flex {
-    height: calc(44rem / 16);
+    height: var(--header-height);
     align-items: center;
   }
 
@@ -498,14 +407,14 @@ li.crumb {
   justify-content: center;
   width: 44px;
   min-width: 44px;
-  height: calc(44rem / 16);
-  border-right: 1px solid var(--medium-hairline-color);
+  height: var(--header-height);
+  border-inline-end: 1px solid var(--medium-hairline-color);
   line-height: 26px;
-  color: currentColor;
+  color: currentcolor;
   text-align: center;
 
-  &:before {
-    @include icon;
+  &::before {
+    @include mixins.icon;
     content: 'menu';
     font-size: 16px;
     line-height: 0;
@@ -542,11 +451,10 @@ li.crumb {
 
 #crumb-list {
   display: flex;
-  flex-direction: row;
+  flex-flow: row nowrap;
   align-items: stretch;
-  flex-wrap: nowrap;
   max-width: 100%;
-  height: calc(44rem / 16);
+  height: var(--header-height);
 
   --arrow-padding: 10;
   --arrow-height: 22;
@@ -556,37 +464,40 @@ li.crumb {
 
   body.rtl & {
     --arrow-angle: -35;
-    --arrow-width: -19.4444;
   }
 
   li.crumb {
     position: relative;
-    @include padding-left(calc(var(--arrow-width) * 0.5rem / 16));
+    padding-inline-start: calc(var(--arrow-width) * 0.5rem / 16);
     cursor: default;
     color: var(--light-text-color);
 
     &:not(.current) {
-      @include padding-right(calc(var(--arrow-width) * 1rem / 16));
+      padding-inline-end: calc(var(--arrow-width) * 1.125rem / 16);
 
-      &:before,
-      &:after {
+      &::before,
+      &::after {
         display: block;
         content: '';
         width: 1px;
         height: calc(var(--arrow-c) * 1rem / 16);
         position: absolute;
-        @include right(calc(var(--arrow-width) * 0.5rem / 16));
+        inset-inline-end: calc(var(--arrow-width) * 0.5rem / 16);
         background: var(--medium-hairline-color);
         pointer-events: none;
       }
 
-      &:before {
-        top: calc((var(--arrow-height) - var(--arrow-c)) / 2 * 1rem / 16);
+      &::before {
+        inset-block-start: calc(
+          (var(--arrow-height) - var(--arrow-c)) / 2 * 1rem / 16
+        );
         transform: rotate(calc(var(--arrow-angle) * -1deg));
       }
 
-      &:after {
-        bottom: calc((var(--arrow-height) - var(--arrow-c)) / 2 * 1rem / 16);
+      &::after {
+        inset-block-end: calc(
+          (var(--arrow-height) - var(--arrow-c)) / 2 * 1rem / 16
+        );
         transform: rotate(calc(var(--arrow-angle) * 1deg));
       }
     }
@@ -606,7 +517,7 @@ li.crumb {
 #crumb-menu-trigger {
   min-width: var(--touch-target-size);
 
-  &:before {
+  &::before {
     width: 100%;
   }
 }
@@ -625,22 +536,27 @@ li.crumb {
 
   [data-icon] {
     position: relative;
-    top: -1px;
+    inset-block-start: -1px;
   }
 
   .menubtn {
     position: relative;
-    margin: 0 calc(var(--xs) * -1 / 2);
+    margin-block: 0;
+    margin-inline: calc(var(--xs) * -1 / 2);
   }
 
-  [data-icon='ellipsis']:before {
-    margin-top: 3px;
+  [data-icon='ellipsis']::before {
+    margin-block-start: 3px;
     font-size: 17px;
   }
 
   .chip {
     padding: 0;
     background-color: transparent;
+
+    --custom-bg-color: initial !important;
+    --custom-text-color: initial !important;
+    --custom-sel-bg-color: initial !important;
 
     .label-link {
       max-width: 15em;
@@ -649,7 +565,7 @@ li.crumb {
         box-shadow: var(--inner-focus-ring);
       }
 
-      span:not(.context-label) {
+      & > span:not(.context-label) {
         display: block;
         white-space: nowrap;
         overflow: hidden;
@@ -659,8 +575,8 @@ li.crumb {
   }
 
   &:has(.menubtn) > a {
-    margin-right: 0 !important;
-    padding-right: var(--xs) !important;
+    margin-inline-end: 0 !important;
+    padding-inline-end: var(--xs) !important;
   }
 
   & > a {
@@ -684,6 +600,10 @@ li.crumb {
 
     &:not(:hover) {
       color: var(--text-color);
+
+      svg {
+        @include mixins.svg-mask(var(--text-color));
+      }
     }
 
     &:hover {
@@ -717,33 +637,33 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #announcements-btn {
-  @include header-btn;
-  width: 40px;
+  @include mixins.header-btn;
+  width: calc(28rem / 16 + 10px);
   position: relative;
 
-  &.unread:after {
+  &.unread::after {
     content: '';
     display: block;
     position: absolute;
-    top: 3px;
-    @include right(7px);
-    width: 7px;
-    height: 7px;
-    border-radius: 4px;
+    inset-block-start: calc(3rem / 16);
+    inset-inline-end: 5px;
+    width: calc(7rem / 16);
+    height: calc(7rem / 16);
+    border-radius: 50%;
     background-color: var(--blue-600);
   }
 
   svg {
-    width: 22px;
-    height: 22px;
-    @include svg-mask(var(--ui-control-color));
+    width: 1rem;
+    height: 1rem;
+    @include mixins.svg-mask(var(--ui-control-color));
   }
 
   &:hover,
   &:active,
   &.active {
     svg {
-      @include svg-mask(var(--ui-control-active-color));
+      @include mixins.svg-mask(var(--ui-control-active-color));
     }
   }
 }
@@ -753,14 +673,13 @@ li.breadcrumb-toggle-wrapper {
 
   .announcement {
     &:not(:first-child) {
-      margin-top: 20px;
+      margin-block-start: 20px;
     }
 
     .announcement-label-container {
-      margin-top: -3px;
+      margin-block: -3px 3px;
       display: flex;
       align-items: center;
-      margin-bottom: 3px;
 
       .announcement-icon svg {
         display: block;
@@ -769,18 +688,18 @@ li.breadcrumb-toggle-wrapper {
       }
 
       .announcement-label {
-        margin-left: 5px;
+        margin-inline-start: 5px;
         font-size: 12px;
         color: var(--light-text-color);
       }
     }
 
-    &.unread .announcement__heading:after {
+    &.unread .announcement__heading::after {
       content: '';
       display: block;
       position: absolute;
-      top: 7px;
-      @include left(-13px);
+      inset-block-start: 7px;
+      inset-inline-start: -13px;
       width: 7px;
       height: 7px;
       border-radius: 4px;
@@ -798,7 +717,8 @@ li.breadcrumb-toggle-wrapper {
 
   .announcement__heading {
     position: relative;
-    margin: 0 0 3px;
+    margin-block: 0 3px;
+    margin-inline: 0;
     order: 1;
   }
 }
@@ -807,24 +727,22 @@ li.breadcrumb-toggle-wrapper {
   display: flex;
   flex-direction: row;
   align-items: center;
-  @include padding-left(var(--s));
-  @include padding-right(calc(var(--padding) + 1px));
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-inline: var(--s) calc(var(--padding) + 1px);
+  padding-block: 5px;
   height: 100%;
   background-color: transparent;
   border-radius: 0;
 
-  &:after {
+  &::after {
     border-color: var(--ui-control-color);
     transition: border-color linear 100ms;
   }
 
-  &:hover:after {
+  &:hover::after {
     border-color: var(--ui-control-hover-color);
   }
 
-  &[aria-expanded='true']:after {
+  &[aria-expanded='true']::after {
     border-color: var(--ui-control-active-color);
   }
 }
@@ -833,23 +751,24 @@ li.breadcrumb-toggle-wrapper {
   img,
   svg {
     display: block;
-    width: 30px;
-    height: 30px;
+    width: calc(30rem / 16);
+    height: calc(30rem / 16);
     max-width: none;
     border-radius: 50%;
-    box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
-      0 0 0 transparentize($grey900, 1);
+    box-shadow:
+      0 0 0 1px color.adjust(mixins.$grey900, $alpha: -0.95),
+      0 0 0 color.adjust(mixins.$grey900, $alpha: -1);
     transition: box-shadow linear 150ms;
 
     #user-info:hover & {
-      box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
-        0 2px 10px -2px transparentize($grey900, 0.7);
+      box-shadow:
+        0 0 0 1px color.adjust(mixins.$grey900, $alpha: -0.95),
+        0 2px 10px -2px color.adjust(mixins.$grey900, $alpha: -0.7);
     }
   }
 }
 
 /* main container */
-
 #main-container {
   position: relative;
   flex-grow: 1;
@@ -857,13 +776,13 @@ li.breadcrumb-toggle-wrapper {
 
 #notifications {
   position: fixed;
-  bottom: 8px;
-  @include left(8px);
+  inset-block-end: 8px;
+  inset-inline-start: 8px;
   width: calc(100% - 16px);
   z-index: 101;
 
   body.has-debug-toolbar & {
-    bottom: 50px;
+    inset-block-end: 50px;
   }
 
   @media only screen and (min-width: $minHorizontalUiWidth) {
@@ -873,11 +792,14 @@ li.breadcrumb-toggle-wrapper {
   .notification {
     display: flex;
     position: relative;
-    @include pane;
-    padding: 10px 14px;
+    @include mixins.pane;
+    padding-block: 10px;
+    padding-inline: 14px;
     border-radius: var(--large-border-radius);
-    box-shadow: 0 0 0 1px transparentize($grey1000, 0.85),
-      0 2px 12px transparentize($grey1000, 0.85);
+    box-shadow:
+      0 0 0 1px color.adjust(mixins.$grey1000, $alpha: -0.85),
+      0 2px 12px color.adjust(mixins.$grey1000, $alpha: -0.85);
+
     --color: var(--notice-color);
 
     &[data-type='success'] {
@@ -889,20 +811,26 @@ li.breadcrumb-toggle-wrapper {
     }
 
     & + .notification {
-      margin-top: 12px;
+      margin-block-start: 12px;
     }
 
     .notification-icon {
       width: 18px;
-      margin-top: -2px;
-      @include margin-right(10px);
+      margin-block-start: -2px;
+      margin-inline-end: 10px;
       font-size: 18px;
       color: var(--color);
     }
 
+    .notification-main {
+      overflow: hidden;
+    }
+
     .notification-body {
-      display: flex;
-      flex: 1;
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: var(--s);
+      width: 100%;
 
       .notification-message {
         font-weight: bold;
@@ -911,24 +839,24 @@ li.breadcrumb-toggle-wrapper {
       }
 
       .notification-details {
-        margin-top: var(--xs);
+        margin-block-start: var(--xs);
 
         .chip {
-          border: 1px solid $hairlineColor;
+          border: 1px solid mixins.$hairlineColor;
         }
       }
     }
 
     .notification-close-btn {
       position: relative;
-      top: -2px;
-      @include margin-left(10px);
+      inset-block-start: -2px;
+      margin-inline-start: 10px;
     }
   }
 }
 
 #header-container {
-  margin-bottom: var(--m);
+  margin-block-end: var(--m);
 }
 
 @media only screen and (min-width: $minFullUiWidth) {
@@ -938,7 +866,8 @@ li.breadcrumb-toggle-wrapper {
 
   #crumbs:not(.empty) #primary-nav-toggle + nav ul li:first-child,
   #crumbs.empty + .context-menu-container {
-    @include padding-left(var(--padding));
+    margin-inline-start: var(--padding);
+    padding-inline-start: 0;
   }
 }
 
@@ -956,34 +885,37 @@ li.breadcrumb-toggle-wrapper {
 #header {
   display: flex;
   align-items: flex-start;
-  align-content: stretch;
+  place-content: stretch space-between;
   flex-wrap: nowrap;
-  justify-content: space-between;
   gap: var(--s);
-  padding: var(--s) var(--padding);
+  padding-block: 5px;
+  padding-inline: var(--padding);
   position: relative;
   z-index: 2;
-  width: calc(100vw - #{$sidebarWidth});
   box-sizing: border-box;
-  background-color: transparentize($grey300, 1);
-  box-shadow: 0 1px 0 transparentize($grey800, 1);
-  transition: background-color linear 100ms, box-shadow linear 100ms;
+  background-color: color.adjust(mixins.$grey300, $alpha: -1);
+  box-shadow: 0 1px 0 color.adjust(mixins.$grey800, $alpha: -1);
+  transition:
+    background-color linear 100ms,
+    box-shadow linear 100ms;
 
   body.fixed-header & {
     position: fixed;
     z-index: 12;
-    top: 0;
+    inset-block-start: 0;
     background-color: var(--gray-100);
-    box-shadow: inset 0 -1px 0 transparentize($grey700, 0.9);
+    box-shadow: 0 1px 0 color.adjust(mixins.$grey700, $alpha: -0.9);
   }
 
   @supports (backdrop-filter: blur(10px)) {
     & {
-      transition: background-color linear 100ms, box-shadow linear 100ms,
+      transition:
+        background-color linear 100ms,
+        box-shadow linear 100ms,
         backdrop-filter linear 100ms;
 
       body.fixed-header & {
-        background-color: transparentize($grey100, 0.25);
+        background-color: color.adjust(mixins.$grey100, $alpha: -0.25);
         backdrop-filter: blur(10px);
       }
     }
@@ -991,14 +923,13 @@ li.breadcrumb-toggle-wrapper {
 
   h1 {
     line-height: 34px;
-    margin-top: 0;
-    margin-bottom: 0;
+    margin-block: 0;
     min-width: 0;
   }
 
   .buttons,
   .btngroup {
-    margin-top: 0;
+    margin-block-start: 0;
   }
 }
 
@@ -1010,42 +941,37 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+#content-heading {
+  font-size: 0.875rem;
+  font-weight: normal;
+
+  &::before {
+    content: '/';
+    display: inline-block;
+    margin-inline: 0.5rem;
+  }
+
+  @media only screen and (min-width: $minHorizontalUiWidth) {
+    display: none;
+  }
+}
+
 #toolbar {
   flex: 1;
   align-items: flex-start;
   justify-content: space-between;
 
-  .icon:before,
-  .texticon:before,
-  .menubtn:after,
-  [data-icon]:before,
-  [data-icon-after]:after {
-    color: currentColor;
+  .icon::before,
+  .texticon::before,
+  .menubtn::after,
+  [data-icon]::before,
+  [data-icon-after]::after {
+    color: currentcolor;
     opacity: 0.8;
   }
 
   .text {
     border-radius: var(--large-border-radius);
-
-    &::-webkit-input-placeholder {
-      color: var(--light-text-color);
-    }
-
-    &:-ms-input-placeholder {
-      color: var(--light-text-color);
-    }
-
-    &::-ms-input-placeholder {
-      color: var(--light-text-color);
-    }
-
-    &:-moz-placeholder {
-      color: var(--light-text-color);
-    }
-
-    &::-moz-placeholder {
-      color: var(--light-text-color);
-    }
 
     &::placeholder {
       color: var(--light-text-color);
@@ -1058,14 +984,21 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #action-buttons {
-  @media only screen and (max-width: 400px) {
+  .action-btn {
+    width: var(--ui-control-height);
+    height: var(--ui-control-height);
+  }
+
+  @media only screen and (width <= 400px) {
     .btngroup .btn:first-child {
       flex-basis: 100%;
     }
   }
 
-  @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
-    margin-top: 10px;
+  @media only screen and (max-width: $minHorizontalUiWidth - calc(1rem / 16)) {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    margin-block-start: 10px;
   }
 }
 
@@ -1073,8 +1006,8 @@ li.breadcrumb-toggle-wrapper {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  width: calc(100vw - #{$sidebarWidth});
-  padding: 0 var(--padding) 48px;
+  padding-block: 0 48px;
+  padding-inline: var(--padding);
   box-sizing: border-box;
 
   // for the Dashboard and any other full-page grids:
@@ -1093,14 +1026,15 @@ li.breadcrumb-toggle-wrapper {
   box-sizing: border-box;
 
   @media only screen and (min-width: $minFullUiWidth) {
-    @include margin-left(calc(var(--xl) * -1));
+    margin-inline-start: calc(var(--xl) * -1);
   }
 }
 
 #sidebar {
   position: relative;
   box-sizing: border-box;
-  padding: 0 31px var(--m);
+  padding-block: 0 var(--m);
+  padding-inline: 40px;
   width: $sidebarWidth;
   background-color: transparent;
 
@@ -1109,8 +1043,7 @@ li.breadcrumb-toggle-wrapper {
   }
 
   nav {
-    margin-left: -31px;
-    margin-right: -31px;
+    margin-inline: -31px;
 
     li {
       a {
@@ -1128,65 +1061,89 @@ li.breadcrumb-toggle-wrapper {
       }
     }
   }
+
+  .skip-link {
+    margin-block: 0;
+    margin-inline: var(--s);
+  }
+
+  @media only screen and (min-width: $minFullUiWidth) {
+    padding-block: 0 var(--m);
+    padding-inline: 31px;
+  }
 }
 
 #content-container {
-  flex: 1;
+  flex: 1 1 auto;
 
-  #main-content:not(.has-sidebar):not(.has-details) & {
-    width: 100%;
-    max-width: 100%;
-  }
+  /*
+  Admittedly I'm not totally sure why this is necessary, but it seems to be.
+  We have to give #content-container some kind of "hard" width for it to properly
+  clip the content when table cells are long.
+   */
+  width: 400px;
+}
 
-  #main-content.has-sidebar & {
-    width: calc(100% - #{$sidebarWidth - 24});
-    max-width: calc(100% - #{$sidebarWidth - 24});
-  }
+.content-grid {
+  --size-main-content: 100%;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(var(--size-main-content), 1fr) var(
+      --touch-target-size
+    );
 
-  #main-content.has-details & {
-    width: calc(100% - #{$detailsWidth} - var(--m));
-    max-width: calc(100% - #{$detailsWidth} - var(--m));
-  }
-
-  #main-content.has-sidebar.has-details {
-    width: calc(100% - #{$sidebarWidth} - #{$detailsWidth} - 38px);
-    max-width: calc(100% - #{$sidebarWidth} - #{$detailsWidth} - 38px);
+  &:has(.content-grid__toggle) {
+    --size-main-content: calc(100% - var(--touch-target-size));
   }
 }
 
-#content-heading {
-  margin-top: var(--xl) !important;
-
-  @media only screen and (min-width: $minHorizontalUiWidth) {
-    @include visually-hidden;
-  }
+.content-grid__main {
+  grid-column: 1/1;
 }
 
 .content-pane {
-  @include pane;
+  @include mixins.pane;
   border-radius: var(--large-border-radius);
   position: relative;
   background-clip: padding-box;
-  padding: var(--xl) var(--padding);
+  padding-block: var(--xl);
+  padding-inline: var(--padding);
   word-wrap: break-word;
 
   & > hr {
-    margin-left: calc(var(--xl) * -1);
-    margin-right: calc(var(--xl) * -1);
+    margin-inline: calc(var(--xl) * -1);
+  }
+}
+
+#footer,
+.footer {
+  padding-block: 6px;
+  padding-inline: var(--pane-padding, var(--xl));
+  min-height: 44px;
+  line-height: calc(32rem / 16);
+
+  .buttons {
+    height: 32px;
+    display: flex;
+    align-items: center;
+  }
+
+  .btn {
+    padding-block: 4px;
+    height: var(--ui-control-height--small);
   }
 }
 
 #footer {
   position: sticky;
-  bottom: 0;
+  inset-block-end: 0;
   z-index: 1;
-  margin: calc(var(--xl) + 1px) calc(var(--padding) * -1 + 2px)
-    calc(var(--xl) * -1 + 2px);
-  padding: var(--s) var(--padding);
+  margin-block: calc(var(--s) + 1px) calc(var(--xl) * -1 + 2px);
+  margin-inline: calc(var(--padding) * -1 + 2px);
   background-color: var(--gray-050);
   border-radius: var(--small-border-radius);
   box-sizing: border-box;
-  min-height: 50px;
+  border-block-start: 2px solid var(--white);
 
   &:empty {
     display: none;
@@ -1197,7 +1154,7 @@ li.breadcrumb-toggle-wrapper {
 
     @supports (backdrop-filter: blur(10px)) {
       & {
-        background-color: transparentize($grey100, 0.25);
+        background-color: color.adjust(mixins.$grey100, $alpha: -0.25);
         backdrop-filter: blur(10px);
       }
     }
@@ -1207,28 +1164,105 @@ li.breadcrumb-toggle-wrapper {
     transition: padding linear 100ms;
 
     &.stuck {
-      padding-bottom: 52px;
+      padding-block-end: 52px;
     }
   }
 
   & > *,
   .flex > * {
-    margin-bottom: 0;
+    margin-block-end: 0;
+  }
+}
+
+#details-container[data-state='collapsed'] {
+  display: none;
+}
+
+#details-toggle > button {
+  position: sticky;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  inset-block-start: 0;
+  height: 100%;
+  max-height: 100vh;
+  width: var(--touch-target-size);
+  border-radius: var(--ui-control-border-radius);
+
+  .details-toggle__inner {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--hairline-color);
+    width: calc(var(--touch-target-size) - var(--s));
+    height: calc(var(--touch-target-size) * 2);
+    border-radius: var(--ui-control-border-radius);
+    background-color: var(--gray-100);
+    position: relative;
+    z-index: 10;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    height: 100%;
+    width: 1px;
+    background-color: var(--hairline-color);
+  }
+
+  &:hover,
+  &:focus,
+  &:focus-visible {
+    .details-toggle__inner {
+      background-color: var(--gray-200);
+    }
+
+    &::before {
+      transform: scaleX(300%);
+    }
+  }
+
+  &:focus-visible,
+  &:focus {
+    box-shadow: none;
+
+    .details-toggle__inner {
+      box-shadow: var(--focus-ring);
+    }
+  }
+
+  .toggle-icon {
+    .rtl & {
+      transform: rotate(180deg);
+    }
+  }
+
+  &[aria-expanded='true'] .toggle-icon--open {
+    display: none;
+  }
+
+  &[aria-expanded='false'] .toggle-icon--close {
+    display: none;
   }
 }
 
 #details-container {
-  flex: 0 0 #{$detailsWidth + 38};
-  width: $detailsWidth + 38;
-  @include margin-right(calc(var(--xl) * -1));
-  box-sizing: border-box;
+  display: block;
+  flex: 0 1 auto;
+  width: calc(var(--details-width));
+  position: sticky;
+  inset-block-start: 0;
 }
 
 #details {
-  box-sizing: border-box;
-  @include padding-right(var(--xl));
-  @include padding-left(var(--m));
-  width: $detailsWidth + 38;
+  display: none;
+}
+
+#details {
+  display: block;
+  width: $detailsWidth;
   z-index: 1;
 
   &.fixed {
@@ -1236,13 +1270,11 @@ li.breadcrumb-toggle-wrapper {
   }
 
   .details {
-    padding-bottom: calc(var(--xl) + 11.5em);
-
     .meta {
       border-radius: var(--large-border-radius);
 
-      &:not(.read-only):not(.warning) {
-        @include pane;
+      &:not(.read-only, .warning) {
+        @include mixins.pane;
       }
 
       &.read-only {
@@ -1255,49 +1287,44 @@ li.breadcrumb-toggle-wrapper {
         &:first-child {
           &,
           & > .status-badge {
-            border-top-left-radius: var(--large-border-radius);
+            border-start-start-radius: var(--large-border-radius);
           }
 
-          border-top-right-radius: var(--large-border-radius);
+          border-start-end-radius: var(--large-border-radius);
         }
 
         &:last-child {
           &,
           & > .status-badge {
-            border-bottom-left-radius: var(--large-border-radius);
+            border-end-start-radius: var(--large-border-radius);
           }
 
-          border-bottom-right-radius: var(--large-border-radius);
+          border-end-end-radius: var(--large-border-radius);
         }
       }
     }
 
     & > .field {
       & > .input > .text.fullwidth {
-        @include pane;
+        @include mixins.pane;
       }
     }
 
     .notes {
       border-radius: var(--large-border-radius);
-      padding-top: var(--m);
-      padding-bottom: var(--m);
+      padding-block: var(--m);
     }
   }
 }
 
 // Hide the sidebar at < 1200
-@media only screen and (max-width: $minFullUiWidth - 1px) {
+@media only screen and (max-width: $minFullUiWidth - calc(1rem/16)) {
   #global-container {
-    @include left(-$sidebarWidth);
+    inset-inline-start: -$sidebarWidth;
     width: calc(100vw + #{$sidebarWidth});
 
-    body.ltr.showing-nav & {
-      left: 0;
-    }
-
-    body.rtl.showing-nav & {
-      right: 0;
+    .showing-nav & {
+      inset-inline-start: 0;
     }
   }
 
@@ -1311,16 +1338,20 @@ li.breadcrumb-toggle-wrapper {
 
   #main-content {
     width: 100vw;
+
+    &.has-sidebar {
+      padding-inline-start: 0;
+    }
   }
 }
 
 // Rearrange #main-content to flow vertically at < 999
-@media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+@media only screen and (max-width: $minHorizontalUiWidth - calc(1rem/16)) {
   #header {
     display: block;
 
     .flex:not(#toolbar) {
-      margin-top: 10px;
+      margin-block-start: 10px;
     }
   }
 
@@ -1328,38 +1359,50 @@ li.breadcrumb-toggle-wrapper {
     flex-wrap: wrap !important;
 
     & > * {
-      margin-top: 10px !important;
+      margin-block-start: 10px !important;
     }
   }
 
   body.fixed-header #header .flex:first-child {
-    margin-top: 0;
+    margin-block-start: 0;
   }
 
   #main-content {
     display: block;
+
+    &.has-sidebar {
+      padding-block: 0 48px;
+      padding-inline: var(--padding);
+    }
+  }
+
+  #sidebar {
+    nav {
+      margin-inline: -40px;
+    }
+
+    .skip-link {
+      margin: 0;
+    }
+  }
+
+  #source-actions {
+    margin-block-start: var(--s);
+    margin-inline-start: -9px;
   }
 
   #sidebar-toggle-container {
     display: block;
-    margin-bottom: var(--m);
+    margin-block-end: var(--s);
   }
 
   #sidebar-toggle {
-    &:after {
-      top: 0;
-      transform: rotate(-45deg);
+    &::after {
+      inset-block-start: 0;
+      transform: rotate(45deg);
 
       body.rtl & {
         transform: rotate(135deg);
-      }
-    }
-
-    body.showing-sidebar & {
-      background-color: darken($grey200, 10%) !important;
-
-      &:after {
-        transform: rotate(45deg);
       }
     }
   }
@@ -1368,21 +1411,38 @@ li.breadcrumb-toggle-wrapper {
     min-height: 0 !important;
   }
 
+  .content-grid,
+  .content-grid:has(.content-grid__toggle) {
+    --size-main-content: 100%;
+  }
+
   #sidebar-container,
   #details-container {
     width: auto !important;
+    padding-inline-start: 0 !important;
+    display: block;
+  }
+
+  .content-grid__toggle {
+    display: none;
   }
 
   #sidebar,
   #details {
-    position: static !important;
+    position: relative !important;
     overflow-y: visible !important;
     max-height: none !important;
     width: auto;
   }
 
   #sidebar {
-    margin-bottom: var(--m);
+    margin-block-end: var(--m);
+
+    body.showing-sidebar & {
+      @include mixins.pane;
+      padding-block: 0.5rem;
+      border-radius: var(--large-border-radius);
+    }
 
     body:not(.showing-sidebar) & {
       display: none;
@@ -1390,7 +1450,7 @@ li.breadcrumb-toggle-wrapper {
   }
 
   #details-container {
-    @include margin-right(0);
+    margin-inline-end: 0;
   }
 
   #content-container {
@@ -1400,16 +1460,16 @@ li.breadcrumb-toggle-wrapper {
 
   #details {
     padding: 0 !important;
-    margin-top: var(--m);
+    margin-block-start: var(--m);
 
     .details {
-      margin-bottom: auto;
+      margin-block-end: auto;
     }
   }
 }
 
 // Tighten up the padding at < 768
-@media only screen and (max-width: 767px) {
+@media only screen and (width <= 767px) {
   :root {
     --padding: var(--s);
     --neg-padding: calc(var(--s) * -1);
@@ -1417,12 +1477,11 @@ li.breadcrumb-toggle-wrapper {
 
   #tabs ul li {
     a {
-      padding-left: var(--m);
-      padding-right: var(--m);
+      padding-inline: var(--m);
     }
 
     & + li {
-      @include margin-left(-7px);
+      margin-inline-start: -7px;
     }
   }
 
@@ -1432,14 +1491,12 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-@media print {
-}
-
 #settingsmenu ul li a {
-  @include padding-left(46px);
+  padding-inline-start: 46px;
 
-  &:before {
-    @include margin(1px, 0, 0, -22px);
+  &::before {
+    margin-inline: -22px 0;
+    margin-block: 1px 0;
     font-size: 15px;
   }
 
@@ -1447,8 +1504,8 @@ li.breadcrumb-toggle-wrapper {
     width: 16px;
     height: 16px;
     position: absolute;
-    margin-left: -23px;
-    margin-top: 1px;
+    margin-inline-start: -23px;
+    margin-block-start: 1px;
   }
 }
 
@@ -1457,8 +1514,8 @@ li.breadcrumb-toggle-wrapper {
   position: relative;
   min-height: 1px; // Required for Grid.js to run
 
-  &:after {
-    @include clearafter;
+  &::after {
+    @include mixins.clearafter;
   }
 
   & > .item {
@@ -1474,24 +1531,28 @@ li.breadcrumb-toggle-wrapper {
   font-size: 13px;
 
   &:not(.drag-helper) {
-    padding: var(--m) 0;
+    padding-block: var(--m);
+    padding-inline: 0;
     background-color: var(--gray-050);
   }
 
   .heading {
     position: relative;
-    margin: 0 var(--xl);
+    margin-block: 0;
+    margin-inline: var(--xl);
 
     &:not(:first-child) {
-      margin-top: var(--m);
+      margin-block-start: var(--m);
     }
 
     & > span {
       display: inline-block;
       position: relative;
       z-index: 1;
-      padding: 0 5px;
-      margin: 0 -5px;
+      padding-block: 0;
+      padding-inline: 5px;
+      margin-block: 0;
+      margin-inline: -5px;
       text-transform: uppercase;
       color: var(--medium-text-color);
       font-size: 11px;
@@ -1499,22 +1560,24 @@ li.breadcrumb-toggle-wrapper {
     }
 
     & > ul {
-      margin: 2px calc(var(--xl) * -1);
+      margin-block: 2px;
+      margin-inline: calc(var(--xl) * -1);
     }
   }
 
   @mixin nav-level($level) {
     & > a {
-      @include padding-left(24px + 14 * $level);
+      padding-inline-start: 24px + 14 * $level;
     }
 
     & > .toggle {
-      @include left(calc(var(--m) * #{$level}));
+      inset-inline-start: calc(var(--m) * #{$level});
     }
   }
 
   nav {
-    padding: 0 var(--s);
+    padding-block: 0;
+    padding-inline: var(--s);
 
     & > ul {
       & > li:not(.heading),
@@ -1545,13 +1608,13 @@ li.breadcrumb-toggle-wrapper {
       &:not(.has-subnav) > a {
         &:not(.sel):hover {
           text-decoration: none;
-          background-color: var(--gray-100);
         }
 
         &.sel,
         &.active-drop-target {
           cursor: default;
-          background-color: var(--gray-500) !important;
+          background-color: var(--gray-500);
+          @include mixins.dark-btn-light-bg-focus-ring;
 
           &,
           & + .toggle {
@@ -1560,20 +1623,24 @@ li.breadcrumb-toggle-wrapper {
         }
 
         &.sel {
-          @include light-on-dark-text;
+          @include mixins.light-on-dark-text;
+
+          --focus-ring: var(--focus-ring-outset);
         }
       }
 
       a {
         position: relative;
-        margin-bottom: 1px;
+        margin-block-end: 1px;
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding: 7px var(--xl);
+        padding-block: 7px;
+        padding-inline: var(--xl);
         min-height: var(--xl);
         box-sizing: border-box;
         color: var(--text-color);
+        cursor: pointer;
         user-select: none;
         border-radius: var(--large-border-radius);
         word-break: break-word;
@@ -1583,27 +1650,31 @@ li.breadcrumb-toggle-wrapper {
         }
 
         .icon {
-          @include margin-right(10px);
+          position: relative;
+          inset-block-start: 1px;
+          margin-inline-end: 10px;
           flex-shrink: 1;
-          width: toRem(18);
-          height: toRem(18);
+          width: calc(18 / 16 * 1rem);
+          height: calc(18 / 16 * 1rem);
           word-break: normal;
-          transition: margin-left linear 150ms, margin-right linear 150ms;
+          transition:
+            margin-inline-start linear 150ms,
+            margin-inline-end linear 150ms;
           opacity: 0.85;
 
           &.icon-mask {
             svg {
-              @include svg-mask(currentColor);
+              @include mixins.svg-mask(currentColor);
             }
 
             span[data-icon] {
-              color: currentColor;
+              color: currentcolor;
             }
           }
 
           svg {
-            width: 16px;
-            height: 16px;
+            width: 1rem;
+            height: 1rem;
           }
 
           span[data-icon] {
@@ -1620,10 +1691,12 @@ li.breadcrumb-toggle-wrapper {
         }
 
         .badge {
-          @include margin(0, -4px, 0, 10px);
+          margin-inline: 10px -4px;
+          margin-block: 0 0;
           flex-shrink: 1;
-          padding: 0 6px;
-          font-size: 11px;
+          padding-block: 0;
+          padding-inline: 6px;
+          font-size: calc(11rem / 16);
           line-height: 16px;
           border-radius: var(--s);
           background-color: var(--medium-text-color);
@@ -1635,7 +1708,7 @@ li.breadcrumb-toggle-wrapper {
         position: absolute;
         z-index: 1;
         height: 34px;
-        top: 0;
+        inset-block-start: 0;
         width: var(--xl);
         display: flex;
         align-items: center;
@@ -1657,21 +1730,22 @@ li.breadcrumb-toggle-wrapper {
 }
 
 .error-summary {
-  margin-bottom: var(--l);
-  padding: var(--l) var(--xl) var(--xl);
-  box-sizing: border-box;
-  box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5);
+  @include mixins.pane;
+  margin-block-end: var(--l);
+  padding-block: var(--l);
+  padding-inline: var(--xl);
   border-radius: var(--large-border-radius);
   background-color: var(--gray-050);
 
   .notification-icon {
     color: var(--error-color);
-    margin: -2px 6px 0 0;
-    float: left;
+    margin-block: -2px 0;
+    margin-inline: 0 6px;
+    float: inline-start;
   }
 
   h2 {
-    margin-top: var(--xs);
+    margin-block-start: 0;
   }
 
   & > ul.errors li,
@@ -1688,18 +1762,35 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+.slideout {
+  .error-summary {
+    border: 1px solid var(--error-color);
+    box-shadow: none;
+    background-color: rgb(var(--error-color-rgb) / 3%);
+    padding: var(--m);
+  }
+
+  // Slideouts with tabs need slightly different margins
+  .flex-fields .error-summary {
+    margin-block: 0 var(--row-gap);
+    margin-inline: var(--row-gap);
+  }
+}
+
 .content.has-sidebar:not(.hiding-sidebar) {
-  @include margin-left($sidebarWidth);
+  margin-inline-start: $sidebarWidth;
 }
 
 #content-notice {
-  margin: 0 calc(var(--xl) * -1);
-  padding: 0 var(--xl);
+  margin-block: 0;
+  margin-inline: calc(var(--xl) * -1);
+  padding-block: 0;
+  padding-inline: var(--xl);
 
   &:not(:last-child) {
-    padding-bottom: var(--s);
-    border-bottom: 1px solid var(--hairline-color);
-    margin-bottom: var(--s);
+    padding-block-end: 5px;
+    border-block-end: 1px solid var(--hairline-color);
+    margin-block-end: 5px;
   }
 }
 
@@ -1707,17 +1798,21 @@ li.breadcrumb-toggle-wrapper {
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields,
 .so-content .flex-fields,
+.lp-content .flex-fields,
 .draghelper .flex-fields {
   --row-gap: var(--xl);
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 calc(var(--row-gap) * -1) calc(var(--row-gap) * -1);
-  width: calc(100% + var(--row-gap) * 2);
+  margin-block: 0 calc(var(--padding) * -1);
+  margin-inline: calc(var(--padding) * -1);
+  width: calc(100% + var(--padding) * 2);
 
-  & > * {
-    margin: 0 0 var(--row-gap) !important;
-    padding: 0 var(--row-gap);
+  & > :not(.error-summary) {
+    margin-block: 0 var(--row-gap) !important;
+    margin-inline: 0 !important;
+    padding-block: 0;
+    padding-inline: var(--padding);
     box-sizing: border-box;
   }
 
@@ -1725,8 +1820,8 @@ li.breadcrumb-toggle-wrapper {
     flex: 4 0 100%;
 
     &:not(:nth-child(-n + 1 of :not(.hidden))) {
-      padding-top: var(--xl);
-      border-top: 1px solid var(--hairline-color);
+      padding-block-start: var(--xl);
+      border-block-start: 1px solid var(--hairline-color);
     }
   }
 
@@ -1736,24 +1831,25 @@ li.breadcrumb-toggle-wrapper {
   }
 
   & > .line-break:not(:first-child) {
-    margin-bottom: 0 !important;
+    margin-block-end: 0 !important;
   }
 
-  & > :not(h2):not(hr):not(.line-break) {
+  & > :not(h2, hr, .line-break) {
     &,
     &:last-child {
       position: relative;
       width: 100%;
 
-      &:before {
+      &::before {
         position: absolute;
-        top: 0;
-        @include left(-1px);
+        inset-block-start: 0;
+        inset-inline-start: -1px;
         width: 1px;
         height: 100%;
         content: '';
+
         // same BG color as the hairline around the content pane’s 1px shadow
-        background-color: transparentize($grey200, 0.5);
+        background-color: color.adjust(mixins.$grey200, $alpha: -0.5);
       }
     }
   }
@@ -1762,7 +1858,7 @@ li.breadcrumb-toggle-wrapper {
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields,
 .draghelper.drag-in-content .flex-fields {
-  & > :not(h2):not(hr):not(.line-break) {
+  & > :not(h2, hr, .line-break) {
     &,
     &:last-child {
       // 4 cols for >= 1536px
@@ -1770,16 +1866,18 @@ li.breadcrumb-toggle-wrapper {
         &.width-25 {
           width: 25%;
         }
+
         &.width-50 {
           width: 50%;
         }
+
         &.width-75 {
           width: 75%;
         }
       }
 
       // 2 cols for 600 - 1535px
-      @media only screen and (min-width: $minDesktopWidth) and (max-width: $minXlUiWidth - 1px) {
+      @media only screen and (min-width: $minDesktopWidth) and (max-width: $minXlUiWidth - calc(1rem/16)) {
         &.width-25,
         &.width-50 {
           width: 50%;
@@ -1790,8 +1888,9 @@ li.breadcrumb-toggle-wrapper {
 }
 
 .so-content .flex-fields,
+.lp-content .flex-fields,
 .draghelper.drag-in-slideout .flex-fields {
-  & > :not(h2):not(hr):not(.line-break) {
+  & > :not(h2, hr, .line-break) {
     &,
     &:last-child {
       // 2 cols for >= 1200

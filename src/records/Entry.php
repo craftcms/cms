@@ -19,7 +19,6 @@ use yii\db\ActiveQueryInterface;
  * @property int|null $fieldId Field ID
  * @property int $primaryOwnerId Primary owner ID
  * @property int $typeId Type ID
- * @property int|null $authorId Author ID
  * @property string|null $postDate Post date
  * @property string|null $expiryDate Expiry date
  * @property Element $element Element
@@ -68,15 +67,5 @@ class Entry extends ActiveRecord
     public function getType(): ActiveQueryInterface
     {
         return $this->hasOne(EntryType::class, ['id' => 'typeId']);
-    }
-
-    /**
-     * Returns the entry’s author.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getAuthor(): ActiveQueryInterface
-    {
-        return $this->hasOne(User::class, ['id' => 'authorId']);
     }
 }

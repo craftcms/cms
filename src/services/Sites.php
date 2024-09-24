@@ -32,6 +32,7 @@ use craft\models\SiteGroup;
 use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -126,6 +127,19 @@ class Sites extends Component
     public const EVENT_AFTER_DELETE_SITE = 'afterDeleteSite';
 
     /**
+     * This value can be configured as needed, but exists as a safeguard against performance issues.
+     *
+     * ::: warning
+     * Craft’s multi-site support is not designed to be infinitely scalable.
+     * Increase this limit at your own risk!
+     * :::
+     *
+     * @var int The maximum number of sites that can be created.
+     * @since 5.0.0
+     */
+    public int $maxSites = 100;
+
+    /**
      * @var MemoizableArray<SiteGroup>|null
      * @see _groups()
      */
@@ -194,11 +208,10 @@ class Sites extends Component
     private function _groups(): MemoizableArray
     {
         if (!isset($this->_groups)) {
-            $groups = [];
-            foreach ($this->_createGroupQuery()->all() as $result) {
-                $groups[] = new SiteGroup($result);
-            }
-            $this->_groups = new MemoizableArray($groups);
+            $this->_groups = new MemoizableArray(
+                $this->_createGroupQuery()->all(),
+                fn(array $result) => new SiteGroup($result),
+            );
         }
 
         return $this->_groups;
@@ -414,7 +427,7 @@ class Sites extends Component
      */
     public function getAllSiteIds(?bool $withDisabled = null): array
     {
-        return ArrayHelper::getColumn($this->_allSites($withDisabled), 'id', false);
+        return array_values(array_map(fn(Site $site) => $site->id, $this->_allSites($withDisabled)));
     }
 
     /**
@@ -591,6 +604,23 @@ class Sites extends Component
     }
 
     /**
+     * Returns editable sites by a group ID.
+     *
+     * @param int $groupId
+     * @param bool|null $withDisabled
+     * @return Site[]
+     * @since 5.4.0
+     */
+    public function getEditableSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
+    {
+        $editableSiteIds = array_flip($this->getEditableSiteIds());
+        return Collection::make($this->getSitesByGroupId($groupId, $withDisabled))
+            ->filter(fn(Site $site) => isset($editableSiteIds[$site->id]))
+            ->values()
+            ->all();
+    }
+
+    /**
      * Gets the total number of sites.
      *
      * @return int
@@ -635,6 +665,31 @@ class Sites extends Component
     }
 
     /**
+     * Returns sites by their language.
+     *
+     * @param string $language
+     * @param bool|null $withDisabled
+     * @return Site[]
+     * @since 4.9.0
+     */
+    public function getSitesByLanguage(string $language, ?bool $withDisabled = null): array
+    {
+        return ArrayHelper::where($this->_allSites($withDisabled), 'language', $language, true);
+    }
+
+    /**
+     * Returns the number of sites that can be created, based on [[$maxSites]].
+     *
+     * @return int
+     * @see $maxSites
+     * @since 5.0.0
+     */
+    public function getRemainingSites(): int
+    {
+        return max($this->maxSites - count($this->_allSitesById), 0);
+    }
+
+    /**
      * Saves a site.
      *
      * @param Site $site The site to be saved
@@ -646,6 +701,10 @@ class Sites extends Component
     public function saveSite(Site $site, bool $runValidation = true): bool
     {
         $isNewSite = !$site->id;
+
+        if ($isNewSite && !$this->getRemainingSites()) {
+            throw new Exception("Maximum number of sites cannot exceed $this->maxSites.");
+        }
 
         if (!empty($this->_allSitesById)) {
             $primarySite = $this->getPrimarySite();
@@ -801,7 +860,6 @@ class Sites extends Component
                     'elementType' => $elementType,
                     'criteria' => [
                         'siteId' => $oldPrimarySiteId,
-                        'status' => null,
                     ],
                     'siteId' => $site->id,
                 ]));
@@ -892,17 +950,16 @@ class Sites extends Component
             throw new Exception('You cannot delete the primary site.');
         }
 
-        // Fire a 'beforeDeleteSite' event
-        $event = new DeleteSiteEvent([
-            'site' => $site,
-            'transferContentTo' => $transferContentTo,
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_DELETE_SITE, $event);
-
-        // Make sure the event is giving us the go ahead
-        if (!$event->isValid) {
-            return false;
+        // Fire a 'beforeDeleteSite'
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE)) {
+            $event = new DeleteSiteEvent([
+                'site' => $site,
+                'transferContentTo' => $transferContentTo,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_DELETE_SITE, $event);
+            if (!$event->isValid) {
+                return false;
+            }
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -1100,6 +1157,7 @@ class Sites extends Component
     {
         $this->_allSitesById = null;
         $this->_enabledSitesById = null;
+        $this->_editableSiteIds = null;
         $this->_loadAllSites();
         Craft::$app->getIsMultiSite(true);
     }
@@ -1335,7 +1393,7 @@ SQL;
         // Set the new primary site by forcing a reload from the DB.
         $this->refreshSites();
 
-        // Fire an afterChangePrimarySite event
+        // Fire an 'afterChangePrimarySite' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {
             $this->trigger(self::EVENT_AFTER_CHANGE_PRIMARY_SITE, new SiteEvent([
                 'site' => $this->_primarySite,

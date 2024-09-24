@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\helpers\FileHelper;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -40,7 +41,14 @@ class Security extends \yii\base\Security
     public function init(): void
     {
         parent::init();
+
         $this->_blowFishHashCost = Craft::$app->getConfig()->getGeneral()->blowfishHashCost;
+
+        // normalize the sensitive keywords
+        $this->sensitiveKeywords = array_map(
+            fn(string $word) => Inflector::camel2words($word, false),
+            $this->sensitiveKeywords,
+        );
     }
 
     /**
@@ -188,5 +196,26 @@ class Security extends \yii\base\Security
         }
 
         return $value;
+    }
+
+    /**
+     * Returns whether the given file path is located within or above any system directories.
+     *
+     * @param string $path
+     * @return bool
+     * @since 5.4.2
+     */
+    public function isSystemDir(string $path): bool
+    {
+        $path = FileHelper::absolutePath($path, '/');
+
+        foreach (Craft::$app->getPath()->getSystemPaths() as $dir) {
+            $dir = FileHelper::absolutePath($dir, '/');
+            if (str_starts_with("$path/", "$dir/") || str_starts_with("$dir/", "$path/")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

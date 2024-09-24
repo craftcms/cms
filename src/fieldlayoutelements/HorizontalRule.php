@@ -23,6 +23,14 @@ class HorizontalRule extends FieldLayoutElement
     /**
      * @inheritdoc
      */
+    public function isMultiInstance(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function conditional(): bool
     {
         return false;
@@ -35,8 +43,10 @@ class HorizontalRule extends FieldLayoutElement
     {
         $label = Craft::t('app', 'Horizontal Rule');
         return <<<HTML
-<div class="fld-hr">
-  <div class="smalltext light">$label</div>
+<div>
+  <div class="fld-hr">
+    <div class="smalltext light">$label</div>
+  </div>
 </div>
 HTML;
     }
