@@ -1527,7 +1527,9 @@ abstract class Element extends Component implements ElementInterface
                 'link' => [
                     'label' => Craft::t('app', 'Link'),
                     'icon' => 'world',
-                    'placeholder' => ElementHelper::linkAttributeHtml(null),
+                    'placeholder' => ElementHelper::linkAttributeHtml('#', [
+                        'aria-disabled' => 'true',
+                    ]),
                 ],
                 'slug' => [
                     'label' => Craft::t('app', 'Slug'),
@@ -1535,7 +1537,13 @@ abstract class Element extends Component implements ElementInterface
                 ],
                 'uri' => [
                     'label' => Craft::t('app', 'URI'),
-                    'placeholder' => ElementHelper::uriAttributeHtml(Craft::t('app', 'link/to/something'), ''),
+                    'placeholder' => ElementHelper::uriAttributeHtml(
+                        Craft::t('app', 'link/to/something'),
+                        '#',
+                        [
+                            'aria-disabled' => 'true',
+                        ]
+                    ),
                 ],
             ]);
         }

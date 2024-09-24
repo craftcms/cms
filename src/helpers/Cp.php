@@ -2493,7 +2493,8 @@ JS, [
         $heading = Html::tag('craft-element-label',
             Html::tag('a', Html::tag('span', Craft::t('app', 'Title')), [
                 'class' => ['label-link'],
-                'href' => null,
+                'href' => '#',
+                'aria-disabled' => 'true',
             ]),
             [
                 'class' => 'label',

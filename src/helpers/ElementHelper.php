@@ -838,17 +838,24 @@ class ElementHelper
      * Returns the HTML for a link attribute based on provided URL.
      *
      * @param string|null $url
+     * @param array $config
      * @return string
      */
-    public static function linkAttributeHtml(?string $url): string
+    public static function linkAttributeHtml(?string $url, array $config = []): string
     {
-        return Html::beginTag('a', [
+        $options = [
             'href' => $url,
             'rel' => 'noopener',
             'target' => '_blank',
             'title' => Craft::t('app', 'Visit webpage'),
             'aria-label' => Craft::t('app', 'View'),
-        ]) .
+        ];
+
+        if (!empty($config)) {
+            $options = array_merge_recursive($options, $config);
+        }
+
+        return Html::beginTag('a',  $options) .
         Html::tag('span', Cp::iconSvg('world'), [
             'class' => ['cp-icon', 'small', 'inline-flex'],
         ]) .
@@ -860,17 +867,24 @@ class ElementHelper
      *
      * @param string|null $value
      * @param string|null $url
+     * @param array $config
      * @return string
      */
-    public static function uriAttributeHtml(?string $value, ?string $url): string
+    public static function uriAttributeHtml(?string $value, ?string $url, array $config = []): string
     {
-        return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
+        $options = [
             'href' => $url,
             'rel' => 'noopener',
             'target' => '_blank',
             'class' => 'go',
             'title' => Craft::t('app', 'Visit webpage'),
-        ]);
+        ];
+
+        if (!empty($config)) {
+            $options = array_merge_recursive($options, $config);
+        }
+
+        return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, $options);
     }
 
     /**

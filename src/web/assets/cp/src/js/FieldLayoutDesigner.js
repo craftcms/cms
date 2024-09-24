@@ -1869,6 +1869,7 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     });
 
     this.initDrag(this.$container);
+    this.preventLinksFromLinking();
   },
 
   initDrag: function ($container) {
@@ -1901,6 +1902,7 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     })
       .then(({data}) => {
         this.$previewContainer.html(data.previewHtml);
+        this.preventLinksFromLinking();
       })
       .catch((e) => {
         Craft.cp.displayError(e?.response?.data?.message);
@@ -1910,6 +1912,13 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
         this.$previewContainer.removeClass('loading');
         Craft.cp.announce(Craft.t('app', 'Loading complete'));
       });
+  },
+
+  preventLinksFromLinking: function() {
+    // prevent the preview links from being clickable
+    this.$previewContainer.find('a').on('click', ev => {
+      ev.preventDefault();
+    });
   },
 
   getCardElements: function () {
