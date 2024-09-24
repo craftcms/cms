@@ -806,7 +806,7 @@ Garnish = $.extend(Garnish, {
 
       if (isArrayInput) {
         // Get the cropped input name
-        const croppedName = inputName.substring(0, inputName.length - 2);
+        var croppedName = inputName.substring(0, inputName.length - 2);
 
         // Prep the input counter
         if (typeof arrayInputCounters[croppedName] === 'undefined') {
