@@ -1914,9 +1914,9 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
       });
   },
 
-  preventLinksFromLinking: function() {
+  preventLinksFromLinking: function () {
     // prevent the preview links from being clickable
-    this.$previewContainer.find('a').on('click', ev => {
+    this.$previewContainer.find('a').on('click', (ev) => {
       ev.preventDefault();
     });
   },
