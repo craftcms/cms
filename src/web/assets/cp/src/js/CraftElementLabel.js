@@ -21,26 +21,30 @@ class CraftElementLabel extends HTMLElement {
       return;
     }
 
-    /**
-     * When the element is inside a tab, we need to listen for tab changes.
-     * Tabs are initially rendered as `display: none` which will cause the
-     * label to have a width of 0
-     */
-    this.$tabs = $('#tabs');
-    if (this.$tabs.length && this.$tabs.data('tabs')) {
-      this.$tabs.data('tabs').on('selectTab', () => {
+    if (!this.hasConnected) {
+      /**
+       * When the element is inside a tab, we need to listen for tab changes.
+       * Tabs are initially rendered as `display: none` which will cause the
+       * label to have a width of 0
+       */
+      this.$tabs = $('#tabs');
+      if (this.$tabs.length && this.$tabs.data('tabs')) {
+        this.$tabs.data('tabs').on('selectTab', () => {
+          this.update();
+        });
+      }
+
+      this.update();
+
+      // Update again when the document is ready.
+      // At the moment, this is necessary for this functionality within a dashboard
+      // widget. In that case, this component is rendered too early.
+      $(() => {
         this.update();
       });
+
+      this.hasConnected = true;
     }
-
-    this.update();
-
-    // Update again when the document is ready.
-    // At the moment, this is necessary for this functionality within a dashboard
-    // widget. In that case, this component is rendered too early.
-    $(() => {
-      this.update();
-    });
   }
 
   update() {
