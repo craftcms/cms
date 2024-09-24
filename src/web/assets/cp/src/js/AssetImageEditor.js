@@ -53,6 +53,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     draggingCropper: false,
     scalingCropper: false,
     draggingFocal: false,
+    clickToMoveFocal: false,
     previousMouseX: 0,
     previousMouseY: 0,
     shiftKeyHeld: false,
@@ -2406,6 +2407,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         } else if (move) {
           this.draggingCropper = true;
         }
+      } else {
+        if (this.focalPoint) {
+          this.clickToMoveFocal = true;
+        }
       }
     },
 
@@ -2454,7 +2459,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     /**
      * Handle mouse being released.
      */
-    _handleMouseUp: function () {
+    _handleMouseUp: function (ev) {
+      if (!this.draggingFocal && this.clickToMoveFocal) {
+        this._handleFocalClickToMove(ev);
+      }
+
       this.draggingCropper = false;
       this.scalingCropper = false;
       this.draggingFocal = false;
@@ -2469,6 +2478,58 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._handleMouseUp(ev);
       this.mouseMoveEvent = ev;
       this._handleMouseMoveInternal();
+    },
+
+    /**
+     * Handle focal point being moved via click.
+     *
+     * @param {Object} ev
+     */
+    _handleFocalClickToMove: function (ev) {
+      if (typeof this._handleFocalClickToMove._ === 'undefined') {
+        this._handleFocalClickToMove._ = {};
+      }
+
+      if (!this.focalPoint) return;
+
+      const left = this.focalPoint.get('left');
+      const top = this.focalPoint.get('top');
+
+      const canvasOffset = this.$croppingCanvas.offset();
+      const canvasOffsetX = canvasOffset.left;
+      const canvasOffsetY = canvasOffset.top;
+
+      const clickPosX = ev.pageX - canvasOffsetX;
+      const clickPosY = ev.pageY - canvasOffsetY;
+      console.log(clickPosY);
+
+      console.log(this.focalPoint.getBoundingRect(false, true));
+
+      // Just make sure that the focal point stays inside the image
+      if (this.currentView === 'crop') {
+        // if (
+        //   !this.arePointsInsideRectangle(
+        //     [
+        //       {
+        //         x: this._handleFocalDrag._.newX,
+        //         y: this._handleFocalDrag._.newY,
+        //       },
+        //     ],
+        //     this.imageVerticeCoords
+        //   )
+        // ) {
+        //   return;
+        // }
+        console.log('in crop mode');
+      }
+
+      this.focalPoint.set({
+        left: clickPosX,
+        top: clickPosY,
+      });
+
+      this.storeFocalPointState();
+      this.renderImage();
     },
 
     /**
