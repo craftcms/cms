@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a JavaScript error. ([#15784](https://github.com/craftcms/cms/issues/15784))
+
 ## 5.4.5 - 2024-09-23
 
 - Element conditions now show rules for fields with the same name but unique handles, if the “Show field handles in edit forms” user preference is enabled. ([#15764](https://github.com/craftcms/cms/issues/15764))
