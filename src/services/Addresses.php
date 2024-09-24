@@ -71,7 +71,10 @@ class Addresses extends Component
     public const EVENT_DEFINE_ADDRESS_SUBDIVISIONS = 'defineAddressSubdivisions';
 
     /**
-     * @event DefineAddressCountriesEvent The event that is triggered when defining country options for an address
+     * @event DefineAddressCountriesEvent The event that is triggered when defining country options for an address.
+     * This event is primarily used to modify the list of countries that are available for selection. You can also use
+     * the event to add additional countries to the list, however, this will require you to use dependency injection to override the
+     * `Addresses::getCountryRepository()` method and provide your own `CountryRepository` instance.
      * @see getCountryList()
      * @since 4.13.0
      */
