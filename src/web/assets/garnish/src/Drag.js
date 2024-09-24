@@ -61,6 +61,8 @@ export default BaseDrag.extend(
      * Start Dragging
      */
     startDragging: function () {
+      this.onBeforeDragStart();
+
       // Reset some things
       this.helpers = [];
       this.helperTargets = [];
@@ -104,7 +106,8 @@ export default BaseDrag.extend(
         this.updateHelperPosProxy
       );
 
-      this.base();
+      this.dragging = true;
+      this.onDragStart();
     },
 
     /**

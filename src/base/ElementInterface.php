@@ -343,7 +343,7 @@ interface ElementInterface extends
     public static function modifyCustomSource(array $config): array;
 
     /**
-     * Returns the available [bulk element actions](https://craftcms.com/docs/4.x/extend/element-actions.html)
+     * Returns the available [bulk element actions](https://craftcms.com/docs/5.x/extend/element-actions.html)
      * for a given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name

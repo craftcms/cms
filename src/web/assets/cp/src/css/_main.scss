@@ -4416,6 +4416,7 @@ table.editable {
 
   td.action {
     padding-inline: var(--xs) !important;
+    vertical-align: middle;
 
     &:has(+ td.action) {
       padding-inline-end: 0 !important;

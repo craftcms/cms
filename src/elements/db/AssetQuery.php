@@ -994,8 +994,28 @@ class AssetQuery extends ElementQuery
         if ($this->hasAlt !== null) {
             $hasAltCondition = [
                 'or',
-                ['assets.alt' => null],
-                ['assets_sites.alt' => null],
+                ['not', ['assets_sites.alt' => '']],
+                [
+                    'and',
+                    ['assets_sites.alt' => null],
+                    ['not', ['assets.alt' => '']],
+                    ['not', ['assets.alt' => null]],
+                ],
+            ];
+
+            $withoutAltCondition = [
+                'or',
+                ['assets_sites.alt' => ''],
+                [
+                    'and',
+                    ['assets_sites.alt' => null],
+                    [
+                        'or',
+                        ['assets.alt' => ''],
+                        ['assets.alt' => null],
+                    ],
+
+                ],
             ];
 
             $this->subQuery
@@ -1004,7 +1024,7 @@ class AssetQuery extends ElementQuery
                     '[[assets_sites.assetId]] = [[assets.id]]',
                     '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
                 ])
-                ->andWhere($this->hasAlt ? ['not', $hasAltCondition] : $hasAltCondition);
+                ->andWhere($this->hasAlt ? $hasAltCondition : $withoutAltCondition);
         }
 
         return parent::afterPrepare();

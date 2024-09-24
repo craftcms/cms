@@ -2253,6 +2253,10 @@ class StringHelperTest extends TestCase
             ['fooBar', 'Fo’o Bar'],
             ['fooBarBaz', 'Foo Ba’r   Baz'],
             ['fooBar', '0 Foo Bar'],
+            ['fooBar', 'Foo!Bar'],
+            ['fooBar', 'Foo,Bar'],
+            ['fooBar', 'Foo/Bar'],
+            ['fooBar', 'Foo\\Bar'],
         ];
     }
 

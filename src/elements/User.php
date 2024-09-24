@@ -953,13 +953,24 @@ class User extends Element implements IdentityInterface
 
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [
-                ['username', 'email'],
+                ['email'],
                 UniqueValidator::class,
                 'targetClass' => UserRecord::class,
                 'caseInsensitive' => true,
                 'filter' => ['or', ['active' => true], ['pending' => true]],
                 'when' => $treatAsActive,
             ];
+
+            if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+                $rules[] = [
+                    ['username'],
+                    UniqueValidator::class,
+                    'targetClass' => UserRecord::class,
+                    'caseInsensitive' => true,
+                    'filter' => ['or', ['active' => true], ['pending' => true]],
+                    'when' => $treatAsActive,
+                ];
+            }
 
             $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
         }
@@ -2330,6 +2341,10 @@ JS, [
     {
         if ($isNew && !Craft::$app->getUsers()->canCreateUsers()) {
             return false;
+        }
+
+        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            $this->username = $this->email;
         }
 
         return parent::beforeSave($isNew);
