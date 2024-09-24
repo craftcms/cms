@@ -2406,7 +2406,6 @@ JS, [
                 'value' => 'layoutElement:' . $bodyField->uid,
                 'fieldClass' => ['disabled', 'cvd-field'],
                 'checked' => true, // all fields that are set to show in the card are selected and cannot be unchecked
-                'disabled' => true,
             ];
         }
 

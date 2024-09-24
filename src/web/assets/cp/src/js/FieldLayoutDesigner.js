@@ -1863,9 +1863,13 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     this.$libraryContainer = this.$container.find('.cvd-library');
 
     // trigger preview update when items are checked/unchecked
-    this.$libraryContainer.on('change', function () {
-      let cvd = $(this).parents('.card-view-designer').data('cvd');
-      cvd.updatePreview();
+    this.$libraryContainer.on('change', function (ev) {
+      if ($(ev.target).parents('.cvd-field.disabled').length > 0) {
+        $(ev.target).prop('checked', true);
+      } else {
+        let cvd = $(this).parents('.card-view-designer').data('cvd');
+        cvd.updatePreview();
+      }
     });
 
     this.initDrag(this.$container);
@@ -1954,7 +1958,6 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
         value: 'layoutElement:' + element.uid,
         label: this.getCheckboxLabel(element.$container),
         checked: true,
-        disabled: true,
         fieldClass: ['disabled', 'cvd-field'],
         data: {
           'field-id': element.fieldId,
