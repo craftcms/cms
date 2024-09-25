@@ -155,7 +155,6 @@ JS;
             'Continue',
             'Copied to clipboard.',
             'Copy',
-            'Copy content from site',
             'Copy the URL',
             'Copy the reference tag',
             'Copy to clipboard',

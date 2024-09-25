@@ -755,16 +755,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         const {element, fragments, message, headHtml, bodyHtml} = response.data;
 
-        if (Craft.broadcaster) {
-          Craft.broadcaster.postMessage({
-            pageId: Craft.pageId,
-            event: 'saveDraft',
-            canonicalId: element.canonicalId,
-            draftId: element.draftId,
-            isProvisionalDraft: element.isProvisionalDraft,
-          });
-        }
-
         const dirtyFields = [];
 
         // Replace the layout elements
