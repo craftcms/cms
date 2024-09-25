@@ -128,4 +128,12 @@ class AltField extends TextareaField
 
         return ElementHelper::translationDescription($element->getVolume()->altTranslationMethod);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function isCopyable(?ElementInterface $element = null, bool $static = false): bool
+    {
+        return $this->translatable($element) && ElementHelper::supportsFieldCopying($element);
+    }
 }
