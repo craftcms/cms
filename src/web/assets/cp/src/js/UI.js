@@ -441,6 +441,12 @@ Craft.ui = {
       });
     }
 
+    if (config.aria) {
+      Object.entries(config.aria).forEach((item) => {
+        $input.attr('aria-' + item[0], item[1]);
+      });
+    }
+
     if (config.toggle || config.reverseToggle) {
       $input.addClass('fieldtoggle');
       new Craft.FieldToggle($input);

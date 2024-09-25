@@ -1962,6 +1962,9 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
         data: {
           'field-id': element.fieldId,
         },
+        aria: {
+          disabled: true,
+        },
       })
       .appendTo($draggable);
 
