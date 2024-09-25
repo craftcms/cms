@@ -2761,17 +2761,17 @@ class Elements extends Component
      */
     private function _copyFieldValueByHandle(ElementInterface $from, ElementInterface $to, string $fieldHandle): bool
     {
-        // reserved $fieldHandles which we need to treat differently
-        $reservedHandles = ['title', 'slug'];
-
+        /** @var FieldInterface|null $field */
+        $field = $from->getFieldLayout()?->getFieldByHandle($fieldHandle);
         $valueChanged = false;
-        // it's a reserved handle - handle differently
-        if (in_array($fieldHandle, $reservedHandles) && $to->{$fieldHandle} != $from->{$fieldHandle}) {
-            $to->{$fieldHandle} = $from->{$fieldHandle};
-            $valueChanged = true;
+
+        // if we didn't find a field, let's assume it's an attribute field and handle differently
+        if ($field === null) {
+            if (property_exists($from, $fieldHandle) && property_exists($to, $fieldHandle) && $to->{$fieldHandle} != $from->{$fieldHandle}) {
+                $to->{$fieldHandle} = $from->{$fieldHandle};
+                $valueChanged = true;
+            }
         } else {
-            /** @var FieldInterface $field */
-            $field = $from->getFieldLayout()?->getFieldByHandle($fieldHandle);
             if ($field instanceof CopyableFieldInterface) {
                 $valueChanged = $field->copyValueBetweenSites($from, $to);
             }
