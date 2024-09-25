@@ -662,6 +662,79 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    protected static function defineCardAttributes(): array
+    {
+        $attributes = array_merge(parent::defineCardAttributes(), [
+            'dateCreated' => [
+                'label' => Craft::t('app', 'Date Uploaded'),
+                // placeholder will be merged from parent
+            ],
+            'filename' => [
+                'label' => Craft::t('app', 'Filename'),
+                'placeholder' => Craft::t('app', 'placeholder') . '.png',
+            ],
+            'size' => [
+                'label' => Craft::t('app', 'File Size'),
+                'placeholder' => '2KB',
+            ],
+            'kind' => [
+                'label' => Craft::t('app', 'File Kind'),
+                'placeholder' => Craft::t('app', 'Image'),
+
+            ],
+            'imageSize' => [
+                'label' => Craft::t('app', 'Dimensions'),
+                'placeholder' => '700x500',
+            ],
+            'width' => [
+                'label' => Craft::t('app', 'Image Width'),
+                'placeholder' => '700px',
+            ],
+            'height' => [
+                'label' => Craft::t('app', 'Image Height'),
+                'placeholder' => '500px',
+            ],
+            'location' => [
+                'label' => Craft::t('app', 'Location'),
+                'placeholder' => Craft::t('app', 'Volume'),
+            ],
+            'link' => [
+                'label' => Craft::t('app', 'Link'),
+                'icon' => 'world',
+                'placeholder' => ElementHelper::linkAttributeHtml(null),
+            ],
+            'dateModified' => [
+                'label' => Craft::t('app', 'File Modified Date'),
+                'placeholder' => (new \DateTime())->sub(new \DateInterval('P14D')),
+            ],
+            'uploader' => [
+                'label' => Craft::t('app', 'Uploaded By'),
+                'placeholder' => ($uploader = Craft::$app->getUser()->getIdentity()) ? Cp::elementChipHtml($uploader) : '',
+            ],
+        ]);
+
+        // Hide Author from Craft Solo
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            unset($attributes['uploader']);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'uploader' => $attribute['placeholder'],
+            default => parent::attributePreviewHtml($attribute),
+        };
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
         $assets = [];

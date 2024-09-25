@@ -935,6 +935,17 @@ JS, [
     }
 
     /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value = null, ?ElementInterface $element = null): string
+    {
+        $mockup = new (static::elementType());
+        $mockup->title = Craft::t('app', 'Related {type} Title', ['type' => $mockup->displayName()]);
+
+        return Cp::chipHtml($mockup);
+    }
+
+    /**
      * Returns the HTML that should be shown for this field in table and card views.
      *
      * @param ElementCollection $elements

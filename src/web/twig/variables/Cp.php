@@ -1093,4 +1093,17 @@ class Cp extends Component
     {
         return CpHelper::fieldLayoutDesignerHtml($fieldLayout, $config);
     }
+
+    /**
+     * Renders a card view designer’s HTML.
+     *
+     * @param FieldLayout $fieldLayout
+     * @param array $config
+     * @return string
+     * @since 5.5.0
+     */
+    public function cardViewDesigner(FieldLayout $fieldLayout, array $config = []): string
+    {
+        return CpHelper::cardViewDesignerHtml($fieldLayout, $config);
+    }
 }
