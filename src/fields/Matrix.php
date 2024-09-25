@@ -42,7 +42,6 @@ use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -1220,14 +1219,6 @@ JS;
         }
 
         return $entryType;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsCopyable(?ElementInterface $element = null): bool
-    {
-        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 
     // Events

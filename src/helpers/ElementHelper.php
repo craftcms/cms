@@ -425,6 +425,12 @@ class ElementHelper
         return false;
     }
 
+    /**
+     * Returns whether given element supports having its field values copied from another site.
+     *
+     * @param $element
+     * @return bool
+     */
     public static function supportsFieldCopying($element): bool
     {
         return !(!Craft::$app->getIsMultiSite() ||

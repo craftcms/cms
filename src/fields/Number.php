@@ -17,7 +17,6 @@ use craft\base\SortableFieldInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
@@ -358,13 +357,5 @@ JS;
             'type' => NumberType::getType(),
             'description' => $this->instructions,
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsCopyable(?ElementInterface $element = null): bool
-    {
-        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

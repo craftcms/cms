@@ -2672,8 +2672,9 @@ class Elements extends Component
      * @param null|string $fieldHandle
      * @param int $copyFromSiteId
      * @return array Array of field handles updated. The key will be the handle and value a boolean
-     * @throws Exception
+     * @throws ElementNotFoundException
      * @throws Throwable
+     * @since 5.5.0
      */
     public function copyFieldValuesFromSite(ElementInterface $element, ?string $fieldHandle, int $copyFromSiteId): array
     {
@@ -2690,6 +2691,7 @@ class Elements extends Component
 
         $updates = [];
 
+        // if $fieldHandle === null - we're doing it for all element's fields
         if ($fieldHandle === null) {
             $translatableFields = array_merge(
                 $this->_getTranslatableCustomFieldHandles($element),
@@ -2733,7 +2735,7 @@ class Elements extends Component
      *
      * @param ElementInterface $element
      * @return array
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     private function _getTranslatableNativeFieldHandles(ElementInterface $element): array
     {
@@ -2756,7 +2758,6 @@ class Elements extends Component
      * @param $to
      * @param $fieldHandle
      * @return bool
-     * @since 5.0.0
      */
     private function _copyFieldValueByHandle($from, $to, $fieldHandle): bool
     {

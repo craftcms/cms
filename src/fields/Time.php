@@ -17,7 +17,6 @@ use craft\base\SortableFieldInterface;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\ElementHelper;
 use craft\i18n\Locale;
 use craft\validators\TimeValidator;
 use DateTime;
@@ -250,13 +249,5 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
             'type' => DateTimeType::getType(),
             'description' => $this->instructions,
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsCopyable(?ElementInterface $element = null): bool
-    {
-        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

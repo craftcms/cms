@@ -612,15 +612,17 @@ JS, [
     }
 
     /**
-     * Returns whether the field is copyable between sites.
+     * @see CopyableFieldInterface::getIsCopyable()
+     * @since 5.5.0
      */
     public function getIsCopyable(?ElementInterface $element = null): bool
     {
-        return false;
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 
     /**
-     * @inheritdoc
+     * @see CopyableFieldInterface::copyValueBetweenSites()
+     * @since 5.5.0
      */
     public function copyValueBetweenSites(ElementInterface $from, ElementInterface $to): bool
     {

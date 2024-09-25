@@ -15,7 +15,6 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;
-use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\validators\ColorValidator;
 use yii\db\Schema;
@@ -235,13 +234,5 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
 
         return "<div class='color small static'><div class='color-preview' style='background-color: {$value->getHex()};'></div></div>" .
             "<div class='colorhex code'>{$value->getHex()}</div>";
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsCopyable(?ElementInterface $element = null): bool
-    {
-        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

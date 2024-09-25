@@ -17,7 +17,6 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\fields\conditions\CountryFieldConditionRule;
 use craft\helpers\Cp;
-use craft\helpers\ElementHelper;
 use yii\db\Schema;
 
 /**
@@ -120,13 +119,5 @@ class Country extends Field implements InlineEditableFieldInterface, MergeableFi
     {
         /** @var CountryModel|null $value */
         return $value?->getName() ?? '';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsCopyable(?ElementInterface $element = null): bool
-    {
-        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

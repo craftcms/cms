@@ -17,7 +17,6 @@ use craft\gql\types\generators\TableRowType;
 use craft\gql\types\TableRow;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
@@ -591,14 +590,6 @@ class Table extends Field implements CopyableFieldInterface
             'name' => $typeName,
             'fields' => fn() => TableRow::prepareRowFieldDefinition($this->columns, false),
         ])));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsCopyable(?ElementInterface $element = null): bool
-    {
-        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 
     /**

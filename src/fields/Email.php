@@ -16,7 +16,6 @@ use craft\base\MergeableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\App;
 use craft\helpers\Cp;
-use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use yii\db\Schema;
@@ -153,13 +152,5 @@ class Email extends Field implements InlineEditableFieldInterface, MergeableFiel
         }
         $value = Html::encode($value);
         return "<a href=\"mailto:$value\">$value</a>";
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsCopyable(?ElementInterface $element = null): bool
-    {
-        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

@@ -1026,14 +1026,6 @@ JS, [
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getIsCopyable(?ElementInterface $element = null): bool
-    {
-        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
-    }
-
     // Events
     // -------------------------------------------------------------------------
 

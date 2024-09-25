@@ -533,6 +533,7 @@ class ElementsController extends Controller
      * @throws \craft\errors\MissingComponentException
      * @throws \yii\base\Exception
      * @throws \yii\db\Exception
+     * @since 5.5.0
      */
     public function actionCopyFieldValuesFromSite(): Response
     {
