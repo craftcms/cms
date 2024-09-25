@@ -686,10 +686,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       $(`<span>${$icon.attr('title')}</span>`).appendTo($hudContent);
 
       // only allow the copy field value of a copyable field
-      // only if drafts can be created for this element (both user has permissions and element supports them)
       // only if this element exists on other sites too
       if (
-        this.settings.canCreateDrafts &&
         $btn.attr('data-copy') &&
         this._getSitesForCopyFieldAction().length > 0
       ) {
@@ -768,7 +766,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           }
         }
 
-        if (dirtyFields.length > 0) {
+        if (dirtyFields.length > 0 && this.settings.canCreateDrafts) {
           // Update the draft with the new values
           await this.saveDraft({
             dirtyFields,

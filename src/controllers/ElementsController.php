@@ -560,13 +560,6 @@ class ElementsController extends Controller
         }
 
         $elementsService = Craft::$app->getElements();
-        $user = static::currentUser();
-
-        // if we can't create drafts for this element, just bail;
-        // this check is to both check if user can create drafts AND if element supports them
-        if (!$elementsService->canCreateDrafts($element, $user)) {
-            throw new ForbiddenHttpException('Can‘t create drafts for this element.');
-        }
 
         // check if this entry exists for other sites
         if (empty($siteIdsForElement = $elementsService->getEnabledSiteIdsForElement($element->id))) {

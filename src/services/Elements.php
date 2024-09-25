@@ -2754,12 +2754,12 @@ class Elements extends Component
     /**
      * Copy field value from one element to another and check if it changed
      *
-     * @param $from
-     * @param $to
-     * @param $fieldHandle
+     * @param ElementInterface $from
+     * @param ElementInterface $to
+     * @param string $fieldHandle
      * @return bool
      */
-    private function _copyFieldValueByHandle($from, $to, $fieldHandle): bool
+    private function _copyFieldValueByHandle(ElementInterface $from, ElementInterface $to, string $fieldHandle): bool
     {
         // reserved $fieldHandles which we need to treat differently
         $reservedHandles = ['title', 'slug'];
