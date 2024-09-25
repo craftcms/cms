@@ -476,6 +476,7 @@
                 {% set config = config|filter((v, k) => k != 'id') %}
             {% endif %}
 
+            <h2 class="visually-hidden">{{ 'Card Layout Editor'|t('app') }}</h2>
             {{ _self.field({
                 label: 'Card View'|t('app'),
                 fieldset: true,
