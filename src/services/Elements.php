@@ -3824,8 +3824,6 @@ class Elements extends Component
                     }
                 }
 
-                $siteSettingsRecord = null;
-
                 // Save the element’s site settings record
                 if ($siteSettingsRecord === null) {
                     // First time we've saved the element for this site
