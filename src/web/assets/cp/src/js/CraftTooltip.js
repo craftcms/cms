@@ -51,6 +51,8 @@ class CraftTooltip extends HTMLElement {
     this.maxWidth = this.getAttribute('max-width') || '220px';
     this.text = this.getAttribute('text') || this.innerText;
 
+    this.handleKeyUp = this.handleKeyUp.bind(this);
+
     this.renderTooltip();
     this.renderInner();
 
@@ -77,8 +79,6 @@ class CraftTooltip extends HTMLElement {
       this.triggerElement?.addEventListener(event, handler.bind(this, delay));
     });
 
-    // Close on ESC
-    document.addEventListener('keyup', this.handleKeyUp.bind(this));
 
     // Update & hide to make sure everything is where it needs to be
     this.update();
@@ -94,7 +94,7 @@ class CraftTooltip extends HTMLElement {
       });
     }
 
-    document.removeEventListener('keyup', this.handleKeyUp.bind(this));
+    document.removeEventListener('keyup', this.handleKeyUp);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -115,6 +115,7 @@ class CraftTooltip extends HTMLElement {
 
   handleKeyUp(e) {
     if (e.key === 'Escape') {
+      console.log('hiding');
       this.hide();
     }
   }
@@ -159,6 +160,9 @@ class CraftTooltip extends HTMLElement {
       });
 
       autoUpdate(this.triggerElement, this.tooltip, this.update.bind(this));
+
+      // Close on ESC
+      document.addEventListener('keyup', this.handleKeyUp);
     }, delay);
   }
 
