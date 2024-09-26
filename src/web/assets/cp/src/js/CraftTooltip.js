@@ -12,7 +12,7 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  * @property {'top'|'top-start'|'top-end'|'right'|'right-start'|'right-end'|'bottom'|'bottom-start'|'bottom-end'|'left'|'left-start'|'left-end'} placement - The placement of the tooltip relative to the parent element.
  * @property {boolean} arrow - Whether the tooltip should have an arrow.
  * @property {number} offset - The offset of the tooltip from the parent element.
- * @property {boolean} self-managed - Whether the tooltip should manage its own state.
+ * @property {boolean} self-managed - When true, the tooltip will be its own trigger.
  * @property {string} aria-label - Text content for the tooltip
  * @property {number} delay - The delay before the tooltip is shown on mouseentery.
  * @method show - Show the tooltip.
@@ -23,7 +23,7 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  */
 class CraftTooltip extends HTMLElement {
   static get observedAttributes() {
-    return ['aria-label'];
+    return ['aria-label', 'placement'];
   }
 
   connectedCallback() {
@@ -40,6 +40,8 @@ class CraftTooltip extends HTMLElement {
     this.direction = getComputedStyle(this).direction;
     this.delay = this.getAttribute('delay') || 500;
     this.delayTimeout = null;
+    this.maxWidth = this.getAttribute('max-width') || '220px';
+    this.text = this.getAttribute('text') || this.innerText;
 
     this.renderTooltip();
     this.renderInner();
@@ -73,6 +75,7 @@ class CraftTooltip extends HTMLElement {
 
     // Close on ESC
     document.addEventListener('keyup', this.handleKeyUp.bind(this));
+    document.addEventListener('scroll', this.update.bind(this));
 
     // Update & hide to make sure everything is where it needs to be
     this.update();
@@ -89,6 +92,7 @@ class CraftTooltip extends HTMLElement {
     }
 
     document.removeEventListener('keyup', this.handleKeyUp.bind(this));
+    document.removeEventListener('scroll', this.update.bind(this));
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -101,6 +105,10 @@ class CraftTooltip extends HTMLElement {
         this.update();
       }
     }
+
+    if (name === 'placement' && newValue !== oldValue) {
+      this.placement = newValue;
+    }
   }
 
   handleKeyUp(e) {
@@ -112,6 +120,7 @@ class CraftTooltip extends HTMLElement {
   renderTooltip() {
     this.tooltip = document.createElement('span');
     this.tooltip.classList.add('craft-tooltip');
+    this.tooltip.style['max-width'] = this.maxWidth;
     this.appendChild(this.tooltip);
   }
 
@@ -122,7 +131,7 @@ class CraftTooltip extends HTMLElement {
   renderInner() {
     this.inner = document.createElement('span');
     this.inner.classList.add('inner');
-    this.inner.innerText = this.getAttribute('aria-label');
+    this.inner.innerText = this.text;
 
     // Replace the content with the inner container
     this.tooltip.appendChild(this.inner);
@@ -192,11 +201,12 @@ class CraftTooltip extends HTMLElement {
       ],
     }).then(({x, y, middlewareData, placement}) => {
       // Placement may have changed
-      this.placement = placement;
+      this.setAttribute('placement', placement);
 
       Object.assign(this.tooltip.style, {
         left: `${x}px`,
         top: `${y}px`,
+        padding: '0px',
         // Add padding to the static side for accessible hovers
         [`padding${Craft.uppercaseFirst(this.getStaticSide())}`]:
           `${this.offset}px`,

@@ -160,7 +160,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         // Use event delegation so we don't have to reinitialize when markup is replaced
         this.$container.on(
-          'click',
+          'mousedown',
           '[data-copy]',
           this.showFieldCopyDialogue.bind(this)
         );
@@ -677,13 +677,12 @@ Craft.ElementEditor = Garnish.Base.extend(
       ev.preventDefault();
 
       const $btn = $(ev.currentTarget);
-      const $icon = $btn.find('.t9n-indicator');
 
       const $hudContent = $('<div/>', {
         class: 'copy-translation-dialogue',
       });
 
-      $(`<span>${$icon.attr('title')}</span>`).appendTo($hudContent);
+      $(`<span>${$btn.attr('data-description')}</span>`).appendTo($hudContent);
 
       // only allow the copy field value of a copyable field
       // only if this element exists on other sites too

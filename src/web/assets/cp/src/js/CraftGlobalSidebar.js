@@ -28,7 +28,7 @@ class CraftGlobalSidebar extends HTMLElement {
         tooltip.setAttribute('placement', 'right');
         tooltip.setAttribute('self-managed', 'true');
         tooltip.setAttribute(
-          'aria-label',
+          'text',
           item.querySelector('.label')?.innerText
         );
         item.append(tooltip);

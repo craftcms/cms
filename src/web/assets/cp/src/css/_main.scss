@@ -1905,6 +1905,7 @@ ul.icons {
 }
 
 .btn {
+  isolation: isolate;
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -6307,7 +6308,7 @@ $min2ColWidth: 400px;
 
 .modal .body,
 .hud .main {
-  padding: 24px;
+  padding: var(--l);
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -7787,6 +7788,10 @@ fieldset {
     margin-block: 0;
     margin-inline: 0.75em;
     min-width: 8.7em;
+  }
+
+  hr {
+    margin-block: var(--m);
   }
 
   .smalltext {

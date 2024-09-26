@@ -1446,14 +1446,19 @@ JS, [
 
         $translationIconHtml = Html::tag('span', '', [
             'class' => ['t9n-indicator'],
-            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
             'data' => [
                 'icon' => 'language',
             ],
             'aria' => [
-                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                 'role' => 'img',
             ],
+        ]);
+
+        $translationIconHtml = Html::tag('craft-tooltip', $translationIconHtml, [
+            'placement' => 'bottom',
+            'max-width' => '200px',
+            'self-managed' => 'true',
+            'text' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
         ]);
 
         // If this is a copyable field, make the translation icon a button
@@ -1461,10 +1466,12 @@ JS, [
             $translationIconHtml = Html::button($translationIconHtml, [
                 'class' => 'copyable',
                 'data' => [
+                    'description' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                     'copy' => $attribute,
                 ],
             ]);
         }
+
 
         if ($label) {
             $labelHtml = $label . (
@@ -1493,8 +1500,8 @@ JS, [
                     'class' => $fieldClass,
                     'id' => $fieldId,
                     'data' => [
-                        'attribute' => $attribute,
-                    ] + $data,
+                            'attribute' => $attribute,
+                        ] + $data,
                 ],
                 $config['fieldAttributes'] ?? []
             )) .
@@ -2817,7 +2824,7 @@ JS;
      * - `liAttributes` – Any HTML attributes that should be set on the item’s `<li>` tag
      *
      * @param array $config
-     * @param string $menuId,
+     * @param string $menuId ,
      * @return string
      * @since 5.0.0
      */
@@ -3027,7 +3034,7 @@ JS;
                 $path = match ($icon) {
                     'asterisk-slash', 'diamond-slash', 'element-card', 'element-card-slash', 'element-cards', 'graphql',
                     'grip-dots', 'image-slash', 'list-flip', 'list-tree-flip', 'share-flip' =>
-                        Craft::getAlias("@app/icons/custom-icons/$icon.svg"),
+                    Craft::getAlias("@app/icons/custom-icons/$icon.svg"),
                     default => Craft::getAlias("@appicons/$icon.svg"),
                 };
                 if (!file_exists($path)) {
