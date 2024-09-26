@@ -16,6 +16,7 @@
   border-inline-end: 1px solid var(--hairline-color);
   width: var(--global-sidebar-width);
   isolation: isolate;
+  z-index: 1;
 
   a {
     text-decoration: none;
