@@ -13,7 +13,8 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  * @property {boolean} arrow - Whether the tooltip should have an arrow.
  * @property {number} offset - The offset of the tooltip from the parent element.
  * @property {boolean} self-managed - When true, the tooltip will be its own trigger.
- * @property {string} aria-label - Text content for the tooltip
+ * @property {string} text - Text content for the tooltip
+ * @property {string} trigger - Selector for the element that should trigger the tooltip. If `self-managed` is set, this setting will be ignored.
  * @property {number} delay - The delay before the tooltip is shown on mouseentery.
  * @method show - Show the tooltip.
  * @method hide - Hide the tooltip.
@@ -26,9 +27,18 @@ class CraftTooltip extends HTMLElement {
     return ['aria-label', 'placement'];
   }
 
+  get triggerElement() {
+    if (this.selfManaged) {
+      return this;
+    }
+
+    const selector =
+      this.getAttribute('trigger') || 'a, button, [role="button"]';
+    return this.closest(selector);
+  }
+
   connectedCallback() {
     this.arrowElement = this.querySelector('.arrow');
-    this.trigger = this.querySelector('a, button, [role="button"]');
     this.selfManaged = this.hasAttribute('self-managed');
 
     this.arrow = this.getAttribute('arrow') !== 'false';
@@ -57,20 +67,16 @@ class CraftTooltip extends HTMLElement {
       ['blur', this.hide, 0],
     ];
 
-    if (this.selfManaged) {
-      this.trigger = this.parentElement;
-    }
-
-    if (!this.trigger) {
+    if (!this.triggerElement) {
       console.warn('No trigger found for tooltip');
       return false;
     }
 
     // Make sure the trigger accepts pointer events
-    this.trigger.style.pointerEvents = 'auto';
+    this.triggerElement.style.pointerEvents = 'auto';
 
     this.listeners.forEach(([event, handler, delay]) => {
-      this.trigger?.addEventListener(event, handler.bind(this, delay));
+      this.triggerElement?.addEventListener(event, handler.bind(this, delay));
     });
 
     // Close on ESC
@@ -87,7 +93,7 @@ class CraftTooltip extends HTMLElement {
 
     if (this.listeners.length) {
       this.listeners.forEach(([event, handler]) => {
-        this.trigger?.removeEventListener(event, handler.bind(this));
+        this.triggerElement?.removeEventListener(event, handler.bind(this));
       });
     }
 
@@ -190,7 +196,7 @@ class CraftTooltip extends HTMLElement {
   }
 
   update() {
-    computePosition(this.trigger, this.tooltip, {
+    computePosition(this.triggerElement, this.tooltip, {
       strategy: 'fixed',
       placement: this.placement,
       middleware: [
