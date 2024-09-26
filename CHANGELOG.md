@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where entries’ `deletedWithEntryType` values in the `entries` table weren’t getting set back to `null` after being restored.
+
 ## 4.12.4.1 - 2024-09-24
 
 - Fixed a JavaScript error. ([#15784](https://github.com/craftcms/cms/issues/15784))
