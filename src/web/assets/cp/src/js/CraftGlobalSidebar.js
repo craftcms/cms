@@ -26,7 +26,7 @@ class CraftGlobalSidebar extends HTMLElement {
       this.items.forEach((item) => {
         const tooltip = document.createElement('craft-tooltip');
         tooltip.setAttribute('placement', 'right');
-        tooltip.setAttribute('trigger', `.${item.classList}`);
+        tooltip.setAttribute('trigger', `.sidebar-action`);
         tooltip.setAttribute('text', item.querySelector('.label')?.innerText);
         item.append(tooltip);
       });

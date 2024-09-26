@@ -1,4 +1,4 @@
-import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
+import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom';
 
 /**
  * Tooltip
@@ -66,7 +66,7 @@ class CraftTooltip extends HTMLElement {
     ];
 
     if (!this.triggerElement) {
-      console.warn('No trigger found for tooltip');
+      console.warn('No trigger found for tooltip', this);
       return false;
     }
 
@@ -79,7 +79,6 @@ class CraftTooltip extends HTMLElement {
 
     // Close on ESC
     document.addEventListener('keyup', this.handleKeyUp.bind(this));
-    document.addEventListener('scroll', this.update.bind(this));
 
     // Update & hide to make sure everything is where it needs to be
     this.update();
@@ -96,7 +95,6 @@ class CraftTooltip extends HTMLElement {
     }
 
     document.removeEventListener('keyup', this.handleKeyUp.bind(this));
-    document.removeEventListener('scroll', this.update.bind(this));
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -110,7 +108,7 @@ class CraftTooltip extends HTMLElement {
       }
     }
 
-    if (name === 'placement' && newValue !== oldValue) {
+    if (name === 'placement') {
       this.placement = newValue;
     }
   }
@@ -148,7 +146,7 @@ class CraftTooltip extends HTMLElement {
   }
 
   show(delay) {
-    this.update();
+    // this.update();
 
     this.delayTimeout = setTimeout(() => {
       Object.assign(this.tooltip.style, {
@@ -159,6 +157,8 @@ class CraftTooltip extends HTMLElement {
         // Make sure if a user hovers over the label itself, it stays open
         pointerEvents: 'auto',
       });
+
+      autoUpdate(this.triggerElement, this.tooltip, this.update.bind(this));
     }, delay);
   }
 
@@ -191,6 +191,10 @@ class CraftTooltip extends HTMLElement {
       bottom: 'top',
       left: 'right',
     }[this.placement.split('-')[0]];
+  }
+
+  cleanup() {
+    return autoUpdate(this.triggerElement, this.tooltip, this.update.bind(this));
   }
 
   update() {
