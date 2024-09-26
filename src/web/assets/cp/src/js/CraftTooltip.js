@@ -23,9 +23,7 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  * @example <craft-tooltip aria-label="Tooltip content"><button type="button">Trigger</button></craft-tooltip>
  */
 class CraftTooltip extends HTMLElement {
-  static get observedAttributes() {
-    return ['text', 'placement'];
-  }
+  static observedAttributes = ['text', 'placement'];
 
   get triggerElement() {
     if (this.selfManaged) {
