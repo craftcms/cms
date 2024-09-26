@@ -1,12 +1,17 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.12.4.1 - 2024-09-24
+
+- Fixed a JavaScript error. ([#15784](https://github.com/craftcms/cms/issues/15784))
+
+## 4.12.4 - 2024-09-23
 
 - Auto-generated handles, slugs, etc. now update immediately when the source input is changed. ([#15754](https://github.com/craftcms/cms/issues/15754))
 - Fixed a bug where Table fields’ Default Values table could lose existing rows if they only consisted of Dropdown columns without configured options.
 - Fixed a bug where custom fields’ `required` properties were always `false`. ([#15752](https://github.com/craftcms/cms/issues/15752))
 - Fixed a bug where `craft\helpers\StringHelper::toHandle()` was allowing non-alphanumeric/underscore characters through. ([#15772](https://github.com/craftcms/cms/pull/15772))
 - Fixed a bug where entries were getting auto-saved while dragging elements within element select inputs.
+- Fixed a bug where the `maxBackups` config setting wasn’t working. ([#15780](https://github.com/craftcms/cms/issues/15780))
 
 ## 4.12.3 - 2024-09-14
 
