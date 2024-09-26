@@ -24,7 +24,7 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  */
 class CraftTooltip extends HTMLElement {
   static get observedAttributes() {
-    return ['aria-label', 'placement'];
+    return ['text', 'placement'];
   }
 
   get triggerElement() {
@@ -102,7 +102,7 @@ class CraftTooltip extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'aria-label' && this.inner) {
+    if (name === 'text' && this.inner) {
       this.inner.innerText = newValue;
 
       // innerText will remove the arrow, so we have to put it back if we need it.
