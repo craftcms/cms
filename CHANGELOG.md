@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error that could occur when restoring a soft-deleted entry type and section, if any entries had been soft-deleted alongside the entry type. ([#15787](https://github.com/craftcms/cms/issues/15787))
+
 ## 5.4.5.1 - 2024-09-24
 
 - Fixed a JavaScript error. ([#15784](https://github.com/craftcms/cms/issues/15784))

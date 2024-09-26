@@ -51,6 +51,7 @@ use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\caching\TagDependency;
 
 /**
@@ -1461,7 +1462,22 @@ SQL)->execute();
                 ->unique()
                 ->andWhere(['entries.deletedWithEntryType' => true])
                 ->all();
-            Craft::$app->getElements()->restoreElements($entries);
+
+            if (!empty($entries)) {
+                // Restore the entries at the end of the request in case the section isn't restored yet
+                // (see https://github.com/craftcms/cms/issues/15787)
+                Craft::$app->onAfterRequest(function() use ($entries) {
+                    /** @var Entry[][] $entriesBySection */
+                    $entriesBySection = ArrayHelper::index($entries, null, ['sectionId']);
+                    foreach ($entriesBySection as $sectionEntries) {
+                        try {
+                            Craft::$app->getElements()->restoreElements($sectionEntries);
+                        } catch (InvalidConfigException) {
+                            // the section probably wasn't restored
+                        }
+                    }
+                });
+            }
         }
 
         /** @var EntryType $entryType */
