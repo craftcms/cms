@@ -65,7 +65,7 @@ class Country extends Field implements PreviewableFieldInterface
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
-        $options = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
+        $options = Craft::$app->getAddresses()->getCountryList(Craft::$app->language);
         array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
 
         return Cp::selectizeHtml([
