@@ -925,7 +925,7 @@ return [
     'Matrix' => 'Matrix',
     'Max Authors' => 'Max. Autoren',
     'Max Date' => 'Maximales Datum',
-    'Max Length' => 'Maixmale Länge',
+    'Max Length' => 'Maximale Länge',
     'Max Levels' => 'Max Stufen',
     'Max Relations' => 'Maximale Anzahl Beziehungen',
     'Max Rows' => 'Max. Zeilen',
