@@ -1,4 +1,11 @@
-import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom';
+import {
+  arrow,
+  autoUpdate,
+  computePosition,
+  flip,
+  offset,
+  shift,
+} from '@floating-ui/dom';
 
 /**
  * Tooltip
@@ -78,7 +85,6 @@ class CraftTooltip extends HTMLElement {
     this.listeners.forEach(([event, handler, delay]) => {
       this.triggerElement?.addEventListener(event, handler.bind(this, delay));
     });
-
 
     // Update & hide to make sure everything is where it needs to be
     this.update();
@@ -198,7 +204,11 @@ class CraftTooltip extends HTMLElement {
   }
 
   cleanup() {
-    return autoUpdate(this.triggerElement, this.tooltip, this.update.bind(this));
+    return autoUpdate(
+      this.triggerElement,
+      this.tooltip,
+      this.update.bind(this)
+    );
   }
 
   update() {

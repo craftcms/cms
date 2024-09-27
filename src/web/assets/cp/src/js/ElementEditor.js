@@ -732,7 +732,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       const data = Craft.filterObject({
         [Craft.csrfTokenName]: Craft.csrfTokenValue,
         elementId: this.settings.canonicalId,
-        fieldHandle: $form.find('input[type="hidden"][name="fieldHandle"]').val(),
+        fieldHandle: $form
+          .find('input[type="hidden"][name="fieldHandle"]')
+          .val(),
         copyFromSiteId: $form.find('select[name="copyFromSiteId"]').val(),
         provisional: this.settings.isProvisionalDraft,
         isFullPage: this.settings.isFullPage,
