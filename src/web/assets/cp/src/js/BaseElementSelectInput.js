@@ -199,15 +199,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             this.$elementsContainer
               .find('craft-element-label')
               .attr('disabled', true);
-
-            // Something about hiding these helps performance a bit
-            // https://github.com/craftcms/cms/issues/15728
-            this.$elementsContainer.find('.action-btn').each(function () {
-              const $this = $(this);
-              $this
-                .data('data-display', $this.css('display'))
-                .css({display: 'none'});
-            });
           },
           onDragStop: () => {
             this.elementEditor?.resume();
@@ -216,12 +207,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             this.$elementsContainer
               .find('craft-element-label')
               .removeAttr('disabled');
-            this.$elementsContainer.find('.action-btn').each(function () {
-              const $this = $(this);
-              $this
-                .css({display: $this.data('data-display')})
-                .data('display', null);
-            });
           },
           onSortChange: () => {
             this.onSortChange();
