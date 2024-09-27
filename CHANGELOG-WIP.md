@@ -31,3 +31,4 @@
 
 ### System
 - Fixed a bug where the Recovery Codes slideout content overflowed its container on small screens. ([#15665](https://github.com/craftcms/cms/pull/15665))
+- Fixed a bug where entries that were soft-deleted along with their section weren’t getting restored if the section was restored. 
