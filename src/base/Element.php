@@ -3605,13 +3605,18 @@ abstract class Element extends Component implements ElementInterface
 
         // Copy content
         $user = Craft::$app->getUser()->getIdentity();
-        if (ElementHelper::supportsFieldCopying($this) && !$this->getIsRevision() && $this->canSave($user)) {
+        if (
+            !$this->getIsRevision() &&
+            $this->canSave($user) &&
+            ElementHelper::supportsFieldCopying($this)
+        ) {
             $copyContentId = sprintf('action-copy-content-%s', mt_rand());
             $items[] = [
                 'id' => $copyContentId,
                 'icon' => 'language',
                 'label' => Craft::t('app', 'Copy content from site'),
                 'type' => MenuItemType::Button,
+                'showInChips' => false,
                 'attributes' => [
                     'data' => [
                         'copy-content' => true,
