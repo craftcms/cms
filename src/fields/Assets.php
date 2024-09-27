@@ -1073,7 +1073,7 @@ class Assets extends BaseRelationField
     {
         if (!$folder->volumeId) {
             // Probably the user's temp folder
-            return "folder:$folder->uid";
+            return "temp";
         }
 
         $segments = array_map(function(VolumeFolder $folder) {
