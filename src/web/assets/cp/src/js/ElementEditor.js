@@ -1170,7 +1170,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.trigger('serializeForm', {
         data: eventData,
       });
-      debugger;
 
       return eventData.serialized;
     },
