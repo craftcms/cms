@@ -1,11 +1,4 @@
-import {
-  arrow,
-  autoUpdate,
-  computePosition,
-  flip,
-  offset,
-  shift,
-} from '@floating-ui/dom';
+import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom';
 
 /**
  * Tooltip
@@ -58,8 +51,6 @@ class CraftTooltip extends HTMLElement {
     this.maxWidth = this.getAttribute('max-width') || '220px';
     this.text = this.getAttribute('text') || this.innerText;
 
-    this.handleKeyUp = this.handleKeyUp.bind(this);
-
     this.renderTooltip();
     this.renderInner();
 
@@ -83,7 +74,7 @@ class CraftTooltip extends HTMLElement {
     this.triggerElement.style.pointerEvents = 'auto';
 
     this.listeners.forEach(([event, handler, delay]) => {
-      this.triggerElement?.addEventListener(event, handler.bind(this, delay));
+      this.triggerElement?.addEventListener(event, () => handler(delay));
     });
 
     // Update & hide to make sure everything is where it needs to be
@@ -152,9 +143,7 @@ class CraftTooltip extends HTMLElement {
     this.inner.appendChild(this.arrowElement);
   }
 
-  show(delay) {
-    // this.update();
-
+  show = (delay) => {
     this.delayTimeout = setTimeout(() => {
       Object.assign(this.tooltip.style, {
         opacity: 1,
@@ -165,14 +154,14 @@ class CraftTooltip extends HTMLElement {
         pointerEvents: 'auto',
       });
 
-      autoUpdate(this.triggerElement, this.tooltip, this.update.bind(this));
+      autoUpdate(this.triggerElement, this.tooltip, this.update);
 
       // Close on ESC
       document.addEventListener('keyup', this.handleKeyUp);
     }, delay);
-  }
+  };
 
-  hide() {
+  hide = () => {
     if (this.delayTimeout) {
       clearTimeout(this.delayTimeout);
     }
@@ -182,7 +171,7 @@ class CraftTooltip extends HTMLElement {
       transform: this.getInitialTransform(),
       pointerEvents: 'none',
     });
-  }
+  };
 
   getInitialTransform() {
     // Make sure the bubble moves in a natural direction
@@ -204,14 +193,10 @@ class CraftTooltip extends HTMLElement {
   }
 
   cleanup() {
-    return autoUpdate(
-      this.triggerElement,
-      this.tooltip,
-      this.update.bind(this)
-    );
+    return autoUpdate(this.triggerElement, this.tooltip, this.update);
   }
 
-  update() {
+  update = () => {
     computePosition(this.triggerElement, this.tooltip, {
       strategy: 'fixed',
       placement: this.placement,
@@ -248,7 +233,7 @@ class CraftTooltip extends HTMLElement {
         [this.getStaticSide()]: '-4px',
       });
     });
-  }
+  };
 }
 
 customElements.define('craft-tooltip', CraftTooltip);
