@@ -879,7 +879,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }, 200);
     },
 
-    selectElements: function (elements) {
+    selectElements: async function (elements) {
       for (let i = 0; i < elements.length; i++) {
         let elementInfo = elements[i],
           $element = this.createNewElement(elementInfo);
