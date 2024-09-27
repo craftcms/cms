@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where entries’ `deletedWithEntryType` values in the `entries` table weren’t getting set back to `null` after being restored.
+- Fixed an information disclosure vulnerability.
 
 ## 4.12.4.1 - 2024-09-24
 
