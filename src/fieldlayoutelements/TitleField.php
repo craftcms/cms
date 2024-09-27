@@ -97,6 +97,10 @@ class TitleField extends TextField
      */
     public function isCopyable(?ElementInterface $element = null, bool $static = false): bool
     {
+        if ($static) {
+            return false;
+        }
+
         return $this->translatable($element) && ElementHelper::supportsFieldCopying($element);
     }
 }

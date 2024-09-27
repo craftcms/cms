@@ -726,19 +726,20 @@ Craft.ElementEditor = Garnish.Base.extend(
       ev.preventDefault();
 
       const $form = $(ev.target);
-      const formData = new FormData(ev.target);
       const $submitBtn = $form.find('[type=submit]');
       $submitBtn.addClass('loading');
 
-      formData.set('elementId', this.settings.canonicalId);
-      if (this.settings.draftId) {
-        formData.set('draftId', this.settings.draftId);
-      }
-      formData.set('provisional', this.settings.isProvisionalDraft);
-      formData.set('isFullPage', this.settings.isFullPage);
+      const data = Craft.filterObject({
+        [Craft.csrfTokenName]: Craft.csrfTokenValue,
+        elementId: this.settings.canonicalId,
+        fieldHandle: $form.find('input[type="hidden"][name="fieldHandle"]').val(),
+        copyFromSiteId: $form.find('select[name="copyFromSiteId"]').val(),
+        provisional: this.settings.isProvisionalDraft,
+        isFullPage: this.settings.isFullPage,
+      });
 
-      if (Craft.csrfTokenName) {
-        formData.set(Craft.csrfTokenName, Craft.csrfTokenValue);
+      if (this.settings.draftId) {
+        data.draftId = this.settings.draftId;
       }
 
       try {
@@ -746,7 +747,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           'POST',
           'elements/copy-field-values-from-site',
           {
-            data: formData,
+            data: data,
           }
         );
 

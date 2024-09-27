@@ -3604,7 +3604,8 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Copy content
-        if (ElementHelper::supportsFieldCopying($this)) {
+        $user = Craft::$app->getUser()->getIdentity();
+        if (ElementHelper::supportsFieldCopying($this) && !$this->getIsRevision() && $this->canSave($user)) {
             $copyContentId = sprintf('action-copy-content-%s', mt_rand());
             $items[] = [
                 'id' => $copyContentId,
