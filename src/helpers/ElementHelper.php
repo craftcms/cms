@@ -17,6 +17,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\Matrix;
 use craft\i18n\Locale;
 use craft\services\ElementSources;
 use craft\web\View;
@@ -428,14 +429,22 @@ class ElementHelper
     /**
      * Returns whether given element supports having its field values copied from another site.
      *
-     * @param $element
+     * @param ElementInterface $element
      * @return bool
      */
-    public static function supportsFieldCopying($element): bool
+    public static function supportsFieldCopying(?ElementInterface $element = null): bool
     {
+        // disallow copying fields in an entry that's nested in a matrix field,
+        // if the matrix field has view mode set to inline-editable blocks
+        if ($element instanceof NestedElementInterface) {
+            $field = $element->getField();
+
+            return !($field instanceof Matrix && $field->viewMode === Matrix::VIEW_MODE_BLOCKS);
+        }
+
         return !(!Craft::$app->getIsMultiSite() ||
             $element === null ||
-            isset($element->ownerId) ||
+            //$element->getPrimaryOwnerId() ||
             count(static::editableSiteIdsForElement($element)) < 2);
     }
 
