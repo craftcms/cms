@@ -4,6 +4,7 @@
 
 - Fixed a bug where entries’ `deletedWithEntryType` values in the `entries` table weren’t getting set back to `null` after being restored.
 - Fixed an error that could occur when restoring a soft-deleted entry type and section, if any entries had been soft-deleted alongside the entry type. ([#15787](https://github.com/craftcms/cms/issues/15787))
+- Fixed an information disclosure vulnerability.
 
 ## 5.4.5.1 - 2024-09-24
 
