@@ -1459,6 +1459,7 @@ JS, [
             'max-width' => '200px',
             'self-managed' => 'true',
             'text' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+            'delay' => '1000',
         ]);
 
         // If this is a copyable field, make the translation icon a button
