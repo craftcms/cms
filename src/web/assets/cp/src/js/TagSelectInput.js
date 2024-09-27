@@ -133,8 +133,12 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
     },
 
     get fieldName() {
-      const $legend = this.$container.closest('fieldset').find('legend')[0];
-      return $legend.innerText;
+      const $legend = this.$container.closest('fieldset').find('legend');
+      if ($legend.length == 0) {
+        return null;
+      }
+
+      return $legend[0].innerText;
     },
 
     focusOption: function ($option) {
@@ -204,12 +208,16 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             }
             this.$spinner.addClass('hidden');
             Craft.cp.announce(Craft.t('app', 'Loading complete'));
-            var $menu = $('<div class="menu tagmenu"/>')
-                .attr('aria-label', this.fieldName)
-                .appendTo(Garnish.$bod),
-              $ul = $('<ul/>').appendTo($menu);
 
-            var $li;
+            let fieldName = this.fieldName;
+            let $menu = $('<div class="menu tagmenu"/>');
+            if (fieldName !== null) {
+              $menu.attr('aria-label', fieldName);
+            }
+            $menu.appendTo(Garnish.$bod);
+            let $ul = $('<ul/>').appendTo($menu);
+
+            let $li;
             let optionLabel;
 
             for (var i = 0; i < response.data.tags.length; i++) {
