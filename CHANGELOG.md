@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where entries’ `deletedWithEntryType` values in the `entries` table weren’t getting set back to `null` after being restored.
+- Fixed a bug where it wasn’t possible to discard changes for related elements via slideouts, if they didn’t exist in the primary site. ([#15798](https://github.com/craftcms/cms/issues/15798))
 - Fixed an error that could occur when restoring a soft-deleted entry type and section, if any entries had been soft-deleted alongside the entry type. ([#15787](https://github.com/craftcms/cms/issues/15787))
 - Fixed a bug where Tags fields weren’t working properly when their label was hidden. ([#15800](https://github.com/craftcms/cms/issues/15800))
 - Fixed an information disclosure vulnerability.
