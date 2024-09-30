@@ -102,7 +102,7 @@ class FullNameField extends TextField
                 'autocomplete' => false,
                 'name' => 'firstName',
                 'value' => $element->firstName ?? null,
-                'errors' => !$static ? $this->errors($element) : [],
+                'errors' => !$static ? $element->getErrors('firstName') : [],
                 'disabled' => $static,
             ]) .
             Cp::textFieldHtml([
@@ -116,6 +116,7 @@ class FullNameField extends TextField
                 'autocomplete' => false,
                 'name' => 'lastName',
                 'value' => $element->lastName ?? null,
+                'errors' => !$static ? $element->getErrors('lastName') : [],
                 'disabled' => $static,
             ]) .
             HtmlHelper::endTag('div');
