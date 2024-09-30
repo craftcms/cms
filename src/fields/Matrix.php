@@ -1012,7 +1012,21 @@ JS;
                     // we only want to show the nested entries errors when the matrix field is in blocks view mode;
                     if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
                         $key = $entry->uid ?? sprintf('new%s', ++$new);
-                        $element->addModelErrors($entry, sprintf('%s[%s]', $this->handle, $key));
+
+                        // we have to do it "manually" instead of relying on Model->addModelErrors()
+                        // because we should only have one prefix in case of multiple nested matrix fields;
+                        // see https://github.com/craftcms/cms/issues/15797 for details
+                        foreach ($entry->getErrors() as $attribute => $errors) {
+                            foreach ($errors as $error) {
+                                // if there's already a prefix - we're done;
+                                $attrPrefix = '';
+                                // otherwise - add it
+                                if (!str_contains($attribute, '].')) {
+                                    $attrPrefix = rtrim(sprintf('%s[%s]', $this->handle, $key), '.') . '.';
+                                }
+                                $element->addError($attrPrefix . $attribute, $error);
+                            }
+                        }
                     }
                     $invalidEntryIds[] = $entry->id;
                 }
