@@ -2,6 +2,7 @@ project_identifier: craft-cms
 api_key_env: CROWDIN_API_KEY
 base_path: /src/translations
 preserve_hierarchy: true
+export_only_approved: true
 files:
   - source: /en/app.php
     translation: /%two_letters_code%/app.php

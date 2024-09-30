@@ -48,7 +48,7 @@ Craft.PasswordInput = Garnish.Base.extend(
         // Swap the inputs, while preventing the focus animation
         $input.insertAfter(this.$currentInput);
         this.$currentInput.detach();
-        $input.trigger('focus');
+        $input.focus();
 
         // Restore the input value
         $input.val(this.$currentInput.val());

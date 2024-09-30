@@ -67,7 +67,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
             ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue)
         );
 
-        if ($valueChanged || $force) {
+        if (($valueChanged || $force) && !str_starts_with($path, ProjectConfigService::PATH_META_NAMES)) {
             $this->updateContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue, $newValue);
         }
 

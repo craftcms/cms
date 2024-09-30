@@ -184,6 +184,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function setConditionRules(array $rules): void
     {
         $conditionsService = Craft::$app->getConditions();
+        $projectConfig = Craft::$app->getProjectConfig();
         $this->_conditionRules = Collection::make($rules)
             ->map(function($rule) use ($conditionsService) {
                 if ($rule instanceof ConditionRuleInterface) {
@@ -196,7 +197,17 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     return null;
                 }
             })
-            ->filter(fn(?ConditionRuleInterface $rule) => $rule && $this->validateConditionRule($rule))
+            ->filter(function(?ConditionRuleInterface $rule) use ($projectConfig) {
+                if (!$rule) {
+                    return false;
+                }
+                // Don't validate the rule when we're applying project config changes.
+                // The rule type might depend on something that hasn't been added yet.
+                if ($projectConfig->isApplyingExternalChanges) {
+                    return true;
+                }
+                return $this->validateConditionRule($rule);
+            })
             ->each(fn(ConditionRuleInterface $rule) => $rule->setCondition($this));
     }
 

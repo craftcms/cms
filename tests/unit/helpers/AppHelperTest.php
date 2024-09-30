@@ -550,6 +550,7 @@ class AppHelperTest extends TestCase
             [123.4, '123.4'],
             ['foo', 'foo'],
             [null, null],
+            ['2833563543.1341693581393', '2833563543.1341693581393'], // https://github.com/craftcms/cms/issues/15533
         ];
     }
 

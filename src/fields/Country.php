@@ -7,6 +7,8 @@
 
 namespace craft\fields;
 
+use CommerceGuys\Addressing\Country\Country as CountryModel;
+use CommerceGuys\Addressing\Exception\UnknownCountryException;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
@@ -43,7 +45,19 @@ class Country extends Field implements PreviewableFieldInterface
      */
     public function normalizeValue(mixed $value, ElementInterface $element = null): mixed
     {
-        return !in_array(strtolower($value), ['', '__blank__']) ? $value : null;
+        if ($value instanceof CountryModel) {
+            return $value;
+        }
+
+        if (!$value || strtolower($value) === '__blank__') {
+            return null;
+        }
+
+        try {
+            return Craft::$app->getAddresses()->getCountryRepository()->get($value, Craft::$app->language);
+        } catch (UnknownCountryException) {
+            return null;
+        }
     }
 
     /**
@@ -65,6 +79,15 @@ class Country extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        /** @var CountryModel|null $value */
+        return $value?->getCountryCode();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getElementConditionRuleType(): array|string|null
     {
         return CountryFieldConditionRule::class;
@@ -73,12 +96,9 @@ class Country extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getPreviewHtml(mixed $value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
-        if (!$value) {
-            return '';
-        }
-        $list = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
-        return $list[$value] ?? $value;
+        /** @var CountryModel|null $value */
+        return $value?->getName() ?? '';
     }
 }

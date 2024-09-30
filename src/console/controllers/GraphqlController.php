@@ -174,7 +174,7 @@ class GraphqlController extends Controller
 
         $token = new GqlToken();
         $token->schemaId = $schema->id;
-        $token->name = $this->name ?? $this->prompt('Schema name:', [
+        $token->name = $this->name ?? $this->prompt('Token name:', [
                 'required' => true,
             ]);
         $token->accessToken = Craft::$app->getSecurity()->generateRandomString(32);

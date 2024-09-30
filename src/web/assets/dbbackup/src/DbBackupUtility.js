@@ -104,7 +104,7 @@
             }
 
             this.$trigger.removeClass('disabled');
-            this.$trigger.trigger('focus');
+            this.$trigger.focus();
           },
         }
       );

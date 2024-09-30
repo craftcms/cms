@@ -286,7 +286,7 @@ class Gql
      *
      * @param string $typeName The union type name.
      * @param array $includedTypes The type the union should include
-     * @param ?callable $resolveFunction The resolver function to use to resolve a specific type. If not provided,
+     * @param callable|null $resolveFunction The resolver function to use to resolve a specific type. If not provided,
      * a default one will be used that is able to resolve Craft elements.
      * @return mixed
      */
@@ -400,15 +400,12 @@ class Gql
     {
         unset($arguments['immediately']);
 
-        if (!empty($arguments['handle'])) {
-            $transform = $arguments['handle'];
-        } elseif (!empty($arguments['transform'])) {
-            $transform = $arguments['transform'];
-        } else {
-            $transform = $arguments;
+        // Remap handle to transform to work with image transform normalization
+        if (isset($arguments['handle'])) {
+            $arguments = $arguments['handle'];
         }
 
-        return $transform;
+        return $arguments;
     }
 
     /**
@@ -617,5 +614,28 @@ class Gql
             Craft::$app->getErrorHandler()->logException($e);
             throw $e;
         }
+    }
+
+    /**
+     * Returns whether the given GraphQL query looks like an introspection query.
+     *
+     * @param string $query
+     * @return bool
+     * @since 4.9.6
+     */
+    public static function isIntrospectionQuery(string $query): bool
+    {
+        // strtok() won’t find a token if the string starts with it
+        /** @var string|false $tok */
+        $tok = strtok(" $query", '{');
+        if ($tok === false) {
+            return false;
+        }
+        $tok = strtok('({}');
+        if ($tok === false) {
+            return false;
+        }
+        $tok = trim($tok);
+        return in_array($tok, ['__schema', '__type']);
     }
 }

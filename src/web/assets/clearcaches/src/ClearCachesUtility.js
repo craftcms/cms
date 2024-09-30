@@ -74,7 +74,7 @@
                       complete: () => {
                         $allDone.velocity({opacity: 1}, {duration: 'fast'});
                         $trigger.removeClass('disabled');
-                        $trigger.trigger('focus');
+                        $trigger.focus();
                       },
                     }
                   );

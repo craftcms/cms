@@ -597,7 +597,7 @@ export default Base.extend(
       Garnish.uiLayerManager.removeLayer();
 
       if (Garnish.focusIsInside(this.$hud)) {
-        this.$trigger.trigger('focus');
+        this.$trigger.focus();
       }
 
       if (this.$nextFocusableElement) {

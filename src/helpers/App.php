@@ -435,12 +435,26 @@ class App
      */
     public static function normalizeValue(mixed $value): mixed
     {
-        return match (is_string($value) ? strtolower($value) : $value) {
-            'true' => true,
-            'false' => false,
-            'null' => null,
-            default => Number::isIntOrFloat($value) ? Number::toIntOrFloat($value) : $value,
-        };
+        if (is_string($value)) {
+            switch (strtolower($value)) {
+                case 'true':
+                    return true;
+                case 'false':
+                    return false;
+                case 'null':
+                    return null;
+            }
+
+            if (Number::isIntOrFloat($value)) {
+                $intOrFloat = Number::toIntOrFloat($value);
+                // make sure we didn't lose any precision
+                if ((string)$intOrFloat === $value) {
+                    return $intOrFloat;
+                }
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -973,7 +987,7 @@ class App
             return [
                 'class' => MysqlMutex::class,
                 'db' => $dbConfig,
-                'keyPrefix' => Craft::$app->id,
+                'keyPrefix' => Craft::$app->getEnvId(),
             ];
         }
 
@@ -1027,7 +1041,7 @@ class App
      */
     public static function sessionConfig(): array
     {
-        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->id);
+        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->getEnvId());
 
         return [
             'class' => Session::class,
@@ -1057,7 +1071,7 @@ class App
             $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         }
 
-        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->id);
+        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->getEnvId());
 
         return [
             'class' => WebUser::class,
@@ -1409,5 +1423,22 @@ class App
         $resolveItems = array_map(fn($issue) => Json::encode($issue[2]), $issues);
         sort($resolveItems);
         return md5(implode('', $resolveItems));
+    }
+
+    /**
+     * Configures an object with property values.
+     *
+     * This is identical to [[\BaseYii::configure()]], except this class is safe to be called during application
+     * bootstrap, whereas `\BaseYii` is not.
+     *
+     * @param object $object the object to be configured
+     * @param array $properties the property initial values given in terms of name-value pairs.
+     * @since 4.11.0
+     */
+    public static function configure(object $object, array $properties): void
+    {
+        foreach ($properties as $name => $value) {
+            $object->$name = $value;
+        }
     }
 }

@@ -914,13 +914,7 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function lines(string $str): array
     {
         $lines = BaseStringy::create($str)->lines();
-
-        foreach ($lines as $i => $line) {
-            $lines[$i] = $line;
-        }
-
-        /** @var string[] $lines */
-        return $lines;
+        return array_map(fn(BaseStringy $line) => (string)$line, $lines);
     }
 
     /**
@@ -1817,6 +1811,9 @@ class StringHelper extends \yii\helpers\StringHelper
         // Handle must start with a letter
         $handle = preg_replace('/^[^a-z]+/', '', $handle);
 
+        // Replace any remaining non-alphanumeric or underscore characters with spaces
+        $handle = preg_replace('/[^a-z0-9_]/', ' ', $handle);
+
         return static::toCamelCase($handle);
     }
 
@@ -2029,5 +2026,17 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         return self::$_shortcodeEscapeMap;
+    }
+
+    /**
+     * Indents each line in the given string.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.10.0
+     */
+    public static function indent(string $str, string $indent = '    '): string
+    {
+        return implode("\n", array_map(fn(string $line) => $indent . $line, static::lines($str)));
     }
 }

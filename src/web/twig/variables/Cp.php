@@ -599,6 +599,11 @@ class Cp extends Component
         if ($includeAliases) {
             $aliasSuggestions = [];
             foreach (Craft::$aliases as $alias => $path) {
+                // Don't ever suggest @web
+                if ($alias === '@web' || str_starts_with($alias, '@web/')) {
+                    continue;
+                }
+
                 if (is_array($path)) {
                     if (
                         isset($path[$alias]) &&

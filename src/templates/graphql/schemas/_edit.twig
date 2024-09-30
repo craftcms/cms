@@ -4,6 +4,15 @@
 
 {% set fullPageForm = true %}
 
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: (schema.isPublic ? 'graphql/schemas/public' : 'graphql/schemas/{id}')|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
 {% set crumbs = [
     { label: "GraphQL Schemas"|t('app'), url: url('graphql/schemas') }
 ] %}

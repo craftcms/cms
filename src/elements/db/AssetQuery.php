@@ -19,16 +19,16 @@ use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\Volume;
 use yii\base\InvalidArgumentException;
-use yii\db\Connection;
 use yii\db\Schema;
 
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of Asset
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @property-write string|string[]|Volume|null $volume The volume(s) that resulting assets must belong to
- * @method Asset[]|array all($db = null)
- * @method Asset|array|null one($db = null)
- * @method Asset|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path assets.md

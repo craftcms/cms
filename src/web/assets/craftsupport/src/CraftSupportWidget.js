@@ -188,7 +188,7 @@ import './CraftSupportWidget.scss';
       sendingSupportTicket: false,
 
       afterInit: function () {
-        this.$body = this.$screen.find('.cs-body-text:first').trigger('focus');
+        this.$body = this.$screen.find('.cs-body-text:first').focus();
         this.$formContainer = this.$screen.children('.cs-forms');
         this.$cancelBtn = this.$screen.find('.cancel');
 
@@ -439,13 +439,13 @@ import './CraftSupportWidget.scss';
       },
 
       reinit: function () {
-        this.$body.trigger('focus');
+        this.$body.focus();
       },
 
       prepForSearch: function (animate) {
         this.mode = BaseSearchScreen.MODE_SEARCH;
 
-        this.$body.velocity('stop').trigger('focus');
+        this.$body.velocity('stop').focus();
 
         if (this.$supportErrorList) {
           this.$supportErrorList.remove();
@@ -472,7 +472,7 @@ import './CraftSupportWidget.scss';
 
         this.mode = BaseSearchScreen.MODE_SUPPORT;
 
-        this.$body.velocity('stop').trigger('focus');
+        this.$body.velocity('stop').focus();
 
         if (animate) {
           this.$body.velocity({height: this.bodyStartHeight * 2});

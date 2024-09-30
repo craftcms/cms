@@ -16,7 +16,7 @@ use craft\helpers\ArrayHelper;
 /**
  * CustomField represents a custom field that can be included in field layouts.
  *
- * @property-write FieldInterface $field The custom field this layout field is based on
+ * @property FieldInterface $field The custom field this layout field is based on
  * @property string $fieldUid The UID of the field this layout field is based on
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -36,6 +36,14 @@ class CustomField extends BaseField
     public function __construct(?FieldInterface $field = null, $config = [])
     {
         $this->_field = $field;
+
+        // ensure we set the field last, so it has access to other properties that need to be set first
+        // see https://github.com/craftcms/cms/issues/15752
+        $fieldUid = ArrayHelper::remove($config, 'fieldUid');
+        if ($fieldUid) {
+            $config['fieldUid'] = $fieldUid;
+        }
+
         parent::__construct($config);
     }
 
@@ -262,7 +270,8 @@ class CustomField extends BaseField
         }
 
         $view = Craft::$app->getView();
-        $view->registerDeltaName($this->_field->handle);
+        $isDirty = $element?->isFieldDirty($this->_field->handle);
+        $view->registerDeltaName($this->_field->handle, $isDirty);
 
         $required = $this->_field->required;
         $describedBy = $this->_field->describedBy;

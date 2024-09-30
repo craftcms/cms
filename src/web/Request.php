@@ -522,7 +522,7 @@ class Request extends \yii\web\Request
     /**
      * Sets the token value.
      *
-     * @param ?string $token
+     * @param string|null $token
      * @since 3.6.0
      */
     public function setToken(?string $token): void
@@ -696,11 +696,16 @@ class Request extends \yii\web\Request
      */
     public function getIsPreview(): bool
     {
-        return (
-            ($this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview')) !== null &&
-            // If there's a token but it expired, they're looking at the live site
-            (!$this->getHadToken() || $this->getToken() !== null)
-        );
+        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview');
+        if (!$previewParamValue) {
+            return false;
+        }
+        if (!Craft::$app->getSecurity()->validateData($previewParamValue)) {
+            return false;
+        }
+
+        // If there's a token but it expired, they're looking at the live site
+        return !$this->getHadToken() || $this->getToken() !== null;
     }
 
     /**
@@ -1281,6 +1286,9 @@ class Request extends \yii\web\Request
      */
     public function getCsrfToken($regenerate = false): string
     {
+        // Ensure the response is not cached by the browser or static cache proxies.
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         if (!isset($this->_craftCsrfToken) || $regenerate) {
             $token = $this->loadCsrfToken();
 
@@ -1391,6 +1399,9 @@ class Request extends \yii\web\Request
      */
     protected function generateCsrfToken(): string
     {
+        // Ensure the response is not cached by the browser or static cache proxies.
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         $existingToken = $this->loadCsrfToken();
 
         // They have an existing CSRF token.

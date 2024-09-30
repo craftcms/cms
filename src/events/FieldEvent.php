@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\base\FieldInterface;
-use yii\base\Event;
 
 /**
  * FieldEvent class.

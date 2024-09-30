@@ -298,8 +298,8 @@ class Connection extends \yii\db\Connection
 
             // Grab all .sql/.dump files in the backup folder.
             $files = array_merge(
-                glob($backupPath . DIRECTORY_SEPARATOR . "*.{$this->_getDumpExtension()}"),
-                glob($backupPath . DIRECTORY_SEPARATOR . "*.{$this->_getDumpExtension()}.zip"),
+                glob($backupPath . DIRECTORY_SEPARATOR . "*{$this->_getDumpExtension()}"),
+                glob($backupPath . DIRECTORY_SEPARATOR . "*{$this->_getDumpExtension()}.zip"),
             );
 
             // Sort them by file modified time descending (newest first).
@@ -450,6 +450,19 @@ class Connection extends \yii\db\Connection
         }
     }
 
+    private function _getDumpExtension(): string
+    {
+        $backupFormat = $this->getIsPgsql()
+            ? $this->getSchema()->getBackupFormat()
+            : null;
+
+        return match ($backupFormat) {
+            'custom', 'directory' => '.dump',
+            'tar' => '.tar',
+            default => '.sql',
+        };
+    }
+
     /**
      * @inheritdoc
      */
@@ -465,11 +478,6 @@ class Connection extends \yii\db\Connection
         }
 
         parent::trigger($name, $event);
-    }
-
-    private function _getDumpExtension(): string
-    {
-        return $this->getIsPgsql() && $this->getSchema()->usePgRestore() ? '.dump' : '.sql';
     }
 
     /**

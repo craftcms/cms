@@ -73,7 +73,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             throw new InvalidConfigException("Invalid element type: $elementType");
         }
 
-        $this->elementType = $elementType;
+        if ($elementType !== null) {
+            $this->elementType = $elementType;
+        }
+
         parent::__construct($config);
     }
 
@@ -127,6 +130,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
         if (Craft::$app->getIsMultiSite() && (!$elementType || $elementType::isLocalized())) {
             $types[] = SiteConditionRule::class;
+
+            if (count(Craft::$app->getSites()->getAllGroups()) > 1) {
+                $types[] = SiteGroupConditionRule::class;
+            }
         }
 
         if ($elementType !== null) {

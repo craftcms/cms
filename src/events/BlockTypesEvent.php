@@ -8,9 +8,9 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
+use craft\base\Event;
 use craft\elements\MatrixBlock;
 use craft\models\MatrixBlockType;
-use yii\base\Event;
 
 /**
  * Matrix block types event class.

@@ -1027,6 +1027,14 @@ interface ElementInterface extends ComponentInterface
     public function getStatus(): ?string;
 
     /**
+     * Returns the root owner element.
+     *
+     * @return self
+     * @since 4.12.0
+     */
+    public function getRootOwner(): self;
+
+    /**
      * Returns the same element in other locales.
      *
      * @return ElementQueryInterface|Collection

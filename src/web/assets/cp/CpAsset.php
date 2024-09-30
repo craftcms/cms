@@ -26,7 +26,6 @@ use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
-use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\fabric\FabricAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
 use craft\web\assets\garnish\GarnishAsset;
@@ -59,7 +58,6 @@ class CpAsset extends AssetBundle
         TailwindResetAsset::class,
         AxiosAsset::class,
         D3Asset::class,
-        ElementResizeDetectorAsset::class,
         GarnishAsset::class,
         JqueryAsset::class,
         JqueryTouchEventsAsset::class,
@@ -126,8 +124,8 @@ JS;
             'Apply',
             'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to close this screen? Any changes will be lost.',
-            'Are you sure you want to delete this address?',
             'Are you sure you want to delete this image?',
+            'Are you sure you want to delete this {type}?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',
             'Are you sure you want to transfer your license to this domain?',
@@ -243,19 +241,19 @@ JS;
             'Move',
             'Name',
             'New category in the {group} category group',
-            'New category',
             'New category, choose a category group',
             'New child',
             'New custom source',
             'New entry in the {section} section',
-            'New entry',
             'New entry, choose a section',
+            'New file uploaded.',
             'New heading',
             'New order saved.',
             'New position saved.',
             'New subfolder',
             'New {group} category',
             'New {section} entry',
+            'New {type}',
             'Next Page',
             'No limit',
             'Notes',
@@ -290,7 +288,7 @@ JS;
             'Rotate',
             'Row could not be added. Maximum number of rows reached.',
             'Row could not be deleted. Minimum number of rows reached.',
-            'Save as a new asset',
+            'Save as a new {type}',
             'Save',
             'Saved {timestamp} by {creator}',
             'Saved {timestamp}',

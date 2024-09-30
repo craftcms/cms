@@ -3481,6 +3481,20 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     */
+    public function getRootOwner(): ElementInterface
+    {
+        if ($this instanceof BlockElementInterface) {
+            $owner = $this->getOwner();
+            if ($owner) {
+                return $owner->getRootOwner();
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.0
      */
     public function getLocalized(): ElementQueryInterface|Collection

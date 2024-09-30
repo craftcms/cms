@@ -97,7 +97,8 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
-        $async = (bool)(ArrayHelper::remove($options, 'async') ?? Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
+        $async = ArrayHelper::remove($options, 'async')
+            ?? ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
 
         if (!$async) {
             Craft::$app->getResponse()->setNoCacheHeaders();
@@ -517,11 +518,22 @@ class Html extends \yii\helpers\Html
             return $value;
         }
         if (is_string($value)) {
+            // first match any css properties that contain 'url()'
+            $markers = [];
+            $value = preg_replace_callback('/\burl\(.*\)/i', function($match) use (&$markers) {
+                $marker = sprintf('{marker:%s}', mt_rand());
+                $markers[$marker] = $match[0];
+                return $marker;
+            }, $value);
+
+            // now split the styles string on semicolons
             $styles = ArrayHelper::filterEmptyStringsFromArray(preg_split('/\s*;\s*/', $value));
+
+            // and proceed with the array of styles
             $normalized = [];
             foreach ($styles as $style) {
                 [$n, $v] = array_pad(preg_split('/\s*:\s*/', $style, 2), 2, '');
-                $normalized[$n] = $v;
+                $normalized[$n] = strtr($v, $markers);
             }
             return $normalized;
         }
@@ -978,11 +990,22 @@ class Html extends \yii\helpers\Html
             throw new InvalidArgumentException("Invalid file path: $file");
         }
 
+        $file = FileHelper::absolutePath(Craft::getAlias($file), '/');
+
+        if (Craft::$app->getSecurity()->isSystemDir(dirname($file))) {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path within or above system directories.', __METHOD__));
+        }
+
+        $ext = pathinfo($file, PATHINFO_EXTENSION);
+        if (strtolower($ext) === 'php') {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path to a PHP file.', __METHOD__));
+        }
+
         if ($mimeType === null) {
             try {
                 $mimeType = FileHelper::getMimeType($file);
             } catch (Throwable $e) {
-                Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage());
+                Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage(), __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
             }
         }

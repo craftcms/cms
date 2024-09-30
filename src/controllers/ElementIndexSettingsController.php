@@ -158,7 +158,14 @@ class ElementIndexSettingsController extends BaseElementsController
         unset($source);
 
         // Get the default sort options for custom sources
-        $defaultSortOptions = $sourcesService->getSourceSortOptions($elementType, 'custom:x');
+        $defaultSortOptions = Collection::make($sourcesService->getSourceSortOptions($elementType, 'custom:x'))
+            ->map(fn(array $option) => [
+                'label' => $option['label'],
+                'attr' => $option['attribute'] ?? $option['orderBy'],
+                'defaultDir' => $option['defaultDir'] ?? 'asc',
+            ])
+            ->values()
+            ->all();
 
         // Get the available table attributes
         $availableTableAttributes = [];

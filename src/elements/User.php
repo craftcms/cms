@@ -754,6 +754,10 @@ class User extends Element implements IdentityInterface
             $this->email = StringHelper::idnToUtf8Email($this->email);
         }
 
+        if (empty($this->username) && Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            $this->username = $this->email;
+        }
+
         $this->normalizeNames();
     }
 

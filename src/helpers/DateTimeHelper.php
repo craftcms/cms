@@ -57,6 +57,37 @@ class DateTimeHelper
     public const SECONDS_YEAR = 31556874;
 
     /**
+     * @var string[] Supported relative time units.
+     * @see relativeTimeStatement()
+     * @see relativeTimeToSeconds()
+     * @since 4.10.0
+     */
+    public const RELATIVE_TIME_UNITS = [
+        'sec',
+        'secs',
+        'second',
+        'seconds',
+        'min',
+        'mins',
+        'minute',
+        'minutes',
+        'hour',
+        'hours',
+        'day',
+        'days',
+        'fortnight',
+        'fortnights',
+        'forthnight',
+        'forthnights',
+        'month',
+        'months',
+        'year',
+        'years',
+        'week',
+        'weeks',
+    ];
+
+    /**
      * @var DateTime[]
      * @see pause()
      * @see resume()
@@ -807,6 +838,45 @@ class DateTimeHelper
     public static function humanDurationFromInterval(DateInterval $dateInterval, bool $showSeconds = true): string
     {
         return static::humanDuration($dateInterval, $showSeconds);
+    }
+
+    /**
+     * Returns a [relative time statement](https://www.php.net/manual/en/datetime.formats.php#datetime.formats.relative)
+     * based on the given number and unit.
+     *
+     * @param int $number
+     * @param string $unit
+     * @return string
+     * @since 4.10.0
+     */
+    public static function relativeTimeStatement(int $number, string $unit): string
+    {
+        // PHP doesn't support "+1 week"
+        if ($unit === 'week') {
+            if ($number == 1) {
+                $number = 7;
+                $unit = 'days';
+            } else {
+                $unit = 'weeks';
+            }
+        }
+
+        return "+$number $unit";
+    }
+
+    /**
+     * Converts a relative time (number and unit) to seconds.
+     *
+     * @param int $number
+     * @param string $unit
+     * @return int
+     * @since 4.10.0
+     */
+    public static function relativeTimeToSeconds(int $number, string $unit): int
+    {
+        $now = new DateTimeImmutable();
+        $then = $now->modify(static::relativeTimeStatement($number, $unit));
+        return $then->getTimestamp() - $now->getTimestamp();
     }
 
     /**

@@ -242,11 +242,19 @@ class Assets extends BaseRelationField
             [
                 'sources',
                 'defaultUploadLocationSource',
-                'restrictedLocationSource',
                 'defaultUploadLocationSubpath',
+            ],
+            'validateNotTempVolume',
+            'when' => fn() => !$this->restrictLocation,
+        ];
+
+        $rules[] = [
+            [
+                'restrictedLocationSource',
                 'restrictedLocationSubpath',
             ],
             'validateNotTempVolume',
+            'when' => fn() => $this->restrictLocation,
         ];
 
         $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
@@ -552,7 +560,7 @@ class Assets extends BaseRelationField
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // No special treatment for revisions
-        $rootElement = ElementHelper::rootElement($element);
+        $rootElement = $element->getRootOwner();
         if (!$rootElement->getIsRevision()) {
             // Figure out what we're working with and set up some initial variables.
             $isCanonical = $rootElement->getIsCanonical();

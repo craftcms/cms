@@ -24,6 +24,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
@@ -440,6 +441,7 @@ class ElementsController extends Controller
                         'isUnpublishedDraft' => $isUnpublishedDraft,
                         'previewTargets' => $previewTargets,
                         'previewToken' => $previewTargets ? $security->generateRandomString() : null,
+                        'previewParamValue' => $previewTargets ? $security->hashData(StringHelper::randomString(10)) : null,
                         'revisionId' => $element->revisionId,
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
@@ -1336,8 +1338,14 @@ JS, [
     {
         $this->requirePostRequest();
 
-        /** @var Element|DraftBehavior|null $element */
+        /** @var Element|DraftBehavior|Response|null $element */
         $element = $this->_element();
+
+        // this can happen if we're creating e.g. nested entry in a matrix field (cards or element index)
+        // and we hit "create entry" before the autosave kicks in
+        if ($element instanceof Response) {
+            return $element;
+        }
 
         if (!$element || $element->getIsRevision()) {
             throw new BadRequestHttpException('No element was identified by the request.');
@@ -1417,11 +1425,13 @@ JS, [
 
             if ($this->request->getIsCpRequest()) {
                 [$docTitle, $title] = $this->_editElementTitles($element);
+                $previewTargets = $element->getPreviewTargets();
                 $data += $this->_fieldLayoutData($element);
                 $data += [
                     'docTitle' => $docTitle,
                     'title' => $title,
-                    'previewTargets' => $element->getPreviewTargets(),
+                    'previewTargets' => $previewTargets,
+                    'previewParamValue' => $previewTargets ? Craft::$app->getSecurity()->hashData(StringHelper::randomString(10)) : null,
                     'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
                     'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
                     'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
@@ -1451,8 +1461,13 @@ JS, [
         $this->requirePostRequest();
         $elementsService = Craft::$app->getElements();
 
-        /** @var Element|DraftBehavior|null $element */
+        /** @var Element|DraftBehavior|Response|null $element */
         $element = $this->_element();
+
+        // this can happen if creating element via slideout, and we hit "create entry" before the autosave kicks in
+        if ($element instanceof Response) {
+            return $element;
+        }
 
         if (!$element || !$element->getIsDraft()) {
             throw new BadRequestHttpException('No draft was identified by the request.');
@@ -1658,8 +1673,13 @@ JS, [
         $this->requirePostRequest();
         $this->requireCpRequest();
 
-        /** @var Element|DraftBehavior|null $element */
+        /** @var Element|DraftBehavior|Response|null $element */
         $element = $this->_element();
+
+        // see https://github.com/craftcms/cms/issues/14635#issuecomment-2349006694 for details
+        if ($element instanceof Response) {
+            return $element;
+        }
 
         if (!$element || $element->getIsRevision()) {
             throw new BadRequestHttpException('No element was identified by the request.');
@@ -1858,24 +1878,8 @@ JS, [
         $elementId = $elementId ?? $this->_elementId;
         $elementUid = $elementUid ?? $this->_elementUid;
 
-        $sitesService = Craft::$app->getSites();
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
-
-        if ($this->_siteId) {
-            $site = $sitesService->getSiteById($this->_siteId, true);
-            if (!$site) {
-                throw new BadRequestHttpException("Invalid side ID: $this->_siteId");
-            }
-            if (Craft::$app->getIsMultiSite() && !$user->can("editSite:$site->uid")) {
-                throw new ForbiddenHttpException('User not authorized to edit content for this site.');
-            }
-        } else {
-            $site = Cp::requestedSite();
-            if (!$site) {
-                throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
-            }
-        }
 
         if ($this->_elementType) {
             $elementType = $this->_elementType;
@@ -1896,12 +1900,31 @@ JS, [
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $this->_validateElementType($elementType);
 
-        if ($strictSite) {
-            $siteId = $site->id;
-            $preferSites = null;
+        if ($elementType::isLocalized()) {
+            if ($this->_siteId) {
+                $site = Craft::$app->getSites()->getSiteById($this->_siteId, true);
+                if (!$site) {
+                    throw new BadRequestHttpException("Invalid side ID: $this->_siteId");
+                }
+                if (Craft::$app->getIsMultiSite() && !$user->can("editSite:$site->uid")) {
+                    throw new ForbiddenHttpException('User not authorized to edit content for this site.');
+                }
+            } else {
+                $site = Cp::requestedSite();
+                if (!$site) {
+                    throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
+                }
+            }
+
+            if ($strictSite) {
+                $siteId = $site->id;
+                $preferSites = null;
+            } else {
+                $siteId = Craft::$app->getSites()->getEditableSiteIds();
+                $preferSites = [$site->id];
+            }
         } else {
-            $siteId = $sitesService->getEditableSiteIds();
-            $preferSites = [$site->id];
+            $siteId = $preferSites = null;
         }
 
         // Loading an existing element?
@@ -1937,7 +1960,7 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
-        if (!$strictSite && $element->siteId !== $site->id) {
+        if (!$strictSite && isset($site) && $element->siteId !== $site->id) {
             return $this->redirect($element->getCpEditUrl());
         }
 
@@ -1950,7 +1973,7 @@ JS, [
         bool $checkForProvisionalDraft,
         string $elementType,
         User $user,
-        int|array $siteId,
+        int|array|null $siteId,
         ?array $preferSites,
     ): ?ElementInterface {
         /** @var string|ElementInterface $elementType */

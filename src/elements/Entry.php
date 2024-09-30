@@ -2110,6 +2110,11 @@ EOD;
      */
     public function afterRestore(): void
     {
+        $this->deletedWithEntryType = false;
+        Db::update(Table::ENTRIES, [
+            'deletedWithEntryType' => null,
+        ], ['id' => $this->id]);
+
         $section = $this->getSection();
         if ($section->type === Section::TYPE_STRUCTURE) {
             // Add the entry back into its structure

@@ -17,7 +17,7 @@
             {% set blockAttributes = {
                 class: [
                     'matrixblock',
-                    not block.enabled ? 'disabled',
+                    not block.enabled ? 'disabled-entry',
                     static ? 'static',
                 ]|filter,
                 data: {

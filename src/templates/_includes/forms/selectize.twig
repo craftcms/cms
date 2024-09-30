@@ -197,6 +197,13 @@
                     this.$control_input.attr(attr.name, attr.value);
                 });
 
+            {% if not multi %}
+                // we need some sort of class here to be able to prevent Garnish.setFocusWithin()
+                // from auto-focusing and therefore opening the selectized field if it's the first one in a slideout
+                // see https://github.com/craftcms/cms/issues/15245
+                this.$control_input.addClass('prevent-autofocus');
+            {% endif %}
+
             // allow autocomplete;
             // despite what the documentation says, the "autofill_disable" seems to be ON by default,
             // and there's no "proper" way to disable it

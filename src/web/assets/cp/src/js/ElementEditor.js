@@ -220,8 +220,19 @@ Craft.ElementEditor = Garnish.Base.extend(
               ev.data.id === this.settings.canonicalId &&
               !this.settings.draftId)
           ) {
-            Craft.setLocalStorage('scrollY', window.scrollY);
-            window.location.reload();
+            // Reload unless reloadOnBroadcastSave is disabled (unless the
+            // draftId is different, in which case we really need to reload)
+            if (
+              this.settings.reloadOnBroadcastSave ||
+              ev.data.draftId !== this.settings.draftId
+            ) {
+              Craft.setUrl(
+                Craft.getUrl(document.location.href, {
+                  scrollY: window.scrollY,
+                })
+              );
+              window.location.reload();
+            }
           } else if (
             ev.data.event === 'deleteDraft' &&
             ev.data.canonicalId === this.settings.canonicalId &&
@@ -232,7 +243,11 @@ Craft.ElementEditor = Garnish.Base.extend(
             if (url.href !== document.location.href) {
               window.location.href = url;
             } else {
-              Craft.setLocalStorage('scrollY', window.scrollY);
+              Craft.setUrl(
+                Craft.getUrl(document.location.href, {
+                  scrollY: window.scrollY,
+                })
+              );
               window.location.reload();
             }
           }
@@ -404,6 +419,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                     data: {
                       elementId: this.settings.canonicalId,
                       draftId: this.settings.draftId,
+                      siteId: this.settings.siteId,
                       provisional: 1,
                     },
                   })
@@ -908,20 +924,20 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {string} url
-     * @param {?string} [randoParam]
-     * @param {boolean} [asPromise=false]
+     * @param {?string} [previewParam]
+     * @param {boolean} [asPromise=true]
      * @returns {(Promise|string)}
      */
-    getTokenizedPreviewUrl: function (url, randoParam, asPromise) {
-      if (typeof asPromise === 'undefined') {
-        asPromise = true;
-      }
-
+    getTokenizedPreviewUrl: function (url, previewParam, asPromise = true) {
       const params = {};
 
-      if (randoParam || !this.settings.isLive) {
+      if (
+        this.settings.previewParamValue &&
+        (previewParam || !this.settings.isLive)
+      ) {
         // Randomize the URL so CDNs don't return cached pages
-        params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
+        params[previewParam || 'x-craft-preview'] =
+          this.settings.previewParamValue;
       }
 
       if (this.settings.siteToken) {
@@ -1220,6 +1236,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         })
           .then((response) => {
             this._afterSaveDraft();
+            this.settings.previewParamValue = response.data.previewParamValue;
             this._afterUpdateFieldLayout(data, selectedTabId, response);
 
             const createdProvisionalDraft = !this.settings.draftId;
@@ -1869,7 +1886,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       if (!Garnish.isMobileBrowser(true)) {
-        this.$nameTextInput.trigger('focus');
+        this.$nameTextInput.focus();
       }
     },
 
@@ -1925,7 +1942,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$editMetaBtn.attr('aria-expanded', 'false');
 
       if (Garnish.focusIsInside(this.metaHud.$body)) {
-        this.$editMetaBtn.trigger('focus');
+        this.$editMetaBtn.focus();
       }
     },
 
@@ -2067,6 +2084,14 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     _checkActivity: function () {
+      if (!Craft.remainingSessionTime) {
+        // Try again after login
+        Garnish.once(Craft.AuthManager, 'login', () => {
+          this._checkActivity();
+        });
+        return;
+      }
+
       this.queue.push(
         () =>
           new Promise((resolve, reject) => {
@@ -2194,7 +2219,17 @@ Craft.ElementEditor = Garnish.Base.extend(
                 }, 15000);
                 resolve();
               })
-              .catch(reject);
+              .catch((e) => {
+                if (e?.response?.status === 400) {
+                  // Try again after login
+                  Garnish.once(Craft.AuthManager, 'login', () => {
+                    this._checkActivity();
+                  });
+                  resolve();
+                } else {
+                  reject(e);
+                }
+              });
           })
       );
     },
@@ -2220,6 +2255,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       isUnpublishedDraft: false,
       previewTargets: [],
       previewToken: null,
+      previewParamValue: null,
       revisionId: null,
       siteId: null,
       siteStatuses: null,
@@ -2227,6 +2263,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       visibleLayoutElements: {},
       updatedTimestamp: null,
       canonicalUpdatedTimestamp: null,
+      reloadOnBroadcastSave: true,
     },
   }
 );

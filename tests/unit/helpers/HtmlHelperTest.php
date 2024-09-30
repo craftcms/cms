@@ -474,6 +474,17 @@ class HtmlHelperTest extends TestCase
             [['class' => false], ['class' => null]],
             [['class' => false], ['class' => false]],
             [['class' => false], ['class' => null]],
+            // https://github.com/craftcms/cms/issues/14964
+            [
+                [
+                    'style' => [
+                        'background-image' => 'url(data:image/jpeg;base64,hash)',
+                    ],
+                ],
+                [
+                    'style' => 'background-image:url(data:image/jpeg;base64,hash);',
+                ],
+            ],
         ];
     }
 

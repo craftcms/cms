@@ -63,7 +63,9 @@ Craft.AddressesInput = Garnish.Base.extend(
           ev.stopPropagation();
           if (
             confirm(
-              Craft.t('app', 'Are you sure you want to delete this address?')
+              Craft.t('app', 'Are you sure you want to delete this {type}?', {
+                type: Craft.elementTypeNames['craft\\elements\\Address'][2],
+              })
             )
           ) {
             this.$addBtn.addClass('loading');

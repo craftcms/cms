@@ -9,7 +9,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\fields\BaseRelationField;
 use Illuminate\Support\Collection;
-use yii\base\InvalidConfigException;
+use yii\db\QueryInterface;
 
 /**
  * Relational field condition rule.
@@ -19,7 +19,9 @@ use yii\base\InvalidConfigException;
  */
 class RelationalFieldConditionRule extends BaseElementSelectConditionRule implements FieldConditionRuleInterface
 {
-    use FieldConditionRuleTrait;
+    use FieldConditionRuleTrait {
+        modifyQuery as traitModifyQuery;
+    }
 
     public const OPERATOR_RELATED_TO = 'relatedTo';
 
@@ -110,14 +112,30 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     /**
      * @inheritdoc
      */
+    public function modifyQuery(QueryInterface $query): void
+    {
+        if ($this->operator === self::OPERATOR_RELATED_TO) {
+            $this->traitModifyQuery($query);
+        } else {
+            // Add the condition manually so we can ignore the related elements’ statuses and the field’s target site
+            // so conditions reflect what authors see in the UI
+            /** @var BaseRelationField $field */
+            $field = $this->field();
+            $query->andWhere(
+                $this->operator === self::OPERATOR_NOT_EMPTY
+                    ? $field::existsQueryCondition($field, false, false)
+                    : ['not', $field::existsQueryCondition($field, false, false)]
+            );
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function elementQueryParam(): int|string|null
     {
-        return match ($this->operator) {
-            self::OPERATOR_RELATED_TO => $this->getElementId(),
-            self::OPERATOR_EMPTY => ':empty:',
-            self::OPERATOR_NOT_EMPTY => 'not :empty:',
-            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
-        };
+        // $this->operator will always be OPERATOR_RELATED_TO at this point
+        return $this->getElementId();
     }
 
     /**
@@ -125,6 +143,12 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function matchFieldValue($value): bool
     {
+        if ($value instanceof ElementQueryInterface) {
+            // Ignore the related elements’ statuses and target site
+            // so conditions reflect what authors see in the UI
+            $value = (clone $value)->site('*')->unique()->status(null);
+        }
+
         /** @var ElementQueryInterface|Collection $value */
         if ($this->operator === self::OPERATOR_RELATED_TO) {
             $elementIds = $value->collect()->map(fn(ElementInterface $element) => $element->id)->all();

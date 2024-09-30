@@ -42,8 +42,17 @@ export default Base.extend(
         return;
       }
 
-      const triggerId = this.$trigger.attr('aria-controls');
-      this.$container = $('#' + triggerId);
+      const containerId = this.$trigger.attr('aria-controls');
+      this.$container = $('#' + containerId);
+      if (!this.$container.length) {
+        // see if it's the next element
+        const $next = this.$trigger.next();
+        if ($next.is(`#${containerId}`)) {
+          this.$container = $next;
+        } else {
+          throw 'No disclosure container found.';
+        }
+      }
 
       this.$trigger.data('trigger', this);
 
@@ -266,10 +275,13 @@ export default Base.extend(
       this.trigger('hide');
       this.removeListener(Garnish.$scrollContainer, 'scroll');
       this.removeListener(Garnish.$win, 'resize');
-      Garnish.uiLayerManager.removeLayer();
+      Garnish.uiLayerManager.removeLayer(this.$container);
     },
 
     focusIsInMenu: function () {
+      if (!this.$container.length) {
+        return false;
+      }
       const $focusedEl = Garnish.getFocusedElement();
       return $focusedEl.length && $.contains(this.$container[0], $focusedEl[0]);
     },

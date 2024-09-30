@@ -435,6 +435,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
           this.$sidebarBtn.focus();
         });
 
+      Craft.releaseFocusWithin(this.$sidebar);
+
       this.$sidebarBtn.removeClass('active').attr({
         'aria-expanded': 'false',
       });

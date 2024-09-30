@@ -62,13 +62,15 @@
             label: 'List all tabs'|t('app'),
         },
     } %}
-        {% if tabsHaveErrors %}
-            {{ tag('span', {
-                data: {
-                    icon: 'alert',
-                }
-            }) }}
-        {% endif %}
+        {%- apply spaceless %}
+            {% if tabsHaveErrors %}
+                {{ tag('span', {
+                    data: {
+                        icon: 'alert',
+                    }
+                }) }}
+            {% endif %}
+        {% endapply -%}
     {% endtag %}
     <div class="menu">
         <ul class="padded" role="listbox">

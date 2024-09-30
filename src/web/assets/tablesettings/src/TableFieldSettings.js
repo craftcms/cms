@@ -173,7 +173,7 @@
           theadHtml +=
             '<th scope="col">' +
             (this.columnsData[colId].heading
-              ? this.columnsData[colId].heading
+              ? Craft.escapeHtml(this.columnsData[colId].heading)
               : '&nbsp;') +
             '</th>';
         }
@@ -338,7 +338,7 @@
       }
 
       setTimeout(() => {
-        this.optionsTable.$tbody.find('textarea').first().trigger('focus');
+        this.optionsTable.$tbody.find('textarea').first().focus();
       }, 100);
     },
 

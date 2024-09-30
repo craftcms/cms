@@ -520,6 +520,10 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             $query->andWhere(['format' => $transform->format]);
         }
 
+        if ($transform->indexId !== null) {
+            $query->andWhere(['id' => $transform->indexId]);
+        }
+
         $result = $query->one();
 
         if ($result) {

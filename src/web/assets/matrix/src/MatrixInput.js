@@ -430,7 +430,7 @@
                 // Scroll to the block
                 Garnish.scrollContainerToElement($block);
                 // Focus on the first focusable element
-                $block.find('.flex-fields :focusable').first().trigger('focus');
+                $block.find('.flex-fields :focusable').first().focus();
               }
 
               // Resume the draft editor
@@ -849,7 +849,7 @@
 
     disable: function () {
       this.$container.children('input[name$="[enabled]"]:first').val('');
-      this.$container.addClass('disabled');
+      this.$container.addClass('disabled-entry');
 
       setTimeout(() => {
         this.$actionMenu
@@ -867,7 +867,7 @@
 
     enable: function () {
       this.$container.children('input[name$="[enabled]"]:first').val('1');
-      this.$container.removeClass('disabled');
+      this.$container.removeClass('disabled-entry');
 
       setTimeout(() => {
         this.$actionMenu

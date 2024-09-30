@@ -229,6 +229,12 @@ class View extends \yii\web\View
     private array $_deltaNames = [];
 
     /**
+     * @var string[] The registered modified delta input names.
+     * @see registerDeltaName()
+     */
+    private array $_modifiedDeltaNames = [];
+
+    /**
      * @var array The initial delta input values.
      * @see setInitialDeltaValue()
      */
@@ -283,6 +289,13 @@ class View extends \yii\web\View
      * @since 4.5.8
      */
     private array $_metaTagBuffers = [];
+
+    /**
+     * @var array
+     * @see startAssetBundleBuffer()
+     * @see clearAssetBundleBuffer()
+     */
+    private array $_assetBundleBuffers = [];
 
     /**
      * @var array|null the registered generic `<script>` code blocks
@@ -1246,6 +1259,39 @@ class View extends \yii\web\View
     }
 
     /**
+     * Starts a buffer for any asset bundles registered with [[registerAssetBundle()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearAssetBundleBuffer()]].
+     *
+     * @see clearAssetBundleBuffer()
+     * @since 4.11.0
+     */
+    public function startAssetBundleBuffer(): void
+    {
+        $this->_assetBundleBuffers[] = $this->assetBundles;
+        $this->assetBundles = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startAssetBundleBuffer()]], returning any asset bundles that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The asset bundles that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     * @see startAssetBundleBuffer()
+     * @since 4.11.0
+     */
+    public function clearAssetBundleBuffer(): array|false
+    {
+        if (empty($this->_assetBundleBuffers)) {
+            return false;
+        }
+
+        $bufferedAssetBundles = $this->assetBundles;
+        $this->assetBundles = array_pop($this->_assetBundleBuffers);
+        return $bufferedAssetBundles;
+    }
+
+    /**
      * @inheritdoc
      */
     public function registerJsFile($url, $options = [], $key = null): void
@@ -1455,12 +1501,18 @@ JS;
      * (see [[getIsDeltaRegistrationActive()]]).
      *
      * @param string $inputName
+     * @param bool $forceModified Whether the name should be considered modified regardless of the initial form value
      * @since 3.4.0
      */
-    public function registerDeltaName(string $inputName): void
+    public function registerDeltaName(string $inputName, bool $forceModified = false): void
     {
         if ($this->_registerDeltaNames) {
-            $this->_deltaNames[] = $this->namespaceInputName($inputName);
+            $inputName = $this->namespaceInputName($inputName);
+            $this->_deltaNames[] = $inputName;
+
+            if ($forceModified) {
+                $this->_modifiedDeltaNames[] = $inputName;
+            }
         }
     }
 
@@ -1516,7 +1568,7 @@ JS;
     }
 
     /**
-     * Returns all of the registered delta input names.
+     * Returns all the registered delta input names.
      *
      * @return string[]
      * @see registerDeltaName()
@@ -1525,6 +1577,18 @@ JS;
     public function getDeltaNames(): array
     {
         return $this->_deltaNames;
+    }
+
+    /**
+     * Returns all the registered delta input names that should be considered modified.
+     *
+     * @return string[]
+     * @see registerDeltaName()
+     * @since 4.10.1
+     */
+    public function getModifiedDeltaNames(): array
+    {
+        return $this->_modifiedDeltaNames;
     }
 
     /**

@@ -15,15 +15,15 @@ use craft\elements\Tag;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\TagGroup;
-use yii\db\Connection;
 
 /**
  * TagQuery represents a SELECT SQL statement for tags in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of Tag
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @property-write string|string[]|TagGroup|null $group The tag group(s) that resulting tags must belong to
- * @method Tag[]|array all($db = null)
- * @method Tag|array|null one($db = null)
- * @method Tag|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path tags.md

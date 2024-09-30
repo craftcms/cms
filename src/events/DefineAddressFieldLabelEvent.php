@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use CommerceGuys\Addressing\AddressFormat\AddressField;
-use yii\base\Event;
+use craft\base\Event;
 
 /**
  * DefineAddressFieldLabelEvent event class.

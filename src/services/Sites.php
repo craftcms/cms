@@ -32,6 +32,7 @@ use craft\models\SiteGroup;
 use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -587,6 +588,23 @@ class Sites extends Component
         ArrayHelper::multisort($sites, 'sortOrder', SORT_ASC, SORT_NUMERIC);
 
         return $sites;
+    }
+
+    /**
+     * Returns editable sites by a group ID.
+     *
+     * @param int $groupId
+     * @param bool|null $withDisabled
+     * @return Site[]
+     * @since 4.12.0
+     */
+    public function getEditableSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
+    {
+        $editableSiteIds = array_flip($this->getEditableSiteIds());
+        return Collection::make($this->getSitesByGroupId($groupId, $withDisabled))
+            ->filter(fn(Site $site) => isset($editableSiteIds[$site->id]))
+            ->values()
+            ->all();
     }
 
     /**

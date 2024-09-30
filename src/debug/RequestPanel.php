@@ -8,6 +8,7 @@
 namespace craft\debug;
 
 use Craft;
+use craft\helpers\StringHelper;
 
 /**
  * Debugger panel that collects and displays request data.
@@ -23,6 +24,22 @@ class RequestPanel extends \yii\debug\panels\RequestPanel
     public function save(): array
     {
         $data = parent::save();
-        return Craft::$app->getSecurity()->redactIfSensitive('', $data);
+        $data = Craft::$app->getSecurity()->redactIfSensitive('', $data);
+        if (isset($data['actionParams'])) {
+            $this->serializeObjects($data['actionParams']);
+        }
+        return $data;
+    }
+
+    private function serializeObjects(array &$arr, int $indent = 1): void
+    {
+        foreach ($arr as &$value) {
+            if (is_object($value)) {
+                $dump = trim(Craft::dump($value, 10, false, true));
+                $value = ltrim(StringHelper::indent($dump, str_repeat('    ', $indent)));
+            } elseif (is_array($value)) {
+                $this->serializeObjects($value, $indent + 1);
+            }
+        }
     }
 }
