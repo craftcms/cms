@@ -104,6 +104,9 @@ class FullNameField extends TextField
                 'value' => $element->firstName ?? null,
                 'errors' => !$static ? $element->getErrors('firstName') : [],
                 'disabled' => $static,
+                'data' => [
+                    'error-key' => 'firstName',
+                ],
             ]) .
             Cp::textFieldHtml([
                 'id' => 'lastName',
@@ -118,6 +121,9 @@ class FullNameField extends TextField
                 'value' => $element->lastName ?? null,
                 'errors' => !$static ? $element->getErrors('lastName') : [],
                 'disabled' => $static,
+                'data' => [
+                    'error-key' => 'lastName',
+                ],
             ]) .
             HtmlHelper::endTag('div');
     }
