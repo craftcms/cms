@@ -1,4 +1,11 @@
-import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom';
+import {
+  arrow,
+  autoUpdate,
+  computePosition,
+  flip,
+  offset,
+  shift,
+} from '@floating-ui/dom';
 
 /**
  * Tooltip

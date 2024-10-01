@@ -823,6 +823,8 @@ class FieldLayout extends Model
         // Any already-included layout elements?
         $visibleElements = ArrayHelper::remove($config, 'visibleElements');
 
+        $disableCopying = ArrayHelper::remove($config, 'disableCopying') ?? false;
+
         $form = new FieldLayoutForm($config);
         $tabs = $this->getTabs();
 
@@ -877,6 +879,7 @@ class FieldLayout extends Model
                             $html = Html::modifyTagAttributes($html, [
                                 'data' => [
                                     'layout-element' => $isConditional ? $layoutElement->uid : true,
+                                    'disable-copying' => $disableCopying,
                                 ] + ($errorKey ? ['error-key' => $errorKey] : []),
                             ]);
 

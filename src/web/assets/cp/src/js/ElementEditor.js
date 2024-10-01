@@ -678,6 +678,16 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       const $btn = $(ev.currentTarget);
 
+      // don't show the hud if we're supposed to disable copying for this field
+      // this is used by fields inside inline-editable matrix "block"
+      const $fieldContainer = $btn.parents('.field');
+      if (
+        $fieldContainer.length > 0 &&
+        Garnish.hasAttr($fieldContainer[0], 'data-disable-copying')
+      ) {
+        return;
+      }
+
       const $hudContent = $('<div/>', {
         class: 'copy-translation-dialogue',
       });

@@ -104,7 +104,10 @@
 {% endif %}
 
 {% namespace baseInputName %}
-  {% set form = entry.getFieldLayout().createForm(entry, static, {'errorKeyPrefix' : "#{name}[#{entry.uid}]"}) %}
+  {% set form = entry.getFieldLayout().createForm(entry, static, {
+    'errorKeyPrefix' : "#{name}[#{entry.uid}]",
+    'disableCopying': true,
+  }) %}
   {% set tabs = form.getTabMenu() %}
 {% endnamespace %}
 
