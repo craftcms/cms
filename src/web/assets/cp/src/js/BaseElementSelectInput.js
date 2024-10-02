@@ -104,6 +104,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           }
         });
       }
+
+      setTimeout(() => {
+        this.elementEditor = this.$container
+          .closest('form')
+          .data('elementEditor');
+      }, 100);
     },
 
     get totalSelected() {
@@ -185,6 +191,23 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           collapseDraggees: true,
           magnetStrength: 4,
           helperLagBase: 1.5,
+          onBeforeDragStart: () => {
+            this.elementEditor?.pause();
+
+            // Disable all craft-element-labels so connectedCallback()
+            // doesn't get fired constantly during drag
+            this.$elementsContainer
+              .find('craft-element-label')
+              .attr('disabled', true);
+          },
+          onDragStop: () => {
+            this.elementEditor?.resume();
+
+            // Put things back where we found them.
+            this.$elementsContainer
+              .find('craft-element-label')
+              .removeAttr('disabled');
+          },
           onSortChange: () => {
             this.onSortChange();
           },
@@ -368,7 +391,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             !$element.hasClass('disabled') &&
             !$element.hasClass('loading')
           ) {
-            this.elementEditor = this.createElementEditor($element);
+            this.createElementEditor($element);
           }
         };
 

@@ -27,11 +27,11 @@ That comes with some limitations on what you can do with the code:
 
 ### Code of Conduct
 
-Please take a couple minutes to read through Craft’s [code of conduct](https://craftcms.com/docs/4.x/coc.html). By participating here, you are expected to uphold this code. Please report unacceptable behavior to us from [craftcms.com/contact](https://craftcms.com/contact).
+Please take a couple minutes to read through Craft’s [code of conduct](https://craftcms.com/docs/5.x/coc.html). By participating here, you are expected to uphold this code. Please report unacceptable behavior to us from [craftcms.com/contact](https://craftcms.com/contact).
 
 ## Security Disclosures
 
-If you discover a security vulnerability, please review our [Security Policy](https://github.com/craftcms/.github/blob/master/SECURITY.md), then report the issue directly to us from [craftcms.com/contact](https://craftcms.com/contact). We will review and respond privately via email.
+If you discover a security vulnerability, please review our [Security Policy](https://github.com/craftcms/.github/blob/main/SECURITY.md), then report the issue directly to us from [craftcms.com/contact](https://craftcms.com/contact). We will review and respond privately via email.
 
 ## Bug Reports & Feature Requests
 
@@ -55,7 +55,7 @@ npm install
 npm run docs:dev
 ```
 
-Once the VuePress dev server is up and running, you’ll be able to view the docs at `http://localhost:8000/`. Changes you make to the `.md` files will automatically trigger a live reload of the pages in the browser.
+Once the VuePress dev server is up and running, you’ll be able to view the docs at `http://localhost:8080/`. Changes you make to the `.md` files will automatically trigger a live reload of the pages in the browser.
 
 ## Control Panel Translations
 
@@ -75,4 +75,3 @@ Pull requests should clearly describe the problem and solution. Include the rele
 Thanks for being awesome.
 
 :cocktail:
-
