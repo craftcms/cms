@@ -4018,6 +4018,9 @@ const ViewMenu = Garnish.Base.extend({
       this.$trigger.addClass('active');
       this.updateSortField();
       this.updateTableFieldVisibility();
+      if (this.elementIndex.getSelectedSourceState('mode') !== this.elementIndex.defaultViewMode) {
+        this._createRevertBtn();
+      }
     });
 
     this.menu.on('hide', () => {
@@ -4050,9 +4053,6 @@ const ViewMenu = Garnish.Base.extend({
         this.$tableColumnsContainer
           .closest('.table-columns-field')
           .addClass('hidden');
-      }
-      if (this.$revertBtn) {
-        this.$revertBtn.addClass('hidden');
       }
     } else {
       if (this.$tableColumnsContainer) {
@@ -4240,19 +4240,9 @@ const ViewMenu = Garnish.Base.extend({
       this.elementIndex.getSelectedSourceState('order') ||
       this.elementIndex.getSelectedSourceState('sort') ||
       this.elementIndex.getSelectedSourceState('tableColumns') ||
-      this.elementIndex.getSelectedSourceState('mode')
+      this.elementIndex.getSelectedSourceState('mode') !== this.elementIndex.defaultViewMode
     ) {
       this._createRevertBtn();
-    }
-
-    // we only want to show the "Use defaults" btn in table and structure views
-    if (
-      this.elementIndex.viewMode !== 'table' &&
-      this.elementIndex.viewMode !== 'structure'
-    ) {
-      if (this.$revertBtn) {
-        this.$revertBtn.addClass('hidden');
-      }
     }
 
     this.$closeBtn = $('<button/>', {
