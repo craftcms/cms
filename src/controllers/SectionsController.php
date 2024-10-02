@@ -142,22 +142,13 @@ class SectionsController extends Controller
             ?? PropagationMethod::All;
         $section->previewTargets = $this->request->getBodyParam('previewTargets') ?: [];
 
-        // Type-specific settings
-        switch ($section->type) {
-            case Section::TYPE_SINGLE:
-                $entryTypeIds = (array)($this->request->getBodyParam('singleEntryType') ?? []);
-                break;
-            case Section::TYPE_STRUCTURE:
-                $section->maxLevels = $this->request->getBodyParam('maxLevels') ?: null;
-                $section->defaultPlacement = $this->request->getBodyParam('defaultPlacement') ?? $section->defaultPlacement;
-                // no break
-            case Section::TYPE_CHANNEL:
-                $entryTypeIds = $this->request->getBodyParam('entryTypes') ?: [];
-                break;
-            default:
-                throw new BadRequestHttpException("Invalid entry type: $section->type");
+        // Structure settings
+        if ($section->type === Section::TYPE_STRUCTURE) {
+            $section->maxLevels = $this->request->getBodyParam('maxLevels') ?: null;
+            $section->defaultPlacement = $this->request->getBodyParam('defaultPlacement') ?? $section->defaultPlacement;
         }
 
+        $entryTypeIds = $this->request->getBodyParam('entryTypes') ?: [];
         $section->setEntryTypes(array_map(fn($id) => $sectionsService->getEntryTypeById((int)$id), array_filter($entryTypeIds)));
 
         // Site-specific settings

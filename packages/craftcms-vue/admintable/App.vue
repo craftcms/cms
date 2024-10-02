@@ -125,7 +125,10 @@
               <span
                 v-if="props.rowData.status !== undefined"
                 class="status"
-                :class="{enabled: props.rowData.status}"
+                :class="{
+                  enabled: props.rowData.status,
+                  disabled: !props.rowData.status,
+                }"
               ></span>
               <a
                 :class="{'cell-bold': props.rowData.status === undefined}"

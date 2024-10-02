@@ -1434,7 +1434,6 @@ Craft.ui = {
   },
 
   getInstructionsId: function (config) {
-    console.log(config);
     return config.id
       ? `${config.id}-instructions`
       : `${Math.floor(Math.random() * 1000000000)}-instructions`;

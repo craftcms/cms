@@ -10,9 +10,13 @@ Craft.CP = Garnish.Base.extend(
   {
     elementThumbLoader: null,
     authManager: null,
+    announcerTimeout: null,
+    modalLayers: [],
 
     $nav: null,
     $navToggle: null,
+    $globalLiveRegion: null,
+    $activeLiveRegion: null,
     $globalSidebar: null,
     $globalContainer: null,
     $mainContainer: null,
@@ -77,6 +81,8 @@ Craft.CP = Garnish.Base.extend(
       // Find all the key elements
       this.$nav = $('#nav');
       this.$navToggle = $('#primary-nav-toggle');
+      this.$globalLiveRegion = $('#global-live-region');
+      this.$activeLiveRegion = this.$globalLiveRegion;
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
       this.$mainContainer = $('#main-container');
@@ -154,6 +160,15 @@ Craft.CP = Garnish.Base.extend(
       // Toggles
       this.addListener(this.$navToggle, 'click', 'toggleNav');
       this.addListener(this.$sidebarToggle, 'click', 'toggleSidebar');
+
+      // Layers
+      Garnish.uiLayerManager.on('addLayer', () => {
+        this.handleLayerUpdates();
+      });
+
+      Garnish.uiLayerManager.on('removeLayer', () => {
+        this.handleLayerUpdates();
+      });
 
       // Does this page have a primary form?
       if (!this.$primaryForm.length) {
@@ -782,6 +797,46 @@ Craft.CP = Garnish.Base.extend(
       this.handleBreadcrumbVisibility();
     },
 
+    handleLayerUpdates: function () {
+      // Exit if the number of modal layers remains the same
+      if (Garnish.uiLayerManager.modalLayers.length === this.modalLayers.length)
+        return;
+
+      // Store modal layers
+      this.modalLayers = Garnish.uiLayerManager.modalLayers;
+
+      if (this.announcerTimeout) {
+        clearTimeout(this.announcerTimeout);
+      }
+
+      if (Garnish.uiLayerManager.modalLayers.length === 0) {
+        this.$activeLiveRegion = this.$globalLiveRegion;
+      } else {
+        const $modal = Garnish.uiLayerManager.highestModalLayer.$container;
+        let modalObj;
+
+        if ($modal.hasClass('modal')) {
+          modalObj = $modal.data('modal');
+        } else if ($modal.hasClass('slideout-container')) {
+          modalObj = $modal.find('.slideout').data('slideout');
+        }
+
+        if (!modalObj) {
+          console.warn('There is no modal object');
+        }
+
+        if (!modalObj?.$liveRegion) {
+          console.warn('There is no live region in the active modal layer.');
+          this.$activeLiveRegion = null;
+        } else {
+          this.$activeLiveRegion = modalObj.$liveRegion;
+        }
+      }
+
+      // Empty in case it was already populated and not cleared
+      this.$activeLiveRegion?.empty();
+    },
+
     updateResponsiveTables: function () {
       for (
         this.updateResponsiveTables._i = 0;
@@ -922,7 +977,30 @@ Craft.CP = Garnish.Base.extend(
     },
 
     /**
-     * Dispays a notification.
+     * Updates the active live region with a screen reader announcement
+     *
+     * @param {string} message
+     */
+    announce: function (message) {
+      if (!message || !this.$activeLiveRegion) {
+        console.warn('There was an error announcing this message.');
+        return;
+      }
+
+      if (this.announcerTimeout) {
+        clearTimeout(this.announcerTimeout);
+      }
+
+      this.$activeLiveRegion?.empty().text(message);
+
+      // Clear message after interval
+      this.announcerTimeout = setTimeout(() => {
+        this.$activeLiveRegion?.empty();
+      }, 5000);
+    },
+
+    /**
+     * Displays a notification.
      *
      * @param {string} type `notice`, `success`, or `error`
      * @param {string} message
@@ -1894,6 +1972,7 @@ var JobProgressIcon = Garnish.Base.extend({
   $a: null,
   $label: null,
   $progressLabel: null,
+  $tooltip: $(),
 
   progress: null,
   failMode: false,
@@ -1944,11 +2023,15 @@ var JobProgressIcon = Garnish.Base.extend({
       .appendTo($labelContainer)
       .hide();
 
-    this.$tooltip = $('<craft-tooltip/>', {
-      placement: 'right',
-      'self-managed': true,
-      'aria-label': this.$label.text(),
-    }).appendTo(this.$a);
+    // If the sidebar is collapsed, make sure to add a tooltip.
+    // CraftGlobalSidebar.js will handle removing it and adding it back on expand/contract
+    if (Garnish.$bod.data('sidebar') === 'collapsed') {
+      this.$tooltip = $('<craft-tooltip/>', {
+        placement: 'right',
+        'self-managed': true,
+        'aria-label': this.$label.text(),
+      }).appendTo(this.$a);
+    }
 
     let m = window.devicePixelRatio > 1 ? 2 : 1;
     this._canvasSize = 18 * m;
@@ -1956,12 +2039,9 @@ var JobProgressIcon = Garnish.Base.extend({
     this._arcRadius = 7 * m;
     this._lineWidth = 3 * m;
 
-    this._$bgCanvas = this._createCanvas(
-      'bg',
-      this.$li.css('background-color')
-    );
+    this._$bgCanvas = this._createCanvas('bg', '#a3afbb');
     this._$staticCanvas = this._createCanvas('static', this.$li.css('color'));
-    this._$hoverCanvas = this._createCanvas('hover', '#fff');
+    this._$hoverCanvas = this._createCanvas('hover', this.$li.css('color'));
     this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
 
     this._staticCtx = this._$staticCanvas[0].getContext('2d');
@@ -1972,7 +2052,6 @@ var JobProgressIcon = Garnish.Base.extend({
   },
 
   setDescription: function (description, progressLabel) {
-    this.$a.attr('title', description);
     this.$label.text(description);
     if (progressLabel) {
       this.$progressLabel.text(progressLabel).show();
@@ -1980,7 +2059,9 @@ var JobProgressIcon = Garnish.Base.extend({
       this.$progressLabel.hide();
     }
 
-    this.$tooltip.attr('aria-label', description);
+    if (this.$tooltip.length) {
+      this.$tooltip.attr('aria-label', description);
+    }
   },
 
   setProgress: function (progress) {

@@ -41,7 +41,7 @@ class Utilities extends Component
      *
      * Utilities must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
      *
-     * Read more about creating utilities in the [documentation](https://craftcms.com/docs/4.x/extend/utilities.html).
+     * Read more about creating utilities in the [documentation](https://craftcms.com/docs/5.x/extend/utilities.html).
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -73,7 +73,7 @@ class Utilities extends Component
             PhpInfo::class,
         ];
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             $utilityTypes[] = SystemMessagesUtility::class;
         }
 

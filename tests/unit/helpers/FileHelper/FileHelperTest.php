@@ -324,6 +324,8 @@ class FileHelperTest extends TestCase
             [' +HostName[@SSL][@Port]+SharedFolder+Resource', ' \\HostName[@SSL][@Port]\SharedFolder\Resource', '+'],
             ['|?|C:|my_dir', '\\?\C:\my_dir', '|'],
             ['==stuff', '\\\\stuff', '='],
+            ['foo/bar', 'file://foo/bar', '/'],
+            ['foo/bar', 'file://FILE://foo/bar', '/'],
         ];
     }
 

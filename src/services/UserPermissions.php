@@ -244,7 +244,7 @@ class UserPermissions extends Component
         if (!isset($this->_permissionsByUserId[$userId])) {
             $groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
-            if (Craft::$app->edition === CmsEdition::Pro) {
+            if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
                 /** @var string[] $userPermissions */
                 $userPermissions = $this->_createUserPermissionsQuery()
                     ->innerJoin(['p_u' => Table::USERPERMISSIONS_USERS], '[[p_u.permissionId]] = [[p.id]]')
@@ -399,6 +399,7 @@ class UserPermissions extends Component
                 $generalPermissions = array_merge($generalPermissions, $cpPermissions);
                 break;
             case CmsEdition::Pro:
+            case CmsEdition::Enterprise:
                 $generalPermissions['accessCp'] = [
                     'label' => Craft::t('app', 'Access the control panel'),
                     'warning' => Craft::t('app', 'Includes read-only access to user data and most content, via element selector modals and other means.'),
@@ -417,7 +418,7 @@ class UserPermissions extends Component
     {
         $assignGroupPermissions = [];
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
                 $assignGroupPermissions["assignUserGroup:$group->uid"] = [
                     'label' => Craft::t('app', 'Assign users to “{group}”', [
@@ -446,14 +447,14 @@ class UserPermissions extends Component
                             'administrateUsers' => [
                                 'label' => Craft::t('app', 'Administrate users'),
                                 'info' => Craft::t('app', 'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.'),
-                                'warning' => Craft::$app->edition === CmsEdition::Pro
+                                'warning' => Craft::$app->edition->value >= CmsEdition::Pro->value
                                     ? Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.')
                                     : null,
                             ],
                             'impersonateUsers' => [
                                 'label' => Craft::t('app', 'Impersonate users'),
                             ],
-                            'assignUserPermissions' => Craft::$app->edition === CmsEdition::Pro
+                            'assignUserPermissions' => Craft::$app->edition->value >= CmsEdition::Pro->value
                                 ? [
                                     'label' => Craft::t('app', 'Assign user permissions'),
                                 ]

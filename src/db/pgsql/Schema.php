@@ -75,6 +75,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @param string $name
      * @return string
+     * @deprecated in 5.4.0
      */
     public function quoteDatabaseName(string $name): string
     {

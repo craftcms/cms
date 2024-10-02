@@ -6,11 +6,11 @@
   cursor: pointer;
 
   &:hover {
-    @include padding-right(26px);
+    padding-inline-end: 26px;
 
-    &:after {
+    &::after {
       position: absolute;
-      top: 18px;
+      inset-block-start: 18px;
       @include right(15px);
       @include icon;
       content: 'edit';
@@ -19,9 +19,9 @@
   }
 
   .subject {
-    padding-bottom: 15px;
-    border-bottom: 1px solid #dbdbdb;
-    margin-bottom: 15px;
+    padding-block-end: 15px;
+    border-block-end: 1px solid #dbdbdb;
+    margin-block-end: 15px;
   }
 
   .body {
@@ -36,7 +36,7 @@
   width: 500px;
 
   .header .right {
-    top: 12px;
+    inset-block-start: 12px;
   }
 
   .body {

@@ -17,6 +17,9 @@ use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\console\controllers\MigrateController;
+use craft\console\controllers\UpController;
+use craft\controllers\AppController;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -54,6 +57,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -95,7 +99,7 @@ class Elements extends Component
      *
      * Element types must implement [[ElementInterface]]. [[Element]] provides a base implementation.
      *
-     * See [Element Types](https://craftcms.com/docs/4.x/extend/element-types.html) for documentation on creating element types.
+     * See [Element Types](https://craftcms.com/docs/5.x/extend/element-types.html) for documentation on creating element types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -1158,7 +1162,9 @@ class Elements extends Component
             ]));
         }
 
-        Db::delete(Table::ELEMENTS_BULKOPS, ['key' => $key], db: $this->bulkOpDb);
+        if (!$this->isMigrationRequest()) {
+            Db::delete(Table::ELEMENTS_BULKOPS, ['key' => $key], db: $this->bulkOpDb);
+        }
     }
 
     /**
@@ -1175,13 +1181,27 @@ class Elements extends Component
 
         $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
 
-        foreach (array_keys($this->bulkKeys) as $key) {
-            Db::upsert(Table::ELEMENTS_BULKOPS, [
-                'elementId' => $element->id,
-                'key' => $key,
-                'timestamp' => $timestamp,
-            ], db: $this->bulkOpDb);
+        if (!$this->isMigrationRequest()) {
+            foreach (array_keys($this->bulkKeys) as $key) {
+                Db::upsert(Table::ELEMENTS_BULKOPS, [
+                    'elementId' => $element->id,
+                    'key' => $key,
+                    'timestamp' => $timestamp,
+                ], db: $this->bulkOpDb);
+            }
         }
+    }
+
+    private function isMigrationRequest(): bool
+    {
+        return (
+            Craft::$app->controller instanceof MigrateController ||
+            Craft::$app->controller instanceof UpController ||
+            (
+                Craft::$app->controller instanceof AppController &&
+                Craft::$app->controller->action?->id === 'update'
+            )
+        );
     }
 
     /**
@@ -1257,7 +1277,7 @@ class Elements extends Component
      * @param bool $forceTouch Whether to force the `dateUpdated` timestamp to be updated for the element,
      * regardless of whether it’s being resaved
      * @param bool|null $crossSiteValidate Whether the element should be validated across all supported sites
-     * @param bool $saveContent Whether the element’s content should be saved
+     * @param bool $saveContent Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
@@ -1270,7 +1290,7 @@ class Elements extends Component
         ?bool $updateSearchIndex = null,
         bool $forceTouch = false,
         ?bool $crossSiteValidate = false,
-        bool $saveContent = true,
+        bool $saveContent = false,
     ): bool {
         // Force propagation for new elements
         $propagate = !$element->id || $propagate;
@@ -1278,6 +1298,11 @@ class Elements extends Component
         // Not currently being duplicated
         $duplicateOf = $element->duplicateOf;
         $element->duplicateOf = null;
+
+        // Force isNewForSite = false here, in case the element is getting saved recursively
+        // (see https://github.com/craftcms/cms/issues/15517)
+        $isNewForSite = $element->isNewForSite;
+        $element->isNewForSite = false;
 
         $success = $this->_saveElementInternal(
             $element,
@@ -1290,6 +1315,7 @@ class Elements extends Component
         );
 
         $element->duplicateOf = $duplicateOf;
+        $element->isNewForSite = $isNewForSite;
 
         return $success;
     }
@@ -1574,7 +1600,7 @@ class Elements extends Component
 
                     if ($e === null) {
                         try {
-                            $this->_saveElementInternal($element, true, true, $updateSearchIndex, forceTouch: $touch);
+                            $this->_saveElementInternal($element, true, true, $updateSearchIndex, forceTouch: $touch, saveContent: true);
                         } catch (Throwable $e) {
                             if (!$continueOnError) {
                                 throw $e;
@@ -1861,7 +1887,7 @@ class Elements extends Component
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 // Start with $element’s site
-                if (!$this->_saveElementInternal($mainClone, false, false, null, $supportedSites)) {
+                if (!$this->_saveElementInternal($mainClone, false, false, null, $supportedSites, saveContent: true)) {
                     throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
                 }
 
@@ -1952,7 +1978,7 @@ class Elements extends Component
                             }
                         }
 
-                        if (!$this->_saveElementInternal($siteClone, false, false, supportedSites: $supportedSites)) {
+                        if (!$this->_saveElementInternal($siteClone, false, false, supportedSites: $supportedSites, saveContent: true)) {
                             throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site $siteElement->siteId: " . implode(', ', $siteClone->getFirstErrors()));
                         }
 
@@ -3435,7 +3461,7 @@ class Elements extends Component
      * @param bool $forceTouch Whether to force the `dateUpdated` timestamp to be updated for the element,
      * regardless of whether it’s being resaved
      * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
-     * @param bool $saveContent Whether the element’s content should be saved
+     * @param bool $saveContent Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
@@ -3449,7 +3475,7 @@ class Elements extends Component
         ?array $supportedSites = null,
         bool $forceTouch = false,
         bool $crossSiteValidate = false,
-        bool $saveContent = true,
+        bool $saveContent = false,
     ): bool {
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
@@ -3712,19 +3738,35 @@ class Elements extends Component
                     }
                 }
 
-                if ($saveContent) {
-                    // Set the field values
+                $saveContent = $saveContent || $element->isNewForSite;
+
+                if ($saveContent || !empty($dirtyFields)) {
+                    $oldContent = $siteSettingsRecord->content ?? []; // we'll need that if we're not saving all the content
+                    if (is_string($oldContent)) {
+                        $oldContent = $oldContent !== '' ? Json::decode($oldContent) : [];
+                    }
+
                     $content = [];
                     if ($fieldLayout) {
                         foreach ($fieldLayout->getCustomFields() as $field) {
-                            if ($field::dbType() !== null) {
+                            if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
                                 $serializedValue = $field->serializeValue($element->getFieldValue($field->handle), $element);
                                 if ($serializedValue !== null) {
                                     $content[$field->layoutElement->uid] = $serializedValue;
+                                } elseif (!$saveContent) {
+                                    // if serialized value is null, and we're not saving all the content,
+                                    // we need to register the fact that the new value is empty
+                                    unset($oldContent[$field->layoutElement->uid]);
                                 }
                             }
                         }
                     }
+
+                    // if we're only saving dirty fields, we need to merge the new dirty values with what's already in the db
+                    if (!$saveContent && $oldContent) {
+                        $content = $content + $oldContent;
+                    }
+
                     $siteSettingsRecord->content = $content ?: null;
                 }
 
@@ -3775,7 +3817,7 @@ class Elements extends Component
                                     $siteId,
                                     $siteElement,
                                     crossSiteValidate: $runValidation && $crossSiteValidate,
-                                    saveContent: $saveContent,
+                                    saveContent: true,
                                 )) {
                                     throw new InvalidConfigException();
                                 }
@@ -3986,7 +4028,11 @@ class Elements extends Component
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->siteSettingsId = null;
             $siteElement->setEnabledForSite($siteInfo['enabledByDefault']);
-            $siteElement->isNewForSite = true;
+            // set isNewForSite to true unless we're reverting content from a revision
+            // in which case, it's possible that the canonical element exists for the site already,
+            // but didn't back when the revision was created.
+            // (see https://github.com/craftcms/cms/issues/15679)
+            $siteElement->isNewForSite = !$siteElement->duplicateOf?->getIsRevision();
 
             // Keep track of this new site ID
             $element->newSiteIds[] = $siteInfo['siteId'];

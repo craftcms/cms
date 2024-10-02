@@ -27,7 +27,7 @@
 
 {% macro configWarning(setting, file) -%}
     {{ "This is being overridden by the {setting} config setting."|t('app', {
-        setting: '<a href="https://craftcms.com/docs/4.x/config/config-settings.html#'~setting|lower~'" rel="noopener" target="_blank">'~setting~'</a>'
+        setting: '<a href="https://craftcms.com/docs/5.x/reference/config/general.html#'~setting|lower~'" rel="noopener" target="_blank">'~setting~'</a>'
     })|raw }}
 {%- endmacro %}
 
@@ -77,7 +77,7 @@
         includeEnvVars: true,
     }) }}
 
-    {% if CraftEdition == CraftPro %}
+    {% if CraftEdition >= CraftPro %}
         <hr>
 
         {% do view.registerTranslations('app', [

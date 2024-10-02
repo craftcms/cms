@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\models\ImageTransform;
-use yii\base\Event;
 
 /**
  * Image transform event class.

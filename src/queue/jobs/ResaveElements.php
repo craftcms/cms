@@ -122,6 +122,7 @@ class ResaveElements extends BaseBatchedElementJob
             Craft::$app->getElements()->saveElement($item,
                 updateSearchIndex: $this->updateSearchIndex,
                 forceTouch: $this->touch,
+                saveContent: true,
             );
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);

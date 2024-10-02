@@ -979,9 +979,9 @@ class ExtensionTest extends TestCase
      */
     public function testDataUrlFunction(): void
     {
-        $path = dirname(__DIR__, 3) . '/_data/assets/files/craft-logo.svg';
+        $path = dirname(__DIR__, 4) . '/.github/workflows/ci.yml';
         $dataUrl = $this->view->renderString('{{ dataUrl(path) }}', compact('path'));
-        self::assertStringStartsWith('data:image/svg+xml;base64,', $dataUrl);
+        self::assertStringStartsWith('data:application/x-yaml;base64,', $dataUrl);
     }
 
     public function testExpressionFunction(): void

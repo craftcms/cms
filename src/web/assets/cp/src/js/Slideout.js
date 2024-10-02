@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 (function ($) {
   /** global: Craft */
   /** global: Garnish */
@@ -9,6 +11,7 @@
       $outerContainer: null,
       $container: null,
       $shade: null,
+      $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
       isOpen: false,
       useMobileStyles: null,
 
@@ -35,6 +38,8 @@
         Garnish.addModalAttributes(this.$outerContainer);
 
         Craft.trapFocusWithin(this.$container);
+
+        this.$liveRegion.appendTo(this.$container);
 
         if (this.settings.autoOpen) {
           this.open();

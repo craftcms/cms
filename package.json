@@ -9,7 +9,8 @@
     "serve": "webpack-dev-server --node-env=development",
     "check-prettier": "prettier --check .",
     "fix-prettier": "prettier --write .",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "lint:styles": "stylelint \"src/**/*.scss\""
   },
   "workspaces": [
     "packages/*"
@@ -26,6 +27,11 @@
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
     "prettier": "3.1.1",
+    "stylelint": "^16.6.1",
+    "stylelint-config-standard": "^36.0.0",
+    "stylelint-config-standard-scss": "^13.1.0",
+    "stylelint-prettier": "^5.0.0",
+    "stylelint-use-logical-spec": "^5.0.1",
     "tailwindcss": "^3.0.18",
     "vue-apexcharts": "^1.6.2"
   },
@@ -49,7 +55,7 @@
     "iframe-resizer": "^4.3.2",
     "inputmask": "^5.0.9",
     "jquery": "^3.6.0",
-    "jquery-ui": "^1.13.1",
+    "jquery-ui": "^1.14.0",
     "jquery.payment": "^3.0.0",
     "picturefill": "^3.0.3",
     "punycode": "^2.3.1",

@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\base\PluginInterface;
-use yii\base\Event;
 
 /**
  * PluginEvent class.

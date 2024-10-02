@@ -2,21 +2,23 @@
 @import '@craftcms/sass/mixins';
 
 #routes {
-  margin: 0 1px 25px;
+  margin-block: 0 25px;
+  margin-inline: 1px;
 }
 
 .route {
   @include pane;
   position: relative;
-  margin: 14px 0;
+  margin-block: 14px;
+  margin-inline: 0;
   padding: 0;
   border-radius: var(--large-border-radius);
   background-color: var(--gray-050);
   cursor: pointer;
 
-  &:hover:after {
+  &:hover::after {
     position: absolute;
-    top: 9px;
+    inset-block-start: 9px;
     @include right(5px);
     @include icon;
     content: 'edit';
@@ -25,65 +27,70 @@
 
   .uri-container,
   .template {
-    padding: 7px 14px;
+    padding-block: 7px;
+    padding-inline: 14px;
     line-height: 18px;
     min-height: 18px;
   }
 
   .uri-container {
     position: relative;
-    @include margin-right(20px);
-    @include padding-right(10px);
-    @include border-radius(
-      var(--large-border-radius),
-      0,
-      0,
-      var(--large-border-radius)
-    );
-    @include floatleft;
+    margin-inline-end: 20px;
+    padding-inline-end: 10px;
+    border-start-start-radius: var(--large-border-radius);
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    border-end-start-radius: var(--large-border-radius);
+    float: inline-start;
     color: var(--link-color);
     background: var(--white);
 
-    &:after {
+    &::after {
       display: block;
       content: '';
       text-indent: -100%;
       overflow: hidden;
       position: absolute;
-      top: 0;
+      inset-block-start: 0;
       @include right(-15px);
       width: 15px;
       height: 32px;
       background-repeat: no-repeat;
+
       body.ltr & {
-        background-image: url(images/route-bg.png);
+        background-image: url('images/route-bg.png');
       }
+
       body.rtl & {
-        background-image: url(images/route-bg_rtl.png);
+        background-image: url('images/route-bg_rtl.png');
       }
     }
 
     .site {
       display: inline-block;
-      @include margin(-1px, 8px, -1px, 0);
+      margin-inline: 0 8px;
+      margin-block: -1px -1px;
       border-radius: var(--small-border-radius);
-      padding: 1px 5px;
+      padding-block: 1px;
+      padding-inline: 5px;
       background: var(--gray-050);
       box-shadow: inset 0 0 0 1px var(--hairline-color);
       color: var(--medium-text-color);
     }
 
     .uri .token {
-      margin: 0 3px -1px;
+      margin-block: 0 -1px;
+      margin-inline: 3px;
     }
   }
 
   .template {
     color: var(--medium-text-color);
 
-    &:before {
+    &::before {
       @include icon;
-      @include margin(0, 5px, 0, 0);
+      margin-inline: 0 5px;
+      margin-block: 0 0;
       content: 'template';
     }
   }
@@ -101,18 +108,16 @@
     .uri {
       width: auto;
       cursor: text;
-      @include padding-left(0);
-      padding-top: 0;
-      padding-bottom: 0;
+      padding-inline-start: 0;
+      padding-block: 0;
 
       input[type='text'] {
         box-shadow: none;
         box-sizing: content-box;
-        padding-top: 6px;
-        padding-bottom: 6px;
+        padding-block: 6px;
 
         &:first-child {
-          @include padding-left(9px);
+          padding-inline-start: 9px;
         }
       }
 
@@ -127,41 +132,41 @@
   }
 
   .uri-tokens {
-    margin-top: 10px;
+    margin-block-start: 10px;
     border-radius: var(--large-border-radius);
-    padding: 15px 25px;
+    padding-block: 15px;
+    padding-inline: 25px;
     box-shadow: inset 0 1px 3px -1px darken($grey100, 10%);
 
     h4 {
-      margin-bottom: 5px;
+      margin-block-end: 5px;
       text-align: center;
     }
 
     .token {
-      @include margin(5px, 5px, 0, 0);
+      margin-inline: 0 5px;
+      margin-block: 5px 0;
       cursor: pointer;
     }
   }
 
   .delete {
     display: block;
-    @include floatleft;
+    float: inline-start;
     color: var(--disabled-color);
   }
 }
 
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-  only screen and (-moz-min-device-pixel-ratio: 1.5),
-  only screen and (-o-min-device-pixel-ratio: 3/2),
-  only screen and (min-device-pixel-ratio: 1.5),
-  only screen and (min-resolution: 1.5dppx) {
-  .route .uri-container:after {
+@media only screen and (resolution >= 1.5dppx) {
+  .route .uri-container::after {
     background-size: 15px 32px;
+
     body.ltr & {
-      background-image: url(images/route-bg_2x.png);
+      background-image: url('images/route-bg_2x.png');
     }
+
     body.rtl & {
-      background-image: url(images/route-bg_rtl_2x.png);
+      background-image: url('images/route-bg_rtl_2x.png');
     }
   }
 }

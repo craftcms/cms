@@ -7,9 +7,9 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\elements\db\ElementQuery;
 use craft\search\SearchQuery;
-use yii\base\Event as BaseEvent;
 
 /**
  * SearchEvent class.
@@ -18,7 +18,7 @@ use yii\base\Event as BaseEvent;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class SearchEvent extends BaseEvent
+class SearchEvent extends Event
 {
     /**
      * @var ElementQuery The element query being executed.

@@ -393,7 +393,7 @@ class Asset extends Element
                 'data' => [
                     'volume-handle' => false,
                     'folder-id' => $temporaryUploadFolder->id,
-                    'can-upload' => false,
+                    'can-upload' => true,
                     'can-move-to' => false,
                     'can-move-peer-files-to' => false,
                     'fs-type' => $temporaryUploadFs::class,
@@ -1580,6 +1580,7 @@ JS, [
                 'id' => $replaceId,
                 'icon' => 'upload',
                 'label' => Craft::t('app', 'Replace file'),
+                'showInChips' => false,
             ];
 
             $view->registerJsWithVars(fn($id, $namespace, $assetId, $fsType, $dimensionsLabel) => <<<JS

@@ -98,6 +98,7 @@ class CraftTooltip extends HTMLElement {
       // innerText will remove the arrow, so we have to put it back if we need it.
       if (this.arrow) {
         this.renderArrow();
+        this.update();
       }
     }
   }

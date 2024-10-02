@@ -20,6 +20,7 @@ Craft.LoginForm = Garnish.Base.extend(
     $errors: null,
     $altMethodContainer: null,
     $passkeyBtn: null,
+    passkeyBtn: null,
 
     modal: null,
     resetPasswordForm: null,
@@ -47,6 +48,7 @@ Craft.LoginForm = Garnish.Base.extend(
       this.submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn, {
         changeButtonText: true,
       });
+      this.passkeyBtn = new Garnish.MultiFunctionBtn(this.$passkeyBtn);
 
       this.$spinner = document.createElement('craft-spinner');
       this.$spinner.setAttribute('visible', false);
@@ -297,6 +299,7 @@ Craft.LoginForm = Garnish.Base.extend(
         .velocity('fadeIn');
 
       this.$errors.removeClass('hidden');
+      Craft.cp.announce(error);
       this.onResize();
     },
 
@@ -318,7 +321,7 @@ Craft.LoginForm = Garnish.Base.extend(
         return;
       }
 
-      this.$passkeyBtn.addClass('loading');
+      this.passkeyBtn.busyEvent();
 
       try {
         const optionsResponse = await Craft.sendActionRequest(
@@ -339,14 +342,18 @@ Craft.LoginForm = Garnish.Base.extend(
           }
         );
 
+        this.passkeyBtn.successEvent();
         this.settings.onLogin(loginResponse.data.returnUrl);
       } catch (e) {
         const message = e?.response?.data?.message;
+
+        this.passkeyBtn.failureEvent();
+
         if (message) {
           this.showError(message);
         }
       } finally {
-        this.$passkeyBtn.removeClass('loading');
+        this.passkeyBtn.endBusyState();
       }
     },
   },
@@ -422,6 +429,7 @@ Craft.LoginForm.ResetPasswordForm = Garnish.Base.extend({
 
     this.loginForm.clearErrors();
     this.$submitBtn.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
     const data = {
       loginName: this.$usernameInput.val(),

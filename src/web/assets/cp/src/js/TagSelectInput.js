@@ -74,7 +74,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 let $nextOption = $hoverOption
                   .parent()
                   .nextAll()
-                  .find('button:not(.disabled)')
+                  .find('.menu-item:not(.disabled)')
                   .first();
                 if ($nextOption.length) {
                   this.focusOption($nextOption);
@@ -94,7 +94,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 let $prevOption = $hoverOption
                   .parent()
                   .prevAll()
-                  .find('button:not(.disabled)')
+                  .find('.menu-item:not(.disabled)')
                   .last();
                 if ($prevOption.length) {
                   this.focusOption($prevOption);
@@ -132,12 +132,25 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
       });
     },
 
+    get fieldName() {
+      const $legend = this.$container.closest('fieldset').find('legend');
+      if ($legend.length == 0) {
+        return null;
+      }
+
+      return $legend[0].innerText;
+    },
+
     focusOption: function ($option) {
       this.searchMenu.$options.removeClass('hover');
+      this.searchMenu.$ariaOptions.attr('aria-selected', 'false');
+
+      const activeDescendant = $option.parent('li').attr('id');
+
       $option.addClass('hover');
-      this.searchMenu.$menuList.attr(
+      this.$addTagInput.attr(
         'aria-activedescendant',
-        $option.attr('id')
+        $option.parent('li').attr('id')
       );
     },
 
@@ -162,6 +175,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
       if (val) {
         this.$spinner.removeClass('hidden');
+        Craft.cp.announce(Craft.t('app', 'Loading'));
 
         var excludeIds = [];
 
@@ -193,15 +207,27 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
               this.killSearchMenu();
             }
             this.$spinner.addClass('hidden');
-            var $menu = $('<div class="menu tagmenu"/>').appendTo(Garnish.$bod),
-              $ul = $('<ul/>').appendTo($menu);
+            Craft.cp.announce(Craft.t('app', 'Loading complete'));
 
-            var $li;
+            let fieldName = this.fieldName;
+            let $menu = $('<div class="menu tagmenu"/>');
+            if (fieldName !== null) {
+              $menu.attr('aria-label', fieldName);
+            }
+            $menu.appendTo(Garnish.$bod);
+            let $ul = $('<ul/>').appendTo($menu);
+
+            let $li;
+            let optionLabel;
 
             for (var i = 0; i < response.data.tags.length; i++) {
               $li = $('<li/>').appendTo($ul);
+              optionLabel = `${Craft.t('app', 'Existing {type}', {
+                type: Craft.t('app', 'Tag'),
+              })}: ${response.data.tags[i].title}`;
+              $li.attr('aria-label', optionLabel);
 
-              $('<button class="menu-item" data-icon="tag"/>')
+              $('<div class="menu-item" data-icon="tag"/>')
                 .appendTo($li)
                 .text(response.data.tags[i].title)
                 .data('id', response.data.tags[i].id)
@@ -210,16 +236,34 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
             if (!response.data.exactMatch) {
               $li = $('<li/>').appendTo($ul);
-              $('<button class="menu-item" data-icon="plus"/>')
+              optionLabel = `${Craft.t('app', 'Create {type}', {
+                type: Craft.t('app', 'Tag'),
+              })}: ${data.search}`;
+              $li.attr('aria-label', optionLabel);
+
+              $('<div class="menu-item" data-icon="plus"/>')
                 .appendTo($li)
                 .text(data.search);
             }
 
-            $ul.find('button:not(.disabled):first').addClass('hover');
+            $ul.find('.menu-item:not(.disabled):first').addClass('hover');
 
             this.searchMenu = new Garnish.Menu($menu, {
-              attachToElement: this.$addTagInput,
+              anchor: this.$addTagInput,
               onOptionSelect: this.selectTag.bind(this),
+            });
+
+            // Add required ARIA attributes
+            this.$addTagInput.attr('aria-controls', this.searchMenu.menuId);
+
+            this.searchMenu.on('show', () => {
+              this.$addTagInput.attr('aria-expanded', 'true');
+              this.focusSelectedOption();
+            });
+
+            this.searchMenu.on('hide', () => {
+              this.$addTagInput.attr('aria-expanded', 'false');
+              this.$addTagInput.removeAttr('aria-activedescendant');
             });
 
             this.addListener($menu, 'mousedown', () => {
@@ -235,10 +279,27 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             }
 
             this.$spinner.addClass('hidden');
+            Craft.cp.announce(Craft.t('app', 'Loading complete'));
           });
       } else {
+        // No need to update the live region here
         this.$spinner.addClass('hidden');
       }
+    },
+
+    focusSelectedOption: function () {
+      let $option = this.searchMenu.$options.filter('.hover:first');
+
+      if ($option.length) {
+        this.focusOption($option);
+      } else {
+        this.focusFirstOption();
+      }
+    },
+
+    focusFirstOption: function () {
+      const $option = this.searchMenu.$options.first();
+      this.focusOption($option);
     },
 
     selectTag: function (option) {

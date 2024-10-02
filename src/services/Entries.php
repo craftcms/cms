@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\MemoizableArray;
 use craft\db\Query;
@@ -50,6 +51,7 @@ use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\caching\TagDependency;
 
 /**
@@ -1460,7 +1462,22 @@ SQL)->execute();
                 ->unique()
                 ->andWhere(['entries.deletedWithEntryType' => true])
                 ->all();
-            Craft::$app->getElements()->restoreElements($entries);
+
+            if (!empty($entries)) {
+                // Restore the entries at the end of the request in case the section isn't restored yet
+                // (see https://github.com/craftcms/cms/issues/15787)
+                Craft::$app->onAfterRequest(function() use ($entries) {
+                    /** @var Entry[][] $entriesBySection */
+                    $entriesBySection = ArrayHelper::index($entries, null, ['sectionId']);
+                    foreach ($entriesBySection as $sectionEntries) {
+                        try {
+                            Craft::$app->getElements()->restoreElements($sectionEntries);
+                        } catch (InvalidConfigException) {
+                            // the section probably wasn't restored
+                        }
+                    }
+                });
+            }
         }
 
         /** @var EntryType $entryType */
@@ -1700,6 +1717,8 @@ SQL)->execute();
         ));
 
         $tableData = [];
+        $usages = $this->allEntryTypeUsages();
+
         foreach ($entryTypes as $entryType) {
             $label = $entryType->getUiLabel();
             $tableData[] = [
@@ -1711,12 +1730,46 @@ SQL)->execute();
                     ]),
                 ]),
                 'handle' => $entryType->handle,
+                'usages' => Cp::componentPreviewHtml($usages[$entryType->id] ?? [], [
+                    'hyperlink' => true,
+                ]),
             ];
         }
 
         $pagination = AdminTable::paginationLinks($page, $total, $limit);
 
         return [$pagination, $tableData];
+    }
+
+    /**
+     * @return array<int,array<Section|ElementContainerFieldInterface>>
+     */
+    private function allEntryTypeUsages(): array
+    {
+        $usages = [];
+
+        // Sections
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $usages[$entryType->id][] = $section;
+            }
+        }
+
+        // Fields
+        $fieldsService = Craft::$app->getFields();
+        foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
+            /** @var ElementContainerFieldInterface[] $fields */
+            $fields = $fieldsService->getFieldsByType($type);
+            foreach ($fields as $field) {
+                foreach ($field->getFieldLayoutProviders() as $provider) {
+                    if ($provider instanceof EntryType) {
+                        $usages[$provider->id][] = $field;
+                    }
+                }
+            }
+        }
+
+        return $usages;
     }
 
     /**

@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import '../../../../../../node_modules/@craftcms/sass/mixins';
+@use '../../../../../../node_modules/@craftcms/sass/mixins';
 
 .login-container {
   .login-form-container {
@@ -14,10 +14,10 @@
 
     & > .field,
     & > .btn {
-      margin-top: var(--l);
+      margin-block-start: var(--l);
 
-      &:not(:last-child):not(.last) {
-        margin-bottom: var(--l);
+      &:not(:last-child, .last) {
+        margin-block-end: var(--l);
       }
     }
 
@@ -27,7 +27,7 @@
   }
 
   .alternative-login-methods {
-    margin-top: var(--m);
+    margin-block-start: var(--m);
 
     .btn {
       width: 100%;
@@ -42,7 +42,8 @@
   }
 
   .login-alt-container {
-    margin: calc(var(--s) - var(--xl)) 0;
+    margin-block: calc(var(--s) - var(--xl));
+    margin-inline: 0;
 
     button {
       display: inline-flex;
@@ -64,7 +65,7 @@
   .login-errors {
     text-align: center;
     color: var(--error-color);
-    margin-top: 1em;
+    margin-block-start: 1em;
   }
 }
 
@@ -101,8 +102,7 @@ body.login {
   #poweredby {
     display: block;
     text-align: center;
-    margin-top: 70px;
-    margin-bottom: 48px;
+    margin-block: 70px 48px;
     opacity: 0.8;
 
     &:hover,
@@ -121,14 +121,14 @@ body.login {
   width: 300px;
 
   .body {
-    @include padding-left(68px);
+    padding-inline-start: 68px;
 
-    &:before {
-      @include icon;
+    &::before {
+      @include mixins.icon;
       display: block;
       position: absolute;
-      top: 24px;
-      @include left(24px);
+      inset-block-start: 24px;
+      inset-inline-start: 24px;
       content: 'mail';
       font-size: 30px;
       color: var(--link-color);
@@ -158,7 +158,7 @@ body.login {
     }
   }
 
-  @media screen and (max-width: 656px) {
+  @media screen and (width <= 656px) {
     border-radius: var(--large-border-radius);
 
     .body {
@@ -168,7 +168,8 @@ body.login {
       overflow: auto;
 
       .login-modal-intro {
-        padding: var(--xs) var(--xl);
+        padding-block: var(--xs);
+        padding-inline: var(--xl);
       }
 
       .login-modal-form {

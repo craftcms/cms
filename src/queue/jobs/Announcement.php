@@ -66,7 +66,7 @@ class Announcement extends BaseJob
         // Fetch all of the control panel users
         $userQuery = User::find();
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             $userQuery->can('accessCp');
         }
 

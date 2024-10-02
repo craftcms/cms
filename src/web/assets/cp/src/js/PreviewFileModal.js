@@ -53,6 +53,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         )
       );
 
+      Craft.cp.announce(Craft.t('app', 'Loading'));
+
       // Cut the flicker, just show the nice person the preview.
       this.$container.velocity('stop');
       this.$container.show().css('opacity', 1);

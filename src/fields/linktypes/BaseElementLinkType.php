@@ -138,6 +138,7 @@ JS, [
             Cp::elementSelectHtml(array_merge($this->elementSelectConfig(), [
                 'id' => $id,
                 'elements' => array_filter([$this->element($value)]),
+                'showSiteMenu' => true,
             ])) .
             Html::hiddenInput('value', $value);
     }

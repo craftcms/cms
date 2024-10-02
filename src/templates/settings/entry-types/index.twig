@@ -9,6 +9,7 @@
     'Handle',
     'No entry types exist yet.',
     'No results.',
+    'No usages',
     'Used by',
 ]) %}
 
@@ -30,18 +31,25 @@
 {% endblock %}
 
 {% js %}
-var columns = [
-    { name: 'chip', title: Craft.t('app', 'Entry Type'), sortField: true },
-    { name: '__slot:handle', title: Craft.t('app', 'Handle'), sortField: true },
-];
+  (() => {
+    const columns = [
+      { name: 'chip', title: Craft.t('app', 'Entry Type'), sortField: true },
+      { name: '__slot:handle', title: Craft.t('app', 'Handle'), sortField: true },
+      {
+        name: 'usages',
+        title: Craft.t('app', 'Used by'),
+        callback: (value) => value || `<i class="light">${Craft.t('app', 'No usages')}</i>`,
+      },
+    ];
 
-new Craft.VueAdminTable({
-    columns: columns,
-    container: '#entrytypes-vue-admin-table',
-    deleteAction: 'entry-types/delete',
-    deleteConfirmationMessage: Craft.t('app', 'Are you sure you want to delete “{name}” and all entries of that type?'),
-    emptyMessage: Craft.t('app', 'No entry types exist yet.'),
-    tableDataEndpoint: 'entry-types/table-data',
-    search: true,
-});
+    new Craft.VueAdminTable({
+      columns,
+      container: '#entrytypes-vue-admin-table',
+      deleteAction: 'entry-types/delete',
+      deleteConfirmationMessage: Craft.t('app', 'Are you sure you want to delete “{name}” and all entries of that type?'),
+      emptyMessage: Craft.t('app', 'No entry types exist yet.'),
+      tableDataEndpoint: 'entry-types/table-data',
+      search: true,
+    });
+  })();
 {% endjs %}

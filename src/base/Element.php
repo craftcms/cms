@@ -353,7 +353,7 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_ADDITIONAL_BUTTONS = 'defineAdditionalButtons';
 
     /**
-     * @event DefineMenuComponentEvent The event that is triggered when defining action menu items..
+     * @event DefineMenuItemsEvent The event that is triggered when defining action menu items..
      * @see getActionMenuItems()
      * @since 5.0.0
      */
@@ -2638,7 +2638,7 @@ abstract class Element extends Component implements ElementInterface
                 ['slug'],
                 'required',
                 'when' => fn() => (bool)preg_match('/\bslug\b/', $this->getUriFormat() ?? ''),
-                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
+                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
             ];
             $rules[] = [['uri'], ElementUriValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
         }
@@ -3287,6 +3287,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function showStatusIndicator(): bool
+    {
+        return static::hasStatuses();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCardBodyHtml(): ?string
     {
         $previews = array_filter(array_map(
@@ -3572,6 +3580,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return array
      * @see getActionMenuItems()
+     * @see Cp::disclosureMenu()
      * @since 5.0.0
      */
     protected function safeActionMenuItems(): array
@@ -3633,6 +3642,7 @@ JS, [
      *
      * @return array
      * @see getActionMenuItems()
+     * @see Cp::disclosureMenu()
      * @since 5.0.0
      */
     protected function destructiveActionMenuItems(): array
@@ -3983,6 +3993,20 @@ JS, [
         }
 
         return self::STATUS_ENABLED;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRootOwner(): ElementInterface
+    {
+        if ($this instanceof NestedElementInterface) {
+            $owner = $this->getOwner();
+            if ($owner) {
+                return $owner->getRootOwner();
+            }
+        }
+        return $this;
     }
 
     /**

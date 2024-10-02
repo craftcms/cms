@@ -696,11 +696,16 @@ class Request extends \yii\web\Request
      */
     public function getIsPreview(): bool
     {
-        return (
-            ($this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview')) !== null &&
-            // If there's a token but it expired, they're looking at the live site
-            (!$this->getHadToken() || $this->getToken() !== null)
-        );
+        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview');
+        if (!$previewParamValue) {
+            return false;
+        }
+        if (!Craft::$app->getSecurity()->validateData($previewParamValue)) {
+            return false;
+        }
+
+        // If there's a token but it expired, they're looking at the live site
+        return !$this->getHadToken() || $this->getToken() !== null;
     }
 
     /**

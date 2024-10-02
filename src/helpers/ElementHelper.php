@@ -240,6 +240,7 @@ class ElementHelper
     private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
     {
         $query = (new Query())
+            ->select(['elements.id', 'elements.type'])
             ->from(['elements_sites' => Table::ELEMENTS_SITES])
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
@@ -268,7 +269,21 @@ class ElementHelper
             ]);
         }
 
-        return (int)$query->count() === 0;
+        $info = $query->all();
+
+        if (empty($info)) {
+            return true;
+        }
+
+        // Make sure the element(s) isn't owned by a draft/revision
+        foreach ($info as $row) {
+            $conflictingElement = Craft::$app->getElements()->getElementById($row['id'], $row['type'], $element->siteId);
+            if ($conflictingElement && !static::isDraftOrRevision($conflictingElement)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -437,22 +452,16 @@ class ElementHelper
     }
 
     /**
-     * Returns the root element of a given element.
+     * Returns the root owner of a given element.
      *
      * @param ElementInterface $element
      * @return ElementInterface
      * @since 3.2.0
+     * @deprecated in 5.4.0. Use [[ElementInterface::getRootOwner()]] instead.
      */
     public static function rootElement(ElementInterface $element): ElementInterface
     {
-        if ($element instanceof NestedElementInterface) {
-            $owner = $element->getOwner();
-            if ($owner) {
-                return static::rootElement($owner);
-            }
-        }
-
-        return $element;
+        return $element->getRootOwner();
     }
 
     /**
@@ -559,8 +568,7 @@ class ElementHelper
      */
     public static function isCanonical(ElementInterface $element): bool
     {
-        $root = static::rootElement($element);
-        return $root->getIsCanonical();
+        return $element->getRootOwner()->getIsCanonical();
     }
 
     /**
@@ -572,8 +580,7 @@ class ElementHelper
      */
     public static function isDerivative(ElementInterface $element): bool
     {
-        $root = static::rootElement($element);
-        return $root->getIsDerivative();
+        return $element->getRootOwner()->getIsDerivative();
     }
 
     /**

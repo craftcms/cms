@@ -231,8 +231,8 @@ JS, [static::class]);
         Elements $elementsService,
         array &$deleteOwnership,
     ): void {
-        // If the element primarily belongs to a different element, just delete the ownership
-        if ($element instanceof NestedElementInterface) {
+        // If the element primarily belongs to a different element, (and we're not hard deleting) just delete the ownership
+        if (!$this->hard && $element instanceof NestedElementInterface) {
             $ownerId = $element->getOwnerId();
             if ($ownerId && $element->getPrimaryOwnerId() !== $ownerId) {
                 $deleteOwnership[$ownerId][] = $element->id;

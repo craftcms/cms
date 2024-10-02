@@ -103,7 +103,7 @@
     }) }}
   {% endif %}
 
-  {% if CraftEdition == CraftPro %}
+  {% if CraftEdition >= CraftPro %}
     {{ forms.lightswitchField({
       fieldClass: 'first',
       label: 'Verify email addresses'|t('app'),

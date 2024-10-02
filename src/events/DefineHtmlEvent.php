@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use yii\base\Event;
+use craft\base\Event;
 
 /**
  * DefineHtmlEvent is used to define the HTML for a UI component.

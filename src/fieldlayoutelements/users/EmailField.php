@@ -94,7 +94,7 @@ class EmailField extends TextField
     {
         /** @var User $element */
         if (
-            Craft::$app->edition === CmsEdition::Pro &&
+            Craft::$app->edition->value >= CmsEdition::Pro->value &&
             Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
             !$element->getIsDraft() &&
             !Craft::$app->getUser()->checkPermission('administrateUsers')

@@ -28,9 +28,7 @@ class Asset extends InputObjectType
 
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => function() {
-                return AssetArguments::getArguments();
-            },
+            'fields' => fn() => AssetArguments::getArguments(),
         ]));
     }
 }

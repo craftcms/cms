@@ -34,7 +34,7 @@
                 <div class="cs-search-params"></div>
                 {% tag 'div' with { class: 'cs-button-wrapper' }%}
                     <button type="submit" class="btn submit fullwidth disabled">{{ submitText }}</button>
-                    {% if CraftEdition == CraftPro %}
+                    {% if CraftEdition >= CraftPro %}
                         <p>{{ "or <a>send to Developer Support</a>"|t('app')|raw }}</p>
                     {% endif %}
                     {{ tag('button', {
@@ -78,7 +78,7 @@
                         <span>{{ 'Knowledge Base'|t('app') }}</span>
                     {% endset %}
                     {{ links.externalLink({
-                        link: 'https://craftcms.com/docs/4.x/',
+                        link: 'https://craftcms.com/docs/5.x/',
                         html: documentationLinkHtml
                     }) }}
                     {{ links.externalLink({

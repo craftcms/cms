@@ -59,7 +59,7 @@ class User extends ElementResolver
             $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
             $userGroupsService = Craft::$app->getUserGroups();
-            if (Craft::$app->edition !== CmsEdition::Pro) {
+            if (Craft::$app->edition < CmsEdition::Pro) {
                 $availableGroupUids = array_map(fn($group) => $group->uid, $userGroupsService->getAllGroups());
                 $pairs['usergroups'] = array_filter($pairs['usergroups'], function($uid) use ($availableGroupUids) {
                     return in_array($uid, $availableGroupUids);

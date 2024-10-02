@@ -11,9 +11,7 @@ export default Base.extend(
     $container: null,
     $shade: null,
     $triggerElement: null,
-    $liveRegion: $(
-      '<span class="visually-hidden" role="status" data-status-message></span>'
-    ),
+    $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
 
     visible: false,
 
@@ -63,6 +61,12 @@ export default Base.extend(
       Garnish.Modal.instances.push(this);
     },
 
+    addLiveRegion: function () {
+      if (!this.$container) return;
+
+      this.$liveRegion.appendTo(this.$container);
+    },
+
     setContainer: function (container) {
       this.$container = $(container);
 
@@ -93,8 +97,7 @@ export default Base.extend(
         });
       }
 
-      // add live region
-      this.$liveRegion.appendTo(this.$container);
+      this.addLiveRegion();
 
       this.addListener(this.$container, 'click', function (ev) {
         ev.stopPropagation();
@@ -104,22 +107,6 @@ export default Base.extend(
       if (this.visible) {
         this.show();
       }
-    },
-
-    updateLiveRegion: function (message) {
-      if (!message) return;
-
-      this.$liveRegion.empty().text(message);
-
-      // Clear message after interval
-      setTimeout(() => {
-        const currentMessage = this.$liveRegion.text();
-
-        // Check that this is the same message and hasn't been updated since
-        if (message !== currentMessage) return;
-
-        this.$liveRegion.empty();
-      }, 5000);
     },
 
     show: function () {

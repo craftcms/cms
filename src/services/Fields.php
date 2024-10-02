@@ -86,7 +86,7 @@ class Fields extends Component
      *
      * Field types must implement [[FieldInterface]]. [[Field]] provides a base implementation.
      *
-     * See [Field Types](https://craftcms.com/docs/4.x/extend/field-types.html) for documentation on creating field types.
+     * See [Field Types](https://craftcms.com/docs/5.x/extend/field-types.html) for documentation on creating field types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -844,6 +844,26 @@ class Fields extends Component
         return $layouts;
     }
 
+    /**
+     * @return array<int,FieldLayout[]>
+     */
+    private function allFieldUsages(): array
+    {
+        $usages = [];
+
+        foreach ($this->getAllLayouts() as $layout) {
+            $uniqueFieldIds = [];
+            foreach ($layout->getCustomFields() as $field) {
+                $uniqueFieldIds[$field->id] = true;
+            }
+            foreach (array_keys($uniqueFieldIds) as $fieldId) {
+                $usages[$fieldId][] = $layout;
+            }
+        }
+
+        return $usages;
+    }
+
     // Layouts
     // -------------------------------------------------------------------------
 
@@ -1459,6 +1479,8 @@ class Fields extends Component
         $result = $query->all();
 
         $tableData = [];
+        $usages = $this->allFieldUsages();
+
         foreach ($result as $item) {
             $field = $this->createField($item);
 
@@ -1474,6 +1496,11 @@ class Fields extends Component
                     'label' => $field instanceof MissingField ? $field->expectedType : $field->displayName(),
                     'icon' => Cp::iconSvg($field::icon()),
                 ],
+                'usages' => isset($usages[$field->id])
+                    ? Craft::t('app', '{count, number} {count, plural, =1{layout} other{layouts}}', [
+                        'count' => count($usages[$field->id]),
+                    ])
+                    : null,
             ];
         }
 
