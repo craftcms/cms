@@ -419,6 +419,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                     data: {
                       elementId: this.settings.canonicalId,
                       draftId: this.settings.draftId,
+                      siteId: this.settings.siteId,
                       provisional: 1,
                     },
                   })

@@ -1,8 +1,9 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.12.5 - 2024-09-27
 
 - Fixed a bug where entries’ `deletedWithEntryType` values in the `entries` table weren’t getting set back to `null` after being restored.
+- Fixed a bug where it wasn’t possible to discard changes for related elements via slideouts, if they didn’t exist in the primary site. ([#15798](https://github.com/craftcms/cms/issues/15798))
 - Fixed an information disclosure vulnerability.
 
 ## 4.12.4.1 - 2024-09-24
