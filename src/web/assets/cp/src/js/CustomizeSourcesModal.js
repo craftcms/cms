@@ -30,6 +30,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   baseSortOptions: null,
   availableTableAttributes: null,
   customFieldAttributes: null,
+  baseViewModes: null,
 
   conditionBuilderHtml: null,
   conditionBuilderJs: null,
@@ -119,6 +120,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.conditionBuilderJs = response.conditionBuilderJs;
     this.sites = response.sites;
     this.userGroups = response.userGroups;
+    this.baseViewModes = response.baseViewModes;
 
     if (response.headHtml) {
       await Craft.appendHeadHtml(response.headHtml);
@@ -195,6 +197,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         defaultSort: [sortOptions[0].attr, sortOptions[1].defaultDir],
         tableAttributes: [],
         availableTableAttributes: [],
+        viewModes: this.baseViewModes,
       });
       this.focusLabelInput();
     });
@@ -627,6 +630,38 @@ Craft.CustomizeSourcesModal.Source =
         .appendTo($container);
       this.createSortField($container);
       this.createTableAttributesField($container);
+      this.createViewModeField($container);
+    },
+
+    createViewModeField: function ($container) {
+      const $inputContainer = $('<div class="flex"/>');
+
+      const $viewModeSelectContainer = Craft.ui
+        .createSelect({
+          name: `sources[${this.sourceData.key}][defaultViewMode]`,
+          options: this.sourceData.viewModes ?? [],
+          value: this.sourceData.defaultViewMode,
+        })
+        .addClass('fullwidth')
+        .appendTo($('<div/>').appendTo($inputContainer));
+
+      this.$viewModeSelect = $viewModeSelectContainer
+        .children('select')
+        .attr('aria-label', Craft.t('app', 'View mode'));
+
+      Craft.ui
+        .createField($inputContainer, {
+          label: Craft.t('app', 'Default View Mode'),
+          fieldset: true,
+        })
+        .appendTo($container)
+        .addClass('view-mode-field');
+
+
+      // on change - update selected view mode
+      this.$viewModeSelect.on('change', () => {
+        this.modal.elementIndex.selectViewMode(this.$viewModeSelect.val());
+      });
     },
 
     createSortField: function ($container) {
@@ -858,6 +893,7 @@ Craft.CustomizeSourcesModal.CustomSource =
 
       this.createSortField($container);
       this.createTableAttributesField($container);
+      this.createViewModeField($container);
 
       if (Craft.sites.length > 1) {
         Craft.ui

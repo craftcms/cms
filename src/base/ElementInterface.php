@@ -482,6 +482,32 @@ interface ElementInterface extends
     public static function sortOptions(): array;
 
     /**
+     * Returns the view modes available for the element type.
+     *
+     * This method should return an array, where each item is a sub-array with the following keys:
+     *
+     * - `label` – How this mode should be described to the user
+     * - `value` – Name of the view mode
+     * - `availableOnMobiles` - Whether the view mode is available on mobile devices (small screens)
+     * - `icon` – Icon representing this view mode (optional)
+     *
+     * ```php
+     * return [
+     *     [
+     *         'label' => Craft::t('app', 'Display in a table'),
+     *         'value' => 'table',
+     *         'availableOnMobiles' => false,
+     *         'icon' => 'list',
+     *     ],
+     * ];
+     *  ```
+     *
+     * @return array The view modes.
+     * @since 5.5.0
+     */
+    public static function indexViewModes(): array;
+
+    /**
      * Defines all of the available columns that can be shown in table views.
      *
      * This method should return an array whose keys represent element attribute names, and whose values make

@@ -1352,6 +1352,37 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function indexViewModes(): array
+    {
+        $viewModes[] = [
+            'value' => 'table',
+            'label' => Craft::t('app', 'Display in a table'),
+            'icon' => 'list',
+            'availableOnMobiles' => false,
+        ];
+
+        if (static::hasThumbs()) {
+            $viewModes[] = [
+                'value' => 'thumbs',
+                'label' => Craft::t('app', 'Display as thumbnails'),
+                'icon' => 'grid',
+                'availableOnMobiles' => true,
+            ];
+        }
+
+        $viewModes[] = [
+            'value' => 'cards',
+            'label' => Craft::t('app', 'Display as cards'),
+            'icon' => 'element-cards',
+            'availableOnMobiles' => true,
+        ];
+
+        return $viewModes;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function sortOptions(): array
     {
         $sortOptions = static::defineSortOptions();

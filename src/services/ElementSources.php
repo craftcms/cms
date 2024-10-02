@@ -459,6 +459,37 @@ class ElementSources extends Component
     }
 
     /**
+     * Returns additional view modes that are available for given source.
+     *
+     * @param array $source
+     * @return array
+     * @since 5.5.0
+     */
+    public function getSourceViewModes(array $source): array
+    {
+        if ($source['key'] === '__IMP__') {
+            return [];
+        }
+
+        if (str_starts_with($source['key'], 'custom:')) {
+            return [];
+        }
+
+        $viewModes = [];
+
+        if (isset($source['structureId'])) {
+            $viewModes[] = [
+                'value' => 'structure',
+                'label' => Craft::t('app', 'Display in a structured table'),
+                'icon' => Craft::$app->getLocale()->getOrientation() === 'rtl' ? 'structurertl' : 'structure',
+                'availableOnMobiles' => false,
+            ];
+        }
+
+        return $viewModes;
+    }
+
+    /**
      * Returns the native sources for a given element type and context, normalized with `type` keys.
      *
      * @param string $elementType
