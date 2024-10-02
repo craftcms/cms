@@ -883,7 +883,7 @@ return [
     'Matrix' => 'Matrix',
     'Max Blocks' => 'Maximale Blöcke',
     'Max Date' => 'Maximales Datum',
-    'Max Length' => 'Maixmale Länge',
+    'Max Length' => 'Maximale Länge',
     'Max Levels' => 'Max Stufen',
     'Max Relations' => 'Max. Relationen',
     'Max Rows' => 'Max. Zeilen',
