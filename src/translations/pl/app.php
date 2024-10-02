@@ -2142,7 +2142,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{tydzień} other{tyg.}}',
     '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, =1{rok} other{lata}} aktualizacji',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, =1{rok} other{lat(a)}}',
-    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{entry} other{entries}}',
+    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {num, plural, =1{wpis} few{wpisy} many{wpisów} other{wpisu}} {sekcji}',
     '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, =1{Dozwolonychy jest tylko jeden autor} other{Dozwolonych jest {num, number} autorów}}.',
     '{pct} width' => 'Szerokość {pct}',
     '{plugin} requires Craft CMS {edition} edition.' => '{plugin} wymaga oprogramowania Craft CMS w wersji {edition}.',
