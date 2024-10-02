@@ -657,7 +657,6 @@ Craft.CustomizeSourcesModal.Source =
         .appendTo($container)
         .addClass('view-mode-field');
 
-
       // on change - update selected view mode
       this.$viewModeSelect.on('change', () => {
         this.modal.elementIndex.selectViewMode(this.$viewModeSelect.val());

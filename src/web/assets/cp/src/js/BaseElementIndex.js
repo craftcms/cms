@@ -2226,7 +2226,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Get the new list of view modes
       this.sourceViewModes = this.getViewModesForSource();
-      this.defaultViewMode = this.getSourceData(this.$source, 'defaultViewMode');
+      this.defaultViewMode = this.getSourceData(
+        this.$source,
+        'defaultViewMode'
+      );
 
       // Create the buttons if there's more than one mode available to this source
       if (this.sourceViewModes.length > 1) {
@@ -2473,16 +2476,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     getViewModesForSource: function () {
       let viewModes = this.$source.data('viewModes').map((viewMode) => {
         return {
-          'mode': viewMode['value'],
-          'title': viewMode['label'],
-          'icon': viewMode['icon'],
-          'availableOnMobiles': viewMode['availableOnMobiles'],
+          mode: viewMode['value'],
+          title: viewMode['label'],
+          icon: viewMode['icon'],
+          availableOnMobiles: viewMode['availableOnMobiles'],
         };
       });
 
       // filter out those that are not suitable for mobiles
       if (Garnish.isMobileBrowser(true)) {
-        viewModes = viewModes.filter((viewMode) => viewMode['availableOnMobiles']);
+        viewModes = viewModes.filter(
+          (viewMode) => viewMode['availableOnMobiles']
+        );
       }
 
       // filter down to the allowed ones
@@ -4018,7 +4023,10 @@ const ViewMenu = Garnish.Base.extend({
       this.$trigger.addClass('active');
       this.updateSortField();
       this.updateTableFieldVisibility();
-      if (this.elementIndex.getSelectedSourceState('mode') !== this.elementIndex.defaultViewMode) {
+      if (
+        this.elementIndex.getSelectedSourceState('mode') !==
+        this.elementIndex.defaultViewMode
+      ) {
         this._createRevertBtn();
       }
     });
@@ -4240,7 +4248,8 @@ const ViewMenu = Garnish.Base.extend({
       this.elementIndex.getSelectedSourceState('order') ||
       this.elementIndex.getSelectedSourceState('sort') ||
       this.elementIndex.getSelectedSourceState('tableColumns') ||
-      this.elementIndex.getSelectedSourceState('mode') !== this.elementIndex.defaultViewMode
+      this.elementIndex.getSelectedSourceState('mode') !==
+        this.elementIndex.defaultViewMode
     ) {
       this._createRevertBtn();
     }
