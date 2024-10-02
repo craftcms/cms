@@ -647,7 +647,7 @@ Craft.CustomizeSourcesModal.Source =
 
       this.$viewModeSelect = $viewModeSelectContainer
         .children('select')
-        .attr('aria-label', Craft.t('app', 'View mode'));
+        .attr('aria-label', Craft.t('app', 'View Mode'));
 
       Craft.ui
         .createField($inputContainer, {
