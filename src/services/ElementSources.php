@@ -467,10 +467,6 @@ class ElementSources extends Component
      */
     public function getSourceViewModes(array $source): array
     {
-        if ($source['key'] === '__IMP__') {
-            return [];
-        }
-
         if (str_starts_with($source['key'], 'custom:')) {
             return [];
         }

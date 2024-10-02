@@ -1235,6 +1235,7 @@ class Cp
                     'key' => '__IMP__',
                     'label' => Craft::t('app', 'All elements'),
                     'hasThumbs' => $elementType::hasThumbs(),
+                    'defaultViewMode' => $config['defaultViewMode'],
                 ],
             ];
 

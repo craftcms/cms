@@ -468,6 +468,7 @@ class NestedElementManager extends Component
             'prevalidate' => false,
             'pageSize' => 50,
             'storageKey' => null,
+            'defaultViewMode' => 'cards',
         ];
 
         if ($config['storageKey'] === null) {
@@ -530,6 +531,7 @@ class NestedElementManager extends Component
                     'sources' => false,
                     'fieldLayouts' => $config['fieldLayouts'],
                     'defaultTableColumns' => $config['defaultTableColumns'],
+                    'defaultViewMode' => $config['defaultViewMode'],
                     'registerJs' => false,
                     'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
                     'prevalidate' => $config['prevalidate'] ?? false,
