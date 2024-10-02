@@ -193,9 +193,20 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           helperLagBase: 1.5,
           onBeforeDragStart: () => {
             this.elementEditor?.pause();
+
+            // Disable all craft-element-labels so connectedCallback()
+            // doesn't get fired constantly during drag
+            this.$elementsContainer
+              .find('craft-element-label')
+              .attr('disabled', true);
           },
           onDragStop: () => {
             this.elementEditor?.resume();
+
+            // Put things back where we found them.
+            this.$elementsContainer
+              .find('craft-element-label')
+              .removeAttr('disabled');
           },
           onSortChange: () => {
             this.onSortChange();
