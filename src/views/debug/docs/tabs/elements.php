@@ -20,22 +20,19 @@ use craft\helpers\StringHelper;
 
     <p>This route was rendered because it matched the URI of a <?= $docs->classReferenceLink($data['primaryElement']::class) ?> element.</p>
 
+    <h4>Custom Fields</h4>
+    <p>Fields associated with this <code><?= $data['primaryElement']::lowerDisplayName() ?></code> via its field layout.</p>
+
     <table class="table table-striped table-bordered">
         <tbody>
             <tr>
-                <th colspan="2">
-                    Custom Fields
-                    <br>
-                    Fields associated with this <code><?= $data['primaryElement']::lowerDisplayName() ?></code> via its field layout.
-                </th>
-            </tr>
-
-            <tr>
                 <th>Field Handle</th>
+                <th>Field Type</th>
                 <th>Value</th>
             </tr>
 
             <?php foreach ($data['primaryElement']->getFieldLayout()->getCustomFieldElements() as $fle): ?>
+                <?php $field = $fle->getField() ?>
                 <?php $handle = $fle->handle ?? $fle->getOriginalHandle() ?>
                 <?php $value = $data['primaryElement']->getFieldValue($handle) ?>
 
@@ -46,18 +43,18 @@ use craft\helpers\StringHelper;
                             (Original handle: <code><?= $fle->getOriginalHandle() ?></code>)
                         <?php endif; ?>
                     </td>
+                    <td><?= $field::displayName() ?></td>
                     <td><?= Craft::dump($value, depth: 2, return: true) ?></td>
                 </tr>
             <?php endforeach; ?>
+        </tbody>
+    </table>
 
-            <tr>
-                <th colspan="2">
-                    Attributes
-                    <br>
-                    Native properties of the <code><?= $data['primaryElement']::lowerDisplayName() ?></code>.
-                </th>
-            </tr>
+    <h4>Attributes</h4>
+    <p>Native properties of the <code><?= $data['primaryElement']::lowerDisplayName() ?></code>.</p>
 
+    <table class="table table-striped table-bordered">
+        <tbody>
             <tr>
                 <th>Attribute</th>
                 <th>Value</th>

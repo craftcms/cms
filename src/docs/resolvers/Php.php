@@ -17,24 +17,26 @@ use ReflectionClass;
  */
 class Php extends BaseResolver
 {
-    static $scalarTypes = [
-        'array',
-        'boolean',
-        'int',
-        'string',
+    static $dataTypes = [
+        'array' => 'array',
+        'boolean' => 'boolean',
+        'integer' => 'integer',
+        'double' => 'float',
+        'NULL' => 'null',
+        'string' => 'string',
     ];
 
     static function match(string $className): bool
     {
-        $isScalar = in_array($className, static::$scalarTypes);
+        $isSimpleType = in_array($className, static::$dataTypes);
 
-        if ($isScalar) {
+        if ($isSimpleType) {
             return true;
         }
 
         $reflection = new ReflectionClass($className);
 
-        return !$reflection->isUserDefined();
+        return $reflection->isInternal();
     }
 
     static function getBaseUrl(): string
@@ -44,6 +46,13 @@ class Php extends BaseResolver
 
     static function getPath(string $className, string $member = null, string $memberType = null): string
     {
+        $dataType = static::$dataTypes[$className] ?? null;
+
+        // Simple data types can be handled easily:
+        if ($dataType) {
+            return 'language.types.' . strtolower($className) . '.php';
+        }
+
         $path = strtolower($className);
 
         if ($member !== null) {

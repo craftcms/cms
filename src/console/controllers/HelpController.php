@@ -129,10 +129,10 @@ class HelpController extends BaseHelpController
         // Normalize multi-term queries into a string:
         $query = join(' ', $query);
 
-        $this->stdout("Querying the knowledge base for “{$query}”... ");
-        $results = $docs->makeApiRequest('search-kb', ['query' => $query]);
+        $this->stdout("Querying the documentation for “{$query}”... ");
+        $results = $docs->makeApiRequest('search', ['query' => $query]);
         $this->stdout('done!', Console::FG_GREEN);
-        $this->stdout("\n");
+        $this->stdout("\n\n");
 
         if (count($results) === 0) {
             $this->stdout('No results were found.', Console::FG_YELLOW);
@@ -147,37 +147,15 @@ class HelpController extends BaseHelpController
         foreach ($results as $result) {
             $this->stdout("\n");
             $this->stdout($result['title'], Console::BOLD);
+            $this->stdout(' — ' . $result['type'], Console::FG_BLACK);
             $this->stdout("\n");
-            $this->stdout('  ' . $result['summary'], Console::FG_GREY);
-            $this->stdout("\n");
-            $this->stdout('  ' . $result['url'], Console::FG_BLUE);
+            $this->stdout(Console::markdownToAnsi($result['summaryPlain']));
+            $this->stdout('  → ', Console::FG_BLACK);
+            $this->stdout($result['url'], Console::FG_BLUE);
             $this->stdout("\n");
         }
 
         $this->stdout("\n");
-
-        // Now on to the documentation!
-
-        $this->stdout("Querying the developer documentation for “{$query}”... ");
-        $results = $docs->searchDocs($query);
-        $this->stdout('done!', Console::FG_GREEN);
-        $this->stdout("\n");
-
-        if (count($results) === 0) {
-            $this->stdout('No results were found.', Console::FG_YELLOW);
-
-            return ExitCode::OK;
-        }
-
-        foreach ($results as $result) {
-            $this->stdout("\n");
-            $this->stdout($result['title'], Console::BOLD);
-            $this->stdout("\n");
-            $this->stdout('  ' . strip_tags($result['summary']), Console::FG_GREY);
-            $this->stdout("\n");
-            $this->stdout('  ' . $docs->docsUrl($result['path']), Console::FG_BLUE);
-            $this->stdout("\n");
-        }
 
         return ExitCode::OK;
     }
