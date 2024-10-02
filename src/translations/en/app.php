@@ -494,6 +494,7 @@ return [
     'Default User Group' => 'Default User Group',
     'Default Value' => 'Default Value',
     'Default Values' => 'Default Values',
+    'Default View Mode' => 'Default View Mode',
     'Default {type} Placement' => 'Default {type} Placement',
     'Default?' => 'Default?',
     'Define the available options.' => 'Define the available options.',

@@ -65,6 +65,8 @@ class ElementIndexSettingsController extends BaseElementsController
             ->values()
             ->all();
 
+        $baseViewModes = $elementType::indexViewModes();
+
         // Get the source info
         $sourcesService = Craft::$app->getElementSources();
         $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX, true);
@@ -72,6 +74,11 @@ class ElementIndexSettingsController extends BaseElementsController
         foreach ($sources as &$source) {
             if ($source['type'] === ElementSources::TYPE_HEADING) {
                 continue;
+            }
+
+            $source['viewModes'] = array_merge($sourcesService->getSourceViewModes($source), $baseViewModes);
+            if (!isset($source['defaultViewMode'])) {
+                $source['defaultViewMode'] = 'table';
             }
 
             // Sort options
@@ -213,6 +220,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
         return $this->asJson([
             'sources' => $sources,
+            'baseViewModes' => $baseViewModes,
             'baseSortOptions' => $baseSortOptions,
             'defaultSortOptions' => $defaultSortOptions,
             'availableTableAttributes' => $availableTableAttributes,
@@ -268,6 +276,10 @@ class ElementIndexSettingsController extends BaseElementsController
 
                     if (isset($postedSettings['defaultSort'])) {
                         $sourceConfig['defaultSort'] = $postedSettings['defaultSort'];
+                    }
+
+                    if (isset($postedSettings['defaultViewMode'])) {
+                        $sourceConfig['defaultViewMode'] = $postedSettings['defaultViewMode'];
                     }
 
                     if ($isCustom) {

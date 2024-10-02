@@ -215,6 +215,14 @@
                 <div id="default-table-columns-input"></div>
             {% endblock %}
         {% endembed %}
+
+        {{ forms.selectField({
+            label: 'Default View Mode'|t('app'),
+            id: 'default-view-mode',
+            name: 'defaultIndexViewMode',
+            options: indexViewModes,
+            value: field.defaultIndexViewMode
+        }) }}
     {% endtag %}
 
     {{ forms.selectField({
