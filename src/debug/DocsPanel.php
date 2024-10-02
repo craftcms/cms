@@ -95,10 +95,12 @@ class DocsPanel extends Panel
     {
         $view = Craft::$app->getView();
 
-        return $view->render('@app/views/debug/docs/detail', [
+        $data = [
             'panel' => $this,
             'docs' => Craft::$app->getDocs(),
-        ]);
+        ];
+
+        return $view->render('@app/views/debug/docs/detail', $data);
     }
 
     /**
@@ -138,6 +140,21 @@ class DocsPanel extends Panel
             $data['primaryElement'] = Craft::$app->getElements()->getElementById($data['primaryElementId']);
         }
 
+        $search = Craft::$app->getRequest()->getQueryParam('search');
+
+        if ($search) {
+            $data['search'] = $search;
+            $data['searchResults'] = Craft::$app->getDocs()->makeApiRequest('search', ['query' => $search]);
+        }
+
         $this->data = $data;
+    }
+
+    /**
+     * Returns an HTML ID for a specific tab in the panel.
+     */
+    public function getTabHash(string $tabId): string
+    {
+        return "craft-debug-docs-$tabId";
     }
 }

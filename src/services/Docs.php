@@ -8,15 +8,14 @@
 namespace craft\services;
 
 use Craft;
+use craft\events\RegisterComponentTypesEvent;
+use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\Search;
-use craft\helpers\StringHelper;
-use Illuminate\Support\Collection;
 use yii\base\Component;
 
 /**
  * Access and display official documentation resources, programmatically.
- * 
+ *
  * URLs for resources can be overridden via application config, for local development or outright replacement.
  */
 class Docs extends Component
@@ -27,6 +26,11 @@ class Docs extends Component
     public string $documentationBaseUrl = 'https://craftcms.com/docs/';
 
     /**
+     * Base URL for documentation-related APIs.
+     */
+    public string $docsApiBaseUrl = 'https://craftcms.com/api/docs';
+
+    /**
      * Base URL for knowledge base articles.
      */
     public string $kbBaseUrl = 'https://craftcms.com/knowledge-base/';
@@ -34,77 +38,16 @@ class Docs extends Component
     /**
      * Base URL for class Reference.
      */
-    public string $classReferenceBaseUrl = 'https://docs.craftcms.com/api/v5/';
+    public string $classReferenceBaseUrl = 'https://docs.craftcms.com/';
 
     /**
-     * Base URL for docs "API" requests
+     * @event RegisterComponentTypes Emitted as the system builds its list of candidates for resolving a class’s class reference/documentation URL. Prepend additional resolvers with more stringent matching criteria!
      */
-    public string $docsApiBaseUrl = 'https://craftcms.com/api/docs/';
-
-    /**
-     * Cache key for documentation sitemap/manifest.
-     */
-    const DOCS_MANIFEST_CACHE_KEY = 'docs-manifest';
-
-    /**
-     * “Docset” or namespace for this version of Craft
-     */
-    const DOCSET_PREFIX = '5.x';
-
-    /**
-     * Generates a URL to version-specific documentation.
-     */
-    public function docsUrl(string $path = ''): string
-    {
-        return $this->documentationBaseUrl . trim($path, '/');
-    }
-
-    /**
-     * Loads the latest developer documentation sitemap for local searching.
-     */
-    public function getDocsManifest(): array
-    {
-        return Craft::$app->getCache()->getOrSet([self::DOCS_MANIFEST_CACHE_KEY, 'prefix' => self::DOCSET_PREFIX], function() {
-            $client = Craft::createGuzzleClient([
-                'base_uri' => $this->documentationBaseUrl,
-            ]);
-
-            $response = $client->get('sitemap.json');
-            $pages = Json::decodeIfJson($response->getBody());
-
-            $candidates = array_filter($pages, function($page) {
-                return strpos($page['path'], '/' . self::DOCSET_PREFIX . '/') === 0;
-            });
-
-            return $candidates;
-        });
-    }
-
-    /**
-     * Assigns a `score` property to each known documentation page based on the passed search terms, and returns the top N results in descending order.
-     * 
-     * @param string $terms Search terms to score pages against
-     * @param int $maxResults Return only this many results
-     * @return Collection Results, in descending rank
-     */
-    public function searchDocs(string $terms, int $maxResults = 5): Collection
-    {
-        $pages = collect($this->getDocsManifest());
-
-        return $pages
-            ->map(function($page, $i) use ($terms) {
-                $page['score'] = $this->_scorePage($terms, $page);
-
-                return $page;
-            })
-            ->where('score', '>', 0)
-            ->sortBy('score', null, true)
-            ->slice(0, $maxResults);
-    }
+    const EVENT_DEFINE_CLASS_REFERENCE_RESOLVERS = 'defineBaseClassReferenceResolvers';
 
     /**
      * Sends a query to the docs API and returns the decoded response.
-     * 
+     *
      * @param string $resource API path.
      * @param array $params Query params to send with the request.
      * @return array Decoded JSON response object.
@@ -123,8 +66,19 @@ class Docs extends Component
     }
 
     /**
+     * Builds a URL to a page within the official documentation.
+     *
+     * @param string $path Page path. This should include any extension or suffix!
+     * @return string Absolute URL
+     */
+    public function docsUrl(string $path = ''): string
+    {
+        return $this->documentationBaseUrl . trim($path, '/');
+    }
+
+    /**
      * Builds a URL to a Knowledge Base article or category.
-     * 
+     *
      * @param string $path Category or article slug.
      * @return string Absolute URL
      */
@@ -135,13 +89,13 @@ class Docs extends Component
 
     /**
      * Generates a URL to the class reference page for the passed class or object.
-     * 
+     *
      * @param mixed $source
      * @param string $member
      * @param string $memberType
-     * @return string
+     * @return string|null URL or null when one couldn’t be a resolved.
      */
-    public function classReferenceUrl(mixed $source = null, string $member = null, string $memberType = null): string
+    public function classReferenceUrl(mixed $source = null, string $member = null, string $memberType = null): string|null
     {
         $url = $this->classReferenceBaseUrl;
 
@@ -155,25 +109,36 @@ class Docs extends Component
             $source = $source::class;
         }
 
-        $url = $url . $this->getClassHandle($source) . '.html';
+        foreach ($this->getResolvers() as $resolver) {
+            if (!$resolver::match($source)) {
+                continue;
+            }
 
-        // Classes are always on their own pages, but each method and property is identified with an anchor:
-        if ($member !== null) {
-            $url = $url . match ($memberType) {
-                'method' => '#method-' . strtolower($member),
-                'property' => '#property-' . strtolower($member),
-                'constant' => '#constants',
-            };
+            return $resolver::getUrl($source, $member, $memberType);
         }
 
-        return $url;
+        // Didn't find a resolver? That’s OK, this should be a signal to the caller that a link is not suitable to output:
+        return null;
+    }
+
+    /**
+     * Builds an HTML anchor tag linking to the class reference page for the provided type/class.
+     *
+     * @param string $className
+     * @return string Markup
+     */
+    public function classReferenceLink(string $className): string
+    {
+        return Html::a(Html::tag('code', $className), $this->classReferenceUrl($className), [
+            'target' => '_blank',
+        ]);
     }
 
     /**
      * Turns a fully-qualified class name into a valid class reference URL segment.
-     * 
+     *
      * This output agrees with internal logic for generating document names.
-     * 
+     *
      * @param string $className
      * @return string Kebab-cased class name
      */
@@ -183,50 +148,27 @@ class Docs extends Component
     }
 
     /**
-     * Scores a search query against a documentation page.
-     * 
-     * @param string $terms
-     * @param array $page
-     * @return int
+     * Returns a list of native + plugin-provided class reference resolvers.
+     *
+     * The order of these resolvers matters! Entries with relaxed matching criteria will swallow more specific matches if specified earlier.
+     *
+     * @return BaseResolver[]
      */
-    private function _scorePage(string $terms, array $page): int
+    private function getResolvers(): array
     {
-        $score = 0;
-        $keywords = explode(' ', Search::normalizeKeywords($terms));
+        $resolvers = [
+            \craft\docs\resolvers\Commerce::class,
+            \craft\docs\resolvers\Cms::class,
+            \craft\docs\resolvers\Yii::class,
+            \craft\docs\resolvers\Php::class,
+        ];
 
-        // Title:
-        $titleWords = StringHelper::toWords(Search::normalizeKeywords($page['title']));
-        $score += 100 * count(array_intersect($titleWords, $keywords));
+        $event = new RegisterComponentTypesEvent([
+            'types' => $resolvers,
+        ]);
 
-        foreach ($titleWords as $word) {
-            if (StringHelper::containsAny($word, $keywords)) {
-                $score += 50;
-            }
-        }
+        $this->trigger(self::EVENT_DEFINE_CLASS_REFERENCE_RESOLVERS, $event);
 
-        // Summary:
-        if ($page['summary']) {
-            $summaryWords = StringHelper::toWords(Search::normalizeKeywords($page['summary']));
-            $score += count(array_intersect($summaryWords, $keywords));
-
-            foreach ($summaryWords as $word) {
-                if (StringHelper::containsAny($word, $keywords)) {
-                    $score += 1;
-                }
-            }
-        }
-
-        // Keywords:
-        if ($page['keywords']) {
-            $score += 20 * count(array_intersect($page['keywords'], $keywords));
-
-            foreach ($page['keywords'] as $word) {
-                if (StringHelper::containsAny($word, $keywords)) {
-                    $score += 10;
-                }
-            }
-        }
-
-        return $score;
+        return $event->types;
     }
 }

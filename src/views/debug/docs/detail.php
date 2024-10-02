@@ -13,6 +13,7 @@ if ($panel->data['pageTemplate']) {
     $tabs['template'] = 'Template';
 }
 
+$tabs['routing'] = 'Routing';
 $tabs['search'] = 'Search';
 ?>
 
@@ -24,7 +25,7 @@ $tabs['search'] = 'Search';
     <a class="btn btn-secondary" href="<?= Craft::$app->getDocs()->classReferenceUrl() ?>" target="_blank" rel="noopener noreferrer">Class Reference &nearr;</a>
 </div>
 
-<?php $defaultTab = array_keys($tabs)[0]; ?>
+<?php $defaultTab = isset($panel->data['search']) ? 'search' : array_keys($tabs)[0]; ?>
 
 <ul class="nav nav-tabs">
     <?php foreach ($tabs as $id => $label): ?>
@@ -45,9 +46,10 @@ $tabs['search'] = 'Search';
         <?= Html::tag('div', $this->render("@app/views/debug/docs/tabs/$id", [
             'panel' => $panel,
             'data' => $panel->data,
+            'docs' => $docs,
         ]), [
             'class' => $id === $defaultTab ? 'tab-pane fade active show' : 'tab-pane fade',
-            'id' => "craft-debug-docs-$id",
+            'id' => $panel->getTabHash($id),
         ]) ?>
     <?php endforeach; ?>
 </div>

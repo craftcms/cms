@@ -1,27 +1,24 @@
 <?php
 
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 
  if ($data['allElementTypes']): ?>
     <h3>Element Types</h3>
     <p>
-        <?= Craft::t('app', 'A total of <strong>{count,spellout}</strong> {count,plural,=1{element type} other{element types}} were used by this request.', ['count' => count($data['allElementTypes'])]) ?>
+        <?= Craft::t('app', 'A total of <strong>{count,spellout}</strong> {count,plural,=1{element type was} other{element types were}} used by this request.', ['count' => count($data['allElementTypes'])]) ?>
     </p>
     <ul>
         <?php foreach ($data['allElementTypes'] as $elementType): ?>
-            <li>
-                <a href="<?= Craft::$app->getDocs()->classReferenceUrl($elementType) ?>" target="_blank"><code><?= $elementType ?></code></a>
-            </li>
+            <li><?= $docs->classReferenceLink($elementType) ?></li>
         <?php endforeach; ?>
     </ul>
 <?php endif; ?>
 
 <?php if (isset($data['primaryElement'])): ?>
-    <?php $ref = $data['primaryElement']::refHandle() ?>
-
     <h3>Primary Element</h3>
 
-    <p>This route was rendered because it matched the URI of a <a href="<?= Craft::$app->getDocs()->classReferenceUrl($data['primaryElement']) ?>" target="_blank"><code><?= $data['primaryElement']::class ?></code></a> element.</p>
+    <p>This route was rendered because it matched the URI of a <?= $docs->classReferenceLink($data['primaryElement']::class) ?> element.</p>
 
     <table class="table table-striped table-bordered">
         <tbody>
@@ -40,16 +37,21 @@ use craft\helpers\StringHelper;
 
             <?php foreach ($data['primaryElement']->getFieldLayout()->getCustomFieldElements() as $fle): ?>
                 <?php $handle = $fle->handle ?? $fle->getOriginalHandle() ?>
+                <?php $value = $data['primaryElement']->getFieldValue($handle) ?>
+
                 <tr>
-                    <td><code><?= $handle ?></code></td>
                     <td class="ws-normal">
-                        <?= StringHelper::toString($data['primaryElement']->getFieldValue($handle)) ?>
+                        <code><?= $handle ?></code>
+                        <?php if ($handle !== $fle->getOriginalHandle()): ?>
+                            (Original handle: <code><?= $fle->getOriginalHandle() ?></code>)
+                        <?php endif; ?>
                     </td>
+                    <td><?= Craft::dump($value, depth: 2, return: true) ?></td>
                 </tr>
             <?php endforeach; ?>
 
             <tr>
-                <th colspan="3">
+                <th colspan="2">
                     Attributes
                     <br>
                     Native properties of the <code><?= $data['primaryElement']::lowerDisplayName() ?></code>.
@@ -63,10 +65,10 @@ use craft\helpers\StringHelper;
 
             <?php foreach ($data['primaryElement']->getAttributes() as $attr => $value): ?>
                 <tr>
-                    <td><code><?= $attr ?></code></td>
                     <td class="ws-normal">
-                        <?= StringHelper::toString($value) ?>
+                        <a href="<?= $docs->classReferenceUrl($data['primaryElement'], $attr, 'property') ?>" target="_blank"><code><?= $attr ?></code></a>
                     </td>
+                    <td><pre><?= var_dump($value) ?></pre></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
