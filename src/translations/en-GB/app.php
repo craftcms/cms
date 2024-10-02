@@ -2,7 +2,7 @@
 
 return [
     '(Ungrouped)' => '(Ungrouped)',
-    '(blank)' => '',
+    '(blank)' => '(blank)',
     '(included)' => '(included)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
     '({period} days)' => '({period} days)',
