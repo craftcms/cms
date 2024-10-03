@@ -693,16 +693,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       const $btn = $(ev.currentTarget);
 
-      // don't show the hud if we're supposed to disable copying for this field
-      // this is used by fields inside inline-editable matrix "block"
-      const $fieldContainer = $btn.parents('.field');
-      if (
-        $fieldContainer.length > 0 &&
-        Garnish.hasAttr($fieldContainer[0], 'data-disable-copying')
-      ) {
-        return;
-      }
-
       const $hudContent = $('<div/>', {
         class: 'copy-translation-dialogue',
       });
@@ -722,7 +712,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             elementId: $btn.data('element-id')
               ? $btn.data('element-id')
               : this.settings.canonicalId,
-            namespace: $btn.data('namespace')
+            namespace: $btn.data('namespace'),
           })
         );
       }
@@ -1639,7 +1629,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               .add(this.$sidebar?.find(selector).closest('.field'))
               .not(':has(> .status-badge)');
 
-          console.log($modifiedFields);
+            console.log($modifiedFields);
             for (let i = 0; i < $modifiedFields.length; i++) {
               $modifiedFields.eq(i).prepend(
                 $('<div/>', {
