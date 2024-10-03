@@ -278,6 +278,11 @@ class UpdateController extends Controller
         $pluginsService = Craft::$app->getPlugins();
 
         if ($this->minorOnly || $this->patchOnly) {
+            $cmsConstraint = $this->_constraint(Craft::$app->getVersion());
+            if ($cmsConstraint !== null) {
+                $constraints['cms'] = $cmsConstraint;
+            }
+
             foreach ($pluginsService->getAllPlugins() as $plugin) {
                 // don't update dev versions
                 $version = $plugin->getVersion();
@@ -285,9 +290,9 @@ class UpdateController extends Controller
                     continue;
                 }
 
-                $constraint = $this->_constraint($version);
-                if ($constraint !== null) {
-                    $constraints[$plugin->id] = $constraint;
+                $pluginConstraint = $this->_constraint($version);
+                if ($pluginConstraint !== null) {
+                    $constraints[$plugin->id] = $pluginConstraint;
                 }
             }
         }
