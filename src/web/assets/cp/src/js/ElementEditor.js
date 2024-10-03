@@ -1629,7 +1629,6 @@ Craft.ElementEditor = Garnish.Base.extend(
               .add(this.$sidebar?.find(selector).closest('.field'))
               .not(':has(> .status-badge)');
 
-            console.log($modifiedFields);
             for (let i = 0; i < $modifiedFields.length; i++) {
               $modifiedFields.eq(i).prepend(
                 $('<div/>', {
