@@ -2,6 +2,7 @@
 
 ### Administration
 - Added `pc/*` commands as an alias of `project-config/*`.
+- Added the `--except`, `--minor-only`, and `--patch-only` options to the `update` command. ([#15829](https://github.com/craftcms/cms/pull/15829))
 
 ### Extensibility
 - Added `craft\base\RequestTrait::getIsWebRequest()`. ([#15690](https://github.com/craftcms/cms/pull/15690))
