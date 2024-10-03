@@ -1,0 +1,23 @@
+{% import '_includes/forms' as forms %}
+
+{% js on ready %}
+  new Craft.DocsWidget({{ widget.id|e('js') }});
+{% endjs %}
+
+<div id="docs-widget-{{ widget.id }}" class="docs-widget" data-widget-id="{{ widget.id }}">
+  <div class="docs-widget-form">
+    <div class="field">
+      <input
+        type="search"
+        name="search"
+        placeholder="{{ 'Search…'|t('app') }}"
+        class="text fullwidth"
+        hx-get="{{ actionUrl('support/docs-search') }}"
+        hx-trigger="keyup delay:500ms changed"
+        hx-target="#docs-widget-{{ widget.id }}-search-results">
+    </div>
+  </div>
+  <div class="docs-widget-results" id="docs-widget-{{ widget.id }}-search-results">
+    {# The content of this element is populated by htmx after Craft renders `results.twig` #}
+  </div>
+</div>

@@ -1147,7 +1147,7 @@ trait ApplicationTrait
 
     /**
      * Returns the documentation service.
-     * 
+     *
      * @return Docs Documentation service singleton
      */
     public function getDocs(): Docs

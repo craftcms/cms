@@ -53,6 +53,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('iconSvg', [Cp::class, 'iconSvg'], ['is_safe' => ['html']]),
             new TwigFunction('siteMenuItems', [Cp::class, 'siteMenuItems']),
             new TwigFunction('statusIndicator', [Cp::class, 'statusIndicatorHtml'], ['is_safe' => ['html']]),
+            new TwigFunction('kbUrl', [Craft::$app->getDocs(), 'kbUrl']),
         ];
     }
 

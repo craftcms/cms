@@ -1,9 +1,4 @@
-<?php
-
-use craft\helpers\Html;
-use craft\helpers\StringHelper;
-
- if ($data['allElementTypes']): ?>
+<?php if ($data['allElementTypes']): ?>
     <h3>Element Types</h3>
     <p>
         <?= Craft::t('app', 'A total of <strong>{count,spellout}</strong> {count,plural,=1{element type was} other{element types were}} used by this request.', ['count' => count($data['allElementTypes'])]) ?>

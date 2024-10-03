@@ -43,7 +43,7 @@ class Docs extends Component
     /**
      * @event RegisterComponentTypes Emitted as the system builds its list of candidates for resolving a class’s class reference/documentation URL. Prepend additional resolvers with more stringent matching criteria!
      */
-    const EVENT_DEFINE_CLASS_REFERENCE_RESOLVERS = 'defineBaseClassReferenceResolvers';
+    public const EVENT_DEFINE_CLASS_REFERENCE_RESOLVERS = 'defineBaseClassReferenceResolvers';
 
     /**
      * Sends a query to the docs API and returns the decoded response.
@@ -157,7 +157,6 @@ class Docs extends Component
     private function getResolvers(): array
     {
         $resolvers = [
-            \craft\docs\resolvers\Commerce::class,
             \craft\docs\resolvers\Cms::class,
             \craft\docs\resolvers\Yii::class,
             \craft\docs\resolvers\Php::class,

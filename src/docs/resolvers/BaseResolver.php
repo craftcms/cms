@@ -27,12 +27,12 @@ abstract class BaseResolver
 
     /**
      * Builds a complete URL from the class name (and optional class member + type).
-     * 
+     *
      * @param string $className Fully-qualified class name.
      * @param string $member Name of a class method, property, or constant.
      * @param string $memberType How the resolver should treat the member name.
      */
-    static function getUrl(string $className, string $member = null, string $memberType = null): string
+    public static function getUrl(string $className, string $member = null, string $memberType = null): string
     {
         return static::getBaseUrl() . static::getPath($className, $member, $memberType);
     }

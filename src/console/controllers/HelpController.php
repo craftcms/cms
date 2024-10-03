@@ -10,7 +10,6 @@ namespace craft\console\controllers;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\Console;
-use craft\helpers\Docs;
 use craft\helpers\Json;
 use ReflectionFunctionAbstract;
 use Throwable;
@@ -119,7 +118,7 @@ class HelpController extends BaseHelpController
 
     /**
      * Performs a search against the documentation and knowledge base, and displays a compact view of the results.
-     * 
+     *
      * @param string[] $query Search term(s)
      */
     public function actionSearch(...$query): int

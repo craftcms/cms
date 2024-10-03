@@ -1,0 +1,22 @@
+@charset "UTF-8";
+@import '@craftcms/sass/mixins';
+
+.docs-widget {
+}
+
+.docs-widget-found {
+  margin-block: 1em;
+}
+
+.docs-widget-result {
+  margin-block: 0 1em;
+}
+
+.docs-widget-result-title {
+  font-weight: bold;
+}
+
+.docs-widget-result-type {
+  color: var(--gray-600);
+  font-size: 12px;
+}

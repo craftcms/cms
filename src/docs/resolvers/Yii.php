@@ -15,17 +15,17 @@ namespace craft\docs\resolvers;
  */
 class Yii extends BaseResolver
 {
-    static function match(string $className): bool
+    public static function match(string $className): bool
     {
         return str_starts_with($className, 'yii\\');
     }
 
-    static function getBaseUrl(): string
+    public static function getBaseUrl(): string
     {
         return 'https://www.yiiframework.com/doc/api/2.0/';
     }
 
-    static function getPath(string $className, string $member = null, string $memberType = null): string
+    public static function getPath(string $className, string $member = null, string $memberType = null): string
     {
         $path = strtolower(str_replace('\\', '-', $className)) . '.html';
 

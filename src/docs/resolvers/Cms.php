@@ -17,17 +17,17 @@ use Craft;
  */
 class Cms extends BaseResolver
 {
-    static function match(string $className): bool
+    public static function match(string $className): bool
     {
         return str_starts_with($className, 'craft\\');
     }
 
-    static function getBaseUrl(): string
+    public static function getBaseUrl(): string
     {
         return Craft::$app->getDocs()->classReferenceUrl() . 'api/v5/';
     }
 
-    static function getPath(string $className, string $member = null, string $memberType = null): string
+    public static function getPath(string $className, string $member = null, string $memberType = null): string
     {
         $path = strtolower(str_replace('\\', '-', $className)) . '.html';
 

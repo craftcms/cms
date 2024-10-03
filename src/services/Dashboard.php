@@ -19,6 +19,7 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\records\Widget as WidgetRecord;
 use craft\widgets\CraftSupport as CraftSupportWidget;
+use craft\widgets\Docs as DocsWidget;
 use craft\widgets\Feed as FeedWidget;
 use craft\widgets\MissingWidget;
 use craft\widgets\MyDrafts;
@@ -94,6 +95,7 @@ class Dashboard extends Component
         $widgetTypes = [
             FeedWidget::class,
             CraftSupportWidget::class,
+            DocsWidget::class,
             NewUsersWidget::class,
             QuickPostWidget::class,
             RecentEntriesWidget::class,

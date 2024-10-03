@@ -17,7 +17,7 @@ use ReflectionClass;
  */
 class Php extends BaseResolver
 {
-    static $dataTypes = [
+    public static $dataTypes = [
         'array' => 'array',
         'boolean' => 'boolean',
         'integer' => 'integer',
@@ -26,7 +26,7 @@ class Php extends BaseResolver
         'string' => 'string',
     ];
 
-    static function match(string $className): bool
+    public static function match(string $className): bool
     {
         $isSimpleType = in_array($className, static::$dataTypes);
 
@@ -39,12 +39,12 @@ class Php extends BaseResolver
         return $reflection->isInternal();
     }
 
-    static function getBaseUrl(): string
+    public static function getBaseUrl(): string
     {
         return 'https://www.php.net/manual/en/';
     }
 
-    static function getPath(string $className, string $member = null, string $memberType = null): string
+    public static function getPath(string $className, string $member = null, string $memberType = null): string
     {
         $dataType = static::$dataTypes[$className] ?? null;
 

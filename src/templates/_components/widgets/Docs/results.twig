@@ -1,0 +1,18 @@
+{# This template is rendered from [[craft\controllers\Support::actionDocsSearch()]] in response to an htmx-powered request! #}
+
+<div class="docs-widget-found">
+    {{ 'Found {results,plural,=1{one result} other{# results}} for “{term}”'|t('app', {
+        results: results|length,
+        term: query,
+    }) }}
+</div>
+
+<ul class="docs-widget-results">
+    {% for result in results %}
+        <li class="docs-widget-result">
+            <a class="docs-widget-result-title" href="{{ result.url }}" target="_blank" rel="noreferrer">{{ result.title }}</a>
+            <div class="docs-widget-result-type">{{ result.type }}</div>
+            <div class="docs-widget-result-summary">{{ result.summary|raw }}</div>
+        </li>
+    {% endfor %}
+</ul>

@@ -61,6 +61,8 @@ import './CraftSupportWidget.scss';
             return new HelpScreen(this, screen, $screen);
           case Craft.CraftSupportWidget.SCREEN_FEEDBACK:
             return new FeedbackScreen(this, screen, $screen);
+          case Craft.CraftSupportWidget.SCREEN_DOCS:
+            return new DocsScreen(this, screen, $screen);
           default:
             throw 'Invalid screen: ' + screen;
         }
@@ -126,6 +128,7 @@ import './CraftSupportWidget.scss';
       SCREEN_HOME: 'home',
       SCREEN_HELP: 'help',
       SCREEN_FEEDBACK: 'feedback',
+      SCREEN_DOCS: 'docs',
     }
   );
 
@@ -636,6 +639,39 @@ import './CraftSupportWidget.scss';
       return (
         'https://api.github.com/search/issues?q=type:issue+repo:craftcms/cms+' +
         encodeURIComponent(query)
+      );
+    },
+
+    getSearchResults: function (response) {
+      return response.items || [];
+    },
+
+    getSearchResultUrl: function (result) {
+      return result.html_url;
+    },
+
+    getSearchResultStatus: function (result) {
+      return result.state === 'open' ? 'green' : 'red';
+    },
+
+    getSearchResultText: function (result) {
+      return result.title;
+    },
+  });
+
+  const DocsScreen = BaseSearchScreen.extend({
+    getFormParams: function (query) {
+      return Object.assign(
+        {
+          title: this.widget.settings.issueTitlePrefix + query,
+        },
+        this.widget.settings.issueParams
+      );
+    },
+
+    getSearchUrl: function (query) {
+      return (
+        'https://craftcom.ddev.site/api/docs?query=' + encodeURIComponent(query)
       );
     },
 

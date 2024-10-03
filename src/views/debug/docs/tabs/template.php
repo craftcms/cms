@@ -1,9 +1,3 @@
-<?php
-
-use yii\helpers\Html;
-
-?>
-
 <h3>Page Variables</h3>
 
 <p>These variables were passed to the primary page template, <code><?= $data['pageTemplate'] ?></code>.</p>

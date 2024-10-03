@@ -1,7 +1,9 @@
 <?php
 
 use craft\helpers\Html;
+
 ?>
+
 <h3>Search Documentation</h3>
 
 <?= Html::beginForm($panel->getUrl(), 'get', ['class' => 'form-inline']) ?>
