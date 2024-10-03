@@ -161,7 +161,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         // Use event delegation so we don't have to reinitialize when markup is replaced
         this.$container.on(
           'mousedown',
-          '[data-copy]',
+          '[data-copyable]',
           this.showFieldCopyDialogue.bind(this)
         );
       }
@@ -600,9 +600,15 @@ Craft.ElementEditor = Garnish.Base.extend(
       }));
     },
 
-    _getCopyBetweenSitesForm: function (fieldHandle = null) {
+    _getCopyBetweenSitesForm: function ({
+      fieldHandle = null,
+      elementId = this.settings.canonicalId,
+      namespace = this.namespace,
+    } = {}) {
       const $form = Craft.createForm();
       $form.append(Craft.getCsrfInput());
+
+      console.log(fieldHandle);
 
       if (fieldHandle) {
         $('<input/>', {
@@ -612,11 +618,20 @@ Craft.ElementEditor = Garnish.Base.extend(
         }).appendTo($form);
       }
 
-      if (this.namespace) {
+      if (elementId) {
+        $('<input/>', {
+          type: 'hidden',
+          name: 'elementId',
+          value: elementId,
+        }).appendTo($form);
+      }
+
+      // Namespace for slideouts
+      if (namespace) {
         $('<input/>', {
           type: 'hidden',
           name: 'namespace',
-          value: this.namespace,
+          value: namespace,
         }).appendTo($form);
       }
 
@@ -697,11 +712,19 @@ Craft.ElementEditor = Garnish.Base.extend(
       // only allow the copy field value of a copyable field
       // only if this element exists on other sites too
       if (
-        $btn.attr('data-copy') &&
+        $btn.attr('data-copyable') &&
         this._getSitesForCopyFieldAction().length > 0
       ) {
         $hudContent.append('<hr/>');
-        $hudContent.append(this._getCopyBetweenSitesForm($btn.data('copy')));
+        $hudContent.append(
+          this._getCopyBetweenSitesForm({
+            fieldHandle: $btn.data('field-handle'),
+            elementId: $btn.data('element-id')
+              ? $btn.data('element-id')
+              : this.settings.canonicalId,
+            namespace: $btn.data('namespace')
+          })
+        );
       }
 
       this.copyHud = new Garnish.HUD($btn, $hudContent);
@@ -739,20 +762,13 @@ Craft.ElementEditor = Garnish.Base.extend(
       const $submitBtn = $form.find('[type=submit]');
       $submitBtn.addClass('loading');
 
-      const data = Craft.filterObject({
-        [Craft.csrfTokenName]: Craft.csrfTokenValue,
-        elementId: this.settings.canonicalId,
-        fieldHandle: $form
-          .find('input[type="hidden"][name="fieldHandle"]')
-          .val(),
-        copyFromSiteId: $form.find('select[name="copyFromSiteId"]').val(),
-        provisional: this.settings.isProvisionalDraft,
-        isFullPage: this.settings.isFullPage,
-      });
+      const data = new FormData(ev.target);
+      data.append('provisional', this.settings.isProvisionalDraft || false);
+      data.append('isFullPage', this.settings.isFullPage || false);
 
-      if (this.settings.draftId) {
-        data.draftId = this.settings.draftId;
-      }
+      // if (this.settings.draftId) {
+      //   data.append('draftId', this.settings.draftId);
+      // }
 
       try {
         const response = await Craft.sendActionRequest(
@@ -772,7 +788,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           const $field = this.$container.find(`[data-layout-element="${uid}"]`);
           if ($field.length > 0) {
             $field.replaceWith(fragments[uid]);
-            dirtyFields.push($field.data('attribute'));
+            dirtyFields.push($field.data('base-input-name'));
 
             Craft.initUiElements($field);
           }
@@ -1623,6 +1639,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               .add(this.$sidebar?.find(selector).closest('.field'))
               .not(':has(> .status-badge)');
 
+          console.log($modifiedFields);
             for (let i = 0; i < $modifiedFields.length; i++) {
               $modifiedFields.eq(i).prepend(
                 $('<div/>', {

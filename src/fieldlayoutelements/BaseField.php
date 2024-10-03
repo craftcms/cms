@@ -397,6 +397,8 @@ abstract class BaseField extends FieldLayoutElement
             'translatable' => $this->translatable($element, $static),
             'translationDescription' => $this->translationDescription($element, $static),
             'copyable' => $this->isCopyable($element, $static),
+            'element-id' => $element->getCanonicalId(),
+            'namespace' => Craft::$app->getView()->getNamespace(),
             'errors' => !$static ? $this->errors($element) : [],
         ]);
     }

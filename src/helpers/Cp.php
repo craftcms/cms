@@ -1454,11 +1454,12 @@ JS, [
             ],
         ]);
 
+        $translationDescription = $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.');
         $translationIconHtml = Html::tag('craft-tooltip', $translationIconHtml, [
             'placement' => 'bottom',
             'max-width' => '200px',
             'self-managed' => 'true',
-            'text' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+            'text' => $translationDescription,
             'delay' => '1000',
         ]);
 
@@ -1467,8 +1468,11 @@ JS, [
             $translationIconHtml = Html::button($translationIconHtml, [
                 'class' => 'copyable',
                 'data' => [
-                    'description' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                    'copy' => $attribute,
+                    'copyable' => 'copyable',
+                    'description' => $translationDescription,
+                    'element-id' => $config['element-id'] ?? null,
+                    'namespace' => Craft::$app->getView()->getNamespace(),
+                    'field-handle' => $attribute,
                 ],
             ]);
         }
