@@ -202,10 +202,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       });
 
       this.addListener(this.$elementContainer, 'keydown', (event) => {
-        if (
-          event.keyCode === Garnish.RETURN_KEY &&
-          Garnish.isCtrlKeyPressed(event)
-        ) {
+        if (event.keyCode === Garnish.RETURN_KEY) {
           this.$saveBtn.trigger('click');
         } else if (
           event.keyCode === Garnish.S_KEY &&
