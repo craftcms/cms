@@ -3089,6 +3089,17 @@ class ElementQuery extends Query implements ElementQueryInterface
                     }
                 }
 
+                // allow aliasing of custom fields, but only when using asArray
+                // https://github.com/craftcms/cms/issues/15827
+                if (
+                    $this->asArray &&
+                    $alias !== $column &&
+                    isset($this->_columnMap[$column]) &&
+                    !empty(ArrayHelper::firstWhere($this->customFields, 'handle', $column))
+                ) {
+                    $column = $this->_columnMap[$column];
+                }
+
                 $select[$alias] = $column;
             }
         }
