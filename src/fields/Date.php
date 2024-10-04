@@ -280,6 +280,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
                 'describedBy' => $this->describedBy,
                 'name' => "$this->handle[timezone]",
                 'value' => $timezone,
+                'offsetDate' => $value,
             ]);
         } else {
             $components[] = Html::hiddenInput("$this->handle[timezone]", $timezone);

@@ -726,24 +726,26 @@ class Cp extends Component
     /**
      * Returns all known time zones for a time zone input.
      *
+     * @param DateTime|null $offsetDate The [[DateTime]] object that contains the date/time to compute time zone offsets from
      * @return array
      * @since 3.7.0
      */
-    public function getTimeZoneOptions(): array
+    public function getTimeZoneOptions(?DateTime $offsetDate = null): array
     {
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
         $options = [];
 
-        $utc = new DateTime();
+        $offsetDate ??= new DateTime();
+        $offsetDate->setTimezone(new DateTimeZone('UTC'));
         $offsets = [];
         $timezoneIds = [];
 
         foreach (DateTimeZone::listIdentifiers() as $timezoneId) {
             $timezone = new DateTimeZone($timezoneId);
-            $transition = $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
+            $transition = $timezone->getTransitions($offsetDate->getTimestamp(), $offsetDate->getTimestamp());
             $abbr = $transition[0]['abbr'];
 
-            $offset = round($timezone->getOffset($utc) / 60);
+            $offset = round($timezone->getOffset($offsetDate) / 60);
 
             if ($offset) {
                 $hour = floor($offset / 60);
