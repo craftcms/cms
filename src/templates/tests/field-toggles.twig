@@ -6,6 +6,24 @@
   {% namespace 'foo[bar]' %}
 
     <div class="pane">
+      {{ forms.selectField({
+        id: 'select',
+        name: 'select',
+        options: [
+          {label: 'Select Option 1', value: 'select-opt1'},
+          {label: 'Select Option 2', value: 'select-opt2'},
+        ],
+        toggle: true,
+      }) }}
+      <div id="select-opt1" class="hidden">
+        <strong><span class="status enabled"></span> Option 1</strong>
+      </div>
+      <div id="select-opt2" class="hidden">
+        <strong><span class="status enabled"></span> Option 2</strong>
+      </div>
+    </div>
+
+    <div class="pane">
       {{ forms.lightswitchField({
         label: "This site has its own base URL"|t('app'),
         id: 'has-urls',
