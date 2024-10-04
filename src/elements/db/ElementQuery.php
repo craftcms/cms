@@ -1990,10 +1990,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         $vars = array_keys(Craft::getObjectVars($this));
         $behavior = $this->getBehavior('customFields');
         $behaviorVars = array_keys(Craft::getObjectVars($behavior));
-        $fields = array_merge(
-            array_combine($vars, $vars),
-            array_combine($behaviorVars, array_map(fn(string $var) => fn() => $behavior->$var, $behaviorVars))
-        );
+        // if using an array_merge here, reverse the order so that the $behaviorVars go before $vars;
+        // the properties ($var) have to take priority over custom fields ($behaviorVars);
+        $fields = array_combine($vars, $vars) +
+            array_combine($behaviorVars, array_map(fn(string $var) => fn() => $behavior->$var, $behaviorVars));
         unset($fields['query'], $fields['subQuery'], $fields['owner']);
         return $fields;
     }
