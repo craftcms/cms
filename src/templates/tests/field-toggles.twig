@@ -53,5 +53,24 @@
       </div>
     </div>
 
+    <div class="pane">
+      {% set targetPrefix = "datetime#{random()}-" %}
+      {{ forms.radioGroupField({
+        id: 'dateTime',
+        name: 'dateTime',
+        options: [
+          {label: 'Option 1', value: 'opt1'},
+          {label: 'Option 2', value: 'opt2'},
+        ],
+        toggle: true,
+      }) }}
+      <div id="opt1" class="hidden">
+        <strong><span class="status enabled"></span> Option 1</strong>
+      </div>
+      <div id="opt2" class="hidden">
+        <strong><span class="status enabled"></span> Option 2</strong>
+      </div>
+    </div>
+
   {% endnamespace %}
 {% endblock %}
