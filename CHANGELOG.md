@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed an error that could occur when saving an element, if a Date field’s time zone input was focused.
+
 ## 4.12.5 - 2024-09-27
 
 - Fixed a bug where entries’ `deletedWithEntryType` values in the `entries` table weren’t getting set back to `null` after being restored.

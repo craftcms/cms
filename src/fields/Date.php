@@ -383,7 +383,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             return null;
         }
 
-        if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && isset($value['timezone'])))) {
+        if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && !empty($value['timezone'])))) {
             $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
         }
 
