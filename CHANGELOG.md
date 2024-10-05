@@ -4,6 +4,7 @@
 
 - Fixed an error that could occur when saving an element, if a Date field’s time zone input was focused.
 - Fixed a bug where the time zones listed in Date fields weren’t labelled properly based on the selected date. ([#15805](https://github.com/craftcms/cms/issues/15805))
+- Fixed a bug where field toggling wasn’t working properly for boolean menus and radio groups.
 
 ## 5.4.6 - 2024-09-27
 

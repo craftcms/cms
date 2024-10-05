@@ -89,5 +89,26 @@
       </div>
     </div>
 
+    <div class="pane">
+      {{ forms.checkboxSelectField({
+        label: 'Allowed Link Types',
+        id: 'types',
+        name: 'types',
+        options: [
+          {label: 'URL', value: 'url'},
+          {label: 'Entry', value: 'entry'},
+        ],
+        values: ['url'],
+        required: true,
+        targetPrefix: 'types-',
+      }) }}
+      <div id="types-url">
+        <strong><span class="status enabled"></span> URL options</strong>
+      </div>
+      <div id="types-entry" class="hidden">
+        <strong><span class="status enabled"></span> Entry options</strong>
+      </div>
+    </div>
+
   {% endnamespace %}
 {% endblock %}
