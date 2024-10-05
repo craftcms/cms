@@ -2057,10 +2057,6 @@ JS,
             ]);
         }
 
-        if (!$elementsService->canSave($address, $user)) {
-            throw new ForbiddenHttpException('User is not permitted to edit this address.');
-        }
-
         // Addresses have no status, and the default element save controller also sets the address scenario to live
         $address->setScenario(Element::SCENARIO_LIVE);
 
@@ -2076,6 +2072,11 @@ JS,
             }
         }
         $address->setAttributes($safeAttributes);
+
+        // Now that all the core attributes have been set, make sure the user is allowed to save the address
+        if (!$elementsService->canSave($address, $user)) {
+            throw new ForbiddenHttpException('User is not permitted to edit this address.');
+        }
 
         // Custom fields
         $fieldsLocation = $this->request->getParam('fieldsLocation') ?? 'fields';
