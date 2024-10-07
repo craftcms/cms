@@ -2499,11 +2499,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       const canvasOffsetX = canvasOffset.left;
       const canvasOffsetY = canvasOffset.top;
 
-      const clickPosX = ev.pageX - canvasOffsetX;
-      const clickPosY = ev.pageY - canvasOffsetY;
-      console.log(clickPosY);
-
-      console.log(this.focalPoint.getBoundingRect(false, true));
+      this._handleFocalClickToMove._.newX = ev.pageX - canvasOffsetX;
+      this._handleFocalClickToMove._.newY = ev.pageY - canvasOffsetY;
 
       // Just make sure that the focal point stays inside the image
       if (this.currentView === 'crop') {
@@ -2521,11 +2518,20 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         //   return;
         // }
         console.log('in crop mode');
+      } else {
+        if (
+          !this.isPointInsideImage({
+            x: this._handleFocalClickToMove._.newX,
+            y: this._handleFocalClickToMove._.newY,
+          })
+        ) {
+          return;
+        }
       }
 
       this.focalPoint.set({
-        left: clickPosX,
-        top: clickPosY,
+        left: this._handleFocalClickToMove._.newX,
+        top: this._handleFocalClickToMove._.newY,
       });
 
       this.storeFocalPointState();
@@ -2696,24 +2702,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           }
         } else {
           if (
-            !(
-              this.viewport.left -
-                this.viewport.width / 2 -
-                this._handleFocalDrag._.newX <
-                0 &&
-              this.viewport.left +
-                this.viewport.width / 2 -
-                this._handleFocalDrag._.newX >
-                0 &&
-              this.viewport.top -
-                this.viewport.height / 2 -
-                this._handleFocalDrag._.newY <
-                0 &&
-              this.viewport.top +
-                this.viewport.height / 2 -
-                this._handleFocalDrag._.newY >
-                0
-            )
+            !this.isPointInsideImage({
+              x: this._handleFocalDrag._.newX,
+              y: this._handleFocalDrag._.newY,
+            })
           ) {
             return;
           }
@@ -2724,6 +2716,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           top: this.focalPoint.top + this._handleFocalDrag._.deltaY,
         });
       }
+    },
+
+    isPointInsideImage(coordinateSet) {
+      return (
+        this.viewport.left - this.viewport.width / 2 - coordinateSet.x < 0 &&
+        this.viewport.left + this.viewport.width / 2 - coordinateSet.x > 0 &&
+        this.viewport.top - this.viewport.height / 2 - coordinateSet.y < 0 &&
+        this.viewport.top + this.viewport.height / 2 - coordinateSet.y > 0
+      );
     },
 
     /**
