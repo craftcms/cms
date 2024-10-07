@@ -21,6 +21,7 @@
 
 ### Development
 - Added the `encodeUrl()` Twig function. ([#15838](https://github.com/craftcms/cms/issues/15838))
+- Added support for passing aliased field handles into element queries’ `select()`/`addSelect()` methods. ([#15827](https://github.com/craftcms/cms/issues/15827))
 
 ### Extensibility
 - Added `craft\base\RequestTrait::getIsWebRequest()`. ([#15690](https://github.com/craftcms/cms/pull/15690))
