@@ -228,7 +228,7 @@ class UrlHelper
      *
      * @param string $url
      * @return string
-     * @since 4.13.0
+     * @since 5.5.0
      */
     public static function encodeUrl(string $url): string
     {
