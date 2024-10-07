@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed an error that could occur when saving an element, if a Date field’s time zone input was focused.
+- Fixed a bug where the time zones listed in Date fields weren’t labelled properly based on the selected date. ([#15805](https://github.com/craftcms/cms/issues/15805))
+- Fixed a missing authorization vulnerability.
+
 ## 4.12.5 - 2024-09-27
 
 - Fixed a bug where entries’ `deletedWithEntryType` values in the `entries` table weren’t getting set back to `null` after being restored.
@@ -516,7 +522,7 @@
 - Fixed a SQL error that occurred when setting the Max Length of a URL field beyond what’s allowed by a `varchar` column. ([#14408](https://github.com/craftcms/cms/issues/14408))
 - Fixed a bug where `data-target` and `data-reverse-target` attributes weren’t getting properly namespaced if they included a class name selector.
 - Fixed the type annotation for `craft\behaviors\CustomFieldBehavior::$fieldHandles`. ([#14421](https://github.com/craftcms/cms/issues/14421))
-- Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets was only working for the first selected asset, rather than the focussed one.
+- Fixed a bug where the <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut for previewing assets was only working for the first selected asset, rather than the focused one.
 - Fixed a JavaScript error that could occur when previewing an image.
 - Fixed a bug where PHP errors that occurred during bootstrap weren’t getting logged to `stderr` for console requests. ([#14424](https://github.com/craftcms/cms/pull/14424))
 - Fixed a bug where disabled elements and drafts weren’t automatically getting propagated to newly-created sites, when appropriate.

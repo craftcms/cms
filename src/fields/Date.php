@@ -280,6 +280,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
                 'describedBy' => $this->describedBy,
                 'name' => "$this->handle[timezone]",
                 'value' => $timezone,
+                'offsetDate' => $value,
             ]);
         } else {
             $components[] = Html::hiddenInput("$this->handle[timezone]", $timezone);
@@ -383,7 +384,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             return null;
         }
 
-        if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && isset($value['timezone'])))) {
+        if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && !empty($value['timezone'])))) {
             $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
         }
 
