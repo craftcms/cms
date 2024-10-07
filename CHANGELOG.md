@@ -8,6 +8,7 @@
 - Fixed a bug where field toggling wasn’t working properly for boolean menus and radio groups.
 - Fixed a bug where eager-loading wasn’t working properly when multiple fields had the same handle. ([#15796](https://github.com/craftcms/cms/issues/15796))
 - Fixed a bug where where required Full Name fields weren’t getting enforced for users. ([#15808](https://github.com/craftcms/cms/issues/15808))
+- Fixed a bug where relation fields weren’t merging uploaded asset IDs with the existing field values. ([#15809](https://github.com/craftcms/cms/issues/15809))
 - Fixed a missing authorization vulnerability.
 
 ## 5.4.6 - 2024-09-27
