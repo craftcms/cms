@@ -553,7 +553,6 @@ class ElementsController extends Controller
         // if $fieldHandle is null, we're copying all element fields
         $fieldHandle = $this->request->getBodyParam('fieldHandle', null);
         $copyFromSiteId = $this->request->getRequiredBodyParam('copyFromSiteId');
-        $namespace = $this->request->getBodyParam('namespace');
 
         if ($fieldHandle === '' || empty($copyFromSiteId)) {
             throw new BadRequestHttpException("Request missing required param");
@@ -605,7 +604,7 @@ class ElementsController extends Controller
                     if (in_array($attribute, array_keys($updates))) {
                         $html = $view->namespaceInputs(function() use ($element, $layoutElement) {
                             return $layoutElement->formHtml($element);
-                        }, $namespace); // you have to pass the $namespace here or some attrs won't get properly namespaced (e.g. title)
+                        });
 
                         if ($html) {
                             $html = Html::modifyTagAttributes($html, [
