@@ -1471,7 +1471,6 @@ JS, [
                     'copyable' => 'copyable',
                     'description' => $translationDescription,
                     'element-id' => $config['element-id'] ?? null,
-                    'namespace' => Craft::$app->getView()->getNamespace(),
                     'field-handle' => $attribute,
                 ],
             ]);

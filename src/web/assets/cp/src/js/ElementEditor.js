@@ -704,6 +704,12 @@ Craft.ElementEditor = Garnish.Base.extend(
         $btn.attr('data-copyable') &&
         this._getSitesForCopyFieldAction().length > 0
       ) {
+        let namespace = this.namespace;
+        let matrixBlock = $btn.parents('.matrixblock').first();
+        if (matrixBlock.length > 0) {
+          namespace = matrixBlock.data('base-input-name');
+        }
+
         $hudContent.append('<hr/>');
         $hudContent.append(
           this._getCopyBetweenSitesForm({
@@ -711,7 +717,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             elementId: $btn.data('element-id')
               ? $btn.data('element-id')
               : this.settings.canonicalId,
-            namespace: $btn.data('namespace'),
+            namespace: namespace,
           })
         );
       }
@@ -754,9 +760,13 @@ Craft.ElementEditor = Garnish.Base.extend(
       const data = new FormData(ev.target);
       data.append('isFullPage', this.settings.isFullPage || false);
 
-      await this.ensureIsDraftOrRevision(false);
-      data.set('elementId', this.settings.elementId);
-      data.set('draftId', this.settings.draftId || null);
+      // if we're not dealing with a matrix field in the inline editable blocks mode - we should ensure the draft exists straight away
+      // this is mostly needed for the nested elements, like matrix entries
+      if (this.copyHud?.$trigger.parents('.matrixblock').first().length == 0) {
+        await this.ensureIsDraftOrRevision(false);
+        data.set('elementId', this.settings.elementId);
+        data.set('draftId', this.settings.draftId || null);
+      }
       data.set('provisional', this.settings.isProvisionalDraft || false);
 
       try {
