@@ -609,8 +609,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       const $form = Craft.createForm();
       $form.append(Craft.getCsrfInput());
 
-      console.log(fieldHandle);
-
       if (fieldHandle) {
         $('<input/>', {
           type: 'hidden',
@@ -754,12 +752,12 @@ Craft.ElementEditor = Garnish.Base.extend(
       $submitBtn.addClass('loading');
 
       const data = new FormData(ev.target);
-      data.append('provisional', this.settings.isProvisionalDraft || false);
       data.append('isFullPage', this.settings.isFullPage || false);
 
-      // if (this.settings.draftId) {
-      //   data.append('draftId', this.settings.draftId);
-      // }
+      await this.ensureIsDraftOrRevision(false);
+      data.set('elementId', this.settings.elementId);
+      data.set('draftId', this.settings.draftId || null);
+      data.set('provisional', this.settings.isProvisionalDraft || false);
 
       try {
         const response = await Craft.sendActionRequest(

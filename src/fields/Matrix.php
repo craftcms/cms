@@ -1595,4 +1595,40 @@ JS;
         /** @var Entry[] $entries */
         return $entries;
     }
+
+    /**
+     * @see CopyableFieldInterface::copyValueBetweenSites()
+     * @since 5.5.0
+     */
+    public function copyValueBetweenSites(ElementInterface $from, ElementInterface $to): bool
+    {
+        if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+            return parent::copyValueBetweenSites($from, $to);
+        }
+
+        // get fromValue - if it's not empty, proceed
+        $fromValue = $from->getFieldValue($this->handle)->collect();
+
+        if ($fromValue->isEmpty()) {
+            return false;
+        }
+
+        $fromIds = $fromValue->pluck('id')->all();
+        $toIds = $to->getFieldValue($this->handle)->collect()->pluck('id')->all();
+
+        if ($fromIds != $toIds) {
+            $to->duplicateOf = $from;
+            $to->copying = true;
+
+            $this->entryManager()->maintainNestedElements($to, false);
+
+            $to->duplicateOf = null;
+            $to->copying = false;
+            $to->setDirtyFields([$this->handle]);
+
+            return true;
+        }
+
+        return false;
+    }
 }

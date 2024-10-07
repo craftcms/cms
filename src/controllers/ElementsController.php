@@ -540,7 +540,7 @@ class ElementsController extends Controller
         $this->requireCpRequest();
 
         /** @var Element|Response|null $element */
-        $element = $this->_element();
+        $element = $this->_element(checkForProvisionalDraft: true);
 
         if ($element instanceof Response) {
             return $element;
@@ -566,8 +566,6 @@ class ElementsController extends Controller
                 'type' => $element::lowerDisplayName(),
             ]);
 
-            Craft::$app->session->setError($errorMsg);
-
             return $this->_asFailure($element, $errorMsg);
         }
 
@@ -576,8 +574,6 @@ class ElementsController extends Controller
             $errorMsg = Craft::t('app', 'Couldn’t find this {type} on the site you selected.', [
                 'type' => $element::lowerDisplayName(),
             ]);
-
-            Craft::$app->session->setError($errorMsg);
 
             return $this->_asFailure($element, $errorMsg);
         }
