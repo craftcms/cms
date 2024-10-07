@@ -2502,25 +2502,23 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._handleFocalClickToMove._.newX = ev.pageX - canvasOffsetX;
       this._handleFocalClickToMove._.newY = ev.pageY - canvasOffsetY;
 
-      // Just make sure that the focal point stays inside the image
       if (this.currentView === 'crop') {
-        // if (
-        //   !this.arePointsInsideRectangle(
-        //     [
-        //       {
-        //         x: this._handleFocalDrag._.newX,
-        //         y: this._handleFocalDrag._.newY,
-        //       },
-        //     ],
-        //     this.imageVerticeCoords
-        //   )
-        // ) {
-        //   return;
-        // }
-        console.log('in crop mode');
+        if (
+          !this.arePointsInsideRectangle(
+            [
+              {
+                x: this._handleFocalClickToMove._.newX,
+                y: this._handleFocalClickToMove._.newY,
+              },
+            ],
+            this.imageVerticeCoords
+          )
+        ) {
+          return;
+        }
       } else {
         if (
-          !this.isPointInsideImage({
+          !this.isPointInsideViewport({
             x: this._handleFocalClickToMove._.newX,
             y: this._handleFocalClickToMove._.newY,
           })
@@ -2702,7 +2700,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           }
         } else {
           if (
-            !this.isPointInsideImage({
+            !this.isPointInsideViewport({
               x: this._handleFocalDrag._.newX,
               y: this._handleFocalDrag._.newY,
             })
@@ -2718,7 +2716,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       }
     },
 
-    isPointInsideImage(coordinateSet) {
+    /**
+     * Given point coordinates in the form {x: int, y:int}, returns true
+     * if the points are inside the viewport
+     *
+     * Adapted from: http://stackoverflow.com/a/2763387/2040791
+     *
+     * @param {Object} points
+     * @param {Object} rectangle
+     */
+    isPointInsideViewport(coordinateSet) {
       return (
         this.viewport.left - this.viewport.width / 2 - coordinateSet.x < 0 &&
         this.viewport.left + this.viewport.width / 2 - coordinateSet.x > 0 &&
