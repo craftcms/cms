@@ -1232,6 +1232,7 @@ return [
     'Reverted content from revision {num}.' => 'Reverted content from revision {num}.',
     'Reverting update (this may take a minute)…' => 'Reverting update (this may take a minute)…',
     'Review' => 'Review',
+    'Reviews' => 'Reviews',
     'Revision Notes' => 'Revision Notes',
     'Revision {num}' => 'Revision {num}',
     'Revision' => 'Revision',

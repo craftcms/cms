@@ -114,6 +114,7 @@ class PluginStoreAsset extends AssetBundle
                 'Remove',
                 'Report plugin',
                 'Repository',
+                'Reviews',
                 'Search plugins',
                 'See all',
                 'Showing results for “{searchQuery}”',
