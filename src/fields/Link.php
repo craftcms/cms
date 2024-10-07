@@ -15,6 +15,7 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\RelationalFieldInterface;
 use craft\base\RelationalFieldTrait;
+use craft\elements\db\ElementQueryInterface;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\fields\data\LinkData;
@@ -332,6 +333,33 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
+        // if this was set due to propagateAll for a fresh element (as opposed to the translation method),
+        // and an element is selected, swap it with the same element in the current site (if it exists)
+        if (
+            $value instanceof LinkData &&
+            $element?->propagating &&
+            $element->propagateAll &&
+            isset($element->propagatingFrom) &&
+            $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)
+        ) {
+            $linkedElement = $value->getElement();
+            if ($linkedElement && $linkedElement::isLocalized()) {
+                $localizedQuery = $linkedElement->getLocalized();
+                if (
+                    $localizedQuery instanceof ElementQueryInterface &&
+                    $localizedQuery->siteId($element->siteId)->exists()
+                ) {
+                    $type = $value->getType();
+                    $value = [
+                        'type' => $type,
+                        $type => [
+                            'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
+                        ],
+                    ];
+                }
+            }
+        }
+
         if ($value instanceof LinkData) {
             return $value;
         }

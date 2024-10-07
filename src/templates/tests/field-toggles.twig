@@ -1,0 +1,114 @@
+{% extends "_layouts/cp" %}
+{% set title = "Form Tests" %}
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+  {% namespace 'foo[bar]' %}
+
+    <div class="pane">
+      {{ forms.selectField({
+        id: 'select',
+        name: 'select',
+        options: [
+          {label: 'Select Option 1', value: 'select-opt1'},
+          {label: 'Select Option 2', value: 'select-opt2'},
+        ],
+        toggle: true,
+      }) }}
+      <div id="select-opt1" class="hidden">
+        <strong><span class="status enabled"></span> Option 1</strong>
+      </div>
+      <div id="select-opt2" class="hidden">
+        <strong><span class="status enabled"></span> Option 2</strong>
+      </div>
+    </div>
+
+    <div class="pane">
+      {{ forms.lightswitchField({
+        label: "This site has its own base URL"|t('app'),
+        id: 'has-urls',
+        name: 'hasUrls',
+        on: false,
+        toggle: 'url-settings'
+      }) }}
+      <div id="url-settings" class="hidden">
+        <strong><span class="status enabled"></span> ON</strong>
+      </div>
+    </div>
+
+    <div class="pane">
+      {{ forms.booleanMenuField({
+        label: "Use authentication"|t('app'),
+        id: 'useAuthentication',
+        name: 'useAuthentication',
+        includeEnvVars: true,
+        value: false,
+        toggle: 'auth-credentials'
+      }) }}
+      <div id="auth-credentials" class="hidden">
+        <strong><span class="status enabled"></span> ON</strong>
+      </div>
+    </div>
+
+    <div class="pane">
+      {% set targetPrefix = "datetime#{random()}-" %}
+      {{ forms.radioGroupField({
+        id: 'dateTime',
+        name: 'dateTime',
+        options: [
+          {label: 'Show date', value: 'showDate'},
+          {label: 'Show time', value: 'showTime'},
+          {label: 'Show date and time', value: 'showBoth'},
+        ],
+        toggle: true,
+        targetPrefix: ".#{targetPrefix}",
+      }) }}
+      <div class="{{ "#{targetPrefix}showTime" }} {{ "#{targetPrefix}showBoth" }} hidden">
+        <strong><span class="status enabled"></span> Show Time + Show Both</strong>
+      </div>
+      <div class="{{ "#{targetPrefix}showDate" }} {{ "#{targetPrefix}showBoth" }} hidden">
+        <strong><span class="status enabled"></span> Show Date + Show Both</strong>
+      </div>
+    </div>
+
+    <div class="pane">
+      {{ forms.radioGroupField({
+        id: 'radio',
+        name: 'radio',
+        options: [
+          {label: 'Option 1', value: 'opt1'},
+          {label: 'Option 2', value: 'opt2'},
+        ],
+        toggle: true,
+      }) }}
+      <div id="opt1" class="hidden">
+        <strong><span class="status enabled"></span> Option 1</strong>
+      </div>
+      <div id="opt2" class="hidden">
+        <strong><span class="status enabled"></span> Option 2</strong>
+      </div>
+    </div>
+
+    <div class="pane">
+      {{ forms.checkboxSelectField({
+        label: 'Allowed Link Types',
+        id: 'types',
+        name: 'types',
+        options: [
+          {label: 'URL', value: 'url'},
+          {label: 'Entry', value: 'entry'},
+        ],
+        values: ['url'],
+        required: true,
+        targetPrefix: 'types-',
+      }) }}
+      <div id="types-url">
+        <strong><span class="status enabled"></span> URL options</strong>
+      </div>
+      <div id="types-entry" class="hidden">
+        <strong><span class="status enabled"></span> Entry options</strong>
+      </div>
+    </div>
+
+  {% endnamespace %}
+{% endblock %}

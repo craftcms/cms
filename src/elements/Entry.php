@@ -751,6 +751,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public bool $deletedWithEntryType = false;
 
     /**
+     * @var bool Whether the entry was deleted along with its section
+     * @see beforeDelete()
+     * @internal
+     */
+    public bool $deletedWithSection = false;
+
+    /**
      * @var int[] Entry author IDs
      * @see getAuthorIds()
      * @see setAuthorIds()
@@ -798,6 +805,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         $names = array_flip($this->traitAttributes());
         unset($names['deletedWithEntryType']);
+        unset($names['deletedWithSection']);
         $names['authorId'] = true;
         $names['authorIds'] = true;
         $names['typeId'] = true;
@@ -2675,6 +2683,7 @@ JS;
 
         $data = [
             'deletedWithEntryType' => $this->deletedWithEntryType,
+            'deletedWithSection' => $this->deletedWithSection,
             'parentId' => null,
         ];
 
@@ -2701,6 +2710,13 @@ JS;
      */
     public function afterRestore(): void
     {
+        $this->deletedWithEntryType = false;
+        $this->deletedWithSection = false;
+        Db::update(Table::ENTRIES, [
+            'deletedWithEntryType' => null,
+            'deletedWithSection' => null,
+        ], ['id' => $this->id]);
+
         $section = $this->getSection();
         if ($section?->type === Section::TYPE_STRUCTURE) {
             // Add the entry back into its structure

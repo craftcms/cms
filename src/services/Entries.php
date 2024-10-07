@@ -51,6 +51,7 @@ use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\caching\TagDependency;
 
 /**
@@ -681,7 +682,8 @@ class Entries extends Component
                 $sectionRecord->structureId != $sectionRecord->getOldAttribute('structureId')
             );
 
-            if ($sectionRecord->dateDeleted) {
+            $wasTrashed = $sectionRecord->dateDeleted;
+            if ($wasTrashed) {
                 $sectionRecord->restore();
                 $resaveEntries = true;
             } else {
@@ -828,6 +830,32 @@ class Entries extends Component
 
         // Clear caches
         $this->_sections = null;
+
+        if ($wasTrashed) {
+            /** @var Entry[] $entries */
+            $entries = Entry::find()
+                ->sectionId($sectionRecord->id)
+                ->drafts(null)
+                ->draftOf(false)
+                ->status(null)
+                ->trashed()
+                ->site('*')
+                ->unique()
+                ->andWhere(['entries.deletedWithSection' => true])
+                ->all();
+            /** @var Entry[][] $entriesByType */
+            $entriesByType = ArrayHelper::index($entries, null, ['typeId']);
+            foreach ($entriesByType as $typeEntries) {
+                try {
+                    array_walk($typeEntries, function(Entry $entry) {
+                        $entry->deletedWithSection = false;
+                    });
+                    Craft::$app->getElements()->restoreElements($typeEntries);
+                } catch (InvalidConfigException) {
+                    // the entry type probably wasn't restored
+                }
+            }
+        }
 
         /** @var Section $section */
         $section = $this->getSectionById($sectionRecord->id);
@@ -1061,8 +1089,7 @@ class Entries extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // All entries *should* be deleted by now via their entry types, but loop through all the sites in case
-            // there are any lingering entries from unsupported sites
+            // Delete the entries
             $elementsTable = Table::ELEMENTS;
             $entriesTable = Table::ENTRIES;
             $now = Db::prepareDateForDb(new DateTime());
@@ -1080,15 +1107,23 @@ SQL;
                 $db->createCommand(<<<SQL
 UPDATE $elementsTable [[elements]]
 INNER JOIN $entriesTable [[entries]] ON [[entries.id]] = [[elements.id]]
-SET [[elements.dateDeleted]] = '$now'
+SET [[elements.dateDeleted]] = '$now',
+  [[entries.deletedWithSection]] = 1
 WHERE $conditionSql
 SQL)->execute();
             } else {
+                // Not possible to update two tables simultaneously with Postgres
+                $db->createCommand(<<<SQL
+UPDATE $entriesTable [[entries]]
+SET [[deletedWithSection]] = TRUE
+FROM $elementsTable [[elements]]
+WHERE $conditionSql
+SQL)->execute();
                 $db->createCommand(<<<SQL
 UPDATE $elementsTable [[elements]]
 SET [[dateDeleted]] = '$now'
 FROM $entriesTable [[entries]]
-WHERE [[entries.id]] = [[elements.id]] AND $conditionSql
+WHERE $conditionSql
 SQL)->execute();
             }
 
@@ -1432,7 +1467,8 @@ SQL)->execute();
             );
 
             // Save the entry type
-            if ($wasTrashed = (bool)$entryTypeRecord->dateDeleted) {
+            $wasTrashed = (bool)$entryTypeRecord->dateDeleted;
+            if ($wasTrashed) {
                 $entryTypeRecord->restore();
                 $resaveEntries = true;
             } else {
@@ -1449,19 +1485,30 @@ SQL)->execute();
         $this->_entryTypes = null;
 
         if ($wasTrashed) {
-            // Restore the entries that were deleted with the entry type
-            /** @var Entry[] $entries */
-            $entries = Entry::find()
-                ->typeId($entryTypeRecord->id)
-                ->drafts(null)
-                ->draftOf(false)
-                ->status(null)
-                ->trashed()
-                ->site('*')
-                ->unique()
-                ->andWhere(['entries.deletedWithEntryType' => true])
-                ->all();
-            Craft::$app->getElements()->restoreElements($entries);
+            // Restore the entries at the end of the request in case the section isn't restored yet
+            // (see https://github.com/craftcms/cms/issues/15787)
+            Craft::$app->onAfterRequest(function() use ($entryTypeRecord) {
+                /** @var Entry[] $entries */
+                $entries = Entry::find()
+                    ->typeId($entryTypeRecord->id)
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null)
+                    ->trashed()
+                    ->site('*')
+                    ->unique()
+                    ->andWhere(['entries.deletedWithEntryType' => true])
+                    ->all();
+                /** @var Entry[][] $entriesBySection */
+                $entriesBySection = ArrayHelper::index($entries, null, ['sectionId']);
+                foreach ($entriesBySection as $sectionEntries) {
+                    try {
+                        Craft::$app->getElements()->restoreElements($sectionEntries);
+                    } catch (InvalidConfigException) {
+                        // the section probably wasn't restored
+                    }
+                }
+            });
         }
 
         /** @var EntryType $entryType */
