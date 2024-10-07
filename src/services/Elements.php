@@ -4226,8 +4226,11 @@ class Elements extends Component
                     foreach ($fieldLayout->getCustomFields() as $field) {
                         // Has this field changed, and does it produce the same translation key as it did for the initial element?
                         if (
-                            $element->isFieldDirty($field->handle) &&
-                            $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
+                            $element->propagateAll ||
+                            (
+                                $element->isFieldDirty($field->handle) &&
+                                $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
+                            )
                         ) {
                             // Copy the initial element’s value over
                             $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
