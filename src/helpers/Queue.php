@@ -24,10 +24,12 @@ class Queue
     /**
      * Pushes a job to the main app queue.
      *
-     * @param JobInterface $job
-     * @param int|null $priority
-     * @param int|null $delay
-     * @param int|null $ttr
+     * @param JobInterface $job The job to execute via the queue.
+     * @param int|null $priority The job priority, if supported. Jobs with a
+     * lower priority will be executed first. (Default is 1024.)
+     * @param int|null $delay The execution delay (in seconds), if supported.
+     * @param int|null $ttr The maximum time the queue should wait around for
+     * the job to be handled before assuming it failed.
      * @param BaseQueue|null $queue The queue to push to
      * @return string|null The new job ID
      */
