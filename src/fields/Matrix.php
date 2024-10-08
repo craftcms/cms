@@ -1154,6 +1154,7 @@ JS;
     public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
     {
         if (!$outgoingField instanceof self) {
+            $reason = 'Matrix fields can only be merged into other Matrix fields.';
             return false;
         }
 
