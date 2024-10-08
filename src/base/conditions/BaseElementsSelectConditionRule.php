@@ -110,7 +110,7 @@ abstract class BaseElementsSelectConditionRule extends BaseConditionRule
 
     /**
      * @param array|string|null $elementIds
-     * @phpstan-param array<int|string>|int|string|null $elementIds
+     * @phpstan-param array<int|string>|string|null $elementIds
      */
     public function setElementIds(array|string|null $elementIds): void
     {
