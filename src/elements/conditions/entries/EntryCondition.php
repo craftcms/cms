@@ -22,6 +22,7 @@ class EntryCondition extends ElementCondition
         return array_merge(parent::selectableConditionRules(), [
             AuthorConditionRule::class,
             AuthorGroupConditionRule::class,
+            EntriesConditionRule::class,
             ExpiryDateConditionRule::class,
             HasDescendantsRule::class,
             LevelConditionRule::class,
