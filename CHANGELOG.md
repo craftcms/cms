@@ -5,6 +5,7 @@
 - An `InvalidConfigException` is now thrown if the `defaultCountryCode` config setting is set to an empty string. ([#15812](https://github.com/craftcms/cms/pull/15812))
 - Fixed an error that could occur when saving an element, if a Date field’s time zone input was focused.
 - Fixed a bug where the time zones listed in Date fields weren’t labelled properly based on the selected date. ([#15805](https://github.com/craftcms/cms/issues/15805))
+- Fixed an error that could occur if a native element property was attempted to be eager-loaded. ([#15822](https://github.com/craftcms/cms/issues/15822))
 - Fixed a missing authorization vulnerability.
 
 ## 4.12.5 - 2024-09-27
