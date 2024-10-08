@@ -9,6 +9,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\fields\BaseRelationField;
 use Illuminate\Support\Collection;
+use yii\base\InvalidConfigException;
 use yii\db\QueryInterface;
 
 /**
@@ -40,8 +41,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function elementType(): string
     {
-        /** @var BaseRelationField $field */
         $field = $this->field();
+        if (!$field instanceof BaseRelationField) {
+            throw new InvalidConfigException();
+        }
         return $field::elementType();
     }
 
@@ -50,8 +53,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function sources(): ?array
     {
-        /** @var BaseRelationField $field */
         $field = $this->field();
+        if (!$field instanceof BaseRelationField) {
+            throw new InvalidConfigException();
+        }
         return (array)$field->getInputSources();
     }
 
@@ -60,8 +65,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function selectionCondition(): ?ElementConditionInterface
     {
-        /** @var BaseRelationField $field */
         $field = $this->field();
+        if (!$field instanceof BaseRelationField) {
+            throw new InvalidConfigException();
+        }
         return $field->getSelectionCondition();
     }
 
@@ -70,8 +77,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function criteria(): ?array
     {
-        /** @var BaseRelationField $field */
         $field = $this->field();
+        if (!$field instanceof BaseRelationField) {
+            throw new InvalidConfigException();
+        }
         return $field->getInputSelectionCriteria();
     }
 
@@ -114,13 +123,16 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     public function modifyQuery(QueryInterface $query): void
     {
+        $field = $this->field();
+        if (!$field instanceof BaseRelationField) {
+            return;
+        }
+
         if ($this->operator === self::OPERATOR_RELATED_TO) {
             $this->traitModifyQuery($query);
         } else {
             // Add the condition manually so we can ignore the related elements’ statuses and the field’s target site
             // so conditions reflect what authors see in the UI
-            /** @var BaseRelationField $field */
-            $field = $this->field();
             $query->andWhere(
                 $this->operator === self::OPERATOR_NOT_EMPTY
                     ? $field::existsQueryCondition($field, false, false)
@@ -143,6 +155,11 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function matchFieldValue($value): bool
     {
+        if (!$this->field() instanceof BaseRelationField) {
+            // No longer a relation field
+            return false;
+        }
+
         if ($value instanceof ElementQueryInterface) {
             // Ignore the related elements’ statuses and target site
             // so conditions reflect what authors see in the UI
