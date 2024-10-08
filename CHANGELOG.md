@@ -7,6 +7,7 @@
 - Fixed a bug where the time zones listed in Date fields weren’t labelled properly based on the selected date. ([#15805](https://github.com/craftcms/cms/issues/15805))
 - Fixed an error that could occur if a native element property was attempted to be eager-loaded. ([#15822](https://github.com/craftcms/cms/issues/15822))
 - Fixed errors that could occur if a custom source or field condition referenced a custom field whose type had changed. ([#15850](https://github.com/craftcms/cms/issues/15850))
+- Fixed a bug where disclosure menus weren’t sticking to their trigger element as it was scrolled, if it was within a slideout or other inline-scrollable container. ([#15852](https://github.com/craftcms/cms/issues/15852))
 - Fixed a bug where field toggling wasn’t working properly for boolean menus and radio groups.
 - Fixed a bug where eager-loading wasn’t working properly when multiple fields had the same handle. ([#15796](https://github.com/craftcms/cms/issues/15796))
 - Fixed a bug where where required Full Name fields weren’t getting enforced for users. ([#15808](https://github.com/craftcms/cms/issues/15808))
