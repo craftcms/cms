@@ -219,25 +219,6 @@
       }),
     },
 
-    mounted() {
-      const pluginHandle = this.$route.params.handle;
-
-      if (this.plugin && this.plugin.handle === pluginHandle) {
-        return;
-      }
-
-      this.loading = true;
-
-      this.$store
-        .dispatch('pluginStore/getPluginDetailsByHandle', pluginHandle)
-        .then(() => {
-          this.loading = false;
-        })
-        .catch(() => {
-          this.loading = false;
-        });
-    },
-
     beforeDestroy() {
       this.$store.dispatch('pluginStore/cancelRequests');
     },
