@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error occurred when running `migrate` commands with an invalid `--plugin` option value.
+
 ## 5.4.7 - 2024-10-08
 
 - The Plugin Store now displays plugin ratings and reviews. ([#15860](https://github.com/craftcms/cms/pull/15860))
