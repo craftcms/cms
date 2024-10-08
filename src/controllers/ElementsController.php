@@ -22,6 +22,7 @@ use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
 use craft\events\DraftEvent;
 use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
@@ -1046,6 +1047,9 @@ JS, [
                         $errorItem .= $error;
                         $errorItem .= Html::endTag('li');
                     } else {
+                        // is the error for multi-nested field (e.g. matrix in a matrix in a blocks mode)
+                        $multiNested = substr_count($key, '.') > 1;
+
                         // get tab uid for this error
                         $tabUid = null;
                         $bracketPos = strpos($key, '[');
@@ -1054,7 +1058,21 @@ JS, [
                             foreach ($tab->getElements() as $layoutElement) {
                                 if ($layoutElement instanceof BaseField && $layoutElement->attribute() === $fieldKey) {
                                     $tabUid = $tab->uid;
-                                    continue 2;
+                                    if (!$multiNested) {
+                                        continue 2;
+                                    }
+                                }
+                                // if it's a multi-nested error key for matrix in blocks mode
+                                // manipulate the key to only reference the matrix field, entry and inner field
+                                if ($multiNested && $layoutElement instanceof CustomField) {
+                                    if (
+                                        $layoutElement->getField() instanceof Matrix &&
+                                        $layoutElement->getField()->viewMode === Matrix::VIEW_MODE_BLOCKS
+                                    ) {
+                                        $keyParts = explode('.', $key);
+                                        $key = implode('.', array_splice($keyParts, -2));
+                                        unset($keyParts);
+                                    }
                                 }
                             }
                         }
