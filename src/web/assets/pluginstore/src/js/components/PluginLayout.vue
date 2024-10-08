@@ -99,6 +99,11 @@
           slug: '',
         });
 
+        tabs.push({
+          name: this.$options.filters.t('Reviews', 'app'),
+          slug: 'reviews',
+        });
+
         if (
           !this.isPluginFree(this.plugin) &&
           this.plugin.editions.length > 1
@@ -141,8 +146,15 @@
 
       this.$store.commit('pluginStore/updatePluginDetails', null);
 
-      this.$store
-        .dispatch('pluginStore/getPluginDetailsByHandle', pluginHandle)
+      Promise.all([
+        this.$store.dispatch('pluginReviews/getPluginReviews', {
+          handle: pluginHandle,
+        }),
+        this.$store.dispatch(
+          'pluginStore/getPluginDetailsByHandle',
+          pluginHandle
+        ),
+      ])
         .then(() => {
           this.loading = false;
         })
