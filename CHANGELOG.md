@@ -8,6 +8,7 @@
 - Fixed an error that could occur if a native element property was attempted to be eager-loaded. ([#15822](https://github.com/craftcms/cms/issues/15822))
 - Fixed errors that could occur if a custom source or field condition referenced a custom field whose type had changed. ([#15850](https://github.com/craftcms/cms/issues/15850))
 - Fixed a bug where disclosure menus weren’t sticking to their trigger element as it was scrolled, if it was within a slideout or other inline-scrollable container. ([#15852](https://github.com/craftcms/cms/issues/15852))
+- Fixed a bug where the default backup command for MySQL was exporting triggers twice. ([#15854](https://github.com/craftcms/cms/pull/15854))
 - Fixed a missing authorization vulnerability.
 
 ## 4.12.5 - 2024-09-27
