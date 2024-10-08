@@ -1153,8 +1153,12 @@ JS;
      */
     public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
     {
+        if (!$outgoingField instanceof self) {
+            $reason = 'Matrix fields can only be merged into other Matrix fields.';
+            return false;
+        }
+
         // Make sure this field has all the entry types the outgoing field has
-        /** @var self $outgoingField */
         $outgoingEntryTypeIds = array_map(fn(EntryType $entryType) => $entryType->id, $outgoingField->getEntryTypes());
         $persistentEntryTypeIds = array_map(fn(EntryType $entryType) => $entryType->id, $this->getEntryTypes());
         $missingEntryTypeIds = array_diff($outgoingEntryTypeIds, $persistentEntryTypeIds);

@@ -29,6 +29,7 @@ use craft\enums\MenuItemType;
 use craft\enums\PropagationMethod;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
+use craft\fieldlayoutelements\users\FullNameField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -60,6 +61,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
+use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 use yii\web\BadRequestHttpException;
 use yii\web\IdentityInterface;
@@ -880,6 +882,27 @@ class User extends Element implements IdentityInterface
         $labels['unverifiedEmail'] = Craft::t('app', 'Email');
         $labels['username'] = Craft::t('app', 'Username');
         return $labels;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterValidate(): void
+    {
+        $scenario = $this->getScenario();
+
+        if ($scenario === self::SCENARIO_LIVE) {
+            $fullNameElement = $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this);
+            if ($fullNameElement && $fullNameElement->required) {
+                if (Craft::$app->getConfig()->getGeneral()->showFirstAndLastNameFields) {
+                    (new RequiredValidator(['attributes' => ['firstName', 'lastName']]))->validateAttributes($this, ['firstName', 'lastName']);
+                } else {
+                    (new RequiredValidator())->validateAttribute($this, 'fullName');
+                }
+            }
+        }
+
+        parent::afterValidate();
     }
 
     /**

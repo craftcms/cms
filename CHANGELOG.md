@@ -2,10 +2,14 @@
 
 ## Unreleased
 
+- An `InvalidConfigException` is now thrown if the `defaultCountryCode` config setting is set to an empty string. ([#15812](https://github.com/craftcms/cms/pull/15812))
 - Fixed an error that could occur when saving an element, if a Date field’s time zone input was focused.
 - Fixed a bug where the time zones listed in Date fields weren’t labelled properly based on the selected date. ([#15805](https://github.com/craftcms/cms/issues/15805))
+- Fixed an error that could occur if a native element property was attempted to be eager-loaded. ([#15822](https://github.com/craftcms/cms/issues/15822))
 - Fixed a bug where field toggling wasn’t working properly for boolean menus and radio groups.
 - Fixed a bug where eager-loading wasn’t working properly when multiple fields had the same handle. ([#15796](https://github.com/craftcms/cms/issues/15796))
+- Fixed a bug where where required Full Name fields weren’t getting enforced for users. ([#15808](https://github.com/craftcms/cms/issues/15808))
+- Fixed a bug where relation fields weren’t merging uploaded asset IDs with the existing field values. ([#15809](https://github.com/craftcms/cms/issues/15809))
 - Fixed a missing authorization vulnerability.
 
 ## 5.4.6 - 2024-09-27

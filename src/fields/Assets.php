@@ -552,6 +552,8 @@ class Assets extends BaseRelationField
                         // Add the newly uploaded IDs to the mix.
                         if (is_array($query->id)) {
                             $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
+                        } elseif (isset($query->where['elements.id']) && ArrayHelper::isNumeric($query->where['elements.id'])) {
+                            $query = $this->normalizeValue(array_merge($query->where['elements.id'], $assetIds), $element);
                         } else {
                             $query = $this->normalizeValue($assetIds, $element);
                         }
