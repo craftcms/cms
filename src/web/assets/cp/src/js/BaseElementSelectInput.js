@@ -465,6 +465,15 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       if (this.settings.allowRemove) {
         actions.push({
+          icon: 'arrows-rotate',
+          label: Craft.t('app', 'Replace'),
+          callback: () => {
+            this.removeElement($element);
+            this.showModal();
+          },
+        });
+
+        actions.push({
           icon: 'remove',
           label: Craft.t('app', 'Remove'),
           callback: () => {
@@ -475,7 +484,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
               this.removeElement($element);
             }
           },
-          destructive: true,
         });
       }
 

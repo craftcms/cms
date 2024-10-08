@@ -1208,7 +1208,7 @@ input.checkbox + label.smalltext {
   margin-inline: 5px 0;
   margin-block: -2px 0;
   font-size: 12px;
-  color: var(--rose-500);
+  color: var(--rose-600);
 }
 
 .scrollpane {
@@ -3610,7 +3610,6 @@ table {
     ) !important;
 
     & > .thumb {
-      background-color: var(--dark-sel-color) !important;
       filter: brightness(0.85);
     }
 
@@ -3634,35 +3633,12 @@ table {
   }
 
   & > .thumb {
-    position: relative;
     display: flex;
-    align-items: stretch;
-    margin: calc(var(--m) * -1);
-    margin-inline-end: 0;
+    flex: 0 0 128px;
     width: 128px;
-    min-width: 128px; // needed for flex
-    min-height: calc(var(--m) * 2 + var(--lh) * 3 + var(--xs));
-    background-color: var(--gray-100);
     overflow: hidden;
-
-    &::after {
-      display: block;
-      content: '';
-      font-size: 0;
-      position: absolute;
-      inset-block: 0;
-      @include mixins.shadow;
-      width: 10px;
-      inset-inline-end: -10px;
-    }
-
-    &,
-    &::after {
-      border-start-start-radius: var(--large-border-radius);
-      border-start-end-radius: 0;
-      border-end-end-radius: 0;
-      border-end-start-radius: var(--large-border-radius);
-    }
+    align-self: start;
+    border-radius: var(--small-border-radius);
 
     img,
     svg {
@@ -4440,6 +4416,7 @@ table.editable {
 
   td.action {
     padding-inline: var(--xs) !important;
+    vertical-align: middle;
 
     &:has(+ td.action) {
       padding-inline-end: 0 !important;
@@ -4514,7 +4491,6 @@ table.editable {
 
       td {
         vertical-align: top;
-        text-align: center;
         background-color: var(--white);
         padding-block: 4px;
         padding-inline: 10px;

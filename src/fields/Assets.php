@@ -9,7 +9,6 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\ThumbableFieldInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
@@ -47,7 +46,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Assets extends BaseRelationField implements ThumbableFieldInterface
+class Assets extends BaseRelationField
 {
     /**
      * @since 3.5.11
@@ -487,20 +486,6 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
         );
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
-    {
-        /** @var AssetQuery|ElementCollection $value */
-        if ($value instanceof AssetQuery) {
-            $handle = sprintf('%s-%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id, $size);
-            $value = (clone $value)->eagerly($handle);
-        }
-
-        return $value->one()?->getThumbHtml($size);
-    }
-
     // Events
     // -------------------------------------------------------------------------
 
@@ -567,6 +552,8 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                         // Add the newly uploaded IDs to the mix.
                         if (is_array($query->id)) {
                             $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
+                        } elseif (isset($query->where['elements.id']) && ArrayHelper::isNumeric($query->where['elements.id'])) {
+                            $query = $this->normalizeValue(array_merge($query->where['elements.id'], $assetIds), $element);
                         } else {
                             $query = $this->normalizeValue($assetIds, $element);
                         }

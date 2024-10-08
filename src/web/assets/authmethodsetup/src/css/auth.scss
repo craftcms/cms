@@ -61,6 +61,7 @@
   justify-content: center;
   align-items: center;
   gap: var(--s);
+  text-align: center;
 
   .auth-method-setup-success-graphic {
     width: 50px;
@@ -84,20 +85,12 @@
 }
 
 ul.auth-method-recovery-codes-list {
-  --width: 12em;
-  --gap: var(--s);
-  display: grid;
-  width: calc(var(--width) * 2 + var(--gap));
-  margin-block: 0;
-  margin-inline: auto;
-  gap: var(--gap) !important;
-  grid-template-columns: var(--width) var(--width);
-  grid-template-rows: auto auto auto auto auto;
-  grid-auto-flow: column;
   @include fixed-width-font;
+  max-width: 20em;
+  margin-inline: auto;
 
-  li {
-    text-align: center;
+  @container (min-width: 20em) {
+    columns: 2;
   }
 }
 

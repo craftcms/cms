@@ -163,8 +163,19 @@
 }
 
 .sidebar-actions {
-  padding-block: 10px;
-  padding-inline: var(--nav-item-gutter-width); // match padding of #system-info
+  display: none;
+
+  @media only screen and (min-width: cp.$minFullUiWidth) {
+    display: block;
+    padding-block: 10px;
+    padding-inline: var(
+      --nav-item-gutter-width
+    ); // match padding of #system-info
+
+    #sidebar-trigger {
+      display: flex;
+    }
+  }
 }
 
 .sidebar-action {
@@ -416,13 +427,5 @@ States
     #sidebar-toggle-icon {
       transform: rotate(180deg);
     }
-  }
-}
-
-#sidebar-trigger {
-  display: none;
-
-  @media only screen and (min-width: cp.$minFullUiWidth) {
-    display: flex;
   }
 }

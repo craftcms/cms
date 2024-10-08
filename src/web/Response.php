@@ -216,7 +216,7 @@ class Response extends \yii\web\Response
     public function redirect($url, $statusCode = 302, $checkAjax = true): self
     {
         if (is_string($url)) {
-            $url = UrlHelper::url($url);
+            $url = UrlHelper::encodeUrl(UrlHelper::url($url));
         }
 
         if ($this->format === TemplateResponseFormatter::FORMAT) {

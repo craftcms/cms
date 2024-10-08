@@ -148,6 +148,7 @@ export class FocalPoint {
     this.saving = true;
 
     this.renderButton();
+    Craft.cp.announce(Craft.t('app', 'Saving...'));
 
     let data = {
       assetUid: this.assetUid,
@@ -164,6 +165,7 @@ export class FocalPoint {
       this.shouldSave = false;
       this.$button.parents('.buttons').css({opacity: ''});
       this.renderButton();
+      Craft.cp.announce(Craft.t('app', 'Saved'));
 
       // Refresh Live Preview
       Craft.Preview.refresh();
