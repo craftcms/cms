@@ -3,6 +3,7 @@
 namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseDateRangeConditionRule;
+use craft\fields\Date;
 use DateTime;
 
 /**
@@ -28,6 +29,11 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
      */
     protected function matchFieldValue($value): bool
     {
+        if (!$this->field() instanceof Date) {
+            // No longer a Date field
+            return false;
+        }
+
         /** @var DateTime|null $value */
         return $this->matchValue($value);
     }
