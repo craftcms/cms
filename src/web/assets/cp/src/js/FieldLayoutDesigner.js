@@ -431,11 +431,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     const $tabContent = this.$container.children('.fld-tabcontent');
     this.$addBtn = $tabContent.children('.fld-add-btn');
 
-    const disclosureMenu = this.$addBtn
-      .disclosureMenu({
-        position: 'below',
-      })
-      .data('disclosureMenu');
+    const disclosureMenu = this.$addBtn.disclosureMenu().data('disclosureMenu');
     disclosureMenu.on('beforeShow', () => {
       this.designer.$libraryContainer.appendTo(disclosureMenu.$container);
     });
