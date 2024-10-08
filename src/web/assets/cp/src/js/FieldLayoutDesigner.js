@@ -1655,6 +1655,15 @@ Craft.FieldLayoutDesigner.ElementDrag =
       }
 
       this.setMidpoints();
+
+      // If we're dragging an element from the library, and it's within a disclosure menu,
+      // hide the menu
+      if (this.draggingLibraryElement) {
+        const $menu = this.$draggee.closest('.fld-library-menu');
+        if ($menu.length) {
+          $menu.data('disclosureMenu').hide();
+        }
+      }
     },
 
     /**
