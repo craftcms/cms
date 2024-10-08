@@ -200,6 +200,7 @@ class Schema extends \yii\db\mysql\Schema
 
         $schemaDump = (clone $baseCommand)
             ->addArg('--no-data')
+            ->addArg('--skip-triggers')
             ->addArg('--result-file=', '{file}')
             ->addArg('{database}');
 
