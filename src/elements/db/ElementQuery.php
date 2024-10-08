@@ -3380,7 +3380,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $includeDefaults = true;
             } else {
                 // Is this a mapped column name?
-                if (isset($this->_columnMap[$column])) {
+                if (is_string($column) && isset($this->_columnMap[$column])) {
                     $column = $this->_columnMap[$column];
 
                     // Completely ditch the mapped name if instantiated elements are going to be returned

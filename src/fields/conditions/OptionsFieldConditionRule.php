@@ -50,6 +50,11 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
      */
     protected function matchFieldValue($value): bool
     {
+        if (!$this->field() instanceof BaseOptionsField) {
+            // No longer an options field
+            return false;
+        }
+
         if ($value instanceof MultiOptionsFieldData) {
             /** @phpstan-ignore-next-line */
             $value = array_map(fn(OptionData $option) => $option->value, (array)$value);
