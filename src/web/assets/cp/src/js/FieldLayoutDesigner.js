@@ -431,11 +431,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     const $tabContent = this.$container.children('.fld-tabcontent');
     this.$addBtn = $tabContent.children('.fld-add-btn');
 
-    const disclosureMenu = this.$addBtn
-      .disclosureMenu({
-        position: 'below',
-      })
-      .data('disclosureMenu');
+    const disclosureMenu = this.$addBtn.disclosureMenu().data('disclosureMenu');
     disclosureMenu.on('beforeShow', () => {
       this.designer.$libraryContainer.appendTo(disclosureMenu.$container);
     });
@@ -1659,6 +1655,15 @@ Craft.FieldLayoutDesigner.ElementDrag =
       }
 
       this.setMidpoints();
+
+      // If we're dragging an element from the library, and it's within a disclosure menu,
+      // hide the menu
+      if (this.draggingLibraryElement) {
+        const $menu = this.$draggee.closest('.fld-library-menu');
+        if ($menu.length) {
+          $menu.data('disclosureMenu').hide();
+        }
+      }
     },
 
     /**
