@@ -399,9 +399,11 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     {
         if ($value instanceof MultiOptionsFieldData) {
             $serialized = [];
-            foreach ($value as $selectedValue) {
-                /** @var OptionData $selectedValue */
-                $serialized[] = $selectedValue->value;
+            // Build the list out in the original option order
+            foreach ($value->getOptions() as $option) {
+                if ($option->selected) {
+                    $serialized[] = $option->value;
+                }
             }
             return $serialized;
         }

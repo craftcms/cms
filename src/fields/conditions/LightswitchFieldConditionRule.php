@@ -3,6 +3,7 @@
 namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseLightswitchConditionRule;
+use craft\fields\Lightswitch;
 
 /**
  * Lightswitch field condition rule.
@@ -27,6 +28,11 @@ class LightswitchFieldConditionRule extends BaseLightswitchConditionRule impleme
      */
     protected function matchFieldValue($value): bool
     {
+        if (!$this->field() instanceof Lightswitch) {
+            // No longer a Lightswitch field
+            return false;
+        }
+
         /** @var bool $value */
         return $this->matchValue($value);
     }

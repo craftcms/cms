@@ -4,6 +4,7 @@ namespace craft\fields\conditions;
 
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
+use craft\fields\Country;
 
 /**
  * Options field condition rule.
@@ -33,6 +34,11 @@ class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements 
      */
     protected function matchFieldValue($value): bool
     {
+        if (!$this->field() instanceof Country) {
+            // No longer a Country field
+            return false;
+        }
+
         return $this->matchValue($value);
     }
 }
