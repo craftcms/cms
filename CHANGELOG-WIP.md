@@ -8,7 +8,7 @@
 - Dropdown cells within editable tables are no longer center-aligned. ([#15742](https://github.com/craftcms/cms/issues/15742))
 - Link fields marked as translatable now swap the selected element with the localized version when their value is getting propagated to a new site for a freshly-created element. ([#15821](https://github.com/craftcms/cms/issues/15821))
 - Pressing <kbd>Return</kbd> when an inline-editable field is focused now submits the inline form. (Previously <kbd>Ctrl</kbd>/<kbd>Command</kbd> had to be pressed as well.) ([#15841](https://github.com/craftcms/cms/issues/15841))
-- Entry conditions can now have a “Entries” rule.
+- Entry conditions can now have an “Entries” rule.
 
 ### Accessibility
 - Improved the control panel for screen readers. ([#15665](https://github.com/craftcms/cms/pull/15665))
