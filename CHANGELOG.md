@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.12.6 - 2024-10-08
 
 - The Plugin Store now displays plugin ratings and reviews. ([#15860](https://github.com/craftcms/cms/pull/15860))
 - An `InvalidConfigException` is now thrown if the `defaultCountryCode` config setting is set to an empty string. ([#15812](https://github.com/craftcms/cms/pull/15812))
