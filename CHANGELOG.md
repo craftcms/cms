@@ -6,6 +6,7 @@
 - Fixed an error that could occur when saving an element, if a Date field’s time zone input was focused.
 - Fixed a bug where the time zones listed in Date fields weren’t labelled properly based on the selected date. ([#15805](https://github.com/craftcms/cms/issues/15805))
 - Fixed an error that could occur if a native element property was attempted to be eager-loaded. ([#15822](https://github.com/craftcms/cms/issues/15822))
+- Fixed errors that could occur if a custom source or field condition referenced a custom field whose type had changed. ([#15850](https://github.com/craftcms/cms/issues/15850))
 - Fixed a missing authorization vulnerability.
 
 ## 4.12.5 - 2024-09-27
