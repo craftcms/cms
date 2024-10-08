@@ -1,4 +1,5 @@
 <script>
+  /* global Craft */
   import {defineComponent} from 'vue';
   import Stat from './Stat.vue';
   import RatingStars from './RatingStars.vue';
@@ -18,6 +19,17 @@
         return `https://console.craftcms.com/accounts/me/plugin-store/reviews/${this.plugin.handle}`;
       },
     },
+    computed: {
+      headingText() {
+        return Craft.t(
+          'app',
+          '{totalReviews, plural, =1{# Review} other{# Reviews}}',
+          {
+            totalReviews: this.stats.totalReviews,
+          }
+        );
+      },
+    },
     props: {
       stats: Object,
       plugin: Object,
@@ -31,17 +43,13 @@
       <Stat>
         <template #title>
           <div class="tw-flex tw-items-baseline tw-justify-between">
-            {{
-              stats.totalReviews === 1
-                ? `${stats.totalReviews} Review`
-                : `${stats.totalReviews} Reviews`
-            }}
+            {{ headingText }}
             <router-link
               v-if="stats.totalReviews > 0"
               :to="`${plugin?.handle}/reviews`"
               class="tw-text-xs"
             >
-              All reviews
+              {{ 'All reviews' | t('app') }}
             </router-link>
           </div>
         </template>
@@ -63,7 +71,9 @@
             <div
               class="tw-flex tw-items-baseline tw-text-sm tw-mt-4 tw-gap-4 tw-text-gray-300"
             >
-              <a :href="getPluginReviewUrl(plugin?.handle)">Leave a review</a>
+              <a :href="getPluginReviewUrl(plugin?.handle)">{{
+                'Leave a review' | t('app')
+              }}</a>
             </div>
           </div>
         </template>
@@ -73,7 +83,9 @@
       <Stat>
         <template #title>Reviews</template>
         <template #content>
-          <p class="tw-font-normal">This plugin doesn't have any reviews.</p>
+          <p class="tw-font-normal">
+            {{ 'This plugin doesn’t have any reviews.' | t('app') }}
+          </p>
 
           <div class="tw-mt-2">
             <c-btn
@@ -81,7 +93,7 @@
               target="_blank"
               :href="getPluginReviewUrl(plugin?.handle)"
             >
-              Leave a review
+              {{ 'Leave a review' | t('app') }}
             </c-btn>
           </div>
         </template>

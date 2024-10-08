@@ -8,7 +8,7 @@
         class="tw-py-10 tw-px-4 tw-border tw-text-red-500 tw-rounded-md"
         :style="{textAlign: 'center'}"
       >
-        Failed to load plugin reviews. Please try again.
+        {{ 'Failed to load plugin reviews. Please try again' | t('app') }}
       </div>
     </template>
     <template v-else-if="status === 'success'">
@@ -35,7 +35,9 @@
               />
 
               <div>
-                <label class="tw-sr-only" for="order-by-select">Order by</label>
+                <label class="tw-sr-only" for="order-by-select">{{
+                  'Order by' | t('app')
+                }}</label>
                 <c-dropdown
                   id="order-by-select"
                   v-model="params.orderBy"
@@ -44,9 +46,9 @@
               </div>
 
               <div>
-                <label class="tw-sr-only" for="direction-select"
-                  >Direction</label
-                >
+                <label class="tw-sr-only" for="direction-select">{{
+                  'Direction' | t('app')
+                }}</label>
                 <c-dropdown
                   id="direction-select"
                   v-model="params.direction"
@@ -90,7 +92,12 @@
                     <template v-if="review.dateUpdated !== review.dateCreated">
                       <span>•</span>
                       <span>
-                        Edited {{ review.dateUpdated | formatDate }}
+                        {{
+                          'Edited {updated}'
+                            | t('app', {
+                              updated: formatDate(review.dateUpdated),
+                            })
+                        }}
                       </span>
                     </template>
                   </div>
@@ -101,7 +108,9 @@
                 <div
                   class="tw-mt-6 tw-border-l-4 tw-border-l-blue-200 dark:tw-border-l-blue-800 tw-pl-4"
                 >
-                  <strong class="tw-block tw-mb-1">Developer Response</strong>
+                  <strong class="tw-block tw-mb-1">{{
+                    'Developer Response' | t('app')
+                  }}</strong>
                   <div v-for="comment in review.comments" :key="comment.id">
                     {{ comment.comment }}
                     <div
@@ -115,7 +124,12 @@
                       >
                         <span>•</span>
                         <span>
-                          Edited {{ comment.dateUpdated | formatDate }}
+                          {{
+                            'Edited {updated}'
+                              | t('app', {
+                                updated: formatDate(comment.dateUpdated),
+                              })
+                          }}
                         </span>
                       </template>
                     </div>
@@ -128,10 +142,15 @@
         <div v-else>
           <div class="tw-p-12 md:tw-py-24 tw-border tw-rounded-md">
             <div class="tw-text-center">
-              <p>This plugin doesn't have any reviews with comments.</p>
+              <p>
+                {{
+                  'This plugin doesn’t have any reviews with comments.'
+                    | t('app')
+                }}
+              </p>
               <div class="tw-mt-4">
                 <c-btn v-if="reviewUrl" :href="reviewUrl" target="_blank">
-                  Leave a review
+                  {{ 'Leave a review' | t('app') }}
                 </c-btn>
               </div>
             </div>
@@ -174,10 +193,10 @@
     <template v-else>
       <div class="tw-p-12 md:tw-py-24 tw-border tw-rounded-md">
         <div class="tw-text-center">
-          <p>This plugin doesn't have any reviews yet.</p>
+          <p>{{ 'This plugin doesn’t have any reviews.' | t('app') }}</p>
           <div class="tw-mt-4">
             <c-btn v-if="reviewUrl" :href="reviewUrl" target="_blank">
-              Leave a review
+              {{ 'Leave a review' | t('app') }}
             </c-btn>
           </div>
         </div>
@@ -187,12 +206,15 @@
 </template>
 
 <script>
+  /* global Craft */
+
   import {defineComponent} from 'vue';
   import PluginLayout from '../../components/PluginLayout.vue';
   import PluginRatingStats from '../../components/PluginRatingStats.vue';
   import RatingStars from '../../components/RatingStars.vue';
   import ProfilePhoto from '../../components/ProfilePhoto.vue';
   import {mapState} from 'vuex';
+  import {formatDate} from '../..//filters/craft';
 
   export default defineComponent({
     name: 'ReviewsPage',
@@ -217,14 +239,14 @@
 
       orderByOptions() {
         return [
-          {label: 'Date Created', value: 'dateCreated'},
-          {label: 'Rating', value: 'rating'},
+          {label: Craft.t('app', 'Date Created'), value: 'dateCreated'},
+          {label: Craft.t('app', 'Rating'), value: 'rating'},
         ];
       },
       directionOptions() {
         return [
-          {label: 'Ascending', value: 'asc'},
-          {label: 'Descending', value: 'desc'},
+          {label: Craft.t('app', 'Ascending'), value: 'asc'},
+          {label: Craft.t('app', 'Descending'), value: 'desc'},
         ];
       },
 
@@ -256,6 +278,7 @@
       };
     },
     methods: {
+      formatDate,
       nextPage() {
         this.goToPage(this.meta.current_page + 1);
       },

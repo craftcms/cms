@@ -1,4 +1,6 @@
 <script>
+  /* global Craft */
+
   import {defineComponent} from 'vue';
   import RatingStars from './RatingStars.vue';
   import ProgressBar from './ProgressBar.vue';
@@ -15,7 +17,13 @@
     },
     computed: {
       ratingsText() {
-        return this.stats.totalReviews === 1 ? 'rating' : 'ratings';
+        return Craft.t(
+          'app',
+          '{totalReviews, plural, =1{# rating} other{# ratings}}',
+          {
+            totalReviews: this.stats.totalReviews,
+          }
+        );
       },
     },
     methods: {

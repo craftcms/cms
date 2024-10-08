@@ -1,4 +1,6 @@
 <script>
+  /* global Craft */
+
   export default {
     props: {
       rating: {
@@ -28,6 +30,13 @@
           default:
             return 'tw-w-6 tw-h-6';
         }
+      },
+
+      screenReaderText() {
+        return Craft.t('app', 'Rating: {rating} out of {max} stars', {
+          rating: this.rating,
+          max: this.max,
+        });
       },
 
       percentage() {
@@ -87,7 +96,7 @@
         </svg>
       </div>
     </div>
-    <span class="tw-sr-only">Rating: {{ rating }} out of {{ max }} stars</span>
+    <span class="tw-sr-only">{{ screenReaderText }}</span>
   </div>
 </template>
 
