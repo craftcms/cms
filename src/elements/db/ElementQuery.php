@@ -1852,14 +1852,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return null;
         }
 
-        if (isset($this->eagerLoadAlias)) {
-            $alias = $this->eagerLoadAlias;
-        } else {
-            $alias = $this->eagerLoadHandle;
-            if (str_contains($alias, ':')) {
-                $alias = explode(':', $alias, 2)[1];
-            }
-        }
+        $alias = $this->eagerLoadAlias ?? "eagerly:$this->eagerLoadHandle";
 
         // see if it was already eager-loaded
         $eagerLoaded = match ($count) {
