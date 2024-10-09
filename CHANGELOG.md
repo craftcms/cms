@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed an error that could occur if Hyper was installed. ([#15867](https://github.com/craftcms/cms/issues/15867))
 - Fixed an error occurred when running `migrate` commands with an invalid `--plugin` option value.
 
 ## 5.4.7 - 2024-10-08
