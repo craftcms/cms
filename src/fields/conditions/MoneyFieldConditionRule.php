@@ -103,10 +103,8 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
      */
     protected function inputOptions(): array
     {
+        /** @var Money $field */
         $field = $this->field();
-        if (!$field instanceof Money) {
-            throw new InvalidConfigException();
-        }
         $defaultValue = null;
         if ($field->defaultValue !== null) {
             $defaultValue = MoneyHelper::toNumber(new MoneyLibrary($field->defaultValue, new Currency($field->currency)));
@@ -136,6 +134,10 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
      */
     protected function elementQueryParam(): ?string
     {
+        if (!$this->field() instanceof Money) {
+            return null;
+        }
+
         return $this->paramValue();
     }
 
@@ -145,8 +147,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
     protected function matchFieldValue($value): bool
     {
         if (!$this->field() instanceof Money) {
-            // No longer a Money field
-            return false;
+            return true;
         }
 
         /** @var int|float|null $value */
