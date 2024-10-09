@@ -69,9 +69,7 @@
             class="tw-relative tw-top-1"
           />
 
-          <div class="xl:tw-ml-auto tw-text-gray-500">
-            {{ stats.totalReviews }} {{ ratingsText }}
-          </div>
+          <div class="xl:tw-ml-auto tw-text-gray-500">{{ ratingsText }}</div>
         </div>
 
         <div class="tw-flex-grow">
