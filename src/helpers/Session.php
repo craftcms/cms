@@ -143,4 +143,52 @@ class Session
         self::$_session = null;
         self::$_exists = false;
     }
+
+    public static function getFlash(string $key, mixed $defaultValue = null, bool $delete = false): mixed
+    {
+        if (!static::exists()) {
+            return $defaultValue;
+        }
+
+        return self::session()->getFlash($key, $defaultValue, $delete);
+    }
+
+    public static function getAllFlashes(bool $delete): array
+    {
+        if (!static::exists()) {
+            return [];
+        }
+        return self::session()->getAllFlashes($delete);
+    }
+
+    public static function hasFlash(string $key): bool
+    {
+        if (!static::exists()) {
+            return false;
+        }
+        return self::session()->hasFlash($key);
+    }
+
+    public static function addFlash($key, $value = true, $removeAfterAccess = true): void
+    {
+        self::session()?->addFlash($key, $value, $removeAfterAccess);
+    }
+
+    public static function removeFlash(string $key): mixed
+    {
+        if (!static::exists()) {
+            return false;
+        }
+
+        return self::session()->removeFlash($key);
+    }
+
+    public static function removeAllFlashes(): void
+    {
+        if (!static::exists()) {
+            return;
+        }
+
+        self::session()->removeAllFlashes();
+    }
 }
