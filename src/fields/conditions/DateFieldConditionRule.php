@@ -5,6 +5,7 @@ namespace craft\fields\conditions;
 use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\fields\Date;
 use DateTime;
+use yii\base\InvalidConfigException;
 
 /**
  * Date field condition rule.
@@ -19,8 +20,24 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
     /**
      * @inheritdoc
      */
+    protected function inputHtml(): string
+    {
+        if (!$this->field() instanceof Date) {
+            throw new InvalidConfigException();
+        }
+
+        return parent::inputHtml();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function elementQueryParam(): array|string|null
     {
+        if (!$this->field() instanceof Date) {
+            return null;
+        }
+
         return $this->queryParamValue();
     }
 
@@ -30,8 +47,7 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
     protected function matchFieldValue($value): bool
     {
         if (!$this->field() instanceof Date) {
-            // No longer a Date field
-            return false;
+            return true;
         }
 
         /** @var DateTime|null $value */

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Custom field condition rules are now ignored if they reference a field with an incompatible type. ([#15850](https://github.com/craftcms/cms/issues/15850))
 - Fixed an error that could occur if Hyper was installed. ([#15867](https://github.com/craftcms/cms/issues/15867))
 - Fixed an error occurred when running `migrate` commands with an invalid `--plugin` option value.
 
