@@ -762,7 +762,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       // if we're not dealing with a matrix field in the inline editable blocks mode - we should ensure the draft exists straight away
       // this is mostly needed for the nested elements, like matrix entries
-      if (this.copyHud?.$trigger.parents('.matrixblock').first().length == 0) {
+      if (
+        this.copyModal ||
+        (this.copyHud && this.copyHud.$trigger.parents('.matrixblock').first().length == 0)
+      ) {
         await this.ensureIsDraftOrRevision(false);
         data.set('elementId', this.settings.elementId);
         data.set('draftId', this.settings.draftId || null);
