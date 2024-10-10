@@ -1609,11 +1609,7 @@ JS;
         // get fromValue - if it's not empty, proceed
         $fromValue = $from->getFieldValue($this->handle)->collect();
 
-        if ($fromValue->isEmpty()) {
-            return false;
-        }
-
-        $fromIds = $fromValue->pluck('id')->all();
+        $fromIds = !$fromValue->isEmpty() ? $fromValue->pluck('id')->all() : [];
         $toIds = $to->getFieldValue($this->handle)->collect()->pluck('id')->all();
 
         if ($fromIds != $toIds) {
