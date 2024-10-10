@@ -764,7 +764,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       // this is mostly needed for the nested elements, like matrix entries
       if (
         this.copyModal ||
-        (this.copyHud && this.copyHud.$trigger.parents('.matrixblock').first().length == 0)
+        (this.copyHud &&
+          this.copyHud.$trigger.parents('.matrixblock').first().length == 0)
       ) {
         await this.ensureIsDraftOrRevision(false);
         data.set('elementId', this.settings.elementId);
