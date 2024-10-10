@@ -423,7 +423,6 @@ Craft.NestedElementManager = Garnish.Base.extend(
         const disclosureMenu = $actionMenuBtn
           .disclosureMenu()
           .data('disclosureMenu');
-        console.log(disclosureMenu);
 
         if (Garnish.hasAttr($element, 'data-deletable')) {
           const ul = disclosureMenu.addGroup();
