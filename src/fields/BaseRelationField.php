@@ -761,12 +761,12 @@ JS, [
                     }
                 },
             ]));
-
-            // Prepare the query for lazy eager loading
-            $query->prepForEagerLoading($this->handle, $element);
         } else {
             $query->id(false);
         }
+
+        // Prepare the query for lazy eager loading
+        $query->prepForEagerLoading($this->handle, $element);
 
         if ($this->allowLimit && $this->maxRelations) {
             $query->limit($this->maxRelations);

@@ -2162,9 +2162,11 @@ JS);
         // All safe attributes
         $safeAttributes = [];
         foreach ($address->safeAttributes() as $name) {
-            $value = $this->request->getBodyParam($name);
-            if ($value !== null) {
-                $safeAttributes[$name] = $value;
+            if (!in_array($name, ['id', 'uid', 'ownerId'])) {
+                $value = $this->request->getBodyParam($name);
+                if ($value !== null) {
+                    $safeAttributes[$name] = $value;
+                }
             }
         }
         $address->setAttributes($safeAttributes);
