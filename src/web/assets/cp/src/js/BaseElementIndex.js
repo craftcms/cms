@@ -3860,8 +3860,8 @@ const SourceNav = Garnish.Base.extend(
 
       if (
         (keyCode === Garnish.RETURN_KEY || keyCode === Garnish.SPACE_KEY) &&
-        !ev.shiftKey &&
-        !Garnish.isCtrlKeyPressed(ev)
+        !event.shiftKey &&
+        !Garnish.isCtrlKeyPressed(event)
       ) {
         event.preventDefault();
         this.selectItem(event.target);
