@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a styling issue with Color field inputs. ([#15868](https://github.com/craftcms/cms/issues/15868))
+
 ## 5.4.7.1 - 2024-10-09
 
 - Custom field condition rules are now ignored if they reference a field with an incompatible type. ([#15850](https://github.com/craftcms/cms/issues/15850))
