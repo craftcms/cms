@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a styling issue with Color field inputs. ([#15868](https://github.com/craftcms/cms/issues/15868))
+- Fixed a deprecation error. ([#15873](https://github.com/craftcms/cms/issues/15873))
 
 ## 5.4.7.1 - 2024-10-09
 
