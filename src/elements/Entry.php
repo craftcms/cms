@@ -1374,8 +1374,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         if (isset($this->fieldId)) {
             /** @var EntryType[] $entryTypes */
             $entryTypes = $this->getField()->getFieldLayoutProviders();
-        } else {
+        } elseif (isset($this->sectionId)) {
             $entryTypes = $this->getSection()->getEntryTypes();
+        } else {
+            throw new InvalidConfigException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
         }
 
         // Fire a 'defineEntryTypes' event

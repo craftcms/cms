@@ -3212,12 +3212,6 @@ class Elements extends Component
             }
 
             foreach ($with as $plan) {
-                // Get the plan handle, without a provider prefix
-                $planHandle = $plan->alias;
-                if (str_contains($planHandle, ':')) {
-                    $planHandle = explode(':', $planHandle, 2)[1];
-                }
-
                 // Filter out any elements that the plan doesn't like
                 if ($plan->when !== null) {
                     $filteredElements = array_values(array_filter($elements, $plan->when));
@@ -3310,7 +3304,7 @@ class Elements extends Component
                                 }
                             }
                         }
-                        $sourceElement->setEagerLoadedElementCount($planHandle, $count);
+                        $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
                     }
 
                     continue;
@@ -3381,11 +3375,11 @@ class Elements extends Component
                         }
                     }
 
-                    $sourceElement->setEagerLoadedElements($planHandle, $targetElementsForSource, $plan);
-                    $sourceElement->setLazyEagerLoadedElements($planHandle, $plan->lazy);
+                    $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource, $plan);
+                    $sourceElement->setLazyEagerLoadedElements($plan->alias, $plan->lazy);
 
                     if ($plan->count) {
-                        $sourceElement->setEagerLoadedElementCount($planHandle, count($targetElementsForSource));
+                        $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
                     }
                 }
 

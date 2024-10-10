@@ -16,8 +16,13 @@ class m231013_185640_changedfields_amend_primary_key extends Migration
     public function safeUp(): bool
     {
         if ($this->db->getIsMysql()) {
-            $this->dropPrimaryKey('elementId', Table::CHANGEDFIELDS);
-            $this->addPrimaryKey('layoutUid', Table::CHANGEDFIELDS, ['elementId', 'siteId', 'fieldId', 'layoutElementUid']);
+            // We need to do this as one command, to avoid a GIPK error
+            // https://www.mydbops.com/blog/generate-invisible-primary-key-gipk-mysql-80/
+            // https://github.com/craftcms/cms/issues/15853
+            $this->execute(sprintf(<<<SQL
+ALTER TABLE %s DROP PRIMARY KEY,
+ADD CONSTRAINT `%s` PRIMARY KEY (`elementId`, `siteId`, `fieldId`, `layoutElementUid`);
+SQL, Table::CHANGEDFIELDS, $this->db->getPrimaryKeyName()));
         } else {
             $pkName = $this->db->getSchema()->getTablePrimaryKey(Table::CHANGEDFIELDS)->name;
 

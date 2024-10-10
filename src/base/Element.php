@@ -5030,6 +5030,14 @@ JS, [
      */
     public function hasEagerLoadedElements(string $handle): bool
     {
+        if (!isset($this->_eagerLoadedElements[$handle])) {
+            // See if we have it stored with the field layout provider’s handle
+            $providerHandle = $this->providerHandle();
+            if ($providerHandle !== null && isset($this->_eagerLoadedElements["$providerHandle:$handle"])) {
+                $handle = "$providerHandle:$handle";
+            }
+        }
+
         return isset($this->_eagerLoadedElements[$handle]);
     }
 
@@ -5039,7 +5047,13 @@ JS, [
     public function getEagerLoadedElements(string $handle): ?ElementCollection
     {
         if (!isset($this->_eagerLoadedElements[$handle])) {
-            return null;
+            // See if we have it stored with the field layout provider’s handle
+            $providerHandle = $this->providerHandle();
+            if ($providerHandle !== null && isset($this->_eagerLoadedElements["$providerHandle:$handle"])) {
+                $handle = "$providerHandle:$handle";
+            } else {
+                return null;
+            }
         }
 
         $elements = $this->_eagerLoadedElements[$handle];
@@ -5106,6 +5120,14 @@ JS, [
      */
     public function getEagerLoadedElementCount(string $handle): ?int
     {
+        if (!isset($this->_eagerLoadedElementCounts[$handle])) {
+            // See if we have it stored with the field layout provider’s handle
+            $providerHandle = $this->providerHandle();
+            if ($providerHandle !== null && isset($this->_eagerLoadedElements["$providerHandle:$handle"])) {
+                $handle = "$providerHandle:$handle";
+            }
+        }
+
         return $this->_eagerLoadedElementCounts[$handle] ?? null;
     }
 
@@ -5115,6 +5137,15 @@ JS, [
     public function setEagerLoadedElementCount(string $handle, int $count): void
     {
         $this->_eagerLoadedElementCounts[$handle] = $count;
+    }
+
+    private function providerHandle(): ?string
+    {
+        try {
+            return $this->getFieldLayout()?->provider?->getHandle();
+        } catch (InvalidConfigException) {
+            return null;
+        }
     }
 
     /**

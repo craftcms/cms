@@ -80,6 +80,8 @@ class UrlHelper
     /**
      * Returns a query string based on the given params.
      *
+     * Param values will be encoded, except for `/`, `{`, and `}` characters.
+     *
      * @param array $params
      * @return string
      * @since 3.3.0
@@ -209,7 +211,7 @@ class UrlHelper
     }
 
     /**
-     * Encodes a URL’s query string params.
+     * Encodes a URL’s query string param values, except for `/`, `{`, and `}` characters.
      *
      * @param string $url
      * @return string
