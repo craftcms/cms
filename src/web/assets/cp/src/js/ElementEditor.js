@@ -704,12 +704,6 @@ Craft.ElementEditor = Garnish.Base.extend(
         $btn.attr('data-copyable') &&
         this._getSitesForCopyFieldAction().length > 0
       ) {
-        let namespace = this.namespace;
-        let matrixBlock = $btn.parents('.matrixblock').first();
-        if (matrixBlock.length > 0) {
-          namespace = matrixBlock.data('base-input-name');
-        }
-
         $hudContent.append('<hr/>');
         $hudContent.append(
           this._getCopyBetweenSitesForm({
@@ -717,7 +711,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             elementId: $btn.data('element-id')
               ? $btn.data('element-id')
               : this.settings.canonicalId,
-            namespace: namespace,
+            namespace: $btn.data('namespace'),
           })
         );
       }
@@ -750,6 +744,18 @@ Craft.ElementEditor = Garnish.Base.extend(
       return $ul;
     },
 
+    createDraftBeforeCopying: function() {
+      if (this.copyHud) {
+        const namespace = this.copyHud.$trigger.data('namespace');
+
+        if (namespace.indexOf('[') > 0) {
+          return false;
+        }
+      }
+
+      return true;
+    },
+
     copyValuesFromSite: async function (ev) {
       ev.preventDefault();
 
@@ -760,13 +766,10 @@ Craft.ElementEditor = Garnish.Base.extend(
       const data = new FormData(ev.target);
       data.append('isFullPage', this.settings.isFullPage || false);
 
-      // if we're not dealing with a matrix field in the inline editable blocks mode - we should ensure the draft exists straight away
-      // this is mostly needed for the nested elements, like matrix entries
-      if (
-        this.copyModal ||
-        (this.copyHud &&
-          this.copyHud.$trigger.parents('.matrixblock').first().length == 0)
-      ) {
+      // in the majority of cases, we should ensure the draft exists straight away;
+      // the exception are fields that use the blocks view mode
+      // (that's matrix and super table when configured so, and neo all the time)
+      if (this.createDraftBeforeCopying()) {
         await this.ensureIsDraftOrRevision(false);
         data.set('elementId', this.settings.elementId);
         data.set('draftId', this.settings.draftId || null);

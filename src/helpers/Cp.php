@@ -1465,12 +1465,22 @@ JS, [
 
         // If this is a copyable field, make the translation icon a button
         if ($copyable) {
+            // prepare namespace for the purpose of copying
+            $namespace = Craft::$app->getView()->getNamespace();
+            if (!empty($namespace)) {
+                // remove the last [fields] segment
+                if (str_ends_with($namespace, '[fields]')) {
+                    $namespace = substr($namespace, 0, -8);
+                }
+            }
+
             $translationIconHtml = Html::button($translationIconHtml, [
                 'class' => 'copyable',
                 'data' => [
                     'copyable' => 'copyable',
                     'description' => $translationDescription,
                     'element-id' => $config['element-id'] ?? null,
+                    'namespace' => $namespace,
                     'field-handle' => $attribute,
                 ],
             ]);
