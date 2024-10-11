@@ -748,7 +748,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (this.copyHud) {
         const namespace = this.copyHud.$trigger.data('namespace');
 
-        if (namespace.indexOf('[') > 0) {
+        if (namespace?.indexOf('[') > 0) {
           return false;
         }
       }

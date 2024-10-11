@@ -1468,6 +1468,9 @@ JS, [
             // prepare namespace for the purpose of copying
             $namespace = Craft::$app->getView()->getNamespace();
             if (!empty($namespace)) {
+                if ($namespace === 'fields') {
+                    $namespace = null;
+                }
                 // remove the last [fields] segment
                 if (str_ends_with($namespace, '[fields]')) {
                     $namespace = substr($namespace, 0, -8);
