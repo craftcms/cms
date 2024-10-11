@@ -744,7 +744,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       return $ul;
     },
 
-    createDraftBeforeCopying: function() {
+    createDraftBeforeCopying: function () {
       if (this.copyHud) {
         const namespace = this.copyHud.$trigger.data('namespace');
 
