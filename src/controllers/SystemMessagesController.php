@@ -37,6 +37,9 @@ class SystemMessagesController extends Controller
         // Make sure they have access to the System Messages utility
         $this->requirePermission('utility:system-messages');
 
+        // Make sure utility is enabled
+        $this->requireUtilityEnabled('system-messages');
+
         return true;
     }
 

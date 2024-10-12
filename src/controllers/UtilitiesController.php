@@ -220,6 +220,7 @@ class UtilitiesController extends Controller
     public function actionDbBackupPerformAction(): ?Response
     {
         $this->requirePermission('utility:db-backup');
+        $this->requireUtilityEnabled('db-backup');
 
         try {
             $backupPath = Craft::$app->getDb()->backup();
@@ -253,6 +254,7 @@ class UtilitiesController extends Controller
     public function actionFindAndReplacePerformAction(): Response
     {
         $this->requirePermission('utility:find-replace');
+        $this->requireUtilityEnabled('find-replace');
 
         $params = $this->request->getRequiredBodyParam('params');
 

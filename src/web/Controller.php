@@ -512,6 +512,20 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
+     * Checks whether the certain utilities are disabled, and ends the request with a 403 error if they are.
+     *
+     * @param string $utilityString The name of the utility.
+     * @throws ForbiddenHttpException if the utility is disabled.
+     */
+    public function requireUtilityEnabled(string $utilityString): void
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (in_array($utilityString, $generalConfig->disabledUtilities)) {
+            throw new ForbiddenHttpException('Utility disabled');
+        }
+    }
+
+    /**
      * Checks whether the current user can perform a given action, and ends the request with a 403 error if they don’t.
      *
      * @param string $action The name of the action to check.
