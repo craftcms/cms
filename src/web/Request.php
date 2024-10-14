@@ -69,6 +69,18 @@ class Request extends \yii\web\Request
     ];
 
     /**
+     * @inheritdoc
+     */
+    public $secureHeaders = [
+        'Client-IP',
+        'X-Forwarded-For',
+        'X-Forwarded',
+        'X-Cluster-Client-IP',
+        'Forwarded-For',
+        'Forwarded',
+    ];
+
+    /**
      * @var int The highest page number that Craft should accept.
      * @since 3.1.14
      */
