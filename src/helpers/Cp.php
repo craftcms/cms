@@ -579,6 +579,11 @@ class Cp
             'sortable' => false,
         ];
 
+        if ($element->getIsRevision()) {
+            $config['showActionMenu'] = false;
+            $config['selectable'] = false;
+        }
+
         $color = $element instanceof Colorable ? $element->getColor() : null;
 
         $classes = ['card'];

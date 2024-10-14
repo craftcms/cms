@@ -7,6 +7,7 @@
 - Fixed a deprecation error. ([#15873](https://github.com/craftcms/cms/issues/15873))
 - Fixed a bug where element sources weren’t keyboard-selectable. ([#15876](https://github.com/craftcms/cms/issues/15876))
 - Fixed a bug where Craft wasn’t auto-detecting interactive terminals on Windows.
+- Fixed a bug where element actions were allowed on nested entries when viewing a revision. ([#15879](https://github.com/craftcms/cms/pull/15879))
 
 ## 5.4.7.1 - 2024-10-09
 

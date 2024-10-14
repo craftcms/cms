@@ -419,25 +419,27 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
 
       const $actionMenuBtn = $element.find('.action-btn');
-      const disclosureMenu = $actionMenuBtn
-        .disclosureMenu()
-        .data('disclosureMenu');
+      if ($actionMenuBtn.length > 0) {
+        const disclosureMenu = $actionMenuBtn
+          .disclosureMenu()
+          .data('disclosureMenu');
 
-      if (Garnish.hasAttr($element, 'data-deletable')) {
-        const ul = disclosureMenu.addGroup();
-        disclosureMenu.addItem(
-          {
-            icon: 'trash',
-            label: this.settings.deleteLabel || Craft.t('app', 'Delete'),
-            destructive: true,
-            onActivate: () => {
-              if (confirm(this.settings.deleteConfirmationMessage)) {
-                this.deleteElement($element);
-              }
+        if (Garnish.hasAttr($element, 'data-deletable')) {
+          const ul = disclosureMenu.addGroup();
+          disclosureMenu.addItem(
+            {
+              icon: 'trash',
+              label: this.settings.deleteLabel || Craft.t('app', 'Delete'),
+              destructive: true,
+              onActivate: () => {
+                if (confirm(this.settings.deleteConfirmationMessage)) {
+                  this.deleteElement($element);
+                }
+              },
             },
-          },
-          ul
-        );
+            ul
+          );
+        }
       }
     },
 

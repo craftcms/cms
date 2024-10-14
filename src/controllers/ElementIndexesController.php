@@ -838,7 +838,7 @@ class ElementIndexesController extends BaseElementsController
 
         // Get the action head/foot HTML before any more is added to it from the element HTML
         if ($includeActions) {
-            $responseData['actions'] = $this->actionData();
+            $responseData['actions'] = $this->viewState['static'] === true ? [] : $this->actionData();
             $responseData['actionsHeadHtml'] = $view->getHeadHtml();
             $responseData['actionsBodyHtml'] = $view->getBodyHtml();
             $responseData['exporters'] = $this->exporterData();
