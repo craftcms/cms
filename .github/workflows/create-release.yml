@@ -56,7 +56,8 @@ jobs:
         run: 'composer create-project craftcms/craft:^5 --no-scripts ${{ env.PROJECT_DIRECTORY }}'
 
       - name: 'Replace composer.json with composer.json.default'
-        run: 'rm ${{ env.PROJECT_DIRECTORY }}/composer.json && mv ${{ env.PROJECT_DIRECTORY }}/composer.json.default ${{ env.PROJECT_DIRECTORY }}/composer.json'
+        working-directory: ${{ env.PROJECT_DIRECTORY }}
+        run: 'rm composer.json && mv composer.json.default composer.json'
 
       - name: 'Install specific Craft version'
         working-directory: ${{ env.PROJECT_DIRECTORY }}
