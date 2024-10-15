@@ -23,6 +23,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
+use craft\utilities\QueueManager;
 use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
@@ -520,7 +521,7 @@ JS;
             'appId' => Craft::$app->id,
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),
             'autosaveDrafts' => $generalConfig->autosaveDrafts,
-            'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
+            'canAccessQueueManager' => Craft::$app->getUtilities()->checkAuthorization(QueueManager::class),
             'dataAttributes' => Html::$dataAttributes,
             'defaultIndexCriteria' => [],
             'disableAutofocus' => (bool)($currentUser->getPreference('disableAutofocus') ?? false),
