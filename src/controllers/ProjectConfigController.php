@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\filters\UtilityAccess;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
 use craft\helpers\StringHelper;
@@ -30,17 +31,14 @@ class ProjectConfigController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action): bool
+    public function behaviors(): array
     {
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
-
-        if (!Craft::$app->getUtilities()->checkAuthorization(ProjectConfigUtility::class)) {
-            throw new ForbiddenHttpException('User is not authorized to perform this action.');
-        }
-
-        return true;
+        return array_merge(parent::behaviors(), [
+            [
+                'class' => UtilityAccess::class,
+                'utility' => ProjectConfigUtility::class,
+            ],
+        ]);
     }
 
     /**

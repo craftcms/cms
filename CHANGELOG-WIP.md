@@ -38,6 +38,7 @@
 - Added `craft\filters\BasicHttpAuthLogin`. ([#15720](https://github.com/craftcms/cms/pull/15720))
 - Added `craft\filters\BasicHttpAuthStatic`. ([#15720](https://github.com/craftcms/cms/pull/15720))
 - Added `craft\filters\SiteFilterTrait::$enabled`. ([#15720](https://github.com/craftcms/cms/pull/15720))
+- Added `craft\filters\UtilityAccess`.
 - Added `craft\helpers\Console::indent()`.
 - Added `craft\helpers\Console::indentStr()`.
 - Added `craft\helpers\Console::outdent()`.
