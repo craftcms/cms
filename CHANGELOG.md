@@ -3,6 +3,12 @@
 ## Unreleased
 
 - Fixed a privilege escalation vulnerability.
+- Added `\craft\helpers\Session::getFlash`
+- Added `\craft\helpers\Session::getAllFlashes`
+- Added `\craft\helpers\Session::hasFlash`
+- Added `\craft\helpers\Session::addFlash`
+- Added `\craft\helpers\Session::removeFlash`
+- Added `\craft\helpers\Session::removeAllFlashes`
 
 ## 4.12.6.1 - 2024-10-09
 
