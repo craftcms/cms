@@ -22,6 +22,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
+use craft\utilities\QueueManager;
 use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
@@ -477,7 +478,7 @@ JS;
             'apiParams' => Craft::$app->apiParams,
             'appId' => Craft::$app->id,
             'autosaveDrafts' => $generalConfig->autosaveDrafts,
-            'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
+            'canAccessQueueManager' => Craft::$app->getUtilities()->checkAuthorization(QueueManager::class),
             'dataAttributes' => Html::$dataAttributes,
             'defaultIndexCriteria' => [],
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],

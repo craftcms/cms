@@ -26,6 +26,7 @@ use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
 use craft\models\Updates;
+use craft\utilities\Updates as UpdatesUtility;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use DateInterval;
@@ -147,9 +148,11 @@ class AppController extends Controller
     {
         $this->requireAcceptsJson();
 
-        // Require either the 'performUpdates' or 'utility:updates' permission
-        $userSession = Craft::$app->getUser();
-        if (!$userSession->checkPermission('performUpdates') && !$userSession->checkPermission('utility:updates')) {
+        // Require either the 'performUpdates' permission or access to the Updates utility
+        if (
+            !Craft::$app->getUser()->checkPermission('performUpdates') &&
+            !Craft::$app->getUtilities()->checkAuthorization(UpdatesUtility::class)
+        ) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
 
@@ -177,9 +180,11 @@ class AppController extends Controller
     {
         $this->requireAcceptsJson();
 
-        // Require either the 'performUpdates' or 'utility:updates' permission
-        $userSession = Craft::$app->getUser();
-        if (!$userSession->checkPermission('performUpdates') && !$userSession->checkPermission('utility:updates')) {
+        // Require either the 'performUpdates' permission or access to the Updates utility
+        if (
+            !Craft::$app->getUser()->checkPermission('performUpdates') &&
+            !Craft::$app->getUtilities()->checkAuthorization(UpdatesUtility::class)
+        ) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
 
