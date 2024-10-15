@@ -9,11 +9,12 @@ namespace craft\fields\linktypes;
 
 use Craft;
 use craft\fields\Link;
-use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use League\Uri\Uri;
+use League\Uri\UriString;
 
 /**
  * Base text link type.
@@ -137,9 +138,7 @@ JS, [
     public function validateValue(string $value, ?string &$error = null): bool
     {
         $pattern = sprintf('/%s/i', $this->pattern());
-        if (App::supportsIdn()) {
-            $value = idn_to_ascii($value);
-        }
+        $value = Uri::fromComponents(UriString::parse($value))->toString();
         return (bool)preg_match($pattern, $value);
     }
 

@@ -44,6 +44,7 @@
     "enshrined/svg-sanitize": "~0.19.0",
     "guzzlehttp/guzzle": "^7.2.0",
     "illuminate/collections": "^v10.42.0",
+    "league/uri": "^7.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "moneyphp/money": "^4.0",
     "monolog/monolog": "^3.0",
