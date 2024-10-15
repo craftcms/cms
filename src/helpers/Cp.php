@@ -21,6 +21,8 @@ use craft\fieldlayoutelements\BaseField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
+use craft\utilities\ProjectConfig as ProjectConfigUtility;
+use craft\utilities\Updates;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use yii\base\Event;
@@ -127,10 +129,12 @@ class Cp
             ]);
         }
 
+        $utilitiesService = Craft::$app->getUtilities();
+
         // Critical update available?
         if (
             $path !== 'utilities/updates' &&
-            $user->can('utility:updates') &&
+            $utilitiesService->checkAuthorization(Updates::class) &&
             Craft::$app->getUpdates()->getIsCriticalUpdateAvailable()
         ) {
             $alerts[] = Craft::t('app', 'A critical update is available.') .
@@ -141,7 +145,7 @@ class Cp
         $projectConfig = Craft::$app->getProjectConfig();
         if (
             $path !== 'utilities/project-config' &&
-            $user->can('utility:project-config') &&
+            $utilitiesService->checkAuthorization(ProjectConfigUtility::class) &&
             $projectConfig->areChangesPending() &&
             ($projectConfig->writeYamlAutomatically || $projectConfig->get('dateModified') <= $projectConfig->get('dateModified', true))
         ) {

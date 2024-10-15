@@ -18,6 +18,7 @@ use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
+use craft\events\ApplyFieldSaveEvent;
 use craft\events\ConfigEvent;
 use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
@@ -142,6 +143,12 @@ class Fields extends Component
      * @event FieldEvent The event that is triggered before a field is saved.
      */
     public const EVENT_BEFORE_SAVE_FIELD = 'beforeSaveField';
+
+    /**
+     * @event ApplyFieldSaveEvent The event that is triggered before a field save is applied to the database.
+     * @since 4.13.0
+     */
+    public const EVENT_BEFORE_APPLY_FIELD_SAVE = 'beforeApplyFieldSave';
 
     /**
      * @event FieldEvent The event that is triggered after a field is saved.
@@ -1563,6 +1570,27 @@ class Fields extends Component
     public function applyFieldSave(string $fieldUid, array $data, string $context): void
     {
         $groupUid = $data['fieldGroup'];
+        $fieldRecord = $this->_getFieldRecord($fieldUid);
+        $groupRecord = $groupUid ? $this->_getGroupRecord($groupUid) : null;
+        $isNewField = $fieldRecord->getIsNewRecord();
+        $oldSettings = $fieldRecord->getOldAttribute('settings');
+
+        // For control panel save requests, make sure we have all the custom data already saved on the object.
+        if (isset($this->_savingFields[$fieldUid])) {
+            $field = $this->_savingFields[$fieldUid];
+        } elseif (!$isNewField) {
+            $field = $this->getFieldById($fieldRecord->id);
+        } else {
+            $field = null;
+        }
+
+        // Fire a 'beforeApplyFieldSave' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_SAVE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_FIELD_SAVE, new ApplyFieldSaveEvent([
+                'field' => $field,
+                'config' => $data,
+            ]));
+        }
 
         // Ensure we have the field group in the place first
         if ($groupUid) {
@@ -1573,11 +1601,6 @@ class Fields extends Component
         $transaction = $db->beginTransaction();
 
         try {
-            $fieldRecord = $this->_getFieldRecord($fieldUid);
-            $groupRecord = $groupUid ? $this->_getGroupRecord($groupUid) : null;
-            $isNewField = $fieldRecord->getIsNewRecord();
-            $oldSettings = $fieldRecord->getOldAttribute('settings');
-
             $class = $data['type'];
 
             // Track whether we should remove the field’s search indexes after save
@@ -1657,18 +1680,11 @@ class Fields extends Component
         // Tell the current CustomFieldBehavior class about the field
         CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;
 
-        // For control panel save requests, make sure we have all the custom data already saved on the object.
-        if (isset($this->_savingFields[$fieldUid])) {
-            $field = $this->_savingFields[$fieldUid];
-
-            if ($isNewField) {
-                $field->id = $fieldRecord->id;
-            }
+        if ($isNewField) {
+            // Try fetching the field again, if it didn’t exist to begin with
+            $field ??= $this->getFieldById($fieldRecord->id);
+            $field->id = $fieldRecord->id;
         } else {
-            $field = $this->getFieldById($fieldRecord->id);
-        }
-
-        if (!$isNewField) {
             // Save the old field handle and settings on the model in case the field type needs to do something with it.
             $field->oldHandle = $fieldRecord->getOldHandle();
             $field->oldSettings = is_string($oldSettings) ? Json::decode($oldSettings) : null;

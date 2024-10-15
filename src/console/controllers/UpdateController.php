@@ -8,6 +8,7 @@
 namespace craft\console\controllers;
 
 use Composer\IO\BufferIO;
+use Composer\Semver\VersionParser;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
@@ -53,6 +54,24 @@ class UpdateController extends Controller
     public bool $withExpired = false;
 
     /**
+     * @var bool Whether only minor updates should be applied.
+     * @since 4.13.0
+     */
+    public bool $minorOnly = false;
+
+    /**
+     * @var bool Whether only patch updates should be applied.
+     * @since 4.13.0
+     */
+    public bool $patchOnly = false;
+
+    /**
+     * @var string[] Plugin handles to exclude
+     * @since 4.13.0
+     */
+    public array $except = [];
+
+    /**
      * @var bool Force the update if allowUpdates is disabled
      */
     public bool $force = false;
@@ -76,6 +95,9 @@ class UpdateController extends Controller
 
         if ($actionID === 'update') {
             $options[] = 'withExpired';
+            $options[] = 'minorOnly';
+            $options[] = 'patchOnly';
+            $options[] = 'except';
             $options[] = 'force';
             $options[] = 'backup';
             $options[] = 'migrate';
@@ -252,7 +274,29 @@ class UpdateController extends Controller
      */
     private function _getRequirements(string ...$handles): array
     {
-        $maxVersions = [];
+        $constraints = [];
+        $pluginsService = Craft::$app->getPlugins();
+
+        if ($this->minorOnly || $this->patchOnly) {
+            $cmsConstraint = $this->_constraint(Craft::$app->getVersion());
+            if ($cmsConstraint !== null) {
+                $constraints['cms'] = $cmsConstraint;
+            }
+
+            foreach ($pluginsService->getAllPlugins() as $plugin) {
+                // don't update dev versions
+                $version = $plugin->getVersion();
+                if (VersionParser::parseStability($version) === 'dev') {
+                    continue;
+                }
+
+                $pluginConstraint = $this->_constraint($version);
+                if ($pluginConstraint !== null) {
+                    $constraints[$plugin->id] = $pluginConstraint;
+                }
+            }
+        }
+
         if ($handles !== ['all']) {
             // Look for any specific versions that were requested
             foreach ($handles as $handle) {
@@ -261,23 +305,28 @@ class UpdateController extends Controller
                     if ($handle === 'craft') {
                         $handle = 'cms';
                     }
-                    $maxVersions[$handle] = $to;
+                    $constraints[$handle] = $to;
                 }
             }
         }
 
-        $updates = $this->_getUpdates($maxVersions);
-        $pluginsService = Craft::$app->getPlugins();
+        $updates = $this->_getUpdates($constraints);
         $info = [];
         $requirements = [];
 
         if ($handles === ['all']) {
-            if (($latest = $updates->cms->getLatest()) !== null) {
+            if (
+                !in_array('craft', $this->except) &&
+                ($latest = $updates->cms->getLatest()) !== null
+            ) {
                 $this->_updateRequirements($requirements, $info, 'craft', Craft::$app->version, $latest->version, 'craftcms/cms', $updates->cms);
             }
 
             foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
-                if (($latest = $pluginUpdate->getLatest()) !== null) {
+                if (
+                    !in_array($pluginHandle, $this->except) &&
+                    ($latest = $pluginUpdate->getLatest()) !== null
+                ) {
                     try {
                         $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
                     } catch (InvalidPluginException) {
@@ -332,6 +381,25 @@ class UpdateController extends Controller
         }
 
         return $requirements;
+    }
+
+    private function _constraint(string $version): ?string
+    {
+        if ($this->minorOnly) {
+            // 1.5.7.0 => ^1.5.7.0
+            return "^$version";
+        }
+
+        if ($this->patchOnly) {
+            // 1.5.7.0 => ~1.5.7
+            $version = (new VersionParser())->normalize($version);
+            $parts = explode('.', $version);
+            if (count($parts) === 4) {
+                return sprintf('~%s.%s.%s', ...array_slice($parts, 0, 3));
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -591,13 +659,13 @@ class UpdateController extends Controller
     /**
      * Returns the available updates.
      *
-     * @param string[] $maxVersions
+     * @param string[] $constraints
      * @return Updates
      */
-    private function _getUpdates(array $maxVersions = []): Updates
+    private function _getUpdates(array $constraints = []): Updates
     {
         $this->stdout('Fetching available updates ... ', Console::FG_YELLOW);
-        $updateData = Craft::$app->getApi()->getUpdates($maxVersions);
+        $updateData = Craft::$app->getApi()->getUpdates($constraints);
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return new UpdatesModel($updateData);
     }

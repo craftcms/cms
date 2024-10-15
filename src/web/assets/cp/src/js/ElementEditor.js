@@ -1090,7 +1090,16 @@ Craft.ElementEditor = Garnish.Base.extend(
         );
       }
 
-      return data;
+      // Give other things the ability to customize the serialized data
+      // (need to be passed via a nested object so changes persist upstream)
+      const eventData = {
+        serialized: data,
+      };
+      this.trigger('serializeForm', {
+        data: eventData,
+      });
+
+      return eventData.serialized;
     },
 
     /**

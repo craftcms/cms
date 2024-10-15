@@ -8,7 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\filters\UtilityAccess;
 use craft\models\SystemMessage;
+use craft\utilities\SystemMessages;
 use craft\web\Controller;
 use yii\web\Response;
 
@@ -25,6 +27,19 @@ class SystemMessagesController extends Controller
     /**
      * @inheritdoc
      */
+    public function behaviors(): array
+    {
+        return array_merge(parent::behaviors(), [
+            [
+                'class' => UtilityAccess::class,
+                'utility' => SystemMessages::class,
+            ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
@@ -32,9 +47,6 @@ class SystemMessagesController extends Controller
         }
 
         Craft::$app->requireEdition(Craft::Pro);
-
-        // Make sure they have access to the System Messages utility
-        $this->requirePermission('utility:system-messages');
 
         return true;
     }

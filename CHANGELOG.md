@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a privilege escalation vulnerability.
+
 ## 4.12.6.1 - 2024-10-09
 
 - Custom field condition rules are now ignored if they reference a field with an incompatible type. ([#15850](https://github.com/craftcms/cms/issues/15850))

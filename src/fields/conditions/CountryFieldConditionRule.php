@@ -22,7 +22,7 @@ class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements 
      */
     protected function options(): array
     {
-        return Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
+        return Craft::$app->getAddresses()->getCountryList(Craft::$app->language);
     }
 
     /**
