@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
 use craft\helpers\StringHelper;
+use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use craft\web\Controller;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Exception;
@@ -35,7 +36,10 @@ class ProjectConfigController extends Controller
             return false;
         }
 
-        $this->requirePermission('utility:project-config');
+        if (!Craft::$app->getUtilities()->checkAuthorization(ProjectConfigUtility::class)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
+
         return true;
     }
 

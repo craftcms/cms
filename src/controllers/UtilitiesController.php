@@ -15,6 +15,10 @@ use craft\helpers\FileHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
+use craft\utilities\DbBackup;
+use craft\utilities\DeprecationErrors;
+use craft\utilities\FindAndReplace as FindAndReplaceUtility;
+use craft\utilities\Migrations;
 use craft\utilities\Updates;
 use craft\utilities\Upgrade;
 use craft\web\assets\utilities\UtilitiesAsset;
@@ -101,9 +105,12 @@ class UtilitiesController extends Controller
      */
     public function actionGetDeprecationErrorTracesModal(): Response
     {
-        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+
+        if (!Craft::$app->getUtilities()->checkAuthorization(DeprecationErrors::class)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
 
         $logId = Craft::$app->request->getRequiredParam('logId');
         $html = $this->getView()->renderTemplate('_components/utilities/DeprecationErrors/traces_modal.twig', [
@@ -123,9 +130,12 @@ class UtilitiesController extends Controller
      */
     public function actionDeleteAllDeprecationErrors(): Response
     {
-        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+
+        if (!Craft::$app->getUtilities()->checkAuthorization(DeprecationErrors::class)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
 
         Craft::$app->deprecator->deleteAllLogs();
 
@@ -140,9 +150,12 @@ class UtilitiesController extends Controller
      */
     public function actionDeleteDeprecationError(): Response
     {
-        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+
+        if (!Craft::$app->getUtilities()->checkAuthorization(DeprecationErrors::class)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
 
         $logId = $this->request->getRequiredBodyParam('logId');
         Craft::$app->deprecator->deleteLogById($logId);
@@ -159,7 +172,9 @@ class UtilitiesController extends Controller
      */
     public function actionClearCachesPerformAction(): Response
     {
-        $this->requirePermission('utility:clear-caches');
+        if (!Craft::$app->getUtilities()->checkAuthorization(ClearCaches::class)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
 
         $caches = $this->request->getRequiredBodyParam('caches');
 
@@ -198,7 +213,9 @@ class UtilitiesController extends Controller
      */
     public function actionInvalidateTags(): Response
     {
-        $this->requirePermission('utility:clear-caches');
+        if (!Craft::$app->getUtilities()->checkAuthorization(ClearCaches::class)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
 
         $tags = $this->request->getRequiredBodyParam('tags');
         $cache = Craft::$app->getCache();
@@ -219,7 +236,9 @@ class UtilitiesController extends Controller
      */
     public function actionDbBackupPerformAction(): ?Response
     {
-        $this->requirePermission('utility:db-backup');
+        if (!Craft::$app->getUtilities()->checkAuthorization(DbBackup::class)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
 
         try {
             $backupPath = Craft::$app->getDb()->backup();
@@ -252,7 +271,9 @@ class UtilitiesController extends Controller
      */
     public function actionFindAndReplacePerformAction(): Response
     {
-        $this->requirePermission('utility:find-replace');
+        if (!Craft::$app->getUtilities()->checkAuthorization(FindAndReplaceUtility::class)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
 
         $params = $this->request->getRequiredBodyParam('params');
 
@@ -274,7 +295,9 @@ class UtilitiesController extends Controller
      */
     public function actionApplyNewMigrations(): Response
     {
-        $this->requirePermission('utility:migrations');
+        if (!Craft::$app->getUtilities()->checkAuthorization(Migrations::class)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
 
         $migrator = Craft::$app->getContentMigrator();
 
