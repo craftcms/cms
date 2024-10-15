@@ -10,6 +10,7 @@
 - Fixed a bug where element actions were allowed on nested entries when viewing a revision. ([#15879](https://github.com/craftcms/cms/pull/15879))
 - Fixed a bug where element error summaries weren’t linking to recursively-nested Matrix fields properly. ([#15797](https://github.com/craftcms/cms/issues/15797))
 - Fixed a bug where eager-loaded relation fields were loading all related elements across all instances of the field. ([#15890](https://github.com/craftcms/cms/issues/15890))
+- Fixed a bug where expanding the site statuses UI for an entry within a slideout would remove the expand button from the main entry’s form. ([#15893](https://github.com/craftcms/cms/pull/15893))
 - Fixed a privilege escalation vulnerability.
 
 ## 5.4.7.1 - 2024-10-09
