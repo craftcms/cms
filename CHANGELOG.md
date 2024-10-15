@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.12.7 - 2024-10-15
 
 - Fixed a privilege escalation vulnerability.
 
