@@ -9,6 +9,7 @@
 - Fixed a bug where Craft wasn’t auto-detecting interactive terminals on Windows.
 - Fixed a bug where element actions were allowed on nested entries when viewing a revision. ([#15879](https://github.com/craftcms/cms/pull/15879))
 - Fixed a bug where element error summaries weren’t linking to recursively-nested Matrix fields properly. ([#15797](https://github.com/craftcms/cms/issues/15797))
+- Fixed a privilege escalation vulnerability.
 
 ## 5.4.7.1 - 2024-10-09
 

@@ -10,7 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\enums\CmsEdition;
 use craft\models\SystemMessage;
+use craft\utilities\SystemMessages;
 use craft\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /**
@@ -35,7 +37,9 @@ class SystemMessagesController extends Controller
         Craft::$app->requireEdition(CmsEdition::Pro);
 
         // Make sure they have access to the System Messages utility
-        $this->requirePermission('utility:system-messages');
+        if (!Craft::$app->getUtilities()->checkAuthorization(SystemMessages::class)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
 
         return true;
     }

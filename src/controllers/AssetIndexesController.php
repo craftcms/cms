@@ -18,6 +18,7 @@ use craft\utilities\AssetIndexes;
 use craft\web\Controller;
 use Throwable;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -41,7 +42,10 @@ class AssetIndexesController extends Controller
         }
 
         // No permission no bueno
-        $this->requirePermission('utility:asset-indexes');
+        if (!Craft::$app->getUtilities()->checkAuthorization(AssetIndexes::class)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
+
         $this->requireAcceptsJson();
 
         return true;
