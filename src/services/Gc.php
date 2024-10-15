@@ -286,7 +286,7 @@ class Gc extends Component
     public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
         /** @var string|ElementInterface $elementType */
-        $this->_stdout(sprintf('    > deleting partial %s data in the `%s` table ... ', $elementType::lowerDisplayName(), $table));
+        $this->_stdout(sprintf('    > deleting partial %s data ... ', $elementType::lowerDisplayName()));
 
         $ids = (new Query())
             ->select('e.id')

@@ -4,6 +4,7 @@ namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\fields\Lightswitch;
+use yii\base\InvalidConfigException;
 
 /**
  * Lightswitch field condition rule.
@@ -18,8 +19,24 @@ class LightswitchFieldConditionRule extends BaseLightswitchConditionRule impleme
     /**
      * @inheritdoc
      */
-    protected function elementQueryParam(): bool
+    protected function inputHtml(): string
     {
+        if (!$this->field() instanceof Lightswitch) {
+            throw new InvalidConfigException();
+        }
+
+        return parent::inputHtml();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function elementQueryParam(): ?bool
+    {
+        if (!$this->field() instanceof Lightswitch) {
+            return null;
+        }
+
         return $this->value;
     }
 
@@ -29,8 +46,7 @@ class LightswitchFieldConditionRule extends BaseLightswitchConditionRule impleme
     protected function matchFieldValue($value): bool
     {
         if (!$this->field() instanceof Lightswitch) {
-            // No longer a Lightswitch field
-            return false;
+            return true;
         }
 
         /** @var bool $value */

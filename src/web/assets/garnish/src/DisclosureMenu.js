@@ -202,6 +202,10 @@ export default Base.extend(
         'scroll',
         'setContainerPosition'
       );
+      const $scrollParent = this.$trigger.scrollParent();
+      if ($scrollParent.get(0) !== document.body) {
+        this.addListener($scrollParent, 'scroll', 'setContainerPosition');
+      }
       this.addListener(Garnish.$win, 'resize', 'setContainerPosition');
 
       this.$container.velocity('stop');

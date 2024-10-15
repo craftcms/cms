@@ -41,10 +41,8 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function elementType(): string
     {
+        /** @var BaseRelationField $field */
         $field = $this->field();
-        if (!$field instanceof BaseRelationField) {
-            throw new InvalidConfigException();
-        }
         return $field::elementType();
     }
 
@@ -53,10 +51,8 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function sources(): ?array
     {
+        /** @var BaseRelationField $field */
         $field = $this->field();
-        if (!$field instanceof BaseRelationField) {
-            throw new InvalidConfigException();
-        }
         return (array)$field->getInputSources();
     }
 
@@ -65,10 +61,8 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function selectionCondition(): ?ElementConditionInterface
     {
+        /** @var BaseRelationField $field */
         $field = $this->field();
-        if (!$field instanceof BaseRelationField) {
-            throw new InvalidConfigException();
-        }
         return $field->getSelectionCondition();
     }
 
@@ -77,10 +71,8 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function criteria(): ?array
     {
+        /** @var BaseRelationField $field */
         $field = $this->field();
-        if (!$field instanceof BaseRelationField) {
-            throw new InvalidConfigException();
-        }
         return $field->getInputSelectionCriteria();
     }
 
@@ -112,6 +104,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function inputHtml(): string
     {
+        if (!$this->field() instanceof BaseRelationField) {
+            throw new InvalidConfigException();
+        }
+
         return match ($this->operator) {
             self::OPERATOR_RELATED_TO => parent::inputHtml(),
             default => '',
@@ -156,8 +152,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     protected function matchFieldValue($value): bool
     {
         if (!$this->field() instanceof BaseRelationField) {
-            // No longer a relation field
-            return false;
+            return true;
         }
 
         if ($value instanceof ElementQueryInterface) {
