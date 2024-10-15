@@ -144,6 +144,16 @@ class Session
         self::$_exists = false;
     }
 
+    /**
+     * Returns a flash message.
+     *
+     * @param string $key the key identifying the flash message
+     * @param mixed $defaultValue value to be returned if the flash message does not exist
+     * @param bool $delete whether to delete this flash message right after this method is called
+     * @return mixed the flash message or an array of messages if addFlash was used
+     * @since 4.13.0
+     * @see \yii\web\Session::getFlash
+     */
     public static function getFlash(string $key, mixed $defaultValue = null, bool $delete = false): mixed
     {
         if (!static::exists()) {
@@ -153,6 +163,14 @@ class Session
         return self::session()->getFlash($key, $defaultValue, $delete);
     }
 
+    /**
+     * Returns all flash messages.
+     *
+     * @param bool $delete whether to delete the flash messages right after this method is called
+     * @return array flash messages (key => message or key => [message1, message2])
+     * @since 4.13.0
+     * @see \yii\web\Session::getAllFlashes
+     */
     public static function getAllFlashes(bool $delete): array
     {
         if (!static::exists()) {
@@ -161,6 +179,14 @@ class Session
         return self::session()->getAllFlashes($delete);
     }
 
+    /**
+     * Returns a value indicating whether there are flash messages associated with the specified key.
+     *
+     * @param string $key key identifying the flash message type
+     * @return bool whether any flash messages exist under specified key
+     * @since 4.13.0
+     * @see \yii\web\Session::hasFlash
+     */
     public static function hasFlash(string $key): bool
     {
         if (!static::exists()) {
@@ -169,11 +195,28 @@ class Session
         return self::session()->hasFlash($key);
     }
 
+    /**
+     * Adds a flash message.
+     *
+     * @param string $key the key identifying the flash message
+     * @param mixed $value flash message
+     * @param bool $removeAfterAccess whether the flash message should be automatically removed only if it is accessed
+     * @since 4.13.0
+     * @see \yii\web\Session::addFlash
+     */
     public static function addFlash($key, $value = true, $removeAfterAccess = true): void
     {
         self::session()?->addFlash($key, $value, $removeAfterAccess);
     }
 
+    /**
+     * Removes a flash message.
+     *
+     * @param string $key the key identifying the flash message
+     * @return mixed the removed flash message or `null` if the flash message does not exist
+     * @since 4.13.0
+     * @see \yii\web\Session::removeFlash
+     */
     public static function removeFlash(string $key): mixed
     {
         if (!static::exists()) {
@@ -183,6 +226,12 @@ class Session
         return self::session()->removeFlash($key);
     }
 
+    /**
+     * Removes all flash messages.
+     *
+     * @since 4.13.0
+     * @see \yii\web\Session::removeAllFlashes
+     */
     public static function removeAllFlashes(): void
     {
         if (!static::exists()) {
