@@ -1059,7 +1059,7 @@ JS, [
                                 if ($layoutElement instanceof BaseField && $layoutElement->attribute() === $fieldKey) {
                                     $tabUid = $tab->uid;
                                     if (!$multiNested) {
-                                        continue 2;
+                                        break 2;
                                     }
                                 }
                                 // if it's a multi-nested error key for matrix in blocks mode
@@ -1072,6 +1072,7 @@ JS, [
                                         $keyParts = explode('.', $key);
                                         $key = implode('.', array_splice($keyParts, -2));
                                         unset($keyParts);
+                                        break 2;
                                     }
                                 }
                             }
