@@ -22,7 +22,6 @@ use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
 use craft\events\DraftEvent;
 use craft\fieldlayoutelements\BaseField;
-use craft\fieldlayoutelements\CustomField;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
@@ -1048,7 +1047,7 @@ JS, [
                         $errorItem .= Html::endTag('li');
                     } else {
                         // get tab uid for this error
-                        $tabUid = $layoutElement = null;
+                        $tabUid = null;
                         $bracketPos = strpos($key, '[');
                         $fieldKey = substr($key, 0, $bracketPos ?: null);
                         foreach ($tabs as $tab) {
@@ -1058,22 +1057,16 @@ JS, [
                                     break 2;
                                 }
                             }
-                            $layoutElement = null;
                         }
 
-                        // is the error for multi-nested field (e.g. matrix in a matrix in a blocks mode)
-                        $multiNested = substr_count($key, '.') > 1;
-
-                        // if it's a multi-nested error key for matrix in blocks mode
-                        // manipulate the key to only reference the matrix field, entry and inner field
-                        if ($multiNested && $layoutElement instanceof CustomField) {
-                            if (
-                                $layoutElement->getField() instanceof Matrix &&
-                                $layoutElement->getField()->viewMode === Matrix::VIEW_MODE_BLOCKS
-                            ) {
-                                $keyParts = explode('.', $key);
-                                $key = implode('.', array_splice($keyParts, -2));
-                                unset($keyParts);
+                        // If the error is for a recursively-nested Matrix field,
+                        // manipulate the key to only reference the nested Matrix field, entry and inner field
+                        // Before: foo[<uuid>].bar[<uuid>].baz
+                        // After:  bar[<uuid>].baz
+                        if (substr_count($key, '.') > 1) {
+                            $keyParts = explode('.', $key);
+                            if (preg_match(sprintf('/\[%s\]$/', StringHelper::UUID_PATTERN), $keyParts[count($keyParts) - 3])) {
+                                $key = implode('.', array_slice($keyParts, -2));
                             }
                         }
 
