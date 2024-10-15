@@ -142,7 +142,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         'aria-live': 'polite',
       }).appendTo($spinnerContainer);
 
-      this.$expandSiteStatusesBtn = $('.expand-status-btn');
+      this.$expandSiteStatusesBtn = this.$container.find('.expand-status-btn');
 
       if (this.settings.canEditMultipleSites) {
         this.addListener(
