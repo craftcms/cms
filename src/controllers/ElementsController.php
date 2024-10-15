@@ -1054,7 +1054,7 @@ JS, [
                             foreach ($tab->getElements() as $layoutElement) {
                                 if ($layoutElement instanceof BaseField && $layoutElement->attribute() === $fieldKey) {
                                     $tabUid = $tab->uid;
-                                    continue 2;
+                                    break 2;
                                 }
                             }
                         }
