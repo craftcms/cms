@@ -1047,34 +1047,33 @@ JS, [
                         $errorItem .= $error;
                         $errorItem .= Html::endTag('li');
                     } else {
-                        // is the error for multi-nested field (e.g. matrix in a matrix in a blocks mode)
-                        $multiNested = substr_count($key, '.') > 1;
-
                         // get tab uid for this error
-                        $tabUid = null;
+                        $tabUid = $layoutElement = null;
                         $bracketPos = strpos($key, '[');
                         $fieldKey = substr($key, 0, $bracketPos ?: null);
                         foreach ($tabs as $tab) {
                             foreach ($tab->getElements() as $layoutElement) {
                                 if ($layoutElement instanceof BaseField && $layoutElement->attribute() === $fieldKey) {
                                     $tabUid = $tab->uid;
-                                    if (!$multiNested) {
-                                        break 2;
-                                    }
+                                    break 2;
                                 }
-                                // if it's a multi-nested error key for matrix in blocks mode
-                                // manipulate the key to only reference the matrix field, entry and inner field
-                                if ($multiNested && $layoutElement instanceof CustomField) {
-                                    if (
-                                        $layoutElement->getField() instanceof Matrix &&
-                                        $layoutElement->getField()->viewMode === Matrix::VIEW_MODE_BLOCKS
-                                    ) {
-                                        $keyParts = explode('.', $key);
-                                        $key = implode('.', array_splice($keyParts, -2));
-                                        unset($keyParts);
-                                        break 2;
-                                    }
-                                }
+                            }
+                            $layoutElement = null;
+                        }
+
+                        // is the error for multi-nested field (e.g. matrix in a matrix in a blocks mode)
+                        $multiNested = substr_count($key, '.') > 1;
+
+                        // if it's a multi-nested error key for matrix in blocks mode
+                        // manipulate the key to only reference the matrix field, entry and inner field
+                        if ($multiNested && $layoutElement instanceof CustomField) {
+                            if (
+                                $layoutElement->getField() instanceof Matrix &&
+                                $layoutElement->getField()->viewMode === Matrix::VIEW_MODE_BLOCKS
+                            ) {
+                                $keyParts = explode('.', $key);
+                                $key = implode('.', array_splice($keyParts, -2));
+                                unset($keyParts);
                             }
                         }
 
