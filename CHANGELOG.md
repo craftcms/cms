@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.4.8 - 2024-10-15
 
 - Added `craft\helpers\App::isTty()`.
 - Fixed a styling issue with Color field inputs. ([#15868](https://github.com/craftcms/cms/issues/15868))
