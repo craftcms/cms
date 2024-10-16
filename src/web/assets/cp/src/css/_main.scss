@@ -2747,13 +2747,12 @@ table {
 
           .sort-icon {
             @include angle(up);
-            inset-inline-end: var(--m);
-            inset-block-start: calc(7rem / 16);
+            margin-top: 7px;
           }
 
           &.desc .sort-icon {
             transform: rotate(45deg);
-            inset-block-start: calc((7rem / 16) - (2rem / 16));
+            margin-top: 5px;
           }
         }
       }
