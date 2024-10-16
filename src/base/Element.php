@@ -3205,7 +3205,11 @@ abstract class Element extends Component implements ElementInterface
     public function getCrumbs(): array
     {
         if ($this instanceof NestedElementInterface) {
-            $owner = $this->getPrimaryOwner();
+            if ($this->getOwnerId() && $this->getPrimaryOwnerId() !== $this->getOwnerId()) {
+                $owner = $this->getOwner();
+            } else {
+                $owner = $this->getPrimaryOwner();
+            }
             if ($owner) {
                 return [
                     ...$owner->getCrumbs(),
@@ -3626,6 +3630,7 @@ JS, [
                     'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
                     'revisionId' => $this->revisionId,
                     'siteId' => $this->siteId,
+                    'ownerId' => $this instanceof NestedElementInterface && property_exists($this, 'ownerId') ? $this->ownerId : null,
                 ],
             ]);
         }

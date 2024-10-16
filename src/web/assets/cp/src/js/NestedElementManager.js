@@ -410,7 +410,13 @@ Craft.NestedElementManager = Garnish.Base.extend(
             // Let the link/button do its thing
             return;
           }
-          Craft.createElementEditor(this.elementType, $element);
+
+          let settings = [];
+          if ($element?.data('owner-id')) {
+            settings['ownerId'] = $element.data('owner-id');
+          }
+
+          Craft.createElementEditor(this.elementType, $element, settings);
         });
       }
 

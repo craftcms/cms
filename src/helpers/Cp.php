@@ -18,6 +18,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\Grippable;
 use craft\base\Iconic;
+use craft\base\NestedElementInterface;
 use craft\base\Statusable;
 use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
@@ -611,6 +612,7 @@ class Cp
                         'id' => Craft::$app->getView()->namespaceInputId($config['id']),
                         'ui' => 'card',
                     ] : false,
+                    'owner-id' => $element instanceof NestedElementInterface && property_exists($element, 'ownerId') ? $element->ownerId : null,
                 ]),
             ],
             $config['attributes'],
