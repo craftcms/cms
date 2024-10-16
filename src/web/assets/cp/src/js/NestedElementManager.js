@@ -415,6 +415,9 @@ Craft.NestedElementManager = Garnish.Base.extend(
           if ($element?.data('owner-id')) {
             settings['ownerId'] = $element.data('owner-id');
           }
+          if ($element?.data('field-id')) {
+            settings['fieldId'] = $element.data('field-id');
+          }
 
           Craft.createElementEditor(this.elementType, $element, settings);
         });

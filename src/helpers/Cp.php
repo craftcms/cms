@@ -613,6 +613,7 @@ class Cp
                         'ui' => 'card',
                     ] : false,
                     'owner-id' => $element instanceof NestedElementInterface && property_exists($element, 'ownerId') ? $element->ownerId : null,
+                    'field-id' => $element instanceof NestedElementInterface && property_exists($element, 'fieldId') ? $element->fieldId : null,
                 ]),
             ],
             $config['attributes'],

@@ -113,6 +113,9 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       if (this.settings.ownerId) {
         params.ownerId = this.settings.ownerId;
       }
+      if (this.settings.fieldId) {
+        params.fieldId = this.settings.fieldId;
+      }
 
       if (this.settings.siteId) {
         params.siteId = this.settings.siteId;

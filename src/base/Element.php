@@ -3631,6 +3631,7 @@ JS, [
                     'revisionId' => $this->revisionId,
                     'siteId' => $this->siteId,
                     'ownerId' => $this instanceof NestedElementInterface && property_exists($this, 'ownerId') ? $this->ownerId : null,
+                    'fieldId' => $this instanceof NestedElementInterface && property_exists($this, 'fieldId') ? $this->fieldId : null,
                 ],
             ]);
         }

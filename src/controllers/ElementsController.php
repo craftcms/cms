@@ -92,6 +92,7 @@ class ElementsController extends Controller
     private bool $_applyParams;
     private bool $_prevalidate;
     private ?int $_ownerId = null;
+    private ?int $_fieldId = null;
 
     /**
      * @inheritdoc
@@ -130,6 +131,7 @@ class ElementsController extends Controller
         $this->_applyParams = $this->_param('applyParams', true) || !$this->request->getIsPost();
         $this->_prevalidate = (bool)$this->_param('prevalidate');
         $this->_ownerId = $this->_param('ownerId');
+        $this->_fieldId = $this->_param('fieldId');
 
         unset($this->_attributes['failMessage']);
         unset($this->_attributes['redirect']);
@@ -2170,6 +2172,9 @@ JS, [
                 if ($this->_ownerId && method_exists($query, 'ownerId')) {
                     $query->ownerId($this->_ownerId);
                 }
+                if ($this->_fieldId && method_exists($query, 'fieldId')) {
+                    $query->fieldId($this->_fieldId);
+                }
 
                 $element = $query->one();
 
@@ -2187,6 +2192,9 @@ JS, [
 
             if ($this->_ownerId && method_exists($query, 'ownerId')) {
                 $query->ownerId($this->_ownerId);
+            }
+            if ($this->_fieldId && method_exists($query, 'fieldId')) {
+                $query->fieldId($this->_fieldId);
             }
 
             $element = $query->one();
@@ -2243,6 +2251,9 @@ JS, [
 
         if ($this->_ownerId && $element instanceof NestedElementInterface) {
             $element->setOwnerId($this->_ownerId);
+        }
+        if ($this->_fieldId && $element instanceof NestedElementInterface && property_exists($element, 'fieldId')) {
+            $element->fieldId = $this->_fieldId;
         }
 
         if (!Craft::$app->getElements()->canSave($element)) {
