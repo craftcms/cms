@@ -99,10 +99,22 @@ export class FocalPoint {
 
     if (this.dragging || this.saving || !targetIsImage) return;
 
-    const newX = ev.pageX;
-    const newY = ev.pageY;
+    const newX = ev.pageX!;
+    const newY = ev.pageY!;
 
-    console.log(`${newX}, ${newY}`);
+    // Calculate the relative position within the target container
+    const containerOffset = this.$target.offset()!;
+    const relativeX = newX - containerOffset.left;
+    const relativeY = newY - containerOffset.top;
+
+    // Update focalPos with the new relative coordinates as percentages
+    const containerWidth = this.$target.width()!;
+    const containerHeight = this.$target.height()!;
+    this.focalPos = [relativeX / containerWidth, relativeY / containerHeight];
+
+    // Update the focal point's position
+    this.debouncedSave();
+    this.positionFocal();
   }
 
   protected handleMove(ev: JQEvent) {
