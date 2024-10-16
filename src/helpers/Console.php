@@ -22,6 +22,53 @@ use const STDOUT;
  */
 class Console extends \yii\helpers\Console
 {
+    private static int $indent = 0;
+
+    /**
+     * Increases the indent prepended to [[output()]] strings.
+     *
+     * @since 5.5.0
+     */
+    public static function indent(): void
+    {
+        self::$indent++;
+    }
+
+    /**
+     * Decreases the indent prepended to [[output()]] strings.
+     *
+     * @since 5.5.0
+     */
+    public static function outdent(): void
+    {
+        self::$indent = max(0, self::$indent - 1);
+    }
+
+    /**
+     * Returns the indent string that should be appended to output lines.
+     *
+     * @return string
+     * @since 5.5.0
+     */
+    public static function indentStr(): string
+    {
+        return str_repeat('  ', self::$indent);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function output($string = null): int|bool
+    {
+        if ($string !== null && self::$indent !== 0) {
+            $lines = StringHelper::lines($string);
+            $lines = array_map(fn(string $line) => static::indentStr() . $line, $lines);
+            $string = implode("\n", $lines);
+        }
+
+        return parent::output($string);
+    }
+
     /**
      * Prints a string to STDOUT.
      *

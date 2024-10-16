@@ -690,7 +690,6 @@ body.rtl [data-icon-after='structure']::after {
 }
 
 .preview-btn::before {
-  margin-block-start: -2px;
   content: 'view';
 }
 
@@ -2688,7 +2687,7 @@ div.btn.submit input {
 
 .color-input {
   @include mixins.fixed-width-font;
-  padding-inline-start: calc(7px + 1em);
+  padding-inline: calc(7px + 1em) 9px;
 }
 
 .color {
@@ -8080,6 +8079,10 @@ body.reduce-focus-visibility {
 .text,
 .selectize.multiselect .selectize-input {
   padding-block: 6px;
+}
+
+.text:not(.color-input),
+.selectize.multiselect .selectize-input {
   padding-inline: 9px;
 }
 

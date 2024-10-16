@@ -98,7 +98,7 @@ class Session
     /**
      * Closes the session, if open.
      *
-     * @since 4.12.0
+     * @since 5.4.0
      */
     public static function close(): void
     {

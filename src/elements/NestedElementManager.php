@@ -468,6 +468,7 @@ class NestedElementManager extends Component
             'prevalidate' => false,
             'pageSize' => 50,
             'storageKey' => null,
+            'static' => $owner->getIsRevision(),
         ];
 
         if ($config['storageKey'] === null) {
@@ -514,6 +515,7 @@ class NestedElementManager extends Component
                     'actions' => [],
                     'canHaveDrafts' => $elementType::hasDrafts(),
                     'storageKey' => $config['storageKey'],
+                    'static' => $config['static'],
                 ];
 
                 if ($config['sortable']) {

@@ -1054,8 +1054,19 @@ JS, [
                             foreach ($tab->getElements() as $layoutElement) {
                                 if ($layoutElement instanceof BaseField && $layoutElement->attribute() === $fieldKey) {
                                     $tabUid = $tab->uid;
-                                    continue 2;
+                                    break 2;
                                 }
+                            }
+                        }
+
+                        // If the error is for a recursively-nested Matrix field,
+                        // manipulate the key to only reference the nested Matrix field, entry and inner field
+                        // Before: foo[<uuid>].bar[<uuid>].baz
+                        // After:  bar[<uuid>].baz
+                        if (substr_count($key, '.') > 1) {
+                            $keyParts = explode('.', $key);
+                            if (preg_match(sprintf('/\[%s\]$/', StringHelper::UUID_PATTERN), $keyParts[count($keyParts) - 3])) {
+                                $key = implode('.', array_slice($keyParts, -2));
                             }
                         }
 

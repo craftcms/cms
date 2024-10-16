@@ -5032,7 +5032,7 @@ JS, [
     {
         if (!isset($this->_eagerLoadedElements[$handle])) {
             // See if we have it stored with the field layout provider’s handle
-            $providerHandle = $this->getFieldLayout()?->provider?->getHandle();
+            $providerHandle = $this->providerHandle();
             if ($providerHandle !== null && isset($this->_eagerLoadedElements["$providerHandle:$handle"])) {
                 $handle = "$providerHandle:$handle";
             }
@@ -5048,7 +5048,7 @@ JS, [
     {
         if (!isset($this->_eagerLoadedElements[$handle])) {
             // See if we have it stored with the field layout provider’s handle
-            $providerHandle = $this->getFieldLayout()?->provider?->getHandle();
+            $providerHandle = $this->providerHandle();
             if ($providerHandle !== null && isset($this->_eagerLoadedElements["$providerHandle:$handle"])) {
                 $handle = "$providerHandle:$handle";
             } else {
@@ -5122,7 +5122,7 @@ JS, [
     {
         if (!isset($this->_eagerLoadedElementCounts[$handle])) {
             // See if we have it stored with the field layout provider’s handle
-            $providerHandle = $this->getFieldLayout()?->provider?->getHandle();
+            $providerHandle = $this->providerHandle();
             if ($providerHandle !== null && isset($this->_eagerLoadedElements["$providerHandle:$handle"])) {
                 $handle = "$providerHandle:$handle";
             }
@@ -5137,6 +5137,15 @@ JS, [
     public function setEagerLoadedElementCount(string $handle, int $count): void
     {
         $this->_eagerLoadedElementCounts[$handle] = $count;
+    }
+
+    private function providerHandle(): ?string
+    {
+        try {
+            return $this->getFieldLayout()?->provider?->getHandle();
+        } catch (InvalidConfigException) {
+            return null;
+        }
     }
 
     /**
