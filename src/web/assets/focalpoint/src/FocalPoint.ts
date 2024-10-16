@@ -1,6 +1,7 @@
 import './focal.scss';
 
 import JQEvent = JQuery.Event;
+import TriggeredEvent = JQuery.TriggeredEvent;
 
 export class FocalPoint {
   private readonly $target: JQuery;
@@ -62,6 +63,7 @@ export class FocalPoint {
   protected addFocalMoveListeners() {
     this.$focal.on('mousedown touchstart', this.handleDragStart.bind(this));
     $(window).on('mouseup touchend', this.handleDragEnd.bind(this));
+    $(window).on('mouseup touchend', this.handleClickToMove.bind(this));
     $(window).on('mousemove touchmove', this.handleMove.bind(this));
   }
 
@@ -72,6 +74,7 @@ export class FocalPoint {
 
     this.$focal.off('mousedown touchstart', this.handleDragStart.bind(this));
     $(window).off('mouseup touchend', this.handleDragEnd.bind(this));
+    $(window).off('mouseup touchend', this.handleClickToMove.bind(this));
     $(window).off('mousemove touchmove', this.handleMove.bind(this));
   }
 
@@ -87,6 +90,31 @@ export class FocalPoint {
 
   protected handleDragEnd() {
     this.dragging = false;
+  }
+
+  protected handleClickToMove(ev: TriggeredEvent) {
+    ev.preventDefault();
+    const {target} = ev;
+    const targetIsImage = target.tagName === 'IMG';
+
+    if (this.dragging || this.saving || !targetIsImage) return;
+
+    const newX = ev.pageX!;
+    const newY = ev.pageY!;
+
+    // Calculate the relative position within the target container
+    const containerOffset = this.$target.offset()!;
+    const relativeX = newX - containerOffset.left;
+    const relativeY = newY - containerOffset.top;
+
+    // Update focalPos with the new relative coordinates as percentages
+    const containerWidth = this.$target.width()!;
+    const containerHeight = this.$target.height()!;
+    this.focalPos = [relativeX / containerWidth, relativeY / containerHeight];
+
+    // Update the focal point's position
+    this.debouncedSave();
+    this.positionFocal();
   }
 
   protected handleMove(ev: JQEvent) {

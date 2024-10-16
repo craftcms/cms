@@ -53,6 +53,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     draggingCropper: false,
     scalingCropper: false,
     draggingFocal: false,
+    clickToMoveFocal: false,
     previousMouseX: 0,
     previousMouseY: 0,
     shiftKeyHeld: false,
@@ -2406,6 +2407,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         } else if (move) {
           this.draggingCropper = true;
         }
+      } else {
+        if (this.focalPoint) {
+          this.clickToMoveFocal = true;
+        }
       }
     },
 
@@ -2454,7 +2459,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     /**
      * Handle mouse being released.
      */
-    _handleMouseUp: function () {
+    _handleMouseUp: function (ev) {
+      if (!this.draggingFocal && this.clickToMoveFocal) {
+        this._handleFocalClickToMove(ev);
+      }
+
       this.draggingCropper = false;
       this.scalingCropper = false;
       this.draggingFocal = false;
@@ -2469,6 +2478,62 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._handleMouseUp(ev);
       this.mouseMoveEvent = ev;
       this._handleMouseMoveInternal();
+    },
+
+    /**
+     * Handle focal point being moved via click.
+     *
+     * @param {Object} ev
+     */
+    _handleFocalClickToMove: function (ev) {
+      if (typeof this._handleFocalClickToMove._ === 'undefined') {
+        this._handleFocalClickToMove._ = {};
+      }
+
+      if (!this.focalPoint) return;
+
+      const left = this.focalPoint.get('left');
+      const top = this.focalPoint.get('top');
+
+      const canvasOffset = this.$croppingCanvas.offset();
+      const canvasOffsetX = canvasOffset.left;
+      const canvasOffsetY = canvasOffset.top;
+
+      this._handleFocalClickToMove._.newX = ev.pageX - canvasOffsetX;
+      this._handleFocalClickToMove._.newY = ev.pageY - canvasOffsetY;
+
+      if (this.currentView === 'crop') {
+        if (
+          !this.arePointsInsideRectangle(
+            [
+              {
+                x: this._handleFocalClickToMove._.newX,
+                y: this._handleFocalClickToMove._.newY,
+              },
+            ],
+            this.imageVerticeCoords
+          )
+        ) {
+          return;
+        }
+      } else {
+        if (
+          !this.isPointInsideViewport({
+            x: this._handleFocalClickToMove._.newX,
+            y: this._handleFocalClickToMove._.newY,
+          })
+        ) {
+          return;
+        }
+      }
+
+      this.focalPoint.set({
+        left: this._handleFocalClickToMove._.newX,
+        top: this._handleFocalClickToMove._.newY,
+      });
+
+      this.storeFocalPointState();
+      this.renderImage();
     },
 
     /**
@@ -2635,24 +2700,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           }
         } else {
           if (
-            !(
-              this.viewport.left -
-                this.viewport.width / 2 -
-                this._handleFocalDrag._.newX <
-                0 &&
-              this.viewport.left +
-                this.viewport.width / 2 -
-                this._handleFocalDrag._.newX >
-                0 &&
-              this.viewport.top -
-                this.viewport.height / 2 -
-                this._handleFocalDrag._.newY <
-                0 &&
-              this.viewport.top +
-                this.viewport.height / 2 -
-                this._handleFocalDrag._.newY >
-                0
-            )
+            !this.isPointInsideViewport({
+              x: this._handleFocalDrag._.newX,
+              y: this._handleFocalDrag._.newY,
+            })
           ) {
             return;
           }
@@ -2663,6 +2714,24 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           top: this.focalPoint.top + this._handleFocalDrag._.deltaY,
         });
       }
+    },
+
+    /**
+     * Given point coordinates in the form {x: int, y:int}, returns true
+     * if the points are inside the viewport
+     *
+     * Adapted from: http://stackoverflow.com/a/2763387/2040791
+     *
+     * @param {Object} points
+     * @param {Object} rectangle
+     */
+    isPointInsideViewport(coordinateSet) {
+      return (
+        this.viewport.left - this.viewport.width / 2 - coordinateSet.x < 0 &&
+        this.viewport.left + this.viewport.width / 2 - coordinateSet.x > 0 &&
+        this.viewport.top - this.viewport.height / 2 - coordinateSet.y < 0 &&
+        this.viewport.top + this.viewport.height / 2 - coordinateSet.y > 0
+      );
     },
 
     /**
