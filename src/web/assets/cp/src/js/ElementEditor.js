@@ -425,6 +425,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                     redirect: this.settings.hashedCpEditUrl,
                     params: {
                       draftId: this.settings.draftId,
+                      ownerId: this.settings.ownerId,
                       provisional: 1,
                     },
                   });
@@ -433,6 +434,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                     data: {
                       elementId: this.settings.canonicalId,
                       draftId: this.settings.draftId,
+                      ownerId: this.settings.ownerId,
                       siteId: this.settings.siteId,
                       provisional: 1,
                     },
@@ -1649,6 +1651,12 @@ Craft.ElementEditor = Garnish.Base.extend(
         );
       }
 
+      if (this.settings.ownerId !== null) {
+        params.push(
+          `${this.namespaceInputName('ownerId')}=${this.settings.ownerId}`
+        );
+      }
+
       for (const [name, value] of Object.entries(this.settings.saveParams)) {
         params.push(`${this.namespaceInputName(name)}=${value}`);
       }
@@ -2299,6 +2307,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       previewToken: null,
       previewParamValue: null,
       revisionId: null,
+      ownerId: null,
       siteId: null,
       siteStatuses: [],
       saveParams: {},
