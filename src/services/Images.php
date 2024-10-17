@@ -19,7 +19,6 @@ use craft\image\SvgAllowedAttributes;
 use enshrined\svgSanitize\Sanitizer;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\Format;
-use Imagine\Imagick\Imagick;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
 use yii\base\Component;
@@ -67,7 +66,7 @@ class Images extends Component
         } elseif ($this->getCanUseImagick()) {
             $this->_driver = self::DRIVER_IMAGICK;
         } else {
-            $this->_driver = self::DRIVER_GD;
+            $this->supportedImageFormats = [];
         }
 
         parent::init();
@@ -95,21 +94,32 @@ class Images extends Component
 
     /**
      * Returns the version of the image driver.
-     *
-     * @return string
      */
-    public function getVersion(): string
+    public function getVersion(): ?string
     {
         if ($this->getIsGd()) {
             return App::extensionVersion('gd');
         }
 
-        $version = App::extensionVersion('imagick');
-        try {
-            $version .= ' (ImageMagick ' . $this->getImageMagickApiVersion() . ')';
-        } catch (Throwable) {
+        if ($this->getIsImagick()) {
+            $version = App::extensionVersion('imagick');
+            try {
+                $version .= ' (ImageMagick ' . $this->getImageMagickApiVersion() . ')';
+            } catch (Throwable) {
+            }
+            return $version;
         }
-        return $version;
+
+        return null;
+    }
+
+    protected function getDriverInfo(): ?\Imagine\Driver\Info
+    {
+        return match(true) {
+            $this->getIsImagick() => ImagickImagine::getDriverInfo(),
+            $this->getIsGd() => GdImagine::getDriverInfo(),
+            default => null,
+        };
     }
 
     /**
@@ -191,8 +201,9 @@ class Images extends Component
      */
     public function getSupportsWebP(): bool
     {
-        $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
-        return $info->isFormatSupported(Format::ID_WEBP);
+        return
+            in_array(Format::ID_WEBP, $this->supportedImageFormats, true) ||
+            (bool) $this->getDriverInfo()?->isFormatSupported(Format::ID_WEBP);
     }
 
     /**
@@ -202,8 +213,9 @@ class Images extends Component
      */
     public function getSupportsAvif(): bool
     {
-        $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
-        return $info->isFormatSupported(Format::ID_AVIF);
+        return
+            in_array(Format::ID_AVIF, $this->supportedImageFormats, true) ||
+            (bool) $this->getDriverInfo()?->isFormatSupported(Format::ID_AVIF);
     }
 
     /**
@@ -214,8 +226,10 @@ class Images extends Component
      */
     public function getSupportsHeic(): bool
     {
-        $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
-        return $info->isFormatSupported(Format::ID_HEIC);
+        return
+            in_array(Format::ID_HEIC, $this->supportedImageFormats, true) ||
+            (bool) ($this->getDriverInfo()?->isFormatSupported(Format::ID_HEIC)
+        );
     }
 
     /**
