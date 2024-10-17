@@ -29,7 +29,7 @@ use craft\helpers\Db;
  * @replace {myElement} myAddress
  * @replace {element-class} \craft\elements\Address
  */
-class AddressQuery extends ElementQuery
+class AddressQuery extends ElementQuery implements NestedElementQueryInterface
 {
     use NestedElementQueryTrait {
         cacheTags as nestedTraitCacheTags;
