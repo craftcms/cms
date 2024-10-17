@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where uninstalled/missing plugins weren’t getting status indicators on the Plugins index page.
+
 ## 5.4.8 - 2024-10-15
 
 - Added `craft\helpers\App::isTty()`.
