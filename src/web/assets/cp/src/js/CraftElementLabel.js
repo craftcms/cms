@@ -77,7 +77,7 @@ class CraftElementLabel extends HTMLElement {
   createTooltip() {
     this.tooltip = document.createElement('craft-tooltip');
     this.tooltip.setAttribute('self-managed', 'true');
-    this.tooltip.setAttribute('aria-label', this.innerText);
+    this.tooltip.setAttribute('text', this.innerText);
     this.tooltip.setAttribute('aria-hidden', 'true');
 
     // If there's a context label, make it a little nicer

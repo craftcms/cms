@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -37,7 +38,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Money extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Money extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CopyableFieldInterface
 {
     /**
      * @inheritdoc

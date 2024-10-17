@@ -191,9 +191,7 @@ Craft.ui = {
     let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
     let value = config.value;
 
-    const $wrapper = $('<div/>', {
-      class: 'copytextbtn-wrapper',
-    });
+    const $wrapper = $('<craft-copy-attribute/>');
 
     let $btn = $('<div/>', {
       id,
@@ -207,50 +205,7 @@ Craft.ui = {
       $btn.addClass(config.class);
     }
 
-    let $input = $('<input/>', {
-      value,
-      readonly: true,
-      size: value.length,
-      tabindex: '-1',
-      'aria-hidden': 'true',
-      class: 'visually-hidden',
-    }).insertBefore($btn);
-
-    const $value = $('<span/>', {
-      text: value,
-      class: 'copytextbtn__value',
-    }).appendTo($btn);
-
-    $('<span/>', {
-      class: 'visually-hidden',
-      text: Craft.t('app', 'Copy to clipboard'),
-    }).appendTo($btn);
-
-    let $icon = $('<span/>', {
-      class: 'copytextbtn__icon',
-      'data-icon': 'clipboard',
-      'aria-hidden': 'true',
-    }).appendTo($btn);
-
-    const copyValue = function () {
-      $input[0].select();
-      document.execCommand('copy');
-      Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
-      $btn.trigger('copy');
-      $input[0].setSelectionRange(0, 0);
-      $btn.focus();
-    };
-
-    $btn.on('activate', () => {
-      copyValue();
-    });
-
-    $btn.on('keydown', (ev) => {
-      if (ev.keyCode === Garnish.SPACE_KEY) {
-        copyValue();
-        ev.preventDefault();
-      }
-    });
+    $btn.text(value);
 
     return $wrapper;
   },

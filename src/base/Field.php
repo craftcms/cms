@@ -612,6 +612,32 @@ JS, [
     }
 
     /**
+     * @see CopyableFieldInterface::getIsCopyable()
+     * @since 5.5.0
+     */
+    public function getIsCopyable(?ElementInterface $element = null): bool
+    {
+        return $this->getIsTranslatable($element) && ElementHelper::supportsFieldCopying($element);
+    }
+
+    /**
+     * @see CopyableFieldInterface::copyValueBetweenSites()
+     * @since 5.5.0
+     */
+    public function copyValueBetweenSites(ElementInterface $from, ElementInterface $to): bool
+    {
+        $fromValue = $this->serializeValue($from->getFieldValue($this->handle), $from);
+        $toValue = $this->serializeValue($to->getFieldValue($this->handle), $to);
+
+        if ($fromValue != $toValue) {
+            $to->setFieldValue($this->handle, $fromValue);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getStatus(ElementInterface $element): ?array
@@ -919,7 +945,7 @@ JS, [
     }
 
     /**
-     * @inheritdoc
+     * Copies field’s value from one element to another.
      */
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {

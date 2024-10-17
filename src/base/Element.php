@@ -34,6 +34,7 @@ use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
 use craft\enums\Color;
+use craft\enums\MenuItemType;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAttributeHtmlEvent;
@@ -3602,6 +3603,31 @@ abstract class Element extends Component implements ElementInterface
             ];
         }
 
+        // Copy content
+        $user = Craft::$app->getUser()->getIdentity();
+        if (
+            !$this->getIsRevision() &&
+            $this->canSave($user) &&
+            ElementHelper::supportsFieldCopying($this)
+        ) {
+            $copyContentId = sprintf('action-copy-content-%s', mt_rand());
+            $items[] = [
+                'id' => $copyContentId,
+                'icon' => 'language',
+                'label' => Craft::t('app', 'Copy content from site'),
+                'type' => MenuItemType::Button,
+                'showInChips' => false,
+                'attributes' => [
+                    'data' => [
+                        'copy-content' => true,
+                    ],
+                    'aria' => [
+                        'label' => Craft::t('app', 'Copy content from site'),
+                    ],
+                ],
+            ];
+        }
+
         // Edit
         if (Craft::$app->getElements()->canView($this)) {
             $editId = sprintf('action-edit-%s', mt_rand());
@@ -5853,7 +5879,7 @@ JS,
             $this->trigger(self::EVENT_BEFORE_SAVE, $event);
             return $event->isValid;
         }
-        
+
         return true;
     }
 

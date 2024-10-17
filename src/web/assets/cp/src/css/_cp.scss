@@ -891,7 +891,7 @@ li.breadcrumb-toggle-wrapper {
   padding-block: 5px;
   padding-inline: var(--padding);
   position: relative;
-  z-index: 2;
+  isolation: isolate;
   box-sizing: border-box;
   background-color: color.adjust(mixins.$grey300, $alpha: -1);
   box-shadow: 0 1px 0 color.adjust(mixins.$grey800, $alpha: -1);
