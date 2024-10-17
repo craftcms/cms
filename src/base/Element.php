@@ -3626,8 +3626,8 @@ JS, [
                     'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
                     'revisionId' => $this->revisionId,
                     'siteId' => $this->siteId,
-                    'ownerId' => $this instanceof NestedElementInterface && property_exists($this, 'ownerId') ? $this->ownerId : null,
-                    'fieldId' => $this instanceof NestedElementInterface && property_exists($this, 'fieldId') ? $this->fieldId : null,
+                    'fieldId' => $this instanceof NestedElementInterface ? $this->getField()?->id : null,
+                    'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
                 ],
             ]);
         }
