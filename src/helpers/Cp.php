@@ -872,7 +872,6 @@ class Cp
                     'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
                     'draft-id' => $element->isProvisionalDraft ? null : $element->draftId,
                     'revision-id' => $element->revisionId,
-                    'field-id' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
                     'owner-id' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
                     'site-id' => $element->siteId,
                     'status' => $element->getStatus(),

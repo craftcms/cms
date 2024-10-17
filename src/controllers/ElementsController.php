@@ -74,7 +74,6 @@ class ElementsController extends Controller
     private ?string $_elementUid = null;
     private ?int $_draftId = null;
     private ?int $_revisionId = null;
-    private ?int $_fieldId = null;
     private ?int $_ownerId = null;
     private ?int $_siteId = null;
 
@@ -117,7 +116,6 @@ class ElementsController extends Controller
         $this->_elementUid = $this->_param('elementUid');
         $this->_draftId = $this->_param('draftId');
         $this->_revisionId = $this->_param('revisionId');
-        $this->_fieldId = $this->_param('fieldId');
         $this->_ownerId = $this->_param('ownerId');
         $this->_siteId = $this->_param('siteId');
         $this->_enabled = $this->_param('enabled', $this->_param('setEnabled', true) ? true : null);
@@ -433,7 +431,6 @@ class ElementsController extends Controller
                         'previewToken' => $previewTargets ? $security->generateRandomString() : null,
                         'previewParamValue' => $previewTargets ? $security->hashData(StringHelper::randomString(10)) : null,
                         'revisionId' => $element->revisionId,
-                        'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
                         'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
@@ -2221,9 +2218,7 @@ JS, [
         /** @var string|ElementInterface $elementType */
         $query = $elementType::find();
         if ($query instanceof NestedElementQueryInterface) {
-            $query
-                ->fieldId($this->_fieldId)
-                ->ownerId($this->_ownerId);
+            $query->ownerId($this->_ownerId);
         }
         return $query;
     }
@@ -2248,16 +2243,6 @@ JS, [
             $element->siteId = $this->_siteId;
         }
         $element->setAttributesFromRequest($this->_attributes);
-
-//        if ($element instanceof NestedElementInterface) {
-//            if (isset($this->_ownerId)) {
-//                $element->setOwnerId($this->_ownerId);
-//            }
-//            // todo: add NestedElementInterface::setField() / setFieldId()
-//            if (isset($this->_fieldId) && property_exists($element, 'fieldId')) {
-//                $element->fieldId = $this->_fieldId;
-//            }
-//        }
 
         if (!Craft::$app->getElements()->canSave($element)) {
             throw new ForbiddenHttpException('User not authorized to create this element.');

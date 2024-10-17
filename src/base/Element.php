@@ -3632,7 +3632,6 @@ JS, [
                     'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
                     'revisionId' => $this->revisionId,
                     'siteId' => $this->siteId,
-                    'fieldId' => $this instanceof NestedElementInterface ? $this->getField()?->id : null,
                     'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
                 ],
             ]);
