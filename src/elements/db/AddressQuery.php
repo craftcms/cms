@@ -35,7 +35,7 @@ use yii\base\InvalidConfigException;
  * @replace {myElement} myAddress
  * @replace {element-class} \craft\elements\Address
  */
-class AddressQuery extends ElementQuery
+class AddressQuery extends ElementQuery implements NestedElementQueryInterface
 {
     /**
      * @var mixed The field ID(s) that the resulting addresses must belong to.
@@ -909,34 +909,7 @@ class AddressQuery extends ElementQuery
 
 
     /**
-     * Narrows the query results based on the field the addresses are contained by.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches {elements}…
-     * | - | -
-     * | `'foo'` | in a field with a handle of `foo`.
-     * | `['foo', 'bar']` | in a field with a handle of `foo` or `bar`.
-     * | an [[craft\fields\Addresses]] object | in a field represented by the object.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch {elements} in the Foo field #}
-     * {% set {elements-var} = {twig-method}
-     *   .field('foo')
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch {elements} in the Foo field
-     * ${elements-var} = {php-method}
-     *     ->field('foo')
-     *     ->all();
-     * ```
-     *
-     * @param mixed $value The property value
-     * @return static self reference
+     * @inheritdoc
      * @uses $fieldId
      * @since 5.0.0
      */
@@ -957,35 +930,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the field the addresses are contained by, per the fields’ IDs.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches addresses…
-     * | - | -
-     * | `1` | in a field with an ID of 1.
-     * | `'not 1'` | not in a field with an ID of 1.
-     * | `[1, 2]` | in a field with an ID of 1 or 2.
-     * | `['not', 1, 2]` | not in a field with an ID of 1 or 2.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch addresses in the field with an ID of 1 #}
-     * {% set {elements-var} = {twig-method}
-     *   .fieldId(1)
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch addresses in the field with an ID of 1
-     * ${elements-var} = {php-method}
-     *     ->fieldId(1)
-     *     ->all();
-     * ```
-     *
-     * @param mixed $value The property value
-     * @return static self reference
+     * @inheritdoc
      * @uses $fieldId
      * @since 5.0.0
      */
@@ -996,33 +941,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the primary owner element of the addresses, per the owners’ IDs.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches addresses…
-     * | - | -
-     * | `1` | created for an element with an ID of 1.
-     * | `[1, 2]` | created for an element with an ID of 1 or 2.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch addresses created for an element with an ID of 1 #}
-     * {% set {elements-var} = {twig-method}
-     *   .primaryOwnerId(1)
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch addresses created for an element with an ID of 1
-     * ${elements-var} = {php-method}
-     *     ->primaryOwnerId(1)
-     *     ->all();
-     * ```
-     *
-     * @param mixed $value The property value
-     * @return static self reference
+     * @inheritdoc
      * @uses $primaryOwnerId
      * @since 5.0.0
      */
@@ -1033,26 +952,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[primaryOwnerId()]] and [[siteId()]] parameters based on a given element.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch addresses created for this entry #}
-     * {% set {elements-var} = {twig-method}
-     *   .primaryOwner(myEntry)
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch addresses created for this entry
-     * ${elements-var} = {php-method}
-     *     ->primaryOwner($myEntry)
-     *     ->all();
-     * ```
-     *
-     * @param ElementInterface $primaryOwner The primary owner element
-     * @return static self reference
+     * @inheritdoc
      * @uses $primaryOwnerId
      * @since 5.0.0
      */
@@ -1064,25 +964,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerId()]] parameter based on a given owner element.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch addresses for the current user #}
-     * {% set {elements-var} = {twig-method}
-     *   .owner(currentUser)
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch addresses created for the current user
-     * ${elements-var} = {php-method}
-     *     ->owner(Craft::$app->user->identity)
-     *     ->all();
-     * ```
-     *
-     * @param ElementInterface $owner The owner element
+     * @inheritdoc
      * @return static self reference
      * @uses $ownerId
      */
@@ -1094,36 +976,11 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the addresses’ owner elements, per their IDs.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches addresses…
-     * | - | -
-     * | `1` | created for an element with an ID of 1.
-     * | `[1, 2]` | created for an element with an ID of 1 or 2.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch addresses created for an element with an ID of 1 #}
-     * {% set {elements-var} = {twig-method}
-     *   .ownerId(1)
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch addresses created for an element with an ID of 1
-     * ${elements-var} = {php-method}
-     *     ->ownerId(1)
-     *     ->all();
-     * ```
-     *
-     * @param int|int[]|null $value The property value
+     * @inheritdoc
      * @return static self reference
      * @uses $ownerId
      */
-    public function ownerId(array|int|null $value): static
+    public function ownerId(mixed $value): static
     {
         $this->ownerId = $value;
         $this->_owner = null;
@@ -1131,17 +988,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on whether the addresses’ owners are drafts.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches addresses…
-     * | - | -
-     * | `true` | which can belong to a draft.
-     * | `false` | which cannot belong to a draft.
-     *
-     * @param bool|null $value The property value
-     * @return static self reference
+     * @inheritdoc
      * @uses $allowOwnerDrafts
      * @since 5.0.0
      */
@@ -1152,17 +999,7 @@ class AddressQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on whether the addresses’ owners are revisions.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches addresses…
-     * | - | -
-     * | `true` | which can belong to a revision.
-     * | `false` | which cannot belong to a revision.
-     *
-     * @param bool|null $value The property value
-     * @return static self reference
+     * @inheritdoc
      * @uses $allowOwnerRevisions
      * @since 5.0.0
      */

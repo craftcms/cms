@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Added `craft\elements\db\NestedElementQueryInterface`.
+- Fixed a bug where admin table header cells weren’t indicating when they were sorted. ([#15897](https://github.com/craftcms/cms/issues/15897))
+- Fixed a bug where uninstalled/missing plugins weren’t getting status indicators on the Plugins index page.
+- Fixed errors that occurred when working with nested entries for a newly-added site. ([#15898](https://github.com/craftcms/cms/pull/15898))
+
 ## 5.4.8 - 2024-10-15
 
 - Added `craft\helpers\App::isTty()`.
