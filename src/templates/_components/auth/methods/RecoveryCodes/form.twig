@@ -2,7 +2,13 @@
 
 {% set formId = formId ?? "recovery-codes-form-#{random()}" %}
 
-<form id="{{ formId }}">
+<form id="{{ formId }}" method="post">
+    {{ actionInput('auth/verify-recovery-code') }}
+
+    {% if craft.app.config.general.enableCsrfProtection %}
+        {{ csrfInput() }}
+    {% endif %}
+
     {% embed '_includes/forms/field.twig' with {
         fieldClass: 'first',
         label: 'Recovery Code'|t('app'),
@@ -12,6 +18,7 @@
             <div class="flex flex-nowrap">
                 {{ forms.text({
                     class: 'code auth-recovery-code',
+                    name: 'code',
                     maxlength: 13,
                 }) }}
                 {{ forms.submitButton({

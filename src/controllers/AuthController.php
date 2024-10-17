@@ -44,8 +44,6 @@ class AuthController extends Controller
             return false;
         }
 
-        $this->requireCpRequest();
-        ;
         return true;
     }
 
