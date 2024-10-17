@@ -36,6 +36,7 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
+use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionNamedType;
@@ -45,6 +46,7 @@ use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
+use yii\base\Model;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
@@ -143,34 +145,38 @@ class App
      * For example, if an object has a `fooBar` property, and `X`/`X_` is passed as the prefix, the resulting array
      * may contain a `fooBar` key set to an `X_FOO_BAR` environment variable value, if it exists.
      *
-     * @param string $class The class name
+     * @param object|string $class The class name or object
      * @phpstan-param class-string $class
      * @param string|null $envPrefix The environment variable name prefix
      * @return array
      * @phpstan-return array<string, mixed>
      * @since 4.0.0
      */
-    public static function envConfig(string $class, ?string $envPrefix = null): array
+    public static function envConfig(object|string $class, ?string $envPrefix = null): array
     {
         $envPrefix = $envPrefix !== null ? StringHelper::ensureRight($envPrefix, '_') : '';
-        $properties = (new ReflectionClass($class))->getProperties(ReflectionProperty::IS_PUBLIC);
-        $envConfig = [];
+        $isModel = (new ReflectionClass($class))->isSubclassOf(Model::class);
 
-        foreach ($properties as $prop) {
-            if ($prop->isStatic()) {
-                continue;
-            }
+        /** @var ?Model $model */
+        $model = $isModel
+            ? ($class instanceof Model ? $class : Craft::createObject($class))
+            : null;
 
-            $propName = $prop->getName();
-            $envName = $envPrefix . strtoupper(StringHelper::toSnakeCase($propName));
-            $envValue = static::env($envName);
+        $properties = $model
+            ? Collection::make($model->attributes())
+            : Collection::make((new ReflectionClass($class))->getProperties(ReflectionProperty::IS_PUBLIC))
+                ->filter(fn(ReflectionProperty $prop) => !$prop->isStatic())
+                ->map(fn(ReflectionProperty $prop) => $prop->getName());
 
-            if ($envValue !== null) {
-                $envConfig[$propName] = $envValue;
-            }
-        }
+        return $properties
+            ->mapWithKeys(function(string $propName) use ($envPrefix) {
+                $envName = $envPrefix . strtoupper(StringHelper::toSnakeCase($propName));
+                $envValue = static::env($envName);
 
-        return $envConfig;
+                return [$propName => $envValue];
+            })
+            ->whereNotNull()
+            ->all();
     }
 
     /**
