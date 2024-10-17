@@ -6,6 +6,7 @@
 - Fixed a bug where admin table header cells weren’t indicating when they were sorted. ([#15897](https://github.com/craftcms/cms/issues/15897))
 - Fixed a bug where uninstalled/missing plugins weren’t getting status indicators on the Plugins index page.
 - Fixed errors that occurred when working with nested entries for a newly-added site. ([#15898](https://github.com/craftcms/cms/pull/15898))
+- Fixed a bug where it wasn’t possible to scroll the section select modal when moving entries to a different section. ([#15900](https://github.com/craftcms/cms/issues/15900))
 
 ## 5.4.8 - 2024-10-15
 

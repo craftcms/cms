@@ -9419,7 +9419,6 @@ body.sitepicker {
   width: var(--width) !important;
   min-width: 0 !important;
   max-width: calc(100% - 20px) !important;
-  max-height: 200px;
 
   .header {
     padding-block: calc(var(--m));
@@ -9427,10 +9426,20 @@ body.sitepicker {
   }
 
   .body {
+    height: 83%;
+    position: relative;
+
     .entry-mover-modal--list {
-      flex: 1;
+      height: calc(100% + 20px);
       position: relative;
-      overflow: hidden;
+
+      fieldset {
+        box-sizing: border-box;
+        height: 100%;
+        overflow: auto;
+        padding-block-end: 20px;
+        position: relative;
+      }
     }
   }
 
