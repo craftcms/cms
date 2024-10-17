@@ -680,7 +680,8 @@ class Assets extends Component
             return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
         }
 
-        $transform = new ImageTransform([
+        $transform = Craft::createObject([
+            'class' => ImageTransform::class,
             'width' => $width,
             'height' => $height,
             'mode' => 'crop',
@@ -724,7 +725,8 @@ class Assets extends Component
             $originalWidth > $width ||
             $originalHeight > $height
         ) {
-            $transform = new ImageTransform([
+            $transform = Craft::createObject([
+                'class' => ImageTransform::class,
                 'width' => $width,
                 'height' => $height,
                 'mode' => 'crop',
