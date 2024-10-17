@@ -1649,6 +1649,18 @@ Craft.ElementEditor = Garnish.Base.extend(
         );
       }
 
+      if (this.settings.fieldId !== null) {
+        params.push(
+          `${this.namespaceInputName('fieldId')}=${this.settings.fieldId}`
+        );
+      }
+
+      if (this.settings.ownerId !== null) {
+        params.push(
+          `${this.namespaceInputName('ownerId')}=${this.settings.ownerId}`
+        );
+      }
+
       for (const [name, value] of Object.entries(this.settings.saveParams)) {
         params.push(`${this.namespaceInputName(name)}=${value}`);
       }
@@ -2299,6 +2311,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       previewToken: null,
       previewParamValue: null,
       revisionId: null,
+      fieldId: null,
+      ownerId: null,
       siteId: null,
       siteStatuses: [],
       saveParams: {},

@@ -110,11 +110,16 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
         params.revisionId = this.$element.data('revision-id');
       }
 
-      if (this.settings.ownerId) {
-        params.ownerId = this.settings.ownerId;
-      }
       if (this.settings.fieldId) {
         params.fieldId = this.settings.fieldId;
+      } else if (this.$element?.data('field-id')) {
+        params.fieldId = this.$element.data('field-id');
+      }
+
+      if (this.settings.ownerId) {
+        params.ownerId = this.settings.ownerId;
+      } else if (this.$element?.data('owner-id')) {
+        params.ownerId = this.$element.data('owner-id');
       }
 
       if (this.settings.siteId) {
@@ -180,6 +185,8 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       elementId: null,
       draftId: null,
       revisionId: null,
+      fieldId: null,
+      ownerId: null,
       elementType: null,
       siteId: null,
       prevalidate: false,

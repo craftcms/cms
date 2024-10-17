@@ -14,6 +14,8 @@ use craft\base\FieldLayoutComponent;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\User;
 use craft\enums\MenuItemType;
 use craft\errors\InvalidElementException;
@@ -72,6 +74,8 @@ class ElementsController extends Controller
     private ?string $_elementUid = null;
     private ?int $_draftId = null;
     private ?int $_revisionId = null;
+    private ?int $_fieldId = null;
+    private ?int $_ownerId = null;
     private ?int $_siteId = null;
 
     private ?bool $_enabled = null;
@@ -91,8 +95,6 @@ class ElementsController extends Controller
     private ?string $_selectedTab = null;
     private bool $_applyParams;
     private bool $_prevalidate;
-    private ?int $_ownerId = null;
-    private ?int $_fieldId = null;
 
     /**
      * @inheritdoc
@@ -115,6 +117,8 @@ class ElementsController extends Controller
         $this->_elementUid = $this->_param('elementUid');
         $this->_draftId = $this->_param('draftId');
         $this->_revisionId = $this->_param('revisionId');
+        $this->_fieldId = $this->_param('fieldId');
+        $this->_ownerId = $this->_param('ownerId');
         $this->_siteId = $this->_param('siteId');
         $this->_enabled = $this->_param('enabled', $this->_param('setEnabled', true) ? true : null);
         $this->_enabledForSite = $this->_param('enabledForSite');
@@ -130,8 +134,6 @@ class ElementsController extends Controller
         $this->_selectedTab = $this->_param('selectedTab');
         $this->_applyParams = $this->_param('applyParams', true) || !$this->request->getIsPost();
         $this->_prevalidate = (bool)$this->_param('prevalidate');
-        $this->_ownerId = $this->_param('ownerId');
-        $this->_fieldId = $this->_param('fieldId');
 
         unset($this->_attributes['failMessage']);
         unset($this->_attributes['redirect']);
@@ -431,6 +433,8 @@ class ElementsController extends Controller
                         'previewToken' => $previewTargets ? $security->generateRandomString() : null,
                         'previewParamValue' => $previewTargets ? $security->hashData(StringHelper::randomString(10)) : null,
                         'revisionId' => $element->revisionId,
+                        'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
+                        'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
                         'siteToken' => (!Craft::$app->getIsLive() || !$element->getSite()->enabled) ? $security->hashData((string)$element->siteId) : null,
@@ -2109,7 +2113,7 @@ JS, [
 
         // Loading an existing element?
         if ($this->_draftId || $this->_revisionId) {
-            $element = $elementType::find()
+            $element = $this->_elementQuery($elementType)
                 ->draftId($this->_draftId)
                 ->revisionId($this->_revisionId)
                 ->provisionalDrafts($this->_provisional)
@@ -2160,44 +2164,28 @@ JS, [
         if ($elementId) {
             // First check for a provisional draft, if we're open to it
             if ($checkForProvisionalDraft) {
-                $query = $elementType::find()
+                $element = $this->_elementQuery($elementType)
                     ->provisionalDrafts()
                     ->draftOf($elementId)
                     ->draftCreator($user)
                     ->siteId($siteId)
                     ->preferSites($preferSites)
                     ->unique()
-                    ->status(null);
-
-                if ($this->_ownerId && method_exists($query, 'ownerId')) {
-                    $query->ownerId($this->_ownerId);
-                }
-                if ($this->_fieldId && method_exists($query, 'fieldId')) {
-                    $query->fieldId($this->_fieldId);
-                }
-
-                $element = $query->one();
+                    ->status(null)
+                    ->one();
 
                 if ($element && $this->_canSave($element, $user)) {
                     return $element;
                 }
             }
 
-            $query = $elementType::find()
+            $element = $this->_elementQuery($elementType)
                 ->id($elementId)
                 ->siteId($siteId)
                 ->preferSites($preferSites)
                 ->unique()
-                ->status(null);
-
-            if ($this->_ownerId && method_exists($query, 'ownerId')) {
-                $query->ownerId($this->_ownerId);
-            }
-            if ($this->_fieldId && method_exists($query, 'fieldId')) {
-                $query->fieldId($this->_fieldId);
-            }
-
-            $element = $query->one();
+                ->status(null)
+                ->one();
 
             if ($element) {
                 return $element;
@@ -2205,7 +2193,7 @@ JS, [
 
             // finally, check for an unpublished draft
             // (see https://github.com/craftcms/cms/issues/14199)
-            return $elementType::find()
+            return $this->_elementQuery($elementType)
                 ->id($elementId)
                 ->siteId($siteId)
                 ->preferSites($preferSites)
@@ -2216,7 +2204,7 @@ JS, [
         }
 
         if ($elementUid) {
-            return $elementType::find()
+            return $this->_elementQuery($elementType)
                 ->uid($elementUid)
                 ->siteId($siteId)
                 ->preferSites($preferSites)
@@ -2226,6 +2214,18 @@ JS, [
         }
 
         return null;
+    }
+
+    private function _elementQuery(string $elementType): ElementQueryInterface
+    {
+        /** @var string|ElementInterface $elementType */
+        $query = $elementType::find();
+        if ($query instanceof NestedElementQueryInterface) {
+            $query
+                ->fieldId($this->_fieldId)
+                ->ownerId($this->_ownerId);
+        }
+        return $query;
     }
 
     /**
@@ -2249,12 +2249,15 @@ JS, [
         }
         $element->setAttributesFromRequest($this->_attributes);
 
-        if ($this->_ownerId && $element instanceof NestedElementInterface) {
-            $element->setOwnerId($this->_ownerId);
-        }
-        if ($this->_fieldId && $element instanceof NestedElementInterface && property_exists($element, 'fieldId')) {
-            $element->fieldId = $this->_fieldId;
-        }
+//        if ($element instanceof NestedElementInterface) {
+//            if (isset($this->_ownerId)) {
+//                $element->setOwnerId($this->_ownerId);
+//            }
+//            // todo: add NestedElementInterface::setField() / setFieldId()
+//            if (isset($this->_fieldId) && property_exists($element, 'fieldId')) {
+//                $element->fieldId = $this->_fieldId;
+//            }
+//        }
 
         if (!Craft::$app->getElements()->canSave($element)) {
             throw new ForbiddenHttpException('User not authorized to create this element.');
